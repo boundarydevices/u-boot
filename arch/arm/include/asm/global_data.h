@@ -75,6 +75,9 @@ typedef	struct	global_data {
 	unsigned long	tlb_addr;
 #endif
 	const void	*fdt_blob;	/* Our device tree, NULL if none */
+#ifdef CONFIG_SYS_SKIP_ARM_RELOCATION
+	ulong		malloc_end;	/* End of malloc region (addr + 1) */
+#endif
 	void		**jt;		/* jump table */
 	char		env_buf[32];	/* buffer for getenv() before reloc. */
 #if defined(CONFIG_POST) || defined(CONFIG_LOGBUFFER)

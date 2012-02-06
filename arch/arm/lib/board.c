@@ -369,6 +369,7 @@ void board_init_f(ulong bootflag)
 #endif /* CONFIG_FB_ADDR */
 #endif /* CONFIG_LCD */
 
+#ifndef CONFIG_SYS_SKIP_ARM_RELOCATION
 	/*
 	 * reserve memory for U-Boot code, data & bss
 	 * round down to next 4 kB limit
@@ -377,6 +378,7 @@ void board_init_f(ulong bootflag)
 	addr &= ~(4096 - 1);
 
 	debug("Reserving %ldk for U-Boot at: %08lx\n", gd->mon_len >> 10, addr);
+#endif
 
 #ifndef CONFIG_SPL_BUILD
 	/*
@@ -449,6 +451,10 @@ void board_init_f(ulong bootflag)
 	dram_init_banksize();
 	display_dram_config();	/* and display it */
 
+#ifdef CONFIG_SYS_SKIP_ARM_RELOCATION
+	gd->malloc_end = addr;
+	addr = _TEXT_BASE;
+#endif
 	gd->relocaddr = addr;
 	gd->start_addr_sp = addr_sp;
 	gd->reloc_off = addr - _TEXT_BASE;
@@ -519,7 +525,11 @@ void board_init_r(gd_t *id, ulong dest_addr)
 #endif
 
 	/* The Malloc area is immediately below the monitor copy in DRAM */
+#ifdef CONFIG_SYS_SKIP_ARM_RELOCATION
+	malloc_start = gd->malloc_end - TOTAL_MALLOC_LEN;
+#else
 	malloc_start = dest_addr - TOTAL_MALLOC_LEN;
+#endif
 	mem_malloc_init (malloc_start, TOTAL_MALLOC_LEN);
 
 #ifdef CONFIG_ARCH_EARLY_INIT_R
