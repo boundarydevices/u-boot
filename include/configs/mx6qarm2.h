@@ -80,6 +80,19 @@
 #define CONFIG_LOADADDR			0x10800000
 #define CONFIG_SYS_TEXT_BASE		0x17800000
 
+/*
+ * The boot ROM code copies U-Boot already into the RAM at
+ * address CONFIG_SYS_TEXT_BASE.  To improve the boot time,
+ * skip the relocation (i.e. the copy RAM -> RAM).
+ *
+ * ATTENTION: Please read
+ *
+ * http://lists.denx.de/pipermail/u-boot/2012-February/117140.html
+ *
+ * why you normally don't want this!
+ */
+#define CONFIG_SYS_SKIP_ARM_RELOCATION
+
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	"script=boot.scr\0" \
 	"uimage=uImage\0" \
