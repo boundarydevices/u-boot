@@ -494,8 +494,13 @@ static int fec_open(struct eth_device *edev)
 	while (readw(&fec->eth->miigsk_enr) & MIIGSK_ENR_READY)
 		udelay(2);
 
+#if !defined(CONFIG_MII)
 	/* configure gasket for RMII, 50 MHz, no loopback, and no echo */
 	writew(MIIGSK_CFGR_IF_MODE_RMII, &fec->eth->miigsk_cfgr);
+#else
+	/* configure gasket for MII, no loopback, and no echo */
+	writew(MIIGSK_CFGR_IF_MODE_MII, &fec->eth->miigsk_cfgr);
+#endif
 
 	/* re-enable the gasket */
 	writew(MIIGSK_ENR_EN, &fec->eth->miigsk_enr);
