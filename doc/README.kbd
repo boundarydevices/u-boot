@@ -1,0 +1,84 @@
+Keyboard handling
+========================================
+This document describes asynchronous keyboard handling, also
+known as "magic key" or "button" handling used to alter the
+boot flow at power-on when one or more keys or buttons are
+pressed.
+
+Note that "keyboard" has multiple meanings, and this document
+does not describe the use of keyboards as a tty or console
+input device.
+
+Think of the button on your WiFi access point that resets to
+factory defaults and not the keyboard on your desk.
+
+This use case is similar in function to the mechanism used
+by a PC BIOS to enter a setup application at boot time or
+on an Android device to access "recovery" mode.
+
+At the highest level, the function of this subsystem is to
+run a set of commands other than the content of the "bootcmd"
+environment variable when one or more keys is pressed at
+startup. The alternate commands are also stored in environment
+variables as illustrated in this snippet from the file
+include/configs/lwmon.h:
+
+"key_cmd2=echo *** Entering Update Mode ***;"		\
+	"if fatload ide 0:3 10000 update.scr;"		\
+		"then source 10000;"			\
+		"else echo *** UPDATE FAILED ***;"	\
+	"fi\0"						\
+
+As of this writing, there are eight boards which implement
+this mechanism:
+	enbw/enbw_cmc/enbw_cmc.c
+	lwmon/lwmon.c
+	lwmon5/kbd.c
+	manroland/hmi1001/hmi1001.c
+	manroland/uc101/uc101.c
+	manroland/mucmc52/mucmc52.c
+	pcs440ep/pcs440ep.c
+	r360mpi/r360mpi.c
+
+They all share some things in common:
+
+1.	They each check for keys pressed in misc_init_r() and
+	use the content of the environment variable "magic_keys"
+	to locate command strings matching key combinations.
+2.	If a keystroke is matched, it is placed into the "preboot"
+	environment variable.
+3.	The "magic_keys" environment variable is used as an
+	index or pointer of sorts to other environment variables
+	which contain key combinations.
+4. 	Each character in the value of "magic_keys" is used as a
+	suffix for a key-combination environment variable name.
+	The name "key_magic" is used in all implementations except
+	enbw_cmc.
+	For example, if "magic_keys" contains the value "1234",
+	the code will check against these environment variables.
+		key_magic1
+		key_magic2
+		key_magic3
+		key_magic4
+5.	If the currently pressed key combination matches the
+	content of the key_magicX variable, the content of
+	another variable, "key_cmdX" is copied to "preboot".
+
+The implementations otherwise vary.
+
+Some implementations, notably the lwmon and r360mpi boards,
+include a command "kbd", which is used to read the current
+key state into an environment variable "keybd".
+
+To recap: to implement this for your platform, you should do the
+following.
+
+Add a section conditional on CONFIG_PREBOOT to implement the
+key handling:
+
+	#ifdef CONFIG_PREBOOT
+	#endif
+
+If CONFIG_PREBOOT is set, add a call to check and conditionally
+define the "preboot" variable based on the current key state.
+
