@@ -667,7 +667,8 @@ The following options need to be configured:
 
 		When CONFIG_CFB_CONSOLE is defined, video console is
 		default i/o. Serial console can be forced with
-		environment 'console=serial'.
+		by placing 'setenv("stdout", "serial");' inside
+		board_late_init().
 
 		When CONFIG_SILENT_CONSOLE is defined, all console
 		messages (by U-Boot and Linux!) can be silenced with
