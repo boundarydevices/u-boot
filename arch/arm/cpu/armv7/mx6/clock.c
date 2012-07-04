@@ -49,6 +49,20 @@ void enable_usboh3_clk(unsigned char enable)
 	__raw_writel(reg, &imx_ccm->CCGR6);
 
 }
+#ifdef CONFIG_IMX_OTP
+void enable_otp_clk(unsigned char enable)
+{
+	u32 reg;
+
+	reg = __raw_readl(&imx_ccm->CCGR2);
+	if (enable)
+		reg |= MXC_CCM_CCGR2_OCOTP_CTRL_MASK;
+	else
+		reg &= ~(MXC_CCM_CCGR2_OCOTP_CTRL_MASK);
+	__raw_writel(reg, &imx_ccm->CCGR2);
+
+}
+#endif
 
 #ifdef CONFIG_I2C_MXC
 /* i2c_num can be from 0 - 2 */
