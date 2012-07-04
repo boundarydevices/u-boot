@@ -63,6 +63,16 @@
 #define CONFIG_I2C_MXC
 #define CONFIG_SYS_I2C_SPEED		100000
 
+/* OCOTP Configs */
+#define CONFIG_CMD_IMXOTP
+#ifdef CONFIG_CMD_IMXOTP
+#define CONFIG_IMX_OTP
+#define IMX_OTP_BASE			OCOTP_BASE_ADDR
+#define IMX_OTP_ADDR_MAX		0x7F
+#define IMX_OTP_DATA_ERROR_VAL		0xBADABADA
+//#define IMX_OTPWRITE_ENABLED
+#endif
+
 /* MMC Configs */
 #define CONFIG_FSL_ESDHC
 #define CONFIG_FSL_USDHC
@@ -229,5 +239,7 @@
 #ifndef CONFIG_SYS_DCACHE_OFF
 #define CONFIG_CMD_CACHE
 #endif
+
+#define IMX_OTPWRITE_ENABLED
 
 #endif			       /* __CONFIG_H */

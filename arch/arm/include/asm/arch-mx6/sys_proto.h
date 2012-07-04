@@ -46,4 +46,9 @@ void set_vddsoc(u32 mv);
 int fecmxc_initialize(bd_t *bis);
 u32 get_ahb_clk(void);
 u32 get_periph_clk(void);
+
+/* OTP related functionality */
+int imx_otp_read_one_u32(u32, u32 *);
+int imx_otp_blow_one_u32(u32, u32, u32 *);
+void enable_otp_clk(unsigned char);
 #endif

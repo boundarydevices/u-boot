@@ -262,6 +262,7 @@ int board_early_init_f(void)
 	       |MXC_CCM_CCGR2_HDMI_TX_ISFRCLK_MASK;
 	writel(reg, &mxc_ccm->CCGR2);
 
+	enable_otp_clk(1);
 	setup_iomux_uart();
 	setup_buttons();
 

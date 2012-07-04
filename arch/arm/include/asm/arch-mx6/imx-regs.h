@@ -595,5 +595,59 @@ struct iomuxc_base_regs {
 	u32     daisy[104];     /* 0x7b0..94c */
 };
 
+struct src_regs {
+	u32	scr;		/* 0x00 */
+	u32	sbmr1;		/* 0x04 */
+	u32	srsr;		/* 0x08 */
+	u32	reserved1;	/* 0x0c */
+	u32	reserved2;	/* 0x10 */
+	u32	sisr;		/* 0x14 */
+	u32	simr;		/* 0x18 */
+	u32	sbmr2;		/* 0x1c */
+	u32	gpr1;		/* 0x20 */
+	u32	gpr2;		/* 0x24 */
+	u32	gpr3;		/* 0x28 */
+	u32	gpr4;		/* 0x2c */
+	u32	gpr5;		/* 0x30 */
+	u32	gpr6;		/* 0x34 */
+	u32	gpr7;		/* 0x38 */
+	u32	gpr8;		/* 0x3c */
+	u32	gpr9;		/* 0x40 */
+	u32	gpr10;		/* 0x44 */
+};
+
+/* OCOTP definitions */
+struct otp_regs {
+	u32	ctrl;		/* 0x00 */
+	u32	ctrl_set;	/* 0x04 */
+	u32	ctrl_clr;	/* 0x08 */
+	u32	ctrl_tog;	/* 0x0c */
+	u32	timing;		/* 0x10 */
+	u32	reserved0[3];	/* 0x10 - 0x1c */
+	u32	data;		/* 0x20 */
+	u32	reserved1[3];	/* 0x20 - 0x2c */
+	u32	read_ctrl;	/* 0x30 */
+	u32	reserved2[3];	/* 0x30 - 0x3c */
+	u32	read_fuse_data;	/* 0x40 */
+};
+
+#define BP_OCOTP_CTRL_WR_UNLOCK		16
+#define BM_OCOTP_CTRL_WR_UNLOCK		0xFFFF0000
+#define BV_OCOTP_CTRL_WR_UNLOCK__KEY	0x3E77
+#define BM_OCOTP_CTRL_RELOAD_SHADOWS	0x00000400
+#define BM_OCOTP_CTRL_ERROR		0x00000200
+#define BM_OCOTP_CTRL_BUSY		0x00000100
+#define BP_OCOTP_CTRL_ADDR		0
+#define BM_OCOTP_CTRL_ADDR		0x0000007F
+
+#define BP_OCOTP_TIMING_STROBE_READ	16
+#define BM_OCOTP_TIMING_STROBE_READ	0x003F0000
+#define BP_OCOTP_TIMING_RELAX		12
+#define BM_OCOTP_TIMING_RELAX		0x0000F000
+#define BP_OCOTP_TIMING_STROBE_PROG     0
+#define BM_OCOTP_TIMING_STROBE_PROG	0x00000FFF
+
+#define BM_OCOTP_READ_CTRL_READ_FUSE	0x00000001
+
 #endif /* __ASSEMBLER__*/
 #endif /* __ASM_ARCH_MX6_IMX_REGS_H__ */
