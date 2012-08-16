@@ -398,7 +398,7 @@ static void fec_eth_phy_config(struct eth_device *dev)
 	struct fec_priv *fec = (struct fec_priv *)dev->priv;
 	struct phy_device *phydev;
 
-	phydev = phy_connect(fec->bus, fec->phy_id, dev,
+	phydev = phy_connect_by_mask(fec->bus, fec->phy_mask, dev,
 			PHY_INTERFACE_MODE_RGMII);
 	if (phydev) {
 		fec->phydev = phydev;
@@ -920,7 +920,8 @@ static int fec_recv(struct eth_device *dev)
 	return len;
 }
 
-static int fec_probe(bd_t *bd, int dev_id, int phy_id, uint32_t base_addr)
+static int fec_probe(bd_t *bd, int dev_id, unsigned phy_mask,
+		uint32_t base_addr)
 {
 	struct eth_device *edev;
 	struct fec_priv *fec;
@@ -980,8 +981,11 @@ static int fec_probe(bd_t *bd, int dev_id, int phy_id, uint32_t base_addr)
 		sprintf(edev->name, "FEC%i", dev_id);
 		fec->dev_id = dev_id;
 	}
-	fec->phy_id = phy_id;
-
+#ifdef CONFIG_PHYLIB
+	fec->phy_mask = phy_mask;
+#else
+	fec->phy_id = ffs(phy_mask) - 1;
+#endif
 	bus = mdio_alloc();
 	if (!bus) {
 		printf("mdio_alloc failed\n");
@@ -1030,9 +1034,14 @@ err1:
 int fecmxc_initialize(bd_t *bd)
 {
 	int lout = 1;
+#ifdef CONFIG_FEC_MXC_PHYMASK
+	unsigned phy_mask = CONFIG_FEC_MXC_PHYMASK;
+#else
+	unsigned phy_mask = 1 << CONFIG_FEC_MXC_PHYADDR;
+#endif
 
 	debug("eth_init: fec_probe(bd)\n");
-	lout = fec_probe(bd, -1, CONFIG_FEC_MXC_PHYADDR, IMX_FEC_BASE);
+	lout = fec_probe(bd, -1, phy_mask, IMX_FEC_BASE);
 
 	return lout;
 }
@@ -1043,7 +1052,7 @@ int fecmxc_initialize_multi(bd_t *bd, int dev_id, int phy_id, uint32_t addr)
 	int lout = 1;
 
 	debug("eth_init: fec_probe(bd, %i, %i) @ %08x\n", dev_id, phy_id, addr);
-	lout = fec_probe(bd, dev_id, phy_id, addr);
+	lout = fec_probe(bd, dev_id, 1 << phy_id, addr);
 
 	return lout;
 }
