@@ -202,6 +202,8 @@ int phy_reset(struct phy_device *phydev);
 struct phy_device *phy_connect(struct mii_dev *bus, int addr,
 				struct eth_device *dev,
 				phy_interface_t interface);
+struct phy_device *phy_connect_by_mask(struct mii_dev *bus, unsigned phy_mask,
+		struct eth_device *dev, phy_interface_t interface);
 int phy_startup(struct phy_device *phydev);
 int phy_config(struct phy_device *phydev);
 int phy_shutdown(struct phy_device *phydev);
