@@ -65,8 +65,6 @@ static table_entry_t imximage_versions[] = {
 	{-1,            "",     " (Invalid)",                 },
 };
 
-static set_dcd_rst_t set_dcd_rst;
-static uint32_t max_dcd_entries;
 static uint32_t *header_size_ptr;
 static uint32_t g_flash_offset;
 
@@ -115,7 +113,7 @@ static void err_imximage_version(int version)
 }
 
 static void set_dcd_val_v1(struct data_src *ds, char *name, int lineno,
-					int fld, uint32_t value, uint32_t off)
+					int fld, uint32_t value)
 {
 	dcd_v1_t *dcd_v1 = &ds->imxhdr->header.hdr_v1.dcd_table;
 
@@ -128,13 +126,15 @@ static void set_dcd_val_v1(struct data_src *ds, char *name, int lineno,
 				name, lineno, value);
 			exit(EXIT_FAILURE);
 		}
-		dcd_v1->addr_data[off].type = value;
+		*ds->p_entry++ = value;
 		break;
 	case CFG_REG_ADDRESS:
-		dcd_v1->addr_data[off].addr = value;
+		*ds->p_entry++ = value;
 		break;
 	case CFG_REG_VALUE:
-		dcd_v1->addr_data[off].value = value;
+		*ds->p_entry++ = value;
+		dcd_v1->preamble.length = (char *)ds->p_entry
+				- (char *)&dcd_v1->addr_data[0].type;
 		break;
 	default:
 		break;
@@ -143,16 +143,42 @@ static void set_dcd_val_v1(struct data_src *ds, char *name, int lineno,
 }
 
 static void set_dcd_val_v2(struct data_src *ds, char *name, int lineno,
-					int fld, uint32_t value, uint32_t off)
+					int fld, uint32_t value)
 {
+	uint32_t len;
 	dcd_v2_t *dcd_v2 = &ds->imxhdr->header.hdr_v2.dcd_table;
 
 	switch (fld) {
+	case CFG_REG_SIZE:
+		/* Byte, halfword, word */
+		if ((value != 1) && (value != 2) && (value != 4)) {
+			fprintf(stderr, "Error: %s[%d] - "
+				"Invalid register size " "(%d)\n",
+				name, lineno, value);
+			exit(EXIT_FAILURE);
+		}
+		if (ds->p_dcd && (ds->p_dcd->param == value))
+			break;
+		if (!ds->p_dcd) {
+			dcd_v2->header.tag = DCD_HEADER_TAG;
+			dcd_v2->header.version = DCD_VERSION;
+			ds->p_dcd = &dcd_v2->write_dcd_command;
+		} else {
+			ds->p_dcd = (write_dcd_command_t *)ds->p_entry;
+		}
+		ds->p_dcd->param = value;
+		ds->p_dcd->tag = DCD_COMMAND_TAG;
+		ds->p_entry = (uint32_t *)(ds->p_dcd + 1);
+		break;
 	case CFG_REG_ADDRESS:
-		dcd_v2->addr_data[off].addr = cpu_to_be32(value);
+		*ds->p_entry++ = cpu_to_be32(value);
 		break;
 	case CFG_REG_VALUE:
-		dcd_v2->addr_data[off].value = cpu_to_be32(value);
+		*ds->p_entry++ = cpu_to_be32(value);
+		len = (char *)ds->p_entry - (char *)&dcd_v2->header;
+		dcd_v2->header.length = cpu_to_be16(len);
+		len = (char *)ds->p_entry - (char *)ds->p_dcd;
+		ds->p_dcd->length = cpu_to_be16(len);
 		break;
 	default:
 		break;
@@ -160,47 +186,14 @@ static void set_dcd_val_v2(struct data_src *ds, char *name, int lineno,
 	}
 }
 
-/*
- * Complete setting up the rest field of DCD of V1
- * such as barker code and DCD data length.
- */
-static void set_dcd_rst_v1(struct imx_header *imxhdr, uint32_t dcd_len,
-						char *name, int lineno)
-{
-	dcd_v1_t *dcd_v1 = &imxhdr->header.hdr_v1.dcd_table;
-
-	dcd_v1->preamble.barker = DCD_BARKER;
-	dcd_v1->preamble.length = dcd_len * sizeof(dcd_type_addr_data_t);
-}
-
-/*
- * Complete setting up the reset field of DCD of V2
- * such as DCD tag, version, length, etc.
- */
-static void set_dcd_rst_v2(struct imx_header *imxhdr, uint32_t dcd_len,
-						char *name, int lineno)
-{
-	dcd_v2_t *dcd_v2 = &imxhdr->header.hdr_v2.dcd_table;
-
-	dcd_v2->header.tag = DCD_HEADER_TAG;
-	dcd_v2->header.length = cpu_to_be16(
-			dcd_len * sizeof(dcd_addr_data_t) + 8);
-	dcd_v2->header.version = DCD_VERSION;
-	dcd_v2->write_dcd_command.tag = DCD_COMMAND_TAG;
-	dcd_v2->write_dcd_command.length = cpu_to_be16(
-			dcd_len * sizeof(dcd_addr_data_t) + 4);
-	dcd_v2->write_dcd_command.param = DCD_COMMAND_PARAM;
-}
-
-static int set_imx_hdr_v1(struct data_src *ds, uint32_t dcd_len,
+static int set_imx_hdr_v1(struct data_src *ds,
 		uint32_t entry_point, uint32_t flash_offset)
 {
 	imx_header_v1_t *hdr_v1 = &ds->imxhdr->header.hdr_v1;
 	flash_header_v1_t *fhdr_v1 = &hdr_v1->fhdr;
-	dcd_v1_t *dcd_v1 = &hdr_v1->dcd_table;
 	uint32_t hdr_base;
-	uint32_t header_length = (((char *)&dcd_v1->addr_data[dcd_len].addr)
-			- ((char *)ds->imxhdr));
+	uint32_t header_length = ((char *)ds->p_entry) + 4
+			- ((char *)ds->imxhdr);
 
 	/* Set magic number */
 	fhdr_v1->app_code_barker = APP_CODE_BARKER;
@@ -220,15 +213,13 @@ static int set_imx_hdr_v1(struct data_src *ds, uint32_t dcd_len,
 	return header_length;
 }
 
-static int set_imx_hdr_v2(struct data_src *ds, uint32_t dcd_len,
+static int set_imx_hdr_v2(struct data_src *ds,
 		uint32_t entry_point, uint32_t flash_offset)
 {
 	imx_header_v2_t *hdr_v2 = &ds->imxhdr->header.hdr_v2;
 	flash_header_v2_t *fhdr_v2 = &hdr_v2->fhdr;
 	uint32_t hdr_base;
-	uint32_t header_length = (dcd_len) ?
-		(char *)&hdr_v2->dcd_table.addr_data[dcd_len] -
-		((char *)ds->imxhdr) : offsetof(imx_header_v2_t, dcd_table);
+	uint32_t header_length = ((char *)ds->p_entry) - ((char *)ds->imxhdr);
 
 	/* Set magic number */
 	fhdr_v2->header.tag = IVT_HEADER_TAG; /* 0xD1 */
@@ -239,7 +230,7 @@ static int set_imx_hdr_v2(struct data_src *ds, uint32_t dcd_len,
 	fhdr_v2->reserved1 = fhdr_v2->reserved2 = 0;
 	fhdr_v2->self = hdr_base = entry_point - header_length;
 
-	fhdr_v2->dcd_ptr = (dcd_len) ? hdr_base
+	fhdr_v2->dcd_ptr = (ds->p_dcd) ? hdr_base
 			+ offsetof(imx_header_v2_t, dcd_table) : 0;
 	fhdr_v2->boot_data_ptr = hdr_base
 			+ offsetof(imx_header_v2_t, boot_data);
@@ -256,15 +247,20 @@ static void set_hdr_func(struct data_src *ds, uint32_t imximage_version)
 	switch (imximage_version) {
 	case IMXIMAGE_V1:
 		ds->set_dcd_val = set_dcd_val_v1;
-		set_dcd_rst = set_dcd_rst_v1;
 		ds->set_imx_hdr = set_imx_hdr_v1;
-		max_dcd_entries = MAX_HW_CFG_SIZE_V1;
+		ds->p_entry = &ds->imxhdr->header.hdr_v1.dcd_table
+				.addr_data[0].type;
+		ds->p_max_dcd = &ds->imxhdr->header.hdr_v1.dcd_table
+				.addr_data[MAX_HW_CFG_SIZE_V1].type;
+		ds->imxhdr->header.hdr_v1.dcd_table.preamble.barker =
+				DCD_BARKER;
 		break;
 	case IMXIMAGE_V2:
 		ds->set_dcd_val = set_dcd_val_v2;
-		set_dcd_rst = set_dcd_rst_v2;
 		ds->set_imx_hdr = set_imx_hdr_v2;
-		max_dcd_entries = MAX_HW_CFG_SIZE_V2;
+		ds->p_entry = (uint32_t *)&ds->imxhdr->header.hdr_v2.dcd_table;
+		ds->p_max_dcd = (uint32_t *)
+				((char *)ds->imxhdr + MAX_HEADER_SIZE);
 		break;
 	default:
 		err_imximage_version(imximage_version);
@@ -328,7 +324,7 @@ static void print_hdr_v2(struct imx_header *imx_hdr)
 }
 
 static void parse_cfg_cmd(struct data_src *ds, int32_t cmd, char *token,
-				char *name, int lineno, int fld, int dcd_len)
+				char *name, int lineno, int fld)
 {
 	int value;
 	static int cmd_ver_first = ~0;
@@ -359,7 +355,7 @@ static void parse_cfg_cmd(struct data_src *ds, int32_t cmd, char *token,
 		break;
 	case CMD_DATA:
 		value = get_cfg_value(token, name, lineno);
-		(*ds->set_dcd_val)(ds, name, lineno, fld, value, dcd_len);
+		(*ds->set_dcd_val)(ds, name, lineno, fld, value);
 		if (unlikely(cmd_ver_first != 1))
 			cmd_ver_first = 0;
 		break;
@@ -367,7 +363,7 @@ static void parse_cfg_cmd(struct data_src *ds, int32_t cmd, char *token,
 }
 
 static void parse_cfg_fld(struct data_src *ds, int32_t *cmd,
-		char *token, char *name, int lineno, int fld, int *dcd_len)
+		char *token, char *name, int lineno, int fld)
 {
 	int value;
 
@@ -382,7 +378,7 @@ static void parse_cfg_fld(struct data_src *ds, int32_t *cmd,
 		}
 		break;
 	case CFG_REG_SIZE:
-		parse_cfg_cmd(ds, *cmd, token, name, lineno, fld, *dcd_len);
+		parse_cfg_cmd(ds, *cmd, token, name, lineno, fld);
 		break;
 	case CFG_REG_ADDRESS:
 	case CFG_REG_VALUE:
@@ -390,16 +386,14 @@ static void parse_cfg_fld(struct data_src *ds, int32_t *cmd,
 			return;
 
 		value = get_cfg_value(token, name, lineno);
-		(*ds->set_dcd_val)(ds, name, lineno, fld, value, *dcd_len);
-
-		if (fld == CFG_REG_VALUE) {
-			(*dcd_len)++;
-			if (*dcd_len > max_dcd_entries) {
-				fprintf(stderr, "Error: %s[%d] -"
-					"DCD table exceeds maximum size(%d)\n",
-					name, lineno, max_dcd_entries);
-				exit(EXIT_FAILURE);
-			}
+		(*ds->set_dcd_val)(ds, name, lineno, fld, value);
+		if (ds->p_entry > ds->p_max_dcd) {
+			uint32_t size = (char *)ds->p_max_dcd -
+					(char *)ds->imxhdr;
+			fprintf(stderr, "Error: %s[%d] -"
+					"header exceeds maximum size(%d)\n",
+					name, lineno, size);
+			exit(EXIT_FAILURE);
 		}
 		break;
 	default:
@@ -417,7 +411,6 @@ static int parse_cfg_file(struct imx_header *imxhdr, char *name,
 	int lineno = 0;
 	int fld;
 	size_t len;
-	int dcd_len = 0;
 	int32_t cmd;
 
 	/* Be able to detect if the cfg file has no BOOT_FROM tag */
@@ -458,12 +451,10 @@ static int parse_cfg_file(struct imx_header *imxhdr, char *name,
 				break;
 
 			parse_cfg_fld(&ds, &cmd, token, name,
-					lineno, fld, &dcd_len);
+					lineno, fld);
 		}
 
 	}
-
-	(*set_dcd_rst)(imxhdr, dcd_len, name, lineno);
 	fclose(fd);
 
 	/* Exit if there is no BOOT_FROM field specifying the flash_offset */
@@ -472,7 +463,7 @@ static int parse_cfg_file(struct imx_header *imxhdr, char *name,
 		exit(EXIT_FAILURE);
 	}
 	/* Set the imx header */
-	return (*ds.set_imx_hdr)(&ds, dcd_len, entry_point, g_flash_offset);
+	return (*ds.set_imx_hdr)(&ds, entry_point, g_flash_offset);
 }
 
 static int imximage_check_image_types(uint8_t type)
@@ -517,7 +508,11 @@ int imximage_vrec_header(struct mkimage_params *params,
 {
 	struct imx_header *imxhdr;
 
-	imxhdr = calloc(1, MAX_HEADER_SIZE);
+	/*
+	 * A little extra space to avoid access violation on dcd table overflow.
+	 * Overflow is checked after entry is added.
+	 */
+	imxhdr = calloc(1, MAX_HEADER_SIZE + 32);
 	if (!imxhdr) {
 		fprintf(stderr, "Error: out of memory\n");
 		exit(EXIT_FAILURE);

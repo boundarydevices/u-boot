@@ -47,7 +47,6 @@
 #define DCD_HEADER_TAG 0xD2
 #define DCD_COMMAND_TAG 0xCC
 #define DCD_VERSION 0x40
-#define DCD_COMMAND_PARAM 0x4
 
 enum imximage_cmd {
 	CMD_INVALID,
@@ -160,21 +159,18 @@ struct imx_header {
 };
 
 struct data_src;
-typedef void (*set_dcd_val_t)(struct data_src *ds,
-					char *name, int lineno,
-					int fld, uint32_t value,
-					uint32_t off);
+typedef void (*set_dcd_val_t)(struct data_src *ds, char *name,
+		int lineno, int fld, uint32_t value);
 
-typedef void (*set_dcd_rst_t)(struct imx_header *imxhdr,
-					uint32_t dcd_len,
-					char *name, int lineno);
-
-typedef int (*set_imx_hdr_t)(struct data_src *ds, uint32_t dcd_len,
-		uint32_t entry_point, uint32_t flash_offset);
+typedef int (*set_imx_hdr_t)(struct data_src *ds, uint32_t entry_point,
+		uint32_t flash_offset);
 
 struct data_src {
 	struct imx_header *imxhdr;
 	set_imx_hdr_t set_imx_hdr;
 	set_dcd_val_t set_dcd_val;
+	uint32_t *p_max_dcd;
+	uint32_t *p_entry;
+	write_dcd_command_t *p_dcd;
 };
 #endif /* _IMXIMAGE_H_ */
