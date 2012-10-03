@@ -65,7 +65,6 @@ static table_entry_t imximage_versions[] = {
 	{-1,            "",     " (Invalid)",                 },
 };
 
-static set_dcd_val_t set_dcd_val;
 static set_dcd_rst_t set_dcd_rst;
 static uint32_t max_dcd_entries;
 static uint32_t *header_size_ptr;
@@ -256,13 +255,13 @@ static void set_hdr_func(struct data_src *ds, uint32_t imximage_version)
 {
 	switch (imximage_version) {
 	case IMXIMAGE_V1:
-		set_dcd_val = set_dcd_val_v1;
+		ds->set_dcd_val = set_dcd_val_v1;
 		set_dcd_rst = set_dcd_rst_v1;
 		ds->set_imx_hdr = set_imx_hdr_v1;
 		max_dcd_entries = MAX_HW_CFG_SIZE_V1;
 		break;
 	case IMXIMAGE_V2:
-		set_dcd_val = set_dcd_val_v2;
+		ds->set_dcd_val = set_dcd_val_v2;
 		set_dcd_rst = set_dcd_rst_v2;
 		ds->set_imx_hdr = set_imx_hdr_v2;
 		max_dcd_entries = MAX_HW_CFG_SIZE_V2;
@@ -360,7 +359,7 @@ static void parse_cfg_cmd(struct data_src *ds, int32_t cmd, char *token,
 		break;
 	case CMD_DATA:
 		value = get_cfg_value(token, name, lineno);
-		(*set_dcd_val)(ds, name, lineno, fld, value, dcd_len);
+		(*ds->set_dcd_val)(ds, name, lineno, fld, value, dcd_len);
 		if (unlikely(cmd_ver_first != 1))
 			cmd_ver_first = 0;
 		break;
@@ -391,7 +390,7 @@ static void parse_cfg_fld(struct data_src *ds, int32_t *cmd,
 			return;
 
 		value = get_cfg_value(token, name, lineno);
-		(*set_dcd_val)(ds, name, lineno, fld, value, *dcd_len);
+		(*ds->set_dcd_val)(ds, name, lineno, fld, value, *dcd_len);
 
 		if (fld == CFG_REG_VALUE) {
 			(*dcd_len)++;

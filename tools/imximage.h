@@ -175,5 +175,6 @@ typedef int (*set_imx_hdr_t)(struct data_src *ds, uint32_t dcd_len,
 struct data_src {
 	struct imx_header *imxhdr;
 	set_imx_hdr_t set_imx_hdr;
+	set_dcd_val_t set_dcd_val;
 };
 #endif /* _IMXIMAGE_H_ */
