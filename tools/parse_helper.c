@@ -97,20 +97,172 @@ int ph_skip_comma(struct parse_helper *ph)
 	}
 }
 
+static const char precedence[] = {
+	/* (  +  -  *  /  &  ^  |  ) */
+	   0, 2, 2, 1, 1, 3, 4, 5, 6
+};
+static const char unary_operations[]  = "(+-";
+static const char binary_operations[] = " +-*/&^|)";
+
+static uint32_t do_func(uint32_t val1, uint32_t val2, int op)
+{
+	switch (op) {
+	case 1:
+		return val1 + val2;
+	case 2:
+		return val1 - val2;
+	case 3:
+		return val1 * val2;
+	case 4:
+		return val1 / val2;
+	case 5:
+		return val1 & val2;
+	case 6:
+		return val1 ^ val2;
+	case 7:
+		return val1 | val2;
+	}
+	fprintf(stderr, "Error: in func %s: val1=%d val2=%d op = %d\n",
+			__func__, val1, val2, op);
+	exit(EXIT_FAILURE);
+}
+
+static int find_op(char c, const char *p)
+{
+	int i;
+	for (i = 0; ; i++) {
+		if (c == p[i])
+			return i;
+		if (!p[i])
+			break;
+	}
+	return -1;
+}
+
+#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+
 int ph_get_value(struct parse_helper *ph, uint32_t *pval)
 {
 	char *endptr;
-	uint32_t value;
+	int op_i = 0;
+	int val_i = 0;
+	unsigned char op[16];
+	uint32_t val[16];
+	int unary = 1;
+	char *p;
 
-	if (ph_skip_separators(ph))
-		return -1;
-	errno = 0;
-	value = strtoul(ph->p, &endptr, 16);
-	if (errno || (ph->p == endptr))
-		return -1;
-	*pval = value;
-	ph->p = endptr;
-	return 0;
+	p = ph->p;
+	for (;;) {
+		char c;
+		int i, j;
+		const char *ops = unary ? unary_operations : binary_operations;
+
+		if (unary) {
+			ph->p = p;
+			if (ph_skip_separators(ph))
+				return -1;
+			p = ph->p;
+			c = *p;
+		} else {
+			for (;;) {
+				c = *p;
+				if ((c != ' ') && (c != '\t'))
+					break;
+				p++;
+			}
+		}
+		i = find_op(c, ops);
+		debug("%d,%c,%d:%s\n", i, c, unary, p);
+		if ((i < 0) && unary) {
+			if (val_i >= ARRAY_SIZE(val))
+				return -1;
+			errno = 0;
+			val[val_i++] = strtoul(p, &endptr, 16);
+			if (errno || (p == endptr)) {
+				ph->p = p;
+				return -1;
+			}
+			p = endptr;
+			unary = 0;
+			debug("val[%d]=%x,%d,%d\n", val_i - 1, val[val_i - 1],
+					op_i, val_i);
+do_unary:
+			while (op_i) {
+				j = op[op_i - 1];
+				if (!(j & 0x80))
+					break;
+				op_i--;
+				val[val_i - 1] = do_func(0,
+						val[val_i - 1], j & 0x7f);
+				debug("un:%d,%x,%d,%d\n", val[val_i - 1], j,
+						op_i, val_i);
+			}
+			continue;
+		}
+		if (i < 0) {
+			c = 0;
+			i = 8;
+		} else {
+			p++;
+		}
+		if (c == '(') {
+			if (op_i >= ARRAY_SIZE(op))
+				return -1;
+			op[op_i++] = i;
+			debug("op[%d]=%x,%d,%d\n", op_i - 1, op[op_i - 1],
+					op_i, val_i);
+			unary = 1;
+			continue;
+		}
+		for (;;) {
+			if (!op_i || unary)
+				break;
+			j = op[op_i - 1];
+			if (j == 0) {
+				if (c == ')') {
+					op_i--;
+					goto do_unary;
+				}
+				break;
+			}
+			if ((j & 0x80)) {
+				op_i--;
+				val[val_i - 1] = do_func(0,
+						val[val_i - 1], j & 0x7f);
+				debug("unary:%d,%x\n", val[val_i - 1], j);
+				continue;
+			}
+			if (precedence[i] < precedence[j])
+				break;
+			if (val_i < 2)
+				return -1;
+			op_i--;
+			val[val_i - 2] = do_func(val[val_i - 2],
+					val[val_i - 1], j);
+			val_i--;
+			debug("binary:%d,%x,%d,%d\n", val[val_i - 1], j,
+					op_i, val_i);
+		}
+		if (c == ')') {
+			fprintf(stderr, "Error: unmatched parenthesis\n");
+			return -1;
+		}
+		if (i == 8) {
+			if ((op_i != 0) || (val_i != 1)) {
+				fprintf(stderr, "Error: syntax %d %d\n",
+						op_i, val_i);
+				return -1;
+			}
+			ph->p = p;
+			*pval = val[0];
+			return 0;
+		}
+		if (op_i >= ARRAY_SIZE(op))
+			return -1;
+		op[op_i++] = i | (unary << 7);
+		debug("op[%d]=%x,%d,%d\n", op_i - 1, op[op_i - 1], op_i, val_i);
+		unary = 1;
+	}
 }
 
 /*
