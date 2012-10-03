@@ -25,9 +25,6 @@
  * MA 02111-1307 USA
  */
 
-/* Required to obtain the getline prototype from stdio.h */
-#define _GNU_SOURCE
-
 #include "mkimage.h"
 #include <image.h>
 #include "imximage.h"
@@ -70,21 +67,6 @@ static uint32_t g_flash_offset;
 
 static struct image_type_params imximage_params;
 
-static uint32_t get_cfg_value(char *token, char *name,  int linenr)
-{
-	char *endptr;
-	uint32_t value;
-
-	errno = 0;
-	value = strtoul(token, &endptr, 16);
-	if (errno || (token == endptr)) {
-		fprintf(stderr, "Error: %s[%d] - Invalid hex data(%s)\n",
-			name,  linenr, token);
-		exit(EXIT_FAILURE);
-	}
-	return value;
-}
-
 static uint32_t detect_imximage_version(struct imx_header *imx_hdr)
 {
 	imx_header_v1_t *hdr_v1 = &imx_hdr->header.hdr_v1;
@@ -112,53 +94,36 @@ static void err_imximage_version(int version)
 	exit(EXIT_FAILURE);
 }
 
-static void set_dcd_val_v1(struct data_src *ds, char *name, int lineno,
-					int fld, uint32_t value)
+static int set_dcd_val_v1(struct data_src *ds, uint32_t *data)
 {
 	dcd_v1_t *dcd_v1 = &ds->imxhdr->header.hdr_v1.dcd_table;
+	uint32_t val = *data++;
 
-	switch (fld) {
-	case CFG_REG_SIZE:
-		/* Byte, halfword, word */
-		if ((value != 1) && (value != 2) && (value != 4)) {
-			fprintf(stderr, "Error: %s[%d] - "
-				"Invalid register size " "(%d)\n",
-				name, lineno, value);
-			exit(EXIT_FAILURE);
-		}
-		*ds->p_entry++ = value;
-		break;
-	case CFG_REG_ADDRESS:
-		*ds->p_entry++ = value;
-		break;
-	case CFG_REG_VALUE:
-		*ds->p_entry++ = value;
-		dcd_v1->preamble.length = (char *)ds->p_entry
-				- (char *)&dcd_v1->addr_data[0].type;
-		break;
-	default:
-		break;
-
+	/* Byte, halfword, word */
+	if ((val != 1) && (val != 2) && (val != 4)) {
+		fprintf(stderr, "Error: Invalid register size (%d)\n", val);
+		return -1;
 	}
+	*ds->p_entry++ = val;
+	*ds->p_entry++ = *data++;
+	*ds->p_entry++ = *data++;
+	dcd_v1->preamble.length = (char *)ds->p_entry - (char *)&dcd_v1->
+			addr_data[0].type;
+	return 0;
 }
 
-static void set_dcd_val_v2(struct data_src *ds, char *name, int lineno,
-					int fld, uint32_t value)
+static int set_dcd_val_v2(struct data_src *ds, uint32_t *data)
 {
 	uint32_t len;
 	dcd_v2_t *dcd_v2 = &ds->imxhdr->header.hdr_v2.dcd_table;
+	uint32_t val = *data++;
 
-	switch (fld) {
-	case CFG_REG_SIZE:
-		/* Byte, halfword, word */
-		if ((value != 1) && (value != 2) && (value != 4)) {
-			fprintf(stderr, "Error: %s[%d] - "
-				"Invalid register size " "(%d)\n",
-				name, lineno, value);
-			exit(EXIT_FAILURE);
-		}
-		if (ds->p_dcd && (ds->p_dcd->param == value))
-			break;
+	/* Byte, halfword, word */
+	if ((val != 1) && (val != 2) && (val != 4)) {
+		fprintf(stderr, "Error: Invalid register size (%d)\n", val);
+		return -1;
+	}
+	if (!(ds->p_dcd && (ds->p_dcd->param == val))) {
 		if (!ds->p_dcd) {
 			dcd_v2->header.tag = DCD_HEADER_TAG;
 			dcd_v2->header.version = DCD_VERSION;
@@ -166,24 +131,19 @@ static void set_dcd_val_v2(struct data_src *ds, char *name, int lineno,
 		} else {
 			ds->p_dcd = (write_dcd_command_t *)ds->p_entry;
 		}
-		ds->p_dcd->param = value;
+		ds->p_dcd->param = val;
 		ds->p_dcd->tag = DCD_COMMAND_TAG;
 		ds->p_entry = (uint32_t *)(ds->p_dcd + 1);
-		break;
-	case CFG_REG_ADDRESS:
-		*ds->p_entry++ = cpu_to_be32(value);
-		break;
-	case CFG_REG_VALUE:
-		*ds->p_entry++ = cpu_to_be32(value);
-		len = (char *)ds->p_entry - (char *)&dcd_v2->header;
-		dcd_v2->header.length = cpu_to_be16(len);
-		len = (char *)ds->p_entry - (char *)ds->p_dcd;
-		ds->p_dcd->length = cpu_to_be16(len);
-		break;
-	default:
-		break;
-
 	}
+	val = *data++;
+	*ds->p_entry++ = cpu_to_be32(val);
+	val = *data++;
+	*ds->p_entry++ = cpu_to_be32(val);
+	len = (char *)ds->p_entry - (char *)&dcd_v2->header;
+	dcd_v2->header.length = cpu_to_be16(len);
+	len = (char *)ds->p_entry - (char *)ds->p_dcd;
+	ds->p_dcd->length = cpu_to_be16(len);
+	return 0;
 }
 
 static int set_imx_hdr_v1(struct data_src *ds,
@@ -323,95 +283,71 @@ static void print_hdr_v2(struct imx_header *imx_hdr)
 	printf("Entry Point:  %08x\n", (uint32_t)fhdr_v2->entry);
 }
 
-static void parse_cfg_cmd(struct data_src *ds, int32_t cmd, char *token,
-				char *name, int lineno, int fld)
+static int parse_cmd_data(struct data_src *ds)
 {
-	int value;
-	static int cmd_ver_first = ~0;
-	uint32_t imximage_version;
+	uint32_t data[3];
+	int ret = ph_get_array(&ds->ph, data, 3);
 
-	switch (cmd) {
-	case CMD_IMAGE_VERSION:
-		imximage_version = get_cfg_value(token, name, lineno);
-		if (cmd_ver_first == 0) {
-			fprintf(stderr, "Error: %s[%d] - IMAGE_VERSION "
-				"command need be the first before other "
-				"valid command in the file\n", name, lineno);
-			exit(EXIT_FAILURE);
-		}
-		cmd_ver_first = 1;
-		set_hdr_func(ds, imximage_version);
-		break;
-	case CMD_BOOT_FROM:
-		g_flash_offset = get_table_entry_id(imximage_bootops,
-					"imximage boot option", token);
-		if (g_flash_offset == -1) {
-			fprintf(stderr, "Error: %s[%d] -Invalid boot device"
-				"(%s)\n", name, lineno, token);
-			exit(EXIT_FAILURE);
-		}
-		if (unlikely(cmd_ver_first != 1))
-			cmd_ver_first = 0;
-		break;
-	case CMD_DATA:
-		value = get_cfg_value(token, name, lineno);
-		(*ds->set_dcd_val)(ds, name, lineno, fld, value);
-		if (unlikely(cmd_ver_first != 1))
-			cmd_ver_first = 0;
-		break;
+	if (ret < 0)
+		return ret;
+	ret = (*ds->set_dcd_val)(ds, data);
+	if (ret)
+		return ret;
+	if (ds->p_entry > ds->p_max_dcd) {
+		uint32_t size = (char *)ds->p_max_dcd - (char *)ds->imxhdr;
+		fprintf(stderr, "Error: header exceeds maximum size(%d)\n",
+				size);
+		return -1;
 	}
+	return 0;
 }
 
-static void parse_cfg_fld(struct data_src *ds, int32_t *cmd,
-		char *token, char *name, int lineno, int fld)
+static int parse_image_version(struct data_src *ds)
 {
-	int value;
+	int ret;
+	uint32_t imximage_version;
 
-	switch (fld) {
-	case CFG_COMMAND:
-		*cmd = get_table_entry_id(imximage_cmds,
-			"imximage commands", token);
-		if (*cmd < 0) {
-			fprintf(stderr, "Error: %s[%d] - Invalid command"
-			"(%s)\n", name, lineno, token);
-			exit(EXIT_FAILURE);
-		}
-		break;
-	case CFG_REG_SIZE:
-		parse_cfg_cmd(ds, *cmd, token, name, lineno, fld);
-		break;
-	case CFG_REG_ADDRESS:
-	case CFG_REG_VALUE:
-		if (*cmd != CMD_DATA)
-			return;
-
-		value = get_cfg_value(token, name, lineno);
-		(*ds->set_dcd_val)(ds, name, lineno, fld, value);
-		if (ds->p_entry > ds->p_max_dcd) {
-			uint32_t size = (char *)ds->p_max_dcd -
-					(char *)ds->imxhdr;
-			fprintf(stderr, "Error: %s[%d] -"
-					"header exceeds maximum size(%d)\n",
-					name, lineno, size);
-			exit(EXIT_FAILURE);
-		}
-		break;
-	default:
-		break;
+	ret = ph_get_value(&ds->ph, &imximage_version);
+	if (ret)
+		return ret;
+	if (ds->cmd_cnt) {
+		fprintf(stderr, "Error: IMAGE_VERSION command needs be "
+				"before other valid commands in the file\n");
+		return -1;
 	}
+	set_hdr_func(ds, imximage_version);
+	return 0;
+}
+
+static int parse_boot_from(struct data_src *ds)
+{
+	g_flash_offset = ph_get_table_entry_id(&ds->ph, imximage_bootops,
+			"imximage boot option");
+	if (g_flash_offset == -1) {
+		fprintf(stderr, "Error: Invalid boot device\n");
+		return -1;
+	}
+	return 0;
+}
+
+static const parse_fld_t cmd_table[] = {
+	parse_image_version, parse_boot_from, parse_cmd_data
+};
+
+static int parse_command(struct data_src *ds)
+{
+	int cmd = ph_get_table_entry_id(&ds->ph, imximage_cmds,
+			"imximage commands");
+	if (cmd < 0)
+		return cmd;
+	return cmd_table[cmd](ds);
 }
 
 static int parse_cfg_file(struct imx_header *imxhdr, char *name,
 		uint32_t entry_point)
 {
 	struct data_src ds;
-	FILE *fd = NULL;
-	char *line = NULL;
-	char *token, *saveptr1, *saveptr2;
-	int lineno = 0;
-	int fld;
-	size_t len;
-	int32_t cmd;
+	struct parse_helper *ph = &ds.ph;
 
 	/* Be able to detect if the cfg file has no BOOT_FROM tag */
 	g_flash_offset = FLASH_OFFSET_UNDEFINED;
@@ -423,8 +359,7 @@ static int parse_cfg_file(struct imx_header *imxhdr, char *name,
 	 * set up function ptr group to V1 by default.
 	 */
 	set_hdr_func(&ds, IMXIMAGE_V1);
-	fd = fopen(name, "r");
-	if (fd == 0) {
+	if (ph_open(ph, name)) {
 		fprintf(stderr, "Error: %s - Can't open DCD file\n", name);
 		exit(EXIT_FAILURE);
 	}
@@ -432,31 +367,19 @@ static int parse_cfg_file(struct imx_header *imxhdr, char *name,
 	/* Very simple parsing, line starting with # are comments
 	 * and are dropped
 	 */
-	while ((getline(&line, &len, fd)) > 0) {
-		lineno++;
-
-		token = strtok_r(line, "\r\n", &saveptr1);
-		if (token == NULL)
-			continue;
-
-		/* Check inside the single line */
-		for (fld = CFG_COMMAND, cmd = CMD_INVALID,
-				line = token; ; line = NULL, fld++) {
-			token = strtok_r(line, " \t", &saveptr2);
-			if (token == NULL)
-				break;
-
-			/* Drop all text starting with '#' as comments */
-			if (token[0] == '#')
-				break;
-
-			parse_cfg_fld(&ds, &cmd, token, name,
-					lineno, fld);
+	for (;;) {
+		ph->cmd_started = 0;
+		if (ph_skip_separators(ph))
+			break;
+		ph->cmd_started = 1;
+		if (parse_command(&ds)) {
+			fprintf(stderr, "Error: invalid token %s[%d](%s)\n",
+					name, ph->lineno, ph->p);
+			exit(EXIT_FAILURE);
 		}
-
+		ds.cmd_cnt++;
 	}
-	fclose(fd);
-
+	ph_close(ph);
 	/* Exit if there is no BOOT_FROM field specifying the flash_offset */
 	if (g_flash_offset == FLASH_OFFSET_UNDEFINED) {
 		fprintf(stderr, "Error: No BOOT_FROM tag in %s\n", name);
@@ -538,12 +461,12 @@ static void imximage_set_header(void *ptr, struct stat *sbuf, int ifd,
 int imximage_check_params(struct mkimage_params *params)
 {
 	if (!params)
-		return CFG_INVALID;
+		return -1;
 	if (!strlen(params->imagename)) {
 		fprintf(stderr, "Error: %s - Configuration file not specified, "
 			"it is needed for imximage generation\n",
 			params->cmdname);
-		return CFG_INVALID;
+		return -1;
 	}
 	/*
 	 * Check parameters:

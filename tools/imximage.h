@@ -23,6 +23,7 @@
 
 #ifndef _IMXIMAGE_H_
 #define _IMXIMAGE_H_
+#include "parse_helper.h"
 
 #define MAX_HW_CFG_SIZE_V2 121 /* Max number of registers imx can set for v2 */
 #define MAX_HW_CFG_SIZE_V1 60  /* Max number of registers imx can set for v1 */
@@ -49,18 +50,9 @@
 #define DCD_VERSION 0x40
 
 enum imximage_cmd {
-	CMD_INVALID,
 	CMD_IMAGE_VERSION,
 	CMD_BOOT_FROM,
 	CMD_DATA
-};
-
-enum imximage_fld_types {
-	CFG_INVALID = -1,
-	CFG_COMMAND,
-	CFG_REG_SIZE,
-	CFG_REG_ADDRESS,
-	CFG_REG_VALUE
 };
 
 enum imximage_version {
@@ -159,14 +151,17 @@ struct imx_header {
 };
 
 struct data_src;
-typedef void (*set_dcd_val_t)(struct data_src *ds, char *name,
-		int lineno, int fld, uint32_t value);
+typedef int (*parse_fld_t)(struct data_src *ds);
+
+typedef int (*set_dcd_val_t)(struct data_src *ds, uint32_t *data);
 
 typedef int (*set_imx_hdr_t)(struct data_src *ds, uint32_t entry_point,
 		uint32_t flash_offset);
 
 struct data_src {
+	struct parse_helper ph;
 	struct imx_header *imxhdr;
+	int cmd_cnt;
 	set_imx_hdr_t set_imx_hdr;
 	set_dcd_val_t set_dcd_val;
 	uint32_t *p_max_dcd;
