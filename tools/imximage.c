@@ -67,7 +67,6 @@ static table_entry_t imximage_versions[] = {
 
 static set_dcd_val_t set_dcd_val;
 static set_dcd_rst_t set_dcd_rst;
-static set_imx_hdr_t set_imx_hdr;
 static uint32_t max_dcd_entries;
 static uint32_t *header_size_ptr;
 static uint32_t g_flash_offset;
@@ -253,19 +252,19 @@ static int set_imx_hdr_v2(struct data_src *ds, uint32_t dcd_len,
 	return header_length;
 }
 
-static void set_hdr_func(struct imx_header *imxhdr, uint32_t imximage_version)
+static void set_hdr_func(struct data_src *ds, uint32_t imximage_version)
 {
 	switch (imximage_version) {
 	case IMXIMAGE_V1:
 		set_dcd_val = set_dcd_val_v1;
 		set_dcd_rst = set_dcd_rst_v1;
-		set_imx_hdr = set_imx_hdr_v1;
+		ds->set_imx_hdr = set_imx_hdr_v1;
 		max_dcd_entries = MAX_HW_CFG_SIZE_V1;
 		break;
 	case IMXIMAGE_V2:
 		set_dcd_val = set_dcd_val_v2;
 		set_dcd_rst = set_dcd_rst_v2;
-		set_imx_hdr = set_imx_hdr_v2;
+		ds->set_imx_hdr = set_imx_hdr_v2;
 		max_dcd_entries = MAX_HW_CFG_SIZE_V2;
 		break;
 	default:
@@ -346,7 +345,7 @@ static void parse_cfg_cmd(struct data_src *ds, int32_t cmd, char *token,
 			exit(EXIT_FAILURE);
 		}
 		cmd_ver_first = 1;
-		set_hdr_func(ds->imxhdr, imximage_version);
+		set_hdr_func(ds, imximage_version);
 		break;
 	case CMD_BOOT_FROM:
 		g_flash_offset = get_table_entry_id(imximage_bootops,
@@ -431,7 +430,7 @@ static int parse_cfg_file(struct imx_header *imxhdr, char *name,
 	 * by adding VERSION command into it, here need
 	 * set up function ptr group to V1 by default.
 	 */
-	set_hdr_func(imxhdr, IMXIMAGE_V1);
+	set_hdr_func(&ds, IMXIMAGE_V1);
 	fd = fopen(name, "r");
 	if (fd == 0) {
 		fprintf(stderr, "Error: %s - Can't open DCD file\n", name);
@@ -474,7 +473,7 @@ static int parse_cfg_file(struct imx_header *imxhdr, char *name,
 		exit(EXIT_FAILURE);
 	}
 	/* Set the imx header */
-	return (*set_imx_hdr)(&ds, dcd_len, entry_point, g_flash_offset);
+	return (*ds.set_imx_hdr)(&ds, dcd_len, entry_point, g_flash_offset);
 }
 
 static int imximage_check_image_types(uint8_t type)
