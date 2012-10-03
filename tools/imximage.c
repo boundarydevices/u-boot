@@ -407,8 +407,11 @@ static void parse_cfg_fld(struct imx_header *imxhdr, int32_t *cmd,
 		break;
 	}
 }
-static uint32_t parse_cfg_file(struct imx_header *imxhdr, char *name)
+
+static int parse_cfg_file(struct imx_header *imxhdr, char *name,
+		uint32_t entry_point)
 {
+	struct data_src ds;
 	FILE *fd = NULL;
 	char *line = NULL;
 	char *token, *saveptr1, *saveptr2;
@@ -418,6 +421,10 @@ static uint32_t parse_cfg_file(struct imx_header *imxhdr, char *name)
 	int dcd_len = 0;
 	int32_t cmd;
 
+	/* Be able to detect if the cfg file has no BOOT_FROM tag */
+	g_flash_offset = FLASH_OFFSET_UNDEFINED;
+	memset(&ds, 0, sizeof(struct data_src));
+	ds.imxhdr = imxhdr;
 	/*
 	 * In order to not change the old imx cfg file
 	 * by adding VERSION command into it, here need
@@ -465,9 +472,9 @@ static uint32_t parse_cfg_file(struct imx_header *imxhdr, char *name)
 		fprintf(stderr, "Error: No BOOT_FROM tag in %s\n", name);
 		exit(EXIT_FAILURE);
 	}
-	return dcd_len;
+	/* Set the imx header */
+	return (*set_imx_hdr)(imxhdr, dcd_len, entry_point, g_flash_offset);
 }
-
 
 static int imximage_check_image_types(uint8_t type)
 {
@@ -510,21 +517,16 @@ int imximage_vrec_header(struct mkimage_params *params,
 		struct image_type_params *tparams)
 {
 	struct imx_header *imxhdr;
-	uint32_t dcd_len;
 
 	imxhdr = calloc(1, MAX_HEADER_SIZE);
 	if (!imxhdr) {
 		fprintf(stderr, "Error: out of memory\n");
 		exit(EXIT_FAILURE);
 	}
-	/* Be able to detect if the cfg file has no BOOT_FROM tag */
-	g_flash_offset = FLASH_OFFSET_UNDEFINED;
-	/* Parse dcd configuration file */
-	dcd_len = parse_cfg_file(imxhdr, params->imagename);
 
-	/* Set the imx header */
-	imximage_params.header_size = (*set_imx_hdr)(imxhdr, dcd_len,
-			params->ep, g_flash_offset);
+	/* Parse dcd configuration file */
+	imximage_params.header_size = parse_cfg_file(imxhdr, params->imagename,
+			params->ep);
 	imximage_params.hdr = imxhdr;
 	return 0;
 }

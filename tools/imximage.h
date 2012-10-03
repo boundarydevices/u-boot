@@ -171,4 +171,7 @@ typedef void (*set_dcd_rst_t)(struct imx_header *imxhdr,
 typedef int (*set_imx_hdr_t)(struct imx_header *imxhdr, uint32_t dcd_len,
 		uint32_t entry_point, uint32_t flash_offset);
 
+struct data_src {
+	struct imx_header *imxhdr;
+};
 #endif /* _IMXIMAGE_H_ */
