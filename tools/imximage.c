@@ -65,7 +65,6 @@ static table_entry_t imximage_versions[] = {
 	{-1,            "",     " (Invalid)",                 },
 };
 
-static struct imx_header imximage_header;
 static uint32_t imximage_version;
 
 static set_dcd_val_t set_dcd_val;
@@ -73,6 +72,9 @@ static set_dcd_rst_t set_dcd_rst;
 static set_imx_hdr_t set_imx_hdr;
 static uint32_t max_dcd_entries;
 static uint32_t *header_size_ptr;
+static uint32_t g_flash_offset;
+
+static struct image_type_params imximage_params;
 
 static uint32_t get_cfg_value(char *token, char *name,  int linenr)
 {
@@ -102,8 +104,7 @@ static uint32_t detect_imximage_version(struct imx_header *imx_hdr)
 		return IMXIMAGE_V1;
 
 	/* Try to detect V2 */
-	if ((fhdr_v2->header.tag == IVT_HEADER_TAG) &&
-		(hdr_v2->dcd_table.header.tag == DCD_HEADER_TAG))
+	if (fhdr_v2->header.tag == IVT_HEADER_TAG)
 		return IMXIMAGE_V2;
 
 	return IMXIMAGE_VER_INVALID;
@@ -195,7 +196,7 @@ static void set_dcd_rst_v2(struct imx_header *imxhdr, uint32_t dcd_len,
 	dcd_v2->write_dcd_command.param = DCD_COMMAND_PARAM;
 }
 
-static void set_imx_hdr_v1(struct imx_header *imxhdr, uint32_t dcd_len,
+static int set_imx_hdr_v1(struct imx_header *imxhdr, uint32_t dcd_len,
 		uint32_t entry_point, uint32_t flash_offset)
 {
 	imx_header_v1_t *hdr_v1 = &imxhdr->header.hdr_v1;
@@ -208,7 +209,7 @@ static void set_imx_hdr_v1(struct imx_header *imxhdr, uint32_t dcd_len,
 	/* Set magic number */
 	fhdr_v1->app_code_barker = APP_CODE_BARKER;
 
-	hdr_base = entry_point - sizeof(struct imx_header);
+	hdr_base = entry_point - header_length;
 	fhdr_v1->app_dest_ptr = hdr_base - flash_offset;
 	fhdr_v1->app_code_jump_vector = entry_point;
 
@@ -219,14 +220,18 @@ static void set_imx_hdr_v1(struct imx_header *imxhdr, uint32_t dcd_len,
 	fhdr_v1->app_code_csf = 0;
 	fhdr_v1->super_root_key = 0;
 	header_size_ptr = (uint32_t *)(((char *)imxhdr) + header_length - 4);
+	return header_length;
 }
 
-static void set_imx_hdr_v2(struct imx_header *imxhdr, uint32_t dcd_len,
+static int set_imx_hdr_v2(struct imx_header *imxhdr, uint32_t dcd_len,
 		uint32_t entry_point, uint32_t flash_offset)
 {
 	imx_header_v2_t *hdr_v2 = &imxhdr->header.hdr_v2;
 	flash_header_v2_t *fhdr_v2 = &hdr_v2->fhdr;
 	uint32_t hdr_base;
+	uint32_t header_length = (dcd_len) ?
+		(char *)&hdr_v2->dcd_table.addr_data[dcd_len] - ((char*)imxhdr)
+		: offsetof(imx_header_v2_t, dcd_table);
 
 	/* Set magic number */
 	fhdr_v2->header.tag = IVT_HEADER_TAG; /* 0xD1 */
@@ -235,9 +240,10 @@ static void set_imx_hdr_v2(struct imx_header *imxhdr, uint32_t dcd_len,
 
 	fhdr_v2->entry = entry_point;
 	fhdr_v2->reserved1 = fhdr_v2->reserved2 = 0;
-	fhdr_v2->self = hdr_base = entry_point - sizeof(struct imx_header);
+	fhdr_v2->self = hdr_base = entry_point - header_length;
 
-	fhdr_v2->dcd_ptr = hdr_base + offsetof(imx_header_v2_t, dcd_table);
+	fhdr_v2->dcd_ptr = (dcd_len) ? hdr_base
+			+ offsetof(imx_header_v2_t, dcd_table) : 0;
 	fhdr_v2->boot_data_ptr = hdr_base
 			+ offsetof(imx_header_v2_t, boot_data);
 	hdr_v2->boot_data.start = hdr_base - flash_offset;
@@ -245,6 +251,7 @@ static void set_imx_hdr_v2(struct imx_header *imxhdr, uint32_t dcd_len,
 	/* Security feature are not supported */
 	fhdr_v2->csf = 0;
 	header_size_ptr = &hdr_v2->boot_data.size;
+	return header_length;
 }
 
 static void set_hdr_func(struct imx_header *imxhdr)
@@ -342,9 +349,9 @@ static void parse_cfg_cmd(struct imx_header *imxhdr, int32_t cmd, char *token,
 		set_hdr_func(imxhdr);
 		break;
 	case CMD_BOOT_FROM:
-		imxhdr->flash_offset = get_table_entry_id(imximage_bootops,
+		g_flash_offset = get_table_entry_id(imximage_bootops,
 					"imximage boot option", token);
-		if (imxhdr->flash_offset == -1) {
+		if (g_flash_offset == -1) {
 			fprintf(stderr, "Error: %s[%d] -Invalid boot device"
 				"(%s)\n", name, lineno, token);
 			exit(EXIT_FAILURE);
@@ -449,7 +456,7 @@ static uint32_t parse_cfg_file(struct imx_header *imxhdr, char *name)
 	fclose(fd);
 
 	/* Exit if there is no BOOT_FROM field specifying the flash_offset */
-	if (imxhdr->flash_offset == FLASH_OFFSET_UNDEFINED) {
+	if (g_flash_offset == FLASH_OFFSET_UNDEFINED) {
 		fprintf(stderr, "Error: No BOOT_FROM tag in %s\n", name);
 		exit(EXIT_FAILURE);
 	}
@@ -494,12 +501,17 @@ static void imximage_print_header(const void *ptr)
 	}
 }
 
-static void imximage_set_header(void *ptr, struct stat *sbuf, int ifd,
-				struct mkimage_params *params)
+int imximage_vrec_header(struct mkimage_params *params,
+		struct image_type_params *tparams)
 {
-	struct imx_header *imxhdr = (struct imx_header *)ptr;
+	struct imx_header *imxhdr;
 	uint32_t dcd_len;
 
+	imxhdr = calloc(1, MAX_HEADER_SIZE);
+	if (!imxhdr) {
+		fprintf(stderr, "Error: out of memory\n");
+		exit(EXIT_FAILURE);
+	}
 	/*
 	 * In order to not change the old imx cfg file
 	 * by adding VERSION command into it, here need
@@ -507,15 +519,27 @@ static void imximage_set_header(void *ptr, struct stat *sbuf, int ifd,
 	 */
 	imximage_version = IMXIMAGE_V1;
 	/* Be able to detect if the cfg file has no BOOT_FROM tag */
-	imxhdr->flash_offset = FLASH_OFFSET_UNDEFINED;
+	g_flash_offset = FLASH_OFFSET_UNDEFINED;
 	set_hdr_func(imxhdr);
 
 	/* Parse dcd configuration file */
 	dcd_len = parse_cfg_file(imxhdr, params->imagename);
 
 	/* Set the imx header */
-	(*set_imx_hdr)(imxhdr, dcd_len, params->ep, imxhdr->flash_offset);
-	*header_size_ptr = sbuf->st_size + imxhdr->flash_offset;
+	imximage_params.header_size = (*set_imx_hdr)(imxhdr, dcd_len,
+			params->ep, g_flash_offset);
+	imximage_params.hdr = imxhdr;
+	return 0;
+}
+
+static void imximage_set_header(void *ptr, struct stat *sbuf, int ifd,
+				struct mkimage_params *params)
+{
+	/* Set the size in header */
+	uint32_t offset = (char *)header_size_ptr - (char *)imximage_params.hdr;
+	uint32_t *p = (uint32_t *)((char *)ptr + offset);
+
+	*p = sbuf->st_size + g_flash_offset;
 }
 
 int imximage_check_params(struct mkimage_params *params)
@@ -545,8 +569,7 @@ int imximage_check_params(struct mkimage_params *params)
  */
 static struct image_type_params imximage_params = {
 	.name		= "Freescale i.MX 5x Boot Image support",
-	.header_size	= sizeof(struct imx_header),
-	.hdr		= (void *)&imximage_header,
+	.vrec_header	= imximage_vrec_header,
 	.check_image_type = imximage_check_image_types,
 	.verify_header	= imximage_verify_header,
 	.print_header	= imximage_print_header,

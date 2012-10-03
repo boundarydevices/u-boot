@@ -30,6 +30,7 @@
 #define DCD_BARKER	0xB17219E9
 
 #define HEADER_OFFSET	0x400
+#define MAX_HEADER_SIZE	(16 << 10)
 
 #define CMD_DATA_STR	"DATA"
 #define FLASH_OFFSET_UNDEFINED	0xFFFFFFFF
@@ -156,7 +157,6 @@ struct imx_header {
 		imx_header_v1_t hdr_v1;
 		imx_header_v2_t hdr_v2;
 	} header;
-	uint32_t flash_offset;
 };
 
 typedef void (*set_dcd_val_t)(struct imx_header *imxhdr,
@@ -168,7 +168,7 @@ typedef void (*set_dcd_rst_t)(struct imx_header *imxhdr,
 					uint32_t dcd_len,
 					char *name, int lineno);
 
-typedef void (*set_imx_hdr_t)(struct imx_header *imxhdr, uint32_t dcd_len,
+typedef int (*set_imx_hdr_t)(struct imx_header *imxhdr, uint32_t dcd_len,
 		uint32_t entry_point, uint32_t flash_offset);
 
 #endif /* _IMXIMAGE_H_ */
