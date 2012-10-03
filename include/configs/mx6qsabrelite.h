@@ -23,7 +23,6 @@
 #define __CONFIG_H
 
 #define CONFIG_MX6
-#define CONFIG_MX6Q
 #define CONFIG_DISPLAY_CPUINFO
 #define CONFIG_DISPLAY_BOARDINFO
 
