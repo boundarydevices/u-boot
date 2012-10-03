@@ -431,7 +431,8 @@ $(obj)u-boot.img:	$(obj)u-boot.bin
 		-d $< $@
 
 $(obj)u-boot.imx:       $(obj)u-boot.bin
-		$(obj)tools/mkimage -n  $(CONFIG_IMX_CONFIG) -T imximage \
+		$(CC) -E -x c $(CONFIG_IMX_CONFIG) -I./include -o $(obj)imxcfg.imx
+		$(obj)tools/mkimage -n  $(obj)imxcfg.imx -T imximage \
 		-e $(CONFIG_SYS_TEXT_BASE) -d $< $@
 
 $(obj)u-boot.kwb:       $(obj)u-boot.bin
