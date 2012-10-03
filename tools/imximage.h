@@ -159,7 +159,8 @@ struct imx_header {
 	} header;
 };
 
-typedef void (*set_dcd_val_t)(struct imx_header *imxhdr,
+struct data_src;
+typedef void (*set_dcd_val_t)(struct data_src *ds,
 					char *name, int lineno,
 					int fld, uint32_t value,
 					uint32_t off);
@@ -168,7 +169,7 @@ typedef void (*set_dcd_rst_t)(struct imx_header *imxhdr,
 					uint32_t dcd_len,
 					char *name, int lineno);
 
-typedef int (*set_imx_hdr_t)(struct imx_header *imxhdr, uint32_t dcd_len,
+typedef int (*set_imx_hdr_t)(struct data_src *ds, uint32_t dcd_len,
 		uint32_t entry_point, uint32_t flash_offset);
 
 struct data_src {

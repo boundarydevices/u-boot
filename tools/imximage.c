@@ -116,10 +116,10 @@ static void err_imximage_version(int version)
 	exit(EXIT_FAILURE);
 }
 
-static void set_dcd_val_v1(struct imx_header *imxhdr, char *name, int lineno,
+static void set_dcd_val_v1(struct data_src *ds, char *name, int lineno,
 					int fld, uint32_t value, uint32_t off)
 {
-	dcd_v1_t *dcd_v1 = &imxhdr->header.hdr_v1.dcd_table;
+	dcd_v1_t *dcd_v1 = &ds->imxhdr->header.hdr_v1.dcd_table;
 
 	switch (fld) {
 	case CFG_REG_SIZE:
@@ -144,10 +144,10 @@ static void set_dcd_val_v1(struct imx_header *imxhdr, char *name, int lineno,
 	}
 }
 
-static void set_dcd_val_v2(struct imx_header *imxhdr, char *name, int lineno,
+static void set_dcd_val_v2(struct data_src *ds, char *name, int lineno,
 					int fld, uint32_t value, uint32_t off)
 {
-	dcd_v2_t *dcd_v2 = &imxhdr->header.hdr_v2.dcd_table;
+	dcd_v2_t *dcd_v2 = &ds->imxhdr->header.hdr_v2.dcd_table;
 
 	switch (fld) {
 	case CFG_REG_ADDRESS:
@@ -194,15 +194,15 @@ static void set_dcd_rst_v2(struct imx_header *imxhdr, uint32_t dcd_len,
 	dcd_v2->write_dcd_command.param = DCD_COMMAND_PARAM;
 }
 
-static int set_imx_hdr_v1(struct imx_header *imxhdr, uint32_t dcd_len,
+static int set_imx_hdr_v1(struct data_src *ds, uint32_t dcd_len,
 		uint32_t entry_point, uint32_t flash_offset)
 {
-	imx_header_v1_t *hdr_v1 = &imxhdr->header.hdr_v1;
+	imx_header_v1_t *hdr_v1 = &ds->imxhdr->header.hdr_v1;
 	flash_header_v1_t *fhdr_v1 = &hdr_v1->fhdr;
 	dcd_v1_t *dcd_v1 = &hdr_v1->dcd_table;
 	uint32_t hdr_base;
 	uint32_t header_length = (((char *)&dcd_v1->addr_data[dcd_len].addr)
-			- ((char *)imxhdr));
+			- ((char *)ds->imxhdr));
 
 	/* Set magic number */
 	fhdr_v1->app_code_barker = APP_CODE_BARKER;
@@ -217,19 +217,20 @@ static int set_imx_hdr_v1(struct imx_header *imxhdr, uint32_t dcd_len,
 	/* Security feature are not supported */
 	fhdr_v1->app_code_csf = 0;
 	fhdr_v1->super_root_key = 0;
-	header_size_ptr = (uint32_t *)(((char *)imxhdr) + header_length - 4);
+	header_size_ptr = (uint32_t *)(((char *)ds->imxhdr) +
+			header_length - 4);
 	return header_length;
 }
 
-static int set_imx_hdr_v2(struct imx_header *imxhdr, uint32_t dcd_len,
+static int set_imx_hdr_v2(struct data_src *ds, uint32_t dcd_len,
 		uint32_t entry_point, uint32_t flash_offset)
 {
-	imx_header_v2_t *hdr_v2 = &imxhdr->header.hdr_v2;
+	imx_header_v2_t *hdr_v2 = &ds->imxhdr->header.hdr_v2;
 	flash_header_v2_t *fhdr_v2 = &hdr_v2->fhdr;
 	uint32_t hdr_base;
 	uint32_t header_length = (dcd_len) ?
-		(char *)&hdr_v2->dcd_table.addr_data[dcd_len] - ((char*)imxhdr)
-		: offsetof(imx_header_v2_t, dcd_table);
+		(char *)&hdr_v2->dcd_table.addr_data[dcd_len] -
+		((char *)ds->imxhdr) : offsetof(imx_header_v2_t, dcd_table);
 
 	/* Set magic number */
 	fhdr_v2->header.tag = IVT_HEADER_TAG; /* 0xD1 */
@@ -328,7 +329,7 @@ static void print_hdr_v2(struct imx_header *imx_hdr)
 	printf("Entry Point:  %08x\n", (uint32_t)fhdr_v2->entry);
 }
 
-static void parse_cfg_cmd(struct imx_header *imxhdr, int32_t cmd, char *token,
+static void parse_cfg_cmd(struct data_src *ds, int32_t cmd, char *token,
 				char *name, int lineno, int fld, int dcd_len)
 {
 	int value;
@@ -345,7 +346,7 @@ static void parse_cfg_cmd(struct imx_header *imxhdr, int32_t cmd, char *token,
 			exit(EXIT_FAILURE);
 		}
 		cmd_ver_first = 1;
-		set_hdr_func(imxhdr, imximage_version);
+		set_hdr_func(ds->imxhdr, imximage_version);
 		break;
 	case CMD_BOOT_FROM:
 		g_flash_offset = get_table_entry_id(imximage_bootops,
@@ -360,14 +361,14 @@ static void parse_cfg_cmd(struct imx_header *imxhdr, int32_t cmd, char *token,
 		break;
 	case CMD_DATA:
 		value = get_cfg_value(token, name, lineno);
-		(*set_dcd_val)(imxhdr, name, lineno, fld, value, dcd_len);
+		(*set_dcd_val)(ds, name, lineno, fld, value, dcd_len);
 		if (unlikely(cmd_ver_first != 1))
 			cmd_ver_first = 0;
 		break;
 	}
 }
 
-static void parse_cfg_fld(struct imx_header *imxhdr, int32_t *cmd,
+static void parse_cfg_fld(struct data_src *ds, int32_t *cmd,
 		char *token, char *name, int lineno, int fld, int *dcd_len)
 {
 	int value;
@@ -383,7 +384,7 @@ static void parse_cfg_fld(struct imx_header *imxhdr, int32_t *cmd,
 		}
 		break;
 	case CFG_REG_SIZE:
-		parse_cfg_cmd(imxhdr, *cmd, token, name, lineno, fld, *dcd_len);
+		parse_cfg_cmd(ds, *cmd, token, name, lineno, fld, *dcd_len);
 		break;
 	case CFG_REG_ADDRESS:
 	case CFG_REG_VALUE:
@@ -391,7 +392,7 @@ static void parse_cfg_fld(struct imx_header *imxhdr, int32_t *cmd,
 			return;
 
 		value = get_cfg_value(token, name, lineno);
-		(*set_dcd_val)(imxhdr, name, lineno, fld, value, *dcd_len);
+		(*set_dcd_val)(ds, name, lineno, fld, value, *dcd_len);
 
 		if (fld == CFG_REG_VALUE) {
 			(*dcd_len)++;
@@ -458,7 +459,7 @@ static int parse_cfg_file(struct imx_header *imxhdr, char *name,
 			if (token[0] == '#')
 				break;
 
-			parse_cfg_fld(imxhdr, &cmd, token, name,
+			parse_cfg_fld(&ds, &cmd, token, name,
 					lineno, fld, &dcd_len);
 		}
 
@@ -473,7 +474,7 @@ static int parse_cfg_file(struct imx_header *imxhdr, char *name,
 		exit(EXIT_FAILURE);
 	}
 	/* Set the imx header */
-	return (*set_imx_hdr)(imxhdr, dcd_len, entry_point, g_flash_offset);
+	return (*set_imx_hdr)(&ds, dcd_len, entry_point, g_flash_offset);
 }
 
 static int imximage_check_image_types(uint8_t type)
