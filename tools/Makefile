@@ -94,6 +94,7 @@ NOPED_OBJ_FILES-y += aisimage.o
 NOPED_OBJ_FILES-y += kwbimage.o
 NOPED_OBJ_FILES-y += pblimage.o
 NOPED_OBJ_FILES-y += imximage.o
+NOPED_OBJ_FILES-y += parse_helper.o
 NOPED_OBJ_FILES-y += omapimage.o
 NOPED_OBJ_FILES-y += mkenvimage.o
 NOPED_OBJ_FILES-y += mkimage.o
@@ -208,6 +209,7 @@ $(obj)mkimage$(SFX):	$(obj)aisimage.o \
 			$(obj)fit_image.o \
 			$(obj)image.o \
 			$(obj)imximage.o \
+			$(obj)parse_helper.o \
 			$(obj)kwbimage.o \
 			$(obj)pblimage.o \
 			$(obj)md5.o \
