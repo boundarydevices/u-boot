@@ -65,8 +65,6 @@ static table_entry_t imximage_versions[] = {
 	{-1,            "",     " (Invalid)",                 },
 };
 
-static uint32_t imximage_version;
-
 static set_dcd_val_t set_dcd_val;
 static set_dcd_rst_t set_dcd_rst;
 static set_imx_hdr_t set_imx_hdr;
@@ -254,7 +252,7 @@ static int set_imx_hdr_v2(struct imx_header *imxhdr, uint32_t dcd_len,
 	return header_length;
 }
 
-static void set_hdr_func(struct imx_header *imxhdr)
+static void set_hdr_func(struct imx_header *imxhdr, uint32_t imximage_version)
 {
 	switch (imximage_version) {
 	case IMXIMAGE_V1:
@@ -335,6 +333,7 @@ static void parse_cfg_cmd(struct imx_header *imxhdr, int32_t cmd, char *token,
 {
 	int value;
 	static int cmd_ver_first = ~0;
+	uint32_t imximage_version;
 
 	switch (cmd) {
 	case CMD_IMAGE_VERSION:
@@ -346,7 +345,7 @@ static void parse_cfg_cmd(struct imx_header *imxhdr, int32_t cmd, char *token,
 			exit(EXIT_FAILURE);
 		}
 		cmd_ver_first = 1;
-		set_hdr_func(imxhdr);
+		set_hdr_func(imxhdr, imximage_version);
 		break;
 	case CMD_BOOT_FROM:
 		g_flash_offset = get_table_entry_id(imximage_bootops,
@@ -419,6 +418,12 @@ static uint32_t parse_cfg_file(struct imx_header *imxhdr, char *name)
 	int dcd_len = 0;
 	int32_t cmd;
 
+	/*
+	 * In order to not change the old imx cfg file
+	 * by adding VERSION command into it, here need
+	 * set up function ptr group to V1 by default.
+	 */
+	set_hdr_func(imxhdr, IMXIMAGE_V1);
 	fd = fopen(name, "r");
 	if (fd == 0) {
 		fprintf(stderr, "Error: %s - Can't open DCD file\n", name);
@@ -512,16 +517,8 @@ int imximage_vrec_header(struct mkimage_params *params,
 		fprintf(stderr, "Error: out of memory\n");
 		exit(EXIT_FAILURE);
 	}
-	/*
-	 * In order to not change the old imx cfg file
-	 * by adding VERSION command into it, here need
-	 * set up function ptr group to V1 by default.
-	 */
-	imximage_version = IMXIMAGE_V1;
 	/* Be able to detect if the cfg file has no BOOT_FROM tag */
 	g_flash_offset = FLASH_OFFSET_UNDEFINED;
-	set_hdr_func(imxhdr);
-
 	/* Parse dcd configuration file */
 	dcd_len = parse_cfg_file(imxhdr, params->imagename);
 
