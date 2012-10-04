@@ -143,6 +143,7 @@
 #define CONFIG_BMP_16BPP
 #define CONFIG_VIDEO_LOGO
 #define CONFIG_IPUV3_CLK 260000000
+#define CONFIG_CMD_HDMIDETECT
 
 /* allow to overwrite serial and ethaddr */
 #define CONFIG_ENV_OVERWRITE
