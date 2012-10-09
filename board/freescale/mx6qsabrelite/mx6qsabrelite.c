@@ -38,6 +38,9 @@
 #include <micrel.h>
 #include <miiphy.h>
 #include <netdev.h>
+#include <asm/arch/mxc_hdmi.h>
+#include <asm/arch/crm_regs.h>
+
 DECLARE_GLOBAL_DATA_PTR;
 
 #ifdef CONFIG_MX6Q
@@ -250,6 +253,15 @@ int setup_sata(void)
 
 int board_early_init_f(void)
 {
+	struct mxc_ccm_reg *mxc_ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
+	int reg;
+
+	/* Turn on HDMI PHY clock */
+	reg = __raw_readl(&mxc_ccm->CCGR2);
+	reg |=  MXC_CCM_CCGR2_HDMI_TX_IAHBCLK_MASK
+	       |MXC_CCM_CCGR2_HDMI_TX_ISFRCLK_MASK;
+	writel(reg, &mxc_ccm->CCGR2);
+
 	setup_iomux_uart();
 	setup_buttons();
 
