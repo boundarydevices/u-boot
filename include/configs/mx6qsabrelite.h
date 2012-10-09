@@ -37,7 +37,7 @@
 #define CONFIG_REVISION_TAG
 
 /* Size of malloc() pool */
-#define CONFIG_SYS_MALLOC_LEN	       (CONFIG_ENV_SIZE + 2 * 1024 * 1024)
+#define CONFIG_SYS_MALLOC_LEN		(10 * 1024 * 1024)
 
 #define CONFIG_BOARD_EARLY_INIT_F
 #define CONFIG_MISC_INIT_R
@@ -118,6 +118,8 @@
 
 /* Miscellaneous commands */
 #define CONFIG_CMD_BMODE
+#define CONFIG_CMD_SETEXPR
+#define CONFIG_CMD_HDMIDETECT
 
 /* allow to overwrite serial and ethaddr */
 #define CONFIG_ENV_OVERWRITE
@@ -137,43 +139,31 @@
 #define CONFIG_SYS_TEXT_BASE	       0x17800000
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
-       "script=boot.scr\0" \
-       "uimage=uImage\0" \
 	"console=ttymxc1\0" \
-	"fdt_high=0xffffffff\0"	  \
-	"initrd_high=0xffffffff\0" \
-       "mmcdev=0\0" \
-       "mmcpart=2\0" \
-       "mmcroot=/dev/mmcblk0p3 rootwait rw\0" \
-       "mmcargs=setenv bootargs console=${console},${baudrate} " \
-	       "root=${mmcroot}\0" \
-       "loadbootscript=" \
-	       "fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${script};\0" \
-       "bootscript=echo Running bootscript from mmc ...; " \
-	       "source\0" \
-       "loaduimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${uimage}\0" \
-       "mmcboot=echo Booting from mmc ...; " \
-	       "run mmcargs; " \
-	       "bootm\0" \
-       "netargs=setenv bootargs console=${console},${baudrate} " \
-	       "root=/dev/nfs " \
-	       "ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
-       "netboot=echo Booting from net ...; " \
-	       "run netargs; " \
-	       "dhcp ${uimage}; bootm\0" \
-
-#define CONFIG_BOOTCOMMAND \
-       "mmc dev ${mmcdev};" \
-       "if mmc rescan ${mmcdev}; then " \
-	       "if run loadbootscript; then " \
-		       "run bootscript; " \
-	       "else " \
-		       "if run loaduimage; then " \
-			       "run mmcboot; " \
-		       "else run netboot; " \
-		       "fi; " \
-	       "fi; " \
-       "else run netboot; fi"
+	"clearenv=if sf probe || sf probe || sf probe 1 ; then sf erase 0xc0000 0x2000 && " \
+		"echo restored environment to factory default ; fi\0" \
+	"bootcmd=for dtype in mmc ; do " \
+			"for disk in 0 1 ; do ${dtype} dev ${disk} ;" \
+				"for fs in fat ext2 ; do " \
+					"${fs}load ${dtype} ${disk}:1 10008000 " \
+						"/6q_bootscript" \
+						"&& source 10008000 ; " \
+				"done ; " \
+			"done ; " \
+		"done; " \
+		"setenv stdout serial,vga ; " \
+		"echo ; echo 6q_bootscript not found ; " \
+		"echo ; echo serial console at 115200, 8N1 ; " \
+		"echo ; echo details at http://boundarydevices.com/6q_bootscript ; setenv stdout serial\0" \
+	"upgradeu=for dtype in sata mmc ; do " \
+		"for disk in 0 1 ; do ${dtype} dev ${disk} ;" \
+		     "for fs in fat ext2 ; do " \
+				"${fs}load ${dtype} ${disk}:1 10008000 " \
+					"/6q_upgrade " \
+					"&& source 10008000 ; " \
+			"done ; " \
+		"done ; " \
+	"done\0" \
 
 #define CONFIG_ARP_TIMEOUT     200UL
 
@@ -216,8 +206,8 @@
 
 #define CONFIG_ENV_SIZE			(8 * 1024)
 
-#define CONFIG_ENV_IS_IN_MMC
-/* #define CONFIG_ENV_IS_IN_SPI_FLASH */
+/* #define CONFIG_ENV_IS_IN_MMC */
+#define CONFIG_ENV_IS_IN_SPI_FLASH
 
 #if defined(CONFIG_ENV_IS_IN_MMC)
 #define CONFIG_ENV_OFFSET		(6 * 64 * 1024)
