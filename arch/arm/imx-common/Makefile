@@ -32,8 +32,9 @@ COBJS-y	= iomux-v3.o timer.o cpu.o speed.o
 COBJS-$(CONFIG_I2C_MXC) += i2c-mxv7.o
 endif
 COBJS-$(CONFIG_CMD_BMODE) += cmd_bmode.o
-COBJS	:= $(sort $(COBJS-y))
+COBJS-$(CONFIG_CMD_HDMIDETECT) += cmd_hdmidet.o
 
+COBJS	:= $(sort $(COBJS-y))
 SRCS	:= $(SOBJS:.o=.S) $(COBJS:.o=.c)
 OBJS	:= $(addprefix $(obj),$(SOBJS) $(COBJS))
 
