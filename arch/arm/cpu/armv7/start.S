@@ -35,6 +35,34 @@
 #include <asm/system.h>
 #include <linux/linkage.h>
 
+/* ************************************************** */
+/*
+ * Invalidate L1 data cache
+ */
+.macro invalidate_dcache rTmp, rWayTmp, rSet, rSetShift, rWay, rWayShift
+	mov	\rTmp, #0
+	/* cache size selection register, select dcache */
+	mcr	p15, 2, \rTmp, c0, c0, 0
+	mrc	p15, 1, \rTmp, c0, c0, 0	/* cache size ID register */
+	mov	\rSet, \rTmp, LSL #32 - 15 - 13
+	mov	\rSet, \rSet, LSR #32 - 15	/* Number of sets - 1*/
+	mov	\rWay, \rTmp, LSL #32 - 10 - 3
+	mov	\rWay, \rWay, LSR #32 - 10	/* Number of Ways - 1 */
+	and	\rSetShift, \rTmp, #0x7
+	add	\rSetShift, \rSetShift, #4
+	clz	\rWayShift, \rWay
+
+1:	mov	\rWayTmp, \rWay
+2:	mov	\rTmp, \rSet, LSL \rSetShift
+	orr	\rTmp, \rTmp, \rWayTmp, LSL \rWayShift
+	/* DCISW, data cache invalidate by set / way */
+	mcr	p15, 0, \rTmp, c7, c6, 2
+	subs	\rWayTmp, \rWayTmp, #1
+	bhs	2b
+	subs	\rSet, \rSet, #1
+	bhs	1b
+.endm
+
 .globl _start
 _start: b	reset
 	ldr	pc, _undefined_instruction
@@ -294,6 +322,16 @@ ENTRY(cpu_init_cp15)
 	mcr	p15, 0, r0, c7, c5, 6	@ invalidate BP array
 	mcr     p15, 0, r0, c7, c10, 4	@ DSB
 	mcr     p15, 0, r0, c7, c5, 4	@ ISB
+#ifdef CONFIG_SYS_DCACHE_OFF
+	/*
+	 * If u-boot started by ROM usb loader, then
+	 * dcache will contain garbage that will
+	 * prevent Linux from decompressing
+	 */
+	invalidate_dcache r0, r1, r2, r3, r4, r5
+	mcr     p15, 0, r0, c7, c10, 4	@ DSB
+	mcr     p15, 0, r0, c7, c5, 4	@ ISB
+#endif
 
 	/*
 	 * disable MMU stuff and caches
