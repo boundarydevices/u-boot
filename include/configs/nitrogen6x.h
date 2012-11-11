@@ -147,7 +147,7 @@
 
 #undef CONFIG_CMD_IMLS
 
-#define CONFIG_BOOTDELAY	       0
+#define CONFIG_BOOTDELAY	       1
 
 #define CONFIG_PREBOOT                 ""
 
