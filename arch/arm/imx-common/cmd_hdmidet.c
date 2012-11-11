@@ -24,7 +24,7 @@
 #include <asm/arch/mxc_hdmi.h>
 #include <asm/io.h>
 
-int do_hdmidet(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+int do_hdmidet(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	u8 reg = __raw_readb(HDMI_ARB_BASE_ADDR+HDMI_PHY_STAT0);
 	return (reg&HDMI_PHY_HPD)
