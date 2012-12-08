@@ -60,5 +60,5 @@ while test "3" -ne $nextcon ; do
 done
 
 setenv bootargs $bootargs fbcon=$fbcon
-${fs}load ${dtype} ${disk}:2 10800000 uImage && ${fs}load ${dtype} ${disk}:2 12800000 uramdisk.img && bootm 10800000 12800000; echo "Error loading kernel image"
+${fs}load ${dtype} ${disk}:1 10800000 uImage && ${fs}load ${dtype} ${disk}:1 12800000 uramdisk.img && bootm 10800000 12800000; echo "Error loading kernel image"
 
