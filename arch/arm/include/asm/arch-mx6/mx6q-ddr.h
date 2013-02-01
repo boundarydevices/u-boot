@@ -1,0 +1,57 @@
+/*
+ * Copyright (C) 2012 Boundary Devices Inc.
+ *
+ * Licensed under the GPL-2 or later.
+ */
+#ifndef __ASM_ARCH_MX6Q_DDR_H__
+#define __ASM_ARCH_MX6Q_DDR_H__
+
+#ifndef CONFIG_MX6Q
+#error "wrong CPU"
+#endif
+
+#define IOM_DRAM_DQM0		0x020e05ac
+#define IOM_DRAM_DQM1		0x020e05b4
+#define IOM_DRAM_DQM2		0x020e0528
+#define IOM_DRAM_DQM3		0x020e0520
+#define IOM_DRAM_DQM4		0x020e0514
+#define IOM_DRAM_DQM5		0x020e0510
+#define IOM_DRAM_DQM6		0x020e05bc
+#define IOM_DRAM_DQM7		0x020e05c4
+
+#define IOM_DRAM_CAS		0x020e056c
+#define IOM_DRAM_RAS		0x020e0578
+#define IOM_DRAM_RESET		0x020e057c
+#define IOM_DRAM_SDCLK_0	0x020e0588
+#define IOM_DRAM_SDCLK_1	0x020e0594
+#define IOM_DRAM_SDBA2		0x020e058c
+#define IOM_DRAM_SDCKE0		0x020e0590
+#define IOM_DRAM_SDCKE1		0x020e0598
+#define IOM_DRAM_SDODT0		0x020e059c
+#define IOM_DRAM_SDODT1		0x020e05a0
+
+#define IOM_DRAM_SDQS0		0x020e05a8
+#define IOM_DRAM_SDQS1		0x020e05b0
+#define IOM_DRAM_SDQS2		0x020e0524
+#define IOM_DRAM_SDQS3		0x020e051c
+#define IOM_DRAM_SDQS4		0x020e0518
+#define IOM_DRAM_SDQS5		0x020e050c
+#define IOM_DRAM_SDQS6		0x020e05b8
+#define IOM_DRAM_SDQS7		0x020e05c0
+
+#define IOM_GRP_B0DS		0x020e0784
+#define IOM_GRP_B1DS		0x020e0788
+#define IOM_GRP_B2DS		0x020e0794
+#define IOM_GRP_B3DS		0x020e079c
+#define IOM_GRP_B4DS		0x020e07a0
+#define IOM_GRP_B5DS		0x020e07a4
+#define IOM_GRP_B6DS		0x020e07a8
+#define IOM_GRP_B7DS		0x020e0748
+#define IOM_GRP_ADDDS		0x020e074c
+#define IOM_DDRMODE_CTL		0x020e0750
+#define IOM_GRP_DDRPKE		0x020e0758
+#define IOM_GRP_DDRMODE		0x020e0774
+#define IOM_GRP_CTLDS		0x020e078c
+#define IOM_GRP_DDR_TYPE	0x020e0798
+
+#endif	/*__ASM_ARCH_MX6Q_DDR_H__ */
