@@ -71,7 +71,7 @@
 #define IMX_OTP_BASE			OCOTP_BASE_ADDR
 #define IMX_OTP_ADDR_MAX		0x7F
 #define IMX_OTP_DATA_ERROR_VAL		0xBADABADA
-/* #define IMX_OTPWRITE_ENABLED */
+#define IMX_OTPWRITE_ENABLED
 #endif
 
 /* MMC Configs */
