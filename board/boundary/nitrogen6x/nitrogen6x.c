@@ -786,12 +786,15 @@ int board_init(void)
 	return 0;
 }
 
+int check_cpu_temperature(void);
+
 int checkboard(void)
 {
 	if (gpio_get_value(WL12XX_WL_IRQ_GP))
 		puts("Board: Nitrogen6X\n");
 	else
 		puts("Board: SABRE Lite\n");
+	check_cpu_temperature();
 
 	return 0;
 }

@@ -749,9 +749,12 @@ int board_init(void)
 	return 0;
 }
 
+int check_cpu_temperature(void);
+
 int checkboard(void)
 {
 	puts("Board: MX6Q-Sabre Lite\n");
+	check_cpu_temperature();
 
 	return 0;
 }
