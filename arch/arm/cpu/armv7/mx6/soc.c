@@ -34,6 +34,10 @@
 #include <div64.h>
 #include <stdbool.h>
 
+#define DEFAULT_RAW_25C		1440
+#define DEFAULT_RAW_HOT		1240
+#define DEFAULT_TEMP_HOT	125
+
 struct scu_regs {
 	u32	ctrl;
 	u32	config;
@@ -88,9 +92,10 @@ static void get_temperature_scale(u32 fuse, unsigned *praw_25c, unsigned long lo
 	hot_temp = fuse & 0xff;
 	if ((hot_temp <= 25) || (raw_25c <= raw_hot)) {
 		/* Use default settings */
-		raw_25c = 1433;	/* 0x599 */
-		raw_hot = 1318;	/* 0x526 */
-		hot_temp = 105;	/* 0x69 */
+		printf("Invalid temperature fuse data: use defaults\n");
+		raw_25c = DEFAULT_RAW_25C;
+		raw_hot = DEFAULT_RAW_HOT;
+		hot_temp = DEFAULT_TEMP_HOT;
 	}
 	cvt_to_celsius = hot_temp - 25;
 	cvt_to_celsius <<= 32;
