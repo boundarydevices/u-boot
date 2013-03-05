@@ -784,7 +784,6 @@ int checkboard(void)
 		puts("Board: Nitrogen6X\n");
 	else
 		puts("Board: SABRE Lite\n");
-	check_cpu_temperature();
 
 	return 0;
 }
@@ -883,6 +882,7 @@ static const struct boot_mode board_boot_modes[] = {
 
 int misc_init_r(void)
 {
+	check_cpu_temperature();
 #ifdef CONFIG_PREBOOT
 	preboot_keys();
 #endif
