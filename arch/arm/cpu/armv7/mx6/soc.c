@@ -178,12 +178,26 @@ static int print_cpu_temperature(unsigned raw, unsigned raw_25c, unsigned long l
 #define TEMP_HOT	80
 #define TEMP_MAX	125
 
+#define TEMPFUSE "tempfuse"
+
+static u32 get_fuse_data(void)
+{
+	u32 fuse;
+	char const *fuse_env = getenv(TEMPFUSE);
+	if (fuse_env) {
+		printf("use tempfuse(%s) from environment\n", fuse_env);
+		fuse = simple_strtoul(fuse_env, 0, 16);
+	} else
+		fuse = get_temperature_fuse();
+	return fuse;
+}
+
 int check_cpu_temperature(void)
 {
 	int cpu_temp;
 	unsigned raw_25c;
 	unsigned long long cvt_to_celsius;
-	u32 fuse = get_temperature_fuse();
+	u32 fuse = get_fuse_data();
 
 	get_temperature_scale(fuse, &raw_25c, &cvt_to_celsius);
 
@@ -209,15 +223,19 @@ int do_temp(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	unsigned raw_25c;
 	u32 raw;
 	unsigned long long cvt_to_celsius;
-	u32 fuse = get_temperature_fuse();
+	u32 fuse = get_fuse_data();
 
 	get_temperature_scale(fuse, &raw_25c, &cvt_to_celsius);
 
 	raw = read_cpu_temperature_raw();
 	cpu_temp = print_cpu_temperature(raw, raw_25c, cvt_to_celsius);
-	if ((cpu_temp > TEMP_MAX) || (cpu_temp < TEMP_MIN))
+	if ((cpu_temp > TEMP_MAX) || (cpu_temp < TEMP_MIN)) {
 		printf("Invalid temperature reading\n");
-	return cpu_temp;
+		return -EINVAL;
+	} else if (1 < argc)
+		return cpu_temp > simple_strtoul(argv[1], 0, 10);
+	else
+		return 0;
 }
 
 U_BOOT_CMD(
