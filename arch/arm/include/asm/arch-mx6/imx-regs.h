@@ -178,6 +178,7 @@
 #include <asm/types.h>
 
 extern void imx_get_mac_from_fuse(int dev_id, unsigned char *mac);
+extern int check_cpu_temperature(void);
 
 /* System Reset Controller (SRC) */
 struct src {
