@@ -162,7 +162,7 @@ iomux_v3_cfg_t const usdhc4_pads[] = {
 	MX6_PAD_SD4_DAT1__USDHC4_DAT1 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_SD4_DAT2__USDHC4_DAT2 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_SD4_DAT3__USDHC4_DAT3 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	MX6_PAD_NANDF_D6__GPIO_2_6    | MUX_PAD_CTRL(NO_PAD_CTRL), /* CD */
+	MX6_PAD_NANDF_D5__GPIO_2_5    | MUX_PAD_CTRL(NO_PAD_CTRL), /* RESET */
 };
 
 iomux_v3_cfg_t const enet_pads1[] = {
@@ -293,6 +293,7 @@ int board_mmc_init(bd_t *bis)
 		case 1:
 		       imx_iomux_v3_setup_multiple_pads(
 			       usdhc4_pads, ARRAY_SIZE(usdhc4_pads));
+			gpio_direction_output(IMX_GPIO_NR(2, 5), 1); /* de-assert nRESET */
 		       break;
 		default:
 		       printf("Warning: you configured more USDHC controllers"
