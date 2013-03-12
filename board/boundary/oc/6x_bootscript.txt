@@ -1,10 +1,10 @@
 setenv bootargs enable_wait_mode=off
 setenv nextcon 0;
 
-if test XGA = "$panel" ; then
+if test xXGA = "x$panel" ; then
 	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=ldb,LDB-XGA,if=RGB24
 else
-	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=ldb,LDB-VGA,if=RGB666
+	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=ldb,LDB-VGA,if=RGB24
 fi
 
 setexpr nextcon $nextcon + 1
