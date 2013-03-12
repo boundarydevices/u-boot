@@ -560,7 +560,6 @@ static struct display_info_t const vga = {
 
 int board_video_skip(void)
 {
-	int i;
 	int ret;
 	char const *panel = getenv("panel");
 	struct display_info_t const *display = 0;
