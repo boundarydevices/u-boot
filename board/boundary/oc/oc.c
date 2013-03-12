@@ -546,13 +546,13 @@ static struct display_info_t const vga = {
 		.refresh        = 60,
 		.xres           = 640,
 		.yres           = 480,
-		.pixclock       = 39721,
+		.pixclock       = 15385,
 		.left_margin    = 40,
 		.right_margin   = 24,
 		.upper_margin   = 32,
 		.lower_margin   = 11,
-		.hsync_len      = 2,
-		.vsync_len      = 2,
+		.hsync_len      = 160,
+		.vsync_len      = 45,
 		.sync           = FB_SYNC_EXT,
 		.vmode          = FB_VMODE_NONINTERLACED
 	}
