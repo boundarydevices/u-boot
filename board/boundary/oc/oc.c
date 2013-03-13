@@ -687,6 +687,11 @@ int overwrite_console(void)
 	return 1;
 }
 
+static iomux_v3_cfg_t const i2c0_mux_pads[] = {
+	MX6_PAD_EIM_D20__GPIO_3_20 | MUX_PAD_CTRL(I2C_PAD_CTRL), /* CAM */
+	MX6_PAD_EIM_CS0__GPIO_2_23 |MUX_PAD_CTRL(I2C_PAD_CTRL)   /* RTC */
+};
+
 int board_init(void)
 {
 	/* address of boot parameters */
@@ -695,6 +700,10 @@ int board_init(void)
 #ifdef CONFIG_MXC_SPI
 	setup_spi();
 #endif
+	imx_iomux_v3_setup_multiple_pads(i2c0_mux_pads,
+					 ARRAY_SIZE(i2c0_mux_pads));
+	gpio_direction_output(IMX_GPIO_NR(3,20),0);
+	gpio_direction_output(IMX_GPIO_NR(2,23),1); /* enable RTC */
 	setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info0);
 	setup_i2c(1, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info1);
 	setup_i2c(2, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info2);
