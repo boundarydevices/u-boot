@@ -158,6 +158,10 @@ iomux_v3_cfg_t const usdhc4_pads[] = {
 	MX6_PAD_SD4_DAT1__USDHC4_DAT1 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_SD4_DAT2__USDHC4_DAT2 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_SD4_DAT3__USDHC4_DAT3 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD4_DAT4__USDHC4_DAT4 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD4_DAT5__USDHC4_DAT5 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD4_DAT6__USDHC4_DAT6 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD4_DAT7__USDHC4_DAT7 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_NANDF_D5__GPIO_2_5    | MUX_PAD_CTRL(NO_PAD_CTRL), /* RESET */
 };
 
@@ -267,7 +271,7 @@ int board_mmc_getcd(struct mmc *mmc)
 		gpio_direction_input(IMX_GPIO_NR(7, 0));
 		ret = !gpio_get_value(IMX_GPIO_NR(7, 0));
 	} else
-		ret = 0; /* eMMC isn't yet supported */
+		ret = 1; /* eMMC is always present */
 
 	return ret;
 }
@@ -279,6 +283,9 @@ int board_mmc_init(bd_t *bis)
 
 	usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC3_CLK);
 	usdhc_cfg[1].sdhc_clk = mxc_get_clock(MXC_ESDHC4_CLK);
+
+	usdhc_cfg[0].max_bus_width = 4;
+	usdhc_cfg[1].max_bus_width = 8;
 
 	for (index = 0; index < CONFIG_SYS_FSL_USDHC_NUM; ++index) {
 		switch (index) {
