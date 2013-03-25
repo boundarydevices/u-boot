@@ -7,20 +7,14 @@ else
 	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=ldb,OC-VGA,if=RGB24
 fi
 
-setexpr nextcon $nextcon + 1
-
+setenv fbmem "fbmem=10M";
 if hdmidet ; then
 	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=hdmi,1280x720M@60,if=RGB24
-	setenv fbmem "fbmem=28M";
-	setexpr nextcon $nextcon + 1
+	setenv fbmem $fbmem,28M;
+	setenv nextcon 2
 else
 	echo "------ no HDMI monitor";
-fi
-
-if test "1" -eq $nextcon; then
-	setenv fbmem "fbmem=10M";
-else
-	setenv fbmem ${fbmem},10M
+	setenv nextcon 1
 fi
 
 while test "3" -ne $nextcon ; do
