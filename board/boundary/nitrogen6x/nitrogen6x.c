@@ -616,6 +616,26 @@ static struct display_info_t const displays[] = {{
 		.vsync_len      = 10,
 		.sync           = 0,
 		.vmode          = FB_VMODE_NONINTERLACED
+} }, {
+	.bus	= 2,
+	.addr	= 0x48,
+	.pixfmt	= IPU_PIX_FMT_RGB24,
+	.detect	= 0,
+	.enable	= enable_rgb,
+	.mode	= {
+		.name           = "wqvga-rgb",
+		.refresh        = 57,
+		.xres           = 480,
+		.yres           = 272,
+		.pixclock       = 37037,
+		.left_margin    = 2,
+		.right_margin   = 1,
+		.upper_margin   = 3,
+		.lower_margin   = 2,
+		.hsync_len      = 41,
+		.vsync_len      = 10,
+		.sync           = 0,
+		.vmode          = FB_VMODE_NONINTERLACED
 } } };
 
 int board_video_skip(void)
