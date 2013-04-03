@@ -11,9 +11,9 @@ Primary branches include:
 
 <table>
 <tr><th>Branch</th><th>Usage</th></tr>
-<tr><td><a href="http://github.com/boundarydevices/u-boot-imx6/tree/master">master</a></td><td>Latest official release of main-line</td></tr>
-<tr><td><a href="http://github.com/boundarydevices/u-boot-imx6/tree/production">production</a></td><td>Latest production release for <a href="http://boundarydevices.com/">Boundary Devices</a> boards</td></tr>
-<tr><td><a href="http://github.com/boundarydevices/u-boot-imx6/tree/staging">staging</a></td><td>Staging for next production release</td></tr>
+<tr><td><tt>master</tt></td><td>Latest official release of main-line</td></tr>
+<tr><td><tt>production</tt></td><td>Latest production release for <a href="http://boundarydevices.com/">Boundary Devices</a> boards</td></tr>
+<tr><td><tt>staging</tt></td><td>Staging for next production release</td></tr>
 </table>
 
 Other branches are used for work in progress and sharing experimental code.
