@@ -12,5 +12,6 @@
 struct phy_device;
 int ksz9021_phy_extended_write(struct phy_device *phydev, int regnum, u16 val);
 int ksz9021_phy_extended_read(struct phy_device *phydev, int regnum);
+int ksz9031_send_phy_cmds(struct phy_device *phydev, unsigned short* p);
 
 #endif
