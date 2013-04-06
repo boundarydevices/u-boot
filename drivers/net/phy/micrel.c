@@ -135,6 +135,51 @@ static struct phy_driver ksz9021_driver = {
 	.startup = &ksz9021_startup,
 	.shutdown = &genphy_shutdown,
 };
+
+int ksz9031_send_phy_cmds(struct phy_device *phydev, unsigned short* p)
+{
+	for (;;) {
+		unsigned reg = *p++;
+		unsigned val = *p++;
+		if (reg == 0 && val == 0)
+			break;
+		if (reg < 32) {
+			phy_write(phydev, MDIO_DEVAD_NONE, reg, val);
+		} else {
+			unsigned dev_addr = (reg >> 8) & 0x7f;
+			phy_write(phydev, MDIO_DEVAD_NONE, 0x0d, dev_addr);
+			phy_write(phydev, MDIO_DEVAD_NONE, 0x0e,
+					reg & 0xff);
+			phy_write(phydev, MDIO_DEVAD_NONE, 0x0d,
+					dev_addr | 0x8000);
+			phy_write(phydev, MDIO_DEVAD_NONE, 0x0e, val);
+		}
+	}
+	return 0;
+}
+
+/* Micrel ksz9031 */
+static int ksz9031_config(struct phy_device *phydev)
+{
+	unsigned features = phydev->drv->features;
+
+	if (getenv("disable_giga"))
+		features &= ~(SUPPORTED_1000baseT_Half |
+				SUPPORTED_1000baseT_Full);
+	phydev->advertising = phydev->supported = features;
+	genphy_config_aneg(phydev);
+	return 0;
+}
+
+static struct phy_driver ksz9031_driver = {
+	.name = "Micrel ksz9031",
+	.uid  = 0x221620,
+	.mask = 0xfffff0,
+	.features = PHY_GBIT_FEATURES,
+	.config = &ksz9031_config,
+	.startup = &ksz9021_startup,
+	.shutdown = &genphy_shutdown,
+};
 #endif
 
 int phy_micrel_init(void)
@@ -142,6 +187,7 @@ int phy_micrel_init(void)
 	phy_register(&KSZ804_driver);
 #ifdef CONFIG_PHY_MICREL_KSZ9021
 	phy_register(&ksz9021_driver);
+	phy_register(&ksz9031_driver);
 #else
 	phy_register(&KS8721_driver);
 #endif
