@@ -400,6 +400,20 @@ unsigned int mxc_get_clock(enum mxc_clock clk)
 	return -1;
 }
 
+void enable_clko1(unsigned parent, unsigned div)
+{
+	struct mxc_ccm_reg *mxc_ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
+	int reg = readl(&mxc_ccm->ccosr);
+
+	/* prevent noise on SGTL5000 by supplying clock */
+	reg &= ~(MXC_CCM_CCOSR_CKOL_DIV_MASK
+		|MXC_CCM_CCOSR_CKOL_SEL_MASK);
+	reg |= MXC_CCM_CCOSR_CKOL_EN
+		| (div<<MXC_CCM_CCOSR_CKOL_DIV_OFFSET)
+		| (parent<<MXC_CCM_CCOSR_CKOL_SEL_OFFSET);
+	writel(reg,&mxc_ccm->ccosr);
+}
+
 /*
  * Dump some core clockes.
  */
