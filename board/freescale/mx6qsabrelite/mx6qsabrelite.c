@@ -700,6 +700,8 @@ static void setup_display(void)
 
 int board_early_init_f(void)
 {
+	enable_clko1(CLKO1_AHB_CLK_ROOT,7);
+
 	setup_iomux_uart();
 	setup_buttons();
 
