@@ -66,4 +66,25 @@ void enable_usboh3_clk(unsigned char enable);
 int enable_sata_clock(void);
 int enable_i2c_clk(unsigned char enable, unsigned i2c_num);
 
+enum mxc_clko1_parents {
+	CLKO1_PLL3_SW_CLK,
+	CLKO1_PLL2_MAIN_CLK,
+	CLKO1_PLL1_MAIN_CLK,
+	CLKO1_PLL5_MAIN_CLK,
+	CLKO1_VIDEO_27M_CLK_ROOT,
+	CLKO1_AXI_CLK_ROOT,
+	CLKO1_ENFC_CLK_ROOT,
+	CLKO1_IPU1_DI0_CLK_ROOT,
+	CLKO1_IPU1_DI1_CLK_ROOT,
+	CLKO1_IPU2_DI0_CLK_ROOT,
+	CLKO1_IPU2_DI1_CLK_ROOT,
+	CLKO1_AHB_CLK_ROOT,
+	CLKO1_IPG_CLK_ROOT,
+	CLKO1_PERCLK_ROOT,
+	CLKO1_CKIL_SYNC_CLK_ROOT,
+	CLKO1_PLL4_MAIN_CLK,
+};
+
+void enable_clko1(unsigned parent, unsigned div);
+
 #endif /* __ASM_ARCH_CLOCK_H */
