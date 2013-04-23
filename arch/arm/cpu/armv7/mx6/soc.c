@@ -27,9 +27,11 @@
 #include <asm/errno.h>
 #include <asm/io.h>
 #include <asm/arch/imx-regs.h>
+#include <asm/arch/crm_regs.h>
 #include <asm/arch/clock.h>
 #include <asm/arch/sys_proto.h>
 #include <asm/imx-common/boot_mode.h>
+#include <div64.h>
 #include <stdbool.h>
 
 struct scu_regs {
@@ -39,6 +41,185 @@ struct scu_regs {
 	u32	invalidate;
 	u32	fpga_rev;
 };
+
+int cvt_raw_to_celius(unsigned raw, unsigned raw_25c,
+		unsigned long long cvt_to_celsius, unsigned *hundredths)
+{
+	int change = (raw_25c - raw);
+	long long scale = (change * cvt_to_celsius);
+
+	change =  scale >> 32;
+	scale = (scale & 0xffffffff) * 100;
+	*hundredths = scale >> 32;
+	return 25 + change;
+}
+
+static int get_temperature_fuse(void)
+{
+	u32 ccm_ccgr2;
+	u32 fuse;
+	struct mxc_ccm_reg *imx_ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
+	struct ocotp_regs *ocotp = (struct ocotp_regs *)OCOTP_BASE_ADDR;
+
+	ccm_ccgr2 = readl(&imx_ccm->CCGR2);
+	writel(ccm_ccgr2 | (0x3 << MXC_CCM_CCGR2_OCOTP_CTRL_OFFSET), &imx_ccm->CCGR2);
+
+	fuse = readl(&ocotp->thermal_calibration_data);
+	writel(ccm_ccgr2, &imx_ccm->CCGR2);
+	return fuse;
+}
+
+static void get_temperature_scale(u32 fuse, unsigned *praw_25c, unsigned long long *pcvt_to_celsius)
+{
+	unsigned raw_25c;
+	unsigned raw_hot;
+	unsigned hot_temp;
+	unsigned long long cvt_to_celsius;
+	unsigned scale_int, scale_frac;
+
+	/*
+	 * Fuse data layout:
+	 * Bits[31:20] raw value @ 25C
+	 * Bits[19:8] raw value @hot temp
+	 * Bits[7:0] hot temperature value
+	 */
+	raw_25c = fuse >> 20;
+	raw_hot = (fuse >> 8) & 0xfff;
+	hot_temp = fuse & 0xff;
+	if ((hot_temp <= 25) || (raw_25c <= raw_hot)) {
+		/* Use default settings */
+		raw_25c = 1433;	/* 0x599 */
+		raw_hot = 1318;	/* 0x526 */
+		hot_temp = 105;	/* 0x69 */
+	}
+	cvt_to_celsius = hot_temp - 25;
+	cvt_to_celsius <<= 32;
+	do_div(cvt_to_celsius, raw_25c - raw_hot);	/* raw25c > raw_hot */
+	*praw_25c = raw_25c;
+	*pcvt_to_celsius = cvt_to_celsius;
+	scale_int = (cvt_to_celsius >> 32);
+	scale_frac = ((cvt_to_celsius & 0xffffffff) * 100) >> 32;
+	printf("Thermal fuse is 0x%x, raw_25c=%d raw_hot=%d"
+			" hot_temp=%d C scale=%d.%02d\n",
+			fuse, raw_25c, raw_hot,
+			hot_temp, scale_int, scale_frac);
+}
+
+#define MEASURE_FREQ	3276  /* 3276 RTC clocks delay, 10ms */
+#define BM_ANADIG_ANA_MISC0_REFTOP_SELBIASOFF	0x8
+#define BM_ANADIG_TEMPSENSE0_POWER_DOWN		0x1
+#define BM_ANADIG_TEMPSENSE0_MEASURE_TEMP	0x2
+#define BM_ANADIG_TEMPSENSE0_FINISHED		0x4
+#define BM_ANADIG_TEMPSENSE1_MEASURE_FREQ	0x0000FFFF
+
+static unsigned read_cpu_temperature_raw(void)
+{
+	u32 reg;
+	unsigned raw;
+	struct anatop_regs *anatop = (struct anatop_regs *)ANATOP_BASE_ADDR;
+
+	/*
+	 * every time we measure the temperature, we will power up/down
+	 * the anadig module
+	 */
+	writel(BM_ANADIG_TEMPSENSE0_POWER_DOWN, &anatop->tempsense0_clr);
+	writel(BM_ANADIG_ANA_MISC0_REFTOP_SELBIASOFF, &anatop->ana_misc0_set);
+
+	/* write measure freq */
+	reg = readl(&anatop->tempsense1) & ~BM_ANADIG_TEMPSENSE1_MEASURE_FREQ;
+	reg |= MEASURE_FREQ;
+	writel(reg, &anatop->tempsense1);
+
+	writel(BM_ANADIG_TEMPSENSE0_MEASURE_TEMP, &anatop->tempsense0_clr);
+	writel(BM_ANADIG_TEMPSENSE0_FINISHED, &anatop->tempsense0_clr);
+	writel(BM_ANADIG_TEMPSENSE0_MEASURE_TEMP, &anatop->tempsense0_set);
+
+	for (;;) {
+		reg = readl(&anatop->tempsense0);
+		if (reg & BM_ANADIG_TEMPSENSE0_FINISHED)
+			break;
+		udelay(1000);
+	}
+	raw = (reg >> 8) & 0xfff;
+	writel(BM_ANADIG_TEMPSENSE0_FINISHED, &anatop->tempsense0_clr);
+
+	/* power down thermal sensor */
+	writel(BM_ANADIG_TEMPSENSE0_POWER_DOWN, &anatop->tempsense0_set);
+	writel(BM_ANADIG_ANA_MISC0_REFTOP_SELBIASOFF, &anatop->ana_misc0_clr);
+	return raw;
+}
+
+static int print_cpu_temperature(unsigned raw, unsigned raw_25c, unsigned long long cvt_to_celsius)
+{
+	int temperature, temp;
+	unsigned hundredths;
+	int negative = 0;
+
+	temp = temperature = cvt_raw_to_celius(raw, raw_25c, cvt_to_celsius, &hundredths);
+	if (temp < 0) {
+		negative = 1;
+		temp = -temp;
+		if (hundredths) {
+			temp--;
+			hundredths = 100 - hundredths;
+		}
+	}
+	printf("Temperature raw=%d temperature=%c%d.%02d C\n", raw,
+			negative ? '-' : ' ', temp, hundredths);
+	return temperature;
+}
+
+#define TEMP_MIN	-25
+#define TEMP_HOT	80
+#define TEMP_MAX	125
+
+int check_cpu_temperature(void)
+{
+	int cpu_temp;
+	unsigned raw_25c;
+	unsigned long long cvt_to_celsius;
+	u32 fuse = get_temperature_fuse();
+
+	get_temperature_scale(fuse, &raw_25c, &cvt_to_celsius);
+
+	for (;;) {
+		unsigned raw = read_cpu_temperature_raw();
+		cpu_temp = print_cpu_temperature(raw, raw_25c, cvt_to_celsius);
+		if ((cpu_temp > TEMP_MAX) || (cpu_temp < TEMP_MIN)) {
+			printf("Invalid temperature reading\n");
+			break;
+		}
+		if (cpu_temp < TEMP_HOT)
+			break;
+		printf("CPU is %d C, too hot to boot, waiting for below %d C...\n",
+				cpu_temp, TEMP_HOT);
+		udelay(5000000);
+	}
+	return cpu_temp;
+}
+
+int do_temp(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+	int cpu_temp;
+	unsigned raw_25c;
+	u32 raw;
+	unsigned long long cvt_to_celsius;
+	u32 fuse = get_temperature_fuse();
+
+	get_temperature_scale(fuse, &raw_25c, &cvt_to_celsius);
+
+	raw = read_cpu_temperature_raw();
+	cpu_temp = print_cpu_temperature(raw, raw_25c, cvt_to_celsius);
+	if ((cpu_temp > TEMP_MAX) || (cpu_temp < TEMP_MIN))
+		printf("Invalid temperature reading\n");
+	return cpu_temp;
+}
+
+U_BOOT_CMD(
+	temp,	1, 0, do_temp,
+	"display temperature",
+	""
+);
 
 u32 get_cpu_rev(void)
 {

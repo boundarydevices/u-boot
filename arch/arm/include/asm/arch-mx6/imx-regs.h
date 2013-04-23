@@ -202,7 +202,9 @@ struct src {
 
 /* OCOTP Registers */
 struct ocotp_regs {
-	u32	reserved[0x198];
+	u32	reserved1[0x138];
+	u32	thermal_calibration_data;	/* 0x4e0 */
+	u32	reserved2[0x5c];
 	u32	gp1;	/* 0x660 */
 };
 

@@ -784,6 +784,7 @@ int checkboard(void)
 		puts("Board: Nitrogen6X\n");
 	else
 		puts("Board: SABRE Lite\n");
+	check_cpu_temperature();
 
 	return 0;
 }

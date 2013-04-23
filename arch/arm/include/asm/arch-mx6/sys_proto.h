@@ -46,4 +46,7 @@ void set_vddsoc(u32 mv);
 int fecmxc_initialize(bd_t *bis);
 u32 get_ahb_clk(void);
 u32 get_periph_clk(void);
+
+int check_cpu_temperature(void);
+
 #endif
