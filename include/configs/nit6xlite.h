@@ -27,7 +27,7 @@
 #define CONFIG_DISPLAY_CPUINFO
 #define CONFIG_DISPLAY_BOARDINFO
 
-#define CONFIG_MACH_TYPE	3769
+#define CONFIG_MACH_TYPE	3771
 
 #include <asm/arch/imx-regs.h>
 #include <asm/imx-common/gpio.h>
