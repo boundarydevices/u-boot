@@ -41,6 +41,7 @@
 #include <ipu_pixfmt.h>
 #include <asm/arch/crm_regs.h>
 #include <asm/arch/mxc_hdmi.h>
+#include <asm/arch/sys_proto.h>
 #include <i2c.h>
 
 DECLARE_GLOBAL_DATA_PTR;
