@@ -164,8 +164,6 @@
 
 #define CONFIG_BOOTDELAY	       1
 
-#define CONFIG_PREBOOT                 ""
-
 #define CONFIG_LOADADDR			       0x12000000
 #define CONFIG_SYS_TEXT_BASE	       0x17800000
 
@@ -216,6 +214,8 @@
 			"done ; " \
 		"done ; " \
 	"done\0" \
+
+#define CONFIG_ARP_TIMEOUT     200UL
 
 /* Miscellaneous configurable options */
 #define CONFIG_SYS_LONGHELP
