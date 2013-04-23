@@ -461,27 +461,20 @@ struct display_info_t {
 
 static void enable_hdmi(struct display_info_t const *dev)
 {
+	struct hdmi_regs *hdmi	= (struct hdmi_regs *)HDMI_ARB_BASE_ADDR;
 	u8 reg;
 	printf("%s: setup HDMI monitor\n", __func__);
-	reg = __raw_readb(
-			HDMI_ARB_BASE_ADDR
-			+HDMI_PHY_CONF0);
+	reg = readb(&hdmi->phy_conf0);
 	reg |= HDMI_PHY_CONF0_PDZ_MASK;
-	__raw_writeb(reg,
-		     HDMI_ARB_BASE_ADDR
-			+HDMI_PHY_CONF0);
+	writeb(reg, &hdmi->phy_conf0);
+
 	udelay(3000);
 	reg |= HDMI_PHY_CONF0_ENTMDS_MASK;
-	__raw_writeb(reg,
-		     HDMI_ARB_BASE_ADDR
-			+HDMI_PHY_CONF0);
+	writeb(reg, &hdmi->phy_conf0);
 	udelay(3000);
 	reg |= HDMI_PHY_CONF0_GEN2_TXPWRON_MASK;
-	__raw_writeb(reg,
-		     HDMI_ARB_BASE_ADDR
-			+HDMI_PHY_CONF0);
-	__raw_writeb(HDMI_MC_PHYRSTZ_ASSERT,
-		     HDMI_ARB_BASE_ADDR+HDMI_MC_PHYRSTZ);
+	writeb(reg, &hdmi->phy_conf0);
+	writeb(HDMI_MC_PHYRSTZ_ASSERT, &hdmi->mc_phyrstz);
 }
 
 static void enable_lvds(struct display_info_t const *dev)
@@ -595,6 +588,7 @@ static void setup_display(void)
 {
 	struct mxc_ccm_reg *mxc_ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
 	struct iomuxc *iomux = (struct iomuxc *)IOMUXC_BASE_ADDR;
+	struct hdmi_regs *hdmi	= (struct hdmi_regs *)HDMI_ARB_BASE_ADDR;
 
 	int reg;
 
@@ -611,8 +605,8 @@ static void setup_display(void)
 	writel(reg, &mxc_ccm->CCGR2);
 
 	/* clear HDMI PHY reset */
-	__raw_writeb(HDMI_MC_PHYRSTZ_DEASSERT,
-		     HDMI_ARB_BASE_ADDR+HDMI_MC_PHYRSTZ);
+	writeb(HDMI_MC_PHYRSTZ_DEASSERT, &hdmi->mc_phyrstz);
+
 
 	/* set LDB0, LDB1 clk select to 011/011 */
 	reg = readl(&mxc_ccm->cs2cdr);
