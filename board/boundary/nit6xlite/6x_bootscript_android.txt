@@ -33,7 +33,7 @@ fi
 
 if test "0" -eq $nextcon; then
 	echo "Default to wqvga (480x272) display";
-	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=lcd,wqvga-lcd,if=RGB24
+	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=lcd,wqvga-lcd,if=RGB24 calibration tsdev=tsc2004
 	setenv fbmem "fbmem=10M";
 	setexpr nextcon $nextcon + 1
 fi
