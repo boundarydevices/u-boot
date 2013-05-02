@@ -449,7 +449,7 @@ static void enable_rgb(struct display_info_t const *dev)
 static struct display_info_t const displays[] = {{
 	.bus	= 2,
 	.addr	= 0x48,
-	.pixfmt	= IPU_PIX_FMT_RGB666,
+	.pixfmt	= IPU_PIX_FMT_RGB24,
 	.detect	= detect_none, /* don't auto-detect because TSC2004 is on-board */
 	.enable	= enable_rgb,
 	.mode	= {
@@ -564,6 +564,7 @@ int board_video_skip(void)
 		}
 		if (!panel) {
 			panel = displays[0].mode.name;
+			i = 0;
 			printf("No panel detected: default to %s\n", panel);
 		}
 	} else {
