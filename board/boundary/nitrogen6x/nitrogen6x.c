@@ -492,9 +492,6 @@ static void enable_lvds(struct display_info_t const *dev)
 
 static void enable_rgb(struct display_info_t const *dev)
 {
-	imx_iomux_v3_setup_multiple_pads(
-		rgb_pads,
-		 ARRAY_SIZE(rgb_pads));
 	gpio_direction_output(RGB_BACKLIGHT_GP, 1);
 }
 
@@ -584,7 +581,13 @@ int board_video_skip(void)
 {
 	int i;
 	int ret;
-	char const *panel = getenv("panel");
+	char const *panel;
+
+	imx_iomux_v3_setup_multiple_pads(
+		rgb_pads,
+		 ARRAY_SIZE(rgb_pads));
+
+	panel = getenv("panel");
 	if (!panel) {
 		for (i = 0; i < ARRAY_SIZE(displays); i++) {
 			struct display_info_t const *dev = displays+i;
