@@ -2,53 +2,80 @@ setenv bootargs enable_wait_mode=off
 setenv nextcon 0;
 setenv bootargs $bootargs console=ttymxc1,115200 vmalloc=400M consoleblank=0 ;
 
+echo "-------------bootargs $bootargs"
+
 if test -n "$tempfuse" ; then
 	setenv bootargs $bootargs thermal.fusedata=$tempfuse
 fi
 
-i2c dev 2
-if i2c probe 0x04 ; then
+echo "--------- testing panel" ;
+
+if test "x" = "x$panel" ; then
+	echo '-------------no panel set... auto-detect'
+	i2c dev 2
+	if i2c probe 0x04 ; then
+		setenv bootargs $bootargs video=mxcfb${nextcon}:dev=ldb,LDB-XGA,if=RGB666
+		if test "0" -eq $nextcon; then
+			setenv fbmem "fbmem=10M";
+		else
+			setenv fbmem ${fbmem},10M
+		fi
+		setexpr nextcon $nextcon + 1
+	else
+		echo "------ no Freescale display";
+	fi
+
+	if i2c probe 0x38 ; then
+		setenv bootargs $bootargs video=mxcfb${nextcon}:dev=ldb,1024x600M@60,if=RGB666
+		if test "0" -eq $nextcon; then
+			setenv fbmem "fbmem=10M";
+		else
+			setenv fbmem ${fbmem},10M
+		fi
+		setexpr nextcon $nextcon + 1
+	else
+		echo "------ no 1024x600 display";
+	fi
+
+	if test "0" -eq $nextcon; then
+		echo "Default to wqvga (480x272) display";
+		setenv bootargs $bootargs video=mxcfb${nextcon}:dev=lcd,wqvga-lcd,if=RGB24 calibration tsdev=tsc2004
+		setenv fbmem "fbmem=10M";
+		setexpr nextcon $nextcon + 1
+	fi
+
+	if hdmidet ; then
+		setenv bootargs $bootargs video=mxcfb${nextcon}:dev=hdmi,1280x720M@60,if=RGB24
+		if test "0" -eq $nextcon; then
+			setenv fbmem "fbmem=28M";
+		else
+			setenv fbmem ${fbmem},28M
+		fi
+		setexpr nextcon $nextcon + 1
+	else
+		echo "------ no HDMI monitor";
+	fi
+else if test "HDMI" = "$panel" ; then
+	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=hdmi,1280x720M@60,if=RGB24
+	setenv fbmem "fbmem=28M";
+	setexpr nextcon $nextcon + 1
+else if test "Hannstar-XGA" = "$panel" ; then
 	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=ldb,LDB-XGA,if=RGB666
-	if test "0" -eq $nextcon; then
-		setenv fbmem "fbmem=10M";
-	else
-		setenv fbmem ${fbmem},10M
-	fi
+	setenv fbmem "fbmem=10M";
 	setexpr nextcon $nextcon + 1
-else
-	echo "------ no Freescale display";
-fi
-
-if i2c probe 0x38 ; then
-	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=ldb,1024x600M@60,if=RGB666
-	if test "0" -eq $nextcon; then
-		setenv fbmem "fbmem=10M";
-	else
-		setenv fbmem ${fbmem},10M
-	fi
-	setexpr nextcon $nextcon + 1
-else
-	echo "------ no 1024x600 display";
-fi
-
-if test "0" -eq $nextcon; then
-	echo "Default to wqvga (480x272) display";
+else if test "wqvga-rgb" = "$panel" ; then
 	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=lcd,wqvga-lcd,if=RGB24 calibration tsdev=tsc2004
 	setenv fbmem "fbmem=10M";
 	setexpr nextcon $nextcon + 1
-fi
-
-if hdmidet ; then
-	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=hdmi,1280x720M@60,if=RGB24
-	if test "0" -eq $nextcon; then
-		setenv fbmem "fbmem=28M";
-	else
-		setenv fbmem ${fbmem},28M
-	fi
+else if test "wsvga-lvds" = "$panel" ; then
+	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=ldb,1024x600M@60,if=RGB666
+	setenv fbmem "fbmem=10M";
 	setexpr nextcon $nextcon + 1
-else
-	echo "------ no HDMI monitor";
-fi
+else if test "wvga-rgb" = "$panel" ; then
+	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=lcd,CLAA-WVGA,if=RGB666 tsdev=tsc2004 calibration
+	setenv fbmem "fbmem=10M";
+	setexpr nextcon $nextcon + 1
+fi ; fi ; fi ; fi ; fi ; fi
 
 while test "3" -ne $nextcon ; do
 	setenv bootargs $bootargs video=mxcfb${nextcon}:off ;
