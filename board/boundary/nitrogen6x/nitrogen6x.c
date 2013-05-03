@@ -479,9 +479,6 @@ static void enable_lvds(struct display_info_t const *dev)
 
 static void enable_rgb(struct display_info_t const *dev)
 {
-	imx_iomux_v3_setup_multiple_pads(
-		rgb_pads,
-		 ARRAY_SIZE(rgb_pads));
 	gpio_direction_output(RGB_BACKLIGHT_GP, 1);
 }
 
@@ -566,6 +563,7 @@ struct display_info_t const displays[] = {{
 		.sync           = 0,
 		.vmode          = FB_VMODE_NONINTERLACED
 } } };
+
 size_t display_count = ARRAY_SIZE(displays);
 
 static void setup_display(void)
