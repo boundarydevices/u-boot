@@ -244,9 +244,7 @@
 #define CONFIG_OF_LIBFDT
 #define CONFIG_CMD_BOOTZ
 
-/*
-#define CONFIG_SYS_DCACHE_OFF
-*/
+/* #define CONFIG_SYS_DCACHE_OFF */
 
 #ifndef CONFIG_SYS_DCACHE_OFF
 #define CONFIG_CMD_CACHE
@@ -256,5 +254,7 @@
 
 #define CONFIG_CMD_TIME
 #define CONFIG_SYS_ALT_MEMTEST
+
+#define CONFIG_CMD_BOOTZ
 
 #endif	       /* __CONFIG_H */
