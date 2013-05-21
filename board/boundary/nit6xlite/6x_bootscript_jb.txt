@@ -1,0 +1,88 @@
+setenv bootargs enable_wait_mode=off
+setenv nextcon 0;
+setenv bootargs $bootargs console=ttymxc1,115200 vmalloc=400M consoleblank=0 ;
+
+echo "-------------bootargs $bootargs"
+
+if test -n "$tempfuse" ; then
+	setenv bootargs $bootargs thermal.fusedata=$tempfuse
+fi
+
+echo "--------- testing panel" ;
+
+if test "x" = "x$panel" ; then
+	echo '-------------no panel set... auto-detect'
+	i2c dev 2
+	if i2c probe 0x04 ; then
+		setenv bootargs $bootargs video=mxcfb${nextcon}:dev=ldb,bpp=32,LDB-XGA,if=RGB666
+		if test "0" -eq $nextcon; then
+			setenv fbmem "fbmem=20M";
+		else
+			setenv fbmem ${fbmem},20M
+		fi
+		setexpr nextcon $nextcon + 1
+	else
+		echo "------ no Freescale display";
+	fi
+
+	if i2c probe 0x38 ; then
+		setenv bootargs $bootargs video=mxcfb${nextcon}:dev=ldb,bpp=32,1024x600M@60,if=RGB666
+		if test "0" -eq $nextcon; then
+			setenv fbmem "fbmem=20M";
+		else
+			setenv fbmem ${fbmem},20M
+		fi
+		setexpr nextcon $nextcon + 1
+	else
+		echo "------ no 1024x600 display";
+	fi
+
+	if test "0" -eq $nextcon; then
+		echo "Default to wqvga (480x272) display";
+		setenv bootargs $bootargs video=mxcfb${nextcon}:dev=lcd,bpp=32,wqvga-lcd,if=RGB24 calibration tsdev=tsc2004
+		setenv fbmem "fbmem=20M";
+		setexpr nextcon $nextcon + 1
+	fi
+
+	if hdmidet ; then
+		setenv bootargs $bootargs video=mxcfb${nextcon}:dev=hdmi,bpp=32,1280x720M@60,if=RGB24
+		if test "0" -eq $nextcon; then
+			setenv fbmem "fbmem=48M";
+		else
+			setenv fbmem ${fbmem},48M
+		fi
+		setexpr nextcon $nextcon + 1
+	else
+		echo "------ no HDMI monitor";
+	fi
+else if test "HDMI" = "$panel" ; then
+	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=hdmi,bpp=32,1280x720M@60,if=RGB24
+	setenv fbmem "fbmem=48M";
+	setexpr nextcon $nextcon + 1
+else if test "Hannstar-XGA" = "$panel" ; then
+	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=ldb,bpp=32,LDB-XGA,if=RGB666
+	setenv fbmem "fbmem=20M";
+	setexpr nextcon $nextcon + 1
+else if test "wqvga-rgb" = "$panel" ; then
+	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=lcd,bpp=32,wqvga-lcd,if=RGB24 calibration tsdev=tsc2004
+	setenv fbmem "fbmem=20M";
+	setexpr nextcon $nextcon + 1
+else if test "wsvga-lvds" = "$panel" ; then
+	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=ldb,bpp=32,1024x600M@60,if=RGB666
+	setenv fbmem "fbmem=20M";
+	setexpr nextcon $nextcon + 1
+else if test "wvga-rgb" = "$panel" ; then
+	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=lcd,bpp=32,CLAA-WVGA,if=RGB666 tsdev=tsc2004 calibration
+	setenv fbmem "fbmem=20M";
+	setexpr nextcon $nextcon + 1
+fi ; fi ; fi ; fi ; fi ; fi
+
+while test "3" -ne $nextcon ; do
+	setenv bootargs $bootargs video=mxcfb${nextcon}:off ;
+	setexpr nextcon $nextcon + 1 ;
+done
+
+setenv bootargs $bootargs $fbmem androidboot.hardware=freescale
+${fs}load ${dtype} ${disk}:1 10800000 uImage && ${fs}load ${dtype} ${disk}:1 12800000 uramdisk.img && bootm 10800000 12800000
+echo "Error loading kernel image"
+
