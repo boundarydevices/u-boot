@@ -410,6 +410,28 @@ int board_eth_init(bd_t *bis)
 	return 0;
 }
 
+
+void splash_screen_prepare(void)
+{
+	char *env_loadsplash;
+
+	if (!getenv("splashimage") || !getenv("splashsize")) {
+		return;
+	}
+
+	env_loadsplash = getenv("loadsplash");
+	if (env_loadsplash == NULL) {
+		printf("Environment variable loadsplash not found!\n");
+		return;
+	}
+
+	if (run_command_list(env_loadsplash, -1, 0)) {
+		printf("failed to run loadsplash %s\n\n", env_loadsplash);
+	}
+
+	return;
+}
+
 static void setup_buttons(void)
 {
 	imx_iomux_v3_setup_multiple_pads(button_pads,
