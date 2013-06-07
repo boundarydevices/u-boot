@@ -1,6 +1,6 @@
 setenv bootargs enable_wait_mode=off
 setenv nextcon 0;
-setenv bootargs $bootargs console=ttymxc1,115200 vmalloc=400M consoleblank=0 ;
+setenv bootargs $bootargs console=ttymxc1,115200 vmalloc=400M consoleblank=0 no_console_suspend;
 setenv bootargs $bootargs calibration tsdev=tsc2004
 
 if test -n "$tempfuse" ; then
