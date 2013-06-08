@@ -479,7 +479,7 @@ static void enable_rgb(struct display_info_t const *dev)
 	gpio_direction_output(GP_RGB_BACKLIGHT_PWM, 1);
 }
 
-static void enable_lvds(struct display_info_t const *dev)
+static void enable_ldb0(struct display_info_t const *dev)
 {
 	struct iomuxc *iomux = (struct iomuxc *)IOMUXC_BASE_ADDR;
 	u32 reg = readl(&iomux->gpr[2]);
@@ -488,9 +488,24 @@ static void enable_lvds(struct display_info_t const *dev)
 		reg |= IOMUXC_GPR2_DATA_WIDTH_CH0_24BIT;
 	else
 		reg &= ~IOMUXC_GPR2_DATA_WIDTH_CH0_24BIT;
-	reg |= 5;
+	reg |= 1;
 	writel(reg, &iomux->gpr[2]);
 	gpio_direction_output(GP_LVDS0_BACKLIGHT_PWM, 1);
+	gpio_direction_output(GP_LVDS1_BACKLIGHT_PWM, 0);
+}
+
+static void enable_ldb1(struct display_info_t const *dev)
+{
+	struct iomuxc *iomux = (struct iomuxc *)IOMUXC_BASE_ADDR;
+	u32 reg = readl(&iomux->gpr[2]);
+
+	if (dev->pixfmt != IPU_PIX_FMT_RGB666)
+		reg |= IOMUXC_GPR2_DATA_WIDTH_CH0_24BIT;
+	else
+		reg &= ~IOMUXC_GPR2_DATA_WIDTH_CH0_24BIT;
+	reg |= 4;
+	writel(reg, &iomux->gpr[2]);
+	gpio_direction_output(GP_LVDS0_BACKLIGHT_PWM, 0);
 	gpio_direction_output(GP_LVDS1_BACKLIGHT_PWM, 1);
 }
 
@@ -498,7 +513,7 @@ static struct display_info_t const d_1024x600 = {
 	.bus	= 2,
 	.addr	= 0x4,
 	.pixfmt	= IPU_PIX_FMT_RGB666,
-	.enable	= enable_lvds,
+	.enable	= enable_ldb0,
 	.mode	= {
 		.name           = "1024x600",
 		.refresh        = 60,
@@ -520,7 +535,7 @@ static struct display_info_t const d_innolux_wvga = {
 	.addr	= 0x48,
 	.pixfmt	= IPU_PIX_FMT_RGB666,
 //	.detect	= detect_i2c,
-	.enable	= enable_lvds,
+	.enable	= enable_ldb1,
 	.mode	= {
 		.name = "INNOLUX-WVGA",
 		.refresh = 57,
