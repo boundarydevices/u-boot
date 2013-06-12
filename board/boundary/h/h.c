@@ -558,9 +558,9 @@ int board_video_skip(void)
 	int ret;
 	char const *panel = getenv("panel");
 	struct display_info_t const *display = 0;
-	if (!panel)
-		panel = "1024x600";
-	if (0 == strcmp(panel, "1024x600"))
+	if (!panel
+	   ||
+	   (0 == strcmp(panel, "1024x600")))
 		display = &d_1024x600;
 	else if (0 == strcmp(panel, "INNOLUX-WVGA"))
 		display = &d_innolux_wvga;
