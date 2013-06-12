@@ -283,5 +283,6 @@
 
 #define CONFIG_CMD_TIME
 #define CONFIG_SYS_ALT_MEMTEST
+#define CONFIG_CMD_FS_GENERIC
 
 #endif	       /* __CONFIG_H */
