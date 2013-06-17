@@ -44,11 +44,6 @@
 #define CONFIG_MISC_INIT_R
 #define CONFIG_MXC_GPIO
 
-#define CONFIG_CMD_FUSE
-#ifdef CONFIG_CMD_FUSE
-#define CONFIG_MXC_OCOTP
-#endif
-
 #define CONFIG_MXC_UART
 #define CONFIG_MXC_UART_BASE	       UART2_BASE
 
@@ -169,8 +164,6 @@
 
 #define CONFIG_BOOTDELAY	       1
 
-#define CONFIG_PREBOOT                 ""
-
 #define CONFIG_LOADADDR			       0x12000000
 #define CONFIG_SYS_TEXT_BASE	       0x17800000
 
@@ -190,6 +183,7 @@
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	"console=ttymxc1\0" \
+	"disable_giga=1\0" \
 	"clearenv=if sf probe || sf probe || sf probe 1 ; then " \
 		"sf erase 0xc0000 0x2000 && " \
 		"echo restored environment to factory default ; fi\0" \
@@ -221,6 +215,8 @@
 			"done ; " \
 		"done ; " \
 	"done\0" \
+
+#define CONFIG_ARP_TIMEOUT     200UL
 
 /* Miscellaneous configurable options */
 #define CONFIG_SYS_LONGHELP
@@ -279,6 +275,8 @@
 #define CONFIG_OF_LIBFDT
 #define CONFIG_CMD_BOOTZ
 
+#define CONFIG_SYS_DCACHE_OFF
+
 #ifndef CONFIG_SYS_DCACHE_OFF
 #define CONFIG_CMD_CACHE
 #endif
@@ -287,9 +285,5 @@
 
 #define CONFIG_CMD_TIME
 #define CONFIG_SYS_ALT_MEMTEST
-
-#define CONFIG_CMD_BOOTZ
-#define CONFIG_SUPPORT_RAW_INITRD
-#define CONFIG_CMD_FS_GENERIC
 
 #endif	       /* __CONFIG_H */
