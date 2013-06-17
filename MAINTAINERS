@@ -1060,6 +1060,8 @@ Eric Nelson <eric.nelson@boundarydevices.com>
 	nitrogen6q2g    	i.MX6Q/6D	2GB
 	nitrogen6s		i.MX6S		512MB
 	nitrogen6s1g		i.MX6S		1GB
+	ocquad			i.MX6Q/6D	1GB
+	ocsolo			i.MX6S		512MB
 
 Alison Wang <b18965@freescale.com>
 
