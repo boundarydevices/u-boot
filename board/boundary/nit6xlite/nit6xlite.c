@@ -196,6 +196,22 @@ iomux_v3_cfg_t const enet_pads2[] = {
 	MX6_PAD_RGMII_RX_CTL__RGMII_RX_CTL	| MUX_PAD_CTRL(ENET_PAD_CTRL),
 };
 
+/* WiFi/BT pads */
+iomux_v3_cfg_t const wifi_pads[] = {
+	(MX6_PAD_NANDF_CS1__GPIO_6_14 & ~MUX_PAD_CTRL_MASK)
+		| MUX_PAD_CTRL(WEAK_PULLDOWN),
+	(MX6_PAD_NANDF_CS2__GPIO_6_15 & ~MUX_PAD_CTRL_MASK)
+		| MUX_PAD_CTRL(OUTPUT_40OHM),
+	(MX6_PAD_NANDF_CS3__GPIO_6_16 & ~MUX_PAD_CTRL_MASK)
+		| MUX_PAD_CTRL(OUTPUT_40OHM),
+	(MX6_PAD_NANDF_CLE__GPIO_6_7 & ~MUX_PAD_CTRL_MASK)
+		| MUX_PAD_CTRL(OUTPUT_40OHM),
+};
+#define WIFI_WL_ENABLE_GP	IMX_GPIO_NR(6, 7)
+#define WIFI_WL_IRQ_GP	IMX_GPIO_NR(6, 14)
+#define WIFI_BT_REG_ON	IMX_GPIO_NR(6, 15)
+#define WIFI_BT_ENABLE_GP	IMX_GPIO_NR(6, 16)
+
 static void setup_iomux_enet(void)
 {
 	gpio_direction_output(IMX_GPIO_NR(1, 27), 0); /* PHY rst */
@@ -682,6 +698,14 @@ int board_early_init_f(void)
 	enable_clko1(CLKO1_AHB_CLK_ROOT,7);
 
 	setup_iomux_uart();
+
+	/* Disable WiFi/BT */
+	gpio_direction_input(WIFI_WL_IRQ_GP);
+	gpio_direction_output(WIFI_WL_ENABLE_GP, 0);
+	gpio_direction_output(WIFI_BT_ENABLE_GP, 0);
+	gpio_direction_output(WIFI_BT_REG_ON, 0);
+
+	imx_iomux_v3_setup_multiple_pads(wifi_pads, ARRAY_SIZE(wifi_pads));
 
 #if defined(CONFIG_VIDEO_IPUV3)
 	setup_display();
