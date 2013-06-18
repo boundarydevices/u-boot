@@ -1,7 +1,11 @@
+if itest.s a$bootfile == a; then
+        bootfile=u-boot.imx
+fi
+
 setenv stdout serial,vga
 echo "check U-Boot" ;
 setenv offset 0x400
-if ${fs}load ${dtype} ${disk}:1 12000000 u-boot.imx || ${fs}load ${dtype} ${disk}:1 12000000 u-boot.nopadding ; then
+if ${fs}load ${dtype} ${disk}:1 12000000 $bootfile || ${fs}load ${dtype} ${disk}:1 12000000 u-boot.nopadding ; then
       echo "read $filesize bytes from SD card" ;
       if sf probe || sf probe || \
 	 sf probe 1 27000000 || sf probe 1 27000000 ; then
