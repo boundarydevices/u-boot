@@ -1,0 +1,7 @@
+mkdir -p save
+boards=`grep " boundary " boards.cfg | awk '{ print $1 }'`;
+for board in $boards ; do
+	make mrproper ; make ${board}_config
+	make all
+	mv  u-boot.imx save/u-boot.$board
+done
