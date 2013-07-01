@@ -74,10 +74,6 @@ static int	TftpTimeoutCount;
 static ulong	TftpBlock;
 /* last packet sequence number received */
 static ulong	TftpLastBlock;
-/* count of sequence number wraparounds */
-static ulong	TftpBlockWrap;
-/* memory offset due to wrapping */
-static ulong	TftpBlockWrapOffset;
 static int	TftpState;
 #ifdef CONFIG_TFTP_TSIZE
 /* The file size reported by the server */
@@ -102,8 +98,6 @@ static int	TftpFinalBlock;	/* 1 if we have sent the last block */
 
 /* default TFTP block size */
 #define TFTP_BLOCK_SIZE		512
-/* sequence number is 16 bit */
-#define TFTP_SEQUENCE_SIZE	((ulong)(1<<16))
 
 #define DEFAULT_NAME_LEN	(8 + 4 + 1)
 static char default_filename[DEFAULT_NAME_LEN];
@@ -159,7 +153,7 @@ mcast_cleanup(void)
 static inline void
 store_block(int block, uchar *src, unsigned len)
 {
-	ulong offset = block * TftpBlkSize + TftpBlockWrapOffset;
+	ulong offset = block * TftpBlkSize;
 	ulong newsize = offset + len;
 #ifdef CONFIG_SYS_DIRECT_FLASH_TFTP
 	int i, rc = 0;
@@ -199,8 +193,6 @@ store_block(int block, uchar *src, unsigned len)
 static void new_transfer(void)
 {
 	TftpLastBlock = 0;
-	TftpBlockWrap = 0;
-	TftpBlockWrapOffset = 0;
 #ifdef CONFIG_CMD_TFTPPUT
 	TftpFinalBlock = 0;
 #endif
@@ -218,7 +210,7 @@ static void new_transfer(void)
 static int load_block(unsigned block, uchar *dst, unsigned len)
 {
 	/* We may want to get the final block from the previous set */
-	ulong offset = ((int)block - 1) * len + TftpBlockWrapOffset;
+	ulong offset = ((int)block - 1) * len;
 	ulong tosend = len;
 
 	tosend = min(NetBootFileXferSize - offset, tosend);
@@ -238,7 +230,7 @@ static void show_block_marker(void)
 {
 #ifdef CONFIG_TFTP_TSIZE
 	if (TftpTsize) {
-		ulong pos = TftpBlock * TftpBlkSize + TftpBlockWrapOffset;
+		ulong pos = TftpBlock * TftpBlkSize;
 
 		while (TftpNumchars < pos * 50 / TftpTsize) {
 			putc('#');
@@ -247,10 +239,11 @@ static void show_block_marker(void)
 	} else
 #endif
 	{
-		if (((TftpBlock - 1) % 10) == 0)
+		if ((TftpBlock % 10) == 0) {
 			putc('#');
-		else if ((TftpBlock % (10 * HASHES_PER_LINE)) == 0)
-			puts("\n\t ");
+			if ((TftpBlock % (10 * HASHES_PER_LINE)) == 0)
+				puts("\n\t ");
+		}
 	}
 }
 
@@ -273,7 +266,7 @@ static void restart(const char *msg)
  *
  * TODO: The egregious use of global variables in this file should be tidied.
  */
-static void update_block_number(void)
+static void update_block_number(unsigned short blknum)
 {
 	/*
 	 * RFC1350 specifies that the first data packet will
@@ -281,13 +274,13 @@ static void update_block_number(void)
 	 * number of 0 this means that there was a wrap
 	 * around of the (16 bit) counter.
 	 */
-	if (TftpBlock == 0) {
-		TftpBlockWrap++;
-		TftpBlockWrapOffset += TftpBlkSize * TFTP_SEQUENCE_SIZE;
-		TftpTimeoutCount = 0; /* we've done well, reset thhe timeout */
-	} else {
-		show_block_marker();
+	TftpBlock &= ~0xffff;
+	TftpBlock |= blknum;
+	if (blknum == 0) {
+		TftpBlock += 0x10000;
+		TftpTimeoutCount = 0; /* we've done well, reset the timeout */
 	}
+	show_block_marker();
 }
 
 /* The TFTP get or put is complete */
@@ -484,10 +477,11 @@ TftpHandler(uchar *pkt, unsigned dest, IPaddr_t sip, unsigned src,
 				 * count to wrap just like the other end!
 				 */
 				int block = ntohs(*s);
-				int ack_ok = (TftpBlock == block);
+				int ack_ok = ((unsigned short)TftpBlock
+						== block);
 
-				TftpBlock = (unsigned short)(block + 1);
-				update_block_number();
+				update_block_number(
+						(unsigned short)(block + 1));
 				if (ack_ok)
 					TftpSend(); /* Send next data block */
 			}
@@ -556,9 +550,8 @@ TftpHandler(uchar *pkt, unsigned dest, IPaddr_t sip, unsigned src,
 		if (len < 2)
 			return;
 		len -= 2;
-		TftpBlock = ntohs(*(ushort *)pkt);
 
-		update_block_number();
+		update_block_number(ntohs(*(ushort *)pkt));
 
 		if (TftpState == STATE_SEND_RRQ)
 			debug("Server did not acknowledge timeout option!\n");
