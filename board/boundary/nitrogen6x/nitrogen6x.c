@@ -351,9 +351,10 @@ void setup_spi(void)
 #endif
 
 unsigned short ksz9031_por_cmds[] = {
-	0x0205, 0x0,            /* RXDn pad skew */
-	0x0206, 0x0,            /* TXDn pad skew */
-	0x0208, 0x03ff,         /* TXC/RXC pad skew */
+	0x0204, 0x0,		/* RX_CTL/TX_CTL output pad skew */
+	0x0205, 0x0,		/* RXDn pad skew */
+	0x0206, 0x0,		/* TXDn pad skew */
+	0x0208, 0x03ff,		/* TXC/RXC pad skew */
 	0x0, 0x0
 };
 
