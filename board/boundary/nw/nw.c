@@ -170,7 +170,9 @@ iomux_v3_cfg_t const wifi_pads[] = {
 #define WIFI_BT_ENABLE_GP	IMX_GPIO_NR(6, 16)
 
 iomux_v3_cfg_t const usb_pads[] = {
-	MX6_PAD_GPIO_17__GPIO_7_12 | MUX_PAD_CTRL(NO_PAD_CTRL),
+	NEW_PAD_CTRL(MX6_PAD_EIM_D22__GPIO_3_22, WEAK_PULLUP),	/* usbotg power */
+	NEW_PAD_CTRL(MX6_PAD_GPIO_1__USBOTG_ID, USDHC_PAD_CTRL), /* USBOTG ID pin */
+	MX6_PAD_KEY_COL4__USBOH3_USBOTG_OC,			/* USBOTG OC pin */
 };
 
 static void setup_iomux_uart(void)
@@ -182,8 +184,6 @@ static void setup_iomux_uart(void)
 #ifdef CONFIG_USB_EHCI_MX6
 int board_ehci_hcd_init(int port)
 {
-	imx_iomux_v3_setup_multiple_pads(usb_pads, ARRAY_SIZE(usb_pads));
-
 	/* Reset USB hub */
 	gpio_direction_output(IMX_GPIO_NR(7, 12), 0);
 	mdelay(2);
@@ -378,6 +378,8 @@ int board_early_init_f(void)
 	enable_clko1(CLKO1_AHB_CLK_ROOT,7);
 
 	setup_iomux_uart();
+
+	imx_iomux_v3_setup_multiple_pads(usb_pads, ARRAY_SIZE(usb_pads));
 
 	/* Disable WiFi/BT */
 	gpio_direction_input(WIFI_WL_IRQ_GP);
