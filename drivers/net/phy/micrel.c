@@ -163,10 +163,11 @@ static int ksz9031_config(struct phy_device *phydev)
 {
 	unsigned features = phydev->drv->features;
 
+	phydev->supported = features;
 	if (getenv("disable_giga"))
 		features &= ~(SUPPORTED_1000baseT_Half |
 				SUPPORTED_1000baseT_Full);
-	phydev->advertising = phydev->supported = features;
+	phydev->advertising = features;
 	genphy_config_aneg(phydev);
 	return 0;
 }
