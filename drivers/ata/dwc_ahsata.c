@@ -443,7 +443,7 @@ static int ahci_port_start(struct ahci_uc_priv *uc_priv, u8 port)
 	struct sata_port_regs *port_mmio = pp->port_mmio;
 	u32 port_status;
 	u32 mem;
-	int timeout = 10000000;
+	int timeout = 20000000;
 
 	debug("Enter start port: %d\n", port);
 	port_status = readl(&port_mmio->ssts);
