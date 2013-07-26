@@ -416,7 +416,7 @@ static int mxcfb_map_video_memory(struct fb_info *fbi)
 				    fbi->fix.line_length;
 	}
 
-	fbi->screen_base = (char *)malloc(fbi->fix.smem_len);
+	fbi->screen_base = (char *)memalign(ARCH_DMA_MINALIGN,fbi->fix.smem_len);
 	fbi->fix.smem_start = (unsigned long)fbi->screen_base;
 	if (fbi->screen_base == 0) {
 		puts("Unable to allocate framebuffer memory\n");
