@@ -51,7 +51,7 @@ else
 	echo "------ no 800x480 display";
 fi
 
-while test "3" -ne $nextcon ; do
+while test "4" -ne $nextcon ; do
 	setenv bootargs $bootargs video=mxcfb${nextcon}:off ;
 	setexpr nextcon $nextcon + 1 ;
 done
