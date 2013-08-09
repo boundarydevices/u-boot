@@ -303,5 +303,6 @@
 #define CONFIG_CMD_BOOTZ
 #define CONFIG_CMD_FS_GENERIC
 #define CONFIG_SUPPORT_RAW_INITRD
+#define CONFIG_BOARD_LATE_INIT
 
 #endif	       /* __CONFIG_H */
