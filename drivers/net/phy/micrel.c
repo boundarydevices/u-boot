@@ -185,6 +185,28 @@ int ksz9031_phy_extended_read(struct phy_device *phydev, int devaddr,
 	return phy_read(phydev, MDIO_DEVAD_NONE, MII_KSZ9031_MMD_REG_DATA);
 }
 
+int ksz9031_send_phy_cmds(struct phy_device *phydev, unsigned short* p)
+{
+	for (;;) {
+		unsigned reg = *p++;
+		unsigned val = *p++;
+		if (reg == 0 && val == 0)
+			break;
+		if (reg < 32) {
+			phy_write(phydev, MDIO_DEVAD_NONE, reg, val);
+		} else {
+			unsigned dev_addr = (reg >> 8) & 0x7f;
+			phy_write(phydev, MDIO_DEVAD_NONE, 0x0d, dev_addr);
+			phy_write(phydev, MDIO_DEVAD_NONE, 0x0e,
+					reg & 0xff);
+			phy_write(phydev, MDIO_DEVAD_NONE, 0x0d,
+				       dev_addr | 0x8000);
+			phy_write(phydev, MDIO_DEVAD_NONE, 0x0e, val);
+		}
+	}
+	return 0;
+}
+
 static struct phy_driver ksz9031_driver = {
 	.name = "Micrel ksz9031",
 	.uid  = 0x221620,
