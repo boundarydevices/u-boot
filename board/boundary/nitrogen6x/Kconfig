@@ -9,4 +9,10 @@ config SYS_VENDOR
 config SYS_CONFIG_NAME
 	default "nitrogen6x"
 
+config ENV_WLMAC
+	bool
+	default	y
+
+source "board/boundary/common/Kconfig"
+
 endif
