@@ -624,13 +624,18 @@ int board_init(void)
 	return 0;
 }
 
+static char const *board_type = "uninitialized";
+
 int checkboard(void)
 {
-	if (gpio_get_value(WL12XX_WL_IRQ_GP))
+	if (gpio_get_value(WL12XX_WL_IRQ_GP)) {
 		puts("Board: Nitrogen6X\n");
-	else
+		board_type = "nitrogen6x";
+	}
+	else {
 		puts("Board: SABRE Lite\n");
-
+		board_type = "sabrelite";
+	}
 	return 0;
 }
 
@@ -735,5 +740,14 @@ int misc_init_r(void)
 #ifdef CONFIG_CMD_BMODE
 	add_board_boot_modes(board_boot_modes);
 #endif
+	return 0;
+}
+
+int board_late_init(void)
+{
+	int cpurev = get_cpu_rev();
+	setenv("cpu",get_imx_type((cpurev & 0xFF000) >> 12));
+	if (0 == getenv("board"))
+		setenv("board",board_type);
 	return 0;
 }
