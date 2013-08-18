@@ -1,0 +1,123 @@
+setenv bootargs ''
+
+if ${fs}load ${dtype} ${disk}:1 10800000 uEnv.txt ; then
+    env import -t 10800000 $filesize
+fi
+
+if itest.s "x" == "x$dtbname" ; then
+	dtbname="imx6";
+	if itest.s x6SOLO == "x$cpu" ; then
+		dtbname=${dtbname}dl-;
+	elif itest.s x6DL == "x$cpu" ; then
+		dtbname=${dtbname}dl-;
+	else
+		dtbname=${dtbname}q-;
+	fi
+	if itest.s x == "x$board" ; then
+		board=sabrelite
+	fi
+	dtbname=${dtbname}${board}.dtb;
+fi
+
+if itest.s x == x${bootdir} ; then
+	bootdir=/boot/
+fi
+
+setenv fdt_addr 0x12000000
+if ${fs}load ${dtype} ${disk}:1 $fdt_addr ${bootdir}$dtbname ; then
+	fdt addr $fdt_addr
+	setenv fdt_high 0xffffffff
+else
+	echo "!!!! Error loading ${bootdir}$dtbname";
+	exit;
+fi
+
+# ------------------- HDMI detection
+i2c dev 1 ;
+if i2c probe 0x50 ; then
+	echo "------ have HDMI";
+	if itest.s "x" != "x$force_edid" ; then
+		echo "------ forcing EDID to /lib/firmware/$force_edid"
+		setenv bootargs $bootargs drm_kms_helper.edid_firmware=$force_edid
+	fi
+fi
+
+# ------------------- LVDS detection
+setenv have_lvds
+i2c dev 2
+if i2c probe 0x04 ; then
+	echo "------ have Hannstar 10";
+	fdt set /panel compatible "hannstar,hsd100pxn1"
+	setenv have_lvds 1
+fi
+if i2c probe 0x38 ; then
+	if itest.s "xLDB-WXGA" == "x$panel"; then
+		echo "------ have Hannstar 7";
+		fdt set /panel compatible "hannstar,hsd070pww1"
+		screenres=1280,800
+	else
+		echo "------ have Innolux 7";
+		fdt set /panel compatible "innolux,zj070na-01p"
+		screenres=1024,600
+	fi
+	setenv have_lvds 1
+	setenv bootargs $bootargs ft5x06_ts.screenres=$screenres
+	if itest.s "x" -ne "x$calibration" ; then
+		setenv bootargs $bootargs ft5x06_ts.calibration=$calibration
+	fi
+fi
+
+# ------------------- LCD detection
+setenv have_lcd
+if i2c probe 0x48 ; then
+	setenv have_lcd 1;
+	echo "------- found TSC2004 touch controller";
+elif i2c probe 0x4d ; then
+	setenv have_lcd 1;
+	echo "------- found AR1020 touch controller";
+fi
+
+setenv bootargs "$bootargs console=ttymxc1,115200 vmalloc=400M cma=256M consoleblank=0 rootwait"
+
+# ------------------- Disabling displays not connected
+if itest.s "x" == "x$have_lvds" ; then
+	setenv bootargs $bootargs video=LVDS-1:d
+fi
+if itest.s "x" == "x$have_lcd" ; then
+	setenv bootargs $bootargs video=VGA-1:d
+fi
+
+if itest.s x$bootpart == x ; then
+	bootpart=1
+fi
+
+if test "sata" = "${dtype}" ; then
+	setenv bootargs "$bootargs root=/dev/sda$bootpart" ;
+else
+        if test "usb" = "${dtype}" ; then
+                setenv bootargs "$bootargs root=/dev/sda$bootpart" ;
+        else
+                setenv bootargs "$bootargs root=/dev/mmcblk0p$bootpart" ;
+        fi
+fi
+
+if itest.s "x" != "x$disable_giga" ; then
+        setenv bootargs $bootargs fec.disable_giga=1
+fi
+
+if itest.s "x" != "x$wlmac" ; then
+        setenv bootargs $bootargs wlcore.mac=$wlmac
+fi
+
+if itest.s "x" != "x$show_fdt" ; then
+	fdt print /
+fi
+
+if itest.s "x" != "x$show_env" ; then
+	printenv
+fi
+
+if ${fs}load ${dtype} ${disk}:1 10800000 ${bootdir}uImage ; then
+	bootm 10800000 - $fdt_addr
+fi
+echo "Error loading kernel image"
