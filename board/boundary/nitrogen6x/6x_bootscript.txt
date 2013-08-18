@@ -66,7 +66,7 @@ fi
 if test "sata" = "${dtype}" ; then
 	setenv bootargs "$bootargs root=/dev/sda$bootpart" ;
 else
-	setenv "bootargs $bootargs root=/dev/mmcblk0p$bootpart" ;
+	setenv bootargs "$bootargs root=/dev/mmcblk0p$bootpart" ;
 fi
 
 dtbname="imx6";
