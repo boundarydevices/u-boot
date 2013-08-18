@@ -1,0 +1,35 @@
+# if upgrade_device is set in environment, it will override the value here
+# if net_upgrade_fs is set in environment, it will override the value here
+#
+# remove from environment so they won't override local values
+setenv a_script
+
+a_script=0x1000c000
+if itest.s x6SX == "x${cpu}" || itest.s x7D == "x${cpu}"; then
+	a_script=0x8000c000
+fi
+# uncomment below to force upgrade to eMMC,
+# regardless of where script was sourced.
+# dtype=mmc
+# disk=1
+if itest.s "x${dtype}" == "x" ; then
+	# loading from network, default to eMMC
+	# may have to start script twice if loading from network
+	dtype=mmc
+	disk=1
+fi
+run clearenv
+
+upgrade_device="${dtype} ${disk}"
+net_upgrade_fs=net_upgrade_fs;
+dhcp ${a_script} net_upgradeu && source ${a_script}
+if itest.s "x${upgraded_fs}" == "x1" ; then
+	# file system has changed, load new bootscript
+	# and execute
+	${dtype} dev ${disk}
+	load ${dtype} ${disk}:${active_partition} ${a_script} /6x_bootscript &&
+	source ${a_script}
+fi
+while echo "---- FS upgrade FAILED!!!" ; do
+	sleep 120
+done
