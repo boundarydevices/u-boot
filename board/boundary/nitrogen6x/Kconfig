@@ -9,7 +9,13 @@ config SYS_VENDOR
 config SYS_CONFIG_NAME
 	default "nitrogen6x"
 
-config DDR_MB
-	int "Memory size in MB"
+config ENV_WLMAC
+	bool
+	default	y
+
+config REV_AG
+	bool "AG rev of board"
+
+source "board/boundary/common/Kconfig"
 
 endif

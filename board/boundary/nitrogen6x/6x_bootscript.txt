@@ -1,7 +1,13 @@
-setenv bootargs enable_wait_mode=off
+if ${fs}load ${dtype} ${disk}:1 10800000 uEnv.txt ; then
+    env import -t 10800000 $filesize
+else
+    setenv bootargs enable_wait_mode=off
+fi
+
 setenv nextcon 0;
 
-if hdmidet ; then
+i2c dev 1 ;
+if i2c probe 0x50 ; then
 	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=hdmi,1280x720M@60,if=RGB24
 	setenv fbmem "fbmem=28M";
 	setexpr nextcon $nextcon + 1
@@ -23,7 +29,29 @@ else
 fi
 
 if i2c probe 0x38 ; then
-	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=ldb,1024x600M@60,if=RGB666
+	if itest.s "xLDB-WXGA" == "x$panel"; then
+		setenv bootargs $bootargs video=mxcfb${nextcon}:dev=ldb,1280x800MR@60,if=RGB666
+		screenres=1280,800
+	else
+		setenv bootargs $bootargs video=mxcfb${nextcon}:dev=ldb,1024x600M@60,if=RGB666
+		screenres=1024,600
+	fi
+	if test "0" -eq $nextcon; then
+		setenv fbmem "fbmem=10M";
+	else
+		setenv fbmem ${fbmem},10M
+	fi
+	setexpr nextcon $nextcon + 1
+	setenv bootargs $bootargs ft5x06_ts.screenres=$screenres
+	if itest.s "x" -ne "x$calibration" ; then
+		setenv bootargs $bootargs ft5x06_ts.calibration=$calibration
+	fi
+else
+	echo "------ no ft5x06 touch controller";
+fi
+
+if i2c probe 0x41 ; then
+        setenv bootargs $bootargs video=mxcfb${nextcon}:dev=ldb,1024x600M@60,if=RGB666
 	if test "0" -eq $nextcon; then
 		setenv fbmem "fbmem=10M";
 	else
@@ -31,11 +59,16 @@ if i2c probe 0x38 ; then
 	fi
 	setexpr nextcon $nextcon + 1
 else
-	echo "------ no 1024x600 display";
+	echo "------ no ILI210x touch controller";
 fi
 
 if i2c probe 0x48 ; then
-	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=lcd,CLAA-WVGA,if=RGB666
+	if itest.s "xqvga" == "x$panel" ; then
+		display="320x240MR@60,if=RGB24";
+	else
+		display="CLAA-WVGA,if=RGB666";
+	fi
+	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=lcd,$display
 	if test "0" -eq $nextcon; then
 		setenv fbmem "fbmem=10M";
 	else
@@ -46,7 +79,7 @@ else
 	echo "------ no 800x480 display";
 fi
 
-while test "3" -ne $nextcon ; do
+while test "4" -ne $nextcon ; do
 	setenv bootargs $bootargs video=mxcfb${nextcon}:off ;
 	setexpr nextcon $nextcon + 1 ;
 done
@@ -54,10 +87,71 @@ done
 setenv bootargs $bootargs $fbmem
 setenv bootargs "$bootargs console=ttymxc1,115200 vmalloc=400M consoleblank=0 rootwait"
 
-if test "sata" = "${dtype}" ; then
-	setenv bootargs "$bootargs root=/dev/sda1" ;
-else
-	setenv "bootargs $bootargs root=/dev/mmcblk0p1" ;
+if itest.s x$bootpart == x ; then
+	bootpart=1
 fi
-${fs}load ${dtype} ${disk}:1 10800000 /boot/uImage && bootm 10800000 ;
+
+if test "sata" = "${dtype}" ; then
+	setenv bootargs "$bootargs root=/dev/sda$bootpart" ;
+else
+        if test "usb" = "${dtype}" ; then
+                setenv bootargs "$bootargs root=/dev/sda$bootpart" ;
+        elif itest.s "x" == "x$sdphys" ; then
+                setenv bootargs "$bootargs root=/dev/mmcblk0p$bootpart" ;
+        elif itest 0 -eq ${disk}; then
+                setenv bootargs "$bootargs root=/dev/mmcblk2p$bootpart" ;
+        else
+                setenv bootargs "$bootargs root=/dev/mmcblk3p$bootpart" ;
+        fi
+fi
+
+dtbname="imx6";
+if itest.s x6SOLO == "x$cpu" ; then
+	dtbname=${dtbname}dl-;
+elif itest.s x6DL == "x$cpu" ; then
+	dtbname=${dtbname}dl-;
+else
+	dtbname=${dtbname}q-;
+fi
+
+if itest.s x == "x$board" ; then
+	board=sabrelite
+fi
+dtbname=${dtbname}${board}.dtb;
+
+if itest.s x == x${bootdir} ; then
+	bootdir=/boot/
+fi
+
+if ${fs}load ${dtype} ${disk}:1 12000000 ${bootdir}$dtbname ; then
+	havedtb=1;
+	setenv fdt_addr 0x11000000
+	setenv fdt_high 0xffffffff
+else
+	havedtb=
+fi
+
+if itest.s x == x$allow_noncea ; then
+	setenv bootargs $bootargs mxc_hdmi.only_cea=1;
+	echo "only CEA modes allowed on HDMI port";
+else
+        setenv bootargs $bootargs mxc_hdmi.only_cea=0;
+        echo "non-CEA modes allowed on HDMI, audio may be affected";
+fi
+
+if itest.s "x" != "x$disable_giga" ; then
+        setenv bootargs $bootargs fec.disable_giga=1
+fi
+
+if itest.s "x" != "x$wlmac" ; then
+        setenv bootargs $bootargs wlcore.mac=$wlmac
+fi
+
+if ${fs}load ${dtype} ${disk}:1 10800000 ${bootdir}uImage ; then
+	if itest.s x$havedtb == x ; then
+		bootm 10800000 ;
+	else
+		bootm 10800000 - 12000000
+	fi
+fi
 echo "Error loading kernel image"
