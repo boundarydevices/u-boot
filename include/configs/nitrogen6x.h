@@ -268,7 +268,8 @@
 		"echo ; echo 6x_bootscript not found ; " \
 		"echo ; echo serial console at 115200, 8N1 ; echo ; " \
 		"echo details at http://boundarydevices.com/6q_bootscript ; " \
-		"setenv stdout serial\0" \
+		"usb start; " \
+		"setenv stdin serial,usbkbd\0" \
 	"upgradeu=for dtype in " CONFIG_DRIVE_TYPES \
 		"; do " \
 		"for disk in 0 1 ; do ${dtype} dev ${disk} ;" \
