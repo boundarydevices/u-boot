@@ -457,12 +457,6 @@ struct display_info_t {
 };
 
 
-static int detect_hdmi(struct display_info_t const *dev)
-{
-	struct hdmi_regs *hdmi	= (struct hdmi_regs *)HDMI_ARB_BASE_ADDR;
-	return readb(&hdmi->phy_stat0) & HDMI_DVI_STAT;
-}
-
 static void do_enable_hdmi(struct display_info_t const *dev)
 {
 	imx_enable_hdmi_phy();
@@ -494,10 +488,10 @@ static void enable_rgb(struct display_info_t const *dev)
 }
 
 static struct display_info_t const displays[] = {{
-	.bus	= -1,
-	.addr	= 0,
+	.bus	= 1,
+	.addr	= 0x50,
 	.pixfmt	= IPU_PIX_FMT_RGB24,
-	.detect	= detect_hdmi,
+	.detect	= detect_i2c,
 	.enable	= do_enable_hdmi,
 	.mode	= {
 		.name           = "HDMI",
