@@ -1091,6 +1091,7 @@ Eric Nelson <eric.nelson@boundarydevices.com>
 	ocquad			i.MX6Q/6D	1GB
 	ocsolo			i.MX6S		512MB
 	ocsolo1g		i.MX6S		1GB
+	s			i.MX6Q		2GB
 
 Alison Wang <b18965@freescale.com>
 
