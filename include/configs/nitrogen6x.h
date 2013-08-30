@@ -55,6 +55,7 @@
 #define CONFIG_I2C_MULTI_BUS
 #define CONFIG_I2C_MXC
 #define CONFIG_SYS_I2C_SPEED		100000
+#define CONFIG_I2C_EDID
 
 /* OCOTP Configs */
 #define CONFIG_CMD_IMXOTP
