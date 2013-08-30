@@ -1079,6 +1079,8 @@ Pali Rohár <pali.rohar@gmail.com>
 
 Eric Nelson <eric.nelson@boundarydevices.com>
 	mx6qsabrelite		i.MX6Q		1GB
+	nit6xlite		i.MX6S		512MB
+	nit6xlite1g		i.MX6S		1GB
 	nitrogen6dl		i.MX6DL		1GB
 	nitrogen6dl2g		i.MX6DL		2GB
 	nitrogen6q		i.MX6Q/6D	1GB
