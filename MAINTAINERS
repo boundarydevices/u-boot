@@ -1078,6 +1078,8 @@ Pali Rohár <pali.rohar@gmail.com>
 	nokia_rx51	ARM ARMV7 (OMAP34xx SoC)
 
 Eric Nelson <eric.nelson@boundarydevices.com>
+	hquad2g			i.MX6Q		2GB
+	hsolo1g			i.MX6S		1GB
 	mx6qsabrelite		i.MX6Q		1GB
 	nit6xlite		i.MX6S		512MB
 	nit6xlite1g		i.MX6S		1GB
