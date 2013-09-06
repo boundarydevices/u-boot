@@ -628,6 +628,26 @@ static struct display_info_t const displays[] = {{
 		.vsync_len      = 10,
 		.sync           = 0,
 		.vmode          = FB_VMODE_NONINTERLACED
+} }, {
+	.bus	= 2,
+	.addr	= 0x48,
+	.pixfmt	= IPU_PIX_FMT_RGB24,
+	.detect	= detect_i2c,
+	.enable	= enable_rgb,
+	.mode	= {
+		.name           = "qvga",
+		.refresh        = 60,
+		.xres           = 320,
+		.yres           = 240,
+		.pixclock       = 37037,
+		.left_margin    = 38,
+		.right_margin   = 37,
+		.upper_margin   = 16,
+		.lower_margin   = 15,
+		.hsync_len      = 30,
+		.vsync_len      = 3,
+		.sync           = 0,
+		.vmode          = FB_VMODE_NONINTERLACED
 } } };
 
 int board_video_skip(void)
