@@ -124,6 +124,15 @@ struct i2c_pads_info i2c_pad_info2 = {
 	}
 };
 
+static iomux_v3_cfg_t const usdhc2_pads[] = {
+	MX6_PAD_SD2_CLK__USDHC2_CLK   | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD2_CMD__USDHC2_CMD   | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD2_DAT0__USDHC2_DAT0 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD2_DAT1__USDHC2_DAT1 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD2_DAT2__USDHC2_DAT2 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD2_DAT3__USDHC2_DAT3 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+};
+
 iomux_v3_cfg_t const usdhc3_pads[] = {
 	MX6_PAD_SD3_CLK__USDHC3_CLK   | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_SD3_CMD__USDHC3_CMD   | MUX_PAD_CTRL(USDHC_PAD_CTRL),
@@ -187,22 +196,6 @@ iomux_v3_cfg_t const wl12xx_pads[] = {
 #define WL12XX_WL_IRQ_GP	IMX_GPIO_NR(6, 14)
 #define WL12XX_WL_ENABLE_GP	IMX_GPIO_NR(6, 15)
 #define WL12XX_BT_ENABLE_GP	IMX_GPIO_NR(6, 16)
-
-/* Button assignments for J14 */
-static iomux_v3_cfg_t const button_pads[] = {
-	/* Menu */
-	MX6_PAD_NANDF_D1__GPIO_2_1	| MUX_PAD_CTRL(BUTTON_PAD_CTRL),
-	/* Back */
-	MX6_PAD_NANDF_D2__GPIO_2_2	| MUX_PAD_CTRL(BUTTON_PAD_CTRL),
-	/* Labelled Search (mapped to Power under Android) */
-	MX6_PAD_NANDF_D3__GPIO_2_3	| MUX_PAD_CTRL(BUTTON_PAD_CTRL),
-	/* Home */
-	MX6_PAD_NANDF_D4__GPIO_2_4	| MUX_PAD_CTRL(BUTTON_PAD_CTRL),
-	/* Volume Down */
-	MX6_PAD_GPIO_19__GPIO_4_5	| MUX_PAD_CTRL(BUTTON_PAD_CTRL),
-	/* Volume Up */
-	MX6_PAD_GPIO_18__GPIO_7_13	| MUX_PAD_CTRL(BUTTON_PAD_CTRL),
-};
 
 unsigned char strap_gpios[] = {
 	IMX_GPIO_NR(6, 25),	/* RXD0 */
@@ -387,10 +380,26 @@ int board_eth_init(bd_t *bis)
 	return 0;
 }
 
-static void setup_buttons(void)
+
+void splash_screen_prepare(void)
 {
-	imx_iomux_v3_setup_multiple_pads(button_pads,
-					 ARRAY_SIZE(button_pads));
+	char *env_loadsplash;
+
+	if (!getenv("splashimage") || !getenv("splashsize")) {
+		return;
+	}
+
+	env_loadsplash = getenv("loadsplash");
+	if (env_loadsplash == NULL) {
+		printf("Environment variable loadsplash not found!\n");
+		return;
+	}
+
+	if (run_command_list(env_loadsplash, -1, 0)) {
+		printf("failed to run loadsplash %s\n\n", env_loadsplash);
+	}
+
+	return;
 }
 
 #ifdef CONFIG_CMD_SATA
@@ -473,12 +482,6 @@ struct display_info_t {
 };
 
 
-static int detect_hdmi(struct display_info_t const *dev)
-{
-	struct hdmi_regs *hdmi	= (struct hdmi_regs *)HDMI_ARB_BASE_ADDR;
-	return readb(&hdmi->phy_stat0) & HDMI_DVI_STAT;
-}
-
 static void do_enable_hdmi(struct display_info_t const *dev)
 {
 	imx_enable_hdmi_phy();
@@ -501,19 +504,27 @@ static void enable_lvds(struct display_info_t const *dev)
 	gpio_direction_output(LVDS_BACKLIGHT_GP, 1);
 }
 
+static void enable_lvds_jeida(struct display_info_t const *dev)
+{
+	struct iomuxc *iomux = (struct iomuxc *)
+				IOMUXC_BASE_ADDR;
+	u32 reg = readl(&iomux->gpr[2]);
+	reg |= IOMUXC_GPR2_DATA_WIDTH_CH0_24BIT
+	     |IOMUXC_GPR2_BIT_MAPPING_CH0_JEIDA;
+	writel(reg, &iomux->gpr[2]);
+	gpio_direction_output(LVDS_BACKLIGHT_GP, 1);
+}
+
 static void enable_rgb(struct display_info_t const *dev)
 {
-	imx_iomux_v3_setup_multiple_pads(
-		rgb_pads,
-		 ARRAY_SIZE(rgb_pads));
 	gpio_direction_output(RGB_BACKLIGHT_GP, 1);
 }
 
 static struct display_info_t const displays[] = {{
-	.bus	= -1,
-	.addr	= 0,
+	.bus	= 1,
+	.addr	= 0x50,
 	.pixfmt	= IPU_PIX_FMT_RGB24,
-	.detect	= detect_hdmi,
+	.detect	= detect_i2c,
 	.enable	= do_enable_hdmi,
 	.mode	= {
 		.name           = "HDMI",
@@ -526,6 +537,26 @@ static struct display_info_t const displays[] = {{
 		.upper_margin   = 21,
 		.lower_margin   = 7,
 		.hsync_len      = 60,
+		.vsync_len      = 10,
+		.sync           = FB_SYNC_EXT,
+		.vmode          = FB_VMODE_NONINTERLACED
+} }, {
+	.bus	= 0,
+	.addr	= 0,
+	.pixfmt	= IPU_PIX_FMT_RGB24,
+	.detect	= NULL,
+	.enable	= enable_lvds_jeida,
+	.mode	= {
+		.name           = "LDB-WXGA",
+		.refresh        = 60,
+		.xres           = 1280,
+		.yres           = 800,
+		.pixclock       = 14065,
+		.left_margin    = 40,
+		.right_margin   = 40,
+		.upper_margin   = 3,
+		.lower_margin   = 80,
+		.hsync_len      = 10,
 		.vsync_len      = 10,
 		.sync           = FB_SYNC_EXT,
 		.vmode          = FB_VMODE_NONINTERLACED
@@ -589,17 +620,43 @@ static struct display_info_t const displays[] = {{
 		.vsync_len      = 10,
 		.sync           = 0,
 		.vmode          = FB_VMODE_NONINTERLACED
+} }, {
+	.bus	= 2,
+	.addr	= 0x48,
+	.pixfmt	= IPU_PIX_FMT_RGB24,
+	.detect	= detect_i2c,
+	.enable	= enable_rgb,
+	.mode	= {
+		.name           = "qvga",
+		.refresh        = 60,
+		.xres           = 320,
+		.yres           = 240,
+		.pixclock       = 37037,
+		.left_margin    = 38,
+		.right_margin   = 37,
+		.upper_margin   = 16,
+		.lower_margin   = 15,
+		.hsync_len      = 30,
+		.vsync_len      = 3,
+		.sync           = 0,
+		.vmode          = FB_VMODE_NONINTERLACED
 } } };
 
 int board_video_skip(void)
 {
 	int i;
 	int ret;
-	char const *panel = getenv("panel");
+	char const *panel;
+
+	imx_iomux_v3_setup_multiple_pads(
+		rgb_pads,
+		 ARRAY_SIZE(rgb_pads));
+
+	panel = getenv("panel");
 	if (!panel) {
 		for (i = 0; i < ARRAY_SIZE(displays); i++) {
 			struct display_info_t const *dev = displays+i;
-			if (dev->detect(dev)) {
+			if (dev->detect && dev->detect(dev)) {
 				panel = dev->mode.name;
 				printf("auto-detected panel %s\n", panel);
 				break;
@@ -608,6 +665,7 @@ int board_video_skip(void)
 		if (!panel) {
 			panel = displays[0].mode.name;
 			printf("No panel detected: default to %s\n", panel);
+			i = 0;
 		}
 	} else {
 		for (i = 0; i < ARRAY_SIZE(displays); i++) {
@@ -631,6 +689,10 @@ int board_video_skip(void)
 		printf("unsupported panel %s\n", panel);
 		ret = -EINVAL;
 	}
+
+	if (!ret)
+		splash_screen_prepare();
+
 	return (0 != ret);
 }
 
@@ -676,7 +738,8 @@ static void setup_display(void)
 	writel(reg, &iomux->gpr[2]);
 
 	reg = readl(&iomux->gpr[3]);
-	reg = (reg & ~IOMUXC_GPR3_LVDS0_MUX_CTL_MASK)
+	reg = (reg & ~(IOMUXC_GPR3_LVDS0_MUX_CTL_MASK
+		       |IOMUXC_GPR3_HDMI_MUX_CTL_MASK))
 	    | (IOMUXC_GPR3_MUX_SRC_IPU1_DI0
 	       <<IOMUXC_GPR3_LVDS0_MUX_CTL_OFFSET);
 	writel(reg, &iomux->gpr[3]);
@@ -699,7 +762,6 @@ int board_early_init_f(void)
 	gpio_direction_output(WL12XX_BT_ENABLE_GP, 0);
 
 	imx_iomux_v3_setup_multiple_pads(wl12xx_pads, ARRAY_SIZE(wl12xx_pads));
-	setup_buttons();
 
 #if defined(CONFIG_VIDEO_IPUV3)
 	setup_display();
@@ -724,6 +786,8 @@ int board_init(void)
 #ifdef CONFIG_MXC_SPI
 	setup_spi();
 #endif
+	imx_iomux_v3_setup_multiple_pads(
+		usdhc2_pads, ARRAY_SIZE(usdhc2_pads));
 	setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info0);
 	setup_i2c(1, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info1);
 	setup_i2c(2, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info2);
@@ -842,5 +906,13 @@ int misc_init_r(void)
 #ifdef CONFIG_CMD_BMODE
 	add_board_boot_modes(board_boot_modes);
 #endif
+	return 0;
+}
+
+int board_late_init(void)
+{
+	int cpurev = get_cpu_rev();
+	setenv("cpu",get_imx_type((cpurev & 0xFF000) >> 12));
+	setenv("board","UTC");
 	return 0;
 }
