@@ -145,7 +145,6 @@ iomux_v3_cfg_t const usdhc4_pads[] = {
 	MX6_PAD_SD4_DAT5__USDHC4_DAT5 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_SD4_DAT6__USDHC4_DAT6 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_SD4_DAT7__USDHC4_DAT7 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	MX6_PAD_NANDF_D6__GPIO_2_6    | MUX_PAD_CTRL(NO_PAD_CTRL), /* CD */
 };
 
 iomux_v3_cfg_t const enet_pads1[] = {
@@ -277,10 +276,8 @@ int board_mmc_getcd(struct mmc *mmc)
 		gpio_direction_input(IMX_GPIO_NR(7, 0));
 		ret = !gpio_get_value(IMX_GPIO_NR(7, 0));
 	} else {
-		gpio_direction_input(IMX_GPIO_NR(2, 6));
-		ret = !gpio_get_value(IMX_GPIO_NR(2, 6));
+		ret = 1;
 	}
-
 	return ret;
 }
 
