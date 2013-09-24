@@ -279,6 +279,8 @@
 		"echo details at http://boundarydevices.com/6q_bootscript ; " \
 		"usb start; " \
 		"setenv stdin serial,usbkbd\0" \
+	"fdt_addr=0x11000000\0" \
+	"fdt_high=0xffffffff\0" \
 	"loadsplash=if sf probe ; then sf read ${splashimage} c2000 ${splashsize} ; fi\0" \
 	"upgradeu=for dtype in " CONFIG_DRIVE_TYPES \
 		"; do " \
