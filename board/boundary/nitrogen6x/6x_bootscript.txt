@@ -94,6 +94,8 @@ fi
 
 if ${fs}load ${dtype} ${disk}:1 12000000 ${bootdir}$dtbname ; then
 	havedtb=1;
+	setenv fdt_addr 0x11000000
+	setenv fdt_high 0xffffffff
 else
 	havedtb=
 fi
