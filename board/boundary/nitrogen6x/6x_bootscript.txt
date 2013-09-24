@@ -23,7 +23,11 @@ else
 fi
 
 if i2c probe 0x38 ; then
-	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=ldb,1024x600M@60,if=RGB666
+	if itest.s "xLDB-WXGA" == "x$panel"; then
+		setenv bootargs $bootargs video=mxcfb${nextcon}:dev=ldb,1280x800MR@60,if=RGB666
+	else
+		setenv bootargs $bootargs video=mxcfb${nextcon}:dev=ldb,1024x600M@60,if=RGB666
+	fi
 	if test "0" -eq $nextcon; then
 		setenv fbmem "fbmem=10M";
 	else
@@ -31,7 +35,7 @@ if i2c probe 0x38 ; then
 	fi
 	setexpr nextcon $nextcon + 1
 else
-	echo "------ no 1024x600 display";
+	echo "------ no ft5x06 touch controller";
 fi
 
 if i2c probe 0x48 ; then
