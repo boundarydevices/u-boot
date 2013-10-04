@@ -35,7 +35,7 @@ if i2c probe 0x38 ; then
 	fi
 	setexpr nextcon $nextcon + 1
 	if itest.s "x" -ne "x$calibration" ; then
-		setenv bootargs $bootargs ft5x06.calibration=$calibration
+		setenv bootargs $bootargs ft5x06_ts.calibration=$calibration
 	fi
 else
 	echo "------ no ft5x06 touch controller";
