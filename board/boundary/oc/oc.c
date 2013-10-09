@@ -624,6 +624,8 @@ static void setup_display(void)
 
 int board_early_init_f(void)
 {
+	setup_iomux_uart();
+
 	/* Disable WiFi/BT */
 	gpio_direction_input(WIFI_WL_IRQ_GP);
 	gpio_direction_output(WIFI_WL_ENABLE_GP, 0);
