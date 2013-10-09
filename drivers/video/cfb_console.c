@@ -2115,6 +2115,7 @@ static int cfg_video_init(void)
 	video_console_address = video_logo();
 #else
 	video_console_address = video_fb_address;
+        video_drawstring(VIDEO_FONT_WIDTH, 0, (uchar *)version_string);
 #endif
 
 	/* Initialize the console */
