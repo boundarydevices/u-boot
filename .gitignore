@@ -91,3 +91,5 @@ GTAGS
 
 # spl ais files
 /spl/*.ais
+include/spl-autoconf.mk
+include/tpl-autoconf.mk
