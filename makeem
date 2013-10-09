@@ -1,0 +1,26 @@
+mkdir -p save
+boards=`grep " boundary " boards.cfg | awk '{ print $7 }'`;
+numboards=0;
+numsuccess=0;
+numfailures=0;
+for board in $boards ; do
+	make mrproper ; make ${board}_config
+	make all C=1 -j4
+	if [ $? -ne 0 ]; then
+		numfailures=`expr $numfailures + 1`;
+		echo -e "\n\n\n!!!!!!!! build failure for $board !!!!!!!!!!!!\n\n";
+		read line;
+	else
+        if [ "x${board}" == "xa" ] ; then
+            board=amp; # *.a gets clobbered in make mrproper
+        elif [ "x${board}" == "xs" ] ; then
+            board=son; # *.s gets clobbered in make mrproper
+        fi
+        cp -fv u-boot.imx save/u-boot.${board};
+        ls -l save/u-boot.${board};
+		numsuccess=`expr $numsuccess + 1`;
+	fi
+	numboards=`expr $numboards + 1`;
+done
+make mrproper ;
+echo -e "\n\n\nbuilt for ${numboards} boards. ${numsuccess} succeeded and ${numfailures} failed";
