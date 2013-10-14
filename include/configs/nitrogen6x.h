@@ -367,4 +367,6 @@
 #define CONFIG_CMD_FS_GENERIC
 #define CONFIG_BOARD_LATE_INIT
 
+#define CONFIG_CMD_ELF
+
 #endif	       /* __CONFIG_H */
