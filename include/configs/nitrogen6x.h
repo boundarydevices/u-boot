@@ -394,4 +394,6 @@
 #define CONFIG_PCIE_IMX
 #endif
 
+#define CONFIG_CMD_ELF
+
 #endif	       /* __CONFIG_H */
