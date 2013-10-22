@@ -736,8 +736,21 @@ static iomux_v3_cfg_t const i2c0_mux_pads[] = {
 	MX6_PAD_EIM_CS0__GPIO_2_23 |MUX_PAD_CTRL(I2C_PAD_CTRL)   /* RTC */
 };
 
+static iomux_v3_cfg_t const gpio_pads[] = {
+	MX6_PAD_GPIO_2__GPIO_1_2 | MUX_PAD_CTRL(PAD_CTL_DSE_240ohm),
+        MX6_PAD_GPIO_3__GPIO_1_3 | MUX_PAD_CTRL(PAD_CTL_DSE_240ohm),
+        MX6_PAD_GPIO_6__GPIO_1_6 | MUX_PAD_CTRL(PAD_CTL_DSE_240ohm),
+        MX6_PAD_GPIO_7__GPIO_1_7 | MUX_PAD_CTRL(PAD_CTL_DSE_240ohm)
+};
+
+static int gpio_pins[] = {
+	2, 3, 6, 7
+};
+
 int board_init(void)
 {
+	int i;
+
 	/* address of boot parameters */
 	gd->bd->bi_boot_params = PHYS_SDRAM + 0x100;
 
@@ -748,6 +761,12 @@ int board_init(void)
 		usdhc2_pads, ARRAY_SIZE(usdhc2_pads));
 	imx_iomux_v3_setup_multiple_pads(i2c0_mux_pads,
 					 ARRAY_SIZE(i2c0_mux_pads));
+	imx_iomux_v3_setup_multiple_pads(
+		gpio_pads, ARRAY_SIZE(gpio_pads));
+
+	for(i=0; i < ARRAY_SIZE(gpio_pins); i++)
+		gpio_direction_output(IMX_GPIO_NR(1,gpio_pins[i]),0);
+
 	gpio_direction_output(IMX_GPIO_NR(3,20),0);
 	gpio_direction_output(IMX_GPIO_NR(2,23),1); /* enable RTC */
 	setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info0);
