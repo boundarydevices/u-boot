@@ -5,7 +5,8 @@ setenv bootdir /
 setenv bootargs enable_wait_mode=off
 setenv nextcon 0;
 
-if hdmidet ; then
+i2c dev 1 ;
+if i2c probe 0x50 ; then
 	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=hdmi,1280x720M@60,if=RGB24
 	setenv fbmem "fbmem=28M";
 	setexpr nextcon $nextcon + 1
@@ -40,7 +41,7 @@ if i2c probe 0x38 ; then
 		setenv fbmem ${fbmem},10M
 	fi
 	setexpr nextcon $nextcon + 1
-	setenv bootargs $bootargs ft5x06.screenres=$screenres
+	setenv bootargs $bootargs ft5x06_ts.screenres=$screenres
 	if itest.s "x" -ne "x$calibration" ; then
 		setenv bootargs $bootargs ft5x06_ts.calibration=$calibration
 	fi
@@ -49,7 +50,12 @@ else
 fi
 
 if i2c probe 0x48 ; then
-	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=lcd,CLAA-WVGA,if=RGB666
+	if itest.s "xqvga" == "x$panel" ; then
+		display="320x240MR@60,if=RGB24";
+	else
+		display="CLAA-WVGA,if=RGB666";
+	fi
+	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=lcd,$display
 	if test "0" -eq $nextcon; then
 		setenv fbmem "fbmem=10M";
 	else
@@ -96,6 +102,8 @@ fi
 
 if ${fs}load ${dtype} ${disk}:1 12000000 ${bootdir}$dtbname ; then
 	havedtb=1;
+	setenv fdt_addr 0x11000000
+	setenv fdt_high 0xffffffff
 else
 	havedtb=
 fi
