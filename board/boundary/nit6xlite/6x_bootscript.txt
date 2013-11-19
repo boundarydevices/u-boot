@@ -42,7 +42,7 @@ fi
 
 if test "0" -eq $lvds; then
 	echo "Default to wqvga (480x272) display";
-	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=lcd,wqvga-lcd,if=RGB24
+	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=lcd,okaya_480x272,if=RGB24
 	if test "0" -eq $nextcon; then
 		setenv fbmem "fbmem=10M";
 	else
