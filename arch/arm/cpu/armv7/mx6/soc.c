@@ -152,7 +152,7 @@ static int read_cpu_temperature(void)
 	unsigned int raw_25c, raw_n40c, ratio;
 	struct anatop_regs *anatop = (struct anatop_regs *)ANATOP_BASE_ADDR;
 	struct mxc_ccm_reg *mxc_ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
-	struct iim_regs *iim = (struct iim_regs *)IMX_IIM_BASE;
+	struct ocotp_regs *iim = (struct ocotp_regs *)OCOTP_BASE_ADDR;
 	struct fuse_bank *bank = &iim->bank[1];
 	struct fuse_bank1_regs *fuse_bank1 =
 			(struct fuse_bank1_regs *)bank->fuse_regs;
