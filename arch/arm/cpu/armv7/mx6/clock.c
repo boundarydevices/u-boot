@@ -48,6 +48,28 @@ void enable_usboh3_clk(unsigned char enable)
 
 }
 
+#ifdef CONFIG_MXC_SPI
+/* spi_num can be from 0 - 4 */
+int enable_spi_clk(unsigned char enable, unsigned spi_num)
+{
+	u32 reg;
+	u32 mask;
+
+	if (spi_num > 4)
+		return -EINVAL;
+
+	mask = MXC_CCM_CCGR_CG_MASK
+		<< (MXC_CCM_CCGR1_ECSPI1S_OFFSET + (spi_num << 1));
+	reg = __raw_readl(&imx_ccm->CCGR1);
+	if (enable)
+		reg |= mask;
+	else
+		reg &= ~mask;
+	__raw_writel(reg, &imx_ccm->CCGR1);
+	return 0;
+}
+#endif
+
 #ifdef CONFIG_I2C_MXC
 /* i2c_num can be from 0 - 2 */
 int enable_i2c_clk(unsigned char enable, unsigned i2c_num)
