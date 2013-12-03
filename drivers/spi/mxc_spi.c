@@ -176,12 +176,14 @@ static s32 spi_cfg_mxc(struct mxc_spi_slave *mxcs, unsigned int cs,
 	 * Configuration register setup
 	 * The MX51 supports different setup for each SS
 	 */
-	reg_config = (reg_config & ~(1 << (cs + MXC_CSPICON_SSPOL))) |
-		(ss_pol << (cs + MXC_CSPICON_SSPOL));
-	reg_config = (reg_config & ~(1 << (cs + MXC_CSPICON_POL))) |
-		(sclkpol << (cs + MXC_CSPICON_POL));
-	reg_config = (reg_config & ~(1 << (cs + MXC_CSPICON_PHA))) |
-		(sclkpha << (cs + MXC_CSPICON_PHA));
+	reg_config &= ~(((1 << MXC_CSPICON_SSPOL) |
+			(1 << MXC_CSPICON_POL) |
+			(1 << MXC_CSPICON_INACTIVE_POL) |
+			(1 << MXC_CSPICON_PHA)) << cs);
+	reg_config |=  ((ss_pol << MXC_CSPICON_SSPOL) |
+			(sclkpol << MXC_CSPICON_POL) |
+			(sclkpol << MXC_CSPICON_INACTIVE_POL) |
+			(sclkpha << MXC_CSPICON_PHA)) << cs;
 
 	debug("reg_ctrl = 0x%x\n", reg_ctrl);
 	reg_write(&regs->ctrl, reg_ctrl);
