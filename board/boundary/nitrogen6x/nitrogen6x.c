@@ -28,6 +28,7 @@
 #include <asm/arch/crm_regs.h>
 #include <asm/arch/mxc_hdmi.h>
 #include <i2c.h>
+#include <spi.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -502,6 +503,225 @@ static int detect_i2c(struct display_info_t const *dev)
 		(0 == i2c_probe(dev->addr)));
 }
 
+#ifdef CONFIG_MXC_SPI
+static iomux_v3_cfg_t const ecspi2_pads[] = {
+	MX6_PAD_CSI0_DAT8__ECSPI2_SCLK  | MUX_PAD_CTRL(SPI_PAD_CTRL),
+	MX6_PAD_CSI0_DAT9__ECSPI2_MOSI  | MUX_PAD_CTRL(SPI_PAD_CTRL),
+	MX6_PAD_CSI0_DAT10__ECSPI2_MISO | MUX_PAD_CTRL(SPI_PAD_CTRL),
+	MX6_PAD_CSI0_DAT11__GPIO_5_29   | MUX_PAD_CTRL(SPI_PAD_CTRL),
+};
+
+int spi_display_read(struct spi_slave *spi, u8 addr, u8 reg, u8 *data, size_t data_len)
+{
+	u8 cmd[2];
+	int ret;
+
+	cmd[0] = addr;
+	cmd[1] = reg;
+	ret = spi_xfer(spi, 2 * 8, cmd, NULL, SPI_XFER_BEGIN | SPI_XFER_END);
+	if (ret) {
+		debug("%s: Failed to select reg 0x%x, %d\n", __func__, reg, ret);
+		return ret;
+	}
+	udelay(3);
+	cmd[0] = addr | 3;
+	ret = spi_xfer(spi, 1 * 8, cmd, NULL, SPI_XFER_BEGIN);
+	if (ret) {
+		debug("%s: Failed to start read for reg 0x%x, %d\n", __func__, reg, ret);
+		return ret;
+	}
+	ret = spi_xfer(spi, data_len * 8, NULL, data, SPI_XFER_END);
+	if (ret) {
+		debug("%s: Failed to read data for reg 0x%x, %d\n", __func__, reg, ret);
+		return ret;
+	}
+	return ret;
+}
+
+int spi_display_cmds(struct spi_slave *spi, u8 addr, u8 *cmds)
+{
+	u8 cmd_buf[16];
+	int ret = 0;
+
+	printf("%s\n", __func__);
+	while (*cmds) {
+		u8 reg = *cmds++;
+		size_t len = *cmds++;
+
+		cmd_buf[0] = addr;
+		cmd_buf[1] = reg;
+		ret = spi_xfer(spi, 2 * 8, cmd_buf, NULL, SPI_XFER_BEGIN | SPI_XFER_END);
+		if (ret) {
+			debug("%s: Failed to select reg 0x%x, %d\n", __func__, reg, ret);
+			return ret;
+		}
+		udelay(3);
+		cmd_buf[0] = addr | 2;
+		memcpy(&cmd_buf[1], cmds, len);
+		cmds += len;
+		ret = spi_xfer(spi, (len + 1) * 8, cmd_buf, NULL, SPI_XFER_BEGIN | SPI_XFER_END);
+		if (ret) {
+			debug("%s: Failed to write for reg 0x%x, %d\n", __func__, reg, ret);
+			return ret;
+		}
+	}
+	return ret;
+}
+
+u8 display_init_cmds[] = {
+/* Display Mode Setting */
+	0x36, 1, 0x08,
+	0x3a, 1, 0x70,
+	0xb1, 3, 0x0e, 0x28, 0x0a,
+	0xb2, 2, 0x00, 0xc8,
+	0xb3, 1, 0x00,
+	0xb4, 1, 0x04,
+	0xb5, 5, 0x42, 0x10, 0x10, 0x00, 0x20,
+	0xb6, 6, 0x0b, 0x0f, 0x3c, 0x13, 0x13, 0xe8,
+	0xb7, 5, 0x46, 0x06, 0x0c, 0x00, 0x00,
+/* Power Setting */
+	0xc0, 2, 0x01, 0x11,
+	0xc3, 5, 0x07, 0x03, 0x04, 0x04, 0x04,
+	0xc4, 6, 0x12, 0x24, 0x18, 0x18, 0x02, 0x49,
+	0xc5, 1, 0x6f,
+	0xc6, 2, 0x41, 0x63,
+/* Gamma Setting */
+	0xd0, 9, 0x03, 0x07, 0x73, 0x35, 0x00, 0x01, 0x20, 0x00, 0x03,
+	0xd2, 9, 0x03, 0x07, 0x73, 0x35, 0x00, 0x01, 0x20, 0x00, 0x03,
+	0xd4, 9, 0x03, 0x07, 0x73, 0x35, 0x00, 0x01, 0x20, 0x00, 0x03,
+	0xd1, 9, 0x03, 0x07, 0x73, 0x35, 0x00, 0x01, 0x20, 0x00, 0x03,
+	0xd3, 9, 0x03, 0x07, 0x73, 0x35, 0x00, 0x01, 0x20, 0x00, 0x03,
+	0xd5, 9, 0x03, 0x07, 0x73, 0x35, 0x00, 0x01, 0x20, 0x00, 0x03,
+/* Sleep out */
+	0x11, 0,
+	0
+};
+
+u8 display_on_cmds[] = {
+	0x29, 0,
+	0
+};
+
+static void enable_spi_rgb(struct display_info_t const *dev)
+{
+	unsigned cs_gpio = IMX_GPIO_NR(5, 29);
+	struct spi_slave *spi;
+	int ret;
+
+	printf("%s\n", __func__);
+	gpio_direction_output(IMX_GPIO_NR(1, 21), 1);	/* set sd1_dat3 pwm1 high */
+	gpio_direction_output(RGB_BACKLIGHT_GP, 1);
+	gpio_direction_output(cs_gpio, 1);
+
+	enable_spi_clk(1, dev->bus);
+
+	/* Setup spi_slave */
+	spi = spi_setup_slave(dev->bus, cs_gpio << 8, 1000000, SPI_MODE_3);
+	if (!spi) {
+		printf("%s: Failed to set up slave\n", __func__);
+		return;
+	}
+
+	/* Claim spi bus */
+	ret = spi_claim_bus(spi);
+	if (ret) {
+		debug("%s: Failed to claim SPI bus: %d\n", __func__, ret);
+		goto free_bus;
+	}
+
+	ret = spi_display_cmds(spi, dev->addr, display_on_cmds);
+	if (ret) {
+		printf("%s: Failed to init %d\n", __func__, ret);
+		goto release_bus;
+	}
+	ret = 1;
+
+	/* Release spi bus */
+release_bus:
+	spi_release_bus(spi);
+free_bus:
+	spi_free_slave(spi);
+	enable_spi_clk(0, dev->bus);
+	return;
+}
+
+/*
+ * Return 1 for successful detection of display
+ */
+static int detect_spi(struct display_info_t const *dev)
+{
+	int ret;
+	unsigned cs_gpio = IMX_GPIO_NR(5, 29);
+	unsigned reset_gpio = IMX_GPIO_NR(2, 5);	/* nandf_d5 */
+	struct spi_slave *spi;
+	u8 data[8];
+
+	printf("%s\n", __func__);
+	gpio_direction_output(cs_gpio, 1);
+	gpio_direction_output(reset_gpio, 1);
+	imx_iomux_v3_setup_multiple_pads(ecspi2_pads, ARRAY_SIZE(ecspi2_pads));
+	udelay(1);
+	gpio_direction_output(reset_gpio, 0);
+	udelay(2000);
+	gpio_direction_output(reset_gpio, 1);
+	udelay(1);
+	enable_spi_clk(1, dev->bus);
+
+	/* Setup spi_slave */
+	spi = spi_setup_slave(dev->bus, cs_gpio << 8, 1000000, SPI_MODE_3);
+	if (!spi) {
+		printf("%s: Failed to set up slave\n", __func__);
+		return 0;
+	}
+
+	/* Claim spi bus */
+	ret = spi_claim_bus(spi);
+	if (ret) {
+		debug("%s: Failed to claim SPI bus: %d\n", __func__, ret);
+		ret = 0;
+		goto free_bus;
+	}
+
+	/* Read the dispctl1 */
+	ret = spi_display_read(spi, dev->addr, 0xb5, data, 2);
+	if (ret) {
+		printf("%s: Failed to read dispctl1, %d\n", __func__, ret);
+		ret = 0;
+		goto release_bus;
+	}
+	debug("%s: *(0x%02x) = 0x%02x 0x%02x\n", __func__, 0xb5, data[0], data[1]);
+
+	if ((data[1] == 0) || (data[1] == 0xff)) {
+		ret = 0;
+		goto release_bus;
+	}
+	/*
+	 * Initialization sequence
+	 * 1. Display Mode Settings
+	 * 2. Power Settings
+	 * 3. Gamma Settings
+	 * 4. Sleep Out
+	 * 5. Wait >= 7 frame
+	 * 6. Display on
+	 */
+	ret = spi_display_cmds(spi, dev->addr, display_init_cmds);
+	if (ret) {
+		printf("%s: Failed to init %d\n", __func__, ret);
+		ret = 0;
+		goto release_bus;
+	}
+	ret = 1;
+
+	/* Release spi bus */
+release_bus:
+	spi_release_bus(spi);
+free_bus:
+	spi_free_slave(spi);
+	enable_spi_clk(0, dev->bus);
+	return ret;
+}
+#endif
+
 static void enable_lvds(struct display_info_t const *dev)
 {
 	struct iomuxc *iomux = (struct iomuxc *)
@@ -668,7 +888,32 @@ static struct display_info_t const displays[] = {{
 		.vsync_len      = 3,
 		.sync           = 0,
 		.vmode          = FB_VMODE_NONINTERLACED
-} } };
+} },
+#ifdef CONFIG_MXC_SPI
+{
+	.bus	= 1,
+	.addr	= 0x70,
+	.pixfmt	= IPU_PIX_FMT_RGB24,
+	.detect	= detect_spi,
+	.enable	= enable_spi_rgb,
+	.mode	= {
+		.name           = "LB043",
+		.refresh        = 57,
+		.xres           = 480,
+		.yres           = 800,
+		.pixclock       = 37037,
+		.left_margin    = 40,
+		.right_margin   = 60,
+		.upper_margin   = 10,
+		.lower_margin   = 10,
+		.hsync_len      = 20,
+		.vsync_len      = 10,
+		.sync           = 0,
+		.vmode          = FB_VMODE_NONINTERLACED
+	},
+},
+#endif
+};
 
 int board_video_skip(void)
 {
