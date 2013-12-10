@@ -668,6 +668,11 @@ static struct display_info_t const displays[] = {{
 		.vmode          = FB_VMODE_NONINTERLACED
 } } };
 
+int board_cfb_skip(void)
+{
+	return 0 != getenv("novideo");
+}
+
 int board_video_skip(void)
 {
 	int i;
