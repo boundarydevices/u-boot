@@ -2223,8 +2223,10 @@ static int video_init(void)
 	debug("Video: Drawing the logo ...\n");
 	video_console_address = video_logo();
 #else
-	video_console_address = video_fb_address;
-        video_drawstring(VIDEO_FONT_WIDTH, 0, (uchar *)version_string);
+	if (!board_cfb_skip()){
+		video_console_address = video_fb_address;
+		video_drawstring(VIDEO_FONT_WIDTH, 0, (uchar *)version_string);
+	}
 #endif
 
 	/* Initialize the console */
