@@ -387,11 +387,22 @@ esdhc_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd, struct mmc_data *data)
 		do {
 			irqstat = esdhc_read32(&regs->irqstat);
 
-			if (irqstat & IRQSTAT_DTOE)
-				return TIMEOUT;
+			if (irqstat & (IRQSTAT_DTOE | DATA_ERR)) {
+				esdhc_write32(&regs->sysctl, esdhc_read32(&regs->sysctl) |
+				      SYSCTL_RSTC);
+				while (esdhc_read32(&regs->sysctl) & SYSCTL_RSTC)
+					;
 
-			if (irqstat & DATA_ERR)
+				esdhc_write32(&regs->sysctl,
+					      esdhc_read32(&regs->sysctl) |
+					      SYSCTL_RSTD);
+				while ((esdhc_read32(&regs->sysctl) & SYSCTL_RSTD))
+					;
+				if (irqstat & IRQSTAT_DTOE)
+					return TIMEOUT;
+
 				return COMM_ERR;
+			}
 		} while ((irqstat & DATA_COMPLETE) != DATA_COMPLETE);
 #endif
 		if (data->flags & MMC_DATA_READ)
