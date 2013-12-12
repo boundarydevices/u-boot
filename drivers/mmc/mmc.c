@@ -1089,6 +1089,8 @@ static int mmc_startup(struct mmc *mmc)
 				mmc->card_caps |= ext_to_hostcaps[extw];
 				break;
 			}
+			printf("%s error(%d) with bus width at %d\n",
+					__func__, err, widths[idx]);
 		}
 
 		if (mmc->card_caps & MMC_MODE_HS) {
