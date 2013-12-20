@@ -153,6 +153,23 @@ iomux_v3_cfg_t const usdhc4_pads[] = {
 	MX6_PAD_NANDF_D6__GPIO_2_6    | MUX_PAD_CTRL(NO_PAD_CTRL), /* CD */
 };
 
+/* Button assignments for J14 */
+static iomux_v3_cfg_t const button_pads[] = {
+	/* Menu */
+	MX6_PAD_NANDF_D1__GPIO_2_1	| MUX_PAD_CTRL(BUTTON_PAD_CTRL),
+	/* Back */
+	MX6_PAD_NANDF_D2__GPIO_2_2	| MUX_PAD_CTRL(BUTTON_PAD_CTRL),
+	/* Labelled Search (mapped to Power under Android) */
+	MX6_PAD_NANDF_D3__GPIO_2_3	| MUX_PAD_CTRL(BUTTON_PAD_CTRL),
+	/* Home */
+	MX6_PAD_NANDF_D4__GPIO_2_4	| MUX_PAD_CTRL(BUTTON_PAD_CTRL),
+	/* Volume Down */
+	MX6_PAD_GPIO_19__GPIO_4_5	| MUX_PAD_CTRL(BUTTON_PAD_CTRL),
+	/* Volume Up */
+	MX6_PAD_GPIO_18__GPIO_7_13	| MUX_PAD_CTRL(BUTTON_PAD_CTRL),
+};
+
+#ifdef CONFIG_FEC_MXC
 iomux_v3_cfg_t const enet_pads1[] = {
 	MX6_PAD_ENET_MDIO__ENET_MDIO		| MUX_PAD_CTRL(ENET_PAD_CTRL),
 	MX6_PAD_ENET_MDC__ENET_MDC		| MUX_PAD_CTRL(ENET_PAD_CTRL),
@@ -189,35 +206,6 @@ iomux_v3_cfg_t const enet_pads2[] = {
 	MX6_PAD_RGMII_RX_CTL__RGMII_RX_CTL	| MUX_PAD_CTRL(ENET_PAD_CTRL),
 };
 
-/* wl1271 pads on nitrogen6x */
-iomux_v3_cfg_t const wl12xx_pads[] = {
-	(MX6_PAD_NANDF_CS1__GPIO_6_14 & ~MUX_PAD_CTRL_MASK)
-		| MUX_PAD_CTRL(WEAK_PULLDOWN),
-	(MX6_PAD_NANDF_CS2__GPIO_6_15 & ~MUX_PAD_CTRL_MASK)
-		| MUX_PAD_CTRL(OUTPUT_40OHM),
-	(MX6_PAD_NANDF_CS3__GPIO_6_16 & ~MUX_PAD_CTRL_MASK)
-		| MUX_PAD_CTRL(OUTPUT_40OHM),
-};
-#define WL12XX_WL_IRQ_GP	IMX_GPIO_NR(6, 14)
-#define WL12XX_WL_ENABLE_GP	IMX_GPIO_NR(6, 15)
-#define WL12XX_BT_ENABLE_GP	IMX_GPIO_NR(6, 16)
-
-/* Button assignments for J14 */
-static iomux_v3_cfg_t const button_pads[] = {
-	/* Menu */
-	MX6_PAD_NANDF_D1__GPIO_2_1	| MUX_PAD_CTRL(BUTTON_PAD_CTRL),
-	/* Back */
-	MX6_PAD_NANDF_D2__GPIO_2_2	| MUX_PAD_CTRL(BUTTON_PAD_CTRL),
-	/* Labelled Search (mapped to Power under Android) */
-	MX6_PAD_NANDF_D3__GPIO_2_3	| MUX_PAD_CTRL(BUTTON_PAD_CTRL),
-	/* Home */
-	MX6_PAD_NANDF_D4__GPIO_2_4	| MUX_PAD_CTRL(BUTTON_PAD_CTRL),
-	/* Volume Down */
-	MX6_PAD_GPIO_19__GPIO_4_5	| MUX_PAD_CTRL(BUTTON_PAD_CTRL),
-	/* Volume Up */
-	MX6_PAD_GPIO_18__GPIO_7_13	| MUX_PAD_CTRL(BUTTON_PAD_CTRL),
-};
-
 static void setup_iomux_enet(void)
 {
 	gpio_direction_output(IMX_GPIO_NR(3, 23), 0); /* SABRE Lite PHY rst */
@@ -238,6 +226,35 @@ static void setup_iomux_enet(void)
 	imx_iomux_v3_setup_multiple_pads(enet_pads2, ARRAY_SIZE(enet_pads2));
 	udelay(100);	/* Wait 100 us before using mii interface */
 }
+
+int board_eth_init(bd_t *bis)
+{
+	uint32_t base = IMX_FEC_BASE;
+	struct mii_dev *bus = NULL;
+	struct phy_device *phydev = NULL;
+	int ret;
+
+	setup_iomux_enet();
+
+	bus = fec_get_miibus(base, -1);
+	if (!bus)
+		return 0;
+	/* scan phy 4,5,6,7 */
+	phydev = phy_find_by_mask(bus, (0xf << 4), PHY_INTERFACE_MODE_RGMII);
+	if (!phydev) {
+		free(bus);
+		return 0;
+	}
+	printf("using phy at %d\n", phydev->addr);
+	ret  = fec_probe(bis, -1, base, bus, phydev);
+	if (ret) {
+		printf("FEC MXC: %s:failed\n", __func__);
+		free(phydev);
+		free(bus);
+	}
+	return 0;
+}
+#endif
 
 iomux_v3_cfg_t const usb_pads[] = {
 	MX6_PAD_GPIO_17__GPIO_7_12 | MUX_PAD_CTRL(NO_PAD_CTRL),
@@ -346,37 +363,6 @@ int board_phy_config(struct phy_device *phydev)
 
 	return 0;
 }
-
-int board_eth_init(bd_t *bis)
-{
-	uint32_t base = IMX_FEC_BASE;
-	struct mii_dev *bus = NULL;
-	struct phy_device *phydev = NULL;
-	int ret;
-
-	setup_iomux_enet();
-
-#ifdef CONFIG_FEC_MXC
-	bus = fec_get_miibus(base, -1);
-	if (!bus)
-		return 0;
-	/* scan phy 4,5,6,7 */
-	phydev = phy_find_by_mask(bus, (0xf << 4), PHY_INTERFACE_MODE_RGMII);
-	if (!phydev) {
-		free(bus);
-		return 0;
-	}
-	printf("using phy at %d\n", phydev->addr);
-	ret  = fec_probe(bis, -1, base, bus, phydev);
-	if (ret) {
-		printf("FEC MXC: %s:failed\n", __func__);
-		free(phydev);
-		free(bus);
-	}
-#endif
-	return 0;
-}
-
 
 void splash_screen_prepare(void)
 {
@@ -1024,6 +1010,19 @@ static void setup_display(void)
 	gpio_direction_input(RGB_BACKLIGHT_GP);
 }
 #endif
+
+/* wl1271 pads on nitrogen6x */
+iomux_v3_cfg_t const wl12xx_pads[] = {
+	(MX6_PAD_NANDF_CS1__GPIO_6_14 & ~MUX_PAD_CTRL_MASK)
+		| MUX_PAD_CTRL(WEAK_PULLDOWN),
+	(MX6_PAD_NANDF_CS2__GPIO_6_15 & ~MUX_PAD_CTRL_MASK)
+		| MUX_PAD_CTRL(OUTPUT_40OHM),
+	(MX6_PAD_NANDF_CS3__GPIO_6_16 & ~MUX_PAD_CTRL_MASK)
+		| MUX_PAD_CTRL(OUTPUT_40OHM),
+};
+#define WL12XX_WL_IRQ_GP	IMX_GPIO_NR(6, 14)
+#define WL12XX_WL_ENABLE_GP	IMX_GPIO_NR(6, 15)
+#define WL12XX_BT_ENABLE_GP	IMX_GPIO_NR(6, 16)
 
 int board_early_init_f(void)
 {
