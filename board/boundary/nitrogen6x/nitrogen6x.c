@@ -501,7 +501,7 @@ static int detect_i2c(struct display_info_t const *dev)
 		(0 == i2c_probe(dev->addr)));
 }
 
-#ifdef CONFIG_MXC_SPI
+#ifdef CONFIG_MXC_SPI_DISPLAY
 static iomux_v3_cfg_t const ecspi2_pads[] = {
 	MX6_PAD_CSI0_DAT8__ECSPI2_SCLK  | MUX_PAD_CTRL(SPI_PAD_CTRL),
 	MX6_PAD_CSI0_DAT9__ECSPI2_MOSI  | MUX_PAD_CTRL(SPI_PAD_CTRL),
@@ -887,7 +887,7 @@ static struct display_info_t const displays[] = {{
 		.sync           = 0,
 		.vmode          = FB_VMODE_NONINTERLACED
 } },
-#ifdef CONFIG_MXC_SPI
+#ifdef CONFIG_MXC_SPI_DISPLAY
 {
 	.bus	= 1,
 	.addr	= 0x70,
