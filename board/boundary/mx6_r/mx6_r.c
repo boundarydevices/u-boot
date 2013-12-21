@@ -849,6 +849,7 @@ static iomux_v3_cfg_t const init_pads[] = {
 	NEW_PAD_CTRL(MX6_PAD_CSI0_VSYNC__GPIO_5_21, OUTPUT_40OHM),
 	/* LED control */
 	NEW_PAD_CTRL(MX6_PAD_EIM_RW__GPIO_2_26, OUTPUT_40OHM),
+	NEW_PAD_CTRL(MX6_PAD_EIM_D20__GPIO_3_20, OUTPUT_40OHM),
 };
 
 #define WL12XX_WL_IRQ_GP	IMX_GPIO_NR(6, 14)
@@ -860,6 +861,7 @@ static unsigned gpios_out_low[] = {
 	IMX_GPIO_NR(3, 22),	/* disable USB otg power */
 	IMX_GPIO_NR(5, 20),	/* ov5640 mipi camera reset */
 	IMX_GPIO_NR(2, 26),	/* turn led off */
+	IMX_GPIO_NR(3, 20),	/* turn led off */
 };
 
 static unsigned gpios_out_high[] = {
@@ -940,11 +942,11 @@ struct button_key {
 
 static struct button_key const buttons[] = {
 	{"back",	IMX_GPIO_NR(3, 0),	'B', 1},
-	{"home",	IMX_GPIO_NR(3, 1),	'H', 1},
+	{"up",		IMX_GPIO_NR(3, 1),	'U', 1},
 	{"menu",	IMX_GPIO_NR(3, 2),	'M', 1},
-	{"voldown",	IMX_GPIO_NR(3, 3),	'v', 1},
-	{"volup",	IMX_GPIO_NR(7, 13),	'V', 1},
-	{"forward",	IMX_GPIO_NR(4, 5),	'F', 1},
+	{"left",	IMX_GPIO_NR(3, 3),	'L', 1},
+	{"right",	IMX_GPIO_NR(7, 13),	'R', 1},
+	{"down",	IMX_GPIO_NR(4, 5),	'D', 1},
 	{"power",	IMX_GPIO_NR(7, 1),	'P', 0},
 };
 
@@ -1049,3 +1051,18 @@ int board_late_init(void)
 	setenv("board",board_type);
 	return 0;
 }
+
+void board_poweroff(void)
+{
+	/* Turn off main power */
+	gpio_direction_output(IMX_GPIO_NR(1, 16), 0);
+	udelay(1000000);
+}
+
+int do_poweroff(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
+{
+	board_poweroff();
+	return 0;
+}
+
+U_BOOT_CMD(poweroff, 1, 1, do_poweroff, "Turn off power", "");
