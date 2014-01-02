@@ -21,7 +21,6 @@
 #include <mmc.h>
 #include <fsl_esdhc.h>
 #include <micrel.h>
-#include <miiphy.h>
 #include <netdev.h>
 #include <linux/fb.h>
 #include <ipu_pixfmt.h>
@@ -38,10 +37,6 @@ DECLARE_GLOBAL_DATA_PTR;
 #define USDHC_PAD_CTRL (PAD_CTL_PKE | PAD_CTL_PUE |	       \
 	PAD_CTL_PUS_47K_UP  | PAD_CTL_SPEED_LOW |	       \
 	PAD_CTL_DSE_80ohm   | PAD_CTL_SRE_FAST  | PAD_CTL_HYS)
-
-#define ENET_PAD_CTRL  (PAD_CTL_PKE | PAD_CTL_PUE |		\
-	PAD_CTL_PUS_100K_UP | PAD_CTL_SPEED_MED	  |		\
-	PAD_CTL_DSE_40ohm   | PAD_CTL_HYS)
 
 #define SPI_PAD_CTRL (PAD_CTL_HYS |				\
 	PAD_CTL_PUS_100K_DOWN | PAD_CTL_SPEED_MED |		\
@@ -158,42 +153,6 @@ iomux_v3_cfg_t const usdhc4_pads[] = {
 	MX6_PAD_NANDF_D6__GPIO_2_6    | MUX_PAD_CTRL(NO_PAD_CTRL), /* CD */
 };
 
-iomux_v3_cfg_t const enet_pads1[] = {
-	MX6_PAD_ENET_MDIO__ENET_MDIO		| MUX_PAD_CTRL(ENET_PAD_CTRL),
-	MX6_PAD_ENET_MDC__ENET_MDC		| MUX_PAD_CTRL(ENET_PAD_CTRL),
-	MX6_PAD_RGMII_TXC__ENET_RGMII_TXC	| MUX_PAD_CTRL(ENET_PAD_CTRL),
-	MX6_PAD_RGMII_TD0__ENET_RGMII_TD0	| MUX_PAD_CTRL(ENET_PAD_CTRL),
-	MX6_PAD_RGMII_TD1__ENET_RGMII_TD1	| MUX_PAD_CTRL(ENET_PAD_CTRL),
-	MX6_PAD_RGMII_TD2__ENET_RGMII_TD2	| MUX_PAD_CTRL(ENET_PAD_CTRL),
-	MX6_PAD_RGMII_TD3__ENET_RGMII_TD3	| MUX_PAD_CTRL(ENET_PAD_CTRL),
-	MX6_PAD_RGMII_TX_CTL__RGMII_TX_CTL	| MUX_PAD_CTRL(ENET_PAD_CTRL),
-	MX6_PAD_ENET_REF_CLK__ENET_TX_CLK	| MUX_PAD_CTRL(ENET_PAD_CTRL),
-	/* pin 35 - 1 (PHY_AD2) on reset */
-	MX6_PAD_RGMII_RXC__GPIO_6_30		| MUX_PAD_CTRL(NO_PAD_CTRL),
-	/* pin 32 - 1 - (MODE0) all */
-	MX6_PAD_RGMII_RD0__GPIO_6_25		| MUX_PAD_CTRL(NO_PAD_CTRL),
-	/* pin 31 - 1 - (MODE1) all */
-	MX6_PAD_RGMII_RD1__GPIO_6_27		| MUX_PAD_CTRL(NO_PAD_CTRL),
-	/* pin 28 - 1 - (MODE2) all */
-	MX6_PAD_RGMII_RD2__GPIO_6_28		| MUX_PAD_CTRL(NO_PAD_CTRL),
-	/* pin 27 - 1 - (MODE3) all */
-	MX6_PAD_RGMII_RD3__GPIO_6_29		| MUX_PAD_CTRL(NO_PAD_CTRL),
-	/* pin 33 - 1 - (CLK125_EN) 125Mhz clockout enabled */
-	MX6_PAD_RGMII_RX_CTL__GPIO_6_24	| MUX_PAD_CTRL(NO_PAD_CTRL),
-	/* pin 42 PHY nRST */
-	MX6_PAD_EIM_D23__GPIO_3_23		| MUX_PAD_CTRL(NO_PAD_CTRL),
-	MX6_PAD_ENET_RXD0__GPIO_1_27		| MUX_PAD_CTRL(NO_PAD_CTRL),
-};
-
-iomux_v3_cfg_t const enet_pads2[] = {
-	MX6_PAD_RGMII_RXC__ENET_RGMII_RXC	| MUX_PAD_CTRL(ENET_PAD_CTRL),
-	MX6_PAD_RGMII_RD0__ENET_RGMII_RD0	| MUX_PAD_CTRL(ENET_PAD_CTRL),
-	MX6_PAD_RGMII_RD1__ENET_RGMII_RD1	| MUX_PAD_CTRL(ENET_PAD_CTRL),
-	MX6_PAD_RGMII_RD2__ENET_RGMII_RD2	| MUX_PAD_CTRL(ENET_PAD_CTRL),
-	MX6_PAD_RGMII_RD3__ENET_RGMII_RD3	| MUX_PAD_CTRL(ENET_PAD_CTRL),
-	MX6_PAD_RGMII_RX_CTL__RGMII_RX_CTL	| MUX_PAD_CTRL(ENET_PAD_CTRL),
-};
-
 /* WiFi/BT pads */
 iomux_v3_cfg_t const wifi_pads[] = {
 	(MX6_PAD_NANDF_CS1__GPIO_6_14 & ~MUX_PAD_CTRL_MASK)
@@ -209,24 +168,6 @@ iomux_v3_cfg_t const wifi_pads[] = {
 #define WIFI_WL_IRQ_GP	IMX_GPIO_NR(6, 14)
 #define WIFI_BT_REG_ON	IMX_GPIO_NR(6, 15)
 #define WIFI_BT_ENABLE_GP	IMX_GPIO_NR(6, 16)
-
-static void setup_iomux_enet(void)
-{
-	gpio_direction_output(IMX_GPIO_NR(1, 27), 0); /* PHY rst */
-	gpio_direction_output(IMX_GPIO_NR(6, 30), 1);
-	gpio_direction_output(IMX_GPIO_NR(6, 25), 1);
-	gpio_direction_output(IMX_GPIO_NR(6, 27), 1);
-	gpio_direction_output(IMX_GPIO_NR(6, 28), 1);
-	gpio_direction_output(IMX_GPIO_NR(6, 29), 1);
-	imx_iomux_v3_setup_multiple_pads(enet_pads1, ARRAY_SIZE(enet_pads1));
-	gpio_direction_output(IMX_GPIO_NR(6, 24), 1);
-
-	/* Need delay 10ms according to KSZ9021 spec */
-	udelay(1000 * 10);
-	gpio_set_value(IMX_GPIO_NR(1, 27), 1); /* PHY reset */
-
-	imx_iomux_v3_setup_multiple_pads(enet_pads2, ARRAY_SIZE(enet_pads2));
-}
 
 iomux_v3_cfg_t const usb_pads[] = {
 	MX6_PAD_GPIO_17__GPIO_7_12 | MUX_PAD_CTRL(NO_PAD_CTRL),
@@ -324,65 +265,6 @@ void setup_spi(void)
 					 ARRAY_SIZE(ecspi1_pads));
 }
 #endif
-
-unsigned short ksz9031_por_cmds[] = {
-	0x0205, 0x0,            /* RXDn pad skew */
-	0x0206, 0x0,            /* TXDn pad skew */
-	0x0208, 0x03ff,         /* TXC/RXC pad skew */
-	0x0, 0x0
-};
-
-int board_phy_config(struct phy_device *phydev)
-{
-	if (phydev->drv->uid == 0x221610) {
-		/* ksz9021 */
-		/* min rx data delay */
-		ksz9021_phy_extended_write(phydev,
-				MII_KSZ9021_EXT_RGMII_RX_DATA_SKEW, 0x0);
-		/* min tx data delay */
-		ksz9021_phy_extended_write(phydev,
-				MII_KSZ9021_EXT_RGMII_TX_DATA_SKEW, 0x0);
-		/* max rx/tx clock delay, min rx/tx control */
-		ksz9021_phy_extended_write(phydev,
-				MII_KSZ9021_EXT_RGMII_CLOCK_SKEW, 0xf0f0);
-	} else {
-		ksz9031_send_phy_cmds(phydev, ksz9031_por_cmds);
-	}
-	if (phydev->drv->config)
-		phydev->drv->config(phydev);
-
-	return 0;
-}
-
-int board_eth_init(bd_t *bis)
-{
-	uint32_t base = IMX_FEC_BASE;
-	struct mii_dev *bus = NULL;
-	struct phy_device *phydev = NULL;
-	int ret;
-
-	setup_iomux_enet();
-
-#ifdef CONFIG_FEC_MXC
-	bus = fec_get_miibus(base, -1);
-	if (!bus)
-		return 0;
-	/* scan phy 4,5,6,7 */
-	phydev = phy_find_by_mask(bus, (0xf << 4), PHY_INTERFACE_MODE_RGMII);
-	if (!phydev) {
-		free(bus);
-		return 0;
-	}
-	printf("using phy at %d\n", phydev->addr);
-	ret  = fec_probe(bis, -1, base, bus, phydev);
-	if (ret) {
-		printf("FEC MXC: %s:failed\n", __func__);
-		free(phydev);
-		free(bus);
-	}
-#endif
-	return 0;
-}
 
 #if defined(CONFIG_VIDEO_IPUV3)
 
