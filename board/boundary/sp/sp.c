@@ -429,14 +429,11 @@ static iomux_v3_cfg_t const i2c0_mux_pads[] = {
 };
 
 static iomux_v3_cfg_t const gpio_pads[] = {
-	MX6_PAD_GPIO_2__GPIO_1_2 | MUX_PAD_CTRL(PAD_CTL_DSE_240ohm),
-        MX6_PAD_GPIO_3__GPIO_1_3 | MUX_PAD_CTRL(PAD_CTL_DSE_240ohm),
-        MX6_PAD_GPIO_6__GPIO_1_6 | MUX_PAD_CTRL(PAD_CTL_DSE_240ohm),
-        MX6_PAD_GPIO_7__GPIO_1_7 | MUX_PAD_CTRL(PAD_CTL_DSE_240ohm)
-};
-
-static int gpio_pins[] = {
-	2, 3, 6, 7
+	MX6_PAD_GPIO_7__GPIO_1_7 | MUX_PAD_CTRL(PAD_CTL_DSE_240ohm),
+	MX6_PAD_GPIO_8__GPIO_1_8 | MUX_PAD_CTRL(PAD_CTL_DSE_240ohm),
+	MX6_PAD_GPIO_18__GPIO_7_13 | MUX_PAD_CTRL(PAD_CTL_DSE_240ohm),
+	MX6_PAD_GPIO_19__GPIO_4_5 | MUX_PAD_CTRL(PAD_CTL_DSE_240ohm),
+        MX6_PAD_EIM_D29__GPIO_3_29 | MUX_PAD_CTRL(PAD_CTL_DSE_240ohm),
 };
 
 int board_init(void)
@@ -455,9 +452,11 @@ int board_init(void)
 					 ARRAY_SIZE(i2c0_mux_pads));
 	imx_iomux_v3_setup_multiple_pads(
 		gpio_pads, ARRAY_SIZE(gpio_pads));
-
-	for(i=0; i < ARRAY_SIZE(gpio_pins); i++)
-		gpio_direction_output(IMX_GPIO_NR(1,gpio_pins[i]),0);
+	gpio_direction_output(IMX_GPIO_NR(1, 7),0);   /* GPIO7 */
+	gpio_direction_output(IMX_GPIO_NR(1, 8),0);   /* GPIO8 */
+	gpio_direction_input(IMX_GPIO_NR(7, 13));     /* GPIO18 */
+	gpio_direction_input(IMX_GPIO_NR(4, 5));      /* GPIO19 */
+	gpio_direction_output(IMX_GPIO_NR(3, 29), 1); /* EIM_D29: ONOFF */
 
 	gpio_direction_output(IMX_GPIO_NR(3,20),0);
 	gpio_direction_output(IMX_GPIO_NR(2,23),1); /* enable RTC */
@@ -474,6 +473,85 @@ int checkboard(void)
 
 	return 0;
 }
+
+struct button_key {
+	char const	*name;
+	unsigned	gpnum;
+	char		ident;
+};
+
+static struct button_key const buttons[] = {
+	{"back",	IMX_GPIO_NR(7, 13),	'B'},
+	{"home",	IMX_GPIO_NR(4, 5),	'H'},
+};
+
+/*
+ * generate a null-terminated string containing the buttons pressed
+ * returns number of keys pressed
+ */
+static int read_keys(char *buf)
+{
+	int i, numpressed = 0;
+	for (i = 0; i < ARRAY_SIZE(buttons); i++) {
+		if (!gpio_get_value(buttons[i].gpnum))
+			buf[numpressed++] = buttons[i].ident;
+	}
+	buf[numpressed] = '\0';
+	return numpressed;
+}
+
+static int do_kbd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+	char envvalue[ARRAY_SIZE(buttons)+1];
+	int numpressed = read_keys(envvalue);
+	setenv("keybd", envvalue);
+	return numpressed == 0;
+}
+
+U_BOOT_CMD(
+	kbd, 1, 1, do_kbd,
+	"Tests for keypresses, sets 'keybd' environment variable",
+	"Returns 0 (true) to shell if key is pressed."
+);
+
+#ifdef CONFIG_PREBOOT
+static char const kbd_magic_prefix[] = "key_magic";
+static char const kbd_command_prefix[] = "key_cmd";
+
+static void preboot_keys(void)
+{
+	int numpressed;
+	char keypress[ARRAY_SIZE(buttons)+1];
+	numpressed = read_keys(keypress);
+	if (numpressed) {
+		char *kbd_magic_keys = getenv("magic_keys");
+		char *suffix;
+		/*
+		 * loop over all magic keys
+		 */
+		for (suffix = kbd_magic_keys; *suffix; ++suffix) {
+			char *keys;
+			char magic[sizeof(kbd_magic_prefix) + 1];
+			sprintf(magic, "%s%c", kbd_magic_prefix, *suffix);
+			keys = getenv(magic);
+			if (keys) {
+				if (!strcmp(keys, keypress))
+					break;
+			}
+		}
+		if (*suffix) {
+			char cmd_name[sizeof(kbd_command_prefix) + 1];
+			char *cmd;
+			sprintf(cmd_name, "%s%c", kbd_command_prefix, *suffix);
+			cmd = getenv(cmd_name);
+			if (cmd) {
+				setenv("preboot", cmd);
+				return;
+			}
+		}
+	}
+}
+#endif
 
 #ifdef CONFIG_CMD_BMODE
 static const struct boot_mode board_boot_modes[] = {
