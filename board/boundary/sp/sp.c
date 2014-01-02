@@ -398,38 +398,6 @@ static iomux_v3_cfg_t const backlight_pads[] = {
 #define LVDS_BACKLIGHT_EN IMX_GPIO_NR(1, 17)
 };
 
-static iomux_v3_cfg_t const rgb_pads[] = {
-	MX6_PAD_DI0_DISP_CLK__IPU1_DI0_DISP_CLK,
-	MX6_PAD_DI0_PIN15__IPU1_DI0_PIN15,
-	MX6_PAD_DI0_PIN2__IPU1_DI0_PIN2,
-	MX6_PAD_DI0_PIN3__IPU1_DI0_PIN3,
-	MX6_PAD_DI0_PIN4__GPIO_4_20,
-	MX6_PAD_DISP0_DAT0__IPU1_DISP0_DAT_0,
-	MX6_PAD_DISP0_DAT1__IPU1_DISP0_DAT_1,
-	MX6_PAD_DISP0_DAT2__IPU1_DISP0_DAT_2,
-	MX6_PAD_DISP0_DAT3__IPU1_DISP0_DAT_3,
-	MX6_PAD_DISP0_DAT4__IPU1_DISP0_DAT_4,
-	MX6_PAD_DISP0_DAT5__IPU1_DISP0_DAT_5,
-	MX6_PAD_DISP0_DAT6__IPU1_DISP0_DAT_6,
-	MX6_PAD_DISP0_DAT7__IPU1_DISP0_DAT_7,
-	MX6_PAD_DISP0_DAT8__IPU1_DISP0_DAT_8,
-	MX6_PAD_DISP0_DAT9__IPU1_DISP0_DAT_9,
-	MX6_PAD_DISP0_DAT10__IPU1_DISP0_DAT_10,
-	MX6_PAD_DISP0_DAT11__IPU1_DISP0_DAT_11,
-	MX6_PAD_DISP0_DAT12__IPU1_DISP0_DAT_12,
-	MX6_PAD_DISP0_DAT13__IPU1_DISP0_DAT_13,
-	MX6_PAD_DISP0_DAT14__IPU1_DISP0_DAT_14,
-	MX6_PAD_DISP0_DAT15__IPU1_DISP0_DAT_15,
-	MX6_PAD_DISP0_DAT16__IPU1_DISP0_DAT_16,
-	MX6_PAD_DISP0_DAT17__IPU1_DISP0_DAT_17,
-	MX6_PAD_DISP0_DAT18__IPU1_DISP0_DAT_18,
-	MX6_PAD_DISP0_DAT19__IPU1_DISP0_DAT_19,
-	MX6_PAD_DISP0_DAT20__IPU1_DISP0_DAT_20,
-	MX6_PAD_DISP0_DAT21__IPU1_DISP0_DAT_21,
-	MX6_PAD_DISP0_DAT22__IPU1_DISP0_DAT_22,
-	MX6_PAD_DISP0_DAT23__IPU1_DISP0_DAT_23,
-};
-
 struct display_info_t {
 	int	bus;
 	int	addr;
@@ -440,32 +408,7 @@ struct display_info_t {
 };
 
 
-static void enable_hdmi(struct display_info_t const *dev)
-{
-	struct hdmi_regs *hdmi	= (struct hdmi_regs *)HDMI_ARB_BASE_ADDR;
-	u8 reg;
-	printf("%s: setup HDMI monitor\n", __func__);
-	reg = readb(&hdmi->phy_conf0);
-	reg |= HDMI_PHY_CONF0_PDZ_MASK;
-	writeb(reg, &hdmi->phy_conf0);
-
-	udelay(3000);
-	reg |= HDMI_PHY_CONF0_ENTMDS_MASK;
-	writeb(reg, &hdmi->phy_conf0);
-	udelay(3000);
-	reg |= HDMI_PHY_CONF0_GEN2_TXPWRON_MASK;
-	writeb(reg, &hdmi->phy_conf0);
-	writeb(HDMI_MC_PHYRSTZ_ASSERT, &hdmi->mc_phyrstz);
-}
-
-static int detect_i2c(struct display_info_t const *dev)
-{
-	return ((0 == i2c_set_bus_num(dev->bus))
-		&&
-		(0 == i2c_probe(dev->addr)));
-}
-
-static void enable_lvds(struct display_info_t const *dev)
+static void enable_lvds(void)
 {
 	struct iomuxc *iomux = (struct iomuxc *)
 				IOMUXC_BASE_ADDR;
@@ -476,197 +419,34 @@ static void enable_lvds(struct display_info_t const *dev)
 	gpio_direction_output(LVDS_BACKLIGHT_EN, 1);
 }
 
-static void enable_lvds_jeida(struct display_info_t const *dev)
-{
-	struct iomuxc *iomux = (struct iomuxc *)
-				IOMUXC_BASE_ADDR;
-	u32 reg = readl(&iomux->gpr[2]);
-	reg |= IOMUXC_GPR2_DATA_WIDTH_CH0_24BIT
-	     |IOMUXC_GPR2_BIT_MAPPING_CH0_JEIDA;
-	writel(reg, &iomux->gpr[2]);
-	gpio_direction_output(LVDS_BACKLIGHT_PWM, 1);
-	gpio_direction_output(LVDS_BACKLIGHT_EN, 1);
-}
-
-static int detect_none(struct display_info_t const *dev)
-{
-	return 0;
-}
-
-static void enable_rgb(struct display_info_t const *dev)
-{
-	gpio_direction_output(RGB_BACKLIGHT_GP, 1);
-}
-
-static struct display_info_t const displays[] = {{
-	.bus	= 2,
-	.addr	= 0x48,
-	.pixfmt	= IPU_PIX_FMT_RGB24,
-	.detect	= detect_none, /* don't auto-detect because TSC2004 is on-board */
-	.enable	= enable_rgb,
-	.mode	= {
-		.name           = "wqvga-rgb",
-		.refresh        = 57,
-		.xres           = 480,
-		.yres           = 272,
-		.pixclock       = 97786,
-		.left_margin    = 2,
-		.right_margin   = 1,
-		.upper_margin   = 3,
-		.lower_margin   = 2,
-		.hsync_len      = 41,
-		.vsync_len      = 10,
-		.sync           = 0,
-		.vmode          = FB_VMODE_NONINTERLACED
-} }, {
-	.bus	= 1,
-	.addr	= 0x50,
-	.pixfmt	= IPU_PIX_FMT_RGB24,
-	.detect	= detect_i2c,
-	.enable	= enable_hdmi,
-	.mode	= {
-		.name           = "HDMI",
-		.refresh        = 60,
-		.xres           = 1024,
-		.yres           = 768,
-		.pixclock       = 15385,
-		.left_margin    = 220,
-		.right_margin   = 40,
-		.upper_margin   = 21,
-		.lower_margin   = 7,
-		.hsync_len      = 60,
-		.vsync_len      = 10,
-		.sync           = FB_SYNC_EXT,
-		.vmode          = FB_VMODE_NONINTERLACED
-} }, {
-	.bus	= 0,
-	.addr	= 0,
-	.pixfmt	= IPU_PIX_FMT_RGB24,
-	.detect	= NULL,
-	.enable	= enable_lvds_jeida,
-	.mode	= {
-		.name           = "LDB-WXGA",
-		.refresh        = 60,
-		.xres           = 1280,
-		.yres           = 800,
-		.pixclock       = 14065,
-		.left_margin    = 40,
-		.right_margin   = 40,
-		.upper_margin   = 3,
-		.lower_margin   = 80,
-		.hsync_len      = 10,
-		.vsync_len      = 10,
-		.sync           = FB_SYNC_EXT,
-		.vmode          = FB_VMODE_NONINTERLACED
-} }, {
-	.bus	= 2,
-	.addr	= 0x4,
-	.pixfmt	= IPU_PIX_FMT_LVDS666,
-	.detect	= detect_i2c,
-	.enable	= enable_lvds,
-	.mode	= {
-		.name           = "Hannstar-XGA",
-		.refresh        = 60,
-		.xres           = 1024,
-		.yres           = 768,
-		.pixclock       = 15385,
-		.left_margin    = 220,
-		.right_margin   = 40,
-		.upper_margin   = 21,
-		.lower_margin   = 7,
-		.hsync_len      = 60,
-		.vsync_len      = 10,
-		.sync           = FB_SYNC_EXT,
-		.vmode          = FB_VMODE_NONINTERLACED
-} }, {
-	.bus	= 2,
-	.addr	= 0x38,
-	.pixfmt	= IPU_PIX_FMT_LVDS666,
-	.detect	= detect_i2c,
-	.enable	= enable_lvds,
-	.mode	= {
-		.name           = "wsvga-lvds",
-		.refresh        = 60,
-		.xres           = 1024,
-		.yres           = 600,
-		.pixclock       = 15385,
-		.left_margin    = 220,
-		.right_margin   = 40,
-		.upper_margin   = 21,
-		.lower_margin   = 7,
-		.hsync_len      = 60,
-		.vsync_len      = 10,
-		.sync           = FB_SYNC_EXT,
-		.vmode          = FB_VMODE_NONINTERLACED
-} }, {
-	.bus	= 2,
-	.addr	= 0x48,
-	.pixfmt	= IPU_PIX_FMT_RGB666,
-	.detect	= detect_none, /* don't auto-detect because TSC2004 is on-board */
-	.enable	= enable_rgb,
-	.mode	= {
-		.name           = "wvga-rgb",
-		.refresh        = 57,
-		.xres           = 800,
-		.yres           = 480,
-		.pixclock       = 37037,
-		.left_margin    = 40,
-		.right_margin   = 60,
-		.upper_margin   = 10,
-		.lower_margin   = 10,
-		.hsync_len      = 20,
-		.vsync_len      = 10,
-		.sync           = 0,
-		.vmode          = FB_VMODE_NONINTERLACED
-} } };
+static struct fb_videomode videomode = {
+	.name           = "LG-9.7",
+	.refresh        = 60,
+	.xres           = 1024,
+	.yres           = 768,
+	.pixclock       = 15385, /* ~65MHz */
+	.left_margin    = 480,
+	.right_margin   = 260,
+	.upper_margin   = 16,
+	.lower_margin   = 6,
+	.hsync_len      = 250,
+	.vsync_len      = 10,
+	.sync           = FB_SYNC_EXT,
+	.vmode          = FB_VMODE_NONINTERLACED
+};
 
 int board_video_skip(void)
 {
-	int i;
-	int ret;
-	char const *panel;
-
-	imx_iomux_v3_setup_multiple_pads(
-		rgb_pads,
-		 ARRAY_SIZE(rgb_pads));
-
-	panel = getenv("panel");
-	if (!panel) {
-		for (i = 0; i < ARRAY_SIZE(displays); i++) {
-			struct display_info_t const *dev = displays+i;
-			if (dev->detect && dev->detect(dev)) {
-				panel = dev->mode.name;
-				printf("auto-detected panel %s\n", panel);
-				break;
-			}
-		}
-		if (!panel) {
-			panel = displays[0].mode.name;
-			i = 0;
-			printf("No panel detected: default to %s\n", panel);
-		}
-	} else {
-		for (i = 0; i < ARRAY_SIZE(displays); i++) {
-			if (!strcmp(panel, displays[i].mode.name))
-				break;
-		}
-	}
-	if (i < ARRAY_SIZE(displays)) {
-		ret = ipuv3_fb_init(&displays[i].mode, 0,
-				    displays[i].pixfmt);
-		if (!ret) {
-			displays[i].enable(displays+i);
-			printf("Display: %s (%ux%u)\n",
-			       displays[i].mode.name,
-			       displays[i].mode.xres,
-			       displays[i].mode.yres);
-		} else
-			printf("LCD %s cannot be configured: %d\n",
-			       displays[i].mode.name, ret);
-	} else {
-		printf("unsupported panel %s\n", panel);
-		ret = -EINVAL;
-	}
+	int ret = ipuv3_fb_init(&videomode, 0, IPU_PIX_FMT_LVDS666);
+	if (!ret) {
+		enable_lvds();
+		printf("Display: %s (%ux%u)\n",
+		       videomode.name,
+		       videomode.xres,
+		       videomode.yres);
+	} else
+		printf("LCD %s cannot be configured: %d\n",
+		       videomode.name, ret);
 	return (0 != ret);
 }
 
@@ -683,16 +463,6 @@ static void setup_display(void)
 	reg |=   MXC_CCM_CCGR3_IPU1_IPU_DI0_OFFSET
 		|MXC_CCM_CCGR3_LDB_DI0_MASK;
 	writel(reg, &mxc_ccm->CCGR3);
-
-	/* Turn on HDMI PHY clock */
-	reg = __raw_readl(&mxc_ccm->CCGR2);
-	reg |=  MXC_CCM_CCGR2_HDMI_TX_IAHBCLK_MASK
-	       |MXC_CCM_CCGR2_HDMI_TX_ISFRCLK_MASK;
-	writel(reg, &mxc_ccm->CCGR2);
-
-	/* clear HDMI PHY reset */
-	writeb(HDMI_MC_PHYRSTZ_DEASSERT, &hdmi->mc_phyrstz);
-
 
 	/* set LDB0, LDB1 clk select to 011/011 */
 	reg = readl(&mxc_ccm->cs2cdr);
