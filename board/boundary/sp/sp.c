@@ -171,6 +171,7 @@ iomux_v3_cfg_t const wifi_pads[] = {
 
 iomux_v3_cfg_t const usb_pads[] = {
 	MX6_PAD_GPIO_17__GPIO_7_12 | MUX_PAD_CTRL(NO_PAD_CTRL),
+	NEW_PAD_CTRL(MX6_PAD_GPIO_1__USB_OTG_ID, USDHC_PAD_CTRL), /* USBOTG ID pin */
 };
 
 static void setup_iomux_uart(void)
