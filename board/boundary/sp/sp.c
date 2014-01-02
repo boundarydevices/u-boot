@@ -778,7 +778,7 @@ int board_init(void)
 
 int checkboard(void)
 {
-	puts("Board: Boundary Nit6x-Lite\n");
+	puts("Board: Boundary SP\n");
 
 	return 0;
 }
