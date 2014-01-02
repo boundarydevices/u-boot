@@ -78,7 +78,7 @@ iomux_v3_cfg_t const uart2_pads[] = {
 
 #define PC MUX_PAD_CTRL(I2C_PAD_CTRL)
 
-/* I2C1 */
+/* I2C1: ADS1000, AR1020-I/SO*/
 struct i2c_pads_info i2c_pad_info0 = {
 	.scl = {
 		.i2c_mode = MX6_PAD_EIM_D21__I2C1_SCL | PC,
@@ -92,7 +92,6 @@ struct i2c_pads_info i2c_pad_info0 = {
 	}
 };
 
-/* I2C2 Camera, MIPI */
 struct i2c_pads_info i2c_pad_info1 = {
 	.scl = {
 		.i2c_mode = MX6_PAD_KEY_COL3__I2C2_SCL | PC,
@@ -106,7 +105,7 @@ struct i2c_pads_info i2c_pad_info1 = {
 	}
 };
 
-/* I2C3, J15 - RGB connector */
+/* I2C3, J8 - external touch, ISL1208 */
 struct i2c_pads_info i2c_pad_info2 = {
 	.scl = {
 		.i2c_mode = MX6_PAD_GPIO_5__I2C3_SCL | PC,
