@@ -144,6 +144,20 @@ iomux_v3_cfg_t const usdhc3_pads[] = {
 	MX6_PAD_SD3_DAT5__GPIO_7_0    | MUX_PAD_CTRL(NO_PAD_CTRL), /* CD */
 };
 
+iomux_v3_cfg_t const usdhc4_pads[] = {
+	MX6_PAD_SD4_CLK__USDHC4_CLK   | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD4_CMD__USDHC4_CMD   | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD4_DAT0__USDHC4_DAT0 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD4_DAT1__USDHC4_DAT1 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD4_DAT2__USDHC4_DAT2 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD4_DAT3__USDHC4_DAT3 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD4_DAT4__USDHC4_DAT4 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD4_DAT5__USDHC4_DAT5 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD4_DAT6__USDHC4_DAT6 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD4_DAT7__USDHC4_DAT7 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_NANDF_D6__GPIO_2_6    | MUX_PAD_CTRL(NO_PAD_CTRL), /* CD */
+};
+
 iomux_v3_cfg_t const enet_pads1[] = {
 	MX6_PAD_ENET_MDIO__ENET_MDIO		| MUX_PAD_CTRL(ENET_PAD_CTRL),
 	MX6_PAD_ENET_MDC__ENET_MDC		| MUX_PAD_CTRL(ENET_PAD_CTRL),
@@ -242,29 +256,55 @@ int board_ehci_hcd_init(int port)
 
 int board_mmc_getcd(struct mmc *mmc)
 {
-	int ret;
+	struct fsl_esdhc_cfg *cfg = (struct fsl_esdhc_cfg *)mmc->priv;
+	int gp_cd = (cfg->esdhc_base == USDHC3_BASE_ADDR) ? CONFIG_SDHC3_CD :
+			CONFIG_SDHC4_CD;
 
-	gpio_direction_input(IMX_GPIO_NR(7, 0));
-	ret = !gpio_get_value(IMX_GPIO_NR(7, 0));
-
-	return ret;
+	if (gp_cd >= 0) {
+		gpio_direction_input(gp_cd);
+		return !gpio_get_value(gp_cd);
+	}
+	return 1;	/* eMMC is always present */
 }
 
-static struct fsl_esdhc_cfg usdhc_cfg = {
-	.esdhc_base = USDHC3_BASE_ADDR,
-	.max_bus_width = 4
+
+struct fsl_esdhc_cfg usdhc_cfg[2] = {
+	{USDHC3_BASE_ADDR},
+	{USDHC4_BASE_ADDR},
 };
 
 int board_mmc_init(bd_t *bis)
 {
-	printf("%s:\n", __func__ );
-	usdhc_cfg.sdhc_clk = mxc_get_clock(MXC_ESDHC3_CLK);
+	s32 status = 0;
+	u32 index = 0;
 
-	printf("%s:setup pads\n", __func__ );
-	imx_iomux_v3_setup_multiple_pads(
-		usdhc3_pads, ARRAY_SIZE(usdhc3_pads));
-	printf("%s:initialize\n", __func__ );
-	return fsl_esdhc_initialize(bis, &usdhc_cfg);
+	usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC3_CLK);
+	usdhc_cfg[1].sdhc_clk = mxc_get_clock(MXC_ESDHC4_CLK);
+
+	usdhc_cfg[0].max_bus_width = 4;
+	usdhc_cfg[1].max_bus_width = 8;
+
+	for (index = 0; index < CONFIG_SYS_FSL_USDHC_NUM; ++index) {
+		switch (index) {
+		case 0:
+			imx_iomux_v3_setup_multiple_pads(
+				usdhc3_pads, ARRAY_SIZE(usdhc3_pads));
+			break;
+		case 1:
+		       imx_iomux_v3_setup_multiple_pads(
+			       usdhc4_pads, ARRAY_SIZE(usdhc4_pads));
+		       break;
+		default:
+		       printf("Warning: you configured more USDHC controllers"
+			       "(%d) then supported by the board (%d)\n",
+			       index + 1, CONFIG_SYS_FSL_USDHC_NUM);
+		       return status;
+		}
+
+		status |= fsl_esdhc_initialize(bis, &usdhc_cfg[index]);
+	}
+
+	return status;
 }
 #endif
 

@@ -29,6 +29,9 @@
 
 #define CONFIG_MACH_TYPE	3771
 
+#define CONFIG_SDHC3_CD		IMX_GPIO_NR(7, 0)
+#define CONFIG_SDHC4_CD		-1
+
 #include <asm/arch/imx-regs.h>
 #include <asm/imx-common/gpio.h>
 
@@ -84,7 +87,7 @@
 #define CONFIG_FSL_ESDHC
 #define CONFIG_FSL_USDHC
 #define CONFIG_SYS_FSL_ESDHC_ADDR      0
-#define CONFIG_SYS_FSL_USDHC_NUM       1
+#define CONFIG_SYS_FSL_USDHC_NUM       2
 
 #define CONFIG_MMC
 #define CONFIG_CMD_MMC
