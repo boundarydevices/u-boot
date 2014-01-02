@@ -33,11 +33,7 @@ if itest.s x$bootpart == x ; then
 	bootpart=1
 fi
 
-if test "sata" = "${dtype}" ; then
-	setenv bootargs "$bootargs root=/dev/sda$bootpart" ;
-else
-	setenv bootargs "$bootargs root=/dev/mmcblk0p$bootpart" ;
-fi
+setenv bootargs "$bootargs root=/dev/mmcblk0p$bootpart" ;
 
 dtbname="imx6";
 if itest.s x6S != "x$cpu" ; then
