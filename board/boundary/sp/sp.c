@@ -569,3 +569,21 @@ int misc_init_r(void)
 #endif
 	return 0;
 }
+
+void board_poweroff(void)
+{
+	/* Turn off main power */
+	gpio_direction_output(IMX_GPIO_NR(3, 29), 0);
+	while (1) {
+		udelay(1000000);
+	}
+}
+
+int do_poweroff(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
+{
+	board_poweroff();
+	return 0;
+}
+
+U_BOOT_CMD(poweroff, 1, 1, do_poweroff, "Turn off power", "");
+
