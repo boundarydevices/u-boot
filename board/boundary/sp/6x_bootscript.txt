@@ -3,6 +3,7 @@ setenv bootpart 2
 setenv bootdir /
 
 setenv bootargs enable_wait_mode=off
+setenv bootargs $bootargs ar1020_i2c.calibration=-17810,0,60214224,0,-22625,78839808,65536,768,1024
 setenv nextcon 0;
 
 if hdmidet ; then
