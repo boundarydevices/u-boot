@@ -11,7 +11,7 @@ setenv bootargs $bootargs ft5x06_ts.screenres=800,1280
 setenv bootargs $bootargs ft5x06_ts.calibration=0,-65538,52428800,65536,0,0,65536
 setenv bootargs $bootargs g_ether.dev_addr=55:aa:55:aa:55:aa
 setenv bootargs $bootargs video=mxcfb1:dev=hdmi,1280x720M@60 video=mxcfb2:off video=mxcfb3:off 
-setenv fbmem=28M
+setenv fbmem 28M
 setenv nextcon 1
 
 i2c dev 1 ;
