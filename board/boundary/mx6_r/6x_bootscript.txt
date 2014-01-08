@@ -70,6 +70,20 @@ if itest.s x == x$allow_noncea ; then
 	echo "only CEA modes allowed on HDMI port";
 fi
 
+if kbd ; then
+	if itest.s xD == x$keybd ; then
+		if ${fs}load ${dtype} ${disk}:1 10800000 ${bootdir}uImage-usbwrite ; then
+			if ${fs}load ${dtype} ${disk}:1 12800000 ${bootdir}uramdisk-usbwrite.img ; then
+			   if itest.s x$havedtb == x ; then
+					bootm 10800000 12800000 ;
+			   else
+					bootm 10800000 12800000 12000000 ;
+			   fi
+			fi
+		fi
+	fi
+fi
+
 if ${fs}load ${dtype} ${disk}:1 10800000 ${bootdir}uImage ; then
 	if itest.s x$havedtb == x ; then
 		bootm 10800000 ;
