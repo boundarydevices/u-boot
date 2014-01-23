@@ -336,7 +336,6 @@ static void setup_display(void)
 {
 	struct mxc_ccm_reg *mxc_ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
 	struct iomuxc *iomux = (struct iomuxc *)IOMUXC_BASE_ADDR;
-	struct hdmi_regs *hdmi	= (struct hdmi_regs *)HDMI_ARB_BASE_ADDR;
 
 	int reg;
 
@@ -438,8 +437,6 @@ static iomux_v3_cfg_t const gpio_pads[] = {
 
 int board_init(void)
 {
-	int i;
-
 	/* address of boot parameters */
 	gd->bd->bi_boot_params = PHYS_SDRAM + 0x100;
 
@@ -566,6 +563,9 @@ int misc_init_r(void)
 {
 #ifdef CONFIG_CMD_BMODE
 	add_board_boot_modes(board_boot_modes);
+#endif
+#ifdef CONFIG_PREBOOT
+	preboot_keys();
 #endif
 	return 0;
 }
