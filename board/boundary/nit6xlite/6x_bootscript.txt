@@ -58,11 +58,7 @@ done
 
 setenv bootargs $bootargs $fbmem
 setenv bootargs "$bootargs console=ttymxc1,115200 vmalloc=400M consoleblank=0 rootwait"
+setenv "bootargs $bootargs root=/dev/mmcblk0p1" ;
 
-if test "sata" = "${dtype}" ; then
-	setenv bootargs "$bootargs root=/dev/sda1" ;
-else
-	setenv "bootargs $bootargs root=/dev/mmcblk0p1" ;
-fi
 ${fs}load ${dtype} ${disk}:1 10800000 /boot/uImage && bootm 10800000 ;
 echo "Error loading kernel image"
