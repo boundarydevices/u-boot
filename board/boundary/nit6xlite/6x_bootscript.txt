@@ -60,5 +60,24 @@ setenv bootargs $bootargs $fbmem
 setenv bootargs "$bootargs console=ttymxc1,115200 vmalloc=400M consoleblank=0 rootwait"
 setenv "bootargs $bootargs root=/dev/mmcblk0p1" ;
 
-${fs}load ${dtype} ${disk}:1 10800000 /boot/uImage && bootm 10800000 ;
+if itest.s x == x${bootdir} ; then
+	bootdir=/boot/
+fi
+
+dtbname="imx6dl-nit6xlite.dtb";
+if ${fs}load ${dtype} ${disk}:1 12000000 ${bootdir}$dtbname ; then
+	havedtb=1;
+	setenv fdt_addr 0x11000000
+	setenv fdt_high 0xffffffff
+else
+	havedtb=
+fi
+
+if ${fs}load ${dtype} ${disk}:1 10800000 ${bootdir}uImage ; then
+	if itest.s x$havedtb == x ; then
+		bootm 10800000 ;
+	else
+		bootm 10800000 - 12000000
+	fi
+fi
 echo "Error loading kernel image"
