@@ -58,7 +58,12 @@ done
 
 setenv bootargs $bootargs $fbmem
 setenv bootargs "$bootargs console=ttymxc1,115200 vmalloc=400M consoleblank=0 rootwait"
-setenv "bootargs $bootargs root=/dev/mmcblk0p1" ;
+
+if itest.s x$bootpart == x ; then
+	bootpart=1
+fi
+
+setenv "bootargs $bootargs root=/dev/mmcblk0p${bootpart}" ;
 
 if itest.s x == x${bootdir} ; then
 	bootdir=/boot/
