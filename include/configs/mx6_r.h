@@ -17,9 +17,8 @@
 
 #define CONFIG_MACH_TYPE	3774
 #define CONFIG_BOARD_NAME	"mx6_r"
-#define CONFIG_SDHC3_CD		IMX_GPIO_NR(7, 0)
-#define CONFIG_SDHC4_CD		-1
-#define CONFIG_SDHC4_WIDTH	4
+#define CONFIG_SDHC3_CD		-1
+#define CONFIG_SDHC4_CD		IMX_GPIO_NR(4, 20)
 #include <asm/arch/imx-regs.h>
 #include <asm/imx-common/gpio.h>
 

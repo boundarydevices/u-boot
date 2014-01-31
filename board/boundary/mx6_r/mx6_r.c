@@ -137,7 +137,10 @@ iomux_v3_cfg_t const usdhc3_pads[] = {
 	MX6_PAD_SD3_DAT1__USDHC3_DAT1 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_SD3_DAT2__USDHC3_DAT2 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_SD3_DAT3__USDHC3_DAT3 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	MX6_PAD_SD3_DAT5__GPIO_7_0    | MUX_PAD_CTRL(NO_PAD_CTRL), /* CD */
+	MX6_PAD_SD3_DAT4__USDHC3_DAT4 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD3_DAT5__USDHC3_DAT5 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD3_DAT6__USDHC3_DAT6 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD3_DAT7__USDHC3_DAT7 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 };
 
 iomux_v3_cfg_t const usdhc4_pads[] = {
@@ -147,13 +150,7 @@ iomux_v3_cfg_t const usdhc4_pads[] = {
 	MX6_PAD_SD4_DAT1__USDHC4_DAT1 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_SD4_DAT2__USDHC4_DAT2 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_SD4_DAT3__USDHC4_DAT3 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-#if (CONFIG_SDHC4_WIDTH==8)
-	MX6_PAD_SD4_DAT4__USDHC4_DAT4 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	MX6_PAD_SD4_DAT5__USDHC4_DAT5 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	MX6_PAD_SD4_DAT6__USDHC4_DAT6 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	MX6_PAD_SD4_DAT7__USDHC4_DAT7 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-#endif
-	MX6_PAD_NANDF_D6__GPIO_2_6    | MUX_PAD_CTRL(NO_PAD_CTRL), /* CD */
+	MX6_PAD_DI0_PIN4__GPIO_4_20   | MUX_PAD_CTRL(NO_PAD_CTRL), /* CD */
 };
 
 /* Button assignments for J14 */
@@ -203,8 +200,8 @@ int board_ehci_hcd_init(int port)
 
 #ifdef CONFIG_FSL_ESDHC
 struct fsl_esdhc_cfg usdhc_cfg[2] = {
-	{USDHC3_BASE_ADDR},
 	{USDHC4_BASE_ADDR},
+	{USDHC3_BASE_ADDR},
 };
 
 int board_mmc_getcd(struct mmc *mmc)
@@ -229,15 +226,15 @@ int board_mmc_init(bd_t *bis)
 	usdhc_cfg[1].sdhc_clk = mxc_get_clock(MXC_ESDHC4_CLK);
 
 	usdhc_cfg[0].max_bus_width = 4;
-	usdhc_cfg[1].max_bus_width = CONFIG_SDHC4_WIDTH;
+	usdhc_cfg[1].max_bus_width = 8;
 
 	for (index = 0; index < CONFIG_SYS_FSL_USDHC_NUM; ++index) {
 		switch (index) {
-		case 0:
+		case 1:
 			imx_iomux_v3_setup_multiple_pads(
 				usdhc3_pads, ARRAY_SIZE(usdhc3_pads));
 			break;
-		case 1:
+		case 0:
 		       imx_iomux_v3_setup_multiple_pads(
 			       usdhc4_pads, ARRAY_SIZE(usdhc4_pads));
 		       break;
@@ -354,7 +351,6 @@ static iomux_v3_cfg_t const rgb_pads[] = {
 	MX6_PAD_DI0_PIN15__IPU1_DI0_PIN15,
 	MX6_PAD_DI0_PIN2__IPU1_DI0_PIN2,
 	MX6_PAD_DI0_PIN3__IPU1_DI0_PIN3,
-	MX6_PAD_DI0_PIN4__GPIO_4_20,
 	MX6_PAD_DISP0_DAT0__IPU1_DISP0_DAT_0,
 	MX6_PAD_DISP0_DAT1__IPU1_DISP0_DAT_1,
 	MX6_PAD_DISP0_DAT2__IPU1_DISP0_DAT_2,
