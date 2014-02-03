@@ -164,7 +164,7 @@ static iomux_v3_cfg_t const button_pads[] = {
 	NEW_PAD_CTRL(MX6_PAD_GPIO_19__GPIO_4_5, WEAK_PULLUP),	/* pin 6 - right */
 	NEW_PAD_CTRL(MX6_PAD_KEY_COL2__GPIO_4_10, WEAK_PULLUP),	/* pin 7 - NC */
 	NEW_PAD_CTRL(MX6_PAD_KEY_ROW2__GPIO_4_11, WEAK_PULLUP),	/* pin 8 - NC */
-	NEW_PAD_CTRL(MX6_PAD_SD3_DAT4__GPIO_7_1, WEAK_PULLDOWN),/* pin 9 inverted, Main power off request */
+	NEW_PAD_CTRL(MX6_PAD_CSI0_DAT15__GPIO_6_1, WEAK_PULLDOWN),/* pin 9 inverted, Main power off request */
 	NEW_PAD_CTRL(MX6_PAD_NANDF_CS0__GPIO_6_11, WEAK_PULLUP), /* pin 10 - NC */
 	NEW_PAD_CTRL(MX6_PAD_SD1_DAT1__GPIO_1_17, WEAK_PULLUP),	/* pin 11 - NC */
 };
@@ -940,7 +940,7 @@ static struct button_key const buttons[] = {
 	{"left",	IMX_GPIO_NR(3, 3),	'L', 1},
 	{"right",	IMX_GPIO_NR(7, 13),	'R', 1},
 	{"down",	IMX_GPIO_NR(4, 5),	'D', 1},
-	{"power",	IMX_GPIO_NR(7, 1),	'P', 0},
+	{"power",	IMX_GPIO_NR(6, 1),	'P', 0},
 };
 
 /*
