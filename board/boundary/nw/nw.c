@@ -28,6 +28,8 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
+#define GP_USB_OTG_PWR	IMX_GPIO_NR(3, 22)
+
 #define UART_PAD_CTRL  (PAD_CTL_PKE | PAD_CTL_PUE |	       \
 	PAD_CTL_PUS_100K_UP | PAD_CTL_SPEED_MED |	       \
 	PAD_CTL_DSE_40ohm   | PAD_CTL_SRE_FAST  | PAD_CTL_HYS)
@@ -191,6 +193,15 @@ int board_ehci_hcd_init(int port)
 
 	return 0;
 }
+
+int board_ehci_power(int port, int on)
+{
+	if (port)
+		return 0;
+	gpio_set_value(GP_USB_OTG_PWR, on);
+	return 0;
+}
+
 #endif
 
 #ifdef CONFIG_FSL_ESDHC
@@ -421,6 +432,13 @@ static iomux_v3_cfg_t const i2c0_mux_pads[] = {
 
 int board_init(void)
 {
+	struct iomuxc_base_regs *const iomuxc_regs
+		= (struct iomuxc_base_regs *)IOMUXC_BASE_ADDR;
+
+	clrsetbits_le32(&iomuxc_regs->gpr[1],
+			IOMUXC_GPR1_OTG_ID_MASK,
+			IOMUXC_GPR1_OTG_ID_GPIO1);
+
 	/* address of boot parameters */
 	gd->bd->bi_boot_params = PHYS_SDRAM + 0x100;
 
