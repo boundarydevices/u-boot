@@ -285,29 +285,18 @@ void setup_spi(void)
 }
 #endif
 
-unsigned short ksz9031_por_cmds[] = {
-	0x0205, 0x0,            /* RXDn pad skew */
-	0x0206, 0x0,            /* TXDn pad skew */
-	0x0208, 0x03ff,         /* TXC/RXC pad skew */
-	0x0, 0x0
-};
-
 int board_phy_config(struct phy_device *phydev)
 {
-	if (phydev->drv->uid == 0x221610) {
-		/* ksz9021 */
-		/* min rx data delay */
-		ksz9021_phy_extended_write(phydev,
-				MII_KSZ9021_EXT_RGMII_RX_DATA_SKEW, 0x0);
-		/* min tx data delay */
-		ksz9021_phy_extended_write(phydev,
-				MII_KSZ9021_EXT_RGMII_TX_DATA_SKEW, 0x0);
-		/* max rx/tx clock delay, min rx/tx control */
-		ksz9021_phy_extended_write(phydev,
-				MII_KSZ9021_EXT_RGMII_CLOCK_SKEW, 0xf0f0);
-	} else {
-		ksz9031_send_phy_cmds(phydev, ksz9031_por_cmds);
-	}
+	/* ksz9021 */
+	/* min rx data delay */
+	ksz9021_phy_extended_write(phydev,
+			MII_KSZ9021_EXT_RGMII_RX_DATA_SKEW, 0x0);
+	/* min tx data delay */
+	ksz9021_phy_extended_write(phydev,
+			MII_KSZ9021_EXT_RGMII_TX_DATA_SKEW, 0x0);
+	/* max rx/tx clock delay, min rx/tx control */
+	ksz9021_phy_extended_write(phydev,
+			MII_KSZ9021_EXT_RGMII_CLOCK_SKEW, 0xf0f0);
 	if (phydev->drv->config)
 		phydev->drv->config(phydev);
 
