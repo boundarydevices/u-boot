@@ -143,6 +143,8 @@ iomux_v3_cfg_t const usdhc4_pads[] = {
 #define GP_PHY_CLK125		IMX_GPIO_NR(6, 24)
 #define GP_PHY_RESET		IMX_GPIO_NR(1, 27)
 
+#ifdef CONFIG_FEC_MXC
+iomux_v3_cfg_t const enet_pads1[] = {
 	MX6_PAD_ENET_MDIO__ENET_MDIO		| MUX_PAD_CTRL(ENET_PAD_CTRL),
 	MX6_PAD_ENET_MDC__ENET_MDC		| MUX_PAD_CTRL(ENET_PAD_CTRL),
 	MX6_PAD_RGMII_TXC__RGMII_TXC	| MUX_PAD_CTRL(ENET_PAD_CTRL),
@@ -177,6 +179,7 @@ iomux_v3_cfg_t const enet_pads2[] = {
 	MX6_PAD_RGMII_RD3__RGMII_RD3	| MUX_PAD_CTRL(ENET_PAD_CTRL),
 	MX6_PAD_RGMII_RX_CTL__RGMII_RX_CTL	| MUX_PAD_CTRL(ENET_PAD_CTRL),
 };
+#endif
 
 /* Broadcom bcm4330 pads on nitrogen6x */
 iomux_v3_cfg_t const bcm4330_pads[] = {
