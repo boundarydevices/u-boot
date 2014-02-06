@@ -226,6 +226,17 @@
 			"done ; " \
 		"done ; " \
 	"done\0" \
+	"ipaddr=10.0.0.2\0" \
+	"netmask=255.255.255.0\0" \
+	"serverip=10.0.0.1\0" \
+	"usbnet_devaddr=6A:92:F8:99:5B:7A\0" \
+	"usbnet_hostaddr=00:19:b8:99:88:77\0" \
+	"ethprime=usb_ether\0" \
+	"ethact=usb_ether\0" \
+	"ncip=10.0.0.1\0" \
+	"bootargs=console=ttymxc1,115200 rootwait enable_wait_mode=off\0" \
+	"netboot=tftpboot 10800000 10.0.0.1:uImage && tftpboot 12800000 10.0.0.1:uramdisk.img && bootm 10800000 12800000\0" \
+
 
 /* Miscellaneous configurable options */
 #define CONFIG_SYS_LONGHELP
