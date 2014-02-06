@@ -425,6 +425,15 @@ int overwrite_console(void)
 	return 1;
 }
 
+int board_eth_init(bd_t *bis)
+{
+#ifdef CONFIG_MV_UDC
+	/* For otg ethernet*/
+	usb_eth_initialize(bis);
+#endif
+	return 0;
+}
+
 int board_init(void)
 {
 	struct iomuxc_base_regs *const iomuxc_regs
