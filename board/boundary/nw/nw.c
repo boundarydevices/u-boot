@@ -172,6 +172,7 @@ iomux_v3_cfg_t const wifi_pads[] = {
 #define WIFI_BT_ENABLE_GP	IMX_GPIO_NR(6, 16)
 
 iomux_v3_cfg_t const usb_pads[] = {
+	MX6_PAD_KEY_ROW4__GPIO4_IO15 | MUX_PAD_CTRL(NO_PAD_CTRL),
 	NEW_PAD_CTRL(MX6_PAD_EIM_D22__GPIO3_IO22, WEAK_PULLUP),	/* usbotg power */
 	NEW_PAD_CTRL(MX6_PAD_GPIO_1__USB_OTG_ID, USDHC_PAD_CTRL), /* USBOTG ID pin */
 	MX6_PAD_KEY_COL4__USB_OTG_OC,			/* USBOTG OC pin */
@@ -187,9 +188,9 @@ static void setup_iomux_uart(void)
 int board_ehci_hcd_init(int port)
 {
 	/* Reset USB hub */
-	gpio_direction_output(IMX_GPIO_NR(7, 12), 0);
+	gpio_direction_output(IMX_GPIO_NR(4, 15), 0);
 	mdelay(2);
-	gpio_set_value(IMX_GPIO_NR(7, 12), 1);
+	gpio_set_value(IMX_GPIO_NR(4, 15), 1);
 
 	return 0;
 }
