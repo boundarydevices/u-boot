@@ -32,6 +32,8 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
+#define GP_USB_OTG_PWR IMX_GPIO_NR(3, 22)
+
 #define UART_PAD_CTRL  (PAD_CTL_PKE | PAD_CTL_PUE |	       \
 	PAD_CTL_PUS_100K_UP | PAD_CTL_SPEED_MED |	       \
 	PAD_CTL_DSE_40ohm   | PAD_CTL_SRE_FAST  | PAD_CTL_HYS)
@@ -231,12 +233,21 @@ static void setup_iomux_enet(void)
 
 iomux_v3_cfg_t const usb_pads[] = {
 	MX6_PAD_GPIO_17__GPIO7_IO12 | MUX_PAD_CTRL(NO_PAD_CTRL),
+	NEW_PAD_CTRL(MX6_PAD_EIM_D22__GPIO3_IO22, WEAK_PULLUP),	/* usbotg power */
 };
 
 static void setup_iomux_uart(void)
 {
 	imx_iomux_v3_setup_multiple_pads(uart1_pads, ARRAY_SIZE(uart1_pads));
 	imx_iomux_v3_setup_multiple_pads(uart2_pads, ARRAY_SIZE(uart2_pads));
+}
+
+int board_ehci_power(int port, int on)
+{
+       if (port)
+               return 0;
+       gpio_set_value(GP_USB_OTG_PWR, on);
+       return 0;
 }
 
 #ifdef CONFIG_USB_EHCI_MX6
@@ -374,6 +385,11 @@ int board_eth_init(bd_t *bis)
 		free(phydev);
 		free(bus);
 	}
+#endif
+
+#ifdef CONFIG_MV_UDC
+	/* For otg ethernet*/
+	usb_eth_initialize(bis);
 #endif
 	return 0;
 }
@@ -631,6 +647,13 @@ static iomux_v3_cfg_t const i2c0_mux_pads[] = {
 
 int board_init(void)
 {
+       struct iomuxc_base_regs *const iomuxc_regs
+               = (struct iomuxc_base_regs *)IOMUXC_BASE_ADDR;
+
+       clrsetbits_le32(&iomuxc_regs->gpr[1],
+                       IOMUXC_GPR1_OTG_ID_MASK,
+                       IOMUXC_GPR1_OTG_ID_GPIO1);
+
 	/* address of boot parameters */
 	gd->bd->bi_boot_params = PHYS_SDRAM + 0x100;
 

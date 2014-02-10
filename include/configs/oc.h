@@ -49,6 +49,13 @@
 #define CONFIG_MXC_OCOTP
 #endif
 
+/* USB gadget support */
+#define CONFIG_MV_UDC
+#define CONFIG_USBD_HS
+#define CONFIG_USB_GADGET_DUALSPEED
+#define CONFIG_USB_ETHER
+#define CONFIG_USB_ETH_CDC
+
 #define CONFIG_MXC_UART
 #define CONFIG_MXC_UART_BASE	       UART2_BASE
 
@@ -129,6 +136,8 @@
 #define CONFIG_CMD_FAT
 #define CONFIG_USB_EHCI
 #define CONFIG_USB_EHCI_MX6
+#define CONFIG_USB_MAX_CONTROLLER_COUNT 2
+#define CONFIG_EHCI_HCD_INIT_AFTER_RESET       /* For OTG port */
 #define CONFIG_USB_STORAGE
 #define CONFIG_USB_HOST_ETHER
 #define CONFIG_USB_ETHER_ASIX
@@ -221,6 +230,12 @@
 			"done ; " \
 		"done ; " \
 	"done\0" \
+	"ipaddr=10.0.0.2\0" \
+	"netmask=255.255.255.0\0" \
+	"serverip=10.0.0.1\0" \
+	"usbnet_devaddr=6A:92:F8:99:5B:7A\0" \
+	"usbnet_hostaddr=00:19:b8:99:88:77\0" \
+	"ncip=10.0.0.1\0" \
 
 #define CONFIG_ARP_TIMEOUT     200UL
 
