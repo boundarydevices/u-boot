@@ -2,7 +2,12 @@
 setenv bootpart 2
 setenv bootdir /
 
-setenv bootargs enable_wait_mode=off
+if ${fs}load ${dtype} ${disk}:1 10800000 uEnv.txt ; then
+    env import -t 10800000 $filesize
+else
+    setenv bootargs enable_wait_mode=off
+fi
+
 setenv nextcon 0;
 
 i2c dev 1 ;
