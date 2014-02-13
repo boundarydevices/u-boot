@@ -52,7 +52,7 @@ if itest.s x == x${bootdir} ; then
 	bootdir=/boot/
 fi
 
-if ${fs}load ${dtype} ${disk}:1 12000000 ${bootdir}$dtbname ; then
+if ${fs}load ${dtype} ${disk}:${bootpart} 12000000 ${bootdir}$dtbname ; then
 	havedtb=1;
 else
 	havedtb=
