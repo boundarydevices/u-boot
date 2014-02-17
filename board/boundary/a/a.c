@@ -230,8 +230,11 @@ static iomux_v3_cfg_t const misc_pads[] = {
 	/* OTG Power enable */
 	MX6_PAD_EIM_D22__GPIO3_IO22		| MUX_PAD_CTRL(OUTPUT_40OHM),
 	MX6_PAD_KEY_COL0__GPIO4_IO06		| MUX_PAD_CTRL(WEAK_PULLUP),  /* S0: factory reset */
+	MX6_PAD_EIM_A23__GPIO6_IO06		| MUX_PAD_CTRL(WEAK_PULLUP),  /* J57: pin3 input switch */
+	MX6_PAD_GPIO_19__GPIO4_IO05		| MUX_PAD_CTRL(WEAK_PULLUP),  /* S1:1 - Loopback request switch */
 	MX6_PAD_KEY_ROW0__GPIO4_IO07		| MUX_PAD_CTRL(WEAK_PULLUP),  /* S1:2 - Diagnostic Switch 1 */
 	MX6_PAD_KEY_COL1__GPIO4_IO08		| MUX_PAD_CTRL(WEAK_PULLUP),  /* S1:3 - Diagnostic Switch 2 */
+	MX6_PAD_EIM_LBA__GPIO2_IO27 		| MUX_PAD_CTRL(WEAK_PULLUP),  /* S1:4 */
 };
 
 static void setup_iomux_enet(void)
@@ -320,8 +323,11 @@ struct button_key {
 
 static struct button_key const buttons[] = {
 	{"factory",	IMX_GPIO_NR(4, 6),	'F'},
-	{"input1",	IMX_GPIO_NR(4, 7),	'1'},
-	{"input2",	IMX_GPIO_NR(4, 8),	'2'},
+	{"input",	IMX_GPIO_NR(6, 6),	'I'},
+	{"D1",	IMX_GPIO_NR(4, 5),	'1'},	/* S1:1 - Loopback request switch */
+	{"D2",	IMX_GPIO_NR(4, 7),	'2'},   /* S1:2 - Diagnostic Switch 1 */
+	{"D3",	IMX_GPIO_NR(4, 8),	'3'},   /* S1:3 - Diagnostic Switch 2 */
+	{"D4",	IMX_GPIO_NR(2, 27),	'4'},   /* S1:4 */
 };
 
 /*
