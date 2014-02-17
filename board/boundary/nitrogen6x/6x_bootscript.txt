@@ -109,7 +109,7 @@ if itest.s x == x$allow_noncea ; then
 	echo "only CEA modes allowed on HDMI port";
 fi
 
-if ${fs}load ${dtype} ${disk}:1 10800000 ${bootdir}uImage ; then
+if ${fs}load ${dtype} ${disk}:${bootpart} 10800000 ${bootdir}uImage ; then
 	if itest.s x$havedtb == x ; then
 		bootm 10800000 ;
 	else
