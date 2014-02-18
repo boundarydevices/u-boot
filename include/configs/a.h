@@ -145,41 +145,31 @@
 
 #define CONFIG_LOADADDR		       0x12000000
 #define CONFIG_SYS_TEXT_BASE	       0x17800000
-
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	"console=ttymxc1\0" \
 	"disable_giga=1\0" \
 	"clearenv=if sf probe || sf probe || sf probe 1 ; then " \
 		"sf erase 0xc0000 0x2000 && " \
 		"echo restored environment to factory default ; fi\0" \
-	"bootcmd=for dtype in mmc " \
-		"; do " \
-			"for disk in 0 ; do ${dtype} dev ${disk} ;" \
-				"for fs in fat ext2 ; do " \
-					"${fs}load " \
-						"${dtype} ${disk}:1 " \
-						"10008000 " \
-						"/6x_bootscript" \
-						"&& source 10008000 ; " \
+	"bootcmd=dtype=mmc;disk=0;" \
+		"for fs in fat ext2 ; do " \
+			"${fs}load " \
+				"${dtype} ${disk}:1 " \
+				"10008000 " \
+				"/6x_bootscript" \
+				"&& source 10008000 ; " \
 				"done ; " \
-			"done ; " \
 		"done; " \
-		"setenv stdout serial,vga ; " \
 		"echo ; echo 6x_bootscript not found ; " \
 		"echo ; echo serial console at 115200, 8N1 ; echo ; " \
 		"echo details at http://boundarydevices.com/6q_bootscript ; " \
-		"usb start; " \
-		"setenv stdin serial,usbkbd\0" \
-	"upgradeu=for dtype in mmc " \
-		"; do " \
-		"for disk in 0 ; do ${dtype} dev ${disk} ;" \
-		     "for fs in fat ext2 ; do " \
-				"${fs}load ${dtype} ${disk}:1 10008000 " \
-					"/6x_upgrade " \
-					"&& source 10008000 ; " \
-			"done ; " \
-		"done ; " \
-	"done\0" \
+		"\0" \
+	"upgradeu=dtype=mmc; disk=0; " \
+		"for fs in fat ext2 ; do " \
+			"${fs}load ${dtype} ${disk}:1 10008000 " \
+				"/6x_upgrade " \
+				"&& source 10008000 ; " \
+		"done\0" \
 
 #define CONFIG_ARP_TIMEOUT     200UL
 

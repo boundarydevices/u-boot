@@ -319,15 +319,18 @@ struct button_key {
 	char const	*name;
 	unsigned	gpnum;
 	char		ident;
+	bool		presslevel;
 };
 
 static struct button_key const buttons[] = {
-	{"factory",	IMX_GPIO_NR(4, 6),	'F'},
-	{"input",	IMX_GPIO_NR(6, 6),	'I'},
-	{"D1",	IMX_GPIO_NR(4, 5),	'1'},	/* S1:1 - Loopback request switch */
-	{"D2",	IMX_GPIO_NR(4, 7),	'2'},   /* S1:2 - Diagnostic Switch 1 */
-	{"D3",	IMX_GPIO_NR(4, 8),	'3'},   /* S1:3 - Diagnostic Switch 2 */
-	{"D4",	IMX_GPIO_NR(2, 27),	'4'},   /* S1:4 */
+	{"factory",	IMX_GPIO_NR(4, 6),	'F', 0},
+	{"input",	IMX_GPIO_NR(6, 6),	'I', 1},
+#if 0
+	{"D1",	IMX_GPIO_NR(4, 5),	'1', 0},	/* S1:1 - Loopback request switch */
+	{"D2",	IMX_GPIO_NR(4, 7),	'2', 0},	/* S1:2 - Diagnostic Switch 1 */
+	{"D3",	IMX_GPIO_NR(4, 8),	'3', 0},	/* S1:3 - Diagnostic Switch 2 */
+	{"D4",	IMX_GPIO_NR(2, 27),	'4', 0},	/* S1:4 */
+#endif
 };
 
 /*
@@ -338,7 +341,8 @@ static int read_keys(char *buf)
 {
 	int i, numpressed = 0;
 	for (i = 0; i < ARRAY_SIZE(buttons); i++) {
-		if (!gpio_get_value(buttons[i].gpnum))
+		if (buttons[i].presslevel 
+		    == gpio_get_value(buttons[i].gpnum))
 			buf[numpressed++] = buttons[i].ident;
 	}
 	buf[numpressed] = '\0';
