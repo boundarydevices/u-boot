@@ -3,23 +3,27 @@ if test -n "$tempfuse" ; then
 	setenv bootargs $bootargs thermal.fusedata=$tempfuse
 fi
 
+kernel=/boot/uImage
+ramdisk=/boot/uramdisk.img
+
 if kbd ; then 
     if itest.s "xF" == "x$keybd" ; then
-        echo "----- do dhcp here";
+        kernel=/boot/uImage-usbwrite
+        ramdisk=/boot/uramdisk-usbwrite
     fi
 fi
 
 if itest.s "x" != "x$asix"; then
-    setenv bootargs $bootargs asix.ethernet1=$asix;
+    setenv bootargs $bootargs asix.ethaddr1=$asix;
 fi
 
 setenv bootargs $bootargs console=ttymxc1,115200
-if ${fs}load ${dtype} 0:1 10800000 /boot/uImage ; then
-    if ${fs}load ${dtype} 0:1 12800000 /boot/uramdisk.img ; then
+if ${fs}load ${dtype} 0:1 10800000 $kernel ; then
+    if ${fs}load ${dtype} 0:1 12800000 $ramdisk ; then
         bootm 10800000 12800000
     else
-        echo "Error loading RAM disk"
+        echo "Error loading RAM disk $ramdisk"
     fi
 else
-    echo "Error loading kernel image"
+    echo "Error loading kernel image $kernel"
 fi
