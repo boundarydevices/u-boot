@@ -1,0 +1,25 @@
+setenv bootargs enable_wait_mode=off
+if test -n "$tempfuse" ; then
+	setenv bootargs $bootargs thermal.fusedata=$tempfuse
+fi
+
+if kbd ; then 
+    if itest.s "xF" == "x$keybd" ; then
+        echo "----- do dhcp here";
+    fi
+fi
+
+if itest.s "x" != "x$asix"; then
+    setenv bootargs $bootargs asix.ethernet1=$asix;
+fi
+
+setenv bootargs $bootargs console=ttymxc1,115200
+if ${fs}load ${dtype} 0:1 10800000 /boot/uImage ; then
+    if ${fs}load ${dtype} 0:1 12800000 /boot/uramdisk.img ; then
+        bootm 10800000 12800000
+    else
+        echo "Error loading RAM disk"
+    fi
+else
+    echo "Error loading kernel image"
+fi
