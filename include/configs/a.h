@@ -4,25 +4,13 @@
  * Configuration settings for the Boundary Devices Nitrogen6X
  * and Freescale i.MX6Q Sabre Lite boards.
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.		See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111-1307 USA
+ * SPDX-License-Identifier:	GPL-2.0+
  */
 
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
+#include "mx6_common.h"
 #define CONFIG_MX6
 #define CONFIG_DISPLAY_CPUINFO
 #define CONFIG_DISPLAY_BOARDINFO
@@ -38,7 +26,7 @@
 #define CONFIG_REVISION_TAG
 
 /* Size of malloc() pool */
-#define CONFIG_SYS_MALLOC_LEN		(10 * 1024 * 1024)
+#define CONFIG_SYS_MALLOC_LEN		(12 * 1024 * 1024)
 
 #define CONFIG_BOARD_EARLY_INIT_F
 #define CONFIG_MISC_INIT_R
@@ -67,16 +55,6 @@
 #define CONFIG_SF_DEFAULT_CS   (0|(IMX_GPIO_NR(3, 19)<<8))
 #define CONFIG_SF_DEFAULT_SPEED 25000000
 #define CONFIG_SF_DEFAULT_MODE (SPI_MODE_0)
-#endif
-
-/* OCOTP Configs */
-#define CONFIG_CMD_IMXOTP
-#ifdef CONFIG_CMD_IMXOTP
-#define CONFIG_IMX_OTP
-#define IMX_OTP_BASE			OCOTP_BASE_ADDR
-#define IMX_OTP_ADDR_MAX		0x7F
-#define IMX_OTP_DATA_ERROR_VAL		0xBADABADA
-#define IMX_OTPWRITE_ENABLED
 #endif
 
 /* MMC Configs */
@@ -171,8 +149,6 @@
 				"&& source 10008000 ; " \
 		"done\0" \
 
-#define CONFIG_ARP_TIMEOUT     200UL
-
 /* Miscellaneous configurable options */
 #define CONFIG_SYS_LONGHELP
 #define CONFIG_SYS_HUSH_PARSER
@@ -182,7 +158,7 @@
 
 /* Print Buffer Size */
 #define CONFIG_SYS_PBSIZE (CONFIG_SYS_CBSIZE + sizeof(CONFIG_SYS_PROMPT) + 16)
-#define CONFIG_SYS_MAXARGS	       16
+#define CONFIG_SYS_MAXARGS	       48
 #define CONFIG_SYS_BARGSIZE CONFIG_SYS_CBSIZE
 
 #define CONFIG_SYS_MEMTEST_START       0x10000000
@@ -190,7 +166,6 @@
 #define CONFIG_SYS_MEMTEST_SCRATCH     0x10800000
 
 #define CONFIG_SYS_LOAD_ADDR	       CONFIG_LOADADDR
-#define CONFIG_SYS_HZ		       1000
 
 #define CONFIG_CMDLINE_EDITING
 
@@ -212,7 +187,6 @@
 
 #define CONFIG_ENV_SIZE			(8 * 1024)
 
-/* #define CONFIG_ENV_IS_IN_MMC */
 #define CONFIG_ENV_IS_IN_SPI_FLASH
 
 #if defined(CONFIG_ENV_IS_IN_MMC)
@@ -230,8 +204,6 @@
 #define CONFIG_OF_LIBFDT
 #define CONFIG_CMD_BOOTZ
 
-/* #define CONFIG_SYS_DCACHE_OFF */
-
 #ifndef CONFIG_SYS_DCACHE_OFF
 #define CONFIG_CMD_CACHE
 #endif
@@ -241,7 +213,7 @@
 #define CONFIG_SYS_ALT_MEMTEST
 
 #define CONFIG_CMD_BOOTZ
-#define CONFIG_CMD_FS_GENERIC
 #define CONFIG_SUPPORT_RAW_INITRD
+#define CONFIG_CMD_FS_GENERIC
 
 #endif	       /* __CONFIG_H */
