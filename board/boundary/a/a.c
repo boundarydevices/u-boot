@@ -237,6 +237,15 @@ static iomux_v3_cfg_t const misc_pads[] = {
 	MX6_PAD_EIM_LBA__GPIO2_IO27 		| MUX_PAD_CTRL(WEAK_PULLUP),  /* S1:4 */
 };
 
+static int gpio_inputs[] = {
+	IMX_GPIO_NR(4,6),			/* S0: factory reset */
+	IMX_GPIO_NR(6,6),			/* J57: pin3 input switch */
+	IMX_GPIO_NR(4,5),			/* S1:1 - Loopback request switch */
+	IMX_GPIO_NR(4,7),			/* S1:2 - Diagnostic Switch 1 */
+	IMX_GPIO_NR(4,8),			/* S1:3 - Diagnostic Switch 2 */
+	IMX_GPIO_NR(2,27),			/* S1:4 */
+};
+
 static void setup_iomux_enet(void)
 {
 	gpio_direction_output(IMX_GPIO_NR(1, 27), 0); /* PHY rst */
@@ -292,6 +301,7 @@ int board_eth_init(bd_t *bis)
 
 int board_init(void)
 {
+	int i;
 	struct iomuxc_base_regs *const iomuxc_regs
 		= (struct iomuxc_base_regs *)IOMUXC_BASE_ADDR;
 
@@ -305,6 +315,10 @@ int board_init(void)
 #ifdef CONFIG_MXC_SPI
 	setup_spi();
 #endif
+	imx_iomux_v3_setup_multiple_pads(misc_pads,
+					 ARRAY_SIZE(misc_pads));
+	for (i=0; i < ARRAY_SIZE(gpio_inputs); i++)
+                gpio_direction_input(gpio_inputs[i]);
 	return 0;
 }
 
