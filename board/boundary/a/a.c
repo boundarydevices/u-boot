@@ -326,10 +326,10 @@ static struct button_key const buttons[] = {
 	{"factory",	IMX_GPIO_NR(4, 6),	'F', 0},
 	{"input",	IMX_GPIO_NR(6, 6),	'I', 1},
 #if 0
-	{"D1",	IMX_GPIO_NR(4, 5),	'1', 0},	/* S1:1 - Loopback request switch */
-	{"D2",	IMX_GPIO_NR(4, 7),	'2', 0},	/* S1:2 - Diagnostic Switch 1 */
-	{"D3",	IMX_GPIO_NR(4, 8),	'3', 0},	/* S1:3 - Diagnostic Switch 2 */
-	{"D4",	IMX_GPIO_NR(2, 27),	'4', 0},	/* S1:4 */
+	{"D1",	IMX_GPIO_NR(4, 5),	'1', 1},	/* S1:1 - Loopback request switch */
+	{"D2",	IMX_GPIO_NR(4, 7),	'2', 1},	/* S1:2 - Diagnostic Switch 1 */
+	{"D3",	IMX_GPIO_NR(4, 8),	'3', 1},	/* S1:3 - Diagnostic Switch 2 */
+	{"D4",	IMX_GPIO_NR(2, 27),	'4', 1},	/* S1:4 */
 #endif
 };
 
