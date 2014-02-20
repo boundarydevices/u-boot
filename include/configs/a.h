@@ -228,4 +228,5 @@
 #define CONFIG_SUPPORT_RAW_INITRD
 #define CONFIG_CMD_FS_GENERIC
 
+#define CONFIG_CMD_GPIO
 #endif	       /* __CONFIG_H */
