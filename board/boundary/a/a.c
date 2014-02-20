@@ -344,7 +344,7 @@ struct button_key {
 
 static struct button_key const buttons[] = {
 	{"factory",	IMX_GPIO_NR(4, 6),	'F', 0},
-	{"input",	IMX_GPIO_NR(6, 6),	'I', 1},
+	{"input",	IMX_GPIO_NR(6, 6),	'I', 0},
 #if 0
 	{"D1",	IMX_GPIO_NR(4, 5),	'1', 1},	/* S1:1 - Loopback request switch */
 	{"D2",	IMX_GPIO_NR(4, 7),	'2', 1},	/* S1:2 - Diagnostic Switch 1 */
