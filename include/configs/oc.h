@@ -230,12 +230,17 @@
 			"done ; " \
 		"done ; " \
 	"done\0" \
-	"ipaddr=10.0.0.2\0" \
-	"netmask=255.255.255.0\0" \
-	"serverip=10.0.0.1\0" \
-	"usbnet_devaddr=6A:92:F8:99:5B:7A\0" \
-	"usbnet_hostaddr=00:19:b8:99:88:77\0" \
-	"ncip=10.0.0.1\0" \
+	"usbnet_devaddr=00:19:b8:00:00:02\0" \
+	"usbnet_hostaddr=00:19:b8:00:00:01\0" \
+	"usbboot=setenv ethact usb_ether; " \
+		"setenv ipaddr 10.0.0.2; " \
+		"setenv netmask 255.255.255.0; " \
+		"setenv serverip 10.0.0.1; " \
+		"setenv ncip 10.0.0.1; " \
+		"setenv bootargs console=ttymxc1,115200; " \
+		"tftpboot 10800000 10.0.0.1:uImage-${board}-recovery" \
+		"&& tftpboot 12800000 10.0.0.1:uramdisk-${board}-recovery.img " \
+		"&& bootm 10800000 12800000\0" \
 
 #define CONFIG_ARP_TIMEOUT     200UL
 
