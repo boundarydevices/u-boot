@@ -435,6 +435,15 @@ static iomux_v3_cfg_t const gpio_pads[] = {
         MX6_PAD_EIM_D29__GPIO3_IO29 | MUX_PAD_CTRL(PAD_CTL_DSE_240ohm),
 };
 
+int board_eth_init(bd_t *bis)
+{
+#ifdef CONFIG_MV_UDC
+	/* For otg ethernet*/
+	usb_eth_initialize(bis);
+#endif
+	return 0;
+}
+
 int board_init(void)
 {
 	/* address of boot parameters */
