@@ -31,6 +31,12 @@
 #define CONFIG_BOARD_EARLY_INIT_F
 #define CONFIG_MISC_INIT_R
 #define CONFIG_MXC_GPIO
+#define CONFIG_MV_UDC
+#define CONFIG_USBD_HS
+#define CONFIG_USB_GADGET_DUALSPEED
+#define CONFIG_USB_ETHER
+#define CONFIG_USB_ETH_CDC
+#define CONFIG_NETCONSOLE
 
 #define CONFIG_CMD_FUSE
 #ifdef CONFIG_CMD_FUSE
@@ -219,6 +225,17 @@
 			"done ; " \
 		"done ; " \
 	"done\0" \
+	"usbnet_devaddr=00:19:b8:00:00:02\0" \
+	"usbnet_hostaddr=00:19:b8:00:00:01\0" \
+	"usbboot=setenv ethact usb_ether; " \
+		"setenv ipaddr 10.0.0.2; " \
+		"setenv netmask 255.255.255.0; " \
+		"setenv serverip 10.0.0.1; " \
+		"setenv ncip 10.0.0.1; " \
+		"setenv console=ttymxc1,115200; " \
+		"tftpboot 10800000 10.0.0.1:uImage-recovery" \
+		"&& tftpboot 12800000 10.0.0.1:uramdisk-recovery.img " \
+		"&& bootm 10800000 12800000\0" \
 
 /* Miscellaneous configurable options */
 #define CONFIG_SYS_LONGHELP
