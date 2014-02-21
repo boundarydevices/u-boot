@@ -358,6 +358,11 @@ int board_eth_init(bd_t *bis)
 		free(bus);
 	}
 #endif
+
+#ifdef CONFIG_MV_UDC
+	/* For otg ethernet*/
+	usb_eth_initialize(bis);
+#endif
 	return 0;
 }
 
