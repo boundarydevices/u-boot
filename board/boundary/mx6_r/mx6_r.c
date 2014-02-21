@@ -172,6 +172,10 @@ static iomux_v3_cfg_t const button_pads[] = {
 
 int board_eth_init(bd_t *bis)
 {
+#ifdef CONFIG_MV_UDC
+	/* For otg ethernet*/
+	usb_eth_initialize(bis);
+#endif
 	return 0;
 }
 
