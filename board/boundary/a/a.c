@@ -24,6 +24,7 @@
 #include <netdev.h>
 #include <linux/fb.h>
 #include <asm/arch/crm_regs.h>
+#include <input.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -60,17 +61,17 @@ int dram_init(void)
 	return 0;
 }
 
-iomux_v3_cfg_t const uart1_pads[] = {
+static iomux_v3_cfg_t const uart1_pads[] = {
 	MX6_PAD_SD3_DAT6__UART1_RX_DATA | MUX_PAD_CTRL(UART_PAD_CTRL),
 	MX6_PAD_SD3_DAT7__UART1_TX_DATA | MUX_PAD_CTRL(UART_PAD_CTRL),
 };
 
-iomux_v3_cfg_t const uart2_pads[] = {
+static iomux_v3_cfg_t const uart2_pads[] = {
 	MX6_PAD_EIM_D26__UART2_TX_DATA | MUX_PAD_CTRL(UART_PAD_CTRL),
 	MX6_PAD_EIM_D27__UART2_RX_DATA | MUX_PAD_CTRL(UART_PAD_CTRL),
 };
 
-iomux_v3_cfg_t const usdhc4_pads[] = {
+static iomux_v3_cfg_t const usdhc4_pads[] = {
 	MX6_PAD_SD4_CLK__SD4_CLK   | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_SD4_CMD__SD4_CMD   | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_SD4_DAT0__SD4_DATA0 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
@@ -84,7 +85,7 @@ iomux_v3_cfg_t const usdhc4_pads[] = {
 	MX6_PAD_NANDF_D0__GPIO2_IO00  | MUX_PAD_CTRL(NO_PAD_CTRL), /* RESET (rev 1) */
 };
 
-iomux_v3_cfg_t const usb_pads[] = {
+static iomux_v3_cfg_t const usb_pads[] = {
 	NEW_PAD_CTRL(MX6_PAD_EIM_D22__GPIO3_IO22, WEAK_PULLUP),	/* usbotg power */
 	NEW_PAD_CTRL(MX6_PAD_GPIO_1__USB_OTG_ID, USDHC_PAD_CTRL), /* USBOTG ID pin */
 	MX6_PAD_KEY_COL4__USB_OTG_OC,			/* USBOTG OC pin */
@@ -135,7 +136,7 @@ int board_mmc_init(bd_t *bis)
 #endif
 
 #ifdef CONFIG_MXC_SPI
-iomux_v3_cfg_t const ecspi1_pads[] = {
+static iomux_v3_cfg_t const ecspi1_pads[] = {
 	/* SS1 */
 	MX6_PAD_EIM_D19__GPIO3_IO19   | MUX_PAD_CTRL(SPI_PAD_CTRL),
 	MX6_PAD_EIM_D17__ECSPI1_MISO | MUX_PAD_CTRL(SPI_PAD_CTRL),
@@ -143,7 +144,7 @@ iomux_v3_cfg_t const ecspi1_pads[] = {
 	MX6_PAD_EIM_D16__ECSPI1_SCLK | MUX_PAD_CTRL(SPI_PAD_CTRL),
 };
 
-void setup_spi(void)
+static void setup_spi(void)
 {
 	gpio_direction_output(CONFIG_SF_DEFAULT_CS, 1);
 	imx_iomux_v3_setup_multiple_pads(ecspi1_pads,
@@ -187,7 +188,7 @@ int board_phy_config(struct phy_device *phydev)
 	return 0;
 }
 
-iomux_v3_cfg_t const enet_pads1[] = {
+static iomux_v3_cfg_t const enet_pads1[] = {
 	MX6_PAD_ENET_MDIO__ENET_MDIO		| MUX_PAD_CTRL(ENET_PAD_CTRL),
 	MX6_PAD_ENET_MDC__ENET_MDC		| MUX_PAD_CTRL(ENET_PAD_CTRL),
 	MX6_PAD_RGMII_TXC__RGMII_TXC	| MUX_PAD_CTRL(ENET_PAD_CTRL),
@@ -214,7 +215,7 @@ iomux_v3_cfg_t const enet_pads1[] = {
 	MX6_PAD_ENET_RXD0__GPIO1_IO27		| MUX_PAD_CTRL(NO_PAD_CTRL),
 };
 
-iomux_v3_cfg_t const enet_pads2[] = {
+static iomux_v3_cfg_t const enet_pads2[] = {
 	MX6_PAD_RGMII_RXC__RGMII_RXC	| MUX_PAD_CTRL(ENET_PAD_CTRL),
 	MX6_PAD_RGMII_RD0__RGMII_RD0	| MUX_PAD_CTRL(ENET_PAD_CTRL),
 	MX6_PAD_RGMII_RD1__RGMII_RD1	| MUX_PAD_CTRL(ENET_PAD_CTRL),
