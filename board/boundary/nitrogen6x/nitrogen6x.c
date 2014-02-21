@@ -390,25 +390,26 @@ int board_phy_config(struct phy_device *phydev)
 	return 0;
 }
 
-void splash_screen_prepare(void)
+int splash_screen_prepare(void)
 {
 	char *env_loadsplash;
 
 	if (!getenv("splashimage") || !getenv("splashsize")) {
-		return;
+		return -1;
 	}
 
 	env_loadsplash = getenv("loadsplash");
 	if (env_loadsplash == NULL) {
 		printf("Environment variable loadsplash not found!\n");
-		return;
+		return -1;
 	}
 
 	if (run_command_list(env_loadsplash, -1, 0)) {
 		printf("failed to run loadsplash %s\n\n", env_loadsplash);
+		return -1;
 	}
 
-	return;
+	return 0;
 }
 
 static void setup_buttons(void)
