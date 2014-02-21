@@ -25,6 +25,9 @@
 #include <asm/arch/crm_regs.h>
 #include <asm/arch/mxc_hdmi.h>
 #include <i2c.h>
+#include <input.h>
+#include <netdev.h>
+#include <splash.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -66,12 +69,12 @@ int dram_init(void)
 	return 0;
 }
 
-iomux_v3_cfg_t const uart1_pads[] = {
+static iomux_v3_cfg_t const uart1_pads[] = {
 	MX6_PAD_SD3_DAT6__UART1_RX_DATA | MUX_PAD_CTRL(UART_PAD_CTRL),
 	MX6_PAD_SD3_DAT7__UART1_TX_DATA | MUX_PAD_CTRL(UART_PAD_CTRL),
 };
 
-iomux_v3_cfg_t const uart2_pads[] = {
+static iomux_v3_cfg_t const uart2_pads[] = {
 	MX6_PAD_EIM_D26__UART2_TX_DATA | MUX_PAD_CTRL(UART_PAD_CTRL),
 	MX6_PAD_EIM_D27__UART2_RX_DATA | MUX_PAD_CTRL(UART_PAD_CTRL),
 };
@@ -79,7 +82,7 @@ iomux_v3_cfg_t const uart2_pads[] = {
 #define PC MUX_PAD_CTRL(I2C_PAD_CTRL)
 
 /* I2C1: RTC */
-struct i2c_pads_info i2c_pad_info0 = {
+static struct i2c_pads_info i2c_pad_info0 = {
 	.scl = {
 		.i2c_mode = MX6_PAD_EIM_D21__I2C1_SCL | PC,
 		.gpio_mode = MX6_PAD_EIM_D21__GPIO3_IO21 | PC,
@@ -93,7 +96,7 @@ struct i2c_pads_info i2c_pad_info0 = {
 };
 
 /* I2C2 Camera, MIPI */
-struct i2c_pads_info i2c_pad_info1 = {
+static struct i2c_pads_info i2c_pad_info1 = {
 	.scl = {
 		.i2c_mode = MX6_PAD_KEY_COL3__I2C2_SCL | PC,
 		.gpio_mode = MX6_PAD_KEY_COL3__GPIO4_IO12 | PC,
@@ -107,7 +110,7 @@ struct i2c_pads_info i2c_pad_info1 = {
 };
 
 /* I2C3, J15 - RGB connector */
-struct i2c_pads_info i2c_pad_info2 = {
+static struct i2c_pads_info i2c_pad_info2 = {
 	.scl = {
 		.i2c_mode = MX6_PAD_GPIO_5__I2C3_SCL | PC,
 		.gpio_mode = MX6_PAD_GPIO_5__GPIO1_IO05 | PC,
@@ -130,7 +133,7 @@ static iomux_v3_cfg_t const usdhc2_pads[] = {
 };
 
 #ifndef CONFIG_REV2
-iomux_v3_cfg_t const usdhc3_pads[] = {
+static iomux_v3_cfg_t const usdhc3_pads[] = {
 	MX6_PAD_SD3_CLK__SD3_CLK   | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_SD3_CMD__SD3_CMD   | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_SD3_DAT0__SD3_DATA0 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
@@ -140,7 +143,7 @@ iomux_v3_cfg_t const usdhc3_pads[] = {
 	MX6_PAD_SD3_DAT5__GPIO7_IO00    | MUX_PAD_CTRL(NO_PAD_CTRL), /* CD */
 };
 #else
-iomux_v3_cfg_t const usdhc4_pads[] = {
+static iomux_v3_cfg_t const usdhc4_pads[] = {
 	MX6_PAD_SD4_CLK__SD4_CLK   | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_SD4_CMD__SD4_CMD   | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_SD4_DAT0__SD4_DATA0 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
@@ -156,7 +159,7 @@ iomux_v3_cfg_t const usdhc4_pads[] = {
 #endif
 
 /* WiFi/BT pads */
-iomux_v3_cfg_t const wifi_pads[] = {
+static iomux_v3_cfg_t const wifi_pads[] = {
 	(MX6_PAD_NANDF_CS1__GPIO6_IO14 & ~MUX_PAD_CTRL_MASK)
 		| MUX_PAD_CTRL(WEAK_PULLDOWN),
 	(MX6_PAD_NANDF_CS2__GPIO6_IO15 & ~MUX_PAD_CTRL_MASK)
@@ -171,7 +174,7 @@ iomux_v3_cfg_t const wifi_pads[] = {
 #define WIFI_BT_REG_ON	IMX_GPIO_NR(6, 15)
 #define WIFI_BT_ENABLE_GP	IMX_GPIO_NR(6, 16)
 
-iomux_v3_cfg_t const usb_pads[] = {
+static iomux_v3_cfg_t const usb_pads[] = {
 	MX6_PAD_KEY_ROW4__GPIO4_IO15 | MUX_PAD_CTRL(NO_PAD_CTRL),
 	NEW_PAD_CTRL(MX6_PAD_EIM_D22__GPIO3_IO22, WEAK_PULLUP),	/* usbotg power */
 	NEW_PAD_CTRL(MX6_PAD_GPIO_1__USB_OTG_ID, USDHC_PAD_CTRL), /* USBOTG ID pin */
@@ -247,7 +250,7 @@ int board_mmc_init(bd_t *bis)
 #endif
 
 #ifdef CONFIG_MXC_SPI
-iomux_v3_cfg_t const ecspi1_pads[] = {
+static iomux_v3_cfg_t const ecspi1_pads[] = {
 	/* SS1 */
 	MX6_PAD_EIM_D19__GPIO3_IO19   | MUX_PAD_CTRL(SPI_PAD_CTRL),
 	MX6_PAD_EIM_D17__ECSPI1_MISO | MUX_PAD_CTRL(SPI_PAD_CTRL),
@@ -255,7 +258,7 @@ iomux_v3_cfg_t const ecspi1_pads[] = {
 	MX6_PAD_EIM_D16__ECSPI1_SCLK | MUX_PAD_CTRL(SPI_PAD_CTRL),
 };
 
-void setup_spi(void)
+static void setup_spi(void)
 {
 	gpio_direction_output(CONFIG_SF_DEFAULT_CS, 1);
 	imx_iomux_v3_setup_multiple_pads(ecspi1_pads,
