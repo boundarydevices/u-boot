@@ -266,25 +266,25 @@ static void setup_spi(void)
 }
 #endif
 
-void splash_screen_prepare(void)
+int splash_screen_prepare(void)
 {
 	char *env_loadsplash;
 
 	if (!getenv("splashimage") || !getenv("splashsize")) {
-		return;
+		return -1;
 	}
 
 	env_loadsplash = getenv("loadsplash");
 	if (env_loadsplash == NULL) {
 		printf("Environment variable loadsplash not found!\n");
-		return;
+		return -1;
 	}
 
 	if (run_command_list(env_loadsplash, -1, 0)) {
 		printf("failed to run loadsplash %s\n\n", env_loadsplash);
 	}
 
-	return;
+	return 0;
 }
 
 #if defined(CONFIG_VIDEO_IPUV3)
