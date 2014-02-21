@@ -219,7 +219,7 @@ static void setup_iomux_enet(void)
 
 #define GP_USB_HUB_RESET	IMX_GPIO_NR(7, 12)
 
-iomux_v3_cfg_t const usb_pads[] = {
+static iomux_v3_cfg_t const usb_pads[] = {
 	NEW_PAD_CTRL(MX6_PAD_GPIO_17__GPIO7_IO12, WEAK_PULLUP),	/* Hub reset */
 	NEW_PAD_CTRL(MX6_PAD_GPIO_1__USB_OTG_ID, USDHC_PAD_CTRL), /* USBOTG ID pin */
 	NEW_PAD_CTRL(MX6_PAD_EIM_D22__GPIO3_IO22, WEAK_PULLUP),	/* usbotg power */
