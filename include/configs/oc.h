@@ -238,8 +238,8 @@
 		"setenv serverip 10.0.0.1; " \
 		"setenv ncip 10.0.0.1; " \
 		"setenv bootargs console=ttymxc1,115200; " \
-		"tftpboot 10800000 10.0.0.1:uImage-${board}-recovery" \
-		"&& tftpboot 12800000 10.0.0.1:uramdisk-${board}-recovery.img " \
+		"tftpboot 10800000 10.0.0.1:uImage-oc-recovery" \
+		"&& tftpboot 12800000 10.0.0.1:uramdisk-oc-recovery.img " \
 		"&& bootm 10800000 12800000\0" \
 
 #define CONFIG_ARP_TIMEOUT     200UL
