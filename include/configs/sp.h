@@ -196,8 +196,8 @@
 		"setenv serverip 10.0.0.1; " \
 		"setenv ncip 10.0.0.1; " \
 		"setenv bootargs console=ttymxc1,115200; " \
-		"tftpboot 10800000 10.0.0.1:uImage-${board}-recovery" \
-		"&& tftpboot 12800000 10.0.0.1:uramdisk-${board}-recovery.img " \
+		"tftpboot 10800000 10.0.0.1:uImage-sp-recovery" \
+		"&& tftpboot 12800000 10.0.0.1:uramdisk-sp-recovery.img " \
 		"&& bootm 10800000 12800000\0" \
 
 /* Miscellaneous configurable options */
