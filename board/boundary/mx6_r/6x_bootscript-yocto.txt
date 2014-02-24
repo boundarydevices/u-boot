@@ -7,8 +7,37 @@ if ${fs}load mmc ${disk}:1 10008000 logo.bmp.gz ; then
 fi
 
 setenv bootargs enable_wait_mode=off
-setenv nextcon 0;
 
+setenv i2cres rtcerr
+if i2c dev 2 ; then
+	if i2c read 0x6f 0.1 6 0x10004000 ; then
+		mw.b 10004006 0 6
+		if cmp.b 10004000 10004006 6 ; then
+			echo "RTC not programmed" ;
+			if i2c mw 0x6f 7.1 0x90 ; then
+				if i2c mw 0x6f 0.1 0x04 6 ; then
+					echo "Initialized RTC" ;
+					setenv i2cres rtcinit ;
+				else
+					setenv i2cres rtcerr-fill
+				fi
+			else
+				setenv i2cres rtcerr-wrinit
+			fi
+		else
+			echo "non-blank RTC data";
+			setenv i2cres rtcok ;
+		fi
+	else
+		setenv i2cres rtcerr-read
+	fi
+else
+	setenv i2cres rtcerr-dev
+fi
+setenv bootargs $bootargs $i2cres
+setenv i2cres
+
+setenv nextcon 0;
 setenv bootargs $bootargs video=mxcfb0:dev=lcd,LB043,if=RGB24 
 setenv bootargs $bootargs ft5x06_ts.screenres=800,1280
 # rotate touch coordinates 90 degrees clockwise
