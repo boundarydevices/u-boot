@@ -227,6 +227,7 @@
 	"usbboot=setenv ethact usb_ether; " \
 		"setenv ipaddr 10.0.0.2; " \
 		"setenv netmask 255.255.255.0; " \
+		"setenv serverip 10.0.0.1; " \
 		"setenv bootargs console=ttymxc1,115200; " \
 		"tftpboot 10800000 10.0.0.1:uImage-h-recovery" \
 		"&& tftpboot 12800000 10.0.0.1:uramdisk-h-recovery.img " \
