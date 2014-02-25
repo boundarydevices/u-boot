@@ -464,8 +464,11 @@ int board_init(void)
 
 int checkboard(void)
 {
+#ifndef CONFIG_REV2
 	puts("Board: Boundary NW board\n");
-
+#else
+	puts("Board: Boundary NW board - Rev2\n");
+#endif
 	return 0;
 }
 
