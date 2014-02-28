@@ -1,0 +1,126 @@
+# Yocto-specifics
+setenv bootpart 2
+setenv bootdir /
+
+setenv bootargs enable_wait_mode=off
+setenv nextcon 0;
+
+i2c dev 1 ;
+if i2c probe 0x50 ; then
+	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=hdmi,1280x720M@60,if=RGB24
+	setenv fbmem "fbmem=28M";
+	setexpr nextcon $nextcon + 1
+else
+	echo "------ no HDMI monitor";
+fi
+
+i2c dev 2
+if i2c probe 0x04 ; then
+	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=ldb,LDB-XGA,if=RGB666
+	if test "0" -eq $nextcon; then
+		setenv fbmem "fbmem=10M";
+	else
+		setenv fbmem ${fbmem},10M
+	fi
+	setexpr nextcon $nextcon + 1
+else
+	echo "------ no Freescale display";
+fi
+
+if i2c probe 0x38 ; then
+	if itest.s "xLDB-WXGA" == "x$panel"; then
+		setenv bootargs $bootargs video=mxcfb${nextcon}:dev=ldb,1280x800MR@60,if=RGB666
+		screenres=1280,800
+	else
+		setenv bootargs $bootargs video=mxcfb${nextcon}:dev=ldb,1024x600M@60,if=RGB666
+		screenres=1024,600
+	fi
+	if test "0" -eq $nextcon; then
+		setenv fbmem "fbmem=10M";
+	else
+		setenv fbmem ${fbmem},10M
+	fi
+	setexpr nextcon $nextcon + 1
+	setenv bootargs $bootargs ft5x06.screenres=$screenres
+	if itest.s "x" -ne "x$calibration" ; then
+		setenv bootargs $bootargs ft5x06_ts.calibration=$calibration
+	fi
+else
+	echo "------ no ft5x06 touch controller";
+fi
+
+if i2c probe 0x48 ; then
+	if itest.s "xqvga" == "x$panel" ; then
+		display="320x240MR@60,if=RGB24";
+	else
+		display="CLAA-WVGA,if=RGB666";
+	fi
+	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=lcd,$display
+	if test "0" -eq $nextcon; then
+		setenv fbmem "fbmem=10M";
+	else
+		setenv fbmem ${fbmem},10M
+	fi
+	setexpr nextcon $nextcon + 1
+else
+	echo "------ no 800x480 display";
+fi
+
+while test "4" -ne $nextcon ; do
+	setenv bootargs $bootargs video=mxcfb${nextcon}:off ;
+	setexpr nextcon $nextcon + 1 ;
+done
+
+setenv bootargs $bootargs $fbmem
+setenv bootargs "$bootargs console=ttymxc1,115200 vmalloc=400M consoleblank=0 rootwait"
+
+if itest.s x$bootpart == x ; then
+	bootpart=1
+fi
+
+if test "sata" = "${dtype}" ; then
+	setenv bootargs "$bootargs root=/dev/sda$bootpart" ;
+else
+	setenv bootargs "$bootargs root=/dev/mmcblk0p$bootpart" ;
+fi
+
+dtbname="imx6";
+if itest.s x6S != "x$cpu" ; then
+	dtbname=${dtbname}q-;
+else
+	dtbname=${dtbname}s-;
+fi
+
+if itest.s x == "x$board" ; then
+	board=sabrelite
+fi
+dtbname=${dtbname}${board}.dtb;
+
+if itest.s x == x${bootdir} ; then
+	bootdir=/boot/
+fi
+
+if ${fs}load ${dtype} ${disk}:1 12000000 ${bootdir}$dtbname ; then
+	havedtb=1;
+	setenv fdt_addr 0x11000000
+	setenv fdt_high 0xffffffff
+else
+	havedtb=
+fi
+
+if itest.s x == x$allow_noncea ; then
+	setenv bootargs $bootargs mxc_hdmi.only_cea=1;
+	echo "only CEA modes allowed on HDMI port";
+else
+        setenv bootargs $bootargs mxc_hdmi.only_cea=0;
+        echo "non-CEA modes allowed on HDMI, audio may be affected";
+fi
+
+if ${fs}load ${dtype} ${disk}:1 10800000 ${bootdir}uImage ; then
+	if itest.s x$havedtb == x ; then
+		bootm 10800000 ;
+	else
+		bootm 10800000 - 12000000
+	fi
+fi
+echo "Error loading kernel image"
