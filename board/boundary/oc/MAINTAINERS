@@ -1,0 +1,9 @@
+OC BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/oc/
+F:	include/configs/oc.h
+F:	configs/ocquad_defconfig
+F:	configs/ocsolo_defconfig
+F:	configs/ocsolo1g_defconfig
+
