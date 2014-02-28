@@ -1,0 +1,7 @@
+SP BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/sp/
+F:	include/configs/sp.h
+F:	configs/sp_defconfig
+
