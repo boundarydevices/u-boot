@@ -1,0 +1,8 @@
+NIT6XLITE BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/nit6xlite/
+F:	include/configs/nit6xlite.h
+F:	configs/nit6xlite_defconfig
+F:	configs/nit6xlite1g_defconfig
+
