@@ -574,6 +574,10 @@ config TARGET_MTP
 	bool "Support mtp"
 	select CPU_V7
 
+config TARGET_MX6_R
+	bool "Support mx6_r"
+	select CPU_V7
+
 config TARGET_NITROGEN6X
 	bool "Support nitrogen6x"
 	select CPU_V7
@@ -954,6 +958,7 @@ source "board/boundary/ls/Kconfig"
 source "board/boundary/mcs/Kconfig"
 source "board/boundary/med/Kconfig"
 source "board/boundary/mtp/Kconfig"
+source "board/boundary/mx6_r/Kconfig"
 source "board/boundary/nitrogen6x/Kconfig"
 source "board/boundary/vp/Kconfig"
 source "board/broadcom/bcm28155_ap/Kconfig"
