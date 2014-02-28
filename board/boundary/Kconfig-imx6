@@ -155,6 +155,10 @@ config TARGET_NITROGEN6X
 	imply USB_ETHER_SMSC95XX
 	imply USB_HOST_ETHER
 
+config TARGET_NW
+	bool "nw"
+	depends on MX6DL || MX6Q || MX6QDL || MX6S
+
 endchoice
 
 source "board/boundary/a/Kconfig"
@@ -194,3 +198,4 @@ source "board/boundary/nitrogen6_som2/Kconfig"
 source "board/boundary/nitrogen6_vm/Kconfig"
 source "board/boundary/nitrogen6sx/Kconfig"
 source "board/boundary/nitrogen6x/Kconfig"
+source "board/boundary/nw/Kconfig"
