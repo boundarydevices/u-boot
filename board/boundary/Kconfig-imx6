@@ -204,6 +204,10 @@ config TARGET_USD_MR2
 	bool "usd_mr2"
 	depends on MX6DL || MX6Q || MX6QDL || MX6S
 
+config TARGET_UTC
+	bool "utc"
+	depends on MX6DL || MX6Q || MX6QDL || MX6S
+
 endchoice
 
 source "board/boundary/a/Kconfig"
@@ -255,3 +259,4 @@ source "board/boundary/sp/Kconfig"
 source "board/boundary/ta/Kconfig"
 source "board/boundary/usd/Kconfig"
 source "board/boundary/usd_mr2/Kconfig"
+source "board/boundary/utc/Kconfig"
