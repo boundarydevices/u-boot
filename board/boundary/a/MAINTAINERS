@@ -1,0 +1,7 @@
+A BOARD
+M:	Eric Nelson <eric.nelson@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/a/
+F:	include/configs/a.h
+F:	configs/a_defconfig
+
