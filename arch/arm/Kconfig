@@ -402,6 +402,9 @@ config TARGET_OC
 config TARGET_S
 	bool "Support S"
 
+config TARGET_UTC
+	bool "Support UTC"
+
 config TARGET_CGTQMX6EVAL
 	bool "Support cgtqmx6eval"
 
@@ -615,6 +618,7 @@ source "board/boundary/nitrogen6x/Kconfig"
 source "board/boundary/nw/Kconfig"
 source "board/boundary/oc/Kconfig"
 source "board/boundary/s/Kconfig"
+source "board/boundary/utc/Kconfig"
 source "board/broadcom/bcm28155_ap/Kconfig"
 source "board/broadcom/bcm958300k/Kconfig"
 source "board/broadcom/bcm958622hr/Kconfig"
