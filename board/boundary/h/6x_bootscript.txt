@@ -1,0 +1,19 @@
+setenv bootargs enable_wait_mode=off ldb=sep0
+setenv nextcon 0;
+setenv bootargs $bootargs video=mxcfb${nextcon}:dev=ldb,1024x600M@60,if=RGB666
+setenv nextcon 1
+setenv bootargs $bootargs video=mxcfb${nextcon}:dev=ldb,INNOLUX-WVGA,if=RGB666
+setenv nextcon 2
+setenv fbmem "fbmem=28M,10M";
+
+while test "4" -ne $nextcon ; do
+	setenv bootargs $bootargs video=mxcfb${nextcon}:off ;
+	setexpr nextcon $nextcon + 1 ;
+done
+
+setenv bootargs $bootargs $fbmem
+setenv bootargs $bootargs console=ttymxc1,115200 vmalloc=400M consoleblank=0
+${fs}load ${dtype} ${disk}:1 10800000 /boot/uImage
+&& ${fs}load ${dtype} ${disk}:1 12800000 /boot/uramdisk.img
+&& bootm 10800000 12800000 ;
+echo "Error loading kernel image"
