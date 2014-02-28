@@ -440,6 +440,9 @@ config TARGET_MED
 config TARGET_MTP
 	bool "mtp"
 
+config TARGET_MX6_R
+	bool "mx6_r"
+
 config TARGET_NITROGEN6X
 	bool "nitrogen6x"
 	imply USB_HOST_ETHER
@@ -609,6 +612,7 @@ source "board/boundary/ltch/Kconfig"
 source "board/boundary/mcs/Kconfig"
 source "board/boundary/med/Kconfig"
 source "board/boundary/mtp/Kconfig"
+source "board/boundary/mx6_r/Kconfig"
 source "board/boundary/nitrogen6x/Kconfig"
 source "board/boundary/ys/Kconfig"
 source "board/bticino/mamoj/Kconfig"
