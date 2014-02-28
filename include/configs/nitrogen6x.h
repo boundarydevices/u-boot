@@ -317,6 +317,16 @@
 				"&& source 10008000 ; " \
 		"done ; " \
 	"done\0" \
+	"usbnet_devaddr=00:19:b8:00:00:02\0" \
+	"usbnet_hostaddr=00:19:b8:00:00:01\0" \
+	"usbrecover=setenv ethact usb_ether; " \
+		"setenv ipaddr 10.0.0.2; " \
+		"setenv netmask 255.255.255.0; " \
+		"setenv serverip 10.0.0.1; " \
+		"setenv bootargs console=ttymxc1,115200; " \
+		"tftpboot 10800000 10.0.0.1:uImage-${board}-recovery && " \
+		"tftpboot 12800000 10.0.0.1:uramdisk-${board}-recovery.img " \
+		"&& bootm 10800000 12800000\0" \
 
 #endif
 /* Miscellaneous configurable options */
