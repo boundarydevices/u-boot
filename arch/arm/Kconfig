@@ -530,6 +530,10 @@ config TARGET_NITROGEN6X
 	bool "Support nitrogen6x"
 	select CPU_V7
 
+config TARGET_VP
+	bool "Support vp"
+	select CPU_V7
+
 config TARGET_CGTQMX6EVAL
 	bool "Support cgtqmx6eval"
 	select CPU_V7
@@ -891,6 +895,7 @@ source "board/barco/titanium/Kconfig"
 source "board/bluegiga/apx4devkit/Kconfig"
 source "board/boundary/a/Kconfig"
 source "board/boundary/nitrogen6x/Kconfig"
+source "board/boundary/vp/Kconfig"
 source "board/broadcom/bcm28155_ap/Kconfig"
 source "board/broadcom/bcmcygnus/Kconfig"
 source "board/broadcom/bcmnsp/Kconfig"
