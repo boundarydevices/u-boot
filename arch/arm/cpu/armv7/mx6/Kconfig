@@ -423,6 +423,9 @@ config TARGET_USD
 config TARGET_USD_MR2
 	bool "usd_mr2"
 
+config TARGET_UTC
+	bool "utc"
+
 config TARGET_YS
 	bool "ys"
 	select MX6SX
@@ -571,6 +574,7 @@ source "board/boundary/sp/Kconfig"
 source "board/boundary/ta/Kconfig"
 source "board/boundary/usd/Kconfig"
 source "board/boundary/usd_mr2/Kconfig"
+source "board/boundary/utc/Kconfig"
 source "board/boundary/ys/Kconfig"
 source "board/ccv/xpress/Kconfig"
 source "board/compulab/cm_fx6/Kconfig"
