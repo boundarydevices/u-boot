@@ -401,6 +401,9 @@ config TARGET_DASH
 config TARGET_EO
 	bool "eo"
 
+config TARGET_H
+	bool "h"
+
 config TARGET_NITROGEN6X
 	bool "nitrogen6x"
 	imply USB_HOST_ETHER
@@ -557,6 +560,7 @@ source "board/boundary/cob/Kconfig"
 source "board/boundary/cob2/Kconfig"
 source "board/boundary/dash/Kconfig"
 source "board/boundary/eo/Kconfig"
+source "board/boundary/h/Kconfig"
 source "board/boundary/nitrogen6x/Kconfig"
 source "board/boundary/ys/Kconfig"
 source "board/bticino/mamoj/Kconfig"
