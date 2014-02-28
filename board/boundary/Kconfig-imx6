@@ -159,6 +159,10 @@ config TARGET_NW
 	bool "nw"
 	depends on MX6DL || MX6Q || MX6QDL || MX6S
 
+config TARGET_OC
+	bool "oc"
+	depends on MX6DL || MX6Q || MX6QDL || MX6S
+
 endchoice
 
 source "board/boundary/a/Kconfig"
@@ -199,3 +203,4 @@ source "board/boundary/nitrogen6_vm/Kconfig"
 source "board/boundary/nitrogen6sx/Kconfig"
 source "board/boundary/nitrogen6x/Kconfig"
 source "board/boundary/nw/Kconfig"
+source "board/boundary/oc/Kconfig"
