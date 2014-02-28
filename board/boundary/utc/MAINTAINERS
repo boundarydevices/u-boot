@@ -1,0 +1,7 @@
+UTC BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/utc/
+F:	include/configs/utc.h
+F:	configs/utc_defconfig
+
