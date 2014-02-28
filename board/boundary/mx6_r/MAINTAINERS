@@ -1,0 +1,7 @@
+MX6_R BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/mx6_r/
+F:	include/configs/mx6_r.h
+F:	configs/mx6_r_defconfig
+
