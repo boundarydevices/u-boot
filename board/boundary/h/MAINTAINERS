@@ -1,0 +1,8 @@
+H BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/h/
+F:	include/configs/h.h
+F:	configs/hsolo1g_defconfig
+F:	configs/hquad2g_defconfig
+
