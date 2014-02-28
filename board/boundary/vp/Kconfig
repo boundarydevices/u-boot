@@ -1,0 +1,24 @@
+if TARGET_VP
+
+config SYS_CPU
+	default "armv7"
+
+config SYS_BOARD
+	default "vp"
+
+config SYS_VENDOR
+	default "boundary"
+
+config SYS_SOC
+	default "mx6"
+
+config SYS_CONFIG_NAME
+	default "vp"
+
+config BOARD_LATE_SPECIFIC_INIT
+	bool
+	default	y
+
+source "board/boundary/common/Kconfig"
+
+endif
