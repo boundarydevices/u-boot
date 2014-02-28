@@ -1,0 +1,8 @@
+for n in 51 52 53 54 ; do gpio clear $n ; done
+load usb 0 10008000 /restore-to-emmc-amp.img.gz
+	&& time gzwrite mmc 0 10008000 0x$filesize 400000 0
+	&& gpio set 51 
+	&& gpio set 52 
+	&& while itest.l 0 -eq 0 ; do ;; done
+gpio set 54
+
