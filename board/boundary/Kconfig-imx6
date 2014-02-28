@@ -115,6 +115,10 @@ config TARGET_MTP
 	bool "mtp"
 	depends on MX6DL || MX6Q || MX6QDL || MX6S
 
+config TARGET_MX6_R
+	bool "mx6_r"
+	depends on MX6DL || MX6Q || MX6QDL || MX6S
+
 config TARGET_NITROGEN6X
 	bool "nitrogen6x"
 	depends on MX6DL || MX6Q || MX6QDL || MX6S
@@ -153,4 +157,5 @@ source "board/boundary/ltch/Kconfig"
 source "board/boundary/mcs/Kconfig"
 source "board/boundary/med/Kconfig"
 source "board/boundary/mtp/Kconfig"
+source "board/boundary/mx6_r/Kconfig"
 source "board/boundary/nitrogen6x/Kconfig"
