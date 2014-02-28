@@ -1,0 +1,24 @@
+if TARGET_NIT6XLITE
+
+config SYS_CPU
+	default "armv7"
+
+config SYS_BOARD
+	default "nit6xlite"
+
+config SYS_VENDOR
+	default "boundary"
+
+config SYS_SOC
+	default "mx6"
+
+config SYS_CONFIG_NAME
+	default "nit6xlite"
+
+config ENV_BD_ADDR
+	bool
+	default	y
+
+source "board/boundary/common/Kconfig"
+
+endif
