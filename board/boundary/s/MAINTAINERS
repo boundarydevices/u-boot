@@ -1,0 +1,7 @@
+S BOARD
+M:	Eric Nelson <eric.nelson@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/nitrogen6x/
+F:	include/configs/s.h
+F:	configs/s_defconfig
+

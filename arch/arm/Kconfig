@@ -396,6 +396,9 @@ config TARGET_NW
 config TARGET_OC
 	bool "Support OC"
 
+config TARGET_S
+	bool "Support S"
+
 config TARGET_CGTQMX6EVAL
 	bool "Support cgtqmx6eval"
 
@@ -607,6 +610,7 @@ source "board/boundary/nitrogen6_max/Kconfig"
 source "board/boundary/nitrogen6x/Kconfig"
 source "board/boundary/nw/Kconfig"
 source "board/boundary/oc/Kconfig"
+source "board/boundary/s/Kconfig"
 source "board/broadcom/bcm28155_ap/Kconfig"
 source "board/broadcom/bcm958300k/Kconfig"
 source "board/broadcom/bcm958622hr/Kconfig"
