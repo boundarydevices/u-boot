@@ -185,6 +185,10 @@ config TARGET_RTA
 	depends on MX6ULL
 	select BOARD_LATE_INIT
 
+config TARGET_S
+	bool "s"
+	depends on MX6DL || MX6Q || MX6QDL || MX6S
+
 endchoice
 
 config MX6QP
@@ -235,3 +239,4 @@ source "board/boundary/oc/Kconfig"
 source "board/boundary/per/Kconfig"
 source "board/boundary/rc/Kconfig"
 source "board/boundary/rta/Kconfig"
+source "board/boundary/s/Kconfig"

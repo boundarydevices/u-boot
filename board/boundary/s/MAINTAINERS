@@ -1,0 +1,7 @@
+S BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/s/
+F:	include/configs/s.h
+F:	configs/s_defconfig
+
