@@ -202,6 +202,9 @@ config TARGET_PER
 config TARGET_RC
 	bool "rc"
 
+config TARGET_S
+	bool "s"
+
 config TARGET_VP
 	bool "vp"
 
@@ -278,6 +281,7 @@ source "board/boundary/nw/Kconfig"
 source "board/boundary/oc/Kconfig"
 source "board/boundary/per/Kconfig"
 source "board/boundary/rc/Kconfig"
+source "board/boundary/s/Kconfig"
 source "board/boundary/vp/Kconfig"
 source "board/compulab/cm_fx6/Kconfig"
 source "board/congatec/cgtqmx6eval/Kconfig"
