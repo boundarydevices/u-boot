@@ -381,6 +381,9 @@ config TARGET_WANDBOARD
 config TARGET_TITANIUM
 	bool "Support titanium"
 
+config TARGET_A
+	bool "Support A"
+
 config TARGET_H
 	bool "Support H"
 
@@ -617,6 +620,7 @@ source "board/balloon3/Kconfig"
 source "board/barco/titanium/Kconfig"
 source "board/bluegiga/apx4devkit/Kconfig"
 source "board/bluewater/snapper9260/Kconfig"
+source "board/boundary/a/Kconfig"
 source "board/boundary/h/Kconfig"
 source "board/boundary/mx6_r/Kconfig"
 source "board/boundary/nit6xlite/Kconfig"
