@@ -26,7 +26,7 @@ char *get_reset_cause(void)
 	struct src *src_regs = (struct src *)SRC_BASE_ADDR;
 
 	cause = readl(&src_regs->srsr);
-	writel(cause, &src_regs->srsr);
+//	writel(cause, &src_regs->srsr);
 
 	switch (cause) {
 	case 0x00001:
