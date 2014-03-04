@@ -507,9 +507,24 @@ static void enable_spi_rgb(struct display_info_t const *dev)
 		goto free_bus;
 	}
 
+	/*
+	 * Initialization sequence
+	 * 1. Display Mode Settings
+	 * 2. Power Settings
+	 * 3. Gamma Settings
+	 * 4. Sleep Out
+	 * 5. Wait >= 7 frame
+	 * 6. Display on
+	 */
+	ret = spi_display_cmds(spi, dev->addr, display_init_cmds);
+	if (ret) {
+		printf("%s: Failed to display_init_cmds %d\n", __func__, ret);
+		goto release_bus;
+	}
+	mdelay(200);
 	ret = spi_display_cmds(spi, dev->addr, display_on_cmds);
 	if (ret) {
-		printf("%s: Failed to init %d\n", __func__, ret);
+		printf("%s: Failed to display_on_cmds %d\n", __func__, ret);
 		goto release_bus;
 	}
 	ret = 1;
@@ -605,7 +620,32 @@ static void enable_rgb(struct display_info_t const *dev)
 	gpio_direction_output(RGB_BACKLIGHT_GP, 1);
 }
 
-static struct display_info_t const displays[] = {{
+static struct display_info_t const displays[] = {
+#ifdef CONFIG_MXC_SPI_DISPLAY
+{
+	.bus	= 1,
+	.addr	= 0x70,
+	.pixfmt	= IPU_PIX_FMT_RGB24,
+	.detect	= detect_spi,
+	.enable	= enable_spi_rgb,
+	.mode	= {
+		.name           = "LB043",
+		.refresh        = 57,
+		.xres           = 480,
+		.yres           = 800,
+		.pixclock       = 37037,
+		.left_margin    = 40,
+		.right_margin   = 60,
+		.upper_margin   = 10,
+		.lower_margin   = 10,
+		.hsync_len      = 20,
+		.vsync_len      = 10,
+		.sync           = 0,
+		.vmode          = FB_VMODE_NONINTERLACED
+	},
+},
+#endif
+{
 	.bus	= 1,
 	.addr	= 0x50,
 	.pixfmt	= IPU_PIX_FMT_RGB24,
@@ -666,30 +706,6 @@ static struct display_info_t const displays[] = {{
 		.sync           = 0,
 		.vmode          = FB_VMODE_NONINTERLACED
 } },
-#ifdef CONFIG_MXC_SPI_DISPLAY
-{
-	.bus	= 1,
-	.addr	= 0x70,
-	.pixfmt	= IPU_PIX_FMT_RGB24,
-	.detect	= detect_spi,
-	.enable	= enable_spi_rgb,
-	.mode	= {
-		.name           = "LB043",
-		.refresh        = 57,
-		.xres           = 480,
-		.yres           = 800,
-		.pixclock       = 37037,
-		.left_margin    = 40,
-		.right_margin   = 60,
-		.upper_margin   = 10,
-		.lower_margin   = 10,
-		.hsync_len      = 20,
-		.vsync_len      = 10,
-		.sync           = 0,
-		.vmode          = FB_VMODE_NONINTERLACED
-	},
-},
-#endif
 };
 
 int board_cfb_skip(void)
