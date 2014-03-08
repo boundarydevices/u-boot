@@ -839,8 +839,19 @@ static iomux_v3_cfg_t const init_pads[] = {
 	/* Mipi Powerdown */
 	NEW_PAD_CTRL(MX6_PAD_CSI0_VSYNC__GPIO5_IO21, OUTPUT_40OHM),
 	/* LED control */
-	NEW_PAD_CTRL(MX6_PAD_EIM_RW__GPIO2_IO26, OUTPUT_40OHM),
 	NEW_PAD_CTRL(MX6_PAD_EIM_D20__GPIO3_IO20, OUTPUT_40OHM),
+	/* 5VEN */
+	NEW_PAD_CTRL(MX6_PAD_NANDF_WP_B__GPIO6_IO09, OUTPUT_40OHM),
+	/* 3P3VEN */
+	NEW_PAD_CTRL(MX6_PAD_EIM_RW__GPIO2_IO26, OUTPUT_40OHM),
+	/* 5P4VEN */
+	NEW_PAD_CTRL(MX6_PAD_NANDF_D1__GPIO2_IO01, OUTPUT_40OHM),
+	/* ??? function */
+	NEW_PAD_CTRL(MX6_PAD_EIM_D29__GPIO3_IO29, OUTPUT_40OHM),
+	/* BAT status */
+	NEW_PAD_CTRL(MX6_PAD_NANDF_D2__GPIO2_IO02, WEAK_PULLUP),
+	/* Misc outputs */
+	NEW_PAD_CTRL(MX6_PAD_GPIO_3__GPIO1_IO03, OUTPUT_40OHM),
 };
 
 #define WL12XX_WL_IRQ_GP	IMX_GPIO_NR(6, 14)
@@ -851,13 +862,20 @@ static unsigned gpios_out_low[] = {
 	IMX_GPIO_NR(6, 16), 	/* disable bluetooth */
 	IMX_GPIO_NR(3, 22),	/* disable USB otg power */
 	IMX_GPIO_NR(5, 20),	/* ov5640 mipi camera reset */
-	IMX_GPIO_NR(2, 26),	/* turn led off */
 	IMX_GPIO_NR(3, 20),	/* turn led off */
+	/* No 5VEN */
+	IMX_GPIO_NR(6, 9),
+	/* No 3P3VEN */
+	IMX_GPIO_NR(2, 26),
+	/* No 5P4VEN */
+	IMX_GPIO_NR(2, 1),
+	IMX_GPIO_NR(1, 3),	/* Unknown function */
 };
 
 static unsigned gpios_out_high[] = {
 	IMX_GPIO_NR(1, 16),	/* Enable main power */
 	IMX_GPIO_NR(5, 21),	/* ov5640 mipi camera power down */
+	IMX_GPIO_NR(3, 29),	/* Unknown function */
 };
 
 static void set_gpios(unsigned *p, int cnt, int val)
