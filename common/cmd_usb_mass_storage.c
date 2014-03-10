@@ -108,6 +108,7 @@ int do_usb_mass_storage(cmd_tbl_t *cmdtp, int flag,
 		return CMD_RET_FAILURE;
 	}
 
+#ifdef CONFIG_USB_CABLE_CHECK
 	/* Timeout unit: seconds */
 	cable_ready_timeout = UMS_CABLE_READY_TIMEOUT;
 
@@ -135,6 +136,7 @@ int do_usb_mass_storage(cmd_tbl_t *cmdtp, int flag,
 		}
 		puts("\r\n");
 	}
+#endif
 
 	while (1) {
 		usb_gadget_handle_interrupts();
