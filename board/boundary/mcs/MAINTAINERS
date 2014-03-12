@@ -1,0 +1,8 @@
+MCS BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/mcs/
+F:	include/configs/mcs.h
+F:	configs/mcsquad_defconfig
+F:	configs/mcssolo_defconfig
+
