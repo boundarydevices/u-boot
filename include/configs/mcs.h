@@ -192,7 +192,7 @@
 		"echo restored environment to factory default ; fi\0" \
 	"bootcmd=for dtype in " CONFIG_DRIVE_TYPES \
 		"; do " \
-			"for disk in 0 1 ; do ${dtype} dev ${disk} ;" \
+			"for disk in 0 1 2 ; do ${dtype} dev ${disk} ;" \
 				"for fs in fat ext2 ; do " \
 					"${fs}load " \
 						"${dtype} ${disk}:1 " \
@@ -210,7 +210,7 @@
 		"setenv stdin serial,usbkbd\0" \
 	"upgradeu=for dtype in " CONFIG_DRIVE_TYPES \
 		"; do " \
-		"for disk in 0 1 ; do ${dtype} dev ${disk} ;" \
+		"for disk in 0 1 2; do ${dtype} dev ${disk} ;" \
 		     "for fs in fat ext2 ; do " \
 				"${fs}load ${dtype} ${disk}:1 10008000 " \
 					"/6x_upgrade " \
