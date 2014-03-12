@@ -1,0 +1,39 @@
+setenv stdout serial,vga;
+
+setenv bootargs enable_wait_mode=off console=ttymxc1,115200 consoleblank=0
+setenv bootargs $bootargs rootwait root=/dev/mmcblk0p1
+
+fivewire='';
+if gpio input 193 ; then ; else fivewire=1 ; fi
+if gpio input 130 ; then fivewire=1 ; fi
+
+if itest.s x == x$fivewire ; then
+        # pin 193 (GP7:1) is low - 4-wire screen
+        echo "------ Four wire screen" ;
+        setenv bootargs $bootargs ar1020_i2c.calibration=-20,-21308,85584968,13901,-11,-1120224,65536,1280,800
+        setenv bootargs $bootargs video=mxcfb0:dev=ldb,1280x800MR@60,if=RGB666
+else
+        echo "------ Five wire screen" ;
+        setenv bootargs $bootargs ar1020_i2c.calibration=22737,-182,-4169360,5,-14290,54938792,65536,1280,800
+        setenv bootargs $bootargs video=mxcfb0:dev=ldb,1280x800MR@60,if=RGB24
+fi
+
+setenv nextcon 1;
+while test "4" -ne $nextcon ; do
+        setenv bootargs $bootargs video=mxcfb${nextcon}:off ;
+        setexpr nextcon $nextcon + 1 ;
+done
+
+if ${fs}load ${dtype} ${disk}:1 10800000 uImage-usbwrite ; then
+        if ${fs}load ${dtype} ${disk}:1 12800000 uramdisk-usbwrite.img ; then
+           if itest.s x$havedtb == x ; then
+                        bootm 10800000 12800000 ;
+           else
+                        bootm 10800000 12800000 12000000 ;
+           fi
+        else
+                echo "------ error loading ram-disk uramdisk-usbwrite.img";
+        fi
+else
+        echo "------ error loading kernel uImage-usbwrite";
+fi
