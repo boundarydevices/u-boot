@@ -77,9 +77,6 @@ int dram_init(void)
 }
 
 static iomux_v3_cfg_t const uart_pads[] = {
-	NEW_PAD_CTRL(MX6_PAD_SD3_DAT6__UART1_RX_DATA, UART_PAD_CTRL),
-	NEW_PAD_CTRL(MX6_PAD_SD3_DAT7__UART1_TX_DATA, UART_PAD_CTRL),
-
 	NEW_PAD_CTRL(MX6_PAD_EIM_D26__UART2_TX_DATA, UART_PAD_CTRL),
 	NEW_PAD_CTRL(MX6_PAD_EIM_D27__UART2_RX_DATA, UART_PAD_CTRL),
 
@@ -235,11 +232,6 @@ static iomux_v3_cfg_t const usb_pads[] = {
 	MX6_PAD_GPIO_17__GPIO7_IO12 | MUX_PAD_CTRL(NO_PAD_CTRL),
 	NEW_PAD_CTRL(MX6_PAD_EIM_D22__GPIO3_IO22, WEAK_PULLUP),	/* usbotg power */
 };
-
-static void setup_iomux_uart(void)
-{
-	imx_iomux_v3_setup_multiple_pads(uart_pads, ARRAY_SIZE(uart_pads));
-}
 
 int board_ehci_power(int port, int on)
 {
@@ -564,7 +556,7 @@ static void setup_display(void)
 
 int board_early_init_f(void)
 {
-	setup_iomux_uart();
+	imx_iomux_v3_setup_multiple_pads(uart_pads, ARRAY_SIZE(uart_pads));
 	setup_display();
 	return 0;
 }
