@@ -431,6 +431,9 @@ config TARGET_LSHORE
 config TARGET_LTCH
 	bool "ltch"
 
+config TARGET_MCS
+	bool "mcs"
+
 config TARGET_NITROGEN6X
 	bool "nitrogen6x"
 	imply USB_HOST_ETHER
@@ -597,6 +600,7 @@ source "board/boundary/jlm/Kconfig"
 source "board/boundary/ls/Kconfig"
 source "board/boundary/lshore/Kconfig"
 source "board/boundary/ltch/Kconfig"
+source "board/boundary/mcs/Kconfig"
 source "board/boundary/nitrogen6x/Kconfig"
 source "board/boundary/ys/Kconfig"
 source "board/bticino/mamoj/Kconfig"
