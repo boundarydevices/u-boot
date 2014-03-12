@@ -1,0 +1,55 @@
+setenv stdout serial,vga;
+
+setenv bootargs enable_wait_mode=off console=ttymxc1,115200 consoleblank=0
+setenv bootargs $bootargs rootwait root=/dev/mmcblk0p1
+
+fivewire='';
+if gpio input 193 ; then ; else fivewire=1 ; fi
+if gpio input 130 ; then ; else fivewire=1 ; fi
+
+if itest.s x == x$fivewire ; then
+        # pin 193 (GP7:1) is low - 4-wire screen
+        echo "------ Four wire screen" ;
+        setenv bootargs $bootargs ar1020_i2c.calibration=-20808,53,84144280,-140,13747,-878712,65536,1280,800
+        setenv bootargs $bootargs video=mxcfb0:dev=ldb,1280x800MR@60,if=RGB666
+else
+        echo "------ Five wire screen" ;
+        setenv bootargs $bootargs ar1020_i2c.calibration=22737,-182,-4169360,5,-14290,54938792,65536,1280,800
+        setenv bootargs $bootargs video=mxcfb0:dev=ldb,1280x800MR@60,if=RGB24
+fi
+
+setenv nextcon 1;
+while test "4" -ne $nextcon ; do
+        setenv bootargs $bootargs video=mxcfb${nextcon}:off ;
+        setexpr nextcon $nextcon + 1 ;
+done
+
+if kbd ; then
+        if itest.s xP == x$keybd ; then
+                if ${fs}load ${dtype} ${disk}:1 10800000 /boot/uImage-usbwrite ; then
+                        if ${fs}load ${dtype} ${disk}:1 12800000 /boot/uramdisk-usbwrite.img ; then
+                           if itest.s x$havedtb == x ; then
+                                        bootm 10800000 12800000 ;
+                           else
+                                        bootm 10800000 12800000 12000000 ;
+                           fi
+                        fi
+                fi
+        fi
+fi
+
+setenv initrd_addr 0x12a00000
+setenv initrd_high 0xffffffff
+
+if ${fs}load mmc ${disk}:1 ${initrd_addr} /initrd.img ; then
+	haverd=1;
+	setenv initrd_size ${filesize}
+else
+	haverd=
+fi
+
+echo 'Loading Linux...' ;
+if ${fs}load mmc ${disk}:1 10800000 /vmlinuz ; then
+	bootz 10800000 ${initrd_addr}:${initrd_size}
+fi
+echo "Error loading kernel image"
