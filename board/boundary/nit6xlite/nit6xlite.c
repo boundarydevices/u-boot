@@ -32,6 +32,7 @@
 #include <netdev.h>
 
 DECLARE_GLOBAL_DATA_PTR;
+#define GP_USB_OTG_PWR	IMX_GPIO_NR(3, 22)
 
 #define UART_PAD_CTRL  (PAD_CTL_PKE | PAD_CTL_PUE |	       \
 	PAD_CTL_PUS_100K_UP | PAD_CTL_SPEED_MED |	       \
@@ -182,6 +183,14 @@ static iomux_v3_cfg_t const enet_pads2[] = {
 	MX6_PAD_RGMII_RX_CTL__RGMII_RX_CTL	| MUX_PAD_CTRL(ENET_PAD_CTRL),
 };
 
+static iomux_v3_cfg_t const misc_pads[] = {
+	MX6_PAD_GPIO_1__USB_OTG_ID		| MUX_PAD_CTRL(WEAK_PULLUP),
+	MX6_PAD_KEY_COL4__USB_OTG_OC		| MUX_PAD_CTRL(WEAK_PULLUP),
+	MX6_PAD_EIM_D30__USB_H1_OC		| MUX_PAD_CTRL(WEAK_PULLUP),
+	/* OTG Power enable */
+	MX6_PAD_EIM_D22__GPIO3_IO22		| MUX_PAD_CTRL(OUTPUT_40OHM),
+};
+
 /* WiFi/BT pads */
 static iomux_v3_cfg_t const wifi_pads[] = {
 	(MX6_PAD_NANDF_CS1__GPIO6_IO14 & ~MUX_PAD_CTRL_MASK)
@@ -238,6 +247,15 @@ int board_ehci_hcd_init(int port)
 
 	return 0;
 }
+
+int board_ehci_power(int port, int on)
+{
+	if (port)
+		return 0;
+	gpio_set_value(GP_USB_OTG_PWR, on);
+	return 0;
+}
+
 #endif
 
 #ifdef CONFIG_FSL_ESDHC
@@ -766,6 +784,7 @@ int board_init(void)
 {
 	int i;
 
+	imx_iomux_v3_setup_multiple_pads(misc_pads, ARRAY_SIZE(misc_pads));
 	/* address of boot parameters */
 	gd->bd->bi_boot_params = PHYS_SDRAM + 0x100;
 
