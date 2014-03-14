@@ -37,7 +37,7 @@ setenv nextcon 0;
 setenv bootargs $bootargs video=mxcfb0:dev=lcd,LB043,if=RGB24 
 setenv bootargs $bootargs ft5x06_ts.screenres=800,1280
 # rotate touch coordinates 90 degrees clockwise
-setenv bootargs $bootargs ft5x06_ts.calibration=0,-65538,52428800,65536,0,0,65536
+setenv bootargs $bootargs ft5x06_ts.calibration=0,-40928,31391744,40941,0,0,65536
 setenv bootargs $bootargs g_ether.dev_addr=55:aa:55:aa:55:aa
 setenv bootargs $bootargs video=mxcfb1:dev=hdmi,1280x720M@60 video=mxcfb2:off video=mxcfb3:off 
 setenv fbmem 28M
