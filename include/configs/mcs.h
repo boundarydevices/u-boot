@@ -211,7 +211,8 @@
 		"echo details at http://boundarydevices.com/6q_bootscript ; " \
 		"usb start; " \
 		"setenv stdin serial,usbkbd\0" \
-	"upgradeu=for dtype in " CONFIG_DRIVE_TYPES \
+		"loadsplash=if sf probe ; then sf read ${splashimage} c2000 ${splashsize} ; fi\0" \
+		"upgradeu=for dtype in " CONFIG_DRIVE_TYPES \
 		"; do " \
 		"for disk in 0 1 2; do ${dtype} dev ${disk} ;" \
 		     "for fs in fat ext2 ; do " \

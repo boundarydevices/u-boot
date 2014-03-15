@@ -413,6 +413,28 @@ static iomux_v3_cfg_t const backlight_pads[] = {
 #define LVDS_BACKLIGHT_PWM IMX_GPIO_NR(1, 18)
 };
 
+int splash_screen_prepare(void)
+{
+	char *env_loadsplash;
+
+	if (!getenv("splashimage") || !getenv("splashsize")) {
+		return -1;
+	}
+
+	env_loadsplash = getenv("loadsplash");
+	if (env_loadsplash == NULL) {
+		printf("Environment variable loadsplash not found!\n");
+		return -1;
+	}
+
+	if (run_command_list(env_loadsplash, -1, 0)) {
+		printf("failed to run loadsplash %s\n\n", env_loadsplash);
+		return -1;
+	}
+
+	return 0;
+}
+
 struct display_info_t {
 	int	bus;
 	int	addr;
@@ -466,6 +488,8 @@ int board_video_skip(void)
 		       display.mode.xres,
 		       display.mode.yres);
 	}
+	if (!ret)
+		splash_screen_prepare();
 	return (0 != ret);
 }
 
@@ -678,6 +702,7 @@ static const struct boot_mode board_boot_modes[] = {
 
 int misc_init_r(void)
 {
+	preboot_keys();
 	add_board_boot_modes(board_boot_modes);
 	return 0;
 }
