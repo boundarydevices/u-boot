@@ -306,7 +306,7 @@
 	"done\0" \
 	"usbnet_devaddr=00:19:b8:00:00:02\0" \
 	"usbnet_hostaddr=00:19:b8:00:00:01\0" \
-	"usbboot=setenv ethact usb_ether; " \
+	"usbrecover=setenv ethact usb_ether; " \
 		"setenv ipaddr 10.0.0.2; " \
 		"setenv netmask 255.255.255.0; " \
 		"setenv serverip 10.0.0.1; " \
