@@ -1,0 +1,126 @@
+if ${fs}load mmc ${disk}:1 10008000 logo.bmp.gz ; then
+	bmp d 10008000
+fi
+
+setenv bootargs enable_wait_mode=off
+
+setenv i2cres rtcerr
+if i2c dev 2 ; then
+	if i2c read 0x6f 0.1 6 0x10004000 ; then
+		mw.b 10004006 0 6
+		if cmp.b 10004000 10004006 6 ; then
+			echo "RTC not programmed" ;
+			if i2c mw 0x6f 7.1 0x90 ; then
+				if i2c mw 0x6f 0.1 0x04 6 ; then
+					echo "Initialized RTC" ;
+					setenv i2cres rtcinit ;
+				else
+					setenv i2cres rtcerr-fill
+				fi
+			else
+				setenv i2cres rtcerr-wrinit
+			fi
+		else
+			echo "non-blank RTC data";
+			setenv i2cres rtcok ;
+		fi
+	else
+		setenv i2cres rtcerr-read
+	fi
+else
+	setenv i2cres rtcerr-dev
+fi
+setenv bootargs $bootargs $i2cres
+setenv i2cres
+
+setenv nextcon 0;
+setenv bootargs $bootargs video=mxcfb0:dev=lcd,LB043,if=RGB24
+setenv bootargs $bootargs ft5x06_ts.screenres=800,1280
+# rotate touch coordinates 90 degrees clockwise
+setenv bootargs $bootargs ft5x06_ts.calibration=0,-40928,31391744,40941,0,0,65536
+setenv bootargs $bootargs g_ether.dev_addr=55:aa:55:aa:55:aa
+setenv bootargs $bootargs video=mxcfb1:dev=hdmi,1280x720M@60 video=mxcfb2:off video=mxcfb3:off
+setenv fbmem 28M
+setenv nextcon 1
+
+i2c dev 1 ;
+if i2c probe 0x50 ; then
+	setenv bootargs $bootargs video=mxcfb1:dev=hdmi,1280x720M@60 video=mxcfb2:off video=mxcfb3:off
+	setenv fbmem $fbmem,28M
+	setexpr nextcon $nextcon + 1
+else
+	echo "------ no HDMI monitor";
+fi
+
+while test "4" -ne $nextcon ; do
+	setenv bootargs $bootargs video=mxcfb${nextcon}:off ;
+	setexpr nextcon $nextcon + 1 ;
+done
+
+setenv bootargs $bootargs $fbmem
+setenv bootargs "$bootargs console=ttymxc1,115200 vmalloc=400M consoleblank=0 rootwait"
+
+if itest.s x$bootpart == x ; then
+	bootpart=1
+fi
+
+if test "sata" = "${dtype}" ; then
+	setenv bootargs "$bootargs root=/dev/sda$bootpart" ;
+else
+	setenv bootargs "$bootargs root=/dev/mmcblk0p$bootpart" ;
+fi
+
+dtbname="imx6";
+if itest.s x6S != "x$cpu" ; then
+	dtbname=${dtbname}q-;
+else
+	dtbname=${dtbname}s-;
+fi
+
+if itest.s x == "x$board" ; then
+	board=sabrelite
+fi
+dtbname=${dtbname}${board}.dtb;
+
+if itest.s x == x${bootdir} ; then
+	bootdir=/boot/
+fi
+
+if ${fs}load ${dtype} ${disk}:1 12000000 ${bootdir}$dtbname ; then
+	havedtb=1;
+	setenv fdt_addr 0x11000000
+	setenv fdt_high 0xffffffff
+else
+	havedtb=
+fi
+
+if itest.s x == x$allow_noncea ; then
+	setenv bootargs $bootargs mxc_hdmi.only_cea=1;
+	echo "only CEA modes allowed on HDMI port";
+else
+        setenv bootargs $bootargs mxc_hdmi.only_cea=0;
+        echo "non-CEA modes allowed on HDMI, audio may be affected";
+fi
+
+if kbd ; then
+	if itest.s xD == x$keybd ; then
+		if ${fs}load ${dtype} ${disk}:1 10800000 ${bootdir}uImage-usbwrite ; then
+			if ${fs}load ${dtype} ${disk}:1 12800000 ${bootdir}uramdisk-usbwrite.img ; then
+			   if itest.s x$havedtb == x ; then
+					bootm 10800000 12800000 ;
+			   else
+					bootm 10800000 12800000 12000000 ;
+			   fi
+			fi
+		fi
+	fi
+fi
+
+if ${fs}load ${dtype} ${disk}:1 10800000 ${bootdir}uImage ; then
+	if itest.s x$havedtb == x ; then
+		bootm 10800000 ;
+	else
+		bootm 10800000 - 12000000
+	fi
+fi
+echo "Error loading kernel image"

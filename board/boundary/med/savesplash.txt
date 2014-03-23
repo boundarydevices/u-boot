@@ -1,0 +1,46 @@
+if itest.s a$splashfile == a; then
+        splashfile=${board}.bmp.gz
+fi
+
+setenv stdout serial,vga
+if ${fs}load ${dtype} ${disk}:1 12000000 $splashfile ; then
+      echo "read $filesize bytes from SD card" ;
+      if sf probe ; then
+	   if sf read 0x12400000 $splashflash $filesize ; then
+	       if cmp.b 0x12000000 0x12400000 $filesize ; then
+		   echo "------- splash images match" ;
+                   if itest.s "x$filesize" != "x$splashsize" ; then
+                        echo "update splashsize" ;
+                        setenv splashsize $filesize;
+                        saveenv
+                   fi
+	       else
+		   echo "re-program splash image" ;
+		   sf erase $splashflash +0x$filesize ;
+		   sf write 0x12000000 $splashflash $filesize ;
+		   echo "verifying" ;
+		   if sf read 0x12400000 $splashflash $filesize ; then
+		       if cmp.b 0x12000000 0x12400000 $filesize ; then
+			   echo "Splash image upgraded.";
+                           setenv splashsize $filesize;
+                           saveenv
+		       else
+			   echo "Read verification error" ;
+		       fi
+		   else
+			echo "Error re-reading EEPROM" ;
+		   fi
+	       fi
+               if itest.s "$bmpsize" != "$filesize" ; then
+                   setenv bmpsize $filesize;
+                   saveenv;
+               fi
+	   else
+	       echo "Error reading splash image from EEPROM" ;
+	   fi
+      else
+	   echo "Error initializing EEPROM" ;
+      fi ;
+else
+     echo "No splash image $splashfile found on SD card" ;
+fi
