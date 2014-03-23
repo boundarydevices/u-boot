@@ -107,6 +107,10 @@ config TARGET_MCS
 	bool "mcs"
 	depends on MX6DL || MX6Q || MX6QDL || MX6S
 
+config TARGET_MED
+	bool "med"
+	depends on MX6DL || MX6Q || MX6QDL || MX6S
+
 config TARGET_NITROGEN6X
 	bool "nitrogen6x"
 	depends on MX6DL || MX6Q || MX6QDL || MX6S
@@ -143,4 +147,5 @@ source "board/boundary/ls/Kconfig"
 source "board/boundary/lshore/Kconfig"
 source "board/boundary/ltch/Kconfig"
 source "board/boundary/mcs/Kconfig"
+source "board/boundary/med/Kconfig"
 source "board/boundary/nitrogen6x/Kconfig"
