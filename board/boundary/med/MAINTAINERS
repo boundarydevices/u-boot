@@ -1,0 +1,6 @@
+MED BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/med/
+F:	include/configs/med.h
+F:	configs/med_defconfig
