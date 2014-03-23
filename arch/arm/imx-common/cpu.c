@@ -37,6 +37,14 @@ static char *get_reset_cause(void)
 	writel(cause, &src_regs->srsr);
 	reset_cause = cause;
 
+#ifdef CONFIG_RESET_CAUSE_ADDR
+	{
+		unsigned *p = (unsigned *)CONFIG_RESET_CAUSE_ADDR;
+		*p++ = 0x12345678;	/* magic value to check for */
+		*p = cause;
+	}
+#endif
+
 	switch (cause) {
 	case 0x00001:
 	case 0x00011:
