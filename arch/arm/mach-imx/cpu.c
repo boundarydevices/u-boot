@@ -47,6 +47,13 @@ u32 get_imx_reset_cause(void)
 /* preserve the value for U-Boot proper */
 #if !defined(CONFIG_SPL_BUILD)
 		writel(reset_cause, &src_regs->srsr);
+#if defined(CONFIG_RESET_CAUSE_ADDR)
+		{
+			unsigned *p = (unsigned *)CONFIG_RESET_CAUSE_ADDR;
+			*p++ = 0x12345678;	/* magic value to check for */
+			*p = reset_cause;
+		}
+#endif
 #endif
 	}
 
