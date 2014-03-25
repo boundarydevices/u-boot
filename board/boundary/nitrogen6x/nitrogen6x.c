@@ -67,6 +67,9 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #define OUTPUT_40OHM (PAD_CTL_SPEED_MED|PAD_CTL_DSE_40ohm)
 
+#define WL12XX_WL_IRQ_GP	IMX_GPIO_NR(6, 14)
+static char const *board_type = "uninitialized";
+
 int dram_init(void)
 {
 	gd->ram_size = ((ulong)CONFIG_DDR_MB * 1024 * 1024);
@@ -824,8 +827,6 @@ static iomux_v3_cfg_t const init_pads[] = {
 	NEW_PAD_CTRL(MX6_PAD_GPIO_6__GPIO1_IO06, OUTPUT_40OHM),
 };
 
-#define WL12XX_WL_IRQ_GP	IMX_GPIO_NR(6, 14)
-
 static unsigned gpios_out_low[] = {
 	/* Disable wl1271 */
 	IMX_GPIO_NR(6, 15),	/* disable wireless */
@@ -871,6 +872,15 @@ int board_early_init_f(void)
  */
 int overwrite_console(void)
 {
+	if (gpio_get_value(WL12XX_WL_IRQ_GP)
+	    || getenv("forcen6")) {
+		puts("Board:   Nitrogen6X\n");
+		board_type = "nitrogen6x";
+	}
+	else {
+		puts("Board:   SABRE Lite\n");
+		board_type = "sabrelite";
+	}
 	return 1;
 }
 
@@ -904,18 +914,8 @@ int board_init(void)
 	return 0;
 }
 
-static char const *board_type = "uninitialized";
-
 int checkboard(void)
 {
-	if (gpio_get_value(WL12XX_WL_IRQ_GP)) {
-		puts("Board: Nitrogen6X\n");
-		board_type = "nitrogen6x";
-	}
-	else {
-		puts("Board: SABRE Lite\n");
-		board_type = "sabrelite";
-	}
 	return 0;
 }
 
