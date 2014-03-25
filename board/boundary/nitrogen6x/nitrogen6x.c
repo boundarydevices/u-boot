@@ -1101,7 +1101,8 @@ static char const *board_type = "uninitialized";
 
 int checkboard(void)
 {
-	if (gpio_get_value(WL12XX_WL_IRQ_GP)) {
+	if (gpio_get_value(WL12XX_WL_IRQ_GP)
+	    || getenv("forcen6x")) {
 		puts("Board: Nitrogen6X\n");
 		board_type = "nitrogen6x";
 	}
