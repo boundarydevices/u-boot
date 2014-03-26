@@ -254,6 +254,20 @@ int board_mmc_init(bd_t *bis)
 	return 0;
 }
 
+static iomux_v3_cfg_t const ecspi1_pads[] = {
+	/* SS1 */
+	MX6_PAD_EIM_D19__GPIO3_IO19   | MUX_PAD_CTRL(SPI_PAD_CTRL),
+	MX6_PAD_EIM_D17__ECSPI1_MISO | MUX_PAD_CTRL(SPI_PAD_CTRL),
+	MX6_PAD_EIM_D18__ECSPI1_MOSI | MUX_PAD_CTRL(SPI_PAD_CTRL),
+	MX6_PAD_EIM_D16__ECSPI1_SCLK | MUX_PAD_CTRL(SPI_PAD_CTRL),
+};
+
+static void setup_spi(void)
+{
+	imx_iomux_v3_setup_multiple_pads(ecspi1_pads,
+					 ARRAY_SIZE(ecspi1_pads));
+}
+
 int board_phy_config(struct phy_device *phydev)
 {
 	/* min rx data delay */
@@ -538,6 +552,7 @@ int board_init(void)
 	setup_i2c(1, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info1);
 	setup_i2c(2, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info2);
 
+	setup_spi();
 
 	return 0;
 }
