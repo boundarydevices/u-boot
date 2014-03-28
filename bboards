@@ -1,0 +1,1 @@
+grep " boundary " boards.cfg | awk '{ print $6 }' | sort | uniq
