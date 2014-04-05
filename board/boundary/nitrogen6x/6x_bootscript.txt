@@ -82,7 +82,11 @@ fi
 if test "sata" = "${dtype}" ; then
 	setenv bootargs "$bootargs root=/dev/sda$bootpart" ;
 else
-	setenv bootargs "$bootargs root=/dev/mmcblk0p$bootpart" ;
+        if test "usb" = "${dtype}" ; then
+                setenv bootargs "$bootargs root=/dev/sda$bootpart" ;
+        else
+                setenv bootargs "$bootargs root=/dev/mmcblk0p$bootpart" ;
+        fi
 fi
 
 dtbname="imx6";
