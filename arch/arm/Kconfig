@@ -582,6 +582,10 @@ config TARGET_NIT6XLITE
 	bool "Support nit6xlite"
 	select CPU_V7
 
+config TARGET_NITROGEN6_MAX
+	bool "Support nitrogen6_max"
+	select CPU_V7
+
 config TARGET_NITROGEN6X
 	bool "Support nitrogen6x"
 	select CPU_V7
@@ -964,6 +968,7 @@ source "board/boundary/med/Kconfig"
 source "board/boundary/mtp/Kconfig"
 source "board/boundary/mx6_r/Kconfig"
 source "board/boundary/nit6xlite/Kconfig"
+source "board/boundary/nitrogen6_max/Kconfig"
 source "board/boundary/nitrogen6x/Kconfig"
 source "board/boundary/vp/Kconfig"
 source "board/broadcom/bcm28155_ap/Kconfig"
