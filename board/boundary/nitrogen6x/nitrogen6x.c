@@ -79,7 +79,7 @@ static iomux_v3_cfg_t const uart1_pads[] = {
 	MX6_PAD_SD3_DAT7__UART1_TX_DATA | MUX_PAD_CTRL(UART_PAD_CTRL),
 };
 
-/* #define CONFIG_SILENT_UART */
+#define CONFIG_SILENT_UART
 static iomux_v3_cfg_t const uart2_pads[] = {
 #ifndef CONFIG_SILENT_UART
 	MX6_PAD_EIM_D26__UART2_TX_DATA | MUX_PAD_CTRL(UART_PAD_CTRL),
