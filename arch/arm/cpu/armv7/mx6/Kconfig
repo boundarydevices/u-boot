@@ -166,6 +166,9 @@ config TARGET_MCS
 config TARGET_MED
 	bool "med"
 
+config TARGET_MTP
+	bool "mtp"
+
 config TARGET_NITROGEN6X
 	bool "nitrogen6x"
 
@@ -233,6 +236,7 @@ source "board/boundary/jlm/Kconfig"
 source "board/boundary/ls/Kconfig"
 source "board/boundary/mcs/Kconfig"
 source "board/boundary/med/Kconfig"
+source "board/boundary/mtp/Kconfig"
 source "board/boundary/nitrogen6x/Kconfig"
 source "board/boundary/vp/Kconfig"
 source "board/compulab/cm_fx6/Kconfig"
