@@ -1,0 +1,7 @@
+MTP BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/mtp/
+F:	include/configs/mtp.h
+F:	configs/mtp_defconfig
+
