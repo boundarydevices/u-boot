@@ -1,0 +1,43 @@
+setenv stdout serial,vga;
+
+setenv bootargs enable_wait_mode=off console=ttymxc1,115200 consoleblank=0
+setenv bootargs $bootargs rootwait root=/dev/mmcblk0p1
+
+setenv nextcon 0;
+setenv bootargs $bootargs video=mxcfb${nextcon}:dev=ldb,1280x800MR@60,if=RGB24
+setexpr nextcon $nextcon + 1
+
+while test "4" -ne $nextcon ; do
+        setenv bootargs $bootargs video=mxcfb${nextcon}:off ;
+        setexpr nextcon $nextcon + 1 ;
+done
+
+if gpio input 193 ; then
+        # pin 193 (GP7:1) is low - 4-wire screen
+        echo "------ Four wire screen" ;
+        setenv bootargs $bootargs ar1020_i2c.calibration=-20,-21308,85584968,13901,-11,-1120224,65536,1280,800
+else
+        echo "------ Five wire screen" ;
+        setenv bootargs $bootargs ar1020_i2c.calibration=22737,-182,-4169360,5,-14290,54938792,65536,1280,800
+fi
+
+if kbd ; then
+        if itest.s xP == x$keybd ; then
+                if ${fs}load ${dtype} ${disk}:1 10800000 /boot/uImage-usbwrite ; then
+                        if ${fs}load ${dtype} ${disk}:1 12800000 /boot/uramdisk-usbwrite.img ; then
+                           if itest.s x$havedtb == x ; then
+                                        bootm 10800000 12800000 ;
+                           else
+                                        bootm 10800000 12800000 12000000 ;
+                           fi
+                        fi
+                fi
+        fi
+fi
+
+echo 'Loading Linux' ;
+if ${fs}load mmc ${disk}:1 10800000 /boot/uImage ; then
+        bootm 10800000
+fi
+echo "Error loading kernel"
+
