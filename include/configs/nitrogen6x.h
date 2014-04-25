@@ -26,6 +26,8 @@
 #define CONFIG_REVISION_TAG
 #define CONFIG_SYS_GENERIC_BOARD
 
+#define CONFIG_SYS_GENERIC_BOARD
+
 /* Size of malloc() pool */
 #define CONFIG_SYS_MALLOC_LEN		(12 * 1024 * 1024)
 
