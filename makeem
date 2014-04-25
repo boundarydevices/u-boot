@@ -13,6 +13,8 @@ for board in $boards ; do
 	else
         if [ "x${board}" == "xa" ] ; then 
             board=amp; # *.a gets clobbered in make mrproper
+        elif [ "x${board}" == "xs" ] ; then 
+            board=son; # *.s gets clobbered in make mrproper
         fi
         cp -fv u-boot.imx save/u-boot.${board};
         ls -l save/u-boot.${board};
