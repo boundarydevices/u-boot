@@ -445,6 +445,18 @@ static void enable_lvds(struct display_info_t const *dev)
 	gpio_direction_output(LVDS_BACKLIGHT_EN, 1);
 }
 
+static void enable_lvds_jeida(struct display_info_t const *dev)
+{
+	struct iomuxc *iomux = (struct iomuxc *)
+				IOMUXC_BASE_ADDR;
+	u32 reg = readl(&iomux->gpr[2]);
+	reg |= IOMUXC_GPR2_DATA_WIDTH_CH0_24BIT
+	     |IOMUXC_GPR2_BIT_MAPPING_CH0_JEIDA;
+	writel(reg, &iomux->gpr[2]);
+	gpio_direction_output(LVDS_BACKLIGHT_PWM, 1);
+	gpio_direction_output(LVDS_BACKLIGHT_EN, 1);
+}
+
 static struct display_info_t const hdmi = {
 	.bus	= -1,
 	.addr	= 0,
@@ -512,6 +524,28 @@ static struct display_info_t const vga = {
 	}
 };
 
+static struct display_info_t const wxga = {
+	.bus	= 2,
+	.addr	= 0x38,
+	.pixfmt	= IPU_PIX_FMT_RGB24,
+	.enable	= enable_lvds_jeida,
+	.mode	= {
+		.name           = "LDB-WXGA",
+		.refresh        = 60,
+		.xres           = 1280,
+		.yres           = 800,
+		.pixclock       = 14065,
+		.left_margin    = 40,
+		.right_margin   = 40,
+		.upper_margin   = 3,
+		.lower_margin   = 80,
+		.hsync_len      = 10,
+		.vsync_len      = 10,
+		.sync           = FB_SYNC_EXT,
+		.vmode          = FB_VMODE_NONINTERLACED
+	}
+};
+
 int board_video_skip(void)
 {
 	int ret;
@@ -523,6 +557,8 @@ int board_video_skip(void)
 		display = &hdmi;
 	else if (0 == strcmp(panel, "XGA"))
 		display = &xga;
+	else if (0 == strcmp(panel, "LDB-WXGA"))
+		display = &wxga;
 	else if (0 != strcmp(panel, "off"))
 		display = &vga;
 
