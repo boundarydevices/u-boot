@@ -5,7 +5,7 @@ if test xXGA = "x$panel" ; then
 	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=ldb,LDB-XGA,if=RGB24
 else
 	if test xLDB-WXGA = "x$panel" ; then
-		setenv bootargs $bootargs video=mxcfb${nextcon}:dev=ldb,1280x800MR@60,if=RGB24
+		setenv bootargs $bootargs video=mxcfb${nextcon}:dev=ldb,1280x800MR@60,if=RGB666
 	else
 		setenv bootargs $bootargs video=mxcfb${nextcon}:dev=ldb,OC-VGA,if=RGB24
 	fi
