@@ -299,6 +299,7 @@ static iomux_v3_cfg_t const backlight_pads[] = {
 	/* Backlight on LVDS connector: J6 */
 	MX6_PAD_SD1_CMD__GPIO1_IO18 | MUX_PAD_CTRL(NO_PAD_CTRL),
 #define LVDS_BACKLIGHT_GP IMX_GPIO_NR(1, 18)
+	MX6_PAD_EIM_DA2__GPIO3_IO02 | MUX_PAD_CTRL(WEAK_PULLUP),
 };
 
 struct display_info_t {
