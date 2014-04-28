@@ -384,6 +384,9 @@ config TARGET_TITANIUM
 config TARGET_A
 	bool "Support A"
 
+config TARGET_DASH
+	bool "Support dash"
+
 config TARGET_H
 	bool "Support H"
 
@@ -630,6 +633,7 @@ source "board/barco/titanium/Kconfig"
 source "board/bluegiga/apx4devkit/Kconfig"
 source "board/bluewater/snapper9260/Kconfig"
 source "board/boundary/a/Kconfig"
+source "board/boundary/dash/Kconfig"
 source "board/boundary/h/Kconfig"
 source "board/boundary/mcs/Kconfig"
 source "board/boundary/med/Kconfig"
