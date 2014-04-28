@@ -395,6 +395,9 @@ config TARGET_COB
 config TARGET_COB2
 	bool "cob2"
 
+config TARGET_DASH
+	bool "dash"
+
 config TARGET_NITROGEN6X
 	bool "nitrogen6x"
 	imply USB_HOST_ETHER
@@ -549,6 +552,7 @@ source "board/boundary/cid_tab/Kconfig"
 source "board/boundary/cnt/Kconfig"
 source "board/boundary/cob/Kconfig"
 source "board/boundary/cob2/Kconfig"
+source "board/boundary/dash/Kconfig"
 source "board/boundary/nitrogen6x/Kconfig"
 source "board/boundary/ys/Kconfig"
 source "board/bticino/mamoj/Kconfig"
