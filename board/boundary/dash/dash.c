@@ -677,18 +677,9 @@ int board_init(void)
 	return 0;
 }
 
-static char const *board_type = "uninitialized";
-
 int checkboard(void)
 {
-	if (gpio_get_value(WL12XX_WL_IRQ_GP)) {
-		puts("Board: Nitrogen6X\n");
-		board_type = "nitrogen6x";
-	}
-	else {
-		puts("Board: SABRE Lite\n");
-		board_type = "sabrelite";
-	}
+	puts("Board: DASH\n");
 	return 0;
 }
 
@@ -800,6 +791,6 @@ int board_late_init(void)
 {
 	int cpurev = get_cpu_rev();
 	setenv("cpu",get_imx_type((cpurev & 0xFF000) >> 12));
-	setenv("board",board_type);
+	setenv("board","DASH");
 	return 0;
 }
