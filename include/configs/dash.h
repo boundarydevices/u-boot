@@ -187,7 +187,7 @@
 		        "if itest.s \"xusb\" == \"x${dtype}\" ; then " \
 				"usb start ;" \
 			"fi; " \
-			"for disk in 0 1 ; do ${dtype} dev ${disk} ;" \
+			"for disk in 0 ; do ${dtype} dev ${disk} ;" \
 				"for fs in fat ext2 ; do " \
 					"${fs}load " \
 						"${dtype} ${disk}:1 " \
@@ -207,7 +207,7 @@
 	"loadsplash=if sf probe ; then sf read ${splashimage} c2000 ${splashsize} ; fi\0" \
 	"upgradeu=for dtype in ${bootdevs}" \
 		"; do " \
-		"for disk in 0 1 ; do ${dtype} dev ${disk} ;" \
+		"for disk in 0 ; do ${dtype} dev ${disk} ;" \
 		     "for fs in fat ext2 ; do " \
 				"${fs}load ${dtype} ${disk}:1 10008000 " \
 					"/6x_upgrade " \
