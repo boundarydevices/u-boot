@@ -1,0 +1,7 @@
+DASH BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/dash/
+F:	include/configs/dash.h
+F:	configs/dash_defconfig
+
