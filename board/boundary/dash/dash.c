@@ -295,11 +295,12 @@ static void setup_buttons(void)
 					 ARRAY_SIZE(button_pads));
 }
 
-static iomux_v3_cfg_t const backlight_pads[] = {
+static iomux_v3_cfg_t const lvds_control_pads[] = {
 	/* Backlight on LVDS connector: J6 */
 	MX6_PAD_SD1_CMD__GPIO1_IO18 | MUX_PAD_CTRL(NO_PAD_CTRL),
 #define LVDS_BACKLIGHT_GP IMX_GPIO_NR(1, 18)
-	MX6_PAD_EIM_DA2__GPIO3_IO02 | MUX_PAD_CTRL(WEAK_PULLUP),
+	MX6_PAD_EIM_DA2__GPIO3_IO02 | MUX_PAD_CTRL(WEAK_PULLUP),	/* LVDS_BCKLT_EN */
+	MX6_PAD_EIM_DA1__GPIO3_IO01 | MUX_PAD_CTRL(WEAK_PULLUP),	/* LVDS_PWR_EN */
 };
 
 struct display_info_t {
@@ -546,8 +547,8 @@ static void setup_display(void)
 	writel(reg, &iomux->gpr[3]);
 
 	/* backlights off until needed */
-	imx_iomux_v3_setup_multiple_pads(backlight_pads,
-					 ARRAY_SIZE(backlight_pads));
+	imx_iomux_v3_setup_multiple_pads(lvds_control_pads,
+					 ARRAY_SIZE(lvds_control_pads));
 	gpio_direction_input(LVDS_BACKLIGHT_GP);
 }
 
