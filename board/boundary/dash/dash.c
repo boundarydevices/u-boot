@@ -140,16 +140,6 @@ static iomux_v3_cfg_t const usdhc2_pads[] = {
 	MX6_PAD_SD2_DAT3__SD2_DATA3 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 };
 
-static iomux_v3_cfg_t const usdhc3_pads[] = {
-	MX6_PAD_SD3_CLK__SD3_CLK   | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	MX6_PAD_SD3_CMD__SD3_CMD   | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	MX6_PAD_SD3_DAT0__SD3_DATA0 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	MX6_PAD_SD3_DAT1__SD3_DATA1 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	MX6_PAD_SD3_DAT2__SD3_DATA2 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	MX6_PAD_SD3_DAT3__SD3_DATA3 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	MX6_PAD_SD3_DAT5__GPIO7_IO00    | MUX_PAD_CTRL(NO_PAD_CTRL), /* CD */
-};
-
 static iomux_v3_cfg_t const usdhc4_pads[] = {
 	MX6_PAD_SD4_CLK__SD4_CLK   | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_SD4_CMD__SD4_CMD   | MUX_PAD_CTRL(USDHC_PAD_CTRL),
@@ -230,56 +220,27 @@ int board_ehci_power(int port, int on)
 
 #endif
 
-#ifdef CONFIG_FSL_ESDHC
-static struct fsl_esdhc_cfg usdhc_cfg[2] = {
-	{USDHC3_BASE_ADDR},
-	{USDHC4_BASE_ADDR},
-};
-
 int board_mmc_getcd(struct mmc *mmc)
 {
-	struct fsl_esdhc_cfg *cfg = (struct fsl_esdhc_cfg *)mmc->priv;
-	int gp_cd = (cfg->esdhc_base == USDHC3_BASE_ADDR) ? IMX_GPIO_NR(7, 0) :
-			IMX_GPIO_NR(2, 6);
+	int gp_cd = IMX_GPIO_NR(2, 6);
 
 	gpio_direction_input(gp_cd);
 	return !gpio_get_value(gp_cd);
 }
 
+static struct fsl_esdhc_cfg usdhc_cfg = {0};
+
 int board_mmc_init(bd_t *bis)
 {
-	s32 status = 0;
-	u32 index = 0;
+	usdhc_cfg.esdhc_base = USDHC4_BASE_ADDR;
+	usdhc_cfg.sdhc_clk = mxc_get_clock(MXC_ESDHC4_CLK);
+	usdhc_cfg.max_bus_width = 4;
 
-	usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC3_CLK);
-	usdhc_cfg[1].sdhc_clk = mxc_get_clock(MXC_ESDHC4_CLK);
+	imx_iomux_v3_setup_multiple_pads(
+	       usdhc4_pads, ARRAY_SIZE(usdhc4_pads));
 
-	usdhc_cfg[0].max_bus_width = 4;
-	usdhc_cfg[1].max_bus_width = 4;
-
-	for (index = 0; index < CONFIG_SYS_FSL_USDHC_NUM; ++index) {
-		switch (index) {
-		case 0:
-			imx_iomux_v3_setup_multiple_pads(
-				usdhc3_pads, ARRAY_SIZE(usdhc3_pads));
-			break;
-		case 1:
-		       imx_iomux_v3_setup_multiple_pads(
-			       usdhc4_pads, ARRAY_SIZE(usdhc4_pads));
-		       break;
-		default:
-		       printf("Warning: you configured more USDHC controllers"
-			       "(%d) then supported by the board (%d)\n",
-			       index + 1, CONFIG_SYS_FSL_USDHC_NUM);
-		       return status;
-		}
-
-		status |= fsl_esdhc_initialize(bis, &usdhc_cfg[index]);
-	}
-
-	return status;
+	return fsl_esdhc_initialize(bis, &usdhc_cfg);
 }
-#endif
 
 #ifdef CONFIG_MXC_SPI
 static iomux_v3_cfg_t const ecspi1_pads[] = {
