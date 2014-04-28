@@ -612,13 +612,6 @@ static unsigned gpios_out_low[] = {
 	IMX_GPIO_NR(6, 15),	/* disable wireless */
 	IMX_GPIO_NR(6, 16), 	/* disable bluetooth */
 	IMX_GPIO_NR(3, 22),	/* disable USB otg power */
-	IMX_GPIO_NR(2, 5),	/* ov5640 mipi camera reset */
-	IMX_GPIO_NR(1, 8),	/* ov5642 reset */
-};
-
-static unsigned gpios_out_high[] = {
-	IMX_GPIO_NR(1, 6),	/* ov5642 powerdown */
-	IMX_GPIO_NR(6, 9),	/* ov5640 mipi camera power down */
 };
 
 static void set_gpios(unsigned *p, int cnt, int val)
@@ -633,7 +626,6 @@ int board_early_init_f(void)
 {
 	setup_iomux_uart();
 
-	set_gpios(gpios_out_high, ARRAY_SIZE(gpios_out_high), 1);
 	set_gpios(gpios_out_low, ARRAY_SIZE(gpios_out_low), 0);
 	gpio_direction_input(WL12XX_WL_IRQ_GP);
 
