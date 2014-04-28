@@ -538,6 +538,10 @@ config TARGET_COB
 	bool "Support cob"
 	select CPU_V7
 
+config TARGET_DASH
+	bool "Support dash"
+	select CPU_V7
+
 config TARGET_NITROGEN6X
 	bool "Support nitrogen6x"
 	select CPU_V7
@@ -909,6 +913,7 @@ source "board/boundary/a/Kconfig"
 source "board/boundary/bt/Kconfig"
 source "board/boundary/cad/Kconfig"
 source "board/boundary/cob/Kconfig"
+source "board/boundary/dash/Kconfig"
 source "board/boundary/nitrogen6x/Kconfig"
 source "board/boundary/vp/Kconfig"
 source "board/broadcom/bcm28155_ap/Kconfig"
