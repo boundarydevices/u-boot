@@ -1067,6 +1067,7 @@ int board_late_init(void)
 {
 	int cpurev = get_cpu_rev();
 	setenv("cpu",get_imx_type((cpurev & 0xFF000) >> 12));
-	setenv("board",board_type);
+	if (0 == getenv("board"))
+		setenv("board",board_type);
 	return 0;
 }
