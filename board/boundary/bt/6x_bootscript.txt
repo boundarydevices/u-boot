@@ -1,0 +1,9 @@
+setenv bootargs enable_wait_mode=off video=mxcfb0:dev=hdmi,1280x720M@60,if=RGB24
+setenv bootargs $bootargs video=mxcfb1:off video=mxcfb2:off video=mxcfb3:off
+setenv bootargs $bootargs fbmem=28M console=ttymxc1,115200 vmalloc=400M
+setenv bootargs $bootargs consoleblank=0 mxc_hdmi.only_cea=1
+setenv bootargs $bootargs rootwait root=/dev/mmcblk${disk}p1
+ext2load mmc ${disk}:1 0x10800000 /boot/uImage &&
+        ext2load mmc ${disk}:1 0x12800000 /boot/uramdisk.img &&
+        bootm 10800000 12800000
+echo "Error launching kernel /boot/uImage"
