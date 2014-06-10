@@ -150,6 +150,7 @@
 				"/6x_upgrade " \
 				"&& source 10008000 ; " \
 		"done\0" \
+	"disable_giga=1\0" \
 	"usbnet_devaddr=00:19:b8:00:00:02\0" \
 	"usbnet_hostaddr=00:19:b8:00:00:01\0" \
 	"usbrecover=setenv ethact usb_ether; " \
