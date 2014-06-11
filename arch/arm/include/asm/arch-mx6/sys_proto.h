@@ -34,6 +34,10 @@ void set_chipselect_size(int const);
 		     is_cpu_type(MXC_CPU_MX6D)) && \
 		     (soc_rev() >= CHIP_REV_2_0))
 
+#ifdef CONFIG_MX6SX
+int arch_auxiliary_core_up(u32 core_id, u32 boot_private_data);
+#endif
+
 /*
  * Initializes on-chip ethernet controllers.
  * to override, implement board_eth_init()
