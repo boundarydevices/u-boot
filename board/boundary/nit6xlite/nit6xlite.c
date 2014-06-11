@@ -498,6 +498,32 @@ static struct display_info_t const displays[] = {{
 		.sync           = 0,
 		.vmode          = FB_VMODE_NONINTERLACED
 } }, {
+	.bus	= 2,
+	.addr	= 0x48,
+	.pixfmt	= IPU_PIX_FMT_RGB666,
+	.detect	= detect_none,
+	.enable	= enable_rgb,
+	.mode	= {
+		.name		= "hitachi_hvga",
+		 /*
+		  * hitachi 640x240
+		  * vsync = 60
+		  * hsync = 260 * vsync = 15.6 Khz
+		  * pixclk = 800 * hsync = 12.48 MHz
+		  */
+		.refresh	= 60,
+		.xres		= 640,              //800=640+125+34+1
+		.yres		= 240,              //260=240+9+8+3
+		.pixclock	= 1000000000 / 800 * 1000 / 260 / 60,	//80128
+		.left_margin	= 34,
+		.right_margin	= 1,
+		.upper_margin	= 8,
+		.lower_margin	= 3,
+		.hsync_len	= 125,
+		.vsync_len	= 9,
+		.sync           = 0,
+		.vmode          = FB_VMODE_NONINTERLACED
+} }, {
 	.bus	= 1,
 	.addr	= 0x50,
 	.pixfmt	= IPU_PIX_FMT_RGB24,
