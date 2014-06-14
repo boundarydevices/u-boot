@@ -187,7 +187,7 @@
 				"done ; " \
 			"done ; " \
 		"done; " \
-		"setenv stdout serial,vga ; " \
+		"setenv stdout serial ; " \
 		"echo ; echo 6x_bootscript not found ; " \
 		"echo ; echo serial console at 115200, 8N1 ; echo ; " \
 		"echo details at http://boundarydevices.com/6q_bootscript ; " \
