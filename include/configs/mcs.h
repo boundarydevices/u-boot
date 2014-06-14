@@ -137,7 +137,6 @@
 #define CONFIG_VIDEO_BMP_GZIP
 #define CONFIG_SYS_VIDEO_LOGO_MAX_SIZE (6 * 1024 * 1024)
 #define CONFIG_BMP_16BPP
-#define CONFIG_VIDEO_LOGO
 #define CONFIG_IPUV3_CLK 260000000
 #define CONFIG_CMD_HDMIDETECT
 #define CONFIG_CONSOLE_MUX
@@ -154,6 +153,11 @@
 
 #define CONFIG_BOOTDELAY	       1
 
+#define CONFIG_PREBOOT                 "if itest.s  \"\" != \"$bmpsize\" ; then " \
+					" sf probe" \
+					" && sf read 10008000 f0000 $bmpsize" \
+					" && bmp d 10008000 ;" \
+				       "fi"
 #define CONFIG_LOADADDR			       0x12000000
 #define CONFIG_SYS_TEXT_BASE	       0x17800000
 
@@ -189,7 +193,6 @@
 		"echo details at http://boundarydevices.com/6q_bootscript ; " \
 		"usb start; " \
 		"setenv stdin serial,usbkbd\0" \
-		"loadsplash=if sf probe ; then sf read ${splashimage} c2000 ${splashsize} ; fi\0" \
 		"upgradeu=for dtype in " CONFIG_DRIVE_TYPES \
 		"; do " \
 		"for disk in 0 1 2; do ${dtype} dev ${disk} ;" \
