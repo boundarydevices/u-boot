@@ -203,6 +203,13 @@
 			"done ; " \
 		"done ; " \
 	"done\0" \
+        "savesplash=for dtype in mmc ; do " \
+			"for disk in 0 1 2; do " \
+				"${dtype} dev ${disk} ;" \
+				"load ${dtype} ${disk}:1 10008000 /savesplash " \
+				"&& source 10008000 ;" \
+			"done ;" \
+		"done\0" \
 	"usbnet_devaddr=00:19:b8:00:00:02\0" \
 	"usbnet_hostaddr=00:19:b8:00:00:01\0" \
 	"usbrecover=setenv ethact usb_ether; " \
