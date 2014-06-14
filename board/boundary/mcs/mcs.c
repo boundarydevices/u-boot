@@ -449,7 +449,8 @@ static void enable_lvds(struct display_info_t const *dev)
 	struct iomuxc *iomux = (struct iomuxc *)
 				IOMUXC_BASE_ADDR;
 	u32 reg = readl(&iomux->gpr[2]);
-	reg |= IOMUXC_GPR2_DATA_WIDTH_CH0_24BIT;
+	reg |= IOMUXC_GPR2_DATA_WIDTH_CH0_24BIT
+	     |IOMUXC_GPR2_BIT_MAPPING_CH0_JEIDA;
 	writel(reg, &iomux->gpr[2]);
 	gpio_direction_output(LVDS_BACKLIGHT_PWM, 1);
 }
