@@ -477,6 +477,11 @@ static struct display_info_t const display = {
 	}
 };
 
+int board_cfb_skip(void)
+{
+	return 1;
+}
+
 int board_video_skip(void)
 {
 	int ret;
