@@ -196,6 +196,9 @@ config TARGET_NW
 config TARGET_OC
 	bool "oc"
 
+config TARGET_PER
+	bool "per"
+
 config TARGET_VP
 	bool "vp"
 
@@ -270,6 +273,7 @@ source "board/boundary/nitrogen6sx/Kconfig"
 source "board/boundary/nitrogen6x/Kconfig"
 source "board/boundary/nw/Kconfig"
 source "board/boundary/oc/Kconfig"
+source "board/boundary/per/Kconfig"
 source "board/boundary/vp/Kconfig"
 source "board/compulab/cm_fx6/Kconfig"
 source "board/congatec/cgtqmx6eval/Kconfig"
