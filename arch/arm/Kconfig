@@ -606,6 +606,10 @@ config TARGET_OC
 	bool "Support oc"
 	select CPU_V7
 
+config TARGET_PER
+	bool "Support per"
+	select CPU_V7
+
 config TARGET_VP
 	bool "Support vp"
 	select CPU_V7
@@ -990,6 +994,7 @@ source "board/boundary/nitrogen6sx/Kconfig"
 source "board/boundary/nitrogen6x/Kconfig"
 source "board/boundary/nw/Kconfig"
 source "board/boundary/oc/Kconfig"
+source "board/boundary/per/Kconfig"
 source "board/boundary/vp/Kconfig"
 source "board/broadcom/bcm28155_ap/Kconfig"
 source "board/broadcom/bcmcygnus/Kconfig"
