@@ -1,0 +1,7 @@
+PER BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/per/
+F:	include/configs/per.h
+F:	configs/per_defconfig
+
