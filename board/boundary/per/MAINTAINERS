@@ -1,0 +1,7 @@
+PER BOARD
+M:	Eric Nelson <eric.nelson@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/per/
+F:	include/configs/per.h
+F:	configs/per_defconfig
+

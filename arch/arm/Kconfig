@@ -417,6 +417,9 @@ config TARGET_NW
 config TARGET_OC
 	bool "Support OC"
 
+config TARGET_PER
+	bool "Support Per"
+
 config TARGET_S
 	bool "Support S"
 
