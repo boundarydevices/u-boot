@@ -194,6 +194,7 @@
 		"setenv stdin serial,usbkbd\0" \
 	"fdt_addr=0x11000000\0" \
 	"fdt_high=0xffffffff\0" \
+	"initrd_high=0xffffffff\0" \
 	"upgradeu=for dtype in ${bootdevs}" \
 		"; do " \
 		"for disk in 0 1 ; do ${dtype} dev ${disk} ;" \
