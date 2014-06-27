@@ -144,6 +144,7 @@
 		"echo details at http://boundarydevices.com/6q_bootscript ;\0" \
 	"fdt_addr=0x11000000\0" \
 	"fdt_high=0xffffffff\0" \
+	"initrd_high=0xffffffff\0" \
 	"upgradeu=dtype=mmc; disk=0; " \
 		"for fs in fat ext2 ; do " \
 			"${fs}load ${dtype} ${disk}:1 10008000 " \
