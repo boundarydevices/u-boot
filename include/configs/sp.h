@@ -176,6 +176,7 @@
 			"done ; " \
 		"done ; " \
 	"done\0" \
+	"initrd_high=0xffffffff\0" \
 	"usbnet_devaddr=00:19:b8:00:00:02\0" \
 	"usbnet_hostaddr=00:19:b8:00:00:01\0" \
 	"usbrecover=setenv ethact usb_ether; " \
