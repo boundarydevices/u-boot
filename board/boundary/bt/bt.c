@@ -424,6 +424,7 @@ static unsigned short gpios_out_low[] = {
 	GP_GS2971_TIM_861,
 	GP_GS2971_SW_EN,
 	GP_GS2971_DVB_ASI,
+	GP_ADV7391_RESET,
 };
 
 static unsigned short gpios_out_high[] = {
@@ -433,7 +434,8 @@ static unsigned short gpios_out_high[] = {
 	GP_PWR_J4,
 	GP_PWR_J6,
 	GP_PWR_J7,
-	GP_ECSPI1_SS1,		/* SS1 of spi nor */
+	GP_ECSPI1_CS1,		/* SS1 of spi nor */
+	GP_ECSPI3_GS2971_CS,
 	GP_SD1_POWER_SEL,	/* high=3.3v */
 	GP_GS2971_STANDBY,
 };
