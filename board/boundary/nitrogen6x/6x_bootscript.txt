@@ -90,10 +90,10 @@ else
 fi
 
 dtbname="imx6";
-if itest.s x6S != "x$cpu" ; then
+if itest.s x6SOLO != "x$cpu" ; then
 	dtbname=${dtbname}q-;
 else
-	dtbname=${dtbname}s-;
+	dtbname=${dtbname}dl-;
 fi
 
 if itest.s x == "x$board" ; then
