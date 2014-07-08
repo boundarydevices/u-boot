@@ -425,6 +425,7 @@ static unsigned short gpios_out_low[] = {
 	GP_GS2971_SW_EN,
 	GP_GS2971_DVB_ASI,
 	GP_ADV7391_RESET,
+	GP_J92_PIN9,
 };
 
 static unsigned short gpios_out_high[] = {
@@ -438,6 +439,7 @@ static unsigned short gpios_out_high[] = {
 	GP_ECSPI3_GS2971_CS,
 	GP_SD1_POWER_SEL,	/* high=3.3v */
 	GP_GS2971_STANDBY,
+	GP_J92_PIN7,
 };
 
 static unsigned short gpios_in[] = {
@@ -448,6 +450,8 @@ static unsigned short gpios_in[] = {
 	GP_GS2971_DATA_ERR,
 	GP_GS2971_LB_CONT,
 	GP_GS2971_Y_1ANC,
+	GP_J92_PIN10,
+	GP_J92_PIN12,
 	GP_BT_GPIO1,
 	GP_BT_GPIO2,
 	GP_BT_GPIO3,
