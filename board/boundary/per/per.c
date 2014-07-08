@@ -391,6 +391,8 @@ static void setup_display(void)
 
 
 static unsigned short gpios_out_low[] = {
+	GP_KL04_RESET,		/* inverted before kl04, not in reset */
+	GP_KL04_PROGRAM,	/* inverted before kl04 */
 	GP_EMMC_RESET,		/* hold in reset */
 	GP_USB_OTG_PWR,		/* disable USB otg power */
 	GP_USB_HUB_RESET,	/* disable hub */
@@ -412,8 +414,6 @@ static unsigned short gpios_out_high[] = {
 	GP_ECSPI3_GS2971_CS,
 	GP_ECSPI3_WM5102_CS,
 	GP_GS2971_STANDBY,
-	GP_KL04_RESET,
-	GP_KL04_PROGRAM,
 };
 
 static unsigned short gpios_in[] = {
