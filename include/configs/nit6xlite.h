@@ -26,7 +26,7 @@
 #define CONFIG_REVISION_TAG
 
 /* Size of malloc() pool */
-#define CONFIG_SYS_MALLOC_LEN		(10 * 1024 * 1024)
+#define CONFIG_SYS_MALLOC_LEN		(40 * 1024 * 1024)
 
 #define CONFIG_BOARD_EARLY_INIT_F
 #define CONFIG_MISC_INIT_R
@@ -264,6 +264,10 @@
 #endif
 
 #define CONFIG_CMD_BMP
+#define CONFIG_VIDEO_BMP_GZIP
+#ifdef CONFIG_VIDEO_BMP_GZIP
+#define CONFIG_SYS_VIDEO_LOGO_MAX_SIZE (8 * 1024 * 1024)
+#endif
 
 #define CONFIG_CMD_TIME
 #define CONFIG_CMD_MEMTEST
