@@ -40,6 +40,18 @@ else
 	echo "------ no 1024x600 display";
 fi
 
+if i2c probe 0x41 ; then
+	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=ldb,1024x600M@60,if=RGB666
+	if test "0" -eq $nextcon; then
+		setenv fbmem "fbmem=10M";
+	else
+		setenv fbmem ${fbmem},10M
+	fi
+	setexpr nextcon $nextcon + 1
+else
+	echo "------ no ILI210x touch controller";
+fi
+
 if test "0" -eq $lvds; then
 	echo "Default to wqvga (480x272) display";
 	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=lcd,okaya_480x272,if=RGB24
