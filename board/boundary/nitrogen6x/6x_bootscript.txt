@@ -50,6 +50,18 @@ else
 	echo "------ no ft5x06 touch controller";
 fi
 
+if i2c probe 0x41 ; then
+        setenv bootargs $bootargs video=mxcfb${nextcon}:dev=ldb,1024x600M@60,if=RGB666
+	if test "0" -eq $nextcon; then
+		setenv fbmem "fbmem=10M";
+	else
+		setenv fbmem ${fbmem},10M
+	fi
+	setexpr nextcon $nextcon + 1
+else
+	echo "------ no ILI210x touch controller";
+fi
+
 if i2c probe 0x48 ; then
 	if itest.s "xqvga" == "x$panel" ; then
 		display="320x240MR@60,if=RGB24";
