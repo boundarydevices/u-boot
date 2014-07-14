@@ -328,7 +328,8 @@ int board_video_skip(void)
 	int ret;
 	enable_hdmi();
 	ret = ipuv3_fb_init(&hdmi_mode, 0, IPU_PIX_FMT_RGB24);
-	printf("HDMI cannot be configured: %d\n", ret);
+	if (ret)
+		printf("HDMI cannot be configured: %d\n", ret);
 	return (0 != ret);
 }
 
