@@ -31,6 +31,9 @@
 #include <input.h>
 #include <netdev.h>
 
+/* Special MXCFB sync flags are here. */
+#include "../drivers/video/mxcfb.h"
+
 DECLARE_GLOBAL_DATA_PTR;
 #define GP_USB_OTG_PWR	IMX_GPIO_NR(3, 22)
 
@@ -521,7 +524,7 @@ static struct display_info_t const displays[] = {{
 		.lower_margin	= 3,
 		.hsync_len	= 125,
 		.vsync_len	= 9,
-		.sync           = 0,
+		.sync           = FB_SYNC_CLK_LAT_FALL,
 		.vmode          = FB_VMODE_NONINTERLACED
 } }, {
 	.bus	= 1,
