@@ -405,6 +405,10 @@ static iomux_v3_cfg_t const gpio_pads[] = {
 	MX6_PAD_EIM_A23__GPIO6_IO06 | MUX_PAD_CTRL(WEAK_PULLUP),
 	/* EIM_A24 - J54 pin 2 */
 	MX6_PAD_EIM_A24__GPIO5_IO04 | MUX_PAD_CTRL(WEAK_PULLUP),
+	/* EIM_A25 - J5 4-wire/5-wire select */
+	MX6_PAD_EIM_A25__GPIO5_IO02 | MUX_PAD_CTRL(WEAK_PULLUP),
+	/* SD3_DAT4 - jumpered 4-wire/5-wire select on first rev (4-wire was low) */
+	MX6_PAD_SD3_DAT4__GPIO7_IO01 | MUX_PAD_CTRL(WEAK_PULLDOWN),
 };
 
 static iomux_v3_cfg_t const backlight_pads[] = {
@@ -571,6 +575,11 @@ static void setup_display(void)
 	imx_iomux_v3_setup_multiple_pads(gpio_pads,
 					 ARRAY_SIZE(gpio_pads));
 	gpio_direction_input(LVDS_BACKLIGHT_PWM);
+
+	/* EIM_A25 - J5 4-wire/5-wire select (4-wire is 0) */
+	gpio_direction_input(IMX_GPIO_NR(5, 2));
+	/* SD3_DAT4 - jumpered 4-wire/5-wire select on first rev */
+	gpio_direction_input(IMX_GPIO_NR(7, 1));
 }
 
 int board_early_init_f(void)
