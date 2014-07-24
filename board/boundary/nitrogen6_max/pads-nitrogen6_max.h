@@ -200,6 +200,8 @@ static const iomux_v3_cfg_t MX6NAME(nitrogen6_max_pads)[] = {
 #define GP_I2C_EN_PCIE		IMX_GPIO_NR(3, 20)
 	NEW_PAD_CTRL(MX6PAD(EIM_OE__GPIO2_IO25), OUTPUT_40OHM),			/* pcie i2c enable */
 
+	/* Amplifier Mute */
+	NEW_PAD_CTRL(MX6PAD(ENET_TXD1__GPIO1_IO29),WEAK_PULLDN),
 };
 
 static const iomux_v3_cfg_t MX6NAME(enet_pads1)[] = {
