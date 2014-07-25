@@ -10,7 +10,7 @@ if gpio input 130 ; then fivewire=1 ; fi
 if itest.s x == x$fivewire ; then
         # pin 193 (GP7:1) is low - 4-wire screen
         echo "------ Four wire screen" ;
-        setenv bootargs $bootargs ar1020_i2c.calibration=-20,-21308,85584968,13901,-11,-1120224,65536,1280,800
+        setenv bootargs $bootargs ar1020_i2c.calibration=-20808,53,84144280,-140,13747,-878712,65536,1280,800
         setenv bootargs $bootargs video=mxcfb0:dev=ldb,1280x800MR@60,if=RGB666
 else
         echo "------ Five wire screen" ;
