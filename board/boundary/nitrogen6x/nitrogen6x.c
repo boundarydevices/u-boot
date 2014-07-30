@@ -829,8 +829,11 @@ static void setup_display(void)
 }
 #endif
 
-/* wl1271 pads on nitrogen6x */
 static iomux_v3_cfg_t const init_pads[] = {
+	NEW_PAD_CTRL(MX6_PAD_GPIO_0__CCM_CLKO1, OUTPUT_40OHM),	/* SGTL5000 sys_mclk */
+	NEW_PAD_CTRL(MX6_PAD_GPIO_3__CCM_CLKO2, OUTPUT_40OHM),	/* J5 - Camera MCLK */
+
+	/* wl1271 pads on nitrogen6x */
 	/* WL12XX_WL_IRQ_GP */
 	NEW_PAD_CTRL(MX6_PAD_NANDF_CS1__GPIO6_IO14, WEAK_PULLDOWN),
 	/* WL12XX_WL_ENABLE_GP */
