@@ -406,7 +406,7 @@ static iomux_v3_cfg_t const gpio_pads[] = {
 	/* EIM_A24 - J54 pin 2 */
 	MX6_PAD_EIM_A24__GPIO5_IO04 | MUX_PAD_CTRL(WEAK_PULLUP),
 	/* EIM_A25 - J5 4-wire/5-wire select */
-	MX6_PAD_EIM_A25__GPIO5_IO02 | MUX_PAD_CTRL(WEAK_PULLUP),
+	MX6_PAD_EIM_A25__GPIO5_IO02 | MUX_PAD_CTRL(WEAK_PULLDOWN),
 	/* SD3_DAT4 - jumpered 4-wire/5-wire select on first rev (4-wire was low) */
 	MX6_PAD_SD3_DAT4__GPIO7_IO01 | MUX_PAD_CTRL(WEAK_PULLDOWN),
 };
