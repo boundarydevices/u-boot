@@ -5,7 +5,7 @@ setenv bootargs $bootargs rootwait root=/dev/mmcblk0p1
 
 fivewire='';
 if gpio input 193 ; then ; else fivewire=1 ; fi
-if gpio input 130 ; then fivewire=1 ; fi
+if gpio input 130 ; then ; else fivewire=1 ; fi
 
 if itest.s x == x$fivewire ; then
         # pin 193 (GP7:1) is low - 4-wire screen
