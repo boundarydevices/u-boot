@@ -118,7 +118,14 @@ static struct i2c_pads_info i2c_pad_info2 = {
 	}
 };
 
-static iomux_v3_cfg_t const usdhc3_pads[] = {
+static iomux_v3_cfg_t const usdhc_pads[] = {
+	MX6_PAD_SD4_CLK__SD4_CLK   | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD4_CMD__SD4_CMD   | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD4_DAT0__SD4_DATA0 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD4_DAT1__SD4_DATA1 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD4_DAT2__SD4_DATA2 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD4_DAT3__SD4_DATA3 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_NANDF_D6__GPIO2_IO06    | MUX_PAD_CTRL(NO_PAD_CTRL), /* CD */
 	MX6_PAD_SD3_CLK__SD3_CLK   | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_SD3_CMD__SD3_CMD   | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_SD3_DAT0__SD3_DATA0 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
@@ -233,8 +240,14 @@ int board_ehci_hcd_init(int port)
 	return 0;
 }
 
-static struct fsl_esdhc_cfg usdhc_cfg = {
-	USDHC3_BASE_ADDR,
+static struct fsl_esdhc_cfg usdhc_cfgs[] = {
+	{.esdhc_base= USDHC4_BASE_ADDR, .max_bus_width=4},
+	{.esdhc_base= USDHC3_BASE_ADDR, .max_bus_width=8}
+};
+
+static int usdhc_clocks[] = {
+        MXC_ESDHC4_CLK,
+        MXC_ESDHC3_CLK
 };
 
 int board_mmc_getcd(struct mmc *mmc)
@@ -244,14 +257,17 @@ int board_mmc_getcd(struct mmc *mmc)
 
 int board_mmc_init(bd_t *bis)
 {
-	int status = 0;
-	usdhc_cfg.sdhc_clk = mxc_get_clock(MXC_ESDHC3_CLK);
-	usdhc_cfg.max_bus_width = 8;
+	int i, status = 0;
 	imx_iomux_v3_setup_multiple_pads(
-		usdhc3_pads, ARRAY_SIZE(usdhc3_pads));
+		usdhc_pads, ARRAY_SIZE(usdhc_pads));
 
-	status |= fsl_esdhc_initialize(bis, &usdhc_cfg);
-	return 0;
+	for (i=0; i < ARRAY_SIZE(usdhc_cfgs); i++) {
+		usdhc_cfgs[i].sdhc_clk = mxc_get_clock(usdhc_clocks[i]);
+		usdhc_cfgs[i].max_bus_width = 8;
+		status |= fsl_esdhc_initialize(bis, &usdhc_cfgs[i]);
+	}
+	printf("%s: status = 0x%x\n", __func__, status);
+	return status;
 }
 
 static iomux_v3_cfg_t const ecspi1_pads[] = {
