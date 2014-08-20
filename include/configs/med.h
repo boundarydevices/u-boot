@@ -221,6 +221,11 @@
 	"done\0" \
 	"usbnet_devaddr=00:19:b8:00:00:02\0" \
 	"usbnet_hostaddr=00:19:b8:00:00:01\0" \
+	"netrecover=setenv ethact FEC; " \
+		"setenv bootargs console=ttymxc1,115200; " \
+		"dhcp 10800000 $serverip:uImage-${board}-recovery" \
+		"&& dhcp 12800000 $serverip:uramdisk-${board}-recovery.img " \
+		"&& bootm 10800000 12800000\0" \
 	"usbrecover=setenv ethact usb_ether; " \
 		"setenv ipaddr 10.0.0.2; " \
 		"setenv netmask 255.255.255.0; " \
