@@ -6,6 +6,10 @@ setenv bootargs enable_wait_mode=off
 setenv nextcon 0;
 setenv lvds 0;
 
+if itest.s "x" != "x$disable_giga" ; then
+        setenv bootargs $bootargs fec.disable_giga=1
+fi
+
 if test -n "$tempfuse" ; then
 	setenv bootargs $bootargs thermal.fusedata=$tempfuse
 fi
