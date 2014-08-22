@@ -137,7 +137,7 @@
 #define CONFIG_SPLASH_SCREEN
 #define CONFIG_SPLASH_SCREEN_ALIGN
 
- #define CONFIG_VIDEO_BMP_GZIP
+#define CONFIG_VIDEO_BMP_GZIP
 #ifdef CONFIG_VIDEO_BMP_GZIP
 #define CONFIG_SYS_VIDEO_LOGO_MAX_SIZE (6 * 1024 * 1024)
 #endif
@@ -160,9 +160,13 @@
 
 #define CONFIG_BOOTDELAY	       1
 
-#define CONFIG_PREBOOT                 ""
+#define CONFIG_PREBOOT                 "if itest.s  \"\" != \"$splashsize\" ; then " \
+					" sf probe" \
+					" && sf read $splashram $splashflash $splashsize" \
+					" && bmp d $splashram ;" \
+				       "fi"
 
-#define CONFIG_LOADADDR			       0x12000000
+#define CONFIG_LOADADDR			0x12000000
 #define CONFIG_SYS_TEXT_BASE	       0x17800000
 
 #ifdef CONFIG_CMD_MMC
@@ -208,7 +212,18 @@
 	"fdt_addr=0x11000000\0" \
 	"fdt_high=0xffffffff\0" \
 	"initrd_high=0xffffffff\0" \
-	"loadsplash=if sf probe ; then sf read ${splashimage} c2000 ${splashsize} ; fi\0" \
+	"loadsplash=if sf probe ; then sf read ${splashram} ${splashflash} ${splashsize} ; fi\0" \
+	"splashram=0x10008000\0" \
+	"splashflash=0xf0000\0" \
+	"splashpos=m,m\0" \
+	"savesplash=for dtype in mmc ; do " \
+			"for disk in 0 1 2; do " \
+				"${dtype} dev ${disk} ;" \
+				"load ${dtype} ${disk}:1 12800000 /savesplash " \
+				"&& source 12800000 ;" \
+			"done ;" \
+		"done\0" \
+	"novideo=1\0" \
 	"upgradeu=for dtype in ${bootdevs}" \
 		"; do " \
 		"for disk in 0 1 ; do ${dtype} dev ${disk} ;" \
