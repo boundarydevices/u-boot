@@ -30,7 +30,6 @@
 #include <i2c.h>
 #include <spi.h>
 #include <input.h>
-#include <splash.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -304,28 +303,6 @@ int board_phy_config(struct phy_device *phydev)
 	return 0;
 }
 
-int splash_screen_prepare(void)
-{
-	char *env_loadsplash;
-
-	if (!getenv("splashimage") || !getenv("splashsize")) {
-		return -1;
-	}
-
-	env_loadsplash = getenv("loadsplash");
-	if (env_loadsplash == NULL) {
-		printf("Environment variable loadsplash not found!\n");
-		return -1;
-	}
-
-	if (run_command_list(env_loadsplash, -1, 0)) {
-		printf("failed to run loadsplash %s\n\n", env_loadsplash);
-		return -1;
-	}
-
-	return 0;
-}
-
 static void setup_buttons(void)
 {
 	imx_iomux_v3_setup_multiple_pads(button_pads,
@@ -416,7 +393,7 @@ static struct display_info_t const displays[] = {
 
 int board_cfb_skip(void)
 {
-	return NULL != getenv("novideo");
+	return 1;
 }
 
 int board_video_skip(void)
@@ -463,9 +440,6 @@ int board_video_skip(void)
 		printf("unsupported panel %s\n", panel);
 		ret = -EINVAL;
 	}
-
-	if (!ret)
-		splash_screen_prepare();
 
 	return (0 != ret);
 }
