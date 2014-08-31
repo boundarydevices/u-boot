@@ -387,6 +387,9 @@ config TARGET_A
 config TARGET_BT
 	bool "Support BT"
 
+config TARGET_CAD
+	bool "Support Cad"
+
 config TARGET_DASH
 	bool "Support dash"
 
@@ -640,6 +643,7 @@ source "board/bluegiga/apx4devkit/Kconfig"
 source "board/bluewater/snapper9260/Kconfig"
 source "board/boundary/a/Kconfig"
 source "board/boundary/bt/Kconfig"
+source "board/boundary/cad/Kconfig"
 source "board/boundary/dash/Kconfig"
 source "board/boundary/h/Kconfig"
 source "board/boundary/mcs/Kconfig"

@@ -1,0 +1,6 @@
+CAD BOARD
+M:	Eric Nelson <eric.nelson@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/cad/
+F:	include/configs/cad.h
+F:	configs/cad_defconfig
