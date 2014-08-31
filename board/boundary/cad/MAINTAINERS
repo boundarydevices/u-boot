@@ -1,0 +1,6 @@
+CAD BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/cad/
+F:	include/configs/cad.h
+F:	configs/cad_defconfig

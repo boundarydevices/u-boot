@@ -530,6 +530,10 @@ config TARGET_BT
 	bool "Support bt"
 	select CPU_V7
 
+config TARGET_CAD
+	bool "Support cad"
+	select CPU_V7
+
 config TARGET_NITROGEN6X
 	bool "Support nitrogen6x"
 	select CPU_V7
@@ -899,6 +903,7 @@ source "board/barco/titanium/Kconfig"
 source "board/bluegiga/apx4devkit/Kconfig"
 source "board/boundary/a/Kconfig"
 source "board/boundary/bt/Kconfig"
+source "board/boundary/cad/Kconfig"
 source "board/boundary/nitrogen6x/Kconfig"
 source "board/boundary/vp/Kconfig"
 source "board/broadcom/bcm28155_ap/Kconfig"
