@@ -102,19 +102,13 @@
 #define CONFIG_CMD_MII
 #define CONFIG_CMD_NET
 
-/* USB Configs */
-#define CONFIG_CMD_USB
-#define CONFIG_CMD_FAT
 #define CONFIG_USB_EHCI
 #define CONFIG_USB_EHCI_MX6
 #define CONFIG_USB_STORAGE
-#define CONFIG_USB_HOST_ETHER
-#define CONFIG_USB_MAX_CONTROLLER_COUNT 2
-#define CONFIG_EHCI_HCD_INIT_AFTER_RESET	/* For OTG port */
-#define CONFIG_MXC_USB_PORTSC	(PORT_PTS_UTMI | PORT_PTS_PTW)
-#define CONFIG_MXC_USB_FLAGS	0
-#define CONFIG_USB_KEYBOARD
-#define CONFIG_SYS_USB_EVENT_POLL_VIA_CONTROL_EP
+#define CONFIG_USB_MAX_CONTROLLER_COUNT 1
+#define CONFIG_EHCI_HCD_INIT_AFTER_RESET       /* For OTG port */
+#define CONFIG_MXC_USB_PORTSC  (PORT_PTS_UTMI | PORT_PTS_PTW)
+#define CONFIG_MXC_USB_FLAGS   0
 
 /* Miscellaneous commands */
 #define CONFIG_CMD_BMODE
@@ -168,13 +162,7 @@
 #define CONFIG_DRIVE_MMC
 #endif
 
-#ifdef CONFIG_USB_STORAGE
-#define CONFIG_DRIVE_USB "usb "
-#else
-#define CONFIG_DRIVE_USB
-#endif
-
-#define CONFIG_DRIVE_TYPES CONFIG_DRIVE_MMC CONFIG_DRIVE_USB
+#define CONFIG_DRIVE_TYPES CONFIG_DRIVE_MMC
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	"bootdevs=" CONFIG_DRIVE_TYPES "\0" \
@@ -185,10 +173,7 @@
 		"echo restored environment to factory default ; fi\0" \
 	"bootcmd=for dtype in ${bootdevs}" \
 		"; do " \
-			"if itest.s \"xusb\" == \"x${dtype}\" ; then " \
-				"usb start ;" \
-			"fi; " \
-			"for disk in 0 1 ; do ${dtype} dev ${disk} ;" \
+			"for disk in 0 1 3 ; do ${dtype} dev ${disk} ;" \
 				"for fs in fat ext2 ; do " \
 					"${fs}load " \
 						"${dtype} ${disk}:1 " \
@@ -202,7 +187,6 @@
 		"echo ; echo 6x_bootscript not found ; " \
 		"echo ; echo serial console at 115200, 8N1 ; echo ; " \
 		"echo details at http://boundarydevices.com/6q_bootscript ; " \
-		"setenv stdin serial,usbkbd\0" \
 	"fdt_addr=0x11000000\0" \
 	"fdt_high=0xffffffff\0" \
 	"initrd_high=0xffffffff\0" \
