@@ -154,21 +154,21 @@ int board_ehci_hcd_init(int port)
 }
 
 static struct fsl_esdhc_cfg usdhc_cfgs[] = {
+	{.esdhc_base = USDHC2_BASE_ADDR, .max_bus_width = 4},
 	{.esdhc_base = USDHC4_BASE_ADDR, .max_bus_width = 4},
 	{.esdhc_base = USDHC3_BASE_ADDR, .max_bus_width = 4},
-	{.esdhc_base = USDHC2_BASE_ADDR, .max_bus_width = 4},
 };
 
 static int usdhc_clocks[] = {
-	MXC_ESDHC4_CLK,
 	MXC_ESDHC3_CLK,
-	MXC_ESDHC2_CLK
+	MXC_ESDHC2_CLK,
+	MXC_ESDHC4_CLK,
 };
 
 static int card_detect[] = {
+	-1,
 	IMX_GPIO_NR(2, 6),
 	IMX_GPIO_NR(7, 0),
-	-1
 };
 
 int board_mmc_getcd(struct mmc *mmc)
