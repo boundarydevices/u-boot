@@ -7,5 +7,4 @@
 #
 
 obj-y  := bt.o
-obj-$(CONFIG_CMD_USB_MASS_STORAGE) += ums.o
 obj-$(CONFIG_SPL_BUILD) += spl.o
