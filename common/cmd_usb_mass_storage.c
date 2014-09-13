@@ -111,7 +111,7 @@ int do_usb_mass_storage(cmd_tbl_t *cmdtp, int flag,
 #ifdef CONFIG_USB_CABLE_CHECK
 	/* Timeout unit: seconds */
 	cable_ready_timeout = UMS_CABLE_READY_TIMEOUT;
-
+#error got here
 	if (!g_dnl_board_usb_cable_connected()) {
 		/*
 		 * Won't execute if we don't know whether the cable is
