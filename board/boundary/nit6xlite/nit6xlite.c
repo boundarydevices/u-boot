@@ -207,11 +207,14 @@ static iomux_v3_cfg_t const wifi_pads[] = {
 	(MX6_PAD_NANDF_CS2__GPIO6_IO15 & ~MUX_PAD_CTRL_MASK)
 		| MUX_PAD_CTRL(OUTPUT_40OHM),
 	(MX6_PAD_NANDF_CS3__GPIO6_IO16 & ~MUX_PAD_CTRL_MASK)
-		| MUX_PAD_CTRL(OUTPUT_40OHM),
+		| MUX_PAD_CTRL(WEAK_PULLUP),
 	(MX6_PAD_NANDF_CLE__GPIO6_IO07 & ~MUX_PAD_CTRL_MASK)
 		| MUX_PAD_CTRL(OUTPUT_40OHM),
+	(MX6_PAD_NANDF_WP_B__GPIO6_IO09 & ~MUX_PAD_CTRL_MASK)
+		| MUX_PAD_CTRL(WEAK_PULLDOWN),
 };
 #define WIFI_WL_ENABLE_GP	IMX_GPIO_NR(6, 7)
+#define WIFI_WL_CLK_REQ		IMX_GPIO_NR(6, 8)
 #define WIFI_WL_IRQ_GP	IMX_GPIO_NR(6, 14)
 #define WIFI_BT_REG_ON	IMX_GPIO_NR(6, 15)
 #define WIFI_BT_ENABLE_GP	IMX_GPIO_NR(6, 16)
@@ -796,13 +799,12 @@ int board_early_init_f(void)
 {
 	setup_iomux_uart();
 
+	imx_iomux_v3_setup_multiple_pads(wifi_pads, ARRAY_SIZE(wifi_pads));
+
 	/* Disable WiFi/BT */
 	gpio_direction_input(WIFI_WL_IRQ_GP);
 	gpio_direction_output(WIFI_WL_ENABLE_GP, 0);
-	gpio_direction_output(WIFI_BT_ENABLE_GP, 0);
 	gpio_direction_output(WIFI_BT_REG_ON, 0);
-
-	imx_iomux_v3_setup_multiple_pads(wifi_pads, ARRAY_SIZE(wifi_pads));
 
 #if defined(CONFIG_VIDEO_IPUV3)
 	setup_display();
@@ -856,12 +858,16 @@ int board_init(void)
 	for(i=0; i < ARRAY_SIZE(gpio_pins); i++)
 		gpio_direction_output(IMX_GPIO_NR(1,gpio_pins[i]),0);
 
+	gpio_direction_output(WIFI_WL_ENABLE_GP,1);
+	gpio_direction_output(WIFI_WL_CLK_REQ,1);
 	gpio_direction_output(IMX_GPIO_NR(3,20),0);
 	gpio_direction_output(IMX_GPIO_NR(2,23),1); /* enable RTC */
 	setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info0);
 	setup_i2c(1, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info1);
 	setup_i2c(2, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info2);
 
+	mdelay(2);
+	gpio_direction_output(WIFI_WL_ENABLE_GP,0);
 	return 0;
 }
 
