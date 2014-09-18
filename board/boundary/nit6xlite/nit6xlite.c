@@ -217,7 +217,6 @@ static iomux_v3_cfg_t const wifi_pads[] = {
 #define WIFI_WL_CLK_REQ		IMX_GPIO_NR(6, 8)
 #define WIFI_WL_IRQ_GP	IMX_GPIO_NR(6, 14)
 #define WIFI_BT_REG_ON	IMX_GPIO_NR(6, 15)
-#define WIFI_BT_ENABLE_GP	IMX_GPIO_NR(6, 16)
 
 static void setup_iomux_enet(void)
 {
