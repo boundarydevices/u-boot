@@ -133,26 +133,16 @@
 		"sf erase 0xc0000 0x2000 && " \
 		"echo restored environment to factory default ; fi\0" \
 	"bootcmd=dtype=mmc;disk=0;" \
-		"for fs in fat ext2 ; do " \
-			"${fs}load " \
-				"${dtype} ${disk}:1 " \
-				"10008000 " \
-				"/6x_bootscript" \
-				"&& source 10008000 ; " \
-				"done ; " \
-		"done; " \
-		"echo ; echo 6x_bootscript not found ; " \
-		"echo ; echo serial console at 115200, 8N1 ; echo ; " \
-		"echo details at http://boundarydevices.com/6q_bootscript ;\0" \
+		"load ${dtype} ${disk}:1 " \
+			"10008000 /6x_bootscript" \
+			"&& source 10008000 ; " \
+		"ums 0 mmc 0;\0" \
 	"fdt_addr=0x11000000\0" \
 	"fdt_high=0xffffffff\0" \
 	"initrd_high=0xffffffff\0" \
 	"upgradeu=dtype=mmc; disk=0; " \
-		"for fs in fat ext2 ; do " \
-			"${fs}load ${dtype} ${disk}:1 10008000 " \
-				"/6x_upgrade " \
-				"&& source 10008000 ; " \
-		"done\0" \
+		"load mmc 0:1 10008000 /6x_upgrade " \
+			"&& source 10008000 ;\0" \
 	"disable_giga=1\0" \
 	"usbnet_devaddr=00:19:b8:00:00:02\0" \
 	"usbnet_hostaddr=00:19:b8:00:00:01\0" \
