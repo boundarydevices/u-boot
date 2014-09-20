@@ -86,9 +86,14 @@ static iomux_v3_cfg_t const usdhc4_pads[] = {
 };
 
 static iomux_v3_cfg_t const usb_pads[] = {
-	NEW_PAD_CTRL(MX6_PAD_EIM_D22__GPIO3_IO22, WEAK_PULLUP),	/* usbotg power */
-	NEW_PAD_CTRL(MX6_PAD_GPIO_1__USB_OTG_ID, USDHC_PAD_CTRL), /* USBOTG ID pin */
-	MX6_PAD_KEY_COL4__USB_OTG_OC,			/* USBOTG OC pin */
+	NEW_PAD_CTRL(MX6_PAD_EIM_D22__GPIO3_IO22, WEAK_PULLUP),		/* usbotg power */
+	NEW_PAD_CTRL(MX6_PAD_GPIO_1__USB_OTG_ID, USDHC_PAD_CTRL), 	/* USBOTG ID pin */
+	MX6_PAD_KEY_COL4__USB_OTG_OC,					/* USBOTG OC pin */
+	NEW_PAD_CTRL(MX6_PAD_NANDF_D5__GPIO2_IO05, OUTPUT_40OHM),   	/* Modem OFF */
+	NEW_PAD_CTRL(MX6_PAD_NANDF_D6__GPIO2_IO06, WEAK_PULLUP), 	/* Modem nRESET */
+	MX6_PAD_NANDF_D7__GPIO2_IO07   | MUX_PAD_CTRL(NO_PAD_CTRL), 	/* Modem Sleep stat */
+	NEW_PAD_CTRL(MX6_PAD_NANDF_WP_B__GPIO6_IO09, OUTPUT_40OHM),
+	MX6_PAD_NANDF_RB0__GPIO6_IO10  | MUX_PAD_CTRL(NO_PAD_CTRL), 	/* Modem Wakeup In */
 };
 
 static void setup_iomux_uart(void)
@@ -158,6 +163,8 @@ int board_early_init_f(void)
 
 	gpio_direction_output(IMX_GPIO_NR(3, 22), 0);	/* disable USB otg power */
 	imx_iomux_v3_setup_multiple_pads(usb_pads, ARRAY_SIZE(usb_pads));
+	gpio_direction_output(IMX_GPIO_NR(2,5), 0); /* de-assert MODEM off */
+	gpio_direction_output(IMX_GPIO_NR(2,6), 1); /* de-assert MODEM nRESET */
 	return 0;
 }
 
