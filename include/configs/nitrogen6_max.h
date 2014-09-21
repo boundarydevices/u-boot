@@ -240,7 +240,20 @@
 		"echo ; echo 6x_bootscript not found ; " \
 		"echo ; echo serial console at 115200, 8N1 ; echo ; " \
 		"echo details at http://boundarydevices.com/6q_bootscript ; " \
-		"setenv stdin serial,usbkbd\0" \
+		"setenv stdout serial; " \
+		"if sata init && sata dev 0; then " \
+			"setenv stdout serial,vga; " \
+			"echo expose SATA drive over USB; " \
+			"ums 0 sata 0;" \
+		"fi ;" \
+		"for disk in 1 0 ; do " \
+			"if mmc dev ${disk} ; then " \
+				"setenv stdout serial,vga; " \
+				"echo expose MMC drive ${disk} over USB; " \
+				"ums 0 mmc ${disk}; " \
+			"fi ;" \
+		"done; " \
+		"\0" \
 	"fdt_addr=0x11000000\0" \
 	"fdt_high=0xffffffff\0" \
 	"initrd_high=0xffffffff\0" \
