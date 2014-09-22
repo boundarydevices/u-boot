@@ -175,7 +175,16 @@
 		"echo ; echo serial console at 115200, 8N1 ; echo ; " \
 		"echo details at http://boundarydevices.com/6q_bootscript ; " \
 		"usb start; " \
-		"setenv stdin serial,usbkbd\0" \
+		"setenv stdout serial;" \
+		"setenv stdin serial,usbkbd;" \
+		"if mmc dev 0 ; then " \
+			"setenv stdout serial,vga; " \
+			"echo expose SD card over USB; " \
+			"ums 0 mmc 0;" \
+		"fi; " \
+		"setenv stdout serial,vga; " \
+		"echo no SD card present;" \
+		"\0" \
 	"upgradeu=for dtype in mmc usb ; do " \
 			"disk=0;" \
 			"load ${dtype} ${disk}:1 10008000 /6x_upgrade " \
