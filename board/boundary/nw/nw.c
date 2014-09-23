@@ -154,7 +154,8 @@ static iomux_v3_cfg_t const usdhc4_pads[] = {
 	MX6_PAD_SD4_DAT5__SD4_DATA5 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_SD4_DAT6__SD4_DATA6 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_SD4_DAT7__SD4_DATA7 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	MX6_PAD_NANDF_D5__GPIO2_IO05    | MUX_PAD_CTRL(NO_PAD_CTRL), /* RESET */
+#define GP_EMMC_RESET	IMX_GPIO_NR(2, 5)
+	NEW_PAD_CTRL(MX6_PAD_NANDF_D5__GPIO2_IO05, WEAK_PULLUP), /* RESET */
 };
 #endif
 
@@ -238,12 +239,9 @@ int board_mmc_init(bd_t *bis)
 	printf("%s:\n", __func__ );
 #if !defined(CONFIG_REV2)
 	usdhc_cfg.sdhc_clk = mxc_get_clock(MXC_ESDHC3_CLK);
-	imx_iomux_v3_setup_multiple_pads(
-		usdhc3_pads, ARRAY_SIZE(usdhc3_pads));
 #else
+	gpio_direction_output(GP_EMMC_RESET, 1);
 	usdhc_cfg.sdhc_clk = mxc_get_clock(MXC_ESDHC4_CLK);
-	imx_iomux_v3_setup_multiple_pads(
-		usdhc4_pads, ARRAY_SIZE(usdhc4_pads));
 #endif
 	return fsl_esdhc_initialize(bis, &usdhc_cfg);
 }
@@ -404,7 +402,14 @@ static void setup_display(void)
 int board_early_init_f(void)
 {
 	setup_iomux_uart();
-
+#ifdef CONFIG_REV2
+	gpio_direction_output(GP_EMMC_RESET, 0);
+	imx_iomux_v3_setup_multiple_pads(
+		usdhc4_pads, ARRAY_SIZE(usdhc4_pads));
+#else
+	imx_iomux_v3_setup_multiple_pads(
+		usdhc3_pads, ARRAY_SIZE(usdhc3_pads));
+#endif
 	imx_iomux_v3_setup_multiple_pads(usb_pads, ARRAY_SIZE(usb_pads));
 
 	/* Disable WiFi/BT */
