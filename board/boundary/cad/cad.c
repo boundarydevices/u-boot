@@ -203,6 +203,11 @@ int board_mmc_init(bd_t *bis)
 	return status;
 }
 
+int board_spi_cs_gpio(unsigned bus, unsigned cs)
+{
+	return (bus == 0 && cs == 0) ? (IMX_GPIO_NR(3, 19)) : -1;
+}
+
 static iomux_v3_cfg_t const ecspi_pads[] = {
 	/* SPI1 chip-select */
 	MX6_PAD_EIM_D19__GPIO3_IO19   | MUX_PAD_CTRL(SPI_PAD_CTRL),
