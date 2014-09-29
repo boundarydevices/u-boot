@@ -30,6 +30,7 @@
 #include <i2c.h>
 #include <input.h>
 #include <netdev.h>
+#include <usb/ehci-fsl.h>
 
 /* Special MXCFB sync flags are here. */
 #include "../drivers/video/mxcfb.h"
