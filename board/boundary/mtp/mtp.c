@@ -44,21 +44,16 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
-int cpu_is_mx6q(void)
-{
-	return (get_cpu_rev() >> 12) == MXC_CPU_MX6Q;
-}
-
 #if defined(CONFIG_MX6DL) || defined(CONFIG_MX6S)
 #ifdef CONFIG_MX6Q
-#define GET_MX6_REF(ref) (cpu_is_mx6q() ? mx6q_##ref : mx6dl_solo_##ref)
+#define GET_MX6_REF(ref) (is_cpu_type(MXC_CPU_MX6Q) ? mx6q_##ref : mx6dl_solo_##ref)
 #define IOMUX_SETUP(list)  iomux_setup(mx6q_##list, ARRAY_SIZE(mx6q_##list), \
 		mx6dl_solo_##list, ARRAY_SIZE(mx6dl_solo_##list))
 
 int iomux_setup(iomux_v3_cfg_t *mx6q_pad_list, int mx6q_pad_cnt,
                iomux_v3_cfg_t *mx6dl_solo_pad_list, int mx6dl_solo_pad_cnt)
 {
-	int mx6q = cpu_is_mx6q();
+	int mx6q = is_cpu_type(MXC_CPU_MX6Q);
 	iomux_v3_cfg_t *p =  mx6q ? mx6q_pad_list : mx6dl_solo_pad_list;
 	int cnt = mx6q ? mx6q_pad_cnt : mx6dl_solo_pad_cnt;
 
