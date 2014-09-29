@@ -295,7 +295,7 @@ static const iomux_v3_cfg_t rgb_pads[] = {
  */
 #define PC MUX_PAD_CTRL(I2C_PAD_CTRL)
 
-struct i2c_pads_info i2c_pad_info_mx6q[] = {
+static struct i2c_pads_info i2c_pads[] = {
 {
 	/* I2C1, SGTL5000 */
 	.scl = {
@@ -306,6 +306,18 @@ struct i2c_pads_info i2c_pad_info_mx6q[] = {
 	.sda = {
 		.i2c_mode = MX6Q_PAD_EIM_D28__I2C1_SDA | PC,
 		.gpio_mode = MX6Q_PAD_EIM_D28__GPIO3_IO28 | PC,
+		.gp = IMX_GPIO_NR(3, 28)
+	}
+}, {
+	/* I2C1, SGTL5000 */
+	.scl = {
+		.i2c_mode = MX6DL_PAD_EIM_D21__I2C1_SCL | PC,
+		.gpio_mode = MX6DL_PAD_EIM_D21__GPIO3_IO21 | PC,
+		.gp = IMX_GPIO_NR(3, 21)
+	},
+	.sda = {
+		.i2c_mode = MX6DL_PAD_EIM_D28__I2C1_SDA | PC,
+		.gpio_mode = MX6DL_PAD_EIM_D28__GPIO3_IO28 | PC,
 		.gp = IMX_GPIO_NR(3, 28)
 	}
 }, {
@@ -321,33 +333,6 @@ struct i2c_pads_info i2c_pad_info_mx6q[] = {
 		.gp = IMX_GPIO_NR(4, 13)
 	}
 }, {
-	/* I2C3, J15 - RGB connector */
-	.scl = {
-		.i2c_mode = MX6Q_PAD_GPIO_5__I2C3_SCL | PC,
-		.gpio_mode = MX6Q_PAD_GPIO_5__GPIO1_IO05 | PC,
-		.gp = IMX_GPIO_NR(1, 5)
-	},
-	.sda = {
-		.i2c_mode = MX6Q_PAD_GPIO_16__I2C3_SDA | PC,
-		.gpio_mode = MX6Q_PAD_GPIO_16__GPIO7_IO11 | PC,
-		.gp = IMX_GPIO_NR(7, 11)
-	}
-}};
-
-struct i2c_pads_info i2c_pad_info_mx6dls[] = {
-{
-	/* I2C1, SGTL5000 */
-	.scl = {
-		.i2c_mode = MX6DL_PAD_EIM_D21__I2C1_SCL | PC,
-		.gpio_mode = MX6DL_PAD_EIM_D21__GPIO3_IO21 | PC,
-		.gp = IMX_GPIO_NR(3, 21)
-	},
-	.sda = {
-		.i2c_mode = MX6DL_PAD_EIM_D28__I2C1_SDA | PC,
-		.gpio_mode = MX6DL_PAD_EIM_D28__GPIO3_IO28 | PC,
-		.gp = IMX_GPIO_NR(3, 28)
-	}
-}, {
 	/* I2C2 Camera, MIPI */
 	.scl = {
 		.i2c_mode = MX6DL_PAD_KEY_COL3__I2C2_SCL | PC,
@@ -358,6 +343,18 @@ struct i2c_pads_info i2c_pad_info_mx6dls[] = {
 		.i2c_mode = MX6DL_PAD_KEY_ROW3__I2C2_SDA | PC,
 		.gpio_mode = MX6DL_PAD_KEY_ROW3__GPIO4_IO13 | PC,
 		.gp = IMX_GPIO_NR(4, 13)
+	}
+}, {
+	/* I2C3, J15 - RGB connector */
+	.scl = {
+		.i2c_mode = MX6Q_PAD_GPIO_5__I2C3_SCL | PC,
+		.gpio_mode = MX6Q_PAD_GPIO_5__GPIO1_IO05 | PC,
+		.gp = IMX_GPIO_NR(1, 5)
+	},
+	.sda = {
+		.i2c_mode = MX6Q_PAD_GPIO_16__I2C3_SDA | PC,
+		.gpio_mode = MX6Q_PAD_GPIO_16__GPIO7_IO11 | PC,
+		.gp = IMX_GPIO_NR(7, 11)
 	}
 }, {
 	/* I2C3, J15 - RGB connector */
@@ -955,19 +952,16 @@ int overwrite_console(void)
 int board_init(void)
 {
 	int i;
-	struct i2c_pads_info *p = is_cpu_type(MXC_CPU_MX6Q)
-					? i2c_pad_info_mx6q
-					: i2c_pad_info_mx6dls;
+	struct i2c_pads_info *p = i2c_pads + !is_cpu_type(MXC_CPU_MX6Q);
 	struct iomuxc *const iomuxc_regs = (struct iomuxc *)IOMUXC_BASE_ADDR;
-
 	clrsetbits_le32(&iomuxc_regs->gpr[1],
 			IOMUXC_GPR1_OTG_ID_MASK,
 			IOMUXC_GPR1_OTG_ID_GPIO1);
 
 	/* address of boot parameters */
 	gd->bd->bi_boot_params = PHYS_SDRAM + 0x100;
-	for (i=0; i < ARRAY_SIZE(i2c_pad_info_mx6q); i++)
-	        setup_i2c(i, CONFIG_SYS_I2C_SPEED, 0x7f, p++);
+	for (i=0; i < ARRAY_SIZE(i2c_pads); i+= 2)
+	        setup_i2c(i/2, CONFIG_SYS_I2C_SPEED, 0x7f, p+i);
 
 #ifdef CONFIG_CMD_SATA
 	setup_sata();
