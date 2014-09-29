@@ -322,11 +322,6 @@ int board_mmc_init(bd_t *bis)
 }
 #endif
 
-u32 get_board_rev(void)
-{
-	return 0x63000;
-}
-
 #ifdef CONFIG_MXC_SPI
 int board_spi_cs_gpio(unsigned bus, unsigned cs)
 {
