@@ -31,6 +31,7 @@
 #include <splash.h>
 #include <input.h>
 #include <netdev.h>
+#include <usb/ehci-fsl.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
