@@ -293,7 +293,7 @@ static const iomux_v3_cfg_t rgb_pads[] = {
 /*
  *
  */
-#define PC I2C_PAD_CTRL
+#define PC MUX_PAD_CTRL(I2C_PAD_CTRL)
 
 struct i2c_pads_info i2c_pad_info_mx6q[] = {
 {
@@ -967,7 +967,7 @@ int board_init(void)
 	/* address of boot parameters */
 	gd->bd->bi_boot_params = PHYS_SDRAM + 0x100;
 	for (i=0; i < ARRAY_SIZE(i2c_pad_info_mx6q); i++)
-	        setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, p++);
+	        setup_i2c(i, CONFIG_SYS_I2C_SPEED, 0x7f, p++);
 
 #ifdef CONFIG_CMD_SATA
 	setup_sata();
