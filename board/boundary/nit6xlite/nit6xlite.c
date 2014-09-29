@@ -18,6 +18,7 @@
 #include <asm/imx-common/iomux-v3.h>
 #include <asm/imx-common/mxc_i2c.h>
 #include <asm/imx-common/spi.h>
+#include <asm/imx-common/video.h>
 #include <asm/imx-common/boot_mode.h>
 #include <mmc.h>
 #include <fsl_esdhc.h>
@@ -422,16 +423,6 @@ static iomux_v3_cfg_t const rgb_pads[] = {
 	MX6_PAD_DISP0_DAT23__IPU1_DISP0_DATA23,
 };
 
-struct display_info_t {
-	int	bus;
-	int	addr;
-	int	pixfmt;
-	int	(*detect)(struct display_info_t const *dev);
-	void	(*enable)(struct display_info_t const *dev);
-	struct	fb_videomode mode;
-};
-
-
 static void enable_hdmi(struct display_info_t const *dev)
 {
 	struct hdmi_regs *hdmi	= (struct hdmi_regs *)HDMI_ARB_BASE_ADDR;
@@ -490,7 +481,7 @@ static void enable_rgb(struct display_info_t const *dev)
 	gpio_direction_output(RGB_BACKLIGHT_GP, 1);
 }
 
-static struct display_info_t const displays[] = {{
+struct display_info_t const displays[] = {{
 	.bus	= 2,
 	.addr	= 0x48,
 	.pixfmt	= IPU_PIX_FMT_RGB24,
