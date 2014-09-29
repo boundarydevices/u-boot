@@ -160,6 +160,11 @@ int board_mmc_init(bd_t *bis)
 }
 #endif
 
+int board_spi_cs_gpio(unsigned bus, unsigned cs)
+{
+	return (bus == 0 && cs == 0) ? (IMX_GPIO_NR(3, 19)) : -1;
+}
+
 int board_phy_config(struct phy_device *phydev)
 {
 	/* min rx data delay */
