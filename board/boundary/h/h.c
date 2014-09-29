@@ -19,6 +19,7 @@
 #include <asm/imx-common/mxc_i2c.h>
 #include <asm/imx-common/sata.h>
 #include <asm/imx-common/spi.h>
+#include <asm/imx-common/video.h>
 #include <asm/imx-common/boot_mode.h>
 #include <mmc.h>
 #include <fsl_esdhc.h>
@@ -425,14 +426,6 @@ static iomux_v3_cfg_t const rgb_pads[] = {
 	MX6_PAD_DISP0_DAT21__IPU1_DISP0_DATA21,
 	MX6_PAD_DISP0_DAT22__IPU1_DISP0_DATA22,
 	MX6_PAD_DISP0_DAT23__IPU1_DISP0_DATA23,
-};
-
-struct display_info_t {
-	int	bus;
-	int	addr;
-	int	pixfmt;
-	void	(*enable)(struct display_info_t const *dev);
-	struct	fb_videomode mode;
 };
 
 static void enable_rgb(struct display_info_t const *dev)
