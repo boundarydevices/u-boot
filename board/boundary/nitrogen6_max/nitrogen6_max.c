@@ -12,7 +12,6 @@
 #include <asm/arch/iomux.h>
 #include <asm/arch/sys_proto.h>
 #include <malloc.h>
-#define CONFIG_MX6QDL
 #include <asm/arch/mx6-pins.h>
 #include <asm/errno.h>
 #include <asm/gpio.h>
