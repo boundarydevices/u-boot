@@ -366,7 +366,7 @@ static const iomux_v3_cfg_t MX6NAME(enet_pads2)[] = {
  */
 #define PC I2C_PAD_CTRL
 
-struct i2c_pads_info MX6NAME(i2c_pad_info)[] = {
+static struct i2c_pads_info MX6NAME(i2c_pad_info)[] = {
 {
 	/* I2C1, SGTL5000 */
 	.scl = {
