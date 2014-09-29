@@ -19,6 +19,7 @@
 #include <asm/imx-common/mxc_i2c.h>
 #include <asm/imx-common/sata.h>
 #include <asm/imx-common/spi.h>
+#include <asm/imx-common/video.h>
 #include <asm/imx-common/boot_mode.h>
 #include <mmc.h>
 #include <fsl_esdhc.h>
@@ -309,16 +310,6 @@ static iomux_v3_cfg_t const lvds_control_pads[] = {
 	MX6_PAD_EIM_DA2__GPIO3_IO02 | MUX_PAD_CTRL(WEAK_PULLUP),	/* LVDS_BCKLT_EN */
 	MX6_PAD_EIM_DA1__GPIO3_IO01 | MUX_PAD_CTRL(WEAK_PULLUP),	/* LVDS_PWR_EN */
 };
-
-struct display_info_t {
-	int	bus;
-	int	addr;
-	int	pixfmt;
-	int	(*detect)(struct display_info_t const *dev);
-	void	(*enable)(struct display_info_t const *dev);
-	struct	fb_videomode mode;
-};
-
 
 static int detect_i2c(struct display_info_t const *dev)
 {
