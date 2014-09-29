@@ -209,7 +209,7 @@ static iomux_v3_cfg_t const misc_pads[] = {
 };
 
 /* wl1271 pads on nitrogen6x */
-iomux_v3_cfg_t const wl12xx_pads[] = {
+static iomux_v3_cfg_t const wl12xx_pads[] = {
 	(MX6_PAD_NANDF_CS1__GPIO6_IO14 & ~MUX_PAD_CTRL_MASK)
 		| MUX_PAD_CTRL(WEAK_PULLDOWN),
 	(MX6_PAD_NANDF_CS2__GPIO6_IO15 & ~MUX_PAD_CTRL_MASK)
@@ -909,6 +909,7 @@ int board_init(void)
 			IOMUXC_GPR1_OTG_ID_GPIO1);
 
 	imx_iomux_v3_setup_multiple_pads(misc_pads, ARRAY_SIZE(misc_pads));
+	imx_iomux_v3_setup_multiple_pads(wl12xx_pads, ARRAY_SIZE(wl12xx_pads));
 
 	/* address of boot parameters */
 	gd->bd->bi_boot_params = PHYS_SDRAM + 0x100;
