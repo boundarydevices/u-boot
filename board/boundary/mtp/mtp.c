@@ -145,6 +145,11 @@ int board_mmc_init(bd_t *bis)
 }
 #endif
 
+int board_spi_cs_gpio(unsigned bus, unsigned cs)
+{
+	return (bus == 0 && cs == 0) ? GP_ECSPI1_SS1 : -1;
+}
+
 int board_eth_init(bd_t *bis)
 {
 #ifdef CONFIG_CI_UDC
