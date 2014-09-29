@@ -32,6 +32,7 @@
 #include <input.h>
 #include <netdev.h>
 #include <splash.h>
+#include <usb/ehci-fsl.h>
 #ifdef CONFIG_MX6Q
 #include "pads-mtp.h"
 #endif
