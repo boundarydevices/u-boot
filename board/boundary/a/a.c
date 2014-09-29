@@ -25,6 +25,7 @@
 #include <linux/fb.h>
 #include <asm/arch/crm_regs.h>
 #include <input.h>
+#include <usb/ehci-fsl.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
