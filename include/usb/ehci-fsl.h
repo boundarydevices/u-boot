@@ -279,5 +279,6 @@ struct usb_ehci {
 
 /* Board-specific initialization */
 int board_ehci_hcd_init(int port);
+int board_ehci_power(int port, int on);
 
 #endif /* _EHCI_FSL_H */
