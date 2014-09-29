@@ -284,5 +284,6 @@ int usb_phy_mode(int port);
 /* Board-specific initialization */
 int board_ehci_hcd_init(int port);
 int board_usb_phy_mode(int port);
+int board_ehci_power(int port, int on);
 
 #endif /* _EHCI_FSL_H */
