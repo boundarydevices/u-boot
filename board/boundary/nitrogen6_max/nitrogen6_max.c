@@ -778,7 +778,7 @@ size_t display_count = ARRAY_SIZE(displays);
 
 int board_cfb_skip(void)
 {
-	return 0 != getenv("novideo");
+	return NULL != getenv("novideo");
 }
 
 static void setup_display(void)
