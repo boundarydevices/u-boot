@@ -29,6 +29,7 @@
 #include <input.h>
 #include <netdev.h>
 #include <splash.h>
+#include <usb/ehci-fsl.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 #define GP_USB_OTG_PWR	IMX_GPIO_NR(3, 22)
