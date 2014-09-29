@@ -28,6 +28,7 @@
 #include <spi.h>
 #include <input.h>
 #include <usb/ehci-fsl.h>
+#include <netdev.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
