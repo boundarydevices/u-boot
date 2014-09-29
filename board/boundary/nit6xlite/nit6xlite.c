@@ -669,55 +669,7 @@ struct display_info_t const displays[] = {{
 		.vmode          = FB_VMODE_NONINTERLACED
 } } };
 
-int board_video_skip(void)
-{
-	int i;
-	int ret;
-	char const *panel;
-
-	imx_iomux_v3_setup_multiple_pads(
-		rgb_pads,
-		 ARRAY_SIZE(rgb_pads));
-
-	panel = getenv("panel");
-	if (!panel) {
-		for (i = 0; i < ARRAY_SIZE(displays); i++) {
-			struct display_info_t const *dev = displays+i;
-			if (dev->detect && dev->detect(dev)) {
-				panel = dev->mode.name;
-				printf("auto-detected panel %s\n", panel);
-				break;
-			}
-		}
-		if (!panel) {
-			panel = displays[0].mode.name;
-			i = 0;
-			printf("No panel detected: default to %s\n", panel);
-		}
-	} else {
-		for (i = 0; i < ARRAY_SIZE(displays); i++) {
-			if (!strcmp(panel, displays[i].mode.name))
-				break;
-		}
-	}
-	if (i < ARRAY_SIZE(displays)) {
-		ret = ipuv3_fb_init(&displays[i].mode, 0,
-				    displays[i].pixfmt);
-		if (!ret) {
-			displays[i].enable(displays+i);
-			printf("Display: %s (%ux%u)\n",
-			       displays[i].mode.name,
-			       displays[i].mode.xres,
-			       displays[i].mode.yres);
-		} else
-			printf("LCD %s cannot be configured: %d\n",
-			       displays[i].mode.name, ret);
-	} else {
-		printf("unsupported panel %s\n", panel);
-		ret = -EINVAL;
-	}
-	return (0 != ret);
-}
+size_t display_count = ARRAY_SIZE(displays);
 
 static void setup_display(void)
 {
