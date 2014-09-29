@@ -183,7 +183,7 @@ static const iomux_v3_cfg_t nitrogen6_max_pads[] = {
 
 	/* ECSPI1 pads */
         /* SS1 */
-	IOMUX_PADS(PAD_EIM_D19__GPIO3_IO19 | MUX_PAD_CTRL(SPI_PAD_CTRL)),
+	IOMUX_PADS(PAD_EIM_D19__GPIO3_IO19 | MUX_PAD_CTRL(NO_PAD_CTRL)),
 	IOMUX_PADS(PAD_EIM_D17__ECSPI1_MISO | MUX_PAD_CTRL(SPI_PAD_CTRL)),
 	IOMUX_PADS(PAD_EIM_D18__ECSPI1_MOSI | MUX_PAD_CTRL(SPI_PAD_CTRL)),
 	IOMUX_PADS(PAD_EIM_D16__ECSPI1_SCLK | MUX_PAD_CTRL(SPI_PAD_CTRL)),
@@ -466,6 +466,15 @@ int board_mmc_init(bd_t *bis)
 	}
 
 	return status;
+}
+#endif
+
+#ifdef CONFIG_MXC_SPI
+int board_spi_cs_gpio(unsigned bus, unsigned cs)
+{
+	int gp = (bus == 0 && cs == 0) ? GP_ECSPI1_SS1 : -1;
+	printf("%s: return GP(%d) for spi bus %d, chip select %d\n", __func__, gp, bus, cs);
+	return gp;
 }
 #endif
 
