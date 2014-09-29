@@ -297,7 +297,7 @@ static struct display_info_t const displays[] = {{
 
 int board_cfb_skip(void)
 {
-	return 0 != getenv("novideo");
+	return NULL != getenv("novideo");
 }
 
 int board_video_skip(void)
