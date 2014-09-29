@@ -370,11 +370,6 @@ static struct i2c_pads_info i2c_pads[] = {
 	}
 }};
 
-int cpu_is_mx6q(void)
-{
-	return (get_cpu_rev() >> 12) == MXC_CPU_MX6Q;
-}
-
 int dram_init(void)
 {
 	gd->ram_size = ((ulong)CONFIG_DDR_MB * 1024 * 1024);
