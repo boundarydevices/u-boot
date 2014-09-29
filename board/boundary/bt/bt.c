@@ -20,6 +20,7 @@
 #include <asm/imx-common/mxc_i2c.h>
 #include <asm/imx-common/sata.h>
 #include <asm/imx-common/spi.h>
+#include <asm/imx-common/video.h>
 #include <asm/imx-common/boot_mode.h>
 #include <mmc.h>
 #include <fsl_esdhc.h>
@@ -258,17 +259,6 @@ int splash_screen_prepare(void)
 }
 
 #if defined(CONFIG_VIDEO_IPUV3)
-
-
-struct display_info_t {
-	int	bus;
-	int	addr;
-	int	pixfmt;
-	int	(*detect)(struct display_info_t const *dev);
-	void	(*enable)(struct display_info_t const *dev);
-	struct	fb_videomode mode;
-};
-
 
 static void do_enable_hdmi(struct display_info_t const *dev)
 {
