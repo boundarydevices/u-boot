@@ -130,7 +130,7 @@
 #define CONFIG_VIDEO_LOGO
 #define CONFIG_IPUV3_CLK 260000000
 #define CONFIG_IMX_HDMI
-#define CONFIG_CMD_HDMIDETECT
+#define CONFIG_IMX_VIDEO_SKIP
 #define CONFIG_CONSOLE_MUX
 
 /* allow to overwrite serial and ethaddr */
