@@ -473,7 +473,7 @@ static int detect_i2c(struct display_info_t const *dev)
 		(0 == i2c_probe(dev->addr)));
 }
 
-static void enable_lvds(struct display_info_t const *dev)
+static void enable_lvds_spwg(struct display_info_t const *dev)
 {
 	struct iomuxc *iomux = (struct iomuxc *)
 				IOMUXC_BASE_ADDR;
@@ -547,7 +547,7 @@ struct display_info_t const displays[] = {{
 	.addr	= 0,
 	.pixfmt	= IPU_PIX_FMT_RGB24,
 	.detect	= NULL,
-	.enable	= enable_lvds,
+	.enable	= enable_lvds_spwg,
 	.mode	= {
 		.name           = "LDB-WXGA-S",
 		.refresh        = 60,
@@ -567,7 +567,7 @@ struct display_info_t const displays[] = {{
 	.addr	= 0x4,
 	.pixfmt	= IPU_PIX_FMT_LVDS666,
 	.detect	= detect_i2c,
-	.enable	= enable_lvds,
+	.enable	= enable_lvds_spwg,
 	.mode	= {
 		.name           = "Hannstar-XGA",
 		.refresh        = 60,
@@ -587,7 +587,7 @@ struct display_info_t const displays[] = {{
 	.addr	= 0,
 	.pixfmt	= IPU_PIX_FMT_LVDS666,
 	.detect	= NULL,
-	.enable	= enable_lvds,
+	.enable	= enable_lvds_spwg,
 	.mode	= {
 		.name           = "LG-9.7",
 		.refresh        = 60,
@@ -607,7 +607,7 @@ struct display_info_t const displays[] = {{
 	.addr	= 0x38,
 	.pixfmt	= IPU_PIX_FMT_LVDS666,
 	.detect	= detect_i2c,
-	.enable	= enable_lvds,
+	.enable	= enable_lvds_spwg,
 	.mode	= {
 		.name           = "wsvga-lvds",
 		.refresh        = 60,
@@ -667,7 +667,7 @@ struct display_info_t const displays[] = {{
 	.addr	= 0x41,
 	.pixfmt	= IPU_PIX_FMT_LVDS666,
 	.detect	= detect_i2c,
-	.enable	= enable_lvds,
+	.enable	= enable_lvds_spwg,
 	.mode	= {
 		.name           = "amp1024x600",
 		.refresh        = 60,
@@ -687,7 +687,7 @@ struct display_info_t const displays[] = {{
 	.addr	= 0,
 	.pixfmt	= IPU_PIX_FMT_LVDS666,
 	.detect	= 0,
-	.enable	= enable_lvds,
+	.enable	= enable_lvds_spwg,
 	.mode	= {
 		.name           = "wvga-lvds",
 		.refresh        = 57,
