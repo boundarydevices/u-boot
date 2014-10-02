@@ -32,6 +32,9 @@
 #include <netdev.h>
 #include <usb/ehci-fsl.h>
 
+/* Special MXCFB sync flags are here. */
+#include "../drivers/video/mxcfb.h"
+
 DECLARE_GLOBAL_DATA_PTR;
 #define GP_USB_OTG_PWR	IMX_GPIO_NR(3, 22)
 
@@ -723,6 +726,32 @@ struct display_info_t const displays[] = {{
 		.hsync_len      = 20,
 		.vsync_len      = 10,
 		.sync           = 0,
+		.vmode          = FB_VMODE_NONINTERLACED
+} }, {
+	.bus	= 0,
+	.addr	= 0,
+	.pixfmt	= IPU_PIX_FMT_RGB666,
+	.detect	= NULL,
+	.enable	= enable_rgb,
+	.mode	= {
+		.name		= "hitachi_hvga",
+		 /*
+		  * hitachi 640x240
+		  * vsync = 60
+		  * hsync = 260 * vsync = 15.6 Khz
+		  * pixclk = 800 * hsync = 12.48 MHz
+		  */
+		.refresh	= 60,
+		.xres		= 640,              //800=640+125+34+1
+		.yres		= 240,              //260=240+9+8+3
+		.pixclock	= 1000000000 / 800 * 1000 / 260 / 60,	//80128
+		.left_margin	= 34,
+		.right_margin	= 1,
+		.upper_margin	= 8,
+		.lower_margin	= 3,
+		.hsync_len	= 125,
+		.vsync_len	= 9,
+		.sync           = FB_SYNC_CLK_LAT_FALL,
 		.vmode          = FB_VMODE_NONINTERLACED
 } }, {
 	.bus	= 0,
