@@ -224,16 +224,11 @@
 	"fdt_addr=0x11000000\0" \
 	"fdt_high=0xffffffff\0" \
 	"loadsplash=if sf probe ; then sf read ${splashimage} c2000 ${splashsize} ; fi\0" \
-	"upgradeu=for dtype in ${bootdevs}" \
-		"; do " \
-		"for disk in 0 1 2; do ${dtype} dev ${disk} ;" \
-		     "for fs in fat ext2 ; do " \
-				"${fs}load ${dtype} ${disk}:1 10008000 " \
-					"/6x_upgrade " \
-					"&& source 10008000 ; " \
-			"done ; " \
-		"done ; " \
+	"upgradeu=for dtype in ${bootdevs}; do " \
+		"disk=0; ${dtype} dev 0 ;" \
+		"load ${dtype} 0:1 10008000 /6x_upgrade && source 10008000 ; " \
 	"done\0" \
+	"disable_giga=1\0" \
 	"usbnet_devaddr=00:19:b8:00:00:02\0" \
 	"usbnet_hostaddr=00:19:b8:00:00:01\0" \
 	"usbrecover=setenv ethact usb_ether; " \
