@@ -1,0 +1,38 @@
+A number of Boundary Devices i.MX6 boards share a set of supported
+display interfaces:
+
+        - HDMI (with EDID)
+        - LVDS0
+        - 24-bit RGB
+
+They also support the same large (and growing) set of panels.
+
+The module video.c provides support for these display interfaces
+through a set of enable_x() routines for each of the display
+interfaces and provides a standard set of panels to prevent
+duplication and ease maintenance.
+
+The module can be configured through a board's configuration
+file as follows:
+
+        CONFIG_BDMX6_VIDEO              - determines whether to include any
+                                          of this.
+        CONFIG_BDMX6_DISPLAYS           - include standard displays
+
+        CONFIG_BDMX6_LVDS0              - support for LVDS0 channel
+        CONFIG_BDMX6_LVDS0_PWM          - GPIO for LVDS0 PWM pin
+        CONFIG_BDMX6_LVDS0_ENABLE       - GPIO for LVDS0 display enable
+        CONFIG_BDMX6_LVDS0_I2C_BUS      - I2C bus for LVDS0 channel
+
+        CONFIG_BDMX6_RGB                - support for RGB channel
+        CONFIG_BDMX6_RGB_PWM            - GPIO for RGB PWM pin
+        CONFIG_BDMX6_RGB_ENABLE         - GPIO for RGB display enable
+        CONFIG_BDMX6_RGB_I2C_BUS        - I2C bus for RGB channel
+
+        CONFIG_BDMX6_HDMI_I2C_BUS       - I2C bus for HDMI EDID
+
+Some standard configuration macros are also used to enable video
+features common to the boards:
+        CONFIG_IMX_HDMI                 - controls inclusion of HDMI
+                                          display and enable_hdmi callback.
+
