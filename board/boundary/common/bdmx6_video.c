@@ -123,27 +123,7 @@ struct display_info_t const displays[] = {
 	.detect	= detect_i2c,
 	.enable	= enable_lvds_spwg,
 	.mode	= BDMX6_LVDS_WSVGA
-},
-#endif
-#ifdef CONFIG_BDMX6_RGB
-{
-	.bus	= CONFIG_BDMX6_RGB_I2C_BUS,
-	.addr	= 0x10,
-	.pixfmt	= IPU_PIX_FMT_RGB666,
-	.detect	= detect_i2c,
-	.enable	= enable_rgb,
-	.mode	= BDMX6_RGB_FUSION7
 }, {
-	.bus	= 0,
-	.addr	= 0,
-	.pixfmt	= IPU_PIX_FMT_RGB666,
-	.detect	= NULL,
-	.enable	= enable_rgb,
-	.mode	= BDMX6_RGB_SVGA
-},
-#endif
-#ifdef CONFIG_BDMX6_LVDS0
-{
 	.bus	= CONFIG_BDMX6_LVDS0_I2C_BUS,
 	.addr	= 0x41,
 	.pixfmt	= IPU_PIX_FMT_LVDS666,
@@ -168,6 +148,20 @@ struct display_info_t const displays[] = {
 #endif
 #ifdef CONFIG_BDMX6_RGB
 {
+	.bus	= CONFIG_BDMX6_RGB_I2C_BUS,
+	.addr	= 0x10,
+	.pixfmt	= IPU_PIX_FMT_RGB666,
+	.detect	= detect_i2c,
+	.enable	= enable_rgb,
+	.mode	= BDMX6_RGB_FUSION7
+}, {
+	.bus	= 0,
+	.addr	= 0,
+	.pixfmt	= IPU_PIX_FMT_RGB666,
+	.detect	= NULL,
+	.enable	= enable_rgb,
+	.mode	= BDMX6_RGB_SVGA
+}, {
 	.bus	= CONFIG_BDMX6_LVDS0_I2C_BUS,
 	.addr	= 0x48,
 	.pixfmt	= IPU_PIX_FMT_RGB666,
