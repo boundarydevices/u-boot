@@ -110,9 +110,7 @@
 #define CONFIG_CMD_FS_GENERIC
 #define CONFIG_DOS_PARTITION
 
-#ifdef CONFIG_MX6Q
 #define CONFIG_CMD_SATA
-#endif
 
 /*
  * SATA Configs
