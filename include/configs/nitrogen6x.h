@@ -316,6 +316,7 @@
 	"fdt_high=0xffffffff\0" \
 	"initrd_high=0xffffffff\0" \
 	"loadsplash=if sf probe ; then sf read ${splashimage} c2000 ${splashsize} ; fi\0" \
+	"rundfu=dfu 0 sf 0:0:25000000:0\0" \
 	"upgradeu=for dtype in ${bootdevs}" \
 		"; do " \
 		"for disk in 0 1 ; do ${dtype} dev ${disk} ;" \
