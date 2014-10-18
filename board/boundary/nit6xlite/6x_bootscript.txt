@@ -1,4 +1,4 @@
-setenv bootargs enable_wait_mode=off
+setenv bootargs enable_wait_mode=off fec.disable_giga=1;
 setenv nextcon 0;
 setenv lvds 0;
 
