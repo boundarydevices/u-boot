@@ -386,6 +386,8 @@ static unsigned short gpios_out_low[] = {
 	GP_KL04_RESET,		/* inverted before kl04, not in reset */
 	GP_KL04_PROGRAM,	/* inverted before kl04 */
 	GP_EMMC_RESET,		/* hold in reset */
+	GP_WM5102_RESET,
+	GP_WM5102_LDO_EN,
 	GP_USB_OTG_PWR,		/* disable USB otg power */
 	GP_USB_HUB_RESET,	/* disable hub */
 	GP_J6_POWER_EN,
@@ -418,6 +420,7 @@ static unsigned short gpios_in[] = {
 	GP_GS2971_LB_CONT,
 	GP_GS2971_Y_1ANC,
 	GP_KL04_IRQ,
+	GP_WM5102_IRQ,
 };
 
 static void set_gpios_in(unsigned short *p, int cnt)
