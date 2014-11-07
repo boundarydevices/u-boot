@@ -148,6 +148,10 @@ if itest.s "x" != "x$disable_giga" ; then
         setenv bootargs $bootargs fec.disable_giga=1
 fi
 
+if itest.s "x" != "x$wlmac" ; then
+        setenv bootargs $bootargs wlcore.mac=$wlmac
+fi
+
 if ${fs}load ${dtype} ${disk}:1 10800000 ${bootdir}uImage ; then
 	if itest.s x$havedtb == x ; then
 		bootm 10800000 ;
