@@ -82,6 +82,7 @@
 #define CONFIG_CMD_EXT2
 #define CONFIG_CMD_FAT
 #define CONFIG_DOS_PARTITION
+#define CONFIG_EFI_PARTITION
 
 /* USB Configs */
 #define CONFIG_CMD_USB
