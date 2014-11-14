@@ -189,7 +189,7 @@
 			"disk=0;" \
 			"load ${dtype} ${disk}:1 10008000 /6x_upgrade " \
 				"&& source 10008000 ; " \
-		"done ; " \
+		"done ;\0" \
 	"disable_giga=1\0" \
 	"initrd_high=0xffffffff\0" \
 	"usbnet_devaddr=00:19:b8:00:00:02\0" \
