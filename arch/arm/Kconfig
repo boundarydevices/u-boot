@@ -432,6 +432,9 @@ config TARGET_SP
 config TARGET_UTC
 	bool "Support UTC"
 
+config TARGET_VP
+	bool "Support VP"
+
 config TARGET_CGTQMX6EVAL
 	bool "Support cgtqmx6eval"
 
@@ -651,6 +654,7 @@ source "board/boundary/per/Kconfig"
 source "board/boundary/s/Kconfig"
 source "board/boundary/sp/Kconfig"
 source "board/boundary/utc/Kconfig"
+source "board/boundary/vp/Kconfig"
 source "board/broadcom/bcm28155_ap/Kconfig"
 source "board/broadcom/bcm958300k/Kconfig"
 source "board/broadcom/bcm958622hr/Kconfig"
