@@ -96,8 +96,12 @@ if test "sata" = "${dtype}" ; then
 else
         if test "usb" = "${dtype}" ; then
                 setenv bootargs "$bootargs root=/dev/sda$bootpart" ;
-        else
+        elif itest.s "x" == "x$sdphys" ; then
                 setenv bootargs "$bootargs root=/dev/mmcblk0p$bootpart" ;
+        elif itest 0 -eq ${disk}; then
+                setenv bootargs "$bootargs root=/dev/mmcblk2p$bootpart" ;
+        else
+                setenv bootargs "$bootargs root=/dev/mmcblk3p$bootpart" ;
         fi
 fi
 
