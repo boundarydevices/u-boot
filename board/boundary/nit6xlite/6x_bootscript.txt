@@ -75,7 +75,7 @@ if itest.s x$bootpart == x ; then
 	bootpart=1
 fi
 
-setenv bootargs "$bootargs root=/dev/mmcblk0p${bootpart}" ;
+setenv bootargs $bootargs root=/dev/mmcblk0p${bootpart};
 
 if itest.s x == x${bootdir} ; then
 	bootdir=/boot/
