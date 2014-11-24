@@ -63,6 +63,7 @@
 #define CONFIG_SYS_I2C
 #define CONFIG_SYS_I2C_MXC
 #define CONFIG_SYS_I2C_SPEED		100000
+#define CONFIG_I2C_EDID
 
 /* MMC Configs */
 #define CONFIG_FSL_ESDHC
@@ -78,6 +79,7 @@
 #define CONFIG_CMD_EXT4
 #define CONFIG_CMD_EXT4_WRITE
 #define CONFIG_CMD_FAT
+#define CONFIG_CMD_FS_GENERIC
 #define CONFIG_DOS_PARTITION
 #define CONFIG_EFI_PARTITION
 
@@ -171,13 +173,11 @@
 	"bootcmd=for dtype in " CONFIG_DRIVE_TYPES \
 		"; do " \
 			"for disk in 0 1 ; do ${dtype} dev ${disk} ;" \
-				"for fs in fat ext2 ; do " \
-					"${fs}load " \
-						"${dtype} ${disk}:1 " \
-						"10008000 " \
-						"/6x_bootscript" \
-						"&& source 10008000 ; " \
-				"done ; " \
+				"load " \
+					"${dtype} ${disk}:1 " \
+					"10008000 " \
+					"/6x_bootscript" \
+					"&& source 10008000 ; " \
 			"done ; " \
 		"done; " \
 		"setenv stdout serial,vga ; " \
@@ -190,11 +190,9 @@
 	"upgradeu=for dtype in " CONFIG_DRIVE_TYPES \
 		"; do " \
 		"for disk in 0 1 ; do ${dtype} dev ${disk} ;" \
-		     "for fs in fat ext2 ; do " \
-				"${fs}load ${dtype} ${disk}:1 10008000 " \
-					"/6x_upgrade " \
-					"&& source 10008000 ; " \
-			"done ; " \
+			"load ${dtype} ${disk}:1 10008000 " \
+				"/6x_upgrade " \
+				"&& source 10008000 ; " \
 		"done ; " \
 	"done\0" \
 	"panel=LDB-WXGA\0" \
@@ -272,8 +270,10 @@
 #define CONFIG_CMD_MEMTEST
 #define CONFIG_SYS_ALT_MEMTEST
 
+#define CONFIG_CMD_BOOTZ
 #define CONFIG_SUPPORT_RAW_INITRD
 #define CONFIG_CMD_FS_GENERIC
+#define CONFIG_BOARD_LATE_INIT
 
 #define CONFIG_CMD_ELF
 
