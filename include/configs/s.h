@@ -24,6 +24,8 @@
 #define CONFIG_INITRD_TAG
 #define CONFIG_REVISION_TAG
 
+#define CONFIG_SYS_GENERIC_BOARD
+
 /* Size of malloc() pool */
 #define CONFIG_SYS_MALLOC_LEN		(12 * 1024 * 1024)
 
@@ -75,6 +77,8 @@
 #define CONFIG_BOUNCE_BUFFER
 #define CONFIG_CMD_EXT2
 #define CONFIG_CMD_FAT
+#define CONFIG_CMD_EXT4
+#define CONFIG_CMD_FS_GENERIC
 #define CONFIG_DOS_PARTITION
 #define CONFIG_EFI_PARTITION
 
@@ -101,7 +105,8 @@
 #define CONFIG_USB_HOST_ETHER
 #define CONFIG_USB_ETHER_ASIX
 #define CONFIG_USB_ETHER_SMSC95XX
-#define CONFIG_MXC_USB_PORT	1
+#define CONFIG_USB_MAX_CONTROLLER_COUNT 2
+#define CONFIG_EHCI_HCD_INIT_AFTER_RESET	/* For OTG port */
 #define CONFIG_MXC_USB_PORTSC	(PORT_PTS_UTMI | PORT_PTS_PTW)
 #define CONFIG_MXC_USB_FLAGS	0
 #define CONFIG_USB_KEYBOARD
@@ -132,7 +137,10 @@
 #define CONFIG_IPUV3_CLK 260000000
 #define CONFIG_IMX_HDMI
 #define CONFIG_IMX_VIDEO_SKIP
+#define CONFIG_CMD_HDMIDETECT
 #define CONFIG_CONSOLE_MUX
+#define CONFIG_IMX_HDMI
+#define CONFIG_IMX_VIDEO_SKIP
 
 /* allow to overwrite serial and ethaddr */
 #define CONFIG_ENV_OVERWRITE
@@ -167,13 +175,11 @@
 	"bootcmd=for dtype in " CONFIG_DRIVE_TYPES \
 		"; do " \
 			"for disk in 0 1 ; do ${dtype} dev ${disk} ;" \
-				"for fs in fat ext2 ; do " \
-					"${fs}load " \
-						"${dtype} ${disk}:1 " \
-						"10008000 " \
-						"/6x_bootscript" \
-						"&& source 10008000 ; " \
-				"done ; " \
+				"load " \
+					"${dtype} ${disk}:1 " \
+					"10008000 " \
+					"/6x_bootscript" \
+					"&& source 10008000 ; " \
 			"done ; " \
 		"done; " \
 		"setenv stdout serial,vga ; " \
@@ -186,11 +192,9 @@
 	"upgradeu=for dtype in " CONFIG_DRIVE_TYPES \
 		"; do " \
 		"for disk in 0 1 ; do ${dtype} dev ${disk} ;" \
-		     "for fs in fat ext2 ; do " \
-				"${fs}load ${dtype} ${disk}:1 10008000 " \
-					"/6x_upgrade " \
-					"&& source 10008000 ; " \
-			"done ; " \
+			"load ${dtype} ${disk}:1 10008000 " \
+				"/6x_upgrade " \
+				"&& source 10008000 ; " \
 		"done ; " \
 	"done\0" \
 	"panel=LDB-WXGA\0" \
@@ -275,7 +279,20 @@
 #define CONFIG_SYS_ALT_MEMTEST
 
 #define CONFIG_CMD_BOOTZ
-#define CONFIG_CMD_FS_GENERIC
 #define CONFIG_SUPPORT_RAW_INITRD
+#define CONFIG_CMD_FS_GENERIC
+#define CONFIG_BOARD_LATE_INIT
+
+#define CONFIG_USB_GADGET
+#define CONFIG_CMD_USB_MASS_STORAGE
+#define CONFIG_USB_GADGET_MASS_STORAGE
+#define CONFIG_USBDOWNLOAD_GADGET
+#define CONFIG_USB_GADGET_VBUS_DRAW	2
+
+/* Netchip IDs */
+#define CONFIG_G_DNL_VENDOR_NUM 0x0525
+#define CONFIG_G_DNL_PRODUCT_NUM 0xa4a5
+#define CONFIG_G_DNL_MANUFACTURER "Boundary"
+
 
 #endif	       /* __CONFIG_H */
