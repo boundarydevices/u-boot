@@ -396,6 +396,9 @@ config TARGET_DASH
 config TARGET_H
 	bool "Support H"
 
+config TARGET_INSP
+	bool "Support INSP"
+
 config TARGET_MCS
 	bool "Support mcs"
 
@@ -649,6 +652,7 @@ source "board/boundary/bt/Kconfig"
 source "board/boundary/cad/Kconfig"
 source "board/boundary/dash/Kconfig"
 source "board/boundary/h/Kconfig"
+source "board/boundary/insp/Kconfig"
 source "board/boundary/mcs/Kconfig"
 source "board/boundary/med/Kconfig"
 source "board/boundary/mtp/Kconfig"
