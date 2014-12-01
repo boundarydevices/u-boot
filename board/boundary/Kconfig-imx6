@@ -79,6 +79,10 @@ config TARGET_HP
 	bool "hp"
 	depends on MX6DL || MX6Q || MX6QDL || MX6S
 
+config TARGET_INSP
+	bool "insp"
+	depends on MX6DL || MX6Q || MX6QDL || MX6S
+
 config TARGET_NITROGEN6X
 	bool "nitrogen6x"
 	depends on MX6DL || MX6Q || MX6QDL || MX6S
@@ -108,4 +112,5 @@ source "board/boundary/h/Kconfig"
 source "board/boundary/h4/Kconfig"
 source "board/boundary/hl/Kconfig"
 source "board/boundary/hp/Kconfig"
+source "board/boundary/insp/Kconfig"
 source "board/boundary/nitrogen6x/Kconfig"
