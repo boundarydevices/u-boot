@@ -1,0 +1,7 @@
+insp BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/insp/
+F:	include/configs/insp.h
+F:	configs/insp_defconfig
+

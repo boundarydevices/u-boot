@@ -550,6 +550,10 @@ config TARGET_H
 	bool "Support h"
 	select CPU_V7
 
+config TARGET_INSP
+	bool "Support insp"
+	select CPU_V7
+
 config TARGET_NITROGEN6X
 	bool "Support nitrogen6x"
 	select CPU_V7
@@ -924,6 +928,7 @@ source "board/boundary/cob/Kconfig"
 source "board/boundary/dash/Kconfig"
 source "board/boundary/eo/Kconfig"
 source "board/boundary/h/Kconfig"
+source "board/boundary/insp/Kconfig"
 source "board/boundary/nitrogen6x/Kconfig"
 source "board/boundary/vp/Kconfig"
 source "board/broadcom/bcm28155_ap/Kconfig"
