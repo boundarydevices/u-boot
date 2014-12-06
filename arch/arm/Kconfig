@@ -381,6 +381,9 @@ config TARGET_WANDBOARD
 config TARGET_TITANIUM
 	bool "Support titanium"
 
+config TARGET_NIT6XLITE
+	bool "Support nit6xlite"
+
 config TARGET_NITROGEN6X
 	bool "Support nitrogen6x"
 
@@ -590,6 +593,7 @@ source "board/balloon3/Kconfig"
 source "board/barco/titanium/Kconfig"
 source "board/bluegiga/apx4devkit/Kconfig"
 source "board/bluewater/snapper9260/Kconfig"
+source "board/boundary/nit6xlite/Kconfig"
 source "board/boundary/nitrogen6x/Kconfig"
 source "board/broadcom/bcm28155_ap/Kconfig"
 source "board/broadcom/bcm958300k/Kconfig"
