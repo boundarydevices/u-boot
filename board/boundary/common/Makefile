@@ -6,5 +6,7 @@
 #
 ifdef CONFIG_BDMX6_VIDEO
 obj-$(CONFIG_BDMX6_VIDEO)       += bdmx6_video.o
+else
+obj- := __dummy__.o
 endif
 
