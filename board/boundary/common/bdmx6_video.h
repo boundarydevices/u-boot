@@ -254,4 +254,17 @@
 		.vmode          = FB_VMODE_NONINTERLACED \
 }
 
+#ifdef CONFIG_IMX_HDMI
+void do_enable_hdmi(struct display_info_t const *dev);
+#endif
+
+#ifdef CONFIG_BDMX6_LVDS0
+void enable_lvds_spwg(struct display_info_t const *dev);
+void enable_lvds_jeida(struct display_info_t const *dev);
+#endif
+
+#ifdef CONFIG_BDMX6_RGB
+void enable_rgb(struct display_info_t const *dev);
+#endif
+
 #endif

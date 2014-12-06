@@ -17,17 +17,11 @@
 #include "../drivers/video/mxcfb.h"
 
 #ifdef CONFIG_IMX_HDMI
-static void do_enable_hdmi(struct display_info_t const *dev)
+void do_enable_hdmi(struct display_info_t const *dev)
 {
 	imx_enable_hdmi_phy();
 }
 #endif
-
-static int detect_i2c(struct display_info_t const *dev)
-{
-	return ((0 == i2c_set_bus_num(dev->bus)) &&
-		(0 == i2c_probe(dev->addr)));
-}
 
 #ifdef CONFIG_BDMX6_LVDS0
 
@@ -41,7 +35,7 @@ static void enable_lvds_backlight(void)
 #endif
 }
 
-static void enable_lvds_spwg(struct display_info_t const *dev)
+void enable_lvds_spwg(struct display_info_t const *dev)
 {
 	struct iomuxc *iomux = (struct iomuxc *)
 				IOMUXC_BASE_ADDR;
@@ -51,7 +45,7 @@ static void enable_lvds_spwg(struct display_info_t const *dev)
 	enable_lvds_backlight();
 }
 
-static void enable_lvds_jeida(struct display_info_t const *dev)
+void enable_lvds_jeida(struct display_info_t const *dev)
 {
 	struct iomuxc *iomux = (struct iomuxc *)
 				IOMUXC_BASE_ADDR;
@@ -64,7 +58,7 @@ static void enable_lvds_jeida(struct display_info_t const *dev)
 #endif
 
 #ifdef CONFIG_BDMX6_RGB
-static void enable_rgb(struct display_info_t const *dev)
+void enable_rgb(struct display_info_t const *dev)
 {
 #ifdef CONFIG_BDMX6_RGB_PWM
 	gpio_direction_output(CONFIG_BDMX6_RGB_PWM, 1);
@@ -76,6 +70,12 @@ static void enable_rgb(struct display_info_t const *dev)
 #endif
 
 #ifdef CONFIG_BDMX6_DISPLAYS
+static int detect_i2c(struct display_info_t const *dev)
+{
+	return ((0 == i2c_set_bus_num(dev->bus)) &&
+		(0 == i2c_probe(dev->addr)));
+}
+
 struct display_info_t const displays[] = {
 #ifdef CONFIG_IMX_HDMI
 {
