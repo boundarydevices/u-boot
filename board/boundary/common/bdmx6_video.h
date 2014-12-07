@@ -8,6 +8,8 @@
 #ifndef __BDMX6_VIDEO_H_
 #define __BDMX6_VIDEO_H_
 
+#include <asm/imx-common/video.h>
+
 #define BDMX6_HDMI_SVGA { \
 		.name           = "HDMI", \
 		.refresh        = 60, \
