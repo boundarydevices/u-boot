@@ -637,6 +637,11 @@ static void set_gpios(unsigned short *p, int cnt, int val)
 		gpio_direction_output(*p++, val);
 }
 
+int board_spi_cs_gpio(unsigned bus, unsigned cs)
+{
+	return (bus == 0 && cs == 0) ? (IMX_GPIO_NR(3, 19)) : -1;
+}
+
 int board_early_init_f(void)
 {
 	set_gpios(gpios_out_high, ARRAY_SIZE(gpios_out_high), 1);
