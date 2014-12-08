@@ -290,7 +290,7 @@ static const iomux_v3_cfg_t rgb_pads[] = {
 /*
  *
  */
-#define PC I2C_PAD_CTRL
+#define PC MUX_PAD_CTRL(I2C_PAD_CTRL)
 
 struct i2c_pads_info i2c_pad_info_mx6q[] = {
 {
