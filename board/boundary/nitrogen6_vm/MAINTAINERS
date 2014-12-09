@@ -1,0 +1,6 @@
+NITROGEN6_VM BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/nitrogen6_vm/
+F:	include/configs/nitrogen6_vm.h
+F:	configs/nitrogen6_vm_defconfig
