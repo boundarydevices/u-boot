@@ -446,25 +446,14 @@ static void setup_display(void)
 {
 	struct mxc_ccm_reg *mxc_ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
 	struct iomuxc *iomux = (struct iomuxc *)IOMUXC_BASE_ADDR;
-	struct hdmi_regs *hdmi	= (struct hdmi_regs *)HDMI_ARB_BASE_ADDR;
-
 	int reg;
 
+	enable_ipu_clock();
+	imx_setup_hdmi();
 	/* Turn on LDB0,IPU,IPU DI0 clocks */
 	reg = __raw_readl(&mxc_ccm->CCGR3);
-	reg |=   MXC_CCM_CCGR3_IPU1_IPU_DI0_OFFSET
-		|MXC_CCM_CCGR3_LDB_DI0_MASK;
+	reg |=  MXC_CCM_CCGR3_LDB_DI0_MASK;
 	writel(reg, &mxc_ccm->CCGR3);
-
-	/* Turn on HDMI PHY clock */
-	reg = __raw_readl(&mxc_ccm->CCGR2);
-	reg |=  MXC_CCM_CCGR2_HDMI_TX_IAHBCLK_MASK
-	       |MXC_CCM_CCGR2_HDMI_TX_ISFRCLK_MASK;
-	writel(reg, &mxc_ccm->CCGR2);
-
-	/* clear HDMI PHY reset */
-	writeb(HDMI_MC_PHYRSTZ_DEASSERT, &hdmi->mc_phyrstz);
-
 
 	/* set LDB0, LDB1 clk select to 011/011 */
 	reg = readl(&mxc_ccm->cs2cdr);
@@ -479,14 +468,7 @@ static void setup_display(void)
 	writel(reg, &mxc_ccm->cscmr2);
 
 	reg = readl(&mxc_ccm->chsccdr);
-	reg &= ~(MXC_CCM_CHSCCDR_IPU1_DI0_PRE_CLK_SEL_MASK
-		|MXC_CCM_CHSCCDR_IPU1_DI0_PODF_MASK
-		|MXC_CCM_CHSCCDR_IPU1_DI0_CLK_SEL_MASK);
 	reg |= (CHSCCDR_CLK_SEL_LDB_DI0
-		<<MXC_CCM_CHSCCDR_IPU1_DI0_CLK_SEL_OFFSET)
-	      |(CHSCCDR_PODF_DIVIDE_BY_3
-		<<MXC_CCM_CHSCCDR_IPU1_DI0_PODF_OFFSET)
-	      |(CHSCCDR_IPU_PRE_CLK_540M_PFD
 		<<MXC_CCM_CHSCCDR_IPU1_DI0_PRE_CLK_SEL_OFFSET);
 	writel(reg, &mxc_ccm->chsccdr);
 
