@@ -139,6 +139,10 @@ config TARGET_NITROGEN6_SOM2
 	bool "nitrogen6_som2"
 	depends on MX6DL || MX6Q || MX6QDL || MX6S
 
+config TARGET_NITROGEN6_VM
+	bool "nitrogen6_vm"
+	depends on MX6DL || MX6Q || MX6QDL || MX6S
+
 config TARGET_NITROGEN6X
 	bool "nitrogen6x"
 	depends on MX6DL || MX6Q || MX6QDL || MX6S
@@ -183,4 +187,5 @@ source "board/boundary/nit6xlite/Kconfig"
 source "board/boundary/nitrogen6_max/Kconfig"
 source "board/boundary/nitrogen6_scm/Kconfig"
 source "board/boundary/nitrogen6_som2/Kconfig"
+source "board/boundary/nitrogen6_vm/Kconfig"
 source "board/boundary/nitrogen6x/Kconfig"
