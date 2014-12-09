@@ -458,6 +458,9 @@ config TARGET_NITROGEN6_SCM
 config TARGET_NITROGEN6_SOM2
 	bool "nitrogen6_som2"
 
+config TARGET_NITROGEN6_VM
+	bool "nitrogen6_vm"
+
 config TARGET_NITROGEN6X
 	bool "nitrogen6x"
 	imply USB_HOST_ETHER
@@ -633,6 +636,7 @@ source "board/boundary/nit6xlite/Kconfig"
 source "board/boundary/nitrogen6_max/Kconfig"
 source "board/boundary/nitrogen6_scm/Kconfig"
 source "board/boundary/nitrogen6_som2/Kconfig"
+source "board/boundary/nitrogen6_vm/Kconfig"
 source "board/boundary/nitrogen6x/Kconfig"
 source "board/boundary/ys/Kconfig"
 source "board/bticino/mamoj/Kconfig"
