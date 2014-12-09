@@ -159,9 +159,13 @@
 			"if itest.s \"xusb\" == \"x${dtype}\" ; then " \
 				"usb start ;" \
 			"fi; " \
-			"disk=0;" \
-			"load ${dtype} ${disk}:1 10008000 /6x_bootscript" \
-				"&& source 10008000 ; " \
+			"for disk in 0 1 ; do ${dtype} dev ${disk} ;" \
+				"load " \
+					"${dtype} ${disk}:1 " \
+					"10008000 " \
+					"/6x_bootscript" \
+					"&& source 10008000 ; " \
+			"done ; " \
 		"done; " \
 		"setenv stdout serial,vga ; " \
 		"echo ; echo 6x_bootscript not found ; " \
@@ -174,14 +178,23 @@
 			"setenv stdout serial,vga; " \
 			"echo expose SD card over USB; " \
 			"ums 0 mmc 0;" \
+		"else " \
+			"setenv stdout serial,vga; " \
+			"echo expose eMMC over USB; " \
+			"ums 0 mmc 1;" \
 		"fi; " \
 		"setenv stdout serial,vga; " \
 		"echo no SD card present;" \
 		"\0" \
 	"upgradeu=for dtype in mmc usb ; do " \
-			"disk=0;" \
-			"load ${dtype} ${disk}:1 10008000 /6x_upgrade " \
-				"&& source 10008000 ; " \
+			"if itest.s \"xusb\" == \"x${dtype}\" ; then " \
+				"usb start ;" \
+			"fi; " \
+			"for disk in 0 1 ; do ${dtype} dev ${disk} ;" \
+				"load ${dtype} ${disk}:1 10008000 " \
+					"/6x_upgrade " \
+					"&& source 10008000 ; " \
+			"done ; " \
 		"done ;\0" \
 	"initrd_high=0xffffffff\0" \
 	"usbnet_devaddr=00:19:b8:00:00:02\0" \
@@ -194,6 +207,7 @@
 		"tftpboot 10800000 10.0.0.1:uImage-nitrogen6_vm-recovery" \
 		"&& tftpboot 12800000 10.0.0.1:uramdisk-nitrogen6_vm-recovery.img " \
 		"&& bootm 10800000 12800000\0" \
+	"dtbname=imx6dl-nitrogen6_vm.dtb\0" \
 
 /* Miscellaneous configurable options */
 #define CONFIG_SYS_LONGHELP
