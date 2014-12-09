@@ -1,0 +1,112 @@
+# Yocto-specifics
+setenv bootpart 2
+setenv bootdir /
+
+setenv bootargs enable_wait_mode=off fec.disable_giga=1;
+setenv nextcon 0;
+setenv lvds 0;
+
+if test -n "$tempfuse" ; then
+	setenv bootargs $bootargs thermal.fusedata=$tempfuse
+fi
+
+i2c dev 1 ;
+if i2c probe 0x50 ; then
+	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=hdmi,1280x720M@60,if=RGB24
+	setenv fbmem "fbmem=28M";
+	setexpr nextcon $nextcon + 1
+else
+	echo "------ no HDMI monitor";
+fi
+
+i2c dev 2
+if i2c probe 0x04 ; then
+	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=ldb,LDB-XGA,if=RGB666
+	if test "0" -eq $nextcon; then
+		setenv fbmem "fbmem=10M";
+	else
+		setenv fbmem ${fbmem},10M
+	fi
+	setexpr nextcon $nextcon + 1
+else
+	echo "------ no Freescale display";
+fi
+
+if i2c probe 0x38 ; then
+	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=ldb,1024x600M@60,if=RGB666
+	if test "0" -eq $nextcon; then
+		setenv fbmem "fbmem=10M";
+	else
+		setenv fbmem ${fbmem},10M
+	fi
+	setexpr nextcon $nextcon + 1
+else
+	echo "------ no 1024x600 display";
+fi
+
+if i2c probe 0x41 ; then
+	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=ldb,1024x600M@60,if=RGB666
+	if test "0" -eq $nextcon; then
+		setenv fbmem "fbmem=10M";
+	else
+		setenv fbmem ${fbmem},10M
+	fi
+	setexpr nextcon $nextcon + 1
+else
+	echo "------ no ILI210x touch controller";
+fi
+
+if test "0" -eq $lvds; then
+	echo "Default to wqvga (480x272) display";
+	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=lcd,okaya_480x272,if=RGB24
+	if test "0" -eq $nextcon; then
+		setenv fbmem "fbmem=10M";
+	else
+		setenv fbmem ${fbmem},10M
+	fi
+	setexpr nextcon $nextcon + 1
+fi
+
+while test "4" -ne $nextcon ; do
+	setenv bootargs $bootargs video=mxcfb${nextcon}:off ;
+	setexpr nextcon $nextcon + 1 ;
+done
+
+setenv bootargs $bootargs $fbmem
+setenv bootargs "$bootargs console=ttymxc1,115200 vmalloc=400M consoleblank=0 rootwait"
+
+if itest.s x$bootpart == x ; then
+	bootpart=1
+fi
+
+if test "usb" = "${dtype}" ; then
+        setenv bootargs "$bootargs root=/dev/sda$bootpart" ;
+elif itest.s "x" == "x$sdphys" ; then
+        setenv bootargs "$bootargs root=/dev/mmcblk0p$bootpart" ;
+elif itest 0 -eq ${disk}; then
+        setenv bootargs "$bootargs root=/dev/mmcblk2p$bootpart" ;
+else
+        setenv bootargs "$bootargs root=/dev/mmcblk3p$bootpart" ;
+fi
+
+if itest.s x == x${bootdir} ; then
+	bootdir=/boot/
+fi
+
+dtbname="imx6dl-nitrogen6_vm.dtb";
+if ${fs}load ${dtype} ${disk}:1 12000000 ${bootdir}$dtbname ; then
+	havedtb=1;
+	setenv fdt_addr 0x11000000
+	setenv fdt_high 0xffffffff
+else
+	havedtb=
+fi
+
+if ${fs}load ${dtype} ${disk}:1 10800000 ${bootdir}uImage ; then
+	if itest.s x$havedtb == x ; then
+		bootm 10800000 ;
+	else
+		bootm 10800000 - 12000000
+	fi
+fi
+echo "Error loading kernel image"
