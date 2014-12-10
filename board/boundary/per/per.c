@@ -405,7 +405,7 @@ static unsigned short gpios_out_low[] = {
 
 static unsigned short gpios_out_high[] = {
 	GP_ECSPI1_CS1,		/* SS1 of spi nor */
-	GP_ECSPI3_GS2971_CS,
+	GP_ECSPI2_GS2971_CS,
 	GP_ECSPI3_WM5102_CS,
 	GP_GS2971_STANDBY,
 };
