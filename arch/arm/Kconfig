@@ -390,8 +390,8 @@ config TARGET_CAD
 config TARGET_DASH
 	bool "Support dash"
 
-config TARGET_ELO
-	bool "Support elo"
+config TARGET_EO
+	bool "Support eo"
 
 config TARGET_H
 	bool "Support H"
@@ -649,7 +649,7 @@ source "board/boundary/a/Kconfig"
 source "board/boundary/bt/Kconfig"
 source "board/boundary/cad/Kconfig"
 source "board/boundary/dash/Kconfig"
-source "board/boundary/elo/Kconfig"
+source "board/boundary/eo/Kconfig"
 source "board/boundary/h/Kconfig"
 source "board/boundary/insp/Kconfig"
 source "board/boundary/mcs/Kconfig"

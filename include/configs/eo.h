@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2010-2011 Freescale Semiconductor, Inc.
  *
- * Configuration settings for the Boundary Devices elo
+ * Configuration settings for the Boundary Devices eo board
  *
  * SPDX-License-Identifier:	GPL-2.0+
  */

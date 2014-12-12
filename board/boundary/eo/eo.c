@@ -81,7 +81,7 @@ DECLARE_GLOBAL_DATA_PTR;
 #define IOMUX_PAD_CTRL(name, ctrl)	NEW_PAD_CTRL(MX6DL_PAD_##name, ctrl)
 #endif
 
-static const iomux_v3_cfg_t elo_pads[] = {
+static const iomux_v3_cfg_t eo_pads[] = {
 	/* ECSPI1 pads */
 	IOMUX_PAD_CTRL(EIM_D17__ECSPI1_MISO, SPI_PAD_CTRL),
 	IOMUX_PAD_CTRL(EIM_D18__ECSPI1_MOSI, SPI_PAD_CTRL),
@@ -642,7 +642,7 @@ int board_early_init_f(void)
 	set_gpios(gpios_out_high, ARRAY_SIZE(gpios_out_high), 1);
 	set_gpios(gpios_out_low, ARRAY_SIZE(gpios_out_low), 0);
 
-	SETUP_IOMUX_PADS(elo_pads);
+	SETUP_IOMUX_PADS(eo_pads);
 #if defined(CONFIG_VIDEO_IPUV3)
 	setup_display();
 #endif
@@ -679,7 +679,7 @@ int board_init(void)
 
 int checkboard(void)
 {
-	puts("Board: ELO\n");
+	puts("Board: EO\n");
 	return 0;
 }
 
@@ -790,6 +790,6 @@ int board_late_init(void)
 {
 	int cpurev = get_cpu_rev();
 	setenv("cpu",get_imx_type((cpurev & 0xFF000) >> 12));
-	setenv("board","elo");
+	setenv("board","eo");
 	return 0;
 }

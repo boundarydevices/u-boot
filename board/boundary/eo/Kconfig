@@ -1,10 +1,10 @@
-if TARGET_ELO
+if TARGET_EO
 
 config SYS_CPU
 	default "armv7"
 
 config SYS_BOARD
-	default "elo"
+	default "eo"
 
 config SYS_VENDOR
 	default "boundary"
@@ -13,6 +13,6 @@ config SYS_SOC
 	default "mx6"
 
 config SYS_CONFIG_NAME
-	default "elo"
+	default "eo"
 
 endif

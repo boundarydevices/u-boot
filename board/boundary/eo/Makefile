@@ -3,4 +3,4 @@
 #
 # SPDX-License-Identifier:	GPL-2.0+
 #
-obj-y  := elo.o
+obj-y  := eo.o

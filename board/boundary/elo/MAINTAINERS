@@ -1,6 +1,0 @@
-ELO BOARD
-M:	Eric Nelson <eric.nelson@boundarydevices.com>
-S:	Maintained
-F:	board/boundary/elo/
-F:	include/configs/elo.h
-F:	configs/elo_defconfig
