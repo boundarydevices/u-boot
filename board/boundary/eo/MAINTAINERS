@@ -1,0 +1,6 @@
+EO BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/eo/
+F:	include/configs/eo.h
+F:	configs/eo_defconfig
