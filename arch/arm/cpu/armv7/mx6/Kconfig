@@ -139,6 +139,9 @@ config TARGET_COB
 config TARGET_DASH
 	bool "dash"
 
+config TARGET_EO
+	bool "eo"
+
 config TARGET_NITROGEN6X
 	bool "nitrogen6x"
 
@@ -197,6 +200,7 @@ source "board/boundary/cad/Kconfig"
 source "board/boundary/cnt/Kconfig"
 source "board/boundary/cob/Kconfig"
 source "board/boundary/dash/Kconfig"
+source "board/boundary/eo/Kconfig"
 source "board/boundary/nitrogen6x/Kconfig"
 source "board/boundary/vp/Kconfig"
 source "board/compulab/cm_fx6/Kconfig"
