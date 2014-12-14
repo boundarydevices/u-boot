@@ -786,10 +786,42 @@ int misc_init_r(void)
 	return 0;
 }
 
+/* RV4162 particulars */
+#define RTC_I2CADDR 0x68
+#define RTC_YEAR 7
+#define RTC_MON  6
+#define RTC_DAY  5
+#define RTC_HOUR 3
+#define RTC_MIN  2
+#define RTC_SEC  1
+
+static int frombcd(u8 val)
+{
+	return (10*(val>>4))+(val&0x0f);
+}
+
 int board_late_init(void)
 {
 	int cpurev = get_cpu_rev();
 	setenv("cpu",get_imx_type((cpurev & 0xFF000) >> 12));
 	setenv("board","eo");
+
+	/* display date and time from RTC */
+	if ((0 == i2c_set_bus_num(0))
+		&&
+		(0 == i2c_probe(RTC_I2CADDR))) {
+		u8 buffer[16];
+		int ret = i2c_read(RTC_I2CADDR, 0, 1, buffer, sizeof(buffer));
+		if (ret)
+			printf("Error %d reading RTC\n", ret);
+		else
+			printf("time: %04u-%02u-%02u %02u:%02u:%02u UTC\n",
+			       2000+frombcd(buffer[RTC_YEAR]),
+			       frombcd(buffer[RTC_MON]&0x1f),
+			       frombcd(buffer[RTC_DAY]),
+			       frombcd(buffer[RTC_HOUR]),
+			       frombcd(buffer[RTC_MIN]),
+			       frombcd(buffer[RTC_SEC]));
+	}
 	return 0;
 }
