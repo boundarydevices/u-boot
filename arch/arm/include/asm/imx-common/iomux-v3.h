@@ -206,4 +206,12 @@ if (is_cpu_type(MXC_CPU_MX6Q)) {				\
 	imx_iomux_v3_setup_multiple_pads(x, ARRAY_SIZE(x))
 #endif
 
+
+#if defined(CONFIG_MX6QDL)
+#define IOMUX_PAD_CTRL(name, ctrl)	NEW_PAD_CTRL(MX6Q_PAD_##name, ctrl), \
+					NEW_PAD_CTRL(MX6DL_PAD_##name, ctrl)
+#else
+#define IOMUX_PAD_CTRL(name, ctrl)	NEW_PAD_CTRL(MX6_PAD_##name, ctrl)
+#endif
+
 #endif	/* __MACH_IOMUX_V3_H__*/
