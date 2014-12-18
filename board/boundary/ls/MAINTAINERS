@@ -1,0 +1,6 @@
+LS BOARD
+M:	Eric Nelson <eric.nelson@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/ls/
+F:	include/configs/ls.h
+F:	configs/ls_defconfig
