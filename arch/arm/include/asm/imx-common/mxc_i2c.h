@@ -7,6 +7,7 @@
 #define __ASM_ARCH_MXC_MXC_I2C_H__
 #include <asm-generic/gpio.h>
 #include <asm/imx-common/iomux-v3.h>
+#include <asm/arch/sys_proto.h>
 
 struct i2c_pin_ctrl {
 	iomux_v3_cfg_t i2c_mode;
@@ -59,6 +60,57 @@ struct mxc_i2c_bus {
 #endif
 };
 
+#ifdef CONFIG_MX6SX
+#define I2C_PADS_INFO_CPU(cpu, i2cnum, scl_pad, scl_bank, scl_gp,	       \
+		sda_pad, sda_bank, sda_gp, ctrl) {			       \
+    .scl = {								       \
+	.i2c_mode = NEW_PAD_CTRL(cpu##_PAD_##scl_pad##__##i2cnum##_SCL, ctrl), \
+	.gpio_mode = NEW_PAD_CTRL(					       \
+		cpu##_PAD_##scl_pad##__GPIO##scl_bank##_IO_##scl_gp, ctrl),    \
+	.gp = IMX_GPIO_NR(scl_bank, scl_gp)				       \
+    },									       \
+    .sda = {								       \
+	.i2c_mode = NEW_PAD_CTRL(cpu##_PAD_##sda_pad##__##i2cnum##_SDA, ctrl), \
+	.gpio_mode = NEW_PAD_CTRL(					       \
+		cpu##_PAD_##sda_pad##__GPIO##sda_bank##_IO_##sda_gp, ctrl),    \
+	.gp = IMX_GPIO_NR(sda_bank, sda_gp)				       \
+    }									       \
+}
+
+#else
+#define I2C_PADS_INFO_CPU(cpu, i2cnum, scl_pad, scl_bank, scl_gp,	       \
+		sda_pad, sda_bank, sda_gp, ctrl) {			       \
+    .scl = {								       \
+	.i2c_mode = NEW_PAD_CTRL(cpu##_PAD_##scl_pad##__##i2cnum##_SCL, ctrl), \
+	.gpio_mode = NEW_PAD_CTRL(					       \
+		cpu##_PAD_##scl_pad##__GPIO##scl_bank##_IO##scl_gp, ctrl),     \
+	.gp = IMX_GPIO_NR(scl_bank, scl_gp)				       \
+    },									       \
+    .sda = {								       \
+	.i2c_mode = NEW_PAD_CTRL(cpu##_PAD_##sda_pad##__##i2cnum##_SDA, ctrl), \
+	.gpio_mode = NEW_PAD_CTRL(					       \
+		cpu##_PAD_##sda_pad##__GPIO##sda_bank##_IO##sda_gp, ctrl),     \
+	.gp = IMX_GPIO_NR(sda_bank, sda_gp)				       \
+    }									       \
+}
+#endif
+
+#if defined(CONFIG_MX6QDL)
+#define I2C_PADS_INFO_ENTRY(i2cnum, scl_pad, scl_bank, scl_gp,		\
+		sda_pad, sda_bank, sda_gp, ctrl)			\
+	I2C_PADS_INFO_CPU(MX6Q, i2cnum, scl_pad, scl_bank, scl_gp,	\
+		sda_pad, sda_bank, sda_gp, ctrl),			\
+	I2C_PADS_INFO_CPU(MX6DL, i2cnum, scl_pad, scl_bank, scl_gp,	\
+		sda_pad, sda_bank, sda_gp, ctrl)
+#define I2C_PADS_INFO_ENTRY_SPACING 2
+#else
+#define I2C_PADS_INFO_ENTRY(i2cnum, scl_pad, scl_bank, scl_gp,		\
+		sda_pad, sda_bank, sda_gp, ctrl)			\
+	I2C_PADS_INFO_CPU(MX6, i2cnum, scl_pad, scl_bank, scl_gp,	\
+		sda_pad, sda_bank, sda_gp, ctrl)
+#define I2C_PADS_INFO_ENTRY_SPACING 1
+#endif
+
 #if defined(CONFIG_MX6QDL)
 #define I2C_PADS(name, scl_i2c, scl_gpio, scl_gp, sda_i2c, sda_gpio, sda_gp) \
 	struct i2c_pads_info mx6q_##name = {		\
@@ -98,4 +150,15 @@ void bus_i2c_init(int index, int speed, int slave_addr,
 		int (*idle_bus_fn)(void *p), void *p);
 int force_idle_bus(void *priv);
 int i2c_idle_bus(struct mxc_i2c_bus *i2c_bus);
+
+static inline int i2c_get_info_entry_offset(void) {
+#if defined(CONFIG_MX6QDL)
+	int cpu = get_cpu_type();
+
+	if ((cpu != MXC_CPU_MX6Q) && (cpu != MXC_CPU_MX6D))
+		return 1;
+#endif
+	return 0;
+}
+
 #endif
