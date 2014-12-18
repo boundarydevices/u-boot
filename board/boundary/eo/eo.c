@@ -249,7 +249,7 @@ static const iomux_v3_cfg_t enet_pads2[] = {
 
 static struct i2c_pads_info i2c_pads[] = {
 {
-	/* I2C1, SGTL5000 */
+	/* I2C1, rv4162 */
 	.scl = {
 		.i2c_mode = MX6Q_PAD_EIM_D21__I2C1_SCL | PC,
 		.gpio_mode = MX6Q_PAD_EIM_D21__GPIO3_IO21 | PC,
@@ -261,7 +261,7 @@ static struct i2c_pads_info i2c_pads[] = {
 		.gp = IMX_GPIO_NR(3, 28)
 	}
 }, {
-	/* I2C1, SGTL5000 */
+	/* I2C1, rv4162 */
 	.scl = {
 		.i2c_mode = MX6DL_PAD_EIM_D21__I2C1_SCL | PC,
 		.gpio_mode = MX6DL_PAD_EIM_D21__GPIO3_IO21 | PC,
