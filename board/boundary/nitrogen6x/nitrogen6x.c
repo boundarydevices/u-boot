@@ -33,6 +33,7 @@
 #include <netdev.h>
 #include <splash.h>
 #include <usb/ehci-fsl.h>
+#include "spi_display.h"
 
 DECLARE_GLOBAL_DATA_PTR;
 #define GP_USB_OTG_PWR	IMX_GPIO_NR(3, 22)
@@ -345,7 +346,7 @@ int board_mmc_init(bd_t *bis)
 #ifdef CONFIG_MXC_SPI
 int board_spi_cs_gpio(unsigned bus, unsigned cs)
 {
-	return (bus == 0 && cs == 0) ? (IMX_GPIO_NR(3, 19)) : -1;
+	return (bus == 0 && cs == 0) ? (IMX_GPIO_NR(3, 19)) : (cs >> 8) ? (cs >> 8) : -1;
 }
 
 static iomux_v3_cfg_t const ecspi1_pads[] = {
@@ -526,7 +527,32 @@ static void enable_rgb(struct display_info_t const *dev)
 	gpio_direction_output(RGB_BACKLIGHT_GP, 1);
 }
 
-struct display_info_t const displays[] = {{
+struct display_info_t const displays[] = {
+#ifdef CONFIG_MXC_SPI_DISPLAY
+{
+	.bus	= 1,
+	.addr	= 0x70,
+	.pixfmt	= IPU_PIX_FMT_RGB24,
+	.detect	= detect_spi,
+	.enable	= enable_spi_rgb,
+	.mode	= {
+		.name           = "AUO_G050",
+		.refresh        = 60,
+		.xres           = 480,
+		.yres           = 800,
+		.pixclock       = 1000000000/516 * 1000 /836/60, /* 38636 */
+		.left_margin    = 18,
+		.right_margin   = 16,
+		.upper_margin   = 18,
+		.lower_margin   = 16,
+		.hsync_len      = 2,
+		.vsync_len      = 2,
+		.sync           = 0,
+		.vmode          = FB_VMODE_NONINTERLACED
+	},
+},
+#endif
+{
 	.bus	= 1,
 	.addr	= 0x50,
 	.pixfmt	= IPU_PIX_FMT_RGB24,
@@ -934,6 +960,10 @@ static char const *board_type = "uninitialized";
 
 int checkboard(void)
 {
+#ifdef CONFIG_NITROGEN6X_FL
+	puts("Board: Nitrogen6X_fl\n");
+	board_type = "nitrogen6x_fl";
+#else
 	if (gpio_get_value(WL12XX_WL_IRQ_GP)) {
 		puts("Board: Nitrogen6X\n");
 		board_type = "nitrogen6x";
@@ -942,6 +972,7 @@ int checkboard(void)
 		puts("Board: SABRE Lite\n");
 		board_type = "sabrelite";
 	}
+#endif
 	return 0;
 }
 
