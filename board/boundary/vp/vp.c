@@ -320,7 +320,6 @@ static unsigned short gpios_out_low[] = {
 	GP_USB_OTG_PWR,		/* disable USB otg power */
 	GP_BRM_BT_RESET,
 	GP_BRM_BT_EN,
-	GP_BRM_BT_WAKEUP,
 	GP_BRM_WL_EN,
 	GP_EMMC_RESET,
 };
@@ -352,6 +351,7 @@ static unsigned short gpios_in[] = {
 	GP_GPS_IRQ,
 	GP_GPS_HEARTBEAT,
 	GP_BRM_BT_WAKE_IRQ,
+	GP_BRM_BT_WAKEUP,
 	GP_BRM_WL_WAKE_IRQ,
 	GP_BRM_CLOCK_REQUEST,
 	GP_SD3_CD,
