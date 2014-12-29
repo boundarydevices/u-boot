@@ -6,6 +6,7 @@
 #ifndef __ASM_ARCH_MXC_MXC_I2C_H__
 #define __ASM_ARCH_MXC_MXC_I2C_H__
 #include <asm/imx-common/iomux-v3.h>
+#include <asm/arch/sys_proto.h>
 
 struct i2c_pin_ctrl {
 	iomux_v3_cfg_t i2c_mode;
