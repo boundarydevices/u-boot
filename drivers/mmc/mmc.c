@@ -384,16 +384,21 @@ static int mmc_send_op_cond(struct mmc *mmc)
 	mmc_go_idle(mmc);
 
  	/* Asking to the card its capabilities */
-	mmc->op_cond_pending = 1;
 	for (i = 0; i < 2; i++) {
 		err = mmc_send_op_cond_iter(mmc, &cmd, i != 0);
 		if (err)
 			return err;
 
 		/* exit if not busy (flag seems to be inverted) */
-		if (mmc->op_cond_response & OCR_BUSY)
+		if (cmd.response[0] & OCR_BUSY) {
+			mmc->version = MMC_VERSION_UNKNOWN;
+			mmc->ocr = cmd.response[0];
+			mmc->high_capacity = ((mmc->ocr & OCR_HCS) == OCR_HCS);
+			mmc->rca = 1;
 			return 0;
+		}
 	}
+	mmc->op_cond_pending = 1;
 	return IN_PROGRESS;
 }
 
