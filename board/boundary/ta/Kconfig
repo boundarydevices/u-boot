@@ -1,0 +1,20 @@
+if TARGET_TA
+
+config SYS_CPU
+	default "armv7"
+
+config SYS_BOARD
+	default "ta"
+
+config SYS_VENDOR
+	default "boundary"
+
+config SYS_SOC
+	default "mx6"
+
+config SYS_CONFIG_NAME
+	default "ta"
+
+source "board/boundary/common/Kconfig"
+
+endif
