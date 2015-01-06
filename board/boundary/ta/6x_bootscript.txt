@@ -1,0 +1,53 @@
+if ${fs}load ${dtype} ${disk}:1 10800000 uEnv.txt ; then
+    env import -t 10800000 $filesize
+else
+    setenv bootargs
+fi
+
+setenv bootargs $bootargs video=mxcfb0:dev=ldb,1280x800MR@60,if=RGB666
+setenv bootargs $bootargs fbmem=10M ft5x06_ts.screenres=1280,800
+setenv bootargs $bootargs video=mxcfb1:off video=mxcfb2:off video=mxcfb3:off
+setenv bootargs $bootargs console=ttymxc1,115200 vmalloc=400M consoleblank=0 rootwait
+
+if itest.s "x" != "x${disable_giga}" ; then
+	setenv bootargs $bootargs fec.disable_giga=1
+fi
+
+if itest.s "x" != "x$gpumem" ; then
+	setenv bootargs $bootargs galcore.contiguousSize=$gpumem
+fi
+
+setenv initrd_high 0xffffffff
+setenv initrd_addr 0x12a00000
+
+echo "----------- trying to load /initrd.img";
+if ${fs}load ${dtype} ${disk}:${bootpart} ${initrd_addr} /initrd.img ; then
+	haverd=1;
+	setenv initrd_size ${filesize}
+	if itest 0 -eq ${disk}; then
+		setenv bootargs "$bootargs root=/dev/disk/by-path/platform-2198000.usdhc-part1" ;
+	else
+		setenv bootargs "$bootargs root=/dev/disk/by-path/platform-219c000.usdhc-part1" ;
+	fi
+else
+	haverd=
+	setenv bootargs "$bootargs root=/dev/mmcblk0p1" ;
+fi
+
+dtbname=imx6q-ta.dtb
+bootdir=/boot
+
+setenv fdt_high 0xffffffff
+setenv fdt_addr    0x13000000
+echo "----------- trying to load ${bootdir}/$dtbname";
+if ${fs}load ${dtype} ${disk}:${bootpart} ${fdt_addr} ${bootdir}/$dtbname ; then
+	if ${fs}load ${dtype} ${disk}:${bootpart} 0x10800000 /vmlinuz ; then
+		if itest.s x$haverd == x ; then
+			bootz 0x10800000 - ${fdt_addr}
+		else
+			bootz 0x10800000 ${initrd_addr}:${initrd_size} ${fdt_addr} ;
+		fi
+	fi
+fi
+
+echo "Error loading kernel or device tree"

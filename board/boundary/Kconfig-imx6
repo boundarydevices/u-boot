@@ -192,6 +192,10 @@ config TARGET_SP
 	bool "sp"
 	depends on MX6DL || MX6Q || MX6QDL || MX6S
 
+config TARGET_TA
+	bool "ta"
+	depends on MX6DL || MX6Q || MX6QDL || MX6S
+
 endchoice
 
 source "board/boundary/a/Kconfig"
@@ -240,3 +244,4 @@ source "board/boundary/s/Kconfig"
 source "board/boundary/ses/Kconfig"
 source "board/boundary/snap/Kconfig"
 source "board/boundary/sp/Kconfig"
+source "board/boundary/ta/Kconfig"
