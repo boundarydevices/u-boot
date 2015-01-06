@@ -211,6 +211,9 @@ config TARGET_SNAP
 config TARGET_SP
 	bool "sp"
 
+config TARGET_TA
+	bool "ta"
+
 config TARGET_VP
 	bool "vp"
 
@@ -290,6 +293,7 @@ source "board/boundary/rc/Kconfig"
 source "board/boundary/s/Kconfig"
 source "board/boundary/snap/Kconfig"
 source "board/boundary/sp/Kconfig"
+source "board/boundary/ta/Kconfig"
 source "board/boundary/vp/Kconfig"
 source "board/compulab/cm_fx6/Kconfig"
 source "board/congatec/cgtqmx6eval/Kconfig"
