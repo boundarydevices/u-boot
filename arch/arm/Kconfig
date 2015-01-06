@@ -441,6 +441,9 @@ config TARGET_S
 config TARGET_SP
 	bool "Support SP"
 
+config TARGET_TA
+	bool "Support TA"
+
 config TARGET_UTC
 	bool "Support UTC"
 
@@ -669,6 +672,7 @@ source "board/boundary/oc/Kconfig"
 source "board/boundary/per/Kconfig"
 source "board/boundary/s/Kconfig"
 source "board/boundary/sp/Kconfig"
+source "board/boundary/ta/Kconfig"
 source "board/boundary/utc/Kconfig"
 source "board/boundary/vp/Kconfig"
 source "board/broadcom/bcm28155_ap/Kconfig"

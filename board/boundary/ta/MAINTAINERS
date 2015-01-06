@@ -1,0 +1,6 @@
+TA BOARD
+M:	Eric Nelson <eric.nelson@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/ta/
+F:	include/configs/ta.h
+F:	configs/ta_defconfig
