@@ -84,6 +84,12 @@
 #define CONFIG_DOS_PARTITION
 #define CONFIG_EFI_PARTITION
 
+#define CONFIG_CMD_PING
+#define CONFIG_CMD_DHCP
+#define CONFIG_CMD_MII
+#define CONFIG_CMD_NET
+#define CONFIG_ETHPRIME	"usbnet"
+
 /* USB Configs */
 #define CONFIG_CMD_USB
 #define CONFIG_CMD_FAT
@@ -169,13 +175,15 @@
 			"done ; " \
 		"done ; " \
 	"done\0" \
+	"fdt_addr=0x11000000\0" \
+	"fdt_high=0xffffffff\0" \
 	"initrd_high=0xffffffff\0" \
+	"serverip=10.0.0.1\0" \
+	"ipaddr=10.0.0.2\0" \
+	"netmask 255.255.255.0\0" \
 	"usbnet_devaddr=00:19:b8:00:00:02\0" \
 	"usbnet_hostaddr=00:19:b8:00:00:01\0" \
 	"usbrecover=setenv ethact usb_ether; " \
-		"setenv ipaddr 10.0.0.2; " \
-		"setenv netmask 255.255.255.0; " \
-		"setenv serverip 10.0.0.1; " \
 		"setenv bootargs console=ttymxc1,115200; " \
 		"tftpboot 10800000 10.0.0.1:uImage-sp-recovery" \
 		"&& tftpboot 12800000 10.0.0.1:uramdisk-sp-recovery.img " \
