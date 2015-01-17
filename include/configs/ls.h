@@ -319,17 +319,6 @@
 #define CONFIG_CMD_FS_GENERIC
 #define CONFIG_BOARD_LATE_INIT
 
-/*
- * PCI express
- */
-/* #define CONFIG_CMD_PCI */
-#ifdef CONFIG_CMD_PCI
-#define CONFIG_PCI
-#define CONFIG_PCI_PNP
-#define CONFIG_PCI_SCAN_SHOW
-#define CONFIG_PCIE_IMX
-#endif
-
 #define CONFIG_CMD_ELF
 
 #define CONFIG_USB_GADGET
