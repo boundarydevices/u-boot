@@ -281,7 +281,7 @@ void enable_caches(void)
 }
 #endif
 
-#if defined(CONFIG_FEC_MXC)
+#if defined(CONFIG_FEC_MXC) || defined(CONFIG_FEC_MAC_FUSE)
 void imx_get_mac_from_fuse(int dev_id, unsigned char *mac)
 {
 	struct ocotp_regs *ocotp = (struct ocotp_regs *)OCOTP_BASE_ADDR;
