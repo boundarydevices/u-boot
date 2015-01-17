@@ -14,7 +14,7 @@ ifneq ($(CONFIG_SPL_BUILD),y)
 obj-$(CONFIG_IMX_BOOTAUX) += imx_bootaux.o
 endif
 obj-$(CONFIG_ENV_IS_IN_MMC) += mmc_env.o
-obj-$(CONFIG_FEC_MXC) += mac.o
+obj-$(CONFIG_FEC_MAC_FUSE) += mac.o
 obj-$(CONFIG_DWC_ETH_QOS) += mac.o
 obj-$(CONFIG_SYS_I2C_MXC) += i2c-mxv7.o
 obj-$(CONFIG_IMX_HAB) += hab.o
@@ -48,7 +48,7 @@ obj-$(CONFIG_IMX_VIDEO_SKIP) += video.o
 endif
 ifeq ($(SOC),$(filter $(SOC),mx6 mx7))
 obj-y	+= cache.o init.o
-obj-$(CONFIG_FEC_MXC) += mac.o
+obj-$(CONFIG_FEC_MAC_FUSE) += mac.o
 obj-$(CONFIG_IMX_RDC) += rdc-sema.o
 ifneq ($(CONFIG_SPL_BUILD),y)
 obj-$(CONFIG_IMX_BOOTAUX) += imx_bootaux.o
