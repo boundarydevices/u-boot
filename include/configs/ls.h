@@ -117,6 +117,7 @@
 #define CONFIG_CMD_MII
 #define CONFIG_CMD_NET
 #define CONFIG_ETHPRIME	"usbnet"
+#define CONFIG_FEC_MAC_FUSE
 
 /* USB Configs */
 #define CONFIG_CMD_USB
