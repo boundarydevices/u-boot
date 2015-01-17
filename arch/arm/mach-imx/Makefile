@@ -12,7 +12,7 @@ endif
 ifeq ($(SOC),$(filter $(SOC),mx8m))
 obj-$(CONFIG_IMX_BOOTAUX) += imx_bootaux.o
 obj-$(CONFIG_ENV_IS_IN_MMC) += mmc_env.o
-obj-$(CONFIG_FEC_MXC) += mac.o
+obj-$(CONFIG_FEC_MAC_FUSE) += mac.o
 obj-$(CONFIG_SYS_I2C_MXC) += i2c-mxv7.o
 obj-$(CONFIG_IMX_VIDEO_SKIP) += video.o
 obj-y += cpu.o
@@ -34,7 +34,7 @@ obj-$(CONFIG_ENV_IS_IN_MMC) += mmc_env.o
 endif
 ifeq ($(SOC),$(filter $(SOC),mx6 mx7))
 obj-y 	+= cache.o init.o
-obj-$(CONFIG_FEC_MXC) += mac.o
+obj-$(CONFIG_FEC_MAC_FUSE) += mac.o
 obj-$(CONFIG_IMX_VIDEO_SKIP) += video.o
 obj-$(CONFIG_IMX_RDC) += rdc-sema.o
 ifneq ($(CONFIG_SPL_BUILD),y)
