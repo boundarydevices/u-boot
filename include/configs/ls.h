@@ -116,15 +116,7 @@
 #define CONFIG_CMD_DHCP
 #define CONFIG_CMD_MII
 #define CONFIG_CMD_NET
-#define CONFIG_FEC_MXC
-#define CONFIG_MII
-#define IMX_FEC_BASE			ENET_BASE_ADDR
-#define CONFIG_FEC_XCV_TYPE		RGMII
-#define CONFIG_ETHPRIME			"FEC"
-#define CONFIG_FEC_MXC_PHYADDR		6
-#define CONFIG_PHYLIB
-#define CONFIG_PHY_MICREL
-#define CONFIG_PHY_MICREL_KSZ9021
+#define CONFIG_ETHPRIME	"usbnet"
 
 /* USB Configs */
 #define CONFIG_CMD_USB
@@ -242,12 +234,15 @@
 				"&& source 10008000 ; " \
 		"done ; " \
 	"done\0" \
+	"fdt_addr=0x11000000\0" \
+	"fdt_high=0xffffffff\0" \
+	"initrd_high=0xffffffff\0" \
+	"serverip=10.0.0.1\0" \
+	"ipaddr=10.0.0.2\0" \
+	"netmask 255.255.255.0\0" \
 	"usbnet_devaddr=00:19:b8:00:00:02\0" \
 	"usbnet_hostaddr=00:19:b8:00:00:01\0" \
 	"usbrecover=setenv ethact usb_ether; " \
-		"setenv ipaddr 10.0.0.2; " \
-		"setenv netmask 255.255.255.0; " \
-		"setenv serverip 10.0.0.1; " \
 		"setenv bootargs console=ttymxc1,115200; " \
 		"tftpboot 10800000 10.0.0.1:uImage-${board}-recovery" \
 		"&& tftpboot 12800000 10.0.0.1:uramdisk-${board}-recovery.img " \
