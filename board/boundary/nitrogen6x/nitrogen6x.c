@@ -524,6 +524,7 @@ static void enable_lvds_jeida(struct display_info_t const *dev)
 
 static void enable_rgb(struct display_info_t const *dev)
 {
+	imx_iomux_v3_setup_multiple_pads(rgb_pads, ARRAY_SIZE(rgb_pads));
 	gpio_direction_output(RGB_BACKLIGHT_GP, 1);
 }
 
