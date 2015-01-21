@@ -195,9 +195,16 @@ static int detect_none(struct display_info_t const *dev)
 
 static int detect_i2c(struct display_info_t const *dev)
 {
-	return ((0 == i2c_set_bus_num(dev->bus))
-		&&
-		(0 == i2c_probe(dev->addr)));
+	int ret;
+
+	if (dev->addr == 0x50)
+		gpio_set_value(GP_HDMI_I2C_EN, 1);
+	ret = i2c_set_bus_num(dev->bus);
+	if (ret == 0)
+		ret = i2c_probe(dev->addr);
+	if (dev->addr == 0x50)
+		gpio_set_value(GP_HDMI_I2C_EN, 0);
+	return (ret == 0);
 }
 
 static void enable_rgb(struct display_info_t const *dev)
