@@ -313,6 +313,7 @@ static void setup_display(void)
 #endif
 
 static unsigned short gpios_out_low[] = {
+	GP_MAIN_POWER_EN,
 	GP_ADV7180_RESET,
 	GP_J6_I2C_EN,
 	GP_HDMI_I2C_EN,
@@ -330,7 +331,6 @@ static unsigned short gpios_out_low[] = {
 };
 
 static unsigned short gpios_out_high[] = {
-	GP_MAIN_POWER_EN,
 	GP_ECSPI1_CS1,
 };
 
