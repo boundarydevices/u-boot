@@ -267,11 +267,7 @@
 
 #define CONFIG_ENV_SIZE			(8 * 1024)
 
-#if defined(CONFIG_SABRELITE)
-#define CONFIG_ENV_IS_IN_MMC
-#else
 #define CONFIG_ENV_IS_IN_SPI_FLASH
-#endif
 
 #if defined(CONFIG_ENV_IS_IN_MMC)
 #define CONFIG_ENV_OFFSET		(6 * 64 * 1024)
