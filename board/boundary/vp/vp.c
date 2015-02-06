@@ -18,7 +18,6 @@
 #include <asm/gpio.h>
 #include <asm/imx-common/iomux-v3.h>
 #include <asm/imx-common/mxc_i2c.h>
-#include <asm/imx-common/sata.h>
 #include <asm/imx-common/spi.h>
 #include <asm/imx-common/boot_mode.h>
 #include <asm/imx-common/video.h>
@@ -407,10 +406,6 @@ int board_init(void)
 	setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &p[0]);
 	setup_i2c(1, CONFIG_SYS_I2C_SPEED, 0x7f, &p[1]);
 	setup_i2c(2, CONFIG_SYS_I2C_SPEED, 0x7f, &p[2]);
-
-#ifdef CONFIG_CMD_SATA
-	setup_sata();
-#endif
 
 	orig_i2c_bus = i2c_get_bus_num();
 	i2c_set_bus_num(2);
