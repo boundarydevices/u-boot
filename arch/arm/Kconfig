@@ -614,6 +614,10 @@ config TARGET_S
 	bool "Support s"
 	select CPU_V7
 
+config TARGET_SNAP
+	bool "Support snap"
+	select CPU_V7
+
 config TARGET_VP
 	bool "Support vp"
 	select CPU_V7
@@ -1000,6 +1004,7 @@ source "board/boundary/nw/Kconfig"
 source "board/boundary/oc/Kconfig"
 source "board/boundary/per/Kconfig"
 source "board/boundary/s/Kconfig"
+source "board/boundary/snap/Kconfig"
 source "board/boundary/vp/Kconfig"
 source "board/broadcom/bcm28155_ap/Kconfig"
 source "board/broadcom/bcmcygnus/Kconfig"
