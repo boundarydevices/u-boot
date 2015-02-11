@@ -1,0 +1,6 @@
+TA BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/snap/
+F:	include/configs/snap.h
+F:	configs/snap_defconfig
