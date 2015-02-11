@@ -408,6 +408,9 @@ config TARGET_RC
 config TARGET_S
 	bool "s"
 
+config TARGET_SNAP
+	bool "snap"
+
 config TARGET_YS
 	bool "ys"
 	select MX6SX
@@ -551,6 +554,7 @@ source "board/boundary/oc/Kconfig"
 source "board/boundary/per/Kconfig"
 source "board/boundary/rc/Kconfig"
 source "board/boundary/s/Kconfig"
+source "board/boundary/snap/Kconfig"
 source "board/boundary/ys/Kconfig"
 source "board/ccv/xpress/Kconfig"
 source "board/compulab/cm_fx6/Kconfig"
