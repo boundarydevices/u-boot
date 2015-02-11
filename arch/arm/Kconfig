@@ -438,6 +438,9 @@ config TARGET_PER
 config TARGET_S
 	bool "Support S"
 
+config TARGET_SNAP
+	bool "Support Snap"
+
 config TARGET_SP
 	bool "Support SP"
 
@@ -671,6 +674,7 @@ source "board/boundary/nw/Kconfig"
 source "board/boundary/oc/Kconfig"
 source "board/boundary/per/Kconfig"
 source "board/boundary/s/Kconfig"
+source "board/boundary/snap/Kconfig"
 source "board/boundary/sp/Kconfig"
 source "board/boundary/ta/Kconfig"
 source "board/boundary/utc/Kconfig"

@@ -1,0 +1,6 @@
+TA BOARD
+M:	Eric Nelson <eric.nelson@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/snap/
+F:	include/configs/snap.h
+F:	configs/snap_defconfig
