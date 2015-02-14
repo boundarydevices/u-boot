@@ -89,9 +89,9 @@ int board_ehci_hcd_init(int port)
 
 int board_ehci_power(int port, int on)
 {
-	if (port)
-		return 0;
-	gpio_set_value(GP_USB_OTG_PWR, on);
+	int gp = port ? GP_USB_DN1_PWR_EN : GP_USB_OTG_PWR;
+
+	gpio_set_value(gp, on);
 	return 0;
 }
 
