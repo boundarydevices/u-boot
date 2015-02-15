@@ -32,6 +32,16 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #define GP_USB_OTG_PWR	IMX_GPIO_NR(3, 22)
 
+/*
+ * From antenna connector toward USB OTG
+ * connector, there are four LEDS in the
+ * order listed below.
+ */
+#define GPLED0		IMX_GPIO_NR(2, 19)
+#define GPLED1		IMX_GPIO_NR(2, 20)
+#define GPLEDRED	IMX_GPIO_NR(2, 22)
+#define GPLED2		IMX_GPIO_NR(2, 21)
+
 #define UART_PAD_CTRL	(PAD_CTL_PUS_100K_UP |		\
 	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm |		\
 	PAD_CTL_SRE_FAST  | PAD_CTL_HYS)
@@ -450,4 +460,56 @@ int misc_init_r(void)
 	add_board_boot_modes(board_boot_modes);
 #endif
 	return 0;
+}
+
+#define PROGRESS_BITS 3
+
+static int const leds[] = {
+	GPLED0,
+	GPLED1,
+	GPLEDRED,
+	GPLED2
+};
+
+void gzwrite_progress_init(u64 expected_size)
+{
+	int i;
+	putc('\n');
+	for (i = 0; i < ARRAY_SIZE(leds); i++)
+		gpio_direction_output(leds[i], 0);
+}
+
+void gzwrite_progress(int iteration,
+		     u64 bytes_written,
+		     u64 total_bytes)
+{
+	int i;
+	if (0 == (iteration & 3))
+		printf("%llu/%llu\r", bytes_written, total_bytes);
+
+	for (i = 0; i < 2; i++)
+		gpio_set_value(leds[i], (iteration & 1) == i);
+}
+
+void gzwrite_progress_finish(int returnval, /* 0 == success */
+			    u64 totalwritten,
+                            u64 totalsize,
+                            u32 expected_crc,
+                            u32 calculated_crc)
+{
+	int i;
+	for (i = 0; i < ARRAY_SIZE(leds); i++)
+		gpio_set_value(leds[i], 0);
+
+	if (0 == returnval) {
+		printf("\n\t%llu bytes, crc 0x%08x\n",
+		       totalwritten, calculated_crc);
+		gpio_set_value(leds[3], 1);
+	} else {
+		printf("\n\tuncompressed %llu of %llu\n"
+		       "\tcrcs == 0x%08x/0x%08x\n",
+		       totalwritten, totalsize,
+		       expected_crc, calculated_crc);
+		gpio_set_value(leds[2], 1);
+	}
 }
