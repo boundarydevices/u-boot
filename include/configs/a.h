@@ -123,27 +123,46 @@
 #undef CONFIG_CMD_IMLS
 
 #define CONFIG_BOOTDELAY	       1
-
 #define CONFIG_LOADADDR		       0x12000000
 #define CONFIG_SYS_TEXT_BASE	       0x17800000
 
+#define BOOTDEVS "usb mmc"
+
 #define CONFIG_EXTRA_ENV_SETTINGS \
+	"bootdevs=" BOOTDEVS "\0" \
 	"console=ttymxc1\0" \
 	"disable_giga=1\0" \
 	"clearenv=if sf probe || sf probe || sf probe 1 ; then " \
 		"sf erase 0xc0000 0x2000 && " \
 		"echo restored environment to factory default ; fi\0" \
-	"bootcmd=dtype=mmc;disk=0;" \
-		"load ${dtype} ${disk}:1 " \
-			"10008000 /6x_bootscript" \
-			"&& source 10008000 ; " \
+	"bootcmd=disk=0;" \
+		"for dtype in ${bootdevs} ; do " \
+			"if itest.s ${dtype} == usb ; then " \
+				"setexpr otgstat *0x020c9030 \\\\& 0x08000000;" \
+				"if itest.l ${otgstat} -eq 0 ; then " \
+					"usb start;" \
+				"fi ;" \
+			"fi;" \
+			"load ${dtype} ${disk}:1 " \
+				"10008000 /6x_bootscript" \
+				"&& source 10008000 ; " \
+		"done;" \
 		"ums 0 mmc 0;\0" \
 	"fdt_addr=0x11000000\0" \
 	"fdt_high=0xffffffff\0" \
 	"initrd_high=0xffffffff\0" \
-	"upgradeu=dtype=mmc; disk=0; " \
-		"load mmc 0:1 10008000 /6x_upgrade " \
-			"&& source 10008000 ;\0" \
+	"upgradeu=disk=0; " \
+		"for dtype in ${bootdevs} ; do " \
+			"if itest.s ${dtype} == usb ; then " \
+				"setexpr otgstat *0x020c9030 \\\\& 0x08000000;" \
+				"if itest.l ${otgstat} -eq 0 ; then " \
+					"usb start;" \
+				"fi ;" \
+			"fi;" \
+			"load ${dtype} ${disk}:1 " \
+				"10008000 /6x_upgrade " \
+				"&& source 10008000 ; " \
+		"done;\0" \
 	"disable_giga=1\0" \
 	"usbnet_devaddr=00:19:b8:00:00:02\0" \
 	"usbnet_hostaddr=00:19:b8:00:00:01\0" \
