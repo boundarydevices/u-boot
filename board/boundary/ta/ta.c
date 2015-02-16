@@ -143,7 +143,7 @@ static const iomux_v3_cfg_t ta_pads[] = {
 	/* LEDS */
 #define GP_LED_RED		IMX_GPIO_NR(3, 13)
 	IOMUX_PAD_CTRL(EIM_DA13__GPIO3_IO13, WEAK_PULLDN_OUTPUT),
-#define GP_LED_YELLOW		IMX_GPIO_NR(3, 0)
+#define GP_CAN_CONNECT		IMX_GPIO_NR(3, 0)
 	IOMUX_PAD_CTRL(EIM_DA0__GPIO3_IO00, WEAK_PULLDN_OUTPUT),
 	/* dry contact relays */
 #define GP_RELAY_EVENT		IMX_GPIO_NR(3, 7)
@@ -606,8 +606,6 @@ static void setup_display(void)
 
 static unsigned short gpios_out_low[] = {
 	GP_ENET_PHY_RESET,
-	GP_LED_RED,
-	GP_LED_YELLOW,
 	GP_RELAY_EVENT,
 	GP_RELAY_GAS,
 	GP_LVDS_CONTRAST,
@@ -618,6 +616,7 @@ static unsigned short gpios_out_low[] = {
 };
 
 static unsigned short gpios_out_high[] = {
+	GP_LED_RED,
 	GP_ECSPI1_NOR_CS,
 	GP_EXCH_OFF,
 	GP_HEATER_OFF,
@@ -625,6 +624,7 @@ static unsigned short gpios_out_high[] = {
 
 static unsigned short gpios_in[] = {
 	GP_ENET_PHY_INT,
+	GP_CAN_CONNECT,
 	GP_INTERLOCK_IRQ,
 	GP_ZERO_CROSSING_IRQ,
 	GP_SYNC_IRQ,
