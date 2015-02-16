@@ -151,6 +151,10 @@
 	"fdt_addr=0x11000000\0" \
 	"fdt_high=0xffffffff\0" \
 	"initrd_high=0xffffffff\0" \
+	"usbnetwork=setenv ethact usb_ether; " \
+		"setenv ipaddr 10.0.0.2; " \
+		"setenv netmask 255.255.255.0; " \
+		"setenv serverip 10.0.0.1;\0" \
 	"upgradeu=disk=0; " \
 		"for dtype in ${bootdevs} ; do " \
 			"if itest.s ${dtype} == usb ; then " \
@@ -166,14 +170,30 @@
 	"disable_giga=1\0" \
 	"usbnet_devaddr=00:19:b8:00:00:02\0" \
 	"usbnet_hostaddr=00:19:b8:00:00:01\0" \
-	"usbrecover=setenv ethact usb_ether; " \
-		"setenv ipaddr 10.0.0.2; " \
-		"setenv netmask 255.255.255.0; " \
-		"setenv serverip 10.0.0.1; " \
+	"usbrecover=run usbnetwork; " \
 		"setenv bootargs console=ttymxc1,115200; " \
 		"tftpboot 10800000 10.0.0.1:uImage-a-recovery" \
 		"&& tftpboot 12800000 10.0.0.1:uramdisk-a-recovery.img " \
 		"&& bootm 10800000 12800000\0" \
+	"tftpu=run usbnetwork; " \
+		"setenv uboot_file \"u-boot.amp\"; " \
+		"tftp 12000000 10.0.0.1:$uboot_file && sf probe && " \
+		"if sf read 0x12400000 0x400 $filesize ; then " \
+			"if cmp.b 0x12000000 0x12400000 $filesize ; then " \
+				"echo \"-- U-Boot versions match\" ; exit; " \
+			"fi ; " \
+			"echo \"----- (re)programming U-Boot\"; " \
+			"sf erase 0 0xC0000 ; " \
+			"sf write 0x12000000 0x400 $filesize && " \
+			"sf read 12400000 0x400 $filesize && " \
+			"if cmp.b 0x12000000 0x12400000 $filesize ; then " \
+				"echo \"--- U-Boot updated\" ; echo \"cycle power\" ;" \
+			"else " \
+				"echo \"!! Error programming U-Boot\"; " \
+			"fi; " \
+			"exit; " \
+		"fi; " \
+		"echo \"U-Boot file ($uboot_file) not found on server\" \0" \
 
 /* Miscellaneous configurable options */
 #define CONFIG_SYS_LONGHELP
