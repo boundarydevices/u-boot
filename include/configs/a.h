@@ -135,18 +135,7 @@
 	"clearenv=if sf probe || sf probe || sf probe 1 ; then " \
 		"sf erase 0xc0000 0x2000 && " \
 		"echo restored environment to factory default ; fi\0" \
-	"bootcmd=disk=0;" \
-		"for dtype in ${bootdevs} ; do " \
-			"if itest.s ${dtype} == usb ; then " \
-				"setexpr otgstat *0x020c9030 \\\\& 0x08000000;" \
-				"if itest.l ${otgstat} -eq 0 ; then " \
-					"usb start;" \
-				"fi ;" \
-			"fi;" \
-			"load ${dtype} ${disk}:1 " \
-				"10008000 /6x_bootscript" \
-				"&& source 10008000 ; " \
-		"done;" \
+	"bootcmd=script=/6x_bootscript; run runscript;" \
 		"ums 0 mmc 0;\0" \
 	"fdt_addr=0x11000000\0" \
 	"fdt_high=0xffffffff\0" \
@@ -155,7 +144,9 @@
 		"setenv ipaddr 10.0.0.2; " \
 		"setenv netmask 255.255.255.0; " \
 		"setenv serverip 10.0.0.1;\0" \
-	"upgradeu=disk=0; " \
+	"upgradeu=script=/6x_upgrade; run runscript\0" \
+	"disable_giga=1\0" \
+	"runscript=disk=0;" \
 		"for dtype in ${bootdevs} ; do " \
 			"if itest.s ${dtype} == usb ; then " \
 				"setexpr otgstat *0x020c9030 \\\\& 0x08000000;" \
@@ -164,10 +155,9 @@
 				"fi ;" \
 			"fi;" \
 			"load ${dtype} ${disk}:1 " \
-				"10008000 /6x_upgrade " \
+				"10008000 $script " \
 				"&& source 10008000 ; " \
-		"done;\0" \
-	"disable_giga=1\0" \
+		"done;" \
 	"usbnet_devaddr=00:19:b8:00:00:02\0" \
 	"usbnet_hostaddr=00:19:b8:00:00:01\0" \
 	"usbrecover=run usbnetwork; " \
