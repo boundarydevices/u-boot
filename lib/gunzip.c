@@ -133,7 +133,7 @@ int gzwrite(unsigned char *src, int len,
 		return -1;
 	}
 
-	blksperbuf = lldiv(szwritebuf,dev->blksz);
+	blksperbuf = szwritebuf / dev->blksz;
 	outblock = lldiv(startoffs, dev->blksz);
 
 	/* skip header */
