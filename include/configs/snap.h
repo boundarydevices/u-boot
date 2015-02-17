@@ -175,38 +175,16 @@
 #define CONFIG_LOADADDR			       0x12000000
 #define CONFIG_SYS_TEXT_BASE	       0x17800000
 
-#ifdef CONFIG_CMD_SATA
-#define CONFIG_DRIVE_SATA "sata "
-#else
-#define CONFIG_DRIVE_SATA
-#endif
-
-#ifdef CONFIG_CMD_MMC
-#define CONFIG_DRIVE_MMC "mmc "
-#else
-#define CONFIG_DRIVE_MMC
-#endif
-
-#ifdef CONFIG_USB_STORAGE
-#define CONFIG_DRIVE_USB "usb "
-#else
-#define CONFIG_DRIVE_USB
-#endif
-
-#define CONFIG_DRIVE_TYPES CONFIG_DRIVE_SATA CONFIG_DRIVE_MMC CONFIG_DRIVE_USB
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
-	"bootdevs=" CONFIG_DRIVE_TYPES "\0" \
+	"bootdevs=mmc\0" \
 	"console=ttymxc1\0" \
 	"clearenv=if sf probe || sf probe || sf probe 1 ; then " \
 		"sf erase 0xc0000 0x2000 && " \
 		"echo restored environment to factory default ; fi\0" \
 	"bootcmd=for dtype in ${bootdevs}" \
 		"; do " \
-		        "if itest.s \"xusb\" == \"x${dtype}\" ; then " \
-				"usb start ;" \
-			"fi; " \
-			"for disk in 0 1 ; do ${dtype} dev ${disk} ;" \
+			"for disk in 1 ; do ${dtype} dev ${disk} ;" \
 				"load " \
 					"${dtype} ${disk}:1 " \
 					"10008000 " \
