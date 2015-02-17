@@ -11,6 +11,7 @@
 #include <image.h>
 #include <malloc.h>
 #include <u-boot/zlib.h>
+#include <div64.h>
 
 #define HEADER0			'\x1f'
 #define HEADER1			'\x8b'
@@ -126,14 +127,14 @@ int gzwrite(unsigned char *src, int len,
 		return -1;
 	}
 
-	if (startoffs % dev->blksz) {
+	if (startoffs & (dev->blksz-1)) {
 		printf("%s: start offset %llu not a multiple of %lu\n",
 		       __func__, startoffs, dev->blksz);
 		return -1;
 	}
 
-	blksperbuf = szwritebuf / dev->blksz;
-	outblock = startoffs / dev->blksz;
+	blksperbuf = lldiv(szwritebuf,dev->blksz);
+	outblock = lldiv(startoffs, dev->blksz);
 
 	/* skip header */
 	i = 10;
@@ -171,7 +172,7 @@ int gzwrite(unsigned char *src, int len,
 		       szexpected, szuncompressed);
 		return -1;
 	}
-	if (szexpected / dev->blksz > (dev->lba - outblock)) {
+	if (lldiv(szexpected, dev->blksz) > (dev->lba - outblock)) {
 		printf("%s: uncompressed size %llu exceeds device size\n",
 		       __func__, szexpected);
 		return -1;
