@@ -136,10 +136,10 @@ static const iomux_v3_cfg_t ta_pads[] = {
 	/* GPIO Outputs */
 	/* Exchange */
 #define GP_EXCH_OFF		IMX_GPIO_NR(3, 11)
-	IOMUX_PAD_CTRL(EIM_DA11__GPIO3_IO11, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(EIM_DA11__GPIO3_IO11, WEAK_PULLDN),
 	/* Heater */
 #define GP_HEATER_OFF		IMX_GPIO_NR(3, 4)
-	IOMUX_PAD_CTRL(EIM_DA4__GPIO3_IO04, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(EIM_DA4__GPIO3_IO04, WEAK_PULLDN),
 	/* LEDS */
 #define GP_LED_RED		IMX_GPIO_NR(3, 13)
 	IOMUX_PAD_CTRL(EIM_DA13__GPIO3_IO13, WEAK_PULLDN_OUTPUT),
@@ -613,13 +613,13 @@ static unsigned short gpios_out_low[] = {
 	GP_USBH1_PWR,
 	GP_USB_OTG_PWR,
 	GP_EMMC_RESET,
+	GP_EXCH_OFF,
+	GP_HEATER_OFF,
 };
 
 static unsigned short gpios_out_high[] = {
 	GP_LED_RED,
 	GP_ECSPI1_NOR_CS,
-	GP_EXCH_OFF,
-	GP_HEATER_OFF,
 };
 
 static unsigned short gpios_in[] = {
