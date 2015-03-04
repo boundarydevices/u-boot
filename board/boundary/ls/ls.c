@@ -438,6 +438,16 @@ int dram_init(void)
 }
 
 #ifdef CONFIG_USB_EHCI_MX6
+static void charge_from_usb(int enable)
+{
+	u8 val8 = enable ? 0x27 : 7;
+	u8 orig_i2c_bus = i2c_get_bus_num();
+
+	i2c_set_bus_num(2);
+	i2c_write(0x69, 0xc3, 1, &val8, 1);
+	i2c_set_bus_num(orig_i2c_bus);
+}
+
 int board_ehci_hcd_init(int port)
 {
 	return 0;
@@ -446,7 +456,12 @@ int board_ehci_hcd_init(int port)
 int board_ehci_power(int port, int on)
 {
 	int gp = port ? GP_USBH1_HUB_RESET : GP_USB_OTG_PWR;
+
+	if (!port && on)
+		charge_from_usb(0);
 	gpio_set_value(gp, on);
+	if (!port && !on)
+		charge_from_usb(1);
 	return 0;
 }
 
@@ -776,6 +791,8 @@ int board_init(void)
 		i2c_write(0x69, 0xbd, 1, &val8, 1);
 		val8 = 0x14;	/* 1A charge */
 		i2c_write(0x69, 0xb9, 1, &val8, 1);
+		val8 = 0x27;	/* enable charging from otg */
+		i2c_write(0x69, 0xc3, 1, &val8, 1);
 		gpio_set_value(GP_I2C3_MAX77818_EN, 0);
 
 		i2c_set_bus_num(orig_i2c_bus);
