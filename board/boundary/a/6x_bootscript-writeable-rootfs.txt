@@ -11,8 +11,8 @@ fi
 
 if kbd ; then
     if itest.s "xF" == "x$keybd" ; then
-        kernel=/boot/uImage-usbwrite
-        ramdisk=/boot/uramdisk-usbwrite
+        kernel=/uImage-usbwrite
+        ramdisk=/uramdisk-usbwrite
         if ${fs}load ${dtype} 0:1 10800000 $kernel ; then
             if ${fs}load ${dtype} 0:1 12800000 $ramdisk ; then
                 bootm 10800000 12800000
@@ -25,7 +25,7 @@ if kbd ; then
     fi
 fi
 
-if ${fs}load ${dtype} 0:1 10800000 /boot/uImage ; then
-    setenv bootargs $bootargs rootwait root=/dev/mmcblk0p1
+if ${fs}load ${dtype} 0:1 10800000 /uImage ; then
+    setenv bootargs $bootargs rootwait root=/dev/mmcblk0p2 init=/sbin/init
     bootm 10800000
 fi
