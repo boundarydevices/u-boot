@@ -11,17 +11,7 @@ fi
 
 if kbd ; then
     if itest.s "xF" == "x$keybd" ; then
-        kernel=/uImage-usbwrite
-        ramdisk=/uramdisk-usbwrite
-        if ${fs}load ${dtype} 0:1 10800000 $kernel ; then
-            if ${fs}load ${dtype} 0:1 12800000 $ramdisk ; then
-                bootm 10800000 12800000
-            else
-                echo "Error loading RAM disk $ramdisk"
-            fi
-        else
-            echo "Error loading kernel image $kernel"
-        fi
+        ums 0 mmc 0;
     fi
 fi
 
