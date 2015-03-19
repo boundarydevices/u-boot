@@ -502,7 +502,7 @@ static void enable_lvds(struct display_info_t const *dev)
 	u32 reg = readl(&iomux->gpr[2]);
 	reg |= IOMUXC_GPR2_DATA_WIDTH_CH0_24BIT;
 	writel(reg, &iomux->gpr[2]);
-	gpio_direction_output(GP_LVDS_BACKLIGHT, 1);
+	gpio_direction_output(GP_LVDS_BACKLIGHT, 0);
 }
 
 struct display_info_t const displays[] = {{
