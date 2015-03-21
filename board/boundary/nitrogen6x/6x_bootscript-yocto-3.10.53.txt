@@ -41,7 +41,6 @@ setenv nextcon 0;
 
 i2c dev 1 ;
 if i2c probe 0x50 ; then
-	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=hdmi,1280x720M@60,if=RGB24
 	setenv fbmem "fbmem=28M";
 	setexpr nextcon $nextcon + 1
 else
