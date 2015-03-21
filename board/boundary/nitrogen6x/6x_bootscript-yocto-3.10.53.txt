@@ -80,6 +80,8 @@ if i2c probe 0x38 ; then
 	fi
 else
 	echo "------ no ft5x06 touch controller";
+	fdt rm okaya1024x600
+	fdt rm lg1280x800
 fi
 
 if itest.s "x" == "x$have_lvds"; then
