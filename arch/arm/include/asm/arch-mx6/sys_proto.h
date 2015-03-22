@@ -2,6 +2,8 @@
  * (C) Copyright 2009
  * Stefano Babic, DENX Software Engineering, sbabic@denx.de.
  *
+ * (C) Copyright 2009-2015 Freescale Semiconductor, Inc.
+ *
  * SPDX-License-Identifier:	GPL-2.0+
  */
 
@@ -26,6 +28,9 @@ u32 get_cpu_rev(void);
 
 const char *get_imx_type(u32 imxtype);
 unsigned imx_ddr_size(void);
+
+#define is_mx6dqp() ((is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D)) \
+	&& (is_soc_rev(CHIP_REV_2_0) >= 0))
 
 /*
  * Initializes on-chip ethernet controllers.
