@@ -8,6 +8,7 @@
 #include <asm/armv7.h>
 #include <asm/pl310.h>
 #include <asm/io.h>
+#include <asm/imx-common/sys_proto.h>
 
 #ifndef CONFIG_SYS_DCACHE_OFF
 void enable_caches(void)
@@ -82,6 +83,9 @@ void v7_outer_cache_enable(void)
 
 #ifndef CONFIG_MX6Q
 	val |= 0x40800000;
+#else
+	if (is_mx6dqp())
+		val |= 0x40800000;
 #endif
 	writel(val, &pl310->pl310_prefetch_ctrl);
 
