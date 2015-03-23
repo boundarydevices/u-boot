@@ -30,4 +30,8 @@
 
 #define CONFIG_MP
 
+#ifdef CONFIG_MX6QP
+#define CONFIG_MX6Q
+#endif
+
 #endif
