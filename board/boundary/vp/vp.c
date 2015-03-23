@@ -678,6 +678,8 @@ int board_init(void)
 	i2c_write(0x69, 0xb9, 1, &val8, 1);
 	val8 = 0x27;	/* enable charging from otg */
 	i2c_write(0x69, 0xc3, 1, &val8, 1);
+	val8 = 0x5;	/* enable charging mode */
+	i2c_write(0x69, 0xb7, 1, &val8, 1);
 	i2c_set_bus_num(orig_i2c_bus);
 
 #if defined(CONFIG_VIDEO_IPUV3)
