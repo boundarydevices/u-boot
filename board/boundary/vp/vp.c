@@ -87,9 +87,9 @@ DECLARE_GLOBAL_DATA_PTR;
 #define OUTPUT_40OHM (PAD_CTL_SPEED_MED|PAD_CTL_DSE_40ohm)
 
 static const iomux_v3_cfg_t vp_pads[] = {
-	/* Main power on, Low shuts down system */
+	/* Main power on, High shuts down system */
 #define GP_MAIN_POWER_EN	IMX_GPIO_NR(1, 19)
-	IOMUX_PAD_CTRL(SD1_DAT2__GPIO1_IO19, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(SD1_DAT2__GPIO1_IO19, WEAK_PULLDN),
 #define GP_LED_BLUE		IMX_GPIO_NR(2, 24)
 	IOMUX_PAD_CTRL(EIM_CS1__GPIO2_IO24, WEAK_PULLUP),
 
@@ -564,7 +564,7 @@ static void setup_display(void)
 #endif
 
 static unsigned short gpios_out_low[] = {
-	/* Disable wl1271 */
+	GP_MAIN_POWER_EN,
 	GP_RGB_BACKLIGHT,
 	GP_BRM_WL_EN,		/* disable wireless */
 	GP_BRM_BT_EN,	 	/* disable bluetooth */
@@ -584,7 +584,6 @@ static unsigned short gpios_out_low[] = {
 };
 
 static unsigned short gpios_out_high[] = {
-	GP_MAIN_POWER_EN,
 	GP_ECSPI1_CS1,
 	GP_I2C3_MAX77818_EN,
 	GP_5V_EN,
