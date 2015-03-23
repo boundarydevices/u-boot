@@ -111,4 +111,8 @@
 #define CONFIG_FSL_ESDHC
 #define CONFIG_FSL_USDHC
 
+#ifdef CONFIG_MX6QP
+#define CONFIG_MX6Q
+#endif
+
 #endif
