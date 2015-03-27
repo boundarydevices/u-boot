@@ -37,12 +37,9 @@ else
 	exit;
 fi
 
-setenv nextcon 0;
-
 i2c dev 1 ;
 if i2c probe 0x50 ; then
-	setenv fbmem "fbmem=28M";
-	setexpr nextcon $nextcon + 1
+	echo "------ have HDMI monitor";
 else
 	fdt rm hdmi_display
 	echo "------ no HDMI monitor";
@@ -68,12 +65,6 @@ if i2c probe 0x38 ; then
 		fdt rm lg1280x800
 	fi
 	setenv have_lvds 1
-	if test "0" -eq $nextcon; then
-		setenv fbmem "fbmem=10M";
-	else
-		setenv fbmem ${fbmem},10M
-	fi
-	setexpr nextcon $nextcon + 1
 	setenv bootargs $bootargs ft5x06_ts.screenres=$screenres
 	if itest.s "x" -ne "x$calibration" ; then
 		setenv bootargs $bootargs ft5x06_ts.calibration=$calibration
@@ -104,17 +95,10 @@ fi
 
 if itest.s "x" != "x$have_lcd" ; then
 	echo "----- found LCD display";
-	if test "0" -eq $nextcon; then
-		setenv fbmem "fbmem=10M";
-	else
-		setenv fbmem ${fbmem},10M
-	fi
-	setexpr nextcon $nextcon + 1
 else
 	fdt rm lcd_display;
 fi
 
-setenv bootargs $bootargs $fbmem
 setenv bootargs "$bootargs console=ttymxc1,115200 vmalloc=400M consoleblank=0 rootwait"
 
 if itest.s x$bootpart == x ; then
