@@ -37,6 +37,7 @@ else
 	exit;
 fi
 
+# ------------------- HDMI detection
 i2c dev 1 ;
 if i2c probe 0x50 ; then
 	echo "------ have HDMI monitor";
@@ -45,8 +46,8 @@ else
 	echo "------ no HDMI monitor";
 fi
 
+# ------------------- LVDS detection
 setenv have_lvds
-
 i2c dev 2
 if i2c probe 0x04 ; then
 	echo "------ have Freescale display";
@@ -79,6 +80,7 @@ if itest.s "x" == "x$have_lvds"; then
 	fdt rm lvds_display;
 fi
 
+# ------------------- LCD detection
 setenv have_lcd '';
 if i2c probe 0x48 ; then
 	setenv have_lcd 1;
