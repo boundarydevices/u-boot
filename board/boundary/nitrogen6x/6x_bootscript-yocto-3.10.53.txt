@@ -41,6 +41,13 @@ fi
 i2c dev 1 ;
 if i2c probe 0x50 ; then
 	echo "------ have HDMI monitor";
+	if itest.s x == x$allow_noncea ; then
+		setenv bootargs $bootargs mxc_hdmi.only_cea=1;
+		echo "only CEA modes allowed on HDMI port";
+	else
+		setenv bootargs $bootargs mxc_hdmi.only_cea=0;
+		echo "non-CEA modes allowed on HDMI, audio may be affected";
+	fi
 else
 	fdt rm hdmi_display
 	echo "------ no HDMI monitor";
@@ -151,14 +158,6 @@ else
         else
                 setenv bootargs "$bootargs root=/dev/mmcblk3p$bootpart" ;
         fi
-fi
-
-if itest.s x == x$allow_noncea ; then
-	setenv bootargs $bootargs mxc_hdmi.only_cea=1;
-	echo "only CEA modes allowed on HDMI port";
-else
-        setenv bootargs $bootargs mxc_hdmi.only_cea=0;
-        echo "non-CEA modes allowed on HDMI, audio may be affected";
 fi
 
 if itest.s "x" != "x$disable_giga" ; then
