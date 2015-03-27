@@ -149,6 +149,10 @@ if itest.s "x" != "x$wlmac" ; then
         setenv bootargs $bootargs wlcore.mac=$wlmac
 fi
 
+if itest.s "x" != "x$show_fdt" ; then
+	fdt print /
+fi
+
 if ${fs}load ${dtype} ${disk}:1 10800000 ${bootdir}uImage ; then
 	if itest.s x$havedtb == x ; then
 		bootm 10800000 ;
