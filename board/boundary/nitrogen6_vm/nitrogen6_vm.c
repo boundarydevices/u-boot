@@ -488,7 +488,6 @@ static unsigned short gpios_out_low[] = {
 	GP_ENET_PHY_RESET,
 	GP_AR1021_5_WIRE_SEL,
 	GP_LVDS_EN,
-	GP_PWM1,
 	GP_RGB_BACKLIGHT,
 	GP_LVDS_BACKLIGHT,
 	GP_SGTL5000_MUTE,
@@ -498,6 +497,7 @@ static unsigned short gpios_out_low[] = {
 
 static unsigned short gpios_out_high[] = {
 	GP_ECSPI1_CS1,		/* SS1 of spi nor */
+	GP_PCAP_NRESET,		/* PCAP reset on J40 */
 };
 
 static unsigned short gpios_in[] = {
