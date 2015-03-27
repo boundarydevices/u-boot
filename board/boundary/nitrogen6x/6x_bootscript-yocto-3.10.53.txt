@@ -47,37 +47,71 @@ else
 fi
 
 # ------------------- LVDS detection
-setenv have_lvds
-i2c dev 2
-if i2c probe 0x04 ; then
-	echo "------ have Freescale display";
-	setenv have_lvds 1
-else
-	echo "------ no Freescale display";
-	fdt rm hannstar;
-fi
-
-if i2c probe 0x38 ; then
-	if itest.s "xLDB-WXGA" == "x$panel"; then
-		screenres=1280,800
-		fdt rm okaya1024x600
-	else
-		screenres=1024,600
-		fdt rm lg1280x800
-	fi
-	setenv have_lvds 1
-	setenv bootargs $bootargs ft5x06_ts.screenres=$screenres
-	if itest.s "x" -ne "x$calibration" ; then
-		setenv bootargs $bootargs ft5x06_ts.calibration=$calibration
-	fi
-else
-	echo "------ no ft5x06 touch controller";
+if itest.s "x" != "x$lvds_1080p" ; then
+	echo "----- 1080P dual channel LVDS";
 	fdt rm okaya1024x600
 	fdt rm lg1280x800
-fi
+	fdt rm hannstar;
+	fdt set ldb split-mode 1
+	fdt set lvds_display interface_pix_fmt "RGB24"
+	fdt set ldb/lvds-channel@0 fsl,data-width <24>
+else
+	fdt rm ldb split-mode
+	fdt rm lvds1080p
 
-if itest.s "x" == "x$have_lvds"; then
-	fdt rm lvds_display;
+	# -------- LVDS0 (bottom on Nitrogen6_Max)
+	setenv have_lvds
+	i2c dev 2
+	if i2c probe 0x04 ; then
+		echo "------ have Freescale display";
+		setenv have_lvds 1
+	else
+		echo "------ no Freescale display";
+		fdt rm hannstar;
+	fi
+
+	if i2c probe 0x38 ; then
+		if itest.s "xLDB-WXGA" == "x$panel"; then
+			screenres=1280,800
+			fdt rm okaya1024x600
+		else
+			screenres=1024,600
+			fdt rm lg1280x800
+		fi
+		setenv have_lvds 1
+		setenv bootargs $bootargs ft5x06_ts.screenres=$screenres
+		if itest.s "x" -ne "x$calibration" ; then
+			setenv bootargs $bootargs ft5x06_ts.calibration=$calibration
+		fi
+	else
+		echo "------ no ft5x06 touch controller";
+		fdt rm okaya1024x600
+		fdt rm lg1280x800
+	fi
+
+	if itest.s "x" == "x$have_lvds"; then
+		fdt rm lvds_display;
+	fi
+
+	# -------- LVDS1 (top on Nitrogen6_Max)
+	if itest.s "xhannstar" == "x$lvds1_panel" ; then
+		echo "configure LVDS1 for Hannstar panel"
+		fdt rm okaya1024x600_2;
+		fdt rm lg1280x800_2;
+		fdt set lvds_display_2 status okay
+	elif itest.s "xokaya1024x600" == "x$lvds1_panel" ; then
+		echo "configure LVDS1 for 1024x600 panel"
+		fdt rm hannstar_2;
+		fdt rm lg1280x800_2;
+		fdt set lvds_display_2 status okay
+	elif itest.s "xlg1280x800" == "x$lvds1_panel" ; then
+		echo "configure LVDS1 for 1280x800 panel"
+		fdt rm hannstar_2;
+		fdt rm okaya1024x600_2;
+		fdt set lvds_display_2 status okay
+	else
+		fdt rm lvds_display_2 ; # ignore errors on boards != 6_max
+	fi
 fi
 
 # ------------------- LCD detection
