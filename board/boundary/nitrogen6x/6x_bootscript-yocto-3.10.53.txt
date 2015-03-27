@@ -28,7 +28,6 @@ if itest.s x == x${bootdir} ; then
 fi
 
 if ${fs}load ${dtype} ${disk}:1 12000000 ${bootdir}$dtbname ; then
-	havedtb=1;
 	setenv fdt_addr 0x12000000
 	fdt addr 12000000
 	setenv fdt_high 0xffffffff
@@ -177,10 +176,6 @@ if itest.s "x" != "x$show_env" ; then
 fi
 
 if ${fs}load ${dtype} ${disk}:1 10800000 ${bootdir}uImage ; then
-	if itest.s x$havedtb == x ; then
-		bootm 10800000 ;
-	else
-		bootm 10800000 - 12000000
-	fi
+	bootm 10800000 - 12000000
 fi
 echo "Error loading kernel image"
