@@ -88,14 +88,22 @@ if itest.s "x" == "x$have_lvds"; then
 	fdt rm lvds_display;
 fi
 
+setenv have_lcd '';
 if i2c probe 0x48 ; then
-	if test "0" -eq $nextcon; then
-		setenv fbmem "fbmem=10M";
-	else
-		setenv fbmem ${fbmem},10M
-	fi
-	setexpr nextcon $nextcon + 1
+	setenv have_lcd 1;
+	echo "------- found TSC2004 touch controller";
 elif i2c probe 0x4d ; then
+	setenv have_lcd 1;
+	echo "------- found AR1020 touch controller";
+fi
+
+if itest.s "x" != "x$ignore_lcd" ; then
+	echo "------ ignoring LCD display";
+	setenv have_lcd '';
+fi
+
+if itest.s "x" != "x$have_lcd" ; then
+	echo "----- found LCD display";
 	if test "0" -eq $nextcon; then
 		setenv fbmem "fbmem=10M";
 	else
@@ -103,7 +111,6 @@ elif i2c probe 0x4d ; then
 	fi
 	setexpr nextcon $nextcon + 1
 else
-	echo "------ no 800x480 display";
 	fdt rm lcd_display;
 fi
 
