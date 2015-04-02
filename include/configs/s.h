@@ -46,7 +46,7 @@
 #endif
 
 #define CONFIG_MXC_UART
-#define CONFIG_MXC_UART_BASE	       UART2_BASE
+#define CONFIG_MXC_UART_BASE	       UART4_BASE
 
 #define CONFIG_CMD_SF
 #ifdef CONFIG_CMD_SF
@@ -168,7 +168,7 @@
 #define CONFIG_DRIVE_TYPES CONFIG_DRIVE_MMC
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
-	"console=ttymxc1\0" \
+	"console=ttymxc3,115200\0" \
 	"clearenv=if sf probe || sf probe || sf probe 1 ; then " \
 		"sf erase 0xc0000 0x2000 && " \
 		"echo restored environment to factory default ; fi\0" \
@@ -205,7 +205,7 @@
 		"setenv ipaddr 10.0.0.2; " \
 		"setenv netmask 255.255.255.0; " \
 		"setenv serverip 10.0.0.1; " \
-		"setenv bootargs console=ttymxc1,115200; " \
+		"setenv bootargs console=$console; " \
 		"tftpboot 10800000 10.0.0.1:uImage-s-recovery" \
 		"&& tftpboot 12800000 10.0.0.1:uramdisk-s-recovery.img " \
 		"&& bootm 10800000 12800000\0" \

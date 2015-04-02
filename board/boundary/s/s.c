@@ -78,15 +78,9 @@ static iomux_v3_cfg_t const uart1_pads[] = {
 	MX6_PAD_SD3_DAT7__UART1_TX_DATA | MUX_PAD_CTRL(UART_PAD_CTRL),
 };
 
-/* #define CONFIG_SILENT_UART */
-static iomux_v3_cfg_t const uart2_pads[] = {
-#ifndef CONFIG_SILENT_UART
-	MX6_PAD_EIM_D26__UART2_TX_DATA | MUX_PAD_CTRL(UART_PAD_CTRL),
-	MX6_PAD_EIM_D27__UART2_RX_DATA | MUX_PAD_CTRL(UART_PAD_CTRL),
-#else
-	MX6_PAD_EIM_D26__GPIO3_IO26 | MUX_PAD_CTRL(UART_PAD_CTRL),
-	MX6_PAD_EIM_D27__GPIO3_IO27 | MUX_PAD_CTRL(UART_PAD_CTRL),
-#endif
+static iomux_v3_cfg_t const uart4_pads[] = {
+	MX6_PAD_KEY_COL0__UART4_TX_DATA | MUX_PAD_CTRL(UART_PAD_CTRL),
+	MX6_PAD_KEY_ROW0__UART4_RX_DATA | MUX_PAD_CTRL(UART_PAD_CTRL),
 };
 
 #define PC MUX_PAD_CTRL(I2C_PAD_CTRL)
@@ -263,7 +257,7 @@ static iomux_v3_cfg_t const usb_pads[] = {
 static void setup_iomux_uart(void)
 {
 	imx_iomux_v3_setup_multiple_pads(uart1_pads, ARRAY_SIZE(uart1_pads));
-	imx_iomux_v3_setup_multiple_pads(uart2_pads, ARRAY_SIZE(uart2_pads));
+	imx_iomux_v3_setup_multiple_pads(uart4_pads, ARRAY_SIZE(uart4_pads));
 }
 
 #ifdef CONFIG_USB_EHCI_MX6
