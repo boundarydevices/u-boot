@@ -159,12 +159,16 @@ else
         fi
 fi
 
-if itest.s "x" != "x$disable_giga" ; then
-        setenv bootargs $bootargs fec.disable_giga=1
+if itest.s "x" != "x${disable_giga}" ; then
+	setenv bootargs $bootargs fec.disable_giga=1
 fi
 
 if itest.s "x" != "x$wlmac" ; then
-        setenv bootargs $bootargs wlcore.mac=$wlmac
+	setenv bootargs $bootargs wlcore.mac=$wlmac
+fi
+
+if itest.s "x" != "x$gpumem" ; then
+	setenv bootargs $bootargs galcore.contiguousSize=$gpumem
 fi
 
 if itest.s "x" != "x$show_fdt" ; then
