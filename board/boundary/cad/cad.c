@@ -19,6 +19,7 @@
 #include <asm/imx-common/mxc_i2c.h>
 #include <asm/imx-common/boot_mode.h>
 #include <asm/imx-common/spi.h>
+#include <asm/imx-common/video.h>
 #include <mmc.h>
 #include <fsl_esdhc.h>
 #include <linux/fb.h>
@@ -29,6 +30,7 @@
 #include <input.h>
 #include <usb/ehci-fsl.h>
 #include <netdev.h>
+#include "spi_display.h"
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -61,11 +63,22 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #define OUTPUT_40OHM (PAD_CTL_SPEED_MED|PAD_CTL_DSE_40ohm)
 
+
+static iomux_v3_cfg_t const init_pads[] = {
 #define POWERDOWN_REPLY		IMX_GPIO_NR(1, 2)
-#define POWERDOWN_NOTICE	IMX_GPIO_NR(1, 6)
+	MX6_PAD_GPIO_2__GPIO1_IO02 | MUX_PAD_CTRL(OUTPUT_40OHM),	/* powerdown_reply - output to latch power */
 #define POWERLOW		IMX_GPIO_NR(1, 3)
+	MX6_PAD_GPIO_3__GPIO1_IO03,					/* powerlow - input reflecting power state */
+#define POWERDOWN_NOTICE	IMX_GPIO_NR(1, 6)
+	MX6_PAD_GPIO_6__GPIO1_IO06,					/* powerdown_notice - input reflecting button press */
 #define BUZZER			IMX_GPIO_NR(7, 13)
+	MX6_PAD_GPIO_18__GPIO7_IO13,					/* buzzer */
 #define IR_STATUS		IMX_GPIO_NR(1, 9)
+	MX6_PAD_GPIO_9__GPIO1_IO09,					/* IR status */
+#define GP_BACKLIGHT		IMX_GPIO_NR(1, 21)			/* PWM1 */
+	IOMUX_PAD_CTRL(SD1_DAT3__GPIO1_IO21, WEAK_PULLDOWN),
+};
+
 
 int dram_init(void)
 {
@@ -207,7 +220,7 @@ int board_mmc_init(bd_t *bis)
 
 int board_spi_cs_gpio(unsigned bus, unsigned cs)
 {
-	return (bus == 0 && cs == 0) ? (IMX_GPIO_NR(3, 19)) : -1;
+	return (bus == 0 && cs == 0) ? (IMX_GPIO_NR(3, 19)) :  (cs >> 8) ? (cs >> 8) : -1;
 }
 
 static iomux_v3_cfg_t const ecspi_pads[] = {
@@ -216,15 +229,6 @@ static iomux_v3_cfg_t const ecspi_pads[] = {
 	MX6_PAD_EIM_D17__ECSPI1_MISO | MUX_PAD_CTRL(SPI_PAD_CTRL),
 	MX6_PAD_EIM_D18__ECSPI1_MOSI | MUX_PAD_CTRL(SPI_PAD_CTRL),
 	MX6_PAD_EIM_D16__ECSPI1_SCLK | MUX_PAD_CTRL(SPI_PAD_CTRL),
-
-	/* SPI2 chip-select */
-	#define DISPLAY_SHUTDOWN IMX_GPIO_NR(2, 4)
-	MX6_PAD_NANDF_D4__GPIO2_IO04	| MUX_PAD_CTRL(WEAK_PULLDOWN),
-	#define DISPLAY_SPI_CS   IMX_GPIO_NR(5, 29)
-	MX6_PAD_CSI0_DAT11__GPIO5_IO29  | MUX_PAD_CTRL(SPI_PAD_CTRL),
-	MX6_PAD_CSI0_DAT8__ECSPI2_SCLK  | MUX_PAD_CTRL(SPI_PAD_CTRL),
-	MX6_PAD_CSI0_DAT9__ECSPI2_MOSI  | MUX_PAD_CTRL(SPI_PAD_CTRL),
-	MX6_PAD_CSI0_DAT10__ECSPI2_MISO | MUX_PAD_CTRL(SPI_PAD_CTRL),
 };
 
 static void setup_spi(void)
@@ -232,87 +236,46 @@ static void setup_spi(void)
 	imx_iomux_v3_setup_multiple_pads(ecspi_pads,
 					 ARRAY_SIZE(ecspi_pads));
 	gpio_direction_output(IMX_GPIO_NR(3, 19), 1);
-	gpio_direction_output(DISPLAY_SPI_CS, 1);
-	gpio_direction_output(DISPLAY_SHUTDOWN, 0);
 }
-
-static iomux_v3_cfg_t const backlight_pads[] = {
-	MX6_PAD_SD1_DAT3__GPIO1_IO21 | MUX_PAD_CTRL(NO_PAD_CTRL),
-#define BACKLIGHT_GP IMX_GPIO_NR(1, 21)
-};
 
 int board_cfb_skip(void)
 {
 	return 1;
 }
 
-static struct fb_videomode const fbmode = {
-	.name           = "qvga",
-	.refresh        = 60,
-	.xres           = 320,
-	.yres           = 240,
-	.pixclock       = 37037,
-	.left_margin    = 38,
-	.right_margin   = 37,
-	.upper_margin   = 16,
-	.lower_margin   = 15,
-	.hsync_len      = 30,
-	.vsync_len      = 3,
-	.sync           = 0,
-	.vmode          = FB_VMODE_NONINTERLACED
+const struct display_info_t displays[] = {
+{
+	.bus	= 1,
+	.addr	= 0x70,
+	.pixfmt	= IPU_PIX_FMT_RGB24,
+	.detect	= detect_spi,
+	.enable	= enable_spi_rgb,
+	.mode	= {
+		.name           = "qvga",
+		.refresh        = 60,
+		.xres           = 320,
+		.yres           = 240,
+		.pixclock       = 1000000000 / 408 * 100 / 262 / 6,
+		.left_margin    = 16,
+		.right_margin   = 20,
+		.upper_margin   = 16,
+		.lower_margin   = 4,
+		.hsync_len      = 52,
+		.vsync_len      = 2,
+		.sync           = 0,
+		.vmode          = FB_VMODE_NONINTERLACED
+	}
+}
 };
-
-static iomux_v3_cfg_t const rgb_pads[] = {
-	MX6_PAD_DI0_DISP_CLK__IPU1_DI0_DISP_CLK,
-	MX6_PAD_DI0_PIN15__IPU1_DI0_PIN15,
-	MX6_PAD_DI0_PIN2__IPU1_DI0_PIN02,
-	MX6_PAD_DI0_PIN3__IPU1_DI0_PIN03,
-	MX6_PAD_DI0_PIN4__GPIO4_IO20,
-	MX6_PAD_DISP0_DAT0__IPU1_DISP0_DATA00,
-	MX6_PAD_DISP0_DAT1__IPU1_DISP0_DATA01,
-	MX6_PAD_DISP0_DAT2__IPU1_DISP0_DATA02,
-	MX6_PAD_DISP0_DAT3__IPU1_DISP0_DATA03,
-	MX6_PAD_DISP0_DAT4__IPU1_DISP0_DATA04,
-	MX6_PAD_DISP0_DAT5__IPU1_DISP0_DATA05,
-	MX6_PAD_DISP0_DAT6__IPU1_DISP0_DATA06,
-	MX6_PAD_DISP0_DAT7__IPU1_DISP0_DATA07,
-	MX6_PAD_DISP0_DAT8__IPU1_DISP0_DATA08,
-	MX6_PAD_DISP0_DAT9__IPU1_DISP0_DATA09,
-	MX6_PAD_DISP0_DAT10__IPU1_DISP0_DATA10,
-	MX6_PAD_DISP0_DAT11__IPU1_DISP0_DATA11,
-	MX6_PAD_DISP0_DAT12__IPU1_DISP0_DATA12,
-	MX6_PAD_DISP0_DAT13__IPU1_DISP0_DATA13,
-	MX6_PAD_DISP0_DAT14__IPU1_DISP0_DATA14,
-	MX6_PAD_DISP0_DAT15__IPU1_DISP0_DATA15,
-	MX6_PAD_DISP0_DAT16__IPU1_DISP0_DATA16,
-	MX6_PAD_DISP0_DAT17__IPU1_DISP0_DATA17,
-	MX6_PAD_DISP0_DAT18__IPU1_DISP0_DATA18,
-	MX6_PAD_DISP0_DAT19__IPU1_DISP0_DATA19,
-	MX6_PAD_DISP0_DAT20__IPU1_DISP0_DATA20,
-	MX6_PAD_DISP0_DAT21__IPU1_DISP0_DATA21,
-	MX6_PAD_DISP0_DAT22__IPU1_DISP0_DATA22,
-	MX6_PAD_DISP0_DAT23__IPU1_DISP0_DATA23,
-};
+size_t display_count = ARRAY_SIZE(displays);
 
 int board_eth_init(bd_t *bis)
 {
 	/* For otg ethernet*/
 	usb_eth_initialize(bis);
+	mdelay(23);	/* Wait 14 frames for display to come on,  20 is too low*/
+	gpio_set_value(GP_BACKLIGHT, 1);
 	return 0;
-}
-
-int board_video_skip(void)
-{
-	int ret;
-	imx_iomux_v3_setup_multiple_pads(
-		rgb_pads,
-		 ARRAY_SIZE(rgb_pads));
-
-	ret = ipuv3_fb_init(&fbmode, 0,
-			    IPU_PIX_FMT_RGB24);
-
-	gpio_direction_output(BACKLIGHT_GP, 1);
-	return (0 != ret);
 }
 
 static void setup_display(void)
@@ -361,23 +324,11 @@ static void setup_display(void)
 	    | (IOMUXC_GPR3_MUX_SRC_IPU1_DI0
 	       <<IOMUXC_GPR3_LVDS0_MUX_CTL_OFFSET);
 	writel(reg, &iomux->gpr[3]);
-
-	/* backlights off until needed */
-	imx_iomux_v3_setup_multiple_pads(backlight_pads,
-					 ARRAY_SIZE(backlight_pads));
-	gpio_direction_input(BACKLIGHT_GP);
 }
-
-static iomux_v3_cfg_t const init_pads[] = {
-	MX6_PAD_GPIO_2__GPIO1_IO02 | MUX_PAD_CTRL(OUTPUT_40OHM),	/* powerdown_reply - output to latch power */
-	MX6_PAD_GPIO_3__GPIO1_IO03,					/* powerlow - input reflecting power state */
-	MX6_PAD_GPIO_6__GPIO1_IO06,					/* powerdown_notice - input reflecting button press */
-	MX6_PAD_GPIO_18__GPIO7_IO13,					/* buzzer */
-	MX6_PAD_GPIO_9__GPIO1_IO09,					/* IR status */
-};
 
 int board_early_init_f(void)
 {
+	gpio_direction_output(GP_BACKLIGHT, 0);
 	setup_iomux_uart();
 
 	imx_iomux_v3_setup_multiple_pads(init_pads, ARRAY_SIZE(init_pads));
@@ -437,3 +388,17 @@ int board_late_init(void)
 	setenv("board", CONFIG_BOARD_NAME);
 	return 0;
 }
+
+static int do_poweroff(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+	gpio_set_value(GP_BACKLIGHT, 0);
+	gpio_set_value(POWERDOWN_REPLY, 0);
+	mdelay(500);
+	return 1;
+}
+
+U_BOOT_CMD(
+	poweroff, 70, 0, do_poweroff,
+	"power down board",
+	""
+);

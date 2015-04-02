@@ -7,3 +7,4 @@
 #
 
 obj-y  := cad.o
+obj-$(CONFIG_MXC_SPI_DISPLAY) += spi_display.o
