@@ -4,7 +4,7 @@ config SYS_CPU
 	default "armv7"
 
 config SYS_BOARD
-	default "nitrogen6x"
+	default "s"
 
 config SYS_VENDOR
 	default "boundary"
