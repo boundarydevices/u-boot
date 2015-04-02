@@ -705,19 +705,8 @@ static char const *board_type = "uninitialized";
 
 int checkboard(void)
 {
-#ifdef CONFIG_NITROGEN6X_FL
-	puts("Board: Nitrogen6X_fl\n");
-	board_type = "nitrogen6x_fl";
-#else
-	if (gpio_get_value(WL12XX_WL_IRQ_GP)) {
-		puts("Board: Nitrogen6X\n");
-		board_type = "nitrogen6x";
-	}
-	else {
-		puts("Board: SABRE Lite\n");
-		board_type = "sabrelite";
-	}
-#endif
+	puts("Board: S\n");
+	board_type = "s";
 	return 0;
 }
 
