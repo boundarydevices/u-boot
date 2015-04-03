@@ -121,6 +121,11 @@ setenv have_lcd '';
 if i2c probe 0x48 ; then
 	setenv have_lcd 1;
 	echo "------- found TSC2004 touch controller";
+	if itest.s "x" -eq "x$tsc_calibration" ; then
+		setenv bootargs $bootargs tsc2004.calibration=-67247,-764,272499173,324,69283,-8653010,65536
+	else
+		setenv bootargs $bootargs tsc2004.calibration=$tsc_calibration
+	fi
 elif i2c probe 0x4d ; then
 	setenv have_lcd 1;
 	echo "------- found AR1020 touch controller";
