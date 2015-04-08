@@ -23,8 +23,12 @@ if itest.s x == x${bootdir} ; then
 	bootdir=/boot/
 fi
 
+if itest.s x$bootpart == x ; then
+	bootpart=1
+fi
+
 setenv fdt_addr 0x12000000
-if ${fs}load ${dtype} ${disk}:1 $fdt_addr ${bootdir}$dtbname ; then
+if ${fs}load ${dtype} ${disk}:${bootpart} $fdt_addr ${bootdir}$dtbname ; then
 	fdt addr $fdt_addr
 	setenv fdt_high 0xffffffff
 else
@@ -143,10 +147,6 @@ else
 fi
 
 setenv bootargs "$bootargs console=ttymxc1,115200 vmalloc=400M consoleblank=0 rootwait fixrtc"
-
-if itest.s x$bootpart == x ; then
-	bootpart=1
-fi
 
 setenv bpart "$bootpart"
 
