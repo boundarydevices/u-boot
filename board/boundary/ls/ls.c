@@ -760,11 +760,24 @@ int overwrite_console(void)
 	return 1;
 }
 
+void board_poweroff(void)
+{
+	struct snvs_regs *snvs = (struct snvs_regs *)(SNVS_BASE_ADDR);
+
+	gpio_set_value(GP_MAIN_ON_OFF, 0);
+	writel(0x60, &snvs->lpcr);
+	mdelay(500);
+}
+
 int board_init(void)
 {
 	int i;
+	int ret;
 	struct i2c_pads_info *p = i2c_pads + i2c_get_info_entry_offset();
 	struct iomuxc *const iomuxc_regs = (struct iomuxc *)IOMUXC_BASE_ADDR;
+	u8 orig_i2c_bus;
+	u8 val8;
+	u8 buf[2];
 
 	clrsetbits_le32(&iomuxc_regs->gpr[1],
 			IOMUXC_GPR1_OTG_ID_MASK,
@@ -776,28 +789,39 @@ int board_init(void)
 		setup_i2c(i, CONFIG_SYS_I2C_SPEED, 0x7f, p);
 		p += I2C_PADS_INFO_ENTRY_SPACING;
 	}
-#if 1
-	{
-		u8 orig_i2c_bus;
-		u8 val8;
 
-		orig_i2c_bus = i2c_get_bus_num();
-		i2c_set_bus_num(2);
+	orig_i2c_bus = i2c_get_bus_num();
+	i2c_set_bus_num(2);
+	gpio_set_value(GP_I2C3_MAX77818_EN, 1);
+#define I2C_ADDR_CHARGER	0x69
+	val8 = 0x7f;	/* 4.0A source */
+	i2c_write(I2C_ADDR_CHARGER, 0xc0, 1, &val8, 1);
+	val8 = 0x0c;	/* Protection allow 0xb9 write */
+	i2c_write(I2C_ADDR_CHARGER, 0xbd, 1, &val8, 1);
+	val8 = 0x14;	/* 1A charge */
+	i2c_write(I2C_ADDR_CHARGER, 0xb9, 1, &val8, 1);
+	val8 = 0x27;	/* enable charging from otg */
+	i2c_write(I2C_ADDR_CHARGER, 0xc3, 1, &val8, 1);
+	val8 = 0x5;	/* enable charging mode */
+	i2c_write(I2C_ADDR_CHARGER, 0xb7, 1, &val8, 1);
 
-		gpio_set_value(GP_I2C3_MAX77818_EN, 1);
-		val8 = 0x7f;	/* 4.0A source */
-		i2c_write(0x69, 0xc0, 1, &val8, 1);
-		val8 = 0x0c;	/* Protection allow 0xb9 write */
-		i2c_write(0x69, 0xbd, 1, &val8, 1);
-		val8 = 0x14;	/* 1A charge */
-		i2c_write(0x69, 0xb9, 1, &val8, 1);
-		val8 = 0x27;	/* enable charging from otg */
-		i2c_write(0x69, 0xc3, 1, &val8, 1);
-		gpio_set_value(GP_I2C3_MAX77818_EN, 0);
+#define I2C_ADDR_FUELGAUGE	0x36
+#define MAX77823_REG_VCELL	0x09
+	ret = i2c_read(I2C_ADDR_FUELGAUGE, MAX77823_REG_VCELL, 1, buf, 2);
+	gpio_set_value(GP_I2C3_MAX77818_EN, 0);
+	if (!ret) {
+		u32 v = (buf[1] << 8) | buf[0];
 
-		i2c_set_bus_num(orig_i2c_bus);
+		v = (v >> 3) * 625;
+		printf("battery voltage = %d uV\n", v);
+		if (v < 3000000) {
+			printf("voltage = %d uV too low, powering off\n", v);
+			board_poweroff();
+		}
+	} else {
+		printf("error reading battery voltage\n");
 	}
-#endif
+	i2c_set_bus_num(orig_i2c_bus);
 
 #if defined(CONFIG_VIDEO_IPUV3)
 	setup_display();
@@ -930,3 +954,15 @@ int board_late_init(void)
 	setenv("wlmac", macbuf);
 	return 0;
 }
+
+static int do_poweroff(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+	board_poweroff();
+	return 0;
+}
+
+U_BOOT_CMD(
+	poweroff, 70, 0, do_poweroff,
+	"power down board",
+	""
+);
