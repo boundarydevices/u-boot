@@ -492,6 +492,39 @@ struct src {
 #define SRC_M4C_NON_SCLR_RST_OFFSET	4
 #define SRC_M4C_NON_SCLR_RST_MASK	BIT(4)
 
+struct snvs_regs {
+	u32 hplr;	/* 0x00 */
+	u32 hpcomr;	/* 0x04 */
+	u32 hpcr;	/* 0x08 */
+	u32 spare1;	/* 0x0c */
+	u32 spare2;	/* 0x10 */
+	u32 hpsr;	/* 0x14 */
+	u32 spare3;	/* 0x18 */
+	u32 spare4;	/* 0x1c */
+	u32 spare5;	/* 0x20 */
+	u32 hprtcmr;	/* 0x24 */
+	u32 hprtclr;	/* 0x28 */
+	u32 hptamr;	/* 0x2c */
+	u32 hptalr;	/* 0x30 */
+	u32 lplr;	/* 0x34 */
+	u32 lpcr;	/* 0x38 */
+	u32 spare6;	/* 0x3c */
+	u32 spare7;	/* 0x40 */
+	u32 spare8;	/* 0x44 */
+	u32 spare9;	/* 0x48 */
+	u32 lpsr;	/* 0x4c */
+	u32 spare10;	/* 0x50 */
+	u32 spare11;	/* 0x54 */
+	u32 spare12;	/* 0x58 */
+	u32 lpsmcmr;	/* 0x5c */
+	u32 lpsmclr;	/* 0x60 */
+	u32 spare13;	/* 0x64 */
+	u32 lpgpr;	/* 0x68 */
+	u8 spare_block[0xbf8 - 0x6c];	/* 0x6c */
+	u32 hpvidr1;	/* 0xbf8 */
+	u32 hpvidr2;	/* 0xbfc */
+};
+
 /* GPR1 bitfields */
 #define IOMUXC_GPR1_APP_CLK_REQ_N		BIT(30)
 #define IOMUXC_GPR1_PCIE_EXIT_L1		BIT(28)
