@@ -486,7 +486,6 @@ static void setup_display(void)
 
 static unsigned short gpios_out_low[] = {
 	GP_ENET_PHY_RESET,
-	GP_AR1021_5_WIRE_SEL,
 	GP_LVDS_EN,
 	GP_RGB_BACKLIGHT,
 	GP_LVDS_BACKLIGHT,
@@ -502,6 +501,7 @@ static unsigned short gpios_out_high[] = {
 
 static unsigned short gpios_in[] = {
 	GP_ENET_PHY_INT,
+	GP_AR1021_5_WIRE_SEL,
 	GP_HOME,
 	GP_BACK,
 	GP_TOUCH_IRQ,
