@@ -5,7 +5,7 @@ else
 fi
 
 setenv bootargs $bootargs video=mxcfb0:dev=ldb,1280x800MR@60,if=RGB666
-setenv bootargs $bootargs fbmem=10Mft5x06_ts.screenres=1280,800
+setenv bootargs $bootargs fbmem=10M ft5x06_ts.screenres=1280,800
 setenv bootargs $bootargs video=mxcfb1:off video=mxcfb2:off video=mxcfb3:off
 setenv bootargs $bootargs console=ttymxc1,115200 vmalloc=400M consoleblank=0 rootwait
 
