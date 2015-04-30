@@ -735,6 +735,26 @@ struct display_info_t const displays[] = {
 		.vmode          = FB_VMODE_NONINTERLACED
 } }, {
 	.bus	= 2,
+	.addr	= 0x48,
+	.pixfmt	= IPU_PIX_FMT_RGB666,
+	.detect	= detect_i2c,
+	.enable	= enable_rgb,
+	.mode	= {
+		.name           = "sharp-wvga",
+		.refresh        = 60,
+		.xres           = 800,
+		.yres           = 480,
+		.pixclock       = 1000000000/928 * 1000 /525/60,
+		.left_margin    = 40,
+		.right_margin   = 40,
+		.upper_margin   = 31,
+		.lower_margin   = 11,
+		.hsync_len      = 48,
+		.vsync_len      = 3,
+		.sync           = 0,
+		.vmode          = FB_VMODE_NONINTERLACED
+} }, {
+	.bus	= 2,
 	.addr	= 0x10,
 	.pixfmt	= IPU_PIX_FMT_RGB666,
 	.detect	= detect_i2c,
