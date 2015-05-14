@@ -469,6 +469,8 @@ void imx_get_mac_from_fuse(int dev_id, unsigned char *mac)
 	mac[1] = value ;
 
 	value = readl(&fuse->mac_addr_low);
+	if ((dev_id > 0) && value)
+		value += dev_id;
 	mac[2] = value >> 24 ;
 	mac[3] = value >> 16 ;
 	mac[4] = value >> 8 ;
