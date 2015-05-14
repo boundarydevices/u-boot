@@ -254,7 +254,7 @@ int cpu_eth_init(struct bd_info *bis)
 {
 	int rc = -ENODEV;
 
-#if defined(CONFIG_FEC_MXC)
+#if defined(CONFIG_FEC_MXC) && defined(CONFIG_FEC_MXC_PHYADDR)
 	rc = fecmxc_initialize(bis);
 #endif
 
