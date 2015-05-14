@@ -512,30 +512,35 @@ void imx_get_mac_from_fuse(int dev_id, unsigned char *mac)
 	struct fuse_bank *bank = &ocotp->bank[4];
 	struct fuse_bank4_regs *fuse =
 			(struct fuse_bank4_regs *)bank->fuse_regs;
+	u32 value_high, value_low;
 
 	if ((is_mx6sx() || is_mx6ul() || is_mx6ull()) && dev_id == 1) {
-		u32 value = readl(&fuse->mac_addr2);
-		mac[0] = value >> 24 ;
-		mac[1] = value >> 16 ;
-		mac[2] = value >> 8 ;
-		mac[3] = value ;
+		value_high = readl(&fuse->mac_addr2);
+		value_low = readl(&fuse->mac_addr1) >> 16;
 
-		value = readl(&fuse->mac_addr1);
-		mac[4] = value >> 24 ;
-		mac[5] = value >> 16 ;
-		
-	} else {
-		u32 value = readl(&fuse->mac_addr1);
-		mac[0] = (value >> 8);
-		mac[1] = value ;
-
-		value = readl(&fuse->mac_addr0);
-		mac[2] = value >> 24 ;
-		mac[3] = value >> 16 ;
-		mac[4] = value >> 8 ;
-		mac[5] = value ;
+		value_low |= (value_high << 16);
+		value_high >>= 16;
+		if (value_low | value_high) {
+			dev_id--;
+			goto valid;
+		}
 	}
 
+	value_high = readl(&fuse->mac_addr1);
+	value_low = readl(&fuse->mac_addr0);
+valid:
+	if ((dev_id > 0) && (value_low | value_high)) {
+		u32 prev = value_low;
+		value_low += dev_id;
+		if (value_low < prev)
+			value_high++;
+	}
+	mac[0] = (value_high >> 8);
+	mac[1] = value_high ;
+	mac[2] = value_low >> 24 ;
+	mac[3] = value_low >> 16 ;
+	mac[4] = value_low >> 8 ;
+	mac[5] = value_low ;
 }
 #endif
 
