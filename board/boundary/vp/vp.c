@@ -20,6 +20,7 @@
 #include <asm/imx-common/spi.h>
 #include <asm/imx-common/boot_mode.h>
 #include <asm/imx-common/video.h>
+#include <div64.h>
 #include <mmc.h>
 #include <fsl_esdhc.h>
 #include <micrel.h>
@@ -826,12 +827,35 @@ int misc_init_r(void)
 	return 0;
 }
 
+static unsigned long long us_to_tick(unsigned long long usec)
+{
+        usec = usec * get_tbclk() + 999999;
+        do_div(usec, 1000000);
+
+        return usec;
+}
+
 int board_late_init(void)
 {
+	unsigned long long stop = get_ticks() + us_to_tick(800000);
 	int cpurev = get_cpu_rev();
+	int reason = *(int *)(CONFIG_RESET_CAUSE_ADDR + 4);
+
 	setenv("cpu",get_imx_type((cpurev & 0xFF000) >> 12));
 	if (0 == getenv("board"))
 		setenv("board",board_type);
+
+	/* return if not power-on reset */
+	if ((reason != 0x01) && (reason != 0x11))
+		return 0;
+	while (get_ticks() < stop) {
+		int ret = gpio_get_value(GP_MAIN_POWER_BUTTON);
+		if (ret) {
+			printf("On button not held\n");
+			board_poweroff();
+		}
+		mdelay(10);
+	}
 	return 0;
 }
 
