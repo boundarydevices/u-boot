@@ -653,7 +653,8 @@ void board_poweroff(void)
 {
 	struct snvs_regs *snvs = (struct snvs_regs *)(SNVS_BASE_ADDR);
 
-	gpio_set_value(GP_MAIN_POWER_EN, 1);
+	/* Doing both gpio1:19 and pmic_req makes the board not turn on again */
+//	gpio_set_value(GP_MAIN_POWER_EN, 1);
 	writel(0x60, &snvs->lpcr);
 	mdelay(500);
 }
