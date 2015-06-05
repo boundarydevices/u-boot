@@ -477,6 +477,9 @@ int arch_cpu_init(void)
 	if (is_mx6sx())
 		setbits_le32(&ccm->cscdr1, MXC_CCM_CSCDR1_UART_CLK_SEL);
 
+	if (is_mx6dqp())
+		writel(0x80000201, 0xbb0608);
+
 	init_src();
 
 #if defined(CONFIG_MX6Q) || defined(CONFIG_MX6QDL)
