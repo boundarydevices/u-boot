@@ -1,0 +1,7 @@
+cob BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/cob/
+F:	include/configs/cob.h
+F:	configs/cob_defconfig
+
