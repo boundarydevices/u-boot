@@ -497,6 +497,19 @@ static int mxcfb_probe(u32 interface_pix_fmt, uint8_t disp,
 	struct fb_info *fbi;
 	struct mxcfb_info *mxcfbi;
 	int ret = 0;
+	int xres = mode->xres;
+	int gdfIndex = GDF_16BIT_565RGB;
+	int bytes_per_pixel = 2;
+	struct fb_videomode umode;
+
+	if (interface_pix_fmt == IPU_PIX_FMT_UPS051) {
+		interface_pix_fmt = IPU_PIX_FMT_RGB565;
+		umode = *mode;
+		umode.xres = xres * 3 / 2;
+		mode = &umode;
+		gdfIndex = GDF_24BIT_888RGB;
+		bytes_per_pixel = 3;
+	}
 
 	/*
 	 * Initialize FB structures
@@ -547,16 +560,16 @@ static int mxcfb_probe(u32 interface_pix_fmt, uint8_t disp,
 
 	mxcfb_set_par(fbi);
 
-	panel.winSizeX = mode->xres;
+	panel.winSizeX = xres;
 	panel.winSizeY = mode->yres;
-	panel.plnSizeX = mode->xres;
+	panel.plnSizeX = xres;
 	panel.plnSizeY = mode->yres;
 
 	panel.frameAdrs = (u32)fbi->screen_base;
 	panel.memSize = fbi->screen_size;
 
-	panel.gdfBytesPP = 2;
-	panel.gdfIndex = GDF_16BIT_565RGB;
+	panel.gdfBytesPP = bytes_per_pixel;
+	panel.gdfIndex = gdfIndex;
 
 	ipu_dump_registers();
 
