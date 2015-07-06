@@ -31,6 +31,7 @@
 #define IPU_PIX_FMT_RGB332  fourcc('R', 'G', 'B', '1')	/*<  8  RGB-3-3-2    */
 #define IPU_PIX_FMT_RGB555  fourcc('R', 'G', 'B', 'O')	/*< 16  RGB-5-5-5    */
 #define IPU_PIX_FMT_RGB565  fourcc('R', 'G', 'B', 'P')	/*< 1 6  RGB-5-6-5   */
+#define IPU_PIX_FMT_UPS051  fourcc('U', 'P', 'S', '0')	/*< 24  RG BR GB, 1.5 clks/pixel   */
 #define IPU_PIX_FMT_RGB666  fourcc('R', 'G', 'B', '6')	/*< 18  RGB-6-6-6    */
 #define IPU_PIX_FMT_BGR666  fourcc('B', 'G', 'R', '6')	/*< 18  BGR-6-6-6    */
 #define IPU_PIX_FMT_BGR24   fourcc('B', 'G', 'R', '3')	/*< 24  BGR-8-8-8    */
