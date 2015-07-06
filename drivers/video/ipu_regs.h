@@ -74,6 +74,14 @@ extern u32 *ipu_dc_tmpl_reg;
 #define DC_EVT_NEW_CHAN_R_1	9
 #define DC_EVT_NEW_DATA_R_0	10
 #define DC_EVT_NEW_DATA_R_1	11
+#define DC_EVEN_UGDE0 		12
+#define DC_ODD_UGDE0 		13
+#define DC_EVEN_UGDE1 		14
+#define DC_ODD_UGDE1 		15
+#define DC_EVEN_UGDE2 		16
+#define DC_ODD_UGDE2 		17
+#define DC_EVEN_UGDE3 		18
+#define DC_ODD_UGDE3 		19
 
 /* Software reset for ipu */
 #define SW_IPU_RST	8
@@ -276,7 +284,7 @@ struct ipu_dc {
 	u32 di1_conf[2];
 	u32 dc_map_ptr[15];
 	u32 dc_map_val[12];
-	u32 udge[16];
+	u32 ugde[16];
 	u32 lla[2];
 	u32 r_lla[2];
 	u32 wr_ch_addr_5_alt;
@@ -392,6 +400,10 @@ static inline struct ipu_dc_ch *dc_ch_offset(int ch)
 #define DC_GEN			(&DC_REG->gen)
 #define DC_DISP_CONF2(disp)	(&DC_REG->disp_conf2[disp])
 #define DC_STAT			(&DC_REG->stat)
+#define DC_UGDE_0(evt)		(&DC_REG->ugde[0 + (4 * (evt))])
+#define DC_UGDE_1(evt)		(&DC_REG->ugde[1 + (4 * (evt))])
+#define DC_UGDE_2(evt)		(&DC_REG->ugde[2 + (4 * (evt))])
+#define DC_UGDE_3(evt)		(&DC_REG->ugde[3 + (4 * (evt))])
 
 #define DP_SYNC 0
 #define DP_ASYNC0 0x60
