@@ -151,6 +151,8 @@ typedef union {
 	struct {
 		uint32_t di;
 		unsigned char interlaced;
+		uint32_t in_pixel_fmt;
+		uint32_t out_pixel_fmt;
 	} mem_dc_sync;
 	struct {
 		uint32_t temp;
@@ -257,7 +259,7 @@ bool ipu_clk_enabled(void);
 void ipu_dmfc_init(int dmfc_type, int first);
 void ipu_init_dc_mappings(void);
 void ipu_dmfc_set_wait4eot(int dma_chan, int width);
-void ipu_dc_init(int dc_chan, int di, unsigned char interlaced);
+void ipu_dc_init(int dc_chan, int di, unsigned char interlaced, uint32_t pixel_fmt);
 void ipu_dc_uninit(int dc_chan);
 void ipu_dp_dc_enable(ipu_channel_t channel);
 int ipu_dp_init(ipu_channel_t channel, uint32_t in_pixel_fmt,
