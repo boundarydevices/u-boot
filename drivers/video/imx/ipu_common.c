@@ -605,7 +605,8 @@ int32_t ipu_init_channel(ipu_channel_t channel, ipu_channel_params_t *params)
 
 		g_dc_di_assignment[1] = params->mem_dc_sync.di;
 		ipu_dc_init(1, params->mem_dc_sync.di,
-			     params->mem_dc_sync.interlaced);
+			     params->mem_dc_sync.interlaced,
+			     params->mem_dc_sync.out_pixel_fmt);
 		ipu_di_use_count[params->mem_dc_sync.di]++;
 		ipu_dc_use_count++;
 		ipu_dmfc_use_count++;
@@ -620,7 +621,8 @@ int32_t ipu_init_channel(ipu_channel_t channel, ipu_channel_params_t *params)
 		ipu_dp_init(channel, params->mem_dp_bg_sync.in_pixel_fmt,
 			     params->mem_dp_bg_sync.out_pixel_fmt);
 		ipu_dc_init(5, params->mem_dp_bg_sync.di,
-			     params->mem_dp_bg_sync.interlaced);
+			     params->mem_dp_bg_sync.interlaced,
+			     params->mem_dp_bg_sync.out_pixel_fmt);
 		ipu_di_use_count[params->mem_dp_bg_sync.di]++;
 		ipu_dc_use_count++;
 		ipu_dp_use_count++;
@@ -901,7 +903,7 @@ static void ipu_ch_param_init(int ch,
 	case IPU_PIX_FMT_YUYV:
 		ipu_ch_param_set_field(&params, 0, 107, 3, 3);	/* bits/pixel */
 		ipu_ch_param_set_field(&params, 1, 85, 4, 0x8);	/* pix format */
-		ipu_ch_param_set_field(&params, 1, 78, 7, 31);	/* burst size */
+		ipu_ch_param_set_field(&params, 1, 78, 7, 15);	/* burst size */
 		break;
 	case IPU_PIX_FMT_YUV420P2:
 	case IPU_PIX_FMT_YUV420P:
@@ -1018,6 +1020,7 @@ int32_t ipu_init_channel_buffer(ipu_channel_t channel, ipu_buffer_t type,
 	uint32_t reg;
 	uint32_t dma_chan;
 
+	printf("%s: chan=0x%08x, pixel_fmt=%x\n", __func__, channel, pixel_fmt);
 	dma_chan = channel_2_dma(channel, type);
 	if (!idma_is_valid(dma_chan))
 		return -EINVAL;
