@@ -344,9 +344,17 @@ int board_mmc_init(bd_t *bis)
 #endif
 
 #ifdef CONFIG_MXC_SPI
+#define GP_ECSPI2_CS		IMX_GPIO_NR(5, 29)
+
 int board_spi_cs_gpio(unsigned bus, unsigned cs)
 {
-	return (bus == 0 && cs == 0) ? (IMX_GPIO_NR(3, 19)) : (cs >> 8) ? (cs >> 8) : -1;
+	if (bus == 0 && cs == 0)
+		return IMX_GPIO_NR(3, 19);
+	if (bus == 1 && cs == 0)
+		return GP_ECSPI2_CS;
+	if (cs >> 8)
+		return (cs >> 8);
+	return -1;
 }
 
 static iomux_v3_cfg_t const ecspi1_pads[] = {
@@ -833,9 +841,9 @@ struct display_info_t const displays[] = {
 #ifdef CONFIG_MXC_SPI_DISPLAY
 {
 	.bus	= 1,
-	.addr	= 0x70,
+	.addr	= 0,
 	.pixfmt	= IPU_PIX_FMT_RGB24,
-	.detect	= detect_spi,
+	.detect	= 0,
 	.enable	= enable_spi_rgb,
 	.mode	= {
 		.name           = "AUO_G050",

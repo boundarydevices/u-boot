@@ -173,12 +173,36 @@ static u8 display_on_cmds[] = {
 	A(0, 0)
 };
 
+/*
+ * Return 1 for successful detection of display
+ */
+int detect_spi(struct display_info_t const *dev)
+{
+	return 1;
+}
+
+static void init_spi(struct display_info_t const *dev)
+{
+	unsigned cs_gpio = GP_ECSPI2_CS;
+	unsigned reset_gpio = GP_SPI_DISPLAY_RESET;
+
+	debug("%s\n", __func__);
+	gpio_direction_output(cs_gpio, 1);
+	gpio_direction_output(reset_gpio, 1);
+	SETUP_IOMUX_PADS(spi_display_pads);
+	gpio_direction_output(reset_gpio, 0);
+	udelay(200);
+	gpio_direction_output(reset_gpio, 1);
+	mdelay(200);
+}
+
 void enable_spi_rgb(struct display_info_t const *dev)
 {
 	unsigned cs_gpio = GP_ECSPI2_CS;
 	struct spi_slave *spi;
 	int ret;
 
+	init_spi(dev);
 	gpio_direction_output(GP_BACKLIGHT, 1);
 	gpio_direction_output(cs_gpio, 1);
 
@@ -227,25 +251,6 @@ free_bus:
 	spi_free_slave(spi);
 	enable_spi_clk(0, dev->bus);
 	return;
-}
-
-/*
- * Return 1 for successful detection of display
- */
-int detect_spi(struct display_info_t const *dev)
-{
-	unsigned cs_gpio = GP_ECSPI2_CS;
-	unsigned reset_gpio = GP_SPI_DISPLAY_RESET;
-
-	debug("%s\n", __func__);
-	gpio_direction_output(cs_gpio, 1);
-	gpio_direction_output(reset_gpio, 1);
-	SETUP_IOMUX_PADS(spi_display_pads);
-	gpio_direction_output(reset_gpio, 0);
-	udelay(200);
-	gpio_direction_output(reset_gpio, 1);
-	mdelay(200);
-	return 1;
 }
 
 static int do_spid(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
