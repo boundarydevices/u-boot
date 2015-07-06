@@ -861,6 +861,28 @@ struct display_info_t const displays[] = {
 		.vmode          = FB_VMODE_NONINTERLACED
 	},
 },
+{
+	.bus	= 1,
+	.addr	= 2,
+	.pixfmt	= IPU_PIX_FMT_UPS051,
+	.detect	= 0,
+	.enable	= enable_spi_rgb,
+	.mode	= {
+		.name           = "A030JN01_UPS051",
+		.refresh        = 60,
+		.xres           = 640,		//640 * 3/2 = 960, (1.5 clocks per pixel)
+		.yres           = 480,
+		.pixclock       = 29668,	//(960+40+48+20)*(480+27+18+1)*60 = 1068*526*60 = 33.7M
+		.left_margin    = 40,
+		.right_margin   = 48,
+		.upper_margin   = 27,
+		.lower_margin   = 18,
+		.hsync_len      = 20,
+		.vsync_len      = 1,
+		.sync           = 0,
+		.vmode          = FB_VMODE_NONINTERLACED
+	},
+},
 #endif
 };
 
