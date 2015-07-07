@@ -44,6 +44,19 @@ struct dp_csc_param_t {
 #define DC_DISP_ID_SERIAL	2
 #define DC_DISP_ID_ASYNC	3
 
+/* DC microcode address */
+#define DC_MCODE_DI0			0	/* 0 - 5 */
+#define MCI_I			0
+#define MCI_NL			1
+#define MCI_EOL			2
+#define MCI_NEW_DATA		3
+#define MCI_EVEN_UGDE		4
+#define MCI_ODD_UGDE		5
+
+#define DC_MCODE_DI1			6	/* 6-11 */
+
+#define DC_MCODE_ASYNC_NEW_DATA		0x64
+
 int dmfc_type_setup;
 static int dmfc_size_28, dmfc_size_29, dmfc_size_24, dmfc_size_27, dmfc_size_23;
 int g_di1_tvout;
@@ -241,47 +254,6 @@ static void ipu_di_sync_config(int di, int wave_gen,
 	__raw_writel(reg, DI_STP_REP(di, wave_gen));
 }
 
-static void ipu_dc_map_link(int current_map,
-		int base_map_0, int buf_num_0,
-		int base_map_1, int buf_num_1,
-		int base_map_2, int buf_num_2)
-{
-	int ptr_0 = base_map_0 * 3 + buf_num_0;
-	int ptr_1 = base_map_1 * 3 + buf_num_1;
-	int ptr_2 = base_map_2 * 3 + buf_num_2;
-	int ptr;
-	u32 reg;
-	ptr = (ptr_2 << 10) +  (ptr_1 << 5) + ptr_0;
-
-	reg = __raw_readl(DC_MAP_CONF_PTR(current_map));
-	reg &= ~(0x1F << ((16 * (current_map & 0x1))));
-	reg |= ptr << ((16 * (current_map & 0x1)));
-	__raw_writel(reg, DC_MAP_CONF_PTR(current_map));
-}
-
-static void ipu_dc_map_config(int map, int byte_num, int offset, int mask)
-{
-	int ptr = map * 3 + byte_num;
-	u32 reg;
-
-	reg = __raw_readl(DC_MAP_CONF_VAL(ptr));
-	reg &= ~(0xFFFF << (16 * (ptr & 0x1)));
-	reg |= ((offset << 8) | mask) << (16 * (ptr & 0x1));
-	__raw_writel(reg, DC_MAP_CONF_VAL(ptr));
-
-	reg = __raw_readl(DC_MAP_CONF_PTR(map));
-	reg &= ~(0x1F << ((16 * (map & 0x1)) + (5 * byte_num)));
-	reg |= ptr << ((16 * (map & 0x1)) + (5 * byte_num));
-	__raw_writel(reg, DC_MAP_CONF_PTR(map));
-}
-
-static void ipu_dc_map_clear(int map)
-{
-	u32 reg = __raw_readl(DC_MAP_CONF_PTR(map));
-	__raw_writel(reg & ~(0xFFFF << (16 * (map & 0x1))),
-		     DC_MAP_CONF_PTR(map));
-}
-
 static void ipu_dc_write_tmpl(int word, u32 opcode, u32 operand, int map,
 			       int wave, int glue, int sync)
 {
@@ -467,8 +439,10 @@ int ipu_dp_init(ipu_channel_t channel, uint32_t in_pixel_fmt,
 	int dp;
 	int partial = 0;
 	uint32_t reg;
+	enum csc_type_t csc_type;
+	struct dp_csc_param_t param;
 
-	printf("%s: chan=0x%08x, infmt %x, outfmt=%x\n", __func__, channel, in_pixel_fmt, out_pixel_fmt);
+	debug("%s: chan=0x%08x, infmt %x, outfmt=%x\n", __func__, channel, in_pixel_fmt, out_pixel_fmt);
 	if (channel == MEM_FG_SYNC) {
 		dp = DP_SYNC;
 		partial = 1;
@@ -485,32 +459,14 @@ int ipu_dp_init(ipu_channel_t channel, uint32_t in_pixel_fmt,
 	in_fmt = format_to_colorspace(in_pixel_fmt);
 	out_fmt = format_to_colorspace(out_pixel_fmt);
 
-	printf("%s: %s to %s\n", __func__, (in_fmt == RGB) ? "rgb" : "yuv", (out_fmt == RGB) ? "rgb" : "yuv");
-	if (partial) {
-		if (in_fmt == RGB) {
-			if (out_fmt == RGB)
-				fg_csc_type = RGB2RGB;
-			else
-				fg_csc_type = RGB2YUV;
-		} else {
-			if (out_fmt == RGB)
-				fg_csc_type = YUV2RGB;
-			else
-				fg_csc_type = YUV2YUV;
-		}
-	} else {
-		if (in_fmt == RGB) {
-			if (out_fmt == RGB)
-				bg_csc_type = RGB2RGB;
-			else
-				bg_csc_type = RGB2YUV;
-		} else {
-			if (out_fmt == RGB)
-				bg_csc_type = YUV2RGB;
-			else
-				bg_csc_type = YUV2YUV;
-		}
-	}
+	debug("%s: %s to %s\n", __func__, (in_fmt == RGB) ? "rgb" : "yuv", (out_fmt == RGB) ? "rgb" : "yuv");
+	csc_type = (in_fmt == RGB) ? ((out_fmt == RGB) ? RGB2RGB : RGB2YUV) :
+				     ((out_fmt == RGB) ? YUV2RGB : YUV2YUV);
+	if (partial)
+		fg_csc_type = csc_type;
+	else
+		bg_csc_type = csc_type;
+
 
 	/* Transform color key from rgb to yuv if CSC is enabled */
 	reg = __raw_readl(DP_COM_CONF());
@@ -543,6 +499,9 @@ int ipu_dp_init(ipu_channel_t channel, uint32_t in_pixel_fmt,
 		debug("_ipu_dp_init color key change to yuv fmt 0x%x!\n",
 			color_key);
 	}
+	param = dp_csc_array[bg_csc_type][fg_csc_type];
+	if ((fg_csc_type == RGB2YUV) || (bg_csc_type == RGB2YUV))
+		param.mode |= (1 << 11);  /* Y range 16-235, U/V range 16-240. */
 
 	ipu_dp_csc_setup(dp, dp_csc_array[bg_csc_type][fg_csc_type], 1);
 
@@ -578,32 +537,26 @@ void ipu_dp_uninit(ipu_channel_t channel)
 void ipu_dc_init(int dc_chan, int di, unsigned char interlaced, uint32_t pixel_fmt)
 {
 	u32 reg = 0;
+	int mc = di ? DC_MCODE_DI1 : DC_MCODE_DI0;
 
-	printf("%s: fmt %x, chan=%d, di=%d, interlaced=%d\n", __func__, pixel_fmt, dc_chan, di, interlaced);
+	debug("%s: fmt %x, chan=%d, di=%d, interlaced=%d\n", __func__, pixel_fmt, dc_chan, di, interlaced);
 	if ((dc_chan == 1) || (dc_chan == 5)) {
 		if (interlaced) {
 			ipu_dc_link_event(dc_chan, DC_EVT_NL, 0, 3);
 			ipu_dc_link_event(dc_chan, DC_EVT_EOL, 0, 2);
 			ipu_dc_link_event(dc_chan, DC_EVT_NEW_DATA, 0, 1);
 		} else {
-			int mc1 = di ? 2 : 5;
-			int mc2 = di ? 8 : 10;
-			int dc = di ? DC_EVEN_UGDE1 : DC_EVEN_UGDE0;
-#define MC_WORD_DI1_NL		2
-#define MC_WORD_DI1_EOL		3
-#define MC_WORD_DI1_NEW_DATA	4
-#define MC_WORD_DI0_NL		5
-#define MC_WORD_DI0_EOL		6
-#define MC_WORD_DI0_NEW_DATA	7
-			ipu_dc_link_event(dc_chan, DC_EVT_NL, mc1++, 3);
-			ipu_dc_link_event(dc_chan, DC_EVT_EOL, mc1++, 2);
-			ipu_dc_link_event(dc_chan, DC_EVT_NEW_DATA, mc1, 1);
+			int evt = di ? DC_EVEN_UGDE1 : DC_EVEN_UGDE0;
+
+			ipu_dc_link_event(dc_chan, DC_EVT_NL, mc + MCI_NL, 3);
+			ipu_dc_link_event(dc_chan, DC_EVT_EOL, mc + MCI_EOL, 2);
+			ipu_dc_link_event(dc_chan, DC_EVT_NEW_DATA, mc + MCI_NEW_DATA, 1);
 
 			if ((pixel_fmt == IPU_PIX_FMT_YUYV) ||
 			    (pixel_fmt == IPU_PIX_FMT_UYVY)) {
-				printf("%s: link %d %d\n", __func__, dc, mc2);
-				ipu_dc_link_event(dc_chan, dc++, mc2++, 5);
-				ipu_dc_link_event(dc_chan, dc, mc2, 5);
+				printf("%s: link %d %d\n", __func__, evt, mc);
+				ipu_dc_link_event(dc_chan, evt, mc + MCI_EVEN_UGDE, 5);
+				ipu_dc_link_event(dc_chan, evt + 1, mc + MCI_ODD_UGDE, 5);
 			}
 		}
 		ipu_dc_link_event(dc_chan, DC_EVT_NF, 0, 0);
@@ -620,8 +573,8 @@ void ipu_dc_init(int dc_chan, int di, unsigned char interlaced, uint32_t pixel_f
 			reg |= DC_WR_CH_CONF_FIELD_MODE;
 	} else if ((dc_chan == 8) || (dc_chan == 9)) {
 		/* async channels */
-		ipu_dc_link_event(dc_chan, DC_EVT_NEW_DATA_W_0, 0x64, 1);
-		ipu_dc_link_event(dc_chan, DC_EVT_NEW_DATA_W_1, 0x64, 1);
+		ipu_dc_link_event(dc_chan, DC_EVT_NEW_DATA_W_0, DC_MCODE_ASYNC_NEW_DATA, 1);
+		ipu_dc_link_event(dc_chan, DC_EVT_NEW_DATA_W_1, DC_MCODE_ASYNC_NEW_DATA, 1);
 
 		reg = 0x3;
 		reg |= DC_DISP_ID_SERIAL << DC_WR_CH_CONF_PROG_DISP_ID_OFFSET;
@@ -792,82 +745,211 @@ void ipu_dp_dc_disable(ipu_channel_t channel, unsigned char swap)
 	}
 }
 
-void ipu_init_dc_mappings(void)
+struct offset_mask {
+	u8 offset;
+	u8 mask;
+};
+
+struct f_mapping {
+	struct offset_mask om[3];
+};
+
+enum {
+	I_IPU_PIX_FMT_RGB24,
+	I_IPU_PIX_FMT_BGR24,
+	I_IPU_PIX_FMT_GBR24,
+	I_IPU_PIX_FMT_RGB666,
+	I_IPU_PIX_FMT_RGB565,
+	I_IPU_PIX_FMT_LVDS666,
+	I_IPU_PIX_FMT_YUV444,
+
+	I_IPU_PIX_FMT_2CYCLE_START,
+	I_IPU_PIX_FMT_VYUYa_1 = I_IPU_PIX_FMT_2CYCLE_START,
+	I_IPU_PIX_FMT_VYUYa_2,
+/* 16bit width for BT1120 */
+	I_IPU_PIX_FMT_BT1120_1,
+	I_IPU_PIX_FMT_BT1120_2,
+
+	I_IPU_PIX_FMT_VYUY_1,
+	I_IPU_PIX_FMT_VYUY_2,
+	I_IPU_PIX_FMT_UYVY_1,
+	I_IPU_PIX_FMT_UYVY_2,
+	I_IPU_PIX_FMT_YUYV_1,
+	I_IPU_PIX_FMT_YUYV_2,
+	I_IPU_PIX_FMT_YVYU_1,
+	I_IPU_PIX_FMT_YVYU_2,
+
+/* 8bit width for BT656 */
+	I_IPU_PIX_FMT_3CYCLE_START,
+	I_IPU_PIX_FMT_BT656_1 = I_IPU_PIX_FMT_3CYCLE_START,
+	I_IPU_PIX_FMT_BT656_2,
+	I_IPU_PIX_FMT_BT656_3,
+};
+
+static struct f_mapping fmt_mappings[] = {
+/* RGB formats are named from High bits to low bits */
+/* YUV formats are named from low bits to high bits */
+			/* B		G		R */
+[I_IPU_PIX_FMT_RGB24] = {{{7, 0xFF}, {15, 0xFF}, {23, 0xFF}}},
+[I_IPU_PIX_FMT_BGR24] = {{{23, 0xFF}, {15, 0xFF}, {7, 0xFF}}},
+[I_IPU_PIX_FMT_GBR24] = {{{15, 0xFF}, {23, 0xFF}, {7, 0xFF}}},
+[I_IPU_PIX_FMT_RGB666] = {{{5, 0xFC}, {11, 0xFC}, {17, 0xFC}}},
+[I_IPU_PIX_FMT_RGB565] = {{{4, 0xF8}, {10, 0xFC}, {15, 0xF8}}},
+[I_IPU_PIX_FMT_LVDS666] = {{{5, 0xFC}, {13, 0xFC}, {21, 0xFC}}},
+
+			/* V		U		Y */
+[I_IPU_PIX_FMT_YUV444] = {{{23, 0xFF}, {15, 0xFF}, {7, 0xFF}}},
+#define BT656_IF_DI_MSB	23
+[I_IPU_PIX_FMT_VYUYa_1] = {{{BT656_IF_DI_MSB - 8, 0xFF}, {0, 0x0}, {BT656_IF_DI_MSB, 0xFF}}},
+[I_IPU_PIX_FMT_VYUYa_2] = {{{0, 0x0}, {BT656_IF_DI_MSB - 8, 0xFF}, {BT656_IF_DI_MSB, 0xFF}}},
+/* 16bit width for BT1120 */
+[I_IPU_PIX_FMT_BT1120_1] = {{{0, 0x0}, {BT656_IF_DI_MSB - 8, 0xFF}, {BT656_IF_DI_MSB, 0xFF}}},
+[I_IPU_PIX_FMT_BT1120_2] = {{{BT656_IF_DI_MSB - 8, 0xFF}, {0, 0x0}, {BT656_IF_DI_MSB, 0xFF}}},
+
+			/* V		U		Y */
+[I_IPU_PIX_FMT_VYUY_1] = {{{7, 0xFF}, {0, 0x0}, {15, 0xFF}}},
+[I_IPU_PIX_FMT_VYUY_2] = {{{0, 0x0}, {7, 0xFF}, {15, 0xFF}}},
+
+[I_IPU_PIX_FMT_UYVY_1] = {{{0, 0x0}, {7, 0xFF}, {15, 0xFF}}},
+[I_IPU_PIX_FMT_UYVY_2] = {{{7, 0xFF}, {0, 0x0}, {15, 0xFF}}},
+
+[I_IPU_PIX_FMT_YUYV_1] = {{{0, 0x0}, {15, 0xFF}, {7, 0xFF}}},
+[I_IPU_PIX_FMT_YUYV_2] = {{{15, 0xFF}, {0, 0x0}, {7, 0xFF}}},
+
+[I_IPU_PIX_FMT_YVYU_1] = {{{15, 0xFF}, {0, 0x0}, {7, 0xFF}}},
+[I_IPU_PIX_FMT_YVYU_2] = {{{0, 0x0}, {15, 0xFF}, {7, 0xFF}}},
+
+/* 8bit width for BT656 */
+[I_IPU_PIX_FMT_BT656_1] = {{{0, 0x0}, {BT656_IF_DI_MSB, 0xFF}, {0, 0x0}}},	/* U */
+[I_IPU_PIX_FMT_BT656_2] = {{{0, 0x0}, {0, 0x0}, {BT656_IF_DI_MSB, 0xFF}}},	/* Y */
+[I_IPU_PIX_FMT_BT656_3] = {{{BT656_IF_DI_MSB, 0xFF}, {0, 0x0}, {0, 0x0}}},	/* V */
+};
+
+#define DC_MAPPING_VAL_MAX	23
+static unsigned long offset_mask_bitmap;
+
+#define DC_MAPPING_PTR_MAX	29
+static unsigned long mapping_bitmap;
+
+static int find_field(u32 val, u32 *reg_base, unsigned long* bitmap, int max)
 {
-	/* IPU_PIX_FMT_RGB24 */
-	ipu_dc_map_clear(0);
-	ipu_dc_map_config(0, 0, 7, 0xFF);
-	ipu_dc_map_config(0, 1, 15, 0xFF);
-	ipu_dc_map_config(0, 2, 23, 0xFF);
+	int i = 0;
+	u32 reg;
 
-	/* IPU_PIX_FMT_RGB666 */
-	ipu_dc_map_clear(1);
-	ipu_dc_map_config(1, 0, 5, 0xFC);
-	ipu_dc_map_config(1, 1, 11, 0xFC);
-	ipu_dc_map_config(1, 2, 17, 0xFC);
+	while (i <= max) {
+		if (!test_bit(i, bitmap))
+			break;
+		reg = __raw_readl(&reg_base[i >> 1]);
+		if (val == (reg & 0xffff))
+			return i;
+		i++;
+		if (!test_bit(i, bitmap))
+			break;
+		if (val == (reg >> 16))
+			return i;
+		i++;
+	}
+	i = ffz(*bitmap);
 
-	/* IPU_PIX_FMT_YUV444 */
-	ipu_dc_map_clear(2);
-	ipu_dc_map_config(2, 0, 15, 0xFF);
-	ipu_dc_map_config(2, 1, 23, 0xFF);
-	ipu_dc_map_config(2, 2, 7, 0xFF);
+	if (i > max) {
+		printf("out of mappings, max=%d\n", max);
+		return -EINVAL;
+	}
 
-	/* IPU_PIX_FMT_RGB565 */
-	ipu_dc_map_clear(3);
-	ipu_dc_map_config(3, 0, 4, 0xF8);
-	ipu_dc_map_config(3, 1, 10, 0xFC);
-	ipu_dc_map_config(3, 2, 15, 0xF8);
-
-	/* IPU_PIX_FMT_LVDS666 */
-	ipu_dc_map_clear(4);
-	ipu_dc_map_config(4, 0, 5, 0xFC);
-	ipu_dc_map_config(4, 1, 13, 0xFC);
-	ipu_dc_map_config(4, 2, 21, 0xFC);
-
-	/* IPU_PIX_FMT_VYUY 16bit width */
-	ipu_dc_map_clear(5);
-	ipu_dc_map_config(5, 0, 7, 0xFF);
-	ipu_dc_map_config(5, 1, 0, 0x0);
-	ipu_dc_map_config(5, 2, 15, 0xFF);
-	ipu_dc_map_clear(6);
-	ipu_dc_map_config(6, 0, 0, 0x0);
-	ipu_dc_map_config(6, 1, 7, 0xFF);
-	ipu_dc_map_config(6, 2, 15, 0xFF);
-
-	/* IPU_PIX_FMT_UYVY 16bit width */
-	ipu_dc_map_clear(7);
-	ipu_dc_map_link(7, 6, 0, 6, 1, 6, 2);
-	ipu_dc_map_clear(8);
-	ipu_dc_map_link(8, 5, 0, 5, 1, 5, 2);
-
-	/* IPU_PIX_FMT_YUYV 16bit width */
-	ipu_dc_map_clear(9);
-	ipu_dc_map_link(9, 5, 1, 5, 2, 5, 0);
-	ipu_dc_map_clear(10);
-	ipu_dc_map_link(10, 5, 2, 5, 1, 5, 0);
+	reg = __raw_readl(&reg_base[i >> 1]);
+	reg &= ~(0xFFFF << (16 * (i & 0x1)));
+	reg |= val << (16 * (i & 0x1));
+	__raw_writel(reg, &reg_base[i >> 1]);
+	set_bit(i, bitmap);
+	debug("%s: [%d] = 0x%x max=%d\n", __func__, i, val, max);
+	return i;
 }
 
-static int ipu_pixfmt_to_map(uint32_t fmt)
+static int find_om(struct offset_mask *om)
+{
+	return find_field((om->offset << 8) | om->mask, DC_MAP_CONF_VAL(0), &offset_mask_bitmap, DC_MAPPING_VAL_MAX);
+}
+
+static int find_mptr(u32 val)
+{
+	return find_field(val, DC_MAP_CONF_PTR(0), &mapping_bitmap, DC_MAPPING_PTR_MAX);
+}
+
+int do_mapping(int i)
+{
+	struct f_mapping *fm = &fmt_mappings[i];
+	u32 t = 0;
+
+	for (i = 0; i < 3; i++) {
+		int m = find_om(&fm->om[i]);
+
+		if (m < 0)
+			return m;
+		t = (t >> 5) | (m << 10);
+	}
+	return find_mptr(t);
+}
+
+static int pixfmt_to_i(uint32_t fmt)
 {
 	switch (fmt) {
 	case IPU_PIX_FMT_GENERIC:
 	case IPU_PIX_FMT_RGB24:
-		return 0;
+		return  I_IPU_PIX_FMT_RGB24;
 	case IPU_PIX_FMT_RGB666:
-		return 1;
+		return I_IPU_PIX_FMT_RGB666;
 	case IPU_PIX_FMT_YUV444:
-		return 2;
+		return I_IPU_PIX_FMT_YUV444;
 	case IPU_PIX_FMT_RGB565:
-		return 3;
+		return I_IPU_PIX_FMT_RGB565;
 	case IPU_PIX_FMT_LVDS666:
-		return 4;
+		return I_IPU_PIX_FMT_LVDS666;
+//	case IPU_PIX_FMT_VYUY:
+//		return I_IPU_PIX_FMT_VYUY_1;
+//	case IPU_PIX_FMT_BT1120:
+//		return I_IPU_PIX_FMT_BT1120_1;
+//	case IPU_PIX_FMT_BT656:
+//		return I_IPU_PIX_FMT_BT656_1;
 	case IPU_PIX_FMT_UYVY:
-		return 8;
+		return I_IPU_PIX_FMT_UYVY_1;
 	case IPU_PIX_FMT_YUYV:
-		return 10;
+		return I_IPU_PIX_FMT_YUYV_1;
+//	case IPU_PIX_FMT_YVYU:
+//		return I_IPU_PIX_FMT_YVYU_1;
+//	case IPU_PIX_FMT_GBR24:
+//	case IPU_PIX_FMT_VYU444:
+//		return I_IPU_PIX_FMT_GBR24;
+	case IPU_PIX_FMT_BGR24:
+		return I_IPU_PIX_FMT_BGR24;
 	}
+	return -EINVAL;
+}
 
-	return -1;
+static int ipu_pixfmt_to_map(uint32_t fmt, int *mappings)
+{
+	int i = pixfmt_to_i(fmt);
+	int ret;
+
+	if (i < 0)
+		return i;
+
+	ret = do_mapping(i++);
+	if (ret < 0)
+		return ret;
+	*mappings++ = ret;
+	if (i > I_IPU_PIX_FMT_2CYCLE_START) {
+		ret = do_mapping(i++);
+		if (ret < 0)
+			return ret;
+		*mappings++ = ret;
+		if (i > I_IPU_PIX_FMT_3CYCLE_START) {
+			ret = do_mapping(i++);
+			if (ret < 0)
+				return ret;
+			*mappings++ = ret;
+		}
+	}
+	return 0;
 }
 
 /*
@@ -919,7 +1001,8 @@ int32_t ipu_init_sync_panel(int disp, uint32_t pixel_clk,
 	uint32_t di_gen, vsync_cnt;
 	uint32_t div, rounded_pixel_clk;
 	uint32_t h_total, v_total;
-	int map;
+	int map[3] = {0, 0, 0};
+	int ret;
 	struct clk *di_parent;
 
 	debug("panel size = %d x %d\n", width, height);
@@ -980,10 +1063,10 @@ int32_t ipu_init_sync_panel(int disp, uint32_t pixel_clk,
 	ipu_di_data_wave_config(disp, SYNC_WAVE, div - 1, div - 1);
 	ipu_di_data_pin_config(disp, SYNC_WAVE, DI_PIN15, 3, 0, div * 2);
 
-	map = ipu_pixfmt_to_map(pixel_fmt);
-	if (map < 0) {
+	ret = ipu_pixfmt_to_map(pixel_fmt, map);
+	if (ret < 0) {
 		debug("IPU_DISP: No MAP\n");
-		return -EINVAL;
+		return ret;
 	}
 
 	di_gen = __raw_readl(DI_GENERAL(disp));
@@ -1155,7 +1238,7 @@ int32_t ipu_init_sync_panel(int disp, uint32_t pixel_clk,
 		di_gen |= DI_GEN_POLARITY_5;
 		di_gen |= DI_GEN_POLARITY_8;
 	} else {
-		int mc1, mc2;
+		int mc = disp ? DC_MCODE_DI1 : DC_MCODE_DI0;
 
 		/* Setup internal HSYNC waveform */
 		ipu_di_sync_config(disp, 1, h_total - 1, DI_SYNC_CLK,
@@ -1204,19 +1287,17 @@ int32_t ipu_init_sync_panel(int disp, uint32_t pixel_clk,
 		__raw_writel(0, DI_STP_REP9(disp));
 
 		/* Init template microcode */
-		mc1 = disp ? 2 : 5;
-		mc2 = disp ? 8 : 10;
 		if ((pixel_fmt == IPU_PIX_FMT_YUYV) ||
 		    (pixel_fmt == IPU_PIX_FMT_UYVY)) {
-			printf("%s: map %d %d, %d %d\n", __func__, map-1, mc2, map, mc2+1);
-			ipu_dc_write_tmpl(mc2++, WROD(0), 0, (map - 1), SYNC_WAVE, 0, 5);
-			ipu_dc_write_tmpl(mc2, WROD(0), 0, map, SYNC_WAVE, 0, 5);
+			printf("%s: map %d %d\n", __func__, map[0], map[1]);
+			ipu_dc_write_tmpl(mc + MCI_EVEN_UGDE, WROD(0), 0, map[0], SYNC_WAVE, 0, 5);
+			ipu_dc_write_tmpl(mc + MCI_ODD_UGDE, WROD(0), 0, map[1], SYNC_WAVE, 0, 5);
 			/* configure user events according to DISP NUM */
 			__raw_writel((width - 1), DC_UGDE_3(disp));
 		}
-		ipu_dc_write_tmpl(mc1++, WROD(0), 0, map, SYNC_WAVE, 8, 5);
-		ipu_dc_write_tmpl(mc1++, WROD(0), 0, map, SYNC_WAVE, 4, 5);
-		ipu_dc_write_tmpl(mc1, WROD(0), 0, map, SYNC_WAVE, 0, 5);
+		ipu_dc_write_tmpl(mc + MCI_NL, WROD(0), 0, map[0], SYNC_WAVE, 8, 5);
+		ipu_dc_write_tmpl(mc + MCI_EOL, WROD(0), 0, map[0], SYNC_WAVE, 4, 5);
+		ipu_dc_write_tmpl(mc + MCI_NEW_DATA, WROD(0), 0, map[0], SYNC_WAVE, 0, 5);
 
 		if (sig.Hsync_pol)
 			di_gen |= DI_GEN_POLARITY_2;
