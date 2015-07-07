@@ -509,8 +509,6 @@ int ipu_probe(void)
 	while (__raw_readl(IPU_MEM_RST) & 0x80000000)
 		;
 
-	ipu_init_dc_mappings();
-
 	__raw_writel(0, IPU_INT_CTRL(5));
 	__raw_writel(0, IPU_INT_CTRL(6));
 	__raw_writel(0, IPU_INT_CTRL(9));
@@ -826,6 +824,8 @@ static void ipu_ch_param_init(int ch,
 	struct ipu_ch_param params;
 
 	memset(&params, 0, sizeof(params));
+	debug("%s:pixel_fmt=%x, width=%d, height=%d, stride=%d, u=%d, v=%d, uv_stride=%d\n",
+			__func__, pixel_fmt, width, height, stride, u, v, uv_stride);
 
 	ipu_ch_param_set_field(&params, 0, 125, 13, width - 1);
 
@@ -1020,7 +1020,7 @@ int32_t ipu_init_channel_buffer(ipu_channel_t channel, ipu_buffer_t type,
 	uint32_t reg;
 	uint32_t dma_chan;
 
-	printf("%s: chan=0x%08x, pixel_fmt=%x\n", __func__, channel, pixel_fmt);
+	debug("%s: chan=0x%08x, pixel_fmt=%x\n", __func__, channel, pixel_fmt);
 	dma_chan = channel_2_dma(channel, type);
 	if (!idma_is_valid(dma_chan))
 		return -EINVAL;
