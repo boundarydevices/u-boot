@@ -458,7 +458,8 @@ static void enable_lvds(struct display_info_t const *dev)
 	gpio_direction_output(LVDS_BACKLIGHT_PWM, 1);
 }
 
-static struct display_info_t const display = {
+struct display_info_t const displays[] = {
+{
 	.bus	= 0,
 	.addr	= 0,
 	.pixfmt	= IPU_PIX_FMT_RGB24,
@@ -478,28 +479,14 @@ static struct display_info_t const display = {
 		.sync           = FB_SYNC_EXT,
 		.vmode          = FB_VMODE_NONINTERLACED
 	}
+},
 };
+
+size_t display_count = ARRAY_SIZE(displays);
 
 int board_cfb_skip(void)
 {
-	return 1;
-}
-
-int board_video_skip(void)
-{
-	int ret;
-	ret = ipuv3_fb_init(&display.mode, 0,
-			    display.pixfmt);
-	if (!ret) {
-		display.enable(&display);
-		printf("Display: %s (%ux%u)\n",
-		       display.mode.name,
-		       display.mode.xres,
-		       display.mode.yres);
-	}
-	if (!ret)
-		splash_screen_prepare();
-	return (0 != ret);
+	return NULL != getenv("novideo");
 }
 
 static void setup_display(void)
@@ -510,10 +497,10 @@ static void setup_display(void)
 
 	int reg;
 
+	enable_ipu_clock();
 	/* Turn on LDB0,IPU,IPU DI0 clocks */
 	reg = __raw_readl(&mxc_ccm->CCGR3);
-	reg |=   MXC_CCM_CCGR3_IPU1_IPU_DI0_OFFSET
-		|MXC_CCM_CCGR3_LDB_DI0_MASK;
+	reg |= MXC_CCM_CCGR3_LDB_DI0_MASK;
 	writel(reg, &mxc_ccm->CCGR3);
 
 	/* Turn on HDMI PHY clock */
