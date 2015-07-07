@@ -257,7 +257,6 @@ int ipu_probe(void);
 bool ipu_clk_enabled(void);
 
 void ipu_dmfc_init(int dmfc_type, int first);
-void ipu_init_dc_mappings(void);
 void ipu_dmfc_set_wait4eot(int dma_chan, int width);
 void ipu_dc_init(int dc_chan, int di, unsigned char interlaced, uint32_t pixel_fmt);
 void ipu_dc_uninit(int dc_chan);
