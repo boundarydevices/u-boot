@@ -714,6 +714,26 @@ struct display_info_t const displays[] = {
 		.sync           = FB_SYNC_EXT,
 		.vmode          = FB_VMODE_NONINTERLACED
 } }, {
+	.bus	= 0,
+	.addr	= 0,
+	.pixfmt	= IPU_PIX_FMT_RGB24,
+	.detect	= 0,
+	.enable	= enable_lvds,
+	.mode	= {
+		.name           = "AA065VE11",
+		.refresh        = 70,
+		.xres           = 640,
+		.yres           = 480,
+		.pixclock       = 22858,	/* 1000000000000 /1000 / 625 / 70 = 22857.1, 23000 works 23100 doesn't */
+		.left_margin    = 48 + 100,
+		.right_margin   = 16 + 100,
+		.upper_margin   = 33 + 50,
+		.lower_margin   = 10 + 50,
+		.hsync_len      = 96,
+		.vsync_len      = 2,
+		.sync           = FB_SYNC_EXT,
+		.vmode          = FB_VMODE_NONINTERLACED
+} }, {
 	.bus	= 2,
 	.addr	= 0x48,
 	.pixfmt	= IPU_PIX_FMT_RGB666,
