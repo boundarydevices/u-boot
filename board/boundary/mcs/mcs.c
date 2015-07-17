@@ -706,3 +706,11 @@ int misc_init_r(void)
 	add_board_boot_modes(board_boot_modes);
 	return 0;
 }
+
+int board_late_init(void)
+{
+	int cpurev = get_cpu_rev();
+
+	setenv("cpu",get_imx_type((cpurev & 0xFF000) >> 12));
+	return 0;
+}
