@@ -712,5 +712,7 @@ int board_late_init(void)
 	int cpurev = get_cpu_rev();
 
 	setenv("cpu",get_imx_type((cpurev & 0xFF000) >> 12));
+	if (getenv("board") == 0)
+		setenv("board", "mcs");
 	return 0;
 }
