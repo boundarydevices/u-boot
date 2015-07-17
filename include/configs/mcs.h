@@ -164,6 +164,7 @@
 #define CONFIG_DRIVE_TYPES CONFIG_DRIVE_MMC
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
+	"board=mcs\0" \
 	"console=ttymxc1\0" \
 	"disable_giga=1\0" \
 	"clearenv=if sf probe || sf probe || sf probe 1 ; then " \
