@@ -529,30 +529,6 @@ static void enable_rgb(struct display_info_t const *dev)
 }
 
 struct display_info_t const displays[] = {
-#ifdef CONFIG_MXC_SPI_DISPLAY
-{
-	.bus	= 1,
-	.addr	= 0x70,
-	.pixfmt	= IPU_PIX_FMT_RGB24,
-	.detect	= detect_spi,
-	.enable	= enable_spi_rgb,
-	.mode	= {
-		.name           = "AUO_G050",
-		.refresh        = 60,
-		.xres           = 480,
-		.yres           = 800,
-		.pixclock       = 1000000000/516 * 1000 /836/60, /* 38636 */
-		.left_margin    = 18,
-		.right_margin   = 16,
-		.upper_margin   = 18,
-		.lower_margin   = 16,
-		.hsync_len      = 2,
-		.vsync_len      = 2,
-		.sync           = 0,
-		.vmode          = FB_VMODE_NONINTERLACED
-	},
-},
-#endif
 {
 	.bus	= 1,
 	.addr	= 0x50,
@@ -853,7 +829,32 @@ struct display_info_t const displays[] = {
 		.vsync_len      = 3,
 		.sync           = 0,
 		.vmode          = FB_VMODE_NONINTERLACED
-} } };
+} },
+#ifdef CONFIG_MXC_SPI_DISPLAY
+{
+	.bus	= 1,
+	.addr	= 0x70,
+	.pixfmt	= IPU_PIX_FMT_RGB24,
+	.detect	= detect_spi,
+	.enable	= enable_spi_rgb,
+	.mode	= {
+		.name           = "AUO_G050",
+		.refresh        = 60,
+		.xres           = 480,
+		.yres           = 800,
+		.pixclock       = 1000000000/516 * 1000 /836/60, /* 38636 */
+		.left_margin    = 18,
+		.right_margin   = 16,
+		.upper_margin   = 18,
+		.lower_margin   = 16,
+		.hsync_len      = 2,
+		.vsync_len      = 2,
+		.sync           = 0,
+		.vmode          = FB_VMODE_NONINTERLACED
+	},
+},
+#endif
+};
 
 size_t display_count = ARRAY_SIZE(displays);
 
