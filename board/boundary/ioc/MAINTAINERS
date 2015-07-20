@@ -1,0 +1,6 @@
+LS BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/ioc/
+F:	include/configs/ioc.h
+F:	configs/ioc_defconfig
