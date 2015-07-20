@@ -402,6 +402,9 @@ config TARGET_H
 config TARGET_INSP
 	bool "Support INSP"
 
+config TARGET_IOC
+	bool "Support ioc"
+
 config TARGET_LS
 	bool "Support ls"
 
@@ -665,6 +668,7 @@ source "board/boundary/dash/Kconfig"
 source "board/boundary/eo/Kconfig"
 source "board/boundary/h/Kconfig"
 source "board/boundary/insp/Kconfig"
+source "board/boundary/ioc/Kconfig"
 source "board/boundary/ls/Kconfig"
 source "board/boundary/mcs/Kconfig"
 source "board/boundary/med/Kconfig"
