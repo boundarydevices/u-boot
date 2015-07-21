@@ -383,7 +383,7 @@ struct display_info_t const displays[] = {
 {
 	.bus	= 2,
 	.addr	= 0x48,
-	.pixfmt	= IPU_PIX_FMT_RGB666,
+	.pixfmt	= IPU_PIX_FMT_RGB24,
 	.detect	= detect_i2c,
 	.enable	= enable_rgb,
 	.mode	= {
