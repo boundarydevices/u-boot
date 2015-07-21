@@ -318,7 +318,6 @@ int board_mmc_init(bd_t *bis)
 int board_spi_cs_gpio(unsigned bus, unsigned cs)
 {
 	int gp = (bus == 0 && cs == 0) ? GP_ECSPI1_NOR_CS : -1;
-	printf("%s: return GP(%d) for spi bus %d, chip select %d\n", __func__, gp, bus, cs);
 	return gp;
 }
 #endif
