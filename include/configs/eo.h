@@ -196,7 +196,7 @@
 #define CONFIG_DRIVE_USB
 #endif
 
-#define CONFIG_DRIVE_TYPES CONFIG_DRIVE_MMC CONFIG_DRIVE_USB
+#define CONFIG_DRIVE_TYPES CONFIG_DRIVE_USB CONFIG_DRIVE_MMC
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	"bootdevs=" CONFIG_DRIVE_TYPES "\0" \
@@ -204,6 +204,7 @@
 	"clearenv=if sf probe || sf probe || sf probe 1 ; then " \
 		"sf erase 0xc0000 0x2000 && " \
 		"echo restored environment to factory default ; fi\0" \
+	"disable_fec=1\0" \
 	"bootcmd=for dtype in ${bootdevs}" \
 		"; do " \
 		        "if itest.s \"xusb\" == \"x${dtype}\" ; then " \
