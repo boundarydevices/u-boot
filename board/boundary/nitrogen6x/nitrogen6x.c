@@ -1052,9 +1052,12 @@ static char const *board_type = "uninitialized";
 
 int checkboard(void)
 {
-#ifdef CONFIG_NITROGEN6X_FL
+#if defined(CONFIG_NITROGEN6X_FL)
 	puts("Board: Nitrogen6X_fl\n");
 	board_type = "nitrogen6x_fl";
+#elif defined(CONFIG_BOARD_NAME) && defined(CONFIG_BOARD_TYPE)
+	puts("Board: " CONFIG_BOARD_NAME "\n");
+	board_type = CONFIG_BOARD_TYPE ;
 #else
 	if (gpio_get_value(WL12XX_WL_IRQ_GP)) {
 		puts("Board: Nitrogen6X\n");
