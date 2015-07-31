@@ -387,12 +387,11 @@ struct mxc_ccm_reg {
 #define CHSCCDR_IPU_PRE_CLK_540M_PFD			5
 
 /* Define the bits in register CSCDR2 */
+#define MXC_CCM_CSCDR2_ECSPI_CLK_PODF_MASK		(0x3F << 19)
+#define MXC_CCM_CSCDR2_ECSPI_CLK_PODF_OFFSET	19
 #ifdef CONFIG_MX6QP
 #define MXC_CCM_CSCDR2_ECSPI_CLK_SEL_MASK		(0x1 << 18)
 #define MXC_CCM_CSCDR2_ECSPI_CLK_SEL_OFFSET		18
-#else
-#define MXC_CCM_CSCDR2_ECSPI_CLK_PODF_MASK		(0x3F << 19)
-#define MXC_CCM_CSCDR2_ECSPI_CLK_PODF_OFFSET		19
 #endif
 
 /* All IPU2_DI1 are LCDIF1 on MX6SX */
