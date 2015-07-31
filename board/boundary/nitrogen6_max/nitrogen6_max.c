@@ -313,13 +313,13 @@ static struct i2c_pads_info i2c_pads[] = {
 }, {
 	/* I2C1, SGTL5000 */
 	.scl = {
-		.i2c_mode = MX6DL_PAD_EIM_D21__I2C1_SCL | PC,
-		.gpio_mode = MX6DL_PAD_EIM_D21__GPIO3_IO21 | PC,
+		.i2c_mode = MX6Q_PAD_EIM_D21__I2C1_SCL | PC,
+		.gpio_mode = MX6Q_PAD_EIM_D21__GPIO3_IO21 | PC,
 		.gp = IMX_GPIO_NR(3, 21)
 	},
 	.sda = {
-		.i2c_mode = MX6DL_PAD_EIM_D28__I2C1_SDA | PC,
-		.gpio_mode = MX6DL_PAD_EIM_D28__GPIO3_IO28 | PC,
+		.i2c_mode = MX6Q_PAD_EIM_D28__I2C1_SDA | PC,
+		.gpio_mode = MX6Q_PAD_EIM_D28__GPIO3_IO28 | PC,
 		.gp = IMX_GPIO_NR(3, 28)
 	}
 }, {
@@ -337,13 +337,13 @@ static struct i2c_pads_info i2c_pads[] = {
 }, {
 	/* I2C2 Camera, MIPI */
 	.scl = {
-		.i2c_mode = MX6DL_PAD_KEY_COL3__I2C2_SCL | PC,
-		.gpio_mode = MX6DL_PAD_KEY_COL3__GPIO4_IO12 | PC,
+		.i2c_mode = MX6Q_PAD_KEY_COL3__I2C2_SCL | PC,
+		.gpio_mode = MX6Q_PAD_KEY_COL3__GPIO4_IO12 | PC,
 		.gp = IMX_GPIO_NR(4, 12)
 	},
 	.sda = {
-		.i2c_mode = MX6DL_PAD_KEY_ROW3__I2C2_SDA | PC,
-		.gpio_mode = MX6DL_PAD_KEY_ROW3__GPIO4_IO13 | PC,
+		.i2c_mode = MX6Q_PAD_KEY_ROW3__I2C2_SDA | PC,
+		.gpio_mode = MX6Q_PAD_KEY_ROW3__GPIO4_IO13 | PC,
 		.gp = IMX_GPIO_NR(4, 13)
 	}
 }, {
@@ -361,13 +361,13 @@ static struct i2c_pads_info i2c_pads[] = {
 }, {
 	/* I2C3, J15 - RGB connector */
 	.scl = {
-		.i2c_mode = MX6DL_PAD_GPIO_5__I2C3_SCL | PC,
-		.gpio_mode = MX6DL_PAD_GPIO_5__GPIO1_IO05 | PC,
+		.i2c_mode = MX6Q_PAD_GPIO_5__I2C3_SCL | PC,
+		.gpio_mode = MX6Q_PAD_GPIO_5__GPIO1_IO05 | PC,
 		.gp = IMX_GPIO_NR(1, 5)
 	},
 	.sda = {
-		.i2c_mode = MX6DL_PAD_GPIO_16__I2C3_SDA | PC,
-		.gpio_mode = MX6DL_PAD_GPIO_16__GPIO7_IO11 | PC,
+		.i2c_mode = MX6Q_PAD_GPIO_16__I2C3_SDA | PC,
+		.gpio_mode = MX6Q_PAD_GPIO_16__GPIO7_IO11 | PC,
 		.gp = IMX_GPIO_NR(7, 11)
 	}
 }};
