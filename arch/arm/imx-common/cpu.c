@@ -116,9 +116,15 @@ const char *get_imx_type(u32 imxtype)
 {
 	switch (imxtype) {
 	case MXC_CPU_MX6Q:
-		return "6Q";	/* Quad-core version of the mx6 */
+		if (is_soc_rev(CHIP_REV_2_0) >= 0)
+			return "6QP";	/* Quad-core Plus version of the mx6 */
+		else
+			return "6Q";	/* Quad-core version of the mx6 */
 	case MXC_CPU_MX6D:
-		return "6D";	/* Dual-core version of the mx6 */
+		if (is_soc_rev(CHIP_REV_2_0) >= 0)
+			return "6DP";	/* Dual-core Plus version of the mx6 */
+		else
+			return "6D";	/* Dual-core version of the mx6 */
 	case MXC_CPU_MX6DL:
 		return "6DL";	/* Dual Lite version of the mx6 */
 	case MXC_CPU_MX6SOLO:
@@ -144,7 +150,7 @@ int print_cpuinfo(void)
 
 #if defined(CONFIG_MX6)
 	if (is_mx6dqp()) {
-		printf("CPU:   Freescale i.MX%sP rev%d.%d at %d MHz\n",
+		printf("CPU:   Freescale i.MX%s rev%d.%d at %d MHz\n",
 			get_imx_type((cpurev & 0xFF000) >> 12),
 			((cpurev & 0x000F0) >> 4) - 1,
 			(cpurev & 0x0000F) >> 0,
