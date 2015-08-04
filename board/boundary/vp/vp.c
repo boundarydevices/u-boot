@@ -587,6 +587,9 @@ static unsigned short gpios_out_low[] = {
 static unsigned short gpios_out_high[] = {
 	GP_ECSPI1_CS1,
 	GP_I2C3_MAX77818_EN,
+};
+
+static unsigned short gpios_out_high2[] = {
 	GP_5V_EN,
 };
 
@@ -711,6 +714,7 @@ int board_init(void)
 	}
 	i2c_set_bus_num(orig_i2c_bus);
 
+	set_gpios(gpios_out_high2, ARRAY_SIZE(gpios_out_high2), 1);
 #if defined(CONFIG_VIDEO_IPUV3)
 	setup_display();
 #endif
