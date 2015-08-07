@@ -14,6 +14,8 @@ if itest.s "x" == "x$dtbname" ; then
 		dtbname=${dtbname}dl-;
 	elif itest.s x6DL == "x$cpu" ; then
 		dtbname=${dtbname}dl-;
+	elif itest.s x6QP == "x$cpu" ; then
+		dtbname=${dtbname}qp-;
 	else
 		dtbname=${dtbname}q-;
 	fi
