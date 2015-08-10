@@ -4,51 +4,484 @@
 
 #include <common.h>
 #include <asm/errno.h>
+#include <asm/arch/mxc_hdmi.h>
 #include <asm/imx-common/video.h>
+#include <asm/io.h>
+#include <div64.h>
+#include <malloc.h>
+#include <video_fb.h>
+/*
+ * This creates commands strings to work on dtb files.
+ * i.e. if you define the following environment variables
+ *
+ * setenv fb_hdmi 1920x1080M@60
+ * setenv fb_lcd *off
+ * setenv fb_lvds lg1280x800
+ *
+ * Note: the "*" means u-boot should enable this display, in this case none.
+ *
+ * you'll get the follow strings if cmd_frozen is not defined.
+ * cmd_hdmi=fdt set fb_hdmi status okay;fdt set fb_hdmi mode_str 1920x1080M@60;
+ *
+ * cmd_lcd=fdt set fb_lcd status disabled
+ *
+ * cmd_lvds=fdt set fb_lvds status okay;
+ * 	fdt set fb_lvds interface_pix_fmt RGB24;
+ * 	fdt set ldb/lvds-channel@0 fsl,data-width <24>;
+ * 	fdt set ldb/lvds-channel@0 fsl,data-mapping jeida;
+ * 	fdt rm ldb split-mode;
+ * 	fdt set t_lvds clock-frequency <71107200>;
+ * 	fdt set t_lvds hactive <1280>;
+ * 	fdt set t_lvds vactive <800>;
+ * 	fdt set t_lvds hback-porch <48>;
+ * 	fdt set t_lvds hfront-porch <80>;
+ * 	fdt set t_lvds vback-porch <15>;
+ * 	fdt set t_lvds vfront-porch <2>;
+ * 	fdt set t_lvds hsync-len <32>;
+ * 	fdt set t_lvds vsync-len <6>;
+ *
+ * cmd_lvds2=fdt set fb_lvds2 status disabled
+ *
+ *
+ * These strings are then used in 6x_bootscript to configure displays
+ *
+ * The following aliases should be defined in the dtb if possible
+ * fb_hdmi, fb_lcd, fb_lvds, fb_lvds2
+ * lcd
+ * ldb
+ * t_lvds, t_lvds2
+ */
+static const char *const fbnames[] = {
+[FB_HDMI] = "fb_hdmi",
+[FB_LCD] = "fb_lcd",
+[FB_LVDS] = "fb_lvds",
+[FB_LVDS2] = "fb_lvds2"
+};
+
+static const char *const timings_names[] = {
+[FB_HDMI] = "t_hdmi",
+[FB_LCD] = "t_lcd",
+[FB_LVDS] = "t_lvds",
+[FB_LVDS2] = "t_lvds2"
+};
+
+static const char *const ch_names[] = {
+[FB_HDMI] = "",
+[FB_LCD] = "",
+[FB_LVDS] = "ldb/lvds-channel@0",
+[FB_LVDS2] = "ldb/lvds-channel@1"
+};
+
+static const char *const cmd_fbnames[] = {
+[FB_HDMI] = "cmd_hdmi",
+[FB_LCD] = "cmd_lcd",
+[FB_LVDS] = "cmd_lvds",
+[FB_LVDS2] = "cmd_lvds2"
+};
+
+static const char *const short_names[] = {
+[FB_HDMI] = "hdmi",
+[FB_LCD] = "lcd",
+[FB_LVDS] = "lvds",
+[FB_LVDS2] = "lvds2"
+};
+
+static const char *const timings_properties[] = {
+"clock-frequency",
+"hactive",
+"vactive",
+"hback-porch",
+"hfront-porch",
+"vback-porch",
+"vfront-porch",
+"hsync-len",
+"vsync-len",
+};
+
+static const int timings_offsets[] = {
+	offsetof(struct fb_videomode, pixclock),
+	offsetof(struct fb_videomode, xres),
+	offsetof(struct fb_videomode, yres),
+	offsetof(struct fb_videomode, left_margin),
+	offsetof(struct fb_videomode, right_margin),
+	offsetof(struct fb_videomode, upper_margin),
+	offsetof(struct fb_videomode, lower_margin),
+	offsetof(struct fb_videomode, hsync_len),
+	offsetof(struct fb_videomode, vsync_len),
+};
+
+static unsigned get_fb_available_mask(void)
+{
+	unsigned mask = 0;
+	const struct display_info_t *di = displays;
+	int i;
+
+	for (i = 0; i < display_count; i++, di++)
+		mask |= (1 << di->fbtype);
+
+	return mask;
+}
+
+static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf, int size)
+{
+	const char *mode_str = NULL;
+	int i;
+	int sz;
+	const char *buf_start = buf;
+	const struct fb_videomode *mode;
+
+	if (getenv("cmd_frozen") && getenv(cmd_fbnames[fb]))
+		return;		/* don't override if already set */
+
+	if (!di) {
+		const char *name = getenv(fbnames[fb]);
+		if (name) {
+			if (name[0] == '*')
+				name++;
+			if (strcmp(name, "off")) {
+				/* Not off and not in list, assume mode_str value */
+				mode_str = name;
+			}
+		}
+		if (!mode_str) {
+			snprintf(buf, size, "fdt set %s status disabled", fbnames[fb]);
+			setenv(cmd_fbnames[fb], buf);
+			return;
+		}
+	} else {
+		if (di->fbflags & FBF_MODESTR)
+			mode_str = di->mode.name;
+	}
+
+	sz = snprintf(buf, size, "fdt set %s status okay;", fbnames[fb]);
+	buf += sz;
+	size -= sz;
+
+	if (di && ((fb == FB_LCD) || (fb == FB_LVDS) || (fb == FB_LVDS2))) {
+		sz = snprintf(buf, size, "fdt set %s interface_pix_fmt %s;", fbnames[fb],
+				(di->pixfmt == IPU_PIX_FMT_RGB24) ? "RGB24" : "RGB666");
+		buf += sz;
+		size -= sz;
+	}
+
+	if (di && (fb == FB_LCD)) {
+		sz = snprintf(buf, size, "fdt set lcd interface_pix_fmt %s;",
+				(di->pixfmt == IPU_PIX_FMT_RGB24) ? "RGB24" : "RGB666");
+		buf += sz;
+		size -= sz;
+	}
+
+	if (di && ((fb == FB_LVDS) || (fb == FB_LVDS2))) {
+
+		sz = snprintf(buf, size, "fdt set %s fsl,data-width <%u>;",
+				ch_names[fb],
+				(di->pixfmt == IPU_PIX_FMT_LVDS666) ? 18 : 24);
+		buf += sz;
+		size -= sz;
+
+		sz = snprintf(buf, size, "fdt set %s fsl,data-mapping %s;",
+				ch_names[fb],
+				(di->fbflags & FBF_JEIDA) ? "jeida" : "spwg");
+		buf += sz;
+		size -= sz;
+
+		if (di->fbflags & FBF_SPLITMODE) {
+			sz = snprintf(buf, size, "fdt set ldb split-mode 1;");
+			buf += sz;
+			size -= sz;
+		}
+	}
+
+	if (mode_str) {
+		snprintf(buf, size, "fdt set %s mode_str %s;", fbnames[fb], mode_str);
+		setenv(cmd_fbnames[fb], buf_start);
+		return;
+	}
+
+	mode = &di->mode;
+	for (i = 0; i < ARRAY_SIZE(timings_properties); i++) {
+		u32 *p = (u32 *)((char *)mode + timings_offsets[i]);
+		u32 val;
+
+		if (i == 0) {
+			u64 lval = 1000000000000ULL;
+
+			do_div(lval, mode->pixclock);
+			val = (u32)lval;
+		} else {
+			val = *p;
+		}
+		sz = snprintf(buf, size, "fdt set %s %s <%u>;", timings_names[fb], timings_properties[i], val);
+		buf += sz;
+		size -= sz;
+	}
+	setenv(cmd_fbnames[fb], buf_start);
+}
+
+static const struct display_info_t *find_panel(unsigned fb, const char *name)
+{
+	const struct display_info_t *di = displays;
+	int i;
+
+	for (i = 0; i < display_count; i++, di++) {
+		if ((fb == di->fbtype) && !strcmp(name, di->mode.name))
+			return di;
+	}
+	return NULL;
+}
+
+static char g_mode_str[4][80];
+static struct display_info_t g_di_temp[FB_COUNT];
+
+void enable_fb(struct display_info_t const *di)
+{
+	struct iomuxc *iomux = (struct iomuxc *)IOMUXC_BASE_ADDR;
+	u32 reg;
+
+	switch (di->fbtype) {
+	case FB_HDMI:
+		imx_enable_hdmi_phy();
+		board_enable_hdmi(di);
+		break;
+	case FB_LCD:
+		board_enable_lcd(di);
+		break;
+	case FB_LVDS:
+		reg = readl(&iomux->gpr[2]);
+		reg &= ~(IOMUXC_GPR2_DATA_WIDTH_CH0_24BIT | IOMUXC_GPR2_BIT_MAPPING_CH0_JEIDA);
+		if (di->pixfmt == IPU_PIX_FMT_RGB24)
+			reg |= IOMUXC_GPR2_DATA_WIDTH_CH0_24BIT;
+		if (di->fbflags & FBF_JEIDA)
+			reg |= IOMUXC_GPR2_BIT_MAPPING_CH0_JEIDA;
+		writel(reg, &iomux->gpr[2]);
+		board_enable_lvds(di);
+		break;
+	case FB_LVDS2:
+		reg = readl(&iomux->gpr[2]);
+		reg &= ~(IOMUXC_GPR2_DATA_WIDTH_CH1_24BIT | IOMUXC_GPR2_BIT_MAPPING_CH1_JEIDA);
+		if (di->pixfmt == IPU_PIX_FMT_RGB24)
+			reg |= IOMUXC_GPR2_DATA_WIDTH_CH1_24BIT;
+		if (di->fbflags & FBF_JEIDA)
+			reg |= IOMUXC_GPR2_BIT_MAPPING_CH1_JEIDA;
+		writel(reg, &iomux->gpr[2]);
+		board_enable_lvds2(di);
+		break;
+	}
+
+}
+
+static const struct display_info_t * parse_mode(const char *p, unsigned fb, unsigned *prefer)
+{
+	char c;
+	char *endp;
+	unsigned value;
+	int i;
+	struct display_info_t *di;
+	char *mode_str = g_mode_str[fb];
+
+	if (*p == '*') {
+		p++;
+		*prefer = 1;
+	}
+	if (!strcmp(p, "off")) {
+		*prefer |= 2;
+		return NULL;
+	}
+
+	i = 0;
+	while (i < 80 - 1) {
+		c = *p;
+		if (c)
+			p++;
+		if (!c || (c == ':')) {
+			break;
+		}
+		mode_str[i++] = c;
+	}
+	mode_str[i] = 0;
+	c = *p;
+	if (!c) {
+		return find_panel(fb, mode_str);
+	}
+	di = &g_di_temp[fb];
+	memset(di, 0, sizeof(*di));
+
+	di->fbtype = fb;
+	di->mode.name = mode_str;
+	di->enable = enable_fb;
+
+	if (c == 'm') {
+		di->fbflags |= FBF_MODESTR;
+		p++;
+		c = *p;
+	}
+	if (c == 'j') {
+		di->fbflags |= FBF_JEIDA;
+		p++;
+		c = *p;
+	}
+	if (c == 's') {
+		di->fbflags |= FBF_SPLITMODE;
+		p++;
+		c = *p;
+	}
+	value = simple_strtoul(p, &endp, 10);
+	if (endp <= p) {
+		printf("expecting 18|24\n");
+		return NULL;
+	}
+	if ((value != 18) && (value != 24)) {
+		printf("expecting 18|24, found %d\n", value);
+		return NULL;
+	}
+	p = endp;
+	di->pixfmt = (value == 24) ? IPU_PIX_FMT_RGB24 : (di->fbtype >= FB_LVDS) ?
+			IPU_PIX_FMT_LVDS666 : IPU_PIX_FMT_RGB666;
+	c = *p;
+	if (*p != ':') {
+		printf("expected ':', %s\n", p);
+		return NULL;
+	}
+	p++;
+
+	for (i = 0; i < ARRAY_SIZE(timings_properties); i++) {
+		u32 *dest = (u32 *)((char *)&di->mode + timings_offsets[i]);
+		u32 val;
+
+		val = simple_strtoul(p, &endp, 10);
+		if (endp <= p) {
+			printf("expecting integer:%s\n", p);
+			return NULL;
+		}
+		if (i == 0) {
+			u64 lval = 1000000000000ULL;
+
+			do_div(lval, val);
+			val = (u32)lval;
+		}
+		*dest = val;
+		p = endp;
+		if (*p == ',')
+			p++;
+		if (*p == ' ')
+			p++;
+	}
+	if (*p) {
+		printf("extra parameters found:%s\n", p);
+		return NULL;
+	}
+	return di;
+}
+
+static const struct display_info_t *find_disp(unsigned fb, unsigned *prefer)
+{
+	int i;
+	const char *name = getenv(fbnames[fb]);
+	const struct display_info_t *di = displays;
+
+	if (name) {
+		di = parse_mode(name, fb, prefer);
+		if (di)
+			return di;
+		if (!(*prefer & 2))
+			printf("No match, assuming mode_str: %s\n", name);
+		return NULL;
+	}
+	/* No specific name requested, lets probe */
+	di = displays;
+	for (i = 0; i < display_count; i++, di++) {
+		if (fb == di->fbtype) {
+			if (di->detect && di->detect(di)) {
+				printf("auto-detected panel %s\n", di->mode.name);
+				return di;
+			}
+		}
+	}
+	return NULL;
+}
+
+static const struct display_info_t *find_first_disp(void)
+{
+	int i;
+	unsigned skip_mask = 0;
+	const struct display_info_t *di = displays;
+
+	for (i = 0; i < display_count; i++, di++) {
+		if (di->fbtype >= FB_COUNT)
+			continue;
+		if (skip_mask & (1 << di->fbtype))
+			continue;
+		if (getenv(fbnames[di->fbtype])) {
+			skip_mask |= (1 << di->fbtype);
+			continue;
+		}
+		return di;
+	}
+	return NULL;
+}
+
+int init_display(const struct display_info_t *di)
+{
+	int ret = ipuv3_fb_init(&di->mode, 0, di->pixfmt);
+	if (ret) {
+		printf("LCD %s cannot be configured: %d\n", di->mode.name, ret);
+		return -EINVAL;
+	}
+	di->enable(di);
+	printf("Display: %s:%s (%ux%u)\n", short_names[di->fbtype],
+			di->mode.name, di->mode.xres, di->mode.yres);
+	return 0;
+}
 
 int board_video_skip(void)
 {
-	int i;
-	int ret;
-	char const *panel = getenv("panel");
-	if (!panel) {
-		for (i = 0; i < display_count; i++) {
-			struct display_info_t const *dev = displays+i;
-			if (dev->detect && dev->detect(dev)) {
-				panel = dev->mode.name;
-				printf("auto-detected panel %s\n", panel);
-				break;
+	const struct display_info_t *disp[FB_COUNT];
+	const struct display_info_t *di = NULL;
+	unsigned prefer_mask = 0;
+	unsigned fb;
+	char *buf = malloc(4096);
+
+	for (fb = 0; fb < ARRAY_SIZE(disp); fb++) {
+		unsigned prefer = 0;
+
+		disp[fb] = find_disp(fb, &prefer);
+		if (prefer & 1)
+			prefer_mask |= (1 << fb);
+	}
+	fb = ffs(prefer_mask) - 1;
+	if (fb < ARRAY_SIZE(disp)) {
+		di = disp[fb];
+	} else {
+		/* default to the 1st one in the list*/
+		for (fb = 0; fb < ARRAY_SIZE(disp); fb++) {
+			if (!di) {
+				di = disp[fb];
+			} else {
+				if (disp[fb] && ((unsigned)disp[fb]
+						< (unsigned)di))
+					di = disp[fb];
 			}
 		}
-		if (!panel) {
-			panel = displays[0].mode.name;
-			printf("No panel detected: default to %s\n", panel);
-			i = 0;
+		if (!di) {
+			di = find_first_disp();
+			if (di)
+				disp[di->fbtype] = di;
 		}
-	} else {
-		for (i = 0; i < display_count; i++) {
-			if (!strcmp(panel, displays[i].mode.name))
-				break;
-		}
-	}
-	if (i < display_count) {
-		ret = ipuv3_fb_init(&displays[i].mode, 0,
-				    displays[i].pixfmt);
-		if (!ret) {
-			displays[i].enable(displays+i);
-			printf("Display: %s (%ux%u)\n",
-			       displays[i].mode.name,
-			       displays[i].mode.xres,
-			       displays[i].mode.yres);
-		} else
-			printf("LCD %s cannot be configured: %d\n",
-			       displays[i].mode.name, ret);
-	} else {
-		printf("unsupported panel %s\n", panel);
-		return -EINVAL;
 	}
 
-	return 0;
+	if (buf) {
+		unsigned mask = get_fb_available_mask();
+
+		for (fb = 0; fb < ARRAY_SIZE(disp); fb++) {
+			if (mask & (1 << fb))
+				setup_cmd_fb(fb, disp[fb], buf, 4096);
+		}
+		free(buf);
+	}
+	if (!di)
+		return -EINVAL;
+
+	return init_display(di);
 }
 
 #ifdef CONFIG_IMX_HDMI
@@ -60,3 +493,179 @@ int detect_hdmi(struct display_info_t const *dev)
 	return readb(&hdmi->phy_stat0) & HDMI_DVI_STAT;
 }
 #endif
+
+static void str_mode(char *p, int size, const struct display_info_t *di, unsigned prefer)
+{
+	int count;
+	int i;
+
+	if (prefer) {
+		*p++ = '*';
+		size--;
+	}
+	if (!di) {
+		count = snprintf(p, size, "off");
+		if (size > count) {
+			p += count;
+			size -= count;
+		}
+		*p = 0;
+		return;
+	}
+	count = snprintf(p, size, "%s:", di->mode.name);
+	if (size > count) {
+		p += count;
+		size -= count;
+	}
+	if (di->fbflags & FBF_MODESTR) {
+		*p++ = 'm';
+		size--;
+	}
+	if (di->fbflags & FBF_JEIDA) {
+		*p++ = 'j';
+		size--;
+	}
+	if (di->fbflags & FBF_SPLITMODE) {
+		*p++ = 's';
+		size--;
+	}
+	count = snprintf(p, size, "%d:", (di->pixfmt == IPU_PIX_FMT_RGB24) ? 24 : 18);
+	if (size > count) {
+		p += count;
+		size -= count;
+	}
+
+	for (i = 0; i < ARRAY_SIZE(timings_properties); i++) {
+		u32 *src = (u32 *)((char *)&di->mode + timings_offsets[i]);
+		u32 val;
+
+		if (i == 0) {
+			u64 lval = 1000000000000ULL;
+
+			do_div(lval, di->mode.pixclock);
+			val = (u32)lval;
+		} else {
+			val = *src;
+			if (size > 1) {
+				*p++ = ',';
+				size--;
+			}
+		}
+		count = snprintf(p, size, "%d", val);
+		if (size > count) {
+			p += count;
+			size -= count;
+		}
+	}
+	*p = 0;
+}
+
+static void print_mode(const struct display_info_t *di, int *len)
+{
+	int i;
+	char format_buf[16];
+	const struct fb_videomode* mode = &di->mode;
+	int fb = di->fbtype;
+	char buf[256];
+
+	str_mode(buf, sizeof(buf), di, 0);
+	printf("%s: %s\n\x09", short_names[fb], buf);
+
+
+	for (i = 0; i < ARRAY_SIZE(timings_properties); i++) {
+		u32 *p = (u32 *)((char *)mode + timings_offsets[i]);
+		u32 val;
+
+		if (i == 0) {
+			u64 lval = 1000000000000ULL;
+
+			do_div(lval, mode->pixclock);
+			val = (u32)lval;
+		} else {
+			val = *p;
+		}
+		snprintf(format_buf, sizeof(format_buf), " %c%du", '%', len[i]);
+		printf(format_buf, val);
+	}
+	printf("\n");
+}
+
+void print_modes(unsigned mask)
+{
+	const struct display_info_t *di = displays;
+	int i;
+	int len[ARRAY_SIZE(timings_properties)];
+
+	/* Print heading */
+	printf("\x09");
+	for (i = 0; i < ARRAY_SIZE(timings_properties); i++) {
+		printf(" %s", timings_properties[i]);
+		len[i] = strlen(timings_properties[i]);
+	}
+	printf("\n");
+
+	for (i = 0; i < display_count; i++, di++) {
+		if (mask & (1 << di->fbtype))
+			print_mode(di, len);
+	}
+}
+
+static int do_fbpanel(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+	int i;
+	const char *fbname;
+	int fb = -1;
+	const char *p;
+	const struct display_info_t* di;
+	char *buf;
+	unsigned prefer;
+	int ret;
+
+	if (argc < 2) {
+		print_modes(0xf);
+                return 0;
+	}
+	fbname = argv[1];
+	for (i = 0; i < ARRAY_SIZE(short_names); i++) {
+		if (!strcmp(short_names[i], fbname)) {
+			fb = i;
+			break;
+		}
+	}
+	if (fb < 0)
+		return CMD_RET_USAGE;
+
+	if (argc < 3) {
+		print_modes(1 << fb);
+		return 0;
+	}
+	p = argv[2];
+	di = parse_mode(p, fb, &prefer);
+	if (!di && !(prefer & 2))
+		return 1;
+
+	buf = malloc(4096);
+	if (buf) {
+		str_mode(buf, 256, di, prefer & 1);
+		setenv(fbnames[fb], buf);
+
+		setup_cmd_fb(fb, di, buf, 4096);
+		free(buf);
+	}
+	if (!(prefer & 1))
+		return 0;
+	ipuv3_fb_shutdown();
+	if (!di)
+		return 0;
+	ret = init_display(di);
+	if (ret)
+		return ret;
+	ipuv3_fb_init2();
+	return ret;
+}
+
+U_BOOT_CMD(fbpanel, 3, 0, do_fbpanel,
+           "show/set panel names available",
+           "fbpanel [hdmi|lcd|lvds|lvds2] [\"[*]mode_str[:[m][j][s][18|24]:pixclkfreq,xres,yres,hback-porch,hfront-porch,vback-porch,vfront-porch,hsync,vsync]\"]\n"
+           "\n"
+           "fbpanel  - show all panels");
