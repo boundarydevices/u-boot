@@ -56,6 +56,11 @@ extern struct clk *g_pixel_clk[2];
 extern unsigned char g_ipu_clk_enabled;
 extern unsigned char g_dc_di_assignment[];
 
+void ipu_dmfc_uninit(void)
+{
+	dmfc_type_setup = 0;
+}
+
 void ipu_dmfc_init(int dmfc_type, int first)
 {
 	u32 dmfc_wr_chan, dmfc_dp_chan;
