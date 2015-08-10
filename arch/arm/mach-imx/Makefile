@@ -46,6 +46,13 @@ endif
 ifeq ($(SOC),$(filter $(SOC),mx5 mx6 mx7))
 obj-$(CONFIG_IMX_VIDEO_SKIP) += video.o
 endif
+
+ifeq ($(SOC),$(filter $(SOC),mx5 mx6 mx7 imx8m imx8ulp))
+ifeq ($(CONFIG_SPL_BUILD)$(CONFIG_TPL_BUILD),)
+obj-$(CONFIG_CMD_FBPANEL) += fbpanel.o
+endif
+endif
+
 ifeq ($(SOC),$(filter $(SOC),mx6 mx7))
 obj-y	+= cache.o init.o
 obj-$(CONFIG_FEC_MAC_FUSE) += mac.o
