@@ -28,7 +28,6 @@
 DECLARE_GLOBAL_DATA_PTR;
 
 static int mxcfb_map_video_memory(struct fb_info *fbi);
-static int mxcfb_unmap_video_memory(struct fb_info *fbi);
 
 /* graphics setup */
 static GraphicDevice panel;
@@ -222,9 +221,6 @@ static int mxcfb_set_par(struct fb_info *fbi)
 
 	mem_len = fbi->var.yres_virtual * fbi->fix.line_length;
 	if (!fbi->fix.smem_start || (mem_len > fbi->fix.smem_len)) {
-		if (fbi->fix.smem_start)
-			mxcfb_unmap_video_memory(fbi);
-
 		if (mxcfb_map_video_memory(fbi) < 0)
 			return -ENOMEM;
 	}
@@ -397,39 +393,44 @@ static int mxcfb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
 
 static int mxcfb_map_video_memory(struct fb_info *fbi)
 {
-	if (fbi->fix.smem_len < fbi->var.yres_virtual * fbi->fix.line_length) {
-		fbi->fix.smem_len = fbi->var.yres_virtual *
-				    fbi->fix.line_length;
+	unsigned smem_len = fbi->var.yres_virtual * fbi->fix.line_length;
+	unsigned min = 1920 * 1080 * 2;
+
+	fbi->screen_size = smem_len;
+	if (smem_len < min)
+		smem_len = min;
+	smem_len = roundup(smem_len, ARCH_DMA_MINALIGN);
+	if (fbi->fix.smem_len < smem_len) {
+		debug("smem_len %d %d, %lx\n", fbi->fix.smem_len, smem_len, fbi->fix.smem_start);
+		if (fbi->fix.smem_start) {
+			free((void *)fbi->fix.smem_start);
+			fbi->fix.smem_start = 0;
+			fbi->screen_base = NULL;
+			fbi->fix.smem_len = 0;
+		}
 	}
-	fbi->fix.smem_len = roundup(fbi->fix.smem_len, ARCH_DMA_MINALIGN);
-	fbi->screen_base = (char *)memalign(ARCH_DMA_MINALIGN,
-					    fbi->fix.smem_len);
-	fbi->fix.smem_start = (unsigned long)fbi->screen_base;
-	if (fbi->screen_base == 0) {
-		puts("Unable to allocate framebuffer memory\n");
-		fbi->fix.smem_len = 0;
-		fbi->fix.smem_start = 0;
-		return -EBUSY;
+	if (!fbi->fix.smem_start) {
+		fbi->screen_base = memalign(ARCH_DMA_MINALIGN, smem_len);
+		fbi->fix.smem_start = (unsigned long)fbi->screen_base;
+		debug("screen_base = %p\n", fbi->screen_base);
+		if (!fbi->screen_base) {
+			puts("Unable to allocate framebuffer memory\n");
+			fbi->fix.smem_len = 0;
+			fbi->fix.smem_start = 0;
+			return -EBUSY;
+		}
+		fbi->fix.smem_len = smem_len;
 	}
 
 	debug("allocated fb @ paddr=0x%08X, size=%d.\n",
 		(uint32_t) fbi->fix.smem_start, fbi->fix.smem_len);
 
-	fbi->screen_size = fbi->fix.smem_len;
 
 	gd->fb_base = fbi->fix.smem_start;
 
 	/* Clear the screen */
 	memset((char *)fbi->screen_base, 0, fbi->fix.smem_len);
 
-	return 0;
-}
-
-static int mxcfb_unmap_video_memory(struct fb_info *fbi)
-{
-	fbi->screen_base = 0;
-	fbi->fix.smem_start = 0;
-	fbi->fix.smem_len = 0;
 	return 0;
 }
 
@@ -448,7 +449,6 @@ static struct fb_info *mxcfb_init_fbinfo(void)
 #define PADDING (BYTES_PER_LONG - (sizeof(struct fb_info) % BYTES_PER_LONG))
 	struct fb_info *fbi;
 	struct mxcfb_info *mxcfbi;
-	char *p;
 	int size = sizeof(struct mxcfb_info) + PADDING +
 		sizeof(struct fb_info);
 
@@ -462,14 +462,12 @@ static struct fb_info *mxcfb_init_fbinfo(void)
 	 * Allocate sufficient memory for the fb structure
 	 */
 
-	p = malloc(size);
-	if (!p)
+	fbi = malloc(size);
+	if (!fbi)
 		return NULL;
+	memset(fbi, 0, size);
 
-	memset(p, 0, size);
-
-	fbi = (struct fb_info *)p;
-	fbi->par = p + sizeof(struct fb_info) + PADDING;
+	fbi->par = ((char *)fbi) + sizeof(struct fb_info) + PADDING;
 
 	mxcfbi = (struct mxcfb_info *)fbi->par;
 	debug("Framebuffer structures at: fbi=0x%x mxcfbi=0x%x\n",
@@ -514,12 +512,17 @@ static int mxcfb_probe(u32 interface_pix_fmt, uint8_t disp,
 	/*
 	 * Initialize FB structures
 	 */
-	fbi = mxcfb_init_fbinfo();
+	fbi = mxcfb_info[disp];
 	if (!fbi) {
-		ret = -ENOMEM;
-		goto err0;
+		fbi = mxcfb_init_fbinfo();
+		if (!fbi) {
+			ret = -ENOMEM;
+			goto err0;
+		}
+		mxcfb_info[disp] = fbi;
 	}
 	mxcfbi = (struct mxcfb_info *)fbi->par;
+	mxcfbi->ipu_di = disp;
 
 	if (!g_dp_in_use) {
 		mxcfbi->ipu_ch = MEM_BG_SYNC;
@@ -529,15 +532,12 @@ static int mxcfb_probe(u32 interface_pix_fmt, uint8_t disp,
 		mxcfbi->blank = FB_BLANK_POWERDOWN;
 	}
 
-	mxcfbi->ipu_di = disp;
-
 	ipu_disp_set_global_alpha(mxcfbi->ipu_ch, 1, 0x80);
 	ipu_disp_set_color_key(mxcfbi->ipu_ch, 0, 0);
 	strcpy(fbi->fix.id, "DISP3 BG");
 
 	g_dp_in_use = 1;
 
-	mxcfb_info[mxcfbi->ipu_di] = fbi;
 
 	/* Need dummy values until real panel is configured */
 
@@ -545,7 +545,6 @@ static int mxcfb_probe(u32 interface_pix_fmt, uint8_t disp,
 	fb_videomode_to_var(&fbi->var, mode);
 	fbi->var.bits_per_pixel = 16;
 	fbi->fix.line_length = fbi->var.xres * (fbi->var.bits_per_pixel / 8);
-	fbi->fix.smem_len = fbi->var.yres_virtual * fbi->fix.line_length;
 
 	mxcfb_check_var(&fbi->var, fbi);
 
@@ -579,6 +578,8 @@ err0:
 	return ret;
 }
 
+void ipu_dmfc_uninit(void);
+
 void ipuv3_fb_shutdown(void)
 {
 	int i;
@@ -596,6 +597,16 @@ void ipuv3_fb_shutdown(void)
 		__raw_writel(__raw_readl(&stat->int_stat[i]),
 			     &stat->int_stat[i]);
 	}
+	ipu_dmfc_uninit();
+	g_dp_in_use = 0;
+}
+
+void *ipuv3_fb_init2(void)
+{
+	mxcfb_probe(gpixfmt, gdisp, gmode);
+
+	debug("Framebuffer at 0x%x\n", (unsigned int)panel.frameAdrs);
+	return (void *)&panel;
 }
 
 void *video_hw_init(void)
@@ -605,11 +616,7 @@ void *video_hw_init(void)
 	ret = ipu_probe();
 	if (ret)
 		puts("Error initializing IPU\n");
-
-	ret = mxcfb_probe(gpixfmt, gdisp, gmode);
-	debug("Framebuffer at 0x%x\n", (unsigned int)panel.frameAdrs);
-
-	return (void *)&panel;
+	return ipuv3_fb_init2();
 }
 
 int ipuv3_fb_init(struct fb_videomode const *mode,
