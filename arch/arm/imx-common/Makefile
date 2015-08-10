@@ -21,6 +21,7 @@ endif
 ifeq ($(SOC),$(filter $(SOC),mx6))
 obj-$(CONFIG_CMD_SATA) += sata.o
 obj-$(CONFIG_IMX_VIDEO_SKIP) += video.o
+obj-$(CONFIG_CMD_FBPANEL) += fbpanel.o
 endif
 ifeq ($(SOC),$(filter $(SOC),vf610))
 obj-y += ddrmc-vf610.o
