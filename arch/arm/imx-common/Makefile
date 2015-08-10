@@ -25,6 +25,7 @@ obj-$(CONFIG_SYSCOUNTER_TIMER) += syscounter.o
 endif
 ifeq ($(SOC),$(filter $(SOC),mx6 mx7))
 obj-y 	+= cache.o init.o
+obj-$(CONFIG_CMD_FBPANEL) += fbpanel.o
 obj-$(CONFIG_CMD_SATA) += sata.o
 obj-$(CONFIG_IMX_VIDEO_SKIP) += video.o
 obj-$(CONFIG_IMX_RDC) += rdc-sema.o
