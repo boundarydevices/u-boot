@@ -77,8 +77,3 @@ int board_video_skip(void)
 
 	return ret;
 }
-
-int ipu_displays_init(void)
-{
-	return board_video_skip();
-}

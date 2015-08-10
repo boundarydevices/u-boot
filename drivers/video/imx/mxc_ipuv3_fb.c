@@ -36,7 +36,6 @@
 DECLARE_GLOBAL_DATA_PTR;
 
 static int mxcfb_map_video_memory(struct fb_info *fbi);
-static int mxcfb_unmap_video_memory(struct fb_info *fbi);
 
 #if !CONFIG_IS_ENABLED(DM_VIDEO)
 /* graphics setup */
@@ -211,9 +210,6 @@ static int mxcfb_set_par(struct fb_info *fbi)
 
 	mem_len = fbi->var.yres_virtual * fbi->fix.line_length;
 	if (!fbi->fix.smem_start || (mem_len > fbi->fix.smem_len)) {
-		if (fbi->fix.smem_start)
-			mxcfb_unmap_video_memory(fbi);
-
 		if (mxcfb_map_video_memory(fbi) < 0)
 			return -ENOMEM;
 	}
@@ -386,36 +382,47 @@ static int mxcfb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
 
 static int mxcfb_map_video_memory(struct fb_info *fbi)
 {
+	unsigned smem_len = fbi->var.yres_virtual * fbi->fix.line_length;
+	unsigned min = 1920 * 1080 * 2;
 #if CONFIG_IS_ENABLED(DM_VIDEO)
 	struct mxcfb_info *mxc_fbi = (struct mxcfb_info *)fbi->par;
 	struct video_uc_platdata *plat = dev_get_uclass_platdata(mxc_fbi->udev);
 #endif
 
-	if (fbi->fix.smem_len < fbi->var.yres_virtual * fbi->fix.line_length) {
-		fbi->fix.smem_len = fbi->var.yres_virtual *
-				    fbi->fix.line_length;
+	fbi->screen_size = smem_len;
+	if (smem_len < min)
+		smem_len = min;
+	smem_len = roundup(smem_len, ARCH_DMA_MINALIGN);
+	if (fbi->fix.smem_len < smem_len) {
+		debug("smem_len %d %d, %lx\n", fbi->fix.smem_len, smem_len, fbi->fix.smem_start);
+		if (fbi->fix.smem_start) {
+			free((void *)fbi->fix.smem_start);
+			fbi->fix.smem_start = 0;
+			fbi->screen_base = NULL;
+			fbi->fix.smem_len = 0;
+		}
 	}
-	fbi->fix.smem_len = roundup(fbi->fix.smem_len, ARCH_DMA_MINALIGN);
 
+	if (!fbi->fix.smem_start) {
 #if CONFIG_IS_ENABLED(DM_VIDEO)
-	fbi->screen_base = (char *)plat->base;
+		fbi->screen_base = (char *)plat->base;
 #else
-	fbi->screen_base = (char *)memalign(ARCH_DMA_MINALIGN,
-					    fbi->fix.smem_len);
+		fbi->screen_base = memalign(ARCH_DMA_MINALIGN, smem_len);
 #endif
-
-	fbi->fix.smem_start = (unsigned long)fbi->screen_base;
-	if (fbi->screen_base == 0) {
-		puts("Unable to allocate framebuffer memory\n");
-		fbi->fix.smem_len = 0;
-		fbi->fix.smem_start = 0;
-		return -EBUSY;
+		fbi->fix.smem_start = (unsigned long)fbi->screen_base;
+		debug("screen_base = %p\n", fbi->screen_base);
+		if (!fbi->screen_base) {
+			puts("Unable to allocate framebuffer memory\n");
+			fbi->fix.smem_len = 0;
+			fbi->fix.smem_start = 0;
+			return -EBUSY;
+		}
+		fbi->fix.smem_len = smem_len;
 	}
 
 	debug("allocated fb @ paddr=0x%08X, size=%d.\n",
 		(uint32_t) fbi->fix.smem_start, fbi->fix.smem_len);
 
-	fbi->screen_size = fbi->fix.smem_len;
 
 #if CONFIG_IS_ENABLED(VIDEO)
 	gd->fb_base = fbi->fix.smem_start;
@@ -424,14 +431,6 @@ static int mxcfb_map_video_memory(struct fb_info *fbi)
 	/* Clear the screen */
 	memset((char *)fbi->screen_base, 0, fbi->fix.smem_len);
 
-	return 0;
-}
-
-static int mxcfb_unmap_video_memory(struct fb_info *fbi)
-{
-	fbi->screen_base = 0;
-	fbi->fix.smem_start = 0;
-	fbi->fix.smem_len = 0;
 	return 0;
 }
 
@@ -450,7 +449,6 @@ static struct fb_info *mxcfb_init_fbinfo(void)
 #define PADDING (BYTES_PER_LONG - (sizeof(struct fb_info) % BYTES_PER_LONG))
 	struct fb_info *fbi;
 	struct mxcfb_info *mxcfbi;
-	char *p;
 	int size = sizeof(struct mxcfb_info) + PADDING +
 		sizeof(struct fb_info);
 
@@ -464,14 +462,12 @@ static struct fb_info *mxcfb_init_fbinfo(void)
 	 * Allocate sufficient memory for the fb structure
 	 */
 
-	p = malloc(size);
-	if (!p)
+	fbi = malloc(size);
+	if (!fbi)
 		return NULL;
+	memset(fbi, 0, size);
 
-	memset(p, 0, size);
-
-	fbi = (struct fb_info *)p;
-	fbi->par = p + sizeof(struct fb_info) + PADDING;
+	fbi->par = ((char *)fbi) + sizeof(struct fb_info) + PADDING;
 
 	mxcfbi = (struct mxcfb_info *)fbi->par;
 	debug("Framebuffer structures at: fbi=0x%x mxcfbi=0x%x\n",
@@ -521,11 +517,15 @@ static int mxcfb_probe(
 	/*
 	 * Initialize FB structures
 	 */
-	fbi = mxcfb_init_fbinfo();
-	if (!fbi)
-		return -ENOMEM;
-
+	fbi = mxcfb_info[disp];
+	if (!fbi) {
+		fbi = mxcfb_init_fbinfo();
+		if (!fbi)
+			return -ENOMEM;
+		mxcfb_info[disp] = fbi;
+	}
 	mxcfbi = (struct mxcfb_info *)fbi->par;
+	mxcfbi->ipu_di = disp;
 
 	if (!g_dp_in_use) {
 		mxcfbi->ipu_ch = MEM_BG_SYNC;
@@ -535,7 +535,6 @@ static int mxcfb_probe(
 		mxcfbi->blank = FB_BLANK_POWERDOWN;
 	}
 
-	mxcfbi->ipu_di = disp;
 #if CONFIG_IS_ENABLED(DM_VIDEO)
 	mxcfbi->udev = dev;
 #endif
@@ -548,7 +547,6 @@ static int mxcfb_probe(
 
 	g_dp_in_use = 1;
 
-	mxcfb_info[mxcfbi->ipu_di] = fbi;
 
 	/* Need dummy values until real panel is configured */
 
@@ -557,7 +555,6 @@ static int mxcfb_probe(
 	fbi->var.bits_per_pixel = 16;
 	fbi->fix.line_length = fbi->var.xres_virtual *
 			       (fbi->var.bits_per_pixel / 8);
-	fbi->fix.smem_len = fbi->var.yres_virtual * fbi->fix.line_length;
 
 	mxcfb_check_var(&fbi->var, fbi);
 
@@ -589,6 +586,8 @@ static int mxcfb_probe(
 	return 0;
 }
 
+void ipu_dmfc_uninit(void);
+
 void ipuv3_fb_shutdown(void)
 {
 	int i;
@@ -609,6 +608,27 @@ void ipuv3_fb_shutdown(void)
 		__raw_writel(__raw_readl(&stat->int_stat[i]),
 			     &stat->int_stat[i]);
 	}
+	ipu_dmfc_uninit();
+	g_dp_in_use = 0;
+}
+
+#if CONFIG_IS_ENABLED(DM_VIDEO)
+struct udevice *gdev;
+#endif
+
+void *ipuv3_fb_init2(void)
+{
+#if CONFIG_IS_ENABLED(DM_VIDEO)
+	if (gdev)
+		mxcfb_probe(gdev, gpixfmt, gdisp, gmode);
+	board_video_enable();
+	return NULL;
+#else
+	mxcfb_probe(gpixfmt, gdisp, gmode);
+
+	debug("Framebuffer at 0x%x\n", (unsigned int)panel.frameAdrs);
+	return (void *)&panel;
+#endif
 }
 
 #if !CONFIG_IS_ENABLED(DM_VIDEO)
@@ -620,11 +640,10 @@ void *video_hw_init(void)
 	if (ret)
 		puts("Error initializing IPU\n");
 
-	ret = mxcfb_probe(gpixfmt, gdisp, gmode);
-	debug("Framebuffer at 0x%x\n", (unsigned int)panel.frameAdrs);
+	ret = ipuv3_fb_init2();
 	gd->fb_base = panel.frameAdrs;
 
-	return (void *)&panel;
+	return ret;
 }
 #endif
 
@@ -664,10 +683,13 @@ static int ipuv3_video_probe(struct udevice *dev)
 	if (ret)
 		return ret;
 
-	ret = ipu_displays_init();
+#if !CONFIG_IS_ENABLED(DM_VIDEO)
+	ret = board_video_skip();
 	if (ret < 0)
 		return ret;
+#endif
 
+	gdev = dev;
 	ret = mxcfb_probe(dev, gpixfmt, gdisp, gmode);
 	if (ret < 0)
 		return ret;
