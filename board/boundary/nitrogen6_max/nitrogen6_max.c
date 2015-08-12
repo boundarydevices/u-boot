@@ -1015,6 +1015,27 @@ struct display_info_t const displays[] = {
 		.vsync_len      = 3,
 		.sync           = 0,
 		.vmode          = FB_VMODE_NONINTERLACED
+} }, {
+	.bus	= 2,
+	.addr	= 0x4,		/* egalax_ts */
+	.pixfmt	= IPU_PIX_FMT_LVDS666,
+	.detect	= NULL,
+	.enable	= enable_lvds,
+	.fbtype = FB_LVDS2,
+	.mode	= {
+		.name           = "hannstar",
+		.refresh        = 60,
+		.xres           = 1024,
+		.yres           = 768,
+		.pixclock       = 1000000000000ULL/((1024+220+40+60)*(768+21+7+10)*60),
+		.left_margin    = 220,
+		.right_margin   = 40,
+		.upper_margin   = 21,
+		.lower_margin   = 7,
+		.hsync_len      = 60,
+		.vsync_len      = 10,
+		.sync           = FB_SYNC_EXT,
+		.vmode          = FB_VMODE_NONINTERLACED
 } },
 };
 
