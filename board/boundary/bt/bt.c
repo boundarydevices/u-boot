@@ -272,18 +272,65 @@ static int detect_i2c(struct display_info_t const *dev)
 		(0 == i2c_probe(dev->addr)));
 }
 
-static struct display_info_t const displays[] = {{
+struct display_info_t const displays[] = {
+{
 	.bus	= 1,
 	.addr	= 0x50,
 	.pixfmt	= IPU_PIX_FMT_RGB24,
 	.detect	= detect_i2c,
 	.enable	= do_enable_hdmi,
+	.fbtype = FB_HDMI,
+	.fbflags = FBF_MODESTR,
 	.mode	= {
-		.name           = "HDMI",
+		.name           = "1280x720M@60",
+		.refresh        = 60,
+		.xres           = 1280,
+		.yres           = 720,
+		.pixclock       = 1000000000000ULL/((1280+216+72+80)*(720+22+3+5)*60),
+		.left_margin    = 220,
+		.right_margin   = 110,
+		.upper_margin   = 20,
+		.lower_margin   = 5,
+		.hsync_len      = 40,
+		.vsync_len      = 5,
+		.sync           = FB_SYNC_EXT,
+		.vmode          = FB_VMODE_NONINTERLACED
+} }, {
+	.bus	= 1,
+	.addr	= 0x50,
+	.pixfmt	= IPU_PIX_FMT_RGB24,
+	.detect	= detect_i2c,
+	.enable	= do_enable_hdmi,
+	.fbtype = FB_HDMI,
+	.fbflags = FBF_MODESTR,
+	.mode	= {
+		.name           = "1920x1080M@60",
+		.refresh        = 60,
+		.xres           = 1920,
+		.yres           = 1080,
+		.pixclock       = 1000000000000ULL/((1920+148+88+44)*(1080+36+4+5)*60),
+		.left_margin    = 148,
+		.right_margin   = 88,
+		.upper_margin   = 36,
+		.lower_margin   = 4,
+		.hsync_len      = 44,
+		.vsync_len      = 5,
+		.sync           = 0,
+		.vmode          = FB_VMODE_NONINTERLACED
+} }, {
+	.bus	= 1,
+	.addr	= 0x50,
+	.pixfmt	= IPU_PIX_FMT_RGB24,
+	.detect	= detect_i2c,
+	.enable	= do_enable_hdmi,
+	.fbtype = FB_HDMI,
+	.fbflags = FBF_MODESTR,
+	.mode	= {
+		.name           = "1024x768M@60",
 		.refresh        = 60,
 		.xres           = 1024,
 		.yres           = 768,
-		.pixclock       = 15385,
+		.pixclock       = 1000000000000ULL/((1024+220+40+60)*(768+21+7+10)*60),
 		.left_margin    = 220,
 		.right_margin   = 40,
 		.upper_margin   = 21,
@@ -292,63 +339,14 @@ static struct display_info_t const displays[] = {{
 		.vsync_len      = 10,
 		.sync           = FB_SYNC_EXT,
 		.vmode          = FB_VMODE_NONINTERLACED
-	}},
+}},
 };
+
+size_t display_count = ARRAY_SIZE(displays);
 
 int board_cfb_skip(void)
 {
 	return NULL != getenv("novideo");
-}
-
-int board_video_skip(void)
-{
-	int i;
-	int ret;
-	char const *panel;
-
-	panel = getenv("panel");
-	if (!panel) {
-		for (i = 0; i < ARRAY_SIZE(displays); i++) {
-			struct display_info_t const *dev = displays+i;
-			if (dev->detect && dev->detect(dev)) {
-				panel = dev->mode.name;
-				printf("auto-detected panel %s\n", panel);
-				break;
-			}
-		}
-		if (!panel) {
-			panel = displays[0].mode.name;
-			printf("No panel detected: default to %s\n", panel);
-			i = 0;
-		}
-	} else {
-		for (i = 0; i < ARRAY_SIZE(displays); i++) {
-			if (!strcmp(panel, displays[i].mode.name))
-				break;
-		}
-	}
-	if (i < ARRAY_SIZE(displays)) {
-		ret = ipuv3_fb_init(&displays[i].mode, 0,
-				    displays[i].pixfmt);
-		if (!ret) {
-			displays[i].enable(displays+i);
-			printf("Display: %s (%ux%u)\n",
-			       displays[i].mode.name,
-			       displays[i].mode.xres,
-			       displays[i].mode.yres);
-		} else {
-			printf("LCD %s cannot be configured: %d\n",
-			       displays[i].mode.name, ret);
-		}
-	} else {
-		printf("unsupported panel %s\n", panel);
-		ret = -EINVAL;
-	}
-
-	if (!ret)
-		splash_screen_prepare();
-
-	return (0 != ret);
 }
 
 static void setup_display(void)
