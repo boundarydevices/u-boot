@@ -202,6 +202,7 @@
 		"echo details at http://boundarydevices.com/6q_bootscript ; " \
 		"usb start; " \
 		"setenv stdin serial,usbkbd\0" \
+	"uboot_defconfig=" CONFIG_DEFCONFIG "\0" \
 	"upgradeu=for dtype in " CONFIG_DRIVE_TYPES \
 		"; do " \
 		"for disk in 0 1 ; do ${dtype} dev ${disk} ;" \
