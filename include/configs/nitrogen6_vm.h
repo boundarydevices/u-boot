@@ -186,6 +186,7 @@
 		"setenv stdout serial,vga; " \
 		"echo no SD card present;" \
 		"\0" \
+	"uboot_defconfig=" CONFIG_DEFCONFIG "\0" \
 	"upgradeu=for dtype in mmc usb ; do " \
 			"if itest.s \"xusb\" == \"x${dtype}\" ; then " \
 				"usb start ;" \
