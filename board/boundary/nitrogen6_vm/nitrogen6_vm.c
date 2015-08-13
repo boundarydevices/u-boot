@@ -239,26 +239,11 @@ static void enable_lvds(struct display_info_t const *dev)
 				IOMUXC_BASE_ADDR;
 	u32 reg = readl(&iomux->gpr[2]);
 	reg |= IOMUXC_GPR2_DATA_WIDTH_CH0_24BIT;
+	if (dev->fbflags & FBF_JEIDA)
+	     reg |= IOMUXC_GPR2_BIT_MAPPING_CH0_JEIDA;
 	writel(reg, &iomux->gpr[2]);
 	gpio_direction_output(GP_LVDS_BACKLIGHT, 1);
 	gpio_direction_output(GP_LVDS_EN, 1);
-}
-
-static void enable_lvds_jeida(struct display_info_t const *dev)
-{
-	struct iomuxc *iomux = (struct iomuxc *)
-				IOMUXC_BASE_ADDR;
-	u32 reg = readl(&iomux->gpr[2]);
-	reg |= IOMUXC_GPR2_DATA_WIDTH_CH0_24BIT
-	     |IOMUXC_GPR2_BIT_MAPPING_CH0_JEIDA;
-	writel(reg, &iomux->gpr[2]);
-	gpio_direction_output(GP_LVDS_BACKLIGHT, 1);
-	gpio_direction_output(GP_LVDS_EN, 1);
-}
-
-static int detect_none(struct display_info_t const *dev)
-{
-	return 0;
 }
 
 static void enable_rgb(struct display_info_t const *dev)
@@ -268,10 +253,12 @@ static void enable_rgb(struct display_info_t const *dev)
 
 struct display_info_t const displays[] = {{
 	.bus	= 2,
-	.addr	= 0x48,
+	.addr	= 0x38,		/* ft5x06_ts */
 	.pixfmt	= IPU_PIX_FMT_RGB666,
-	.detect	= detect_none,
+	.detect	= detect_i2c,
 	.enable	= enable_rgb,
+	.fbtype = FB_LCD,
+	.fbflags = FBF_MODESTR,
 	.mode	= {
 		.name		= "hitachi_hvga",
 		 /*
@@ -298,12 +285,58 @@ struct display_info_t const displays[] = {{
 	.pixfmt	= IPU_PIX_FMT_RGB24,
 	.detect	= detect_i2c,
 	.enable	= do_enable_hdmi,
+	.fbtype = FB_HDMI,
+	.fbflags = FBF_MODESTR,
 	.mode	= {
-		.name           = "HDMI",
+		.name           = "1280x720M@60",
+		.refresh        = 60,
+		.xres           = 1280,
+		.yres           = 720,
+		.pixclock       = 1000000000000ULL/((1280+216+72+80)*(720+22+3+5)*60),
+		.left_margin    = 220,
+		.right_margin   = 110,
+		.upper_margin   = 20,
+		.lower_margin   = 5,
+		.hsync_len      = 40,
+		.vsync_len      = 5,
+		.sync           = FB_SYNC_EXT,
+		.vmode          = FB_VMODE_NONINTERLACED
+} }, {
+	.bus	= 1,
+	.addr	= 0x50,
+	.pixfmt	= IPU_PIX_FMT_RGB24,
+	.detect	= detect_i2c,
+	.enable	= do_enable_hdmi,
+	.fbtype = FB_HDMI,
+	.fbflags = FBF_MODESTR,
+	.mode	= {
+		.name           = "1920x1080M@60",
+		.refresh        = 60,
+		.xres           = 1920,
+		.yres           = 1080,
+		.pixclock       = 1000000000000ULL/((1920+148+88+44)*(1080+36+4+5)*60),
+		.left_margin    = 148,
+		.right_margin   = 88,
+		.upper_margin   = 36,
+		.lower_margin   = 4,
+		.hsync_len      = 44,
+		.vsync_len      = 5,
+		.sync           = 0,
+		.vmode          = FB_VMODE_NONINTERLACED
+} }, {
+	.bus	= 1,
+	.addr	= 0x50,
+	.pixfmt	= IPU_PIX_FMT_RGB24,
+	.detect	= detect_i2c,
+	.enable	= do_enable_hdmi,
+	.fbtype = FB_HDMI,
+	.fbflags = FBF_MODESTR,
+	.mode	= {
+		.name           = "1024x768M@60",
 		.refresh        = 60,
 		.xres           = 1024,
 		.yres           = 768,
-		.pixclock       = 15385,
+		.pixclock       = 1000000000000ULL/((1024+220+40+60)*(768+21+7+10)*60),
 		.left_margin    = 220,
 		.right_margin   = 40,
 		.upper_margin   = 21,
@@ -313,17 +346,62 @@ struct display_info_t const displays[] = {{
 		.sync           = FB_SYNC_EXT,
 		.vmode          = FB_VMODE_NONINTERLACED
 } }, {
+	.bus	= 2,
+	.addr	= 0x38,		/* ft5x06_ts */
+	.pixfmt	= IPU_PIX_FMT_RGB24,
+	.detect	= NULL,
+	.enable	= enable_lvds,
+	.fbtype = FB_LVDS,
+	.fbflags = FBF_JEIDA,
+	.mode	= {
+		.name           = "lg1280x800",
+		.refresh        = 60,
+		.xres           = 1280,
+		.yres           = 800,
+		.pixclock       = 1000000000000ULL/((1280+48+80+32)*(800+15+2+6)*60),
+		.left_margin    = 48,
+		.right_margin   = 80,
+		.upper_margin   = 15,
+		.lower_margin   = 2,
+		.hsync_len      = 32,
+		.vsync_len      = 6,
+		.sync           = FB_SYNC_EXT,
+		.vmode          = FB_VMODE_NONINTERLACED
+} }, {
 	.bus	= 0,
 	.addr	= 0,
 	.pixfmt	= IPU_PIX_FMT_RGB24,
 	.detect	= NULL,
-	.enable	= enable_lvds_jeida,
+	.enable	= enable_lvds,
+	.fbtype = FB_LVDS,
+	.fbflags = FBF_JEIDA,
 	.mode	= {
-		.name           = "LDB-WXGA",
+		.name           = "sharp-LQ101K1LY04",
 		.refresh        = 60,
 		.xres           = 1280,
 		.yres           = 800,
-		.pixclock       = 14065,
+		.pixclock       = 1000000000000ULL/((1280+20+20+10)*(800+4+4+4)*60),
+		.left_margin    = 20,
+		.right_margin   = 20,
+		.upper_margin   = 4,
+		.lower_margin   = 4,
+		.hsync_len      = 10,
+		.vsync_len      = 4,
+		.sync           = FB_SYNC_EXT,
+		.vmode          = FB_VMODE_NONINTERLACED
+} }, {
+	.bus	= 0,
+	.addr	= 0,
+	.pixfmt	= IPU_PIX_FMT_RGB24,
+	.detect	= NULL,
+	.enable	= enable_lvds,
+	.fbtype = FB_LVDS,
+	.mode	= {
+		.name           = "wxga",
+		.refresh        = 60,
+		.xres           = 1280,
+		.yres           = 800,
+		.pixclock       = 1000000000000ULL/((1280+40+40+10)*(800+3+80+10)*60),
 		.left_margin    = 40,
 		.right_margin   = 40,
 		.upper_margin   = 3,
@@ -334,16 +412,39 @@ struct display_info_t const displays[] = {{
 		.vmode          = FB_VMODE_NONINTERLACED
 } }, {
 	.bus	= 2,
-	.addr	= 0x4,
+	.addr	= 0x38,		/* ft5x06_ts */
+	.pixfmt	= IPU_PIX_FMT_LVDS666,
+	.detect	= NULL,
+	.enable	= enable_lvds,
+	.fbtype = FB_LVDS,
+	.fbflags = 0,	/* lg1280x800 is Jeida, this is not */
+	.mode	= {
+		.name           = "hannstar7",
+		.refresh        = 60,
+		.xres           = 1280,
+		.yres           = 800,
+		.pixclock       = 1000000000000ULL/((1280+48+80+32)*(800+15+2+6)*60),
+		.left_margin    = 48,
+		.right_margin   = 80,
+		.upper_margin   = 15,
+		.lower_margin   = 2,
+		.hsync_len      = 32,
+		.vsync_len      = 6,
+		.sync           = FB_SYNC_EXT,
+		.vmode          = FB_VMODE_NONINTERLACED
+} }, {
+	.bus	= 2,
+	.addr	= 0x4,		/* egalax_ts */
 	.pixfmt	= IPU_PIX_FMT_LVDS666,
 	.detect	= detect_i2c,
 	.enable	= enable_lvds,
+	.fbtype = FB_LVDS,
 	.mode	= {
-		.name           = "Hannstar-XGA",
+		.name           = "hannstar",
 		.refresh        = 60,
 		.xres           = 1024,
 		.yres           = 768,
-		.pixclock       = 15385,
+		.pixclock       = 1000000000000ULL/((1024+220+40+60)*(768+21+7+10)*60),
 		.left_margin    = 220,
 		.right_margin   = 40,
 		.upper_margin   = 21,
@@ -354,16 +455,17 @@ struct display_info_t const displays[] = {{
 		.vmode          = FB_VMODE_NONINTERLACED
 } }, {
 	.bus	= 2,
-	.addr	= 0x4,
+	.addr	= 0x4,		/* egalax_ts */
 	.pixfmt	= IPU_PIX_FMT_LVDS666,
 	.detect	= detect_i2c,
 	.enable	= enable_lvds,
+	.fbtype = FB_LVDS,
 	.mode	= {
-		.name           = "LG-9.7",
+		.name           = "lg9.7",
 		.refresh        = 60,
 		.xres           = 1024,
 		.yres           = 768,
-		.pixclock       = 15385, /* ~65MHz */
+		.pixclock       = 1000000000000ULL/((1024+480+260+250)*(768+16+6+10)*60), /* ~65MHz */
 		.left_margin    = 480,
 		.right_margin   = 260,
 		.upper_margin   = 16,
@@ -374,16 +476,38 @@ struct display_info_t const displays[] = {{
 		.vmode          = FB_VMODE_NONINTERLACED
 } }, {
 	.bus	= 2,
-	.addr	= 0x38,
+	.addr	= 0x38,		/* ft5x06_ts */
 	.pixfmt	= IPU_PIX_FMT_LVDS666,
-	.detect	= detect_i2c,
+	.detect	= NULL,
 	.enable	= enable_lvds,
+	.fbtype = FB_LVDS,
 	.mode	= {
-		.name           = "wsvga-lvds",
+		.name           = "wsvga",
 		.refresh        = 60,
 		.xres           = 1024,
 		.yres           = 600,
-		.pixclock       = 15385,
+		.pixclock       = 1000000000000ULL/((1024+220+40+60)*(600+21+7+10)*60),
+		.left_margin    = 220,
+		.right_margin   = 40,
+		.upper_margin   = 21,
+		.lower_margin   = 7,
+		.hsync_len      = 60,
+		.vsync_len      = 10,
+		.sync           = FB_SYNC_EXT,
+		.vmode          = FB_VMODE_NONINTERLACED
+} }, {
+	.bus	= 2,
+	.addr	= 0x41,		/* ili210x */
+	.pixfmt	= IPU_PIX_FMT_LVDS666,
+	.detect	= detect_i2c,
+	.enable	= enable_lvds,
+	.fbtype = FB_LVDS,
+	.mode	= {
+		.name           = "amp1024x600",
+		.refresh        = 60,
+		.xres           = 1024,
+		.yres           = 600,
+		.pixclock       = 1000000000000ULL/((1024+220+40+60)*(600+21+7+10)*60),
 		.left_margin    = 220,
 		.right_margin   = 40,
 		.upper_margin   = 21,
@@ -395,15 +519,16 @@ struct display_info_t const displays[] = {{
 } }, {
 	.bus	= 0,
 	.addr	= 0,
-	.pixfmt	= IPU_PIX_FMT_RGB24,
+	.pixfmt	= IPU_PIX_FMT_LVDS666,
 	.detect	= NULL,
-	.enable	= enable_lvds_jeida,
+	.enable	= enable_lvds,
+	.fbtype = FB_LVDS,
 	.mode	= {
-		.name           = "LDB-WVGA",
-		.refresh        = 57,
+		.name           = "wvga",
+		.refresh        = 60,
 		.xres           = 800,
 		.yres           = 480,
-		.pixclock       = 15385,
+		.pixclock       = 1000000000000ULL/((800+220+40+60)*(480+21+7+10)*60),
 		.left_margin    = 220,
 		.right_margin   = 40,
 		.upper_margin   = 21,
