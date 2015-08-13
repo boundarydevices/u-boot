@@ -177,6 +177,7 @@
 		"setenv stdout serial,vga; " \
 		"echo no SD card present;" \
 		"\0" \
+	"uboot_defconfig=" CONFIG_DEFCONFIG "\0" \
 	"upgradeu=for dtype in mmc usb ; do " \
 			"disk=0;" \
 			"load ${dtype} ${disk}:1 10008000 /6x_upgrade " \
