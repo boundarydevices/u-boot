@@ -218,6 +218,7 @@
 			"done ;" \
 		"done\0" \
 	"novideo=1\0" \
+	"uboot_defconfig=" CONFIG_DEFCONFIG "\0" \
 	"upgradeu=for dtype in ${bootdevs}" \
 		"; do " \
 		"for disk in 0 1 ; do ${dtype} dev ${disk} ;" \
