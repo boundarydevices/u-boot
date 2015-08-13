@@ -206,6 +206,7 @@
 	"fdt_addr=0x11000000\0" \
 	"fdt_high=0xffffffff\0" \
 	"loadsplash=if sf probe ; then sf read ${splashimage} c2000 ${splashsize} ; fi\0" \
+	"uboot_defconfig=" CONFIG_DEFCONFIG "\0" \
 	"upgradeu=for dtype in ${bootdevs}" \
 		"; do " \
 		"for disk in 0 ; do ${dtype} dev ${disk} ;" \
