@@ -248,6 +248,7 @@ static void enable_lvds(struct display_info_t const *dev)
 
 static void enable_rgb(struct display_info_t const *dev)
 {
+	IOMUX_SETUP(rgb_pads);
 	gpio_direction_output(GP_RGB_BACKLIGHT, 1);
 }
 
