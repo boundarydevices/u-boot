@@ -142,6 +142,7 @@
 		"setenv ipaddr 10.0.0.2; " \
 		"setenv netmask 255.255.255.0; " \
 		"setenv serverip 10.0.0.1;\0" \
+	"uboot_defconfig=" CONFIG_DEFCONFIG "\0" \
 	"upgradeu=script=/6x_upgrade; run runscript\0" \
 	"disable_giga=1\0" \
 	"runscript=disk=0;" \
