@@ -803,8 +803,12 @@ static int frombcd(u8 val)
 int board_late_init(void)
 {
 	int cpurev = get_cpu_rev();
-	setenv("cpu",get_imx_type((cpurev & 0xFF000) >> 12));
-	setenv("board","eo");
+
+	setenv("cpu", get_imx_type((cpurev & 0xFF000) >> 12));
+	if (!getenv("board"))
+	setenv("board", "eo");
+	if (!getenv("uboot_defconfig"))
+		setenv("uboot_defconfig", CONFIG_DEFCONFIG);
 
 	/* display date and time from RTC */
 	if ((0 == i2c_set_bus_num(0))
