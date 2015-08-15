@@ -1007,8 +1007,12 @@ int board_late_init(void)
 	unsigned char mac_address[6];
 	char macbuf[18];
 	int cpurev = get_cpu_rev();
-	setenv("cpu",get_imx_type((cpurev & 0xFF000) >> 12));
-	setenv("board","ls");
+
+	setenv("cpu", get_imx_type((cpurev & 0xFF000) >> 12));
+	if (!getenv("board"))
+		setenv("board", "ls");
+	if (!getenv("uboot_defconfig"))
+		setenv("uboot_defconfig", CONFIG_DEFCONFIG);
 	imx_get_mac_from_fuse(0, mac_address);
 	snprintf(macbuf, sizeof(macbuf), "%pM", mac_address);
 	setenv("wlmac", macbuf);
