@@ -696,3 +696,15 @@ int misc_init_r(void)
 #endif
 	return 0;
 }
+
+int board_late_init(void)
+{
+	int cpurev = get_cpu_rev();
+
+	setenv("cpu", get_imx_type((cpurev & 0xFF000) >> 12));
+	if (!getenv("board"))
+		setenv("board", "h");
+	if (!getenv("uboot_defconfig"))
+		setenv("uboot_defconfig", CONFIG_DEFCONFIG);
+	return 0;
+}
