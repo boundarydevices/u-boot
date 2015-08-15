@@ -595,3 +595,15 @@ static int do_poweroff(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[
 }
 
 U_BOOT_CMD(poweroff, 1, 1, do_poweroff, "Turn off power", "");
+
+int board_late_init(void)
+{
+	int cpurev = get_cpu_rev();
+
+	setenv("cpu", get_imx_type((cpurev & 0xFF000) >> 12));
+	if (!getenv("board"))
+		setenv("board", "sp");
+	if (!getenv("uboot_defconfig"))
+		setenv("uboot_defconfig", CONFIG_DEFCONFIG);
+	return 0;
+}
