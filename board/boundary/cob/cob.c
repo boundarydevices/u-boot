@@ -713,7 +713,11 @@ int board_late_init(void)
 	unsigned char mac[8];
 	int cpurev = get_cpu_rev();
 
-	setenv("cpu",get_imx_type((cpurev & 0xFF000) >> 12));
+	setenv("cpu", get_imx_type((cpurev & 0xFF000) >> 12));
+	if (!getenv("board"))
+		setenv("board", "cob");
+	if (!getenv("uboot_defconfig"))
+		setenv("uboot_defconfig", CONFIG_DEFCONFIG);
 	imx_get_mac_from_fuse(0, mac);
 	if (is_valid_ether_addr(mac)) {
 		if (!getenv("ethaddr"))
