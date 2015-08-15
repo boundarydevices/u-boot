@@ -654,7 +654,11 @@ int misc_init_r(void)
 int board_late_init(void)
 {
 	int cpurev = get_cpu_rev();
-	setenv("cpu",get_imx_type((cpurev & 0xFF000) >> 12));
-	setenv("board",CONFIG_BOARD_NAME);
+
+	setenv("cpu", get_imx_type((cpurev & 0xFF000) >> 12));
+	if (!getenv("board"))
+		setenv("board", CONFIG_BOARD_NAME);
+	if (!getenv("uboot_defconfig"))
+		setenv("uboot_defconfig", CONFIG_DEFCONFIG);
 	return 0;
 }
