@@ -721,12 +721,9 @@ int board_init(void)
 	return 0;
 }
 
-static char const *board_type = "uninitialized";
-
 int checkboard(void)
 {
 	puts("Board: vp\n");
-	board_type = "vp";
 	return 0;
 }
 
@@ -845,9 +842,11 @@ int board_late_init(void)
 	int cpurev = get_cpu_rev();
 	int reason = *(int *)(CONFIG_RESET_CAUSE_ADDR + 4);
 
-	setenv("cpu",get_imx_type((cpurev & 0xFF000) >> 12));
-	if (0 == getenv("board"))
-		setenv("board",board_type);
+	setenv("cpu", get_imx_type((cpurev & 0xFF000) >> 12));
+	if (!getenv("board"))
+		setenv("board", "vp");
+	if (!getenv("uboot_defconfig"))
+		setenv("uboot_defconfig", CONFIG_DEFCONFIG);
 
 	/* return if not power-on reset */
 	if ((reason != 0x01) && (reason != 0x11))
