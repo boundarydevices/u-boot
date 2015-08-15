@@ -931,12 +931,9 @@ int board_init(void)
 	return 0;
 }
 
-static char const *board_type = "uninitialized";
-
 int checkboard(void)
 {
 	puts("Board: " CONFIG_BOARD_NAME "\n");
-	board_type = CONFIG_BOARD_NAME;
 	return 0;
 }
 
@@ -1054,8 +1051,12 @@ int misc_init_r(void)
 int board_late_init(void)
 {
 	int cpurev = get_cpu_rev();
-	setenv("cpu",get_imx_type((cpurev & 0xFF000) >> 12));
-	setenv("board",board_type);
+
+	setenv("cpu", get_imx_type((cpurev & 0xFF000) >> 12));
+	if (!getenv("board"))
+		setenv("board", CONFIG_BOARD_NAME);
+	if (!getenv("uboot_defconfig"))
+		setenv("uboot_defconfig", CONFIG_DEFCONFIG);
 	return 0;
 }
 
