@@ -427,12 +427,9 @@ int board_init(void)
 	return 0;
 }
 
-static char const *board_type = "uninitialized";
-
 int checkboard(void)
 {
 	puts("Board: insp\n");
-	board_type = "insp";
 	return 0;
 }
 
@@ -542,9 +539,11 @@ int board_late_init(void)
 	unsigned char mac[8];
 	int cpurev = get_cpu_rev();
 
-	setenv("cpu",get_imx_type((cpurev & 0xFF000) >> 12));
-	if (0 == getenv("board"))
-		setenv("board",board_type);
+	setenv("cpu", get_imx_type((cpurev & 0xFF000) >> 12));
+	if (!getenv("board"))
+		setenv("board", "insp");
+	if (!getenv("uboot_defconfig"))
+		setenv("uboot_defconfig", CONFIG_DEFCONFIG);
 	imx_get_mac_from_fuse(0, mac);
 	if (is_valid_ether_addr(mac)) {
 		if (!getenv("ethaddr"))
