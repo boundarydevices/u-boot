@@ -711,8 +711,10 @@ int board_late_init(void)
 {
 	int cpurev = get_cpu_rev();
 
-	setenv("cpu",get_imx_type((cpurev & 0xFF000) >> 12));
-	if (getenv("board") == 0)
+	setenv("cpu", get_imx_type((cpurev & 0xFF000) >> 12));
+	if (!getenv("board"))
 		setenv("board", "mcs");
+	if (!getenv("uboot_defconfig"))
+		setenv("uboot_defconfig", CONFIG_DEFCONFIG);
 	return 0;
 }
