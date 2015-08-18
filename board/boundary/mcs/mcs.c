@@ -79,7 +79,7 @@ int dram_init(void)
 	return 0;
 }
 
-static iomux_v3_cfg_t const uart_pads[] = {
+static iomux_v3_cfg_t const init_pads[] = {
 	NEW_PAD_CTRL(MX6_PAD_EIM_D26__UART2_TX_DATA, UART_PAD_CTRL),
 	NEW_PAD_CTRL(MX6_PAD_EIM_D27__UART2_RX_DATA, UART_PAD_CTRL),
 
@@ -97,6 +97,31 @@ static iomux_v3_cfg_t const uart_pads[] = {
 	NEW_PAD_CTRL(MX6_PAD_EIM_LBA__GPIO2_IO27, WEAK_PULLDOWN),
 	NEW_PAD_CTRL(MX6_PAD_CSI0_DAT14__UART5_TX_DATA, UART_PAD_CTRL),
 	NEW_PAD_CTRL(MX6_PAD_CSI0_DAT15__UART5_RX_DATA, UART_PAD_CTRL),
+
+	/* PWM on LVDS connector: J6 */
+#define LVDS_BACKLIGHT_PWM IMX_GPIO_NR(1, 18)
+	MX6_PAD_SD1_CMD__GPIO1_IO18 | MUX_PAD_CTRL(NO_PAD_CTRL),
+
+	/* Shutdown request on J55 */
+	MX6_PAD_KEY_ROW4__GPIO4_IO15| MUX_PAD_CTRL(WEAK_PULLUP),
+	/* EIM_A19 - J54 pin 9 */
+	MX6_PAD_EIM_A19__GPIO2_IO19 | MUX_PAD_CTRL(WEAK_PULLUP),
+	/* EIM_A20 - J54 pin 6 */
+	MX6_PAD_EIM_A20__GPIO2_IO18 | MUX_PAD_CTRL(WEAK_PULLUP),
+	/* EIM_A21 - J54 pin 5 */
+	MX6_PAD_EIM_A21__GPIO2_IO17 | MUX_PAD_CTRL(WEAK_PULLUP),
+	/* EIM_A22 - J54 pin 4 */
+	MX6_PAD_EIM_A22__GPIO2_IO16 | MUX_PAD_CTRL(WEAK_PULLUP),
+	/* EIM_A23 - J54 pin 3 */
+	MX6_PAD_EIM_A23__GPIO6_IO06 | MUX_PAD_CTRL(WEAK_PULLUP),
+	/* EIM_A24 - J54 pin 2 */
+	MX6_PAD_EIM_A24__GPIO5_IO04 | MUX_PAD_CTRL(WEAK_PULLUP),
+	/* EIM_A25 - J5 4-wire/5-wire select (4-wire is 0) */
+#define GP_4_5_WIRE_SELECT	IMX_GPIO_NR(5, 2)
+	MX6_PAD_EIM_A25__GPIO5_IO02 | MUX_PAD_CTRL(WEAK_PULLDOWN),
+	/* SD3_DAT4 - jumpered 4-wire/5-wire select on first rev (4-wire was low) */
+#define GP_4_5_WIRE_SELECT_R1	IMX_GPIO_NR(7, 1)
+	MX6_PAD_SD3_DAT4__GPIO7_IO01 | MUX_PAD_CTRL(WEAK_PULLDOWN),
 };
 
 #define PC MUX_PAD_CTRL(I2C_PAD_CTRL)
@@ -398,33 +423,6 @@ int board_eth_init(bd_t *bis)
 	return 0;
 }
 
-static iomux_v3_cfg_t const gpio_pads[] = {
-	/* Shutdown request on J55 */
-	MX6_PAD_KEY_ROW4__GPIO4_IO15| MUX_PAD_CTRL(WEAK_PULLUP),
-	/* EIM_A19 - J54 pin 9 */
-	MX6_PAD_EIM_A19__GPIO2_IO19 | MUX_PAD_CTRL(WEAK_PULLUP),
-	/* EIM_A20 - J54 pin 6 */
-	MX6_PAD_EIM_A20__GPIO2_IO18 | MUX_PAD_CTRL(WEAK_PULLUP),
-	/* EIM_A21 - J54 pin 5 */
-	MX6_PAD_EIM_A21__GPIO2_IO17 | MUX_PAD_CTRL(WEAK_PULLUP),
-	/* EIM_A22 - J54 pin 4 */
-	MX6_PAD_EIM_A22__GPIO2_IO16 | MUX_PAD_CTRL(WEAK_PULLUP),
-	/* EIM_A23 - J54 pin 3 */
-	MX6_PAD_EIM_A23__GPIO6_IO06 | MUX_PAD_CTRL(WEAK_PULLUP),
-	/* EIM_A24 - J54 pin 2 */
-	MX6_PAD_EIM_A24__GPIO5_IO04 | MUX_PAD_CTRL(WEAK_PULLUP),
-	/* EIM_A25 - J5 4-wire/5-wire select */
-	MX6_PAD_EIM_A25__GPIO5_IO02 | MUX_PAD_CTRL(WEAK_PULLDOWN),
-	/* SD3_DAT4 - jumpered 4-wire/5-wire select on first rev (4-wire was low) */
-	MX6_PAD_SD3_DAT4__GPIO7_IO01 | MUX_PAD_CTRL(WEAK_PULLDOWN),
-};
-
-static iomux_v3_cfg_t const backlight_pads[] = {
-	/* PWM on LVDS connector: J6 */
-	MX6_PAD_SD1_CMD__GPIO1_IO18 | MUX_PAD_CTRL(NO_PAD_CTRL),
-#define LVDS_BACKLIGHT_PWM IMX_GPIO_NR(1, 18)
-};
-
 int splash_screen_prepare(void)
 {
 	char *env_loadsplash;
@@ -447,39 +445,13 @@ int splash_screen_prepare(void)
 	return 0;
 }
 
-static void enable_lvds(struct display_info_t const *dev)
+void board_enable_lvds(const struct display_info_t *di)
 {
-	struct iomuxc *iomux = (struct iomuxc *)
-				IOMUXC_BASE_ADDR;
-	u32 reg = readl(&iomux->gpr[2]);
-	reg |= IOMUXC_GPR2_DATA_WIDTH_CH0_24BIT
-	     |IOMUXC_GPR2_BIT_MAPPING_CH0_JEIDA;
-	writel(reg, &iomux->gpr[2]);
 	gpio_direction_output(LVDS_BACKLIGHT_PWM, 1);
 }
 
-struct display_info_t const displays[] = {
-{
-	.bus	= 0,
-	.addr	= 0,
-	.pixfmt	= IPU_PIX_FMT_RGB24,
-	.enable	= enable_lvds,
-	.mode	= {
-		.name           = "LDB-WXGA",
-		.refresh        = 60,
-		.xres           = 1280,
-		.yres           = 800,
-		.pixclock       = 14065,
-		.left_margin    = 40,
-		.right_margin   = 40,
-		.upper_margin   = 3,
-		.lower_margin   = 80,
-		.hsync_len      = 10,
-		.vsync_len      = 10,
-		.sync           = FB_SYNC_EXT,
-		.vmode          = FB_VMODE_NONINTERLACED
-	}
-},
+const struct display_info_t displays[] = {
+	IMX_VD_WXGA_J(LVDS, 0, 0),
 };
 
 size_t display_count = ARRAY_SIZE(displays);
@@ -492,85 +464,36 @@ int board_cfb_skip(void)
 static void setup_display(void)
 {
 	struct mxc_ccm_reg *mxc_ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
-	struct iomuxc *iomux = (struct iomuxc *)IOMUXC_BASE_ADDR;
-	struct hdmi_regs *hdmi	= (struct hdmi_regs *)HDMI_ARB_BASE_ADDR;
-
 	int reg;
 
-	enable_ipu_clock();
-	/* Turn on LDB0,IPU,IPU DI0 clocks */
-	reg = __raw_readl(&mxc_ccm->CCGR3);
-	reg |= MXC_CCM_CCGR3_LDB_DI0_MASK;
-	writel(reg, &mxc_ccm->CCGR3);
-
-	/* Turn on HDMI PHY clock */
-	reg = __raw_readl(&mxc_ccm->CCGR2);
-	reg |=  MXC_CCM_CCGR2_HDMI_TX_IAHBCLK_MASK
-	       |MXC_CCM_CCGR2_HDMI_TX_ISFRCLK_MASK;
-	writel(reg, &mxc_ccm->CCGR2);
-
-	/* clear HDMI PHY reset */
-	writeb(HDMI_MC_PHYRSTZ_DEASSERT, &hdmi->mc_phyrstz);
-
-
-	/* set LDB0, LDB1 clk select to 011/011 */
-	reg = readl(&mxc_ccm->cs2cdr);
-	reg &= ~(MXC_CCM_CS2CDR_LDB_DI0_CLK_SEL_MASK
-		 |MXC_CCM_CS2CDR_LDB_DI1_CLK_SEL_MASK);
-	reg |= (3<<MXC_CCM_CS2CDR_LDB_DI0_CLK_SEL_OFFSET)
-	      |(3<<MXC_CCM_CS2CDR_LDB_DI1_CLK_SEL_OFFSET);
-	writel(reg, &mxc_ccm->cs2cdr);
-
-	reg = readl(&mxc_ccm->cscmr2);
-	reg |= MXC_CCM_CSCMR2_LDB_DI0_IPU_DIV;
-	writel(reg, &mxc_ccm->cscmr2);
-
 	reg = readl(&mxc_ccm->chsccdr);
-	reg &= ~(MXC_CCM_CHSCCDR_IPU1_DI0_PRE_CLK_SEL_MASK
-		|MXC_CCM_CHSCCDR_IPU1_DI0_PODF_MASK
-		|MXC_CCM_CHSCCDR_IPU1_DI0_CLK_SEL_MASK);
-	reg |= (CHSCCDR_CLK_SEL_LDB_DI0
-		<<MXC_CCM_CHSCCDR_IPU1_DI0_CLK_SEL_OFFSET)
-	      |(CHSCCDR_PODF_DIVIDE_BY_3
-		<<MXC_CCM_CHSCCDR_IPU1_DI0_PODF_OFFSET)
-	      |(CHSCCDR_IPU_PRE_CLK_540M_PFD
-		<<MXC_CCM_CHSCCDR_IPU1_DI0_PRE_CLK_SEL_OFFSET);
+	reg &= ~(MXC_CCM_CHSCCDR_IPU1_DI0_PODF_MASK |
+		 MXC_CCM_CHSCCDR_IPU1_DI0_PRE_CLK_SEL_MASK);
+	reg |= (CHSCCDR_PODF_DIVIDE_BY_3 <<MXC_CCM_CHSCCDR_IPU1_DI0_PODF_OFFSET) |
+	       (CHSCCDR_IPU_PRE_CLK_540M_PFD <<MXC_CCM_CHSCCDR_IPU1_DI0_PRE_CLK_SEL_OFFSET);
 	writel(reg, &mxc_ccm->chsccdr);
+}
 
-	reg = IOMUXC_GPR2_BGREF_RRMODE_EXTERNAL_RES
-	     |IOMUXC_GPR2_DI1_VS_POLARITY_ACTIVE_HIGH
-	     |IOMUXC_GPR2_DI0_VS_POLARITY_ACTIVE_LOW
-	     |IOMUXC_GPR2_BIT_MAPPING_CH1_SPWG
-	     |IOMUXC_GPR2_DATA_WIDTH_CH1_18BIT
-	     |IOMUXC_GPR2_BIT_MAPPING_CH0_SPWG
-	     |IOMUXC_GPR2_DATA_WIDTH_CH0_18BIT
-	     |IOMUXC_GPR2_LVDS_CH1_MODE_DISABLED
-	     |IOMUXC_GPR2_LVDS_CH0_MODE_ENABLED_DI0;
-	writel(reg, &iomux->gpr[2]);
+static unsigned short gpios_in[] = {
+	LVDS_BACKLIGHT_PWM,
+	GP_4_5_WIRE_SELECT,
+	GP_4_5_WIRE_SELECT_R1,
+};
 
-	reg = readl(&iomux->gpr[3]);
-	reg = (reg & ~(IOMUXC_GPR3_LVDS0_MUX_CTL_MASK
-		       |IOMUXC_GPR3_HDMI_MUX_CTL_MASK))
-	    | (IOMUXC_GPR3_MUX_SRC_IPU1_DI0
-	       <<IOMUXC_GPR3_LVDS0_MUX_CTL_OFFSET);
-	writel(reg, &iomux->gpr[3]);
+static void set_gpios_in(unsigned short *p, int cnt)
+{
+	int i;
 
-	/* backlights off until needed */
-	imx_iomux_v3_setup_multiple_pads(backlight_pads,
-					 ARRAY_SIZE(backlight_pads));
-	imx_iomux_v3_setup_multiple_pads(gpio_pads,
-					 ARRAY_SIZE(gpio_pads));
-	gpio_direction_input(LVDS_BACKLIGHT_PWM);
-
-	/* EIM_A25 - J5 4-wire/5-wire select (4-wire is 0) */
-	gpio_direction_input(IMX_GPIO_NR(5, 2));
-	/* SD3_DAT4 - jumpered 4-wire/5-wire select on first rev */
-	gpio_direction_input(IMX_GPIO_NR(7, 1));
+	for (i = 0; i < cnt; i++)
+		gpio_direction_input(*p++);
 }
 
 int board_early_init_f(void)
 {
-	imx_iomux_v3_setup_multiple_pads(uart_pads, ARRAY_SIZE(uart_pads));
+	set_gpios_in(gpios_in, ARRAY_SIZE(gpios_in));
+	imx_iomux_v3_setup_multiple_pads(init_pads, ARRAY_SIZE(init_pads));
+
+	imx_setup_display();
 	setup_display();
 	return 0;
 }
