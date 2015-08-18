@@ -140,6 +140,7 @@
 #define CONFIG_BMP_16BPP
 #define CONFIG_IPUV3_CLK 260000000
 #define CONFIG_CONSOLE_MUX
+#define CONFIG_IMX_VIDEO_SKIP
 
 /* allow to overwrite serial and ethaddr */
 #define CONFIG_ENV_OVERWRITE
