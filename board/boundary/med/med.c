@@ -68,6 +68,27 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #define OUTPUT_40OHM (PAD_CTL_SPEED_MED|PAD_CTL_DSE_40ohm)
 
+static iomux_v3_cfg_t const init_pads[] = {
+	/* Misc inputs */
+	MX6_PAD_GPIO_18__GPIO7_IO13,		/* bidirectional - NXP P0-8 */
+	MX6_PAD_NANDF_WP_B__GPIO6_IO09,		/* bidirectional - NXP P0-14 */
+	MX6_PAD_KEY_COL2__GPIO4_IO10,		/* bidirectional - NXP P0-21 */
+	MX6_PAD_KEY_ROW2__GPIO4_IO11,		/* bidirectional - NXP P0-21 */
+	MX6_PAD_CSI0_DATA_EN__GPIO5_IO20,	/* bidirectional - NXP P2-10 */
+	MX6_PAD_SD1_DAT1__GPIO1_IO17,		/* bidirectional - NXP RST_OUT */
+	/* Misc outputs */
+	MX6_PAD_EIM_DA0__GPIO3_IO00,	/* TPS3823 - reset generator for NXP active hi */
+	MX6_PAD_EIM_DA1__GPIO3_IO01,	/* output - to NXP P4-30 */
+	MX6_PAD_EIM_DA2__GPIO3_IO02,	/* 74LVC1G32 - WDT active low - reset to I.MX */
+	MX6_PAD_EIM_OE__GPIO2_IO25, 	/* output - to NXP P4-31 */
+	MX6_PAD_EIM_D20__GPIO3_IO20,	/* output - to NXP P1-10 */
+
+	/* Backlight on LVDS connector */
+#define BACKLIGHT_GP IMX_GPIO_NR(1, 18)
+	MX6_PAD_SD1_CMD__GPIO1_IO18 | MUX_PAD_CTRL(NO_PAD_CTRL),
+};
+
+
 int dram_init(void)
 {
 	gd->ram_size = ((ulong)CONFIG_DDR_MB * 1024 * 1024);
@@ -317,210 +338,49 @@ static void setup_buttons(void)
 					 ARRAY_SIZE(button_pads));
 }
 
-static void do_enable_hdmi(struct display_info_t const *dev)
+void board_enable_lvds(const struct display_info_t *di)
 {
-	imx_enable_hdmi_phy();
-}
-
-static iomux_v3_cfg_t const backlight_pads[] = {
-	/* Backlight on LVDS connector */
-	MX6_PAD_SD1_CMD__GPIO1_IO18 | MUX_PAD_CTRL(NO_PAD_CTRL),
-#define BACKLIGHT_GP IMX_GPIO_NR(1, 18)
-};
-
-static void enable_lvds_jeida(struct display_info_t const *dev)
-{
-	struct iomuxc *iomux = (struct iomuxc *)
-				IOMUXC_BASE_ADDR;
-	u32 reg = readl(&iomux->gpr[2]);
-	reg |= IOMUXC_GPR2_DATA_WIDTH_CH0_24BIT
-	     |IOMUXC_GPR2_BIT_MAPPING_CH0_JEIDA;
-	writel(reg, &iomux->gpr[2]);
 	gpio_direction_output(BACKLIGHT_GP, 1);
 }
 
-static int detect_i2c(struct display_info_t const *dev)
-{
-	return ((0 == i2c_set_bus_num(dev->bus))
-		&&
-		(0 == i2c_probe(dev->addr)));
-}
+const struct display_info_t displays[] = {
+	IMX_VD_WXGA_J(LVDS, 0, 0),
 
-static struct display_info_t const displays[] = {
-{
-	.bus	= 0,
-	.addr	= 0,
-	.pixfmt	= IPU_PIX_FMT_RGB24,
-	.detect	= NULL,
-	.enable	= enable_lvds_jeida,
-	.mode	= {
-		.name           = "LDB-WXGA",
-		.refresh        = 60,
-		.xres           = 1280,
-		.yres           = 800,
-		.pixclock       = 14065,
-		.left_margin    = 40,
-		.right_margin   = 40,
-		.upper_margin   = 3,
-		.lower_margin   = 80,
-		.hsync_len      = 10,
-		.vsync_len      = 10,
-		.sync           = FB_SYNC_EXT,
-		.vmode          = FB_VMODE_NONINTERLACED
-} }, {
-	.bus	= 1,
-	.addr	= 0x50,
-	.pixfmt	= IPU_PIX_FMT_RGB24,
-	.detect	= detect_i2c,
-	.enable	= do_enable_hdmi,
-	.mode	= {
-		.name           = "HDMI",
-		.refresh        = 60,
-		.xres           = 1024,
-		.yres           = 768,
-		.pixclock       = 15385,
-		.left_margin    = 220,
-		.right_margin   = 40,
-		.upper_margin   = 21,
-		.lower_margin   = 7,
-		.hsync_len      = 60,
-		.vsync_len      = 10,
-		.sync           = FB_SYNC_EXT,
-		.vmode          = FB_VMODE_NONINTERLACED
-} } };
+	/* hdmi */
+	IMX_VD50_1280_720M_60(HDMI, 1, 1),
+	IMX_VD50_1920_1080M_60(HDMI, 0, 1),
+	IMX_VD50_1024_768M_60(HDMI, 0, 1),
+};
+
+size_t display_count = ARRAY_SIZE(displays);
 
 int board_cfb_skip(void)
 {
 	return 1;
 }
 
-int board_video_skip(void)
+static unsigned short gpios_in[] = {
+	BACKLIGHT_GP,
+};
+
+static void set_gpios_in(unsigned short *p, int cnt)
 {
 	int i;
-	int ret;
-	char const *panel;
 
-	panel = getenv("panel");
-	if (!panel) {
-		for (i = 0; i < ARRAY_SIZE(displays); i++) {
-			struct display_info_t const *dev = displays+i;
-			if (dev->detect && dev->detect(dev)) {
-				panel = dev->mode.name;
-				printf("auto-detected panel %s\n", panel);
-				break;
-			}
-		}
-		if (!panel) {
-			panel = displays[0].mode.name;
-			printf("No panel detected: default to %s\n", panel);
-			i = 0;
-		}
-	} else {
-		for (i = 0; i < ARRAY_SIZE(displays); i++) {
-			if (!strcmp(panel, displays[i].mode.name))
-				break;
-		}
-	}
-	if (i < ARRAY_SIZE(displays)) {
-		ret = ipuv3_fb_init(&displays[i].mode, 0,
-				    displays[i].pixfmt);
-		if (!ret) {
-			displays[i].enable(displays+i);
-			printf("Display: %s (%ux%u)\n",
-			       displays[i].mode.name,
-			       displays[i].mode.xres,
-			       displays[i].mode.yres);
-		} else {
-			printf("LCD %s cannot be configured: %d\n",
-			       displays[i].mode.name, ret);
-		}
-	} else {
-		printf("unsupported panel %s\n", panel);
-		ret = -EINVAL;
-	}
-
-	return (0 != ret);
+	for (i = 0; i < cnt; i++)
+		gpio_direction_input(*p++);
 }
-
-static void setup_display(void)
-{
-	struct mxc_ccm_reg *mxc_ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
-	struct iomuxc *iomux = (struct iomuxc *)IOMUXC_BASE_ADDR;
-	int reg;
-
-	enable_ipu_clock();
-	imx_setup_hdmi();
-	/* Turn on LDB0,IPU,IPU DI0 clocks */
-	reg = __raw_readl(&mxc_ccm->CCGR3);
-	reg |=  MXC_CCM_CCGR3_LDB_DI0_MASK;
-	writel(reg, &mxc_ccm->CCGR3);
-
-	/* set LDB0, LDB1 clk select to 011/011 */
-	reg = readl(&mxc_ccm->cs2cdr);
-	reg &= ~(MXC_CCM_CS2CDR_LDB_DI0_CLK_SEL_MASK
-		 |MXC_CCM_CS2CDR_LDB_DI1_CLK_SEL_MASK);
-	reg |= (3<<MXC_CCM_CS2CDR_LDB_DI0_CLK_SEL_OFFSET)
-	      |(3<<MXC_CCM_CS2CDR_LDB_DI1_CLK_SEL_OFFSET);
-	writel(reg, &mxc_ccm->cs2cdr);
-
-	reg = readl(&mxc_ccm->cscmr2);
-	reg |= MXC_CCM_CSCMR2_LDB_DI0_IPU_DIV;
-	writel(reg, &mxc_ccm->cscmr2);
-
-	reg = readl(&mxc_ccm->chsccdr);
-	reg |= (CHSCCDR_CLK_SEL_LDB_DI0
-		<<MXC_CCM_CHSCCDR_IPU1_DI0_CLK_SEL_OFFSET);
-	writel(reg, &mxc_ccm->chsccdr);
-
-	reg = IOMUXC_GPR2_BGREF_RRMODE_EXTERNAL_RES
-	     |IOMUXC_GPR2_DI1_VS_POLARITY_ACTIVE_HIGH
-	     |IOMUXC_GPR2_DI0_VS_POLARITY_ACTIVE_LOW
-	     |IOMUXC_GPR2_BIT_MAPPING_CH1_SPWG
-	     |IOMUXC_GPR2_DATA_WIDTH_CH1_18BIT
-	     |IOMUXC_GPR2_BIT_MAPPING_CH0_SPWG
-	     |IOMUXC_GPR2_DATA_WIDTH_CH0_18BIT
-	     |IOMUXC_GPR2_LVDS_CH1_MODE_DISABLED
-	     |IOMUXC_GPR2_LVDS_CH0_MODE_ENABLED_DI0;
-	writel(reg, &iomux->gpr[2]);
-
-	reg = readl(&iomux->gpr[3]);
-	reg = (reg & ~(IOMUXC_GPR3_LVDS0_MUX_CTL_MASK
-			|IOMUXC_GPR3_HDMI_MUX_CTL_MASK))
-	    | (IOMUXC_GPR3_MUX_SRC_IPU1_DI0
-	       <<IOMUXC_GPR3_LVDS0_MUX_CTL_OFFSET);
-	writel(reg, &iomux->gpr[3]);
-
-	/* backlights off until needed */
-	imx_iomux_v3_setup_multiple_pads(backlight_pads,
-					 ARRAY_SIZE(backlight_pads));
-	gpio_direction_input(BACKLIGHT_GP);
-}
-
-static iomux_v3_cfg_t const init_pads[] = {
-	/* Misc inputs */
-	MX6_PAD_GPIO_18__GPIO7_IO13,		/* bidirectional - NXP P0-8 */
-	MX6_PAD_NANDF_WP_B__GPIO6_IO09,		/* bidirectional - NXP P0-14 */
-	MX6_PAD_KEY_COL2__GPIO4_IO10,		/* bidirectional - NXP P0-21 */
-	MX6_PAD_KEY_ROW2__GPIO4_IO11,		/* bidirectional - NXP P0-21 */
-	MX6_PAD_CSI0_DATA_EN__GPIO5_IO20,	/* bidirectional - NXP P2-10 */
-	MX6_PAD_SD1_DAT1__GPIO1_IO17,		/* bidirectional - NXP RST_OUT */
-	/* Misc outputs */
-	MX6_PAD_EIM_DA0__GPIO3_IO00,	/* TPS3823 - reset generator for NXP active hi */
-	MX6_PAD_EIM_DA1__GPIO3_IO01,	/* output - to NXP P4-30 */
-	MX6_PAD_EIM_DA2__GPIO3_IO02,	/* 74LVC1G32 - WDT active low - reset to I.MX */
-	MX6_PAD_EIM_OE__GPIO2_IO25, 	/* output - to NXP P4-31 */
-	MX6_PAD_EIM_D20__GPIO3_IO20,	/* output - to NXP P1-10 */
-};
 
 int board_early_init_f(void)
 {
 	setup_iomux_uart();
 
+	set_gpios_in(gpios_in, ARRAY_SIZE(gpios_in));
 	imx_iomux_v3_setup_multiple_pads(init_pads, ARRAY_SIZE(init_pads));
 	setup_buttons();
 
 #if defined(CONFIG_VIDEO_IPUV3)
-	setup_display();
+	imx_setup_display();
 #endif
 	return 0;
 }
