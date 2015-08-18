@@ -4,10 +4,14 @@
 
 #include <common.h>
 #include <asm/errno.h>
+#include <asm/arch/clock.h>
+#include <asm/arch/crm_regs.h>
 #include <asm/arch/mxc_hdmi.h>
+#include <asm/gpio.h>
 #include <asm/imx-common/video.h>
 #include <asm/io.h>
 #include <div64.h>
+#include <i2c.h>
 #include <malloc.h>
 #include <video_fb.h>
 /*
@@ -109,6 +113,31 @@ static const int timings_offsets[] = {
 	offsetof(struct fb_videomode, hsync_len),
 	offsetof(struct fb_videomode, vsync_len),
 };
+
+static void __board_enable_hdmi(const struct display_info_t *di)
+{
+}
+
+static void __board_enable_lcd(const struct display_info_t *di)
+{
+}
+
+static void __board_enable_lvds(const struct display_info_t *di)
+{
+}
+
+static void __board_enable_lvds2(const struct display_info_t *di)
+{
+}
+
+void board_enable_hdmi(const struct display_info_t *di)
+	__attribute__((weak, alias("__board_enable_hdmi")));
+void board_enable_lcd(const struct display_info_t *di)
+	__attribute__((weak, alias("__board_enable_lcd")));
+void board_enable_lvds(const struct display_info_t *di)
+	__attribute__((weak, alias("__board_enable_lvds")));
+void board_enable_lvds2(const struct display_info_t *di)
+	__attribute__((weak, alias("__board_enable_lvds2")));
 
 static unsigned get_fb_available_mask(void)
 {
@@ -233,36 +262,131 @@ static const struct display_info_t *find_panel(unsigned fb, const char *name)
 static char g_mode_str[4][80];
 static struct display_info_t g_di_temp[FB_COUNT];
 
-void enable_fb(struct display_info_t const *di)
+int imx_detect_i2c(struct display_info_t const *di)
 {
+	int ret;
+	int gp = di->bus >> 8;
+
+	if (gp)
+		gpio_set_value(gp, 1);
+	ret = i2c_set_bus_num(di->bus & 0xff);
+	if (ret == 0)
+		ret = i2c_probe(di->addr);
+	if (gp)
+		gpio_set_value(gp, 0);
+	return (ret == 0);
+}
+
+void imx_setup_display(void)
+{
+	struct mxc_ccm_reg *mxc_ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
 	struct iomuxc *iomux = (struct iomuxc *)IOMUXC_BASE_ADDR;
-	u32 reg;
+	int reg;
+
+	enable_ipu_clock();
+#ifdef CONFIG_IMX_HDMI
+	imx_setup_hdmi();
+#endif
+	/* Turn on LDB0,IPU,IPU DI0 clocks */
+	reg = __raw_readl(&mxc_ccm->CCGR3);
+	reg |=  MXC_CCM_CCGR3_LDB_DI0_MASK;
+	writel(reg, &mxc_ccm->CCGR3);
+
+	/* set LDB0, LDB1 clk select to 011/011 */
+	reg = readl(&mxc_ccm->cs2cdr);
+	reg &= ~(MXC_CCM_CS2CDR_LDB_DI0_CLK_SEL_MASK
+		 |MXC_CCM_CS2CDR_LDB_DI1_CLK_SEL_MASK);
+	reg |= (3<<MXC_CCM_CS2CDR_LDB_DI0_CLK_SEL_OFFSET)
+	      |(3<<MXC_CCM_CS2CDR_LDB_DI1_CLK_SEL_OFFSET);
+	writel(reg, &mxc_ccm->cs2cdr);
+
+	reg = readl(&mxc_ccm->chsccdr);
+	reg &= ~MXC_CCM_CHSCCDR_IPU1_DI0_CLK_SEL_MASK;
+	reg |= (CHSCCDR_CLK_SEL_LDB_DI0
+		<<MXC_CCM_CHSCCDR_IPU1_DI0_CLK_SEL_OFFSET);
+	writel(reg, &mxc_ccm->chsccdr);
+
+	reg = IOMUXC_GPR2_BGREF_RRMODE_EXTERNAL_RES
+	     |IOMUXC_GPR2_DI1_VS_POLARITY_ACTIVE_LOW
+	     |IOMUXC_GPR2_DI0_VS_POLARITY_ACTIVE_LOW
+	     |IOMUXC_GPR2_BIT_MAPPING_CH1_SPWG
+	     |IOMUXC_GPR2_DATA_WIDTH_CH1_18BIT
+	     |IOMUXC_GPR2_BIT_MAPPING_CH0_SPWG
+	     |IOMUXC_GPR2_DATA_WIDTH_CH0_18BIT;
+	writel(reg, &iomux->gpr[2]);
+
+	reg = readl(&iomux->gpr[3]);
+	reg = (reg & ~(IOMUXC_GPR3_LVDS0_MUX_CTL_MASK
+			|IOMUXC_GPR3_HDMI_MUX_CTL_MASK))
+	    | (IOMUXC_GPR3_MUX_SRC_IPU1_DI0
+	       <<IOMUXC_GPR3_LVDS0_MUX_CTL_OFFSET);
+	writel(reg, &iomux->gpr[3]);
+}
+
+void imx_enable_fb(struct display_info_t const *di)
+{
+	struct mxc_ccm_reg *mxc_ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
+	struct iomuxc *iomux = (struct iomuxc *)IOMUXC_BASE_ADDR;
+	u32 reg, cscmr2;
+	u32 tmp;
 
 	switch (di->fbtype) {
+#ifdef CONFIG_IMX_HDMI
 	case FB_HDMI:
 		imx_enable_hdmi_phy();
 		board_enable_hdmi(di);
 		break;
+#endif
 	case FB_LCD:
 		board_enable_lcd(di);
 		break;
 	case FB_LVDS:
 		reg = readl(&iomux->gpr[2]);
-		reg &= ~(IOMUXC_GPR2_DATA_WIDTH_CH0_24BIT | IOMUXC_GPR2_BIT_MAPPING_CH0_JEIDA);
+		cscmr2 = readl(&mxc_ccm->cscmr2);
+		reg &= ~(IOMUXC_GPR2_DATA_WIDTH_CH0_24BIT |
+			 IOMUXC_GPR2_BIT_MAPPING_CH0_JEIDA |
+			 IOMUXC_GPR2_DATA_WIDTH_CH1_24BIT |
+ 			 IOMUXC_GPR2_BIT_MAPPING_CH1_JEIDA |
+			 IOMUXC_GPR2_LVDS_CH0_MODE_MASK |
+			 IOMUXC_GPR2_LVDS_CH1_MODE_MASK |
+			 IOMUXC_GPR2_SPLIT_MODE_EN_MASK);
+		tmp = 0;
 		if (di->pixfmt == IPU_PIX_FMT_RGB24)
-			reg |= IOMUXC_GPR2_DATA_WIDTH_CH0_24BIT;
+			tmp |= IOMUXC_GPR2_DATA_WIDTH_CH0_24BIT;
 		if (di->fbflags & FBF_JEIDA)
-			reg |= IOMUXC_GPR2_BIT_MAPPING_CH0_JEIDA;
+			tmp |= IOMUXC_GPR2_BIT_MAPPING_CH0_JEIDA;
+		if (di->fbflags & FBF_SPLITMODE) {
+			tmp |= tmp << 2;
+			tmp |= IOMUXC_GPR2_SPLIT_MODE_EN_MASK |
+			       IOMUXC_GPR2_LVDS_CH1_MODE_ENABLED_DI0;
+
+			cscmr2 &= ~(MXC_CCM_CSCMR2_LDB_DI0_IPU_DIV |
+				 MXC_CCM_CSCMR2_LDB_DI1_IPU_DIV);
+
+		} else {
+			cscmr2 |= MXC_CCM_CSCMR2_LDB_DI0_IPU_DIV;
+		}
+		writel(cscmr2, &mxc_ccm->cscmr2);
+		reg |= tmp | IOMUXC_GPR2_LVDS_CH0_MODE_ENABLED_DI0;
 		writel(reg, &iomux->gpr[2]);
 		board_enable_lvds(di);
 		break;
 	case FB_LVDS2:
 		reg = readl(&iomux->gpr[2]);
-		reg &= ~(IOMUXC_GPR2_DATA_WIDTH_CH1_24BIT | IOMUXC_GPR2_BIT_MAPPING_CH1_JEIDA);
+		cscmr2 = readl(&mxc_ccm->cscmr2);
+		reg &= ~(IOMUXC_GPR2_DATA_WIDTH_CH1_24BIT |
+			 IOMUXC_GPR2_BIT_MAPPING_CH1_JEIDA |
+			 IOMUXC_GPR2_LVDS_CH0_MODE_MASK |
+			 IOMUXC_GPR2_LVDS_CH1_MODE_MASK);
 		if (di->pixfmt == IPU_PIX_FMT_RGB24)
 			reg |= IOMUXC_GPR2_DATA_WIDTH_CH1_24BIT;
 		if (di->fbflags & FBF_JEIDA)
 			reg |= IOMUXC_GPR2_BIT_MAPPING_CH1_JEIDA;
+
+		cscmr2 |= MXC_CCM_CSCMR2_LDB_DI1_IPU_DIV;
+		writel(cscmr2, &mxc_ccm->cscmr2);
+
+		reg |= IOMUXC_GPR2_LVDS_CH1_MODE_ENABLED_DI0;
 		writel(reg, &iomux->gpr[2]);
 		board_enable_lvds2(di);
 		break;
@@ -308,7 +432,7 @@ static const struct display_info_t * parse_mode(const char *p, unsigned fb, unsi
 
 	di->fbtype = fb;
 	di->mode.name = mode_str;
-	di->enable = enable_fb;
+	di->enable = imx_enable_fb;
 
 	if (c == 'm') {
 		di->fbflags |= FBF_MODESTR;
