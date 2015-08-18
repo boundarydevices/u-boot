@@ -69,6 +69,33 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #define OUTPUT_40OHM (PAD_CTL_SPEED_MED|PAD_CTL_DSE_40ohm)
 
+static iomux_v3_cfg_t const init_pads[] = {
+	NEW_PAD_CTRL(MX6_PAD_GPIO_0__CCM_CLKO1, OUTPUT_40OHM),	/* SGTL5000 sys_mclk */
+	NEW_PAD_CTRL(MX6_PAD_GPIO_3__CCM_CLKO2, OUTPUT_40OHM),	/* J5 - Camera MCLK */
+
+	/* wl1271 pads */
+#define WL12XX_WL_IRQ_GP	IMX_GPIO_NR(6, 14)
+	NEW_PAD_CTRL(MX6_PAD_NANDF_CS1__GPIO6_IO14, WEAK_PULLDOWN),
+	/* WL12XX_WL_ENABLE_GP */
+	NEW_PAD_CTRL(MX6_PAD_NANDF_CS2__GPIO6_IO15, OUTPUT_40OHM),
+	/* WL12XX_BT_ENABLE_GP */
+	NEW_PAD_CTRL(MX6_PAD_NANDF_CS3__GPIO6_IO16, OUTPUT_40OHM),
+	/* USB otg power */
+	NEW_PAD_CTRL(MX6_PAD_EIM_D22__GPIO3_IO22, OUTPUT_40OHM),
+	NEW_PAD_CTRL(MX6_PAD_NANDF_D5__GPIO2_IO05, OUTPUT_40OHM),
+	NEW_PAD_CTRL(MX6_PAD_NANDF_WP_B__GPIO6_IO09, OUTPUT_40OHM),
+	NEW_PAD_CTRL(MX6_PAD_GPIO_8__GPIO1_IO08, OUTPUT_40OHM),
+	NEW_PAD_CTRL(MX6_PAD_GPIO_6__GPIO1_IO06, OUTPUT_40OHM),
+
+	/* Backlight on RGB connector: J15 */
+#define RGB_BACKLIGHT_GP IMX_GPIO_NR(1, 21)
+	MX6_PAD_SD1_DAT3__GPIO1_IO21 | MUX_PAD_CTRL(NO_PAD_CTRL),
+
+	/* Backlight on LVDS connector: J6 */
+#define LVDS_BACKLIGHT_GP IMX_GPIO_NR(1, 18)
+	MX6_PAD_SD1_CMD__GPIO1_IO18 | MUX_PAD_CTRL(NO_PAD_CTRL),
+};
+
 int dram_init(void)
 {
 	gd->ram_size = ((ulong)CONFIG_DDR_MB * 1024 * 1024);
@@ -453,13 +480,6 @@ static void setup_buttons(void)
 #if defined(CONFIG_VIDEO_IPUV3)
 
 static iomux_v3_cfg_t const backlight_pads[] = {
-	/* Backlight on RGB connector: J15 */
-	MX6_PAD_SD1_DAT3__GPIO1_IO21 | MUX_PAD_CTRL(NO_PAD_CTRL),
-#define RGB_BACKLIGHT_GP IMX_GPIO_NR(1, 21)
-
-	/* Backlight on LVDS connector: J6 */
-	MX6_PAD_SD1_CMD__GPIO1_IO18 | MUX_PAD_CTRL(NO_PAD_CTRL),
-#define LVDS_BACKLIGHT_GP IMX_GPIO_NR(1, 18)
 };
 
 static iomux_v3_cfg_t const rgb_pads[] = {
@@ -494,392 +514,61 @@ static iomux_v3_cfg_t const rgb_pads[] = {
 	MX6_PAD_DISP0_DAT23__IPU1_DISP0_DATA23,
 };
 
-static void do_enable_hdmi(struct display_info_t const *dev)
+void board_enable_lvds(const struct display_info_t *di)
 {
-	imx_enable_hdmi_phy();
-}
-
-static int detect_i2c(struct display_info_t const *dev)
-{
-	return ((0 == i2c_set_bus_num(dev->bus))
-		&&
-		(0 == i2c_probe(dev->addr)));
-}
-
-static void enable_lvds(struct display_info_t const *dev)
-{
-	struct iomuxc *iomux = (struct iomuxc *)
-				IOMUXC_BASE_ADDR;
-	u32 reg = readl(&iomux->gpr[2]);
-	reg |= IOMUXC_GPR2_DATA_WIDTH_CH0_24BIT;
-	writel(reg, &iomux->gpr[2]);
 	gpio_direction_output(LVDS_BACKLIGHT_GP, 1);
 }
 
-static void enable_lvds_jeida(struct display_info_t const *dev)
-{
-	struct iomuxc *iomux = (struct iomuxc *)
-				IOMUXC_BASE_ADDR;
-	u32 reg = readl(&iomux->gpr[2]);
-	reg |= IOMUXC_GPR2_DATA_WIDTH_CH0_24BIT
-	     |IOMUXC_GPR2_BIT_MAPPING_CH0_JEIDA;
-	writel(reg, &iomux->gpr[2]);
-	gpio_direction_output(LVDS_BACKLIGHT_GP, 1);
-}
-
-static void enable_rgb(struct display_info_t const *dev)
+void board_enable_lcd(const struct display_info_t *di)
 {
 	imx_iomux_v3_setup_multiple_pads(rgb_pads, ARRAY_SIZE(rgb_pads));
+#ifdef CONFIG_MXC_SPI_DISPLAY
+	if (di->fbflags & FBF_SPI)
+		return enable_spi_rgb(di);
+#endif
 	gpio_direction_output(RGB_BACKLIGHT_GP, 1);
 }
 
-struct display_info_t const displays[] = {
-{
-	.bus	= 1,
-	.addr	= 0x50,
-	.pixfmt	= IPU_PIX_FMT_RGB24,
-	.detect	= detect_i2c,
-	.enable	= do_enable_hdmi,
-	.mode	= {
-		.name           = "HDMI",
-		.refresh        = 60,
-		.xres           = 1024,
-		.yres           = 768,
-		.pixclock       = 15385,
-		.left_margin    = 220,
-		.right_margin   = 40,
-		.upper_margin   = 21,
-		.lower_margin   = 7,
-		.hsync_len      = 60,
-		.vsync_len      = 10,
-		.sync           = FB_SYNC_EXT,
-		.vmode          = FB_VMODE_NONINTERLACED
-} }, {
-	.bus	= 0,
-	.addr	= 0,
-	.pixfmt	= IPU_PIX_FMT_RGB24,
-	.detect	= NULL,
-	.enable	= enable_lvds_jeida,
-	.mode	= {
-		.name           = "LDB-WXGA",
-		.refresh        = 60,
-		.xres           = 1280,
-		.yres           = 800,
-		.pixclock       = 14065,
-		.left_margin    = 40,
-		.right_margin   = 40,
-		.upper_margin   = 3,
-		.lower_margin   = 80,
-		.hsync_len      = 10,
-		.vsync_len      = 10,
-		.sync           = FB_SYNC_EXT,
-		.vmode          = FB_VMODE_NONINTERLACED
-} }, {
-	.bus	= 2,
-	.addr	= 0x4,
-	.pixfmt	= IPU_PIX_FMT_LVDS666,
-	.detect	= detect_i2c,
-	.enable	= enable_lvds,
-	.mode	= {
-		.name           = "Hannstar-XGA",
-		.refresh        = 60,
-		.xres           = 1024,
-		.yres           = 768,
-		.pixclock       = 15385,
-		.left_margin    = 220,
-		.right_margin   = 40,
-		.upper_margin   = 21,
-		.lower_margin   = 7,
-		.hsync_len      = 60,
-		.vsync_len      = 10,
-		.sync           = FB_SYNC_EXT,
-		.vmode          = FB_VMODE_NONINTERLACED
-} }, {
-	.bus	= 0,
-	.addr	= 0,
-	.pixfmt	= IPU_PIX_FMT_RGB24,
-	.detect	= NULL,
-	.enable	= enable_lvds,
-	.mode	= {
-		.name           = "LDB-WXGA-S",
-		.refresh        = 60,
-		.xres           = 1280,
-		.yres           = 800,
-		.pixclock       = 14065,
-		.left_margin    = 40,
-		.right_margin   = 40,
-		.upper_margin   = 3,
-		.lower_margin   = 80,
-		.hsync_len      = 10,
-		.vsync_len      = 10,
-		.sync           = FB_SYNC_EXT,
-		.vmode          = FB_VMODE_NONINTERLACED
-} }, {
-	.bus	= 2,
-	.addr	= 0x4,
-	.pixfmt	= IPU_PIX_FMT_LVDS666,
-	.detect	= detect_i2c,
-	.enable	= enable_lvds,
-	.mode	= {
-		.name           = "LG-9.7",
-		.refresh        = 60,
-		.xres           = 1024,
-		.yres           = 768,
-		.pixclock       = 15385, /* ~65MHz */
-		.left_margin    = 480,
-		.right_margin   = 260,
-		.upper_margin   = 16,
-		.lower_margin   = 6,
-		.hsync_len      = 250,
-		.vsync_len      = 10,
-		.sync           = FB_SYNC_EXT,
-		.vmode          = FB_VMODE_NONINTERLACED
-} }, {
-	.bus	= 2,
-	.addr	= 0x38,
-	.pixfmt	= IPU_PIX_FMT_LVDS666,
-	.detect	= detect_i2c,
-	.enable	= enable_lvds,
-	.mode	= {
-		.name           = "wsvga-lvds",
-		.refresh        = 60,
-		.xres           = 1024,
-		.yres           = 600,
-		.pixclock       = 15385,
-		.left_margin    = 220,
-		.right_margin   = 40,
-		.upper_margin   = 21,
-		.lower_margin   = 7,
-		.hsync_len      = 60,
-		.vsync_len      = 10,
-		.sync           = FB_SYNC_EXT,
-		.vmode          = FB_VMODE_NONINTERLACED
-} }, {
-	.bus	= 2,
-	.addr	= 0x41,
-	.pixfmt	= IPU_PIX_FMT_LVDS666,
-	.detect	= detect_i2c,
-	.enable	= enable_lvds,
-	.mode	= {
-		.name           = "amp1024x600",
-		.refresh        = 60,
-		.xres           = 1024,
-		.yres           = 600,
-		.pixclock       = 15385,
-		.left_margin    = 220,
-		.right_margin   = 40,
-		.upper_margin   = 21,
-		.lower_margin   = 7,
-		.hsync_len      = 60,
-		.vsync_len      = 10,
-		.sync           = FB_SYNC_EXT,
-		.vmode          = FB_VMODE_NONINTERLACED
-} }, {
-	.bus	= 0,
-	.addr	= 0,
-	.pixfmt	= IPU_PIX_FMT_LVDS666,
-	.detect	= 0,
-	.enable	= enable_lvds,
-	.mode	= {
-		.name           = "wvga-lvds",
-		.refresh        = 57,
-		.xres           = 800,
-		.yres           = 480,
-		.pixclock       = 15385,
-		.left_margin    = 220,
-		.right_margin   = 40,
-		.upper_margin   = 21,
-		.lower_margin   = 7,
-		.hsync_len      = 60,
-		.vsync_len      = 10,
-		.sync           = FB_SYNC_EXT,
-		.vmode          = FB_VMODE_NONINTERLACED
-} }, {
-	.bus	= 0,
-	.addr	= 0,
-	.pixfmt	= IPU_PIX_FMT_RGB24,
-	.detect	= 0,
-	.enable	= enable_lvds,
-	.mode	= {
-		.name           = "AA065VE11",
-		.refresh        = 70,
-		.xres           = 640,
-		.yres           = 480,
-		.pixclock       = 22858,	/* 1000000000000 /1000 / 625 / 70 = 22857.1, 23000 works 23100 doesn't */
-		.left_margin    = 48 + 100,
-		.right_margin   = 16 + 100,
-		.upper_margin   = 33 + 50,
-		.lower_margin   = 10 + 50,
-		.hsync_len      = 96,
-		.vsync_len      = 2,
-		.sync           = FB_SYNC_EXT,
-		.vmode          = FB_VMODE_NONINTERLACED
-} }, {
-	.bus	= 0,
-	.addr	= 0,
-	.pixfmt	= IPU_PIX_FMT_RGB24,
-	.detect	= 0,
-	.enable	= enable_lvds,
-	.mode	= {
-		.name           = "vga-lvds",
-		.refresh        = 60,
-		.xres           = 640,
-		.yres           = 480,
-		.pixclock       = 39682,	/* 10**12 /800 / 525 / 60 = 39682 */
-		.left_margin    = 48,
-		.right_margin   = 16,
-		.upper_margin   = 33,
-		.lower_margin   = 10,
-		.hsync_len      = 96,
-		.vsync_len      = 2,
-		.sync           = FB_SYNC_EXT,
-		.vmode          = FB_VMODE_NONINTERLACED
-} }, {
-	.bus	= 2,
-	.addr	= 0x48,
-	.pixfmt	= IPU_PIX_FMT_RGB666,
-	.detect	= detect_i2c,
-	.enable	= enable_rgb,
-	.mode	= {
-		.name           = "wvga-rgb",
-		.refresh        = 57,
-		.xres           = 800,
-		.yres           = 480,
-		.pixclock       = 37037,
-		.left_margin    = 40,
-		.right_margin   = 60,
-		.upper_margin   = 10,
-		.lower_margin   = 10,
-		.hsync_len      = 20,
-		.vsync_len      = 10,
-		.sync           = 0,
-		.vmode          = FB_VMODE_NONINTERLACED
-} }, {
-	.bus	= 2,
-	.addr	= 0x48,
-	.pixfmt	= IPU_PIX_FMT_RGB666,
-	.detect	= detect_i2c,
-	.enable	= enable_rgb,
-	.mode	= {
-		.name           = "sharp-wvga",
-		.refresh        = 60,
-		.xres           = 800,
-		.yres           = 480,
-		.pixclock       = 1000000000/928 * 1000 /525/60,
-		.left_margin    = 40,
-		.right_margin   = 40,
-		.upper_margin   = 31,
-		.lower_margin   = 11,
-		.hsync_len      = 48,
-		.vsync_len      = 3,
-		.sync           = 0,
-		.vmode          = FB_VMODE_NONINTERLACED
-} }, {
-	.bus	= 2,
-	.addr	= 0x10,
-	.pixfmt	= IPU_PIX_FMT_RGB666,
-	.detect	= detect_i2c,
-	.enable	= enable_rgb,
-	.mode	= {
-		.name           = "fusion7",
-		.refresh        = 60,
-		.xres           = 800,
-		.yres           = 480,
-		.pixclock       = 33898,
-		.left_margin    = 96,
-		.right_margin   = 24,
-		.upper_margin   = 3,
-		.lower_margin   = 10,
-		.hsync_len      = 72,
-		.vsync_len      = 7,
-		.sync           = 0x40000002,
-		.vmode          = FB_VMODE_NONINTERLACED
-} }, {
-	.bus	= 0,
-	.addr	= 0,
-	.pixfmt	= IPU_PIX_FMT_RGB666,
-	.detect	= detect_i2c,
-	.enable	= enable_rgb,
-	.mode	= {
-		.name           = "svga",
-		.refresh        = 60,
-		.xres           = 800,
-		.yres           = 600,
-		.pixclock       = 15385,
-		.left_margin    = 220,
-		.right_margin   = 40,
-		.upper_margin   = 21,
-		.lower_margin   = 7,
-		.hsync_len      = 60,
-		.vsync_len      = 10,
-		.sync           = 0,
-		.vmode          = FB_VMODE_NONINTERLACED
-} }, {
-	.bus	= 2,
-	.addr	= 0x48,
-	.pixfmt	= IPU_PIX_FMT_RGB24,
-	.detect	= detect_i2c,
-	.enable	= enable_rgb,
-	.mode	= {
-		.name           = "qvga",
-		.refresh        = 60,
-		.xres           = 320,
-		.yres           = 240,
-		.pixclock       = 37037,
-		.left_margin    = 38,
-		.right_margin   = 37,
-		.upper_margin   = 16,
-		.lower_margin   = 15,
-		.hsync_len      = 30,
-		.vsync_len      = 3,
-		.sync           = 0,
-		.vmode          = FB_VMODE_NONINTERLACED
-} },
+const struct display_info_t displays[] = {
+	/* hdmi */
+	IMX_VD50_1280_720M_60(HDMI, 1, 1),
+	IMX_VD50_1920_1080M_60(HDMI, 0, 1),
+	IMX_VD50_1024_768M_60(HDMI, 0, 1),
+
+	/* ft5x06 */
+	IMX_VD38_LG1280_800(LVDS, 1, 2),
+	IMX_VD38_HANNSTAR7(LVDS, 0, 2),
+	IMX_VD38_WSVGA(LVDS, 0, 2),
+
+	/* ili210x */
+	IMX_VD41_AMP1024_600(LVDS, 1, 2),
+
+	/* egalax_ts */
+	IMX_VD04_HANNSTAR(LVDS, 1, 2),
+	IMX_VD04_LG9_7(LVDS, 0, 2),
+
+	/* fusion7 specific touchscreen */
+	IMX_VD10_FUSION7(LCD, 1, 2),
+
+	IMX_VD_SHARP_LQ101K1LY04(LVDS, 0, 0),
+	IMX_VD_WXGA_J(LVDS, 0, 0),
+	IMX_VD_WXGA(LVDS, 0, 0),
+	IMX_VD_WVGA(LVDS, 0, 0),
+	IMX_VD_AA065VE11(LVDS, 0, 0),
+	IMX_VD_VGA(LVDS, 0, 0),
+
+	/* tsc2004 */
+	IMX_VD48_CLAA_WVGA(LCD, 1, 2),
+	IMX_VD48_SHARP_WVGA(LCD, 0, 2),
+	IMX_VD48_DC050WX(LCD, 0, 2),
+	IMX_VD48_QVGA(LCD, 0, 2),
+	IMX_VD48_AT035GT_07ET3(LCD, 0, 2),
+
+	IMX_VD_LSA40AT9001(LCD, 0, 0),
+	IMX_VD_SVGA(LCD, 0, 0),
 #ifdef CONFIG_MXC_SPI_DISPLAY
-{
-	.bus	= 1,
-	.addr	= 0,
-	.pixfmt	= IPU_PIX_FMT_RGB24,
-	.detect	= 0,
-	.enable	= enable_spi_rgb,
-	.mode	= {
-		.name           = "AUO_G050",
-		.refresh        = 60,
-		.xres           = 480,
-		.yres           = 800,
-		.pixclock       = 1000000000/516 * 1000 /836/60, /* 38636 */
-		.left_margin    = 18,
-		.right_margin   = 16,
-		.upper_margin   = 18,
-		.lower_margin   = 16,
-		.hsync_len      = 2,
-		.vsync_len      = 2,
-		.sync           = 0,
-		.vmode          = FB_VMODE_NONINTERLACED
-	},
-},
-{
-	.bus	= 1,
-	.addr	= 2,
-	.pixfmt	= IPU_PIX_FMT_UPS051,
-	.detect	= 0,
-	.enable	= enable_spi_rgb,
-	.mode	= {
-		.name           = "A030JN01_UPS051",
-		.refresh        = 60,
-		.xres           = 640,		//640 * 3/2 = 960, (1.5 clocks per pixel)
-		.yres           = 480,
-		.pixclock       = 29668,	//(960+40+48+20)*(480+27+18+1)*60 = 1068*526*60 = 33.7M
-		.left_margin    = 40,
-		.right_margin   = 48,
-		.upper_margin   = 27,
-		.lower_margin   = 18,
-		.hsync_len      = 20,
-		.vsync_len      = 1,
-		.sync           = 0,
-		.vmode          = FB_VMODE_NONINTERLACED
-	},
-},
+	IMX_VD_AUO_G050(LCD, 0, 1),
+	IMX_VD_A030JN01_UPS051(LCD, 0, 1),
 #endif
 };
 
@@ -889,83 +578,7 @@ int board_cfb_skip(void)
 {
 	return NULL != getenv("novideo");
 }
-
-static void setup_display(void)
-{
-	struct mxc_ccm_reg *mxc_ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
-	struct iomuxc *iomux = (struct iomuxc *)IOMUXC_BASE_ADDR;
-	int reg;
-
-	enable_ipu_clock();
-	imx_setup_hdmi();
-	/* Turn on LDB0,IPU,IPU DI0 clocks */
-	reg = __raw_readl(&mxc_ccm->CCGR3);
-	reg |=  MXC_CCM_CCGR3_LDB_DI0_MASK;
-	writel(reg, &mxc_ccm->CCGR3);
-
-	/* set LDB0, LDB1 clk select to 011/011 */
-	reg = readl(&mxc_ccm->cs2cdr);
-	reg &= ~(MXC_CCM_CS2CDR_LDB_DI0_CLK_SEL_MASK
-		 |MXC_CCM_CS2CDR_LDB_DI1_CLK_SEL_MASK);
-	reg |= (3<<MXC_CCM_CS2CDR_LDB_DI0_CLK_SEL_OFFSET)
-	      |(3<<MXC_CCM_CS2CDR_LDB_DI1_CLK_SEL_OFFSET);
-	writel(reg, &mxc_ccm->cs2cdr);
-
-	reg = readl(&mxc_ccm->cscmr2);
-	reg |= MXC_CCM_CSCMR2_LDB_DI0_IPU_DIV;
-	writel(reg, &mxc_ccm->cscmr2);
-
-	reg = readl(&mxc_ccm->chsccdr);
-	reg |= (CHSCCDR_CLK_SEL_LDB_DI0
-		<<MXC_CCM_CHSCCDR_IPU1_DI0_CLK_SEL_OFFSET);
-	writel(reg, &mxc_ccm->chsccdr);
-
-	reg = IOMUXC_GPR2_BGREF_RRMODE_EXTERNAL_RES
-	     |IOMUXC_GPR2_DI1_VS_POLARITY_ACTIVE_HIGH
-	     |IOMUXC_GPR2_DI0_VS_POLARITY_ACTIVE_LOW
-	     |IOMUXC_GPR2_BIT_MAPPING_CH1_SPWG
-	     |IOMUXC_GPR2_DATA_WIDTH_CH1_18BIT
-	     |IOMUXC_GPR2_BIT_MAPPING_CH0_SPWG
-	     |IOMUXC_GPR2_DATA_WIDTH_CH0_18BIT
-	     |IOMUXC_GPR2_LVDS_CH1_MODE_DISABLED
-	     |IOMUXC_GPR2_LVDS_CH0_MODE_ENABLED_DI0;
-	writel(reg, &iomux->gpr[2]);
-
-	reg = readl(&iomux->gpr[3]);
-	reg = (reg & ~(IOMUXC_GPR3_LVDS0_MUX_CTL_MASK
-			|IOMUXC_GPR3_HDMI_MUX_CTL_MASK))
-	    | (IOMUXC_GPR3_MUX_SRC_IPU1_DI0
-	       <<IOMUXC_GPR3_LVDS0_MUX_CTL_OFFSET);
-	writel(reg, &iomux->gpr[3]);
-
-	/* backlights off until needed */
-	imx_iomux_v3_setup_multiple_pads(backlight_pads,
-					 ARRAY_SIZE(backlight_pads));
-	gpio_direction_input(LVDS_BACKLIGHT_GP);
-	gpio_direction_input(RGB_BACKLIGHT_GP);
-}
 #endif
-
-static iomux_v3_cfg_t const init_pads[] = {
-	NEW_PAD_CTRL(MX6_PAD_GPIO_0__CCM_CLKO1, OUTPUT_40OHM),	/* SGTL5000 sys_mclk */
-	NEW_PAD_CTRL(MX6_PAD_GPIO_3__CCM_CLKO2, OUTPUT_40OHM),	/* J5 - Camera MCLK */
-
-	/* wl1271 pads */
-	/* WL12XX_WL_IRQ_GP */
-	NEW_PAD_CTRL(MX6_PAD_NANDF_CS1__GPIO6_IO14, WEAK_PULLDOWN),
-	/* WL12XX_WL_ENABLE_GP */
-	NEW_PAD_CTRL(MX6_PAD_NANDF_CS2__GPIO6_IO15, OUTPUT_40OHM),
-	/* WL12XX_BT_ENABLE_GP */
-	NEW_PAD_CTRL(MX6_PAD_NANDF_CS3__GPIO6_IO16, OUTPUT_40OHM),
-	/* USB otg power */
-	NEW_PAD_CTRL(MX6_PAD_EIM_D22__GPIO3_IO22, OUTPUT_40OHM),
-	NEW_PAD_CTRL(MX6_PAD_NANDF_D5__GPIO2_IO05, OUTPUT_40OHM),
-	NEW_PAD_CTRL(MX6_PAD_NANDF_WP_B__GPIO6_IO09, OUTPUT_40OHM),
-	NEW_PAD_CTRL(MX6_PAD_GPIO_8__GPIO1_IO08, OUTPUT_40OHM),
-	NEW_PAD_CTRL(MX6_PAD_GPIO_6__GPIO1_IO06, OUTPUT_40OHM),
-};
-
-#define WL12XX_WL_IRQ_GP	IMX_GPIO_NR(6, 14)
 
 static unsigned gpios_out_low[] = {
 	/* Disable wl1271 */
@@ -981,6 +594,20 @@ static unsigned gpios_out_high[] = {
 	IMX_GPIO_NR(6, 9),	/* ov5640 mipi camera power down */
 };
 
+static unsigned short gpios_in[] = {
+	LVDS_BACKLIGHT_GP,
+	RGB_BACKLIGHT_GP,
+	WL12XX_WL_IRQ_GP,
+};
+
+static void set_gpios_in(unsigned short *p, int cnt)
+{
+	int i;
+
+	for (i = 0; i < cnt; i++)
+		gpio_direction_input(*p++);
+}
+
 static void set_gpios(unsigned *p, int cnt, int val)
 {
 	int i;
@@ -993,15 +620,15 @@ int board_early_init_f(void)
 {
 	setup_iomux_uart();
 
+	set_gpios_in(gpios_in, ARRAY_SIZE(gpios_in));
 	set_gpios(gpios_out_high, ARRAY_SIZE(gpios_out_high), 1);
 	set_gpios(gpios_out_low, ARRAY_SIZE(gpios_out_low), 0);
-	gpio_direction_input(WL12XX_WL_IRQ_GP);
 
 	imx_iomux_v3_setup_multiple_pads(init_pads, ARRAY_SIZE(init_pads));
 	setup_buttons();
 
 #if defined(CONFIG_VIDEO_IPUV3)
-	setup_display();
+	imx_setup_display();
 #endif
 	return 0;
 }
