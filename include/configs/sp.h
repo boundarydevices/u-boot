@@ -123,8 +123,8 @@
 #define CONFIG_SYS_VIDEO_LOGO_MAX_SIZE (6 * 1024 * 1024)
 #define CONFIG_BMP_16BPP
 #define CONFIG_IPUV3_CLK 260000000
-#define CONFIG_CMD_HDMIDETECT
 #define CONFIG_CONSOLE_MUX
+#define CONFIG_IMX_VIDEO_SKIP
 
 /* allow to overwrite serial and ethaddr */
 #define CONFIG_ENV_OVERWRITE
