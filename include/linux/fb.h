@@ -79,6 +79,7 @@ struct fb_bitfield {
 					/* vtotal = 144d/288n/576i => PAL  */
 					/* vtotal = 121d/242n/484i => NTSC */
 #define FB_SYNC_ON_GREEN	32	/* sync on green */
+#define FB_SYNC_CLK_LAT_FALL	0x40000000
 
 #define FB_VMODE_NONINTERLACED	0	/* non interlaced */
 #define FB_VMODE_INTERLACED	1	/* interlaced	*/
