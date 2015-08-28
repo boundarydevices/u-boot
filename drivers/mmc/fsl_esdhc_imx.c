@@ -323,9 +323,13 @@ static int esdhc_setup_data(struct fsl_esdhc_priv *priv, struct mmc *mmc,
 	struct fsl_esdhc *regs = priv->esdhc_regs;
 
 	if (is_write) {
-		if (priv->wp_enable && !(esdhc_read32(&regs->prsstat) & PRSSTAT_WPSPL)) {
-			printf("Cannot write to locked SD card.\n");
-			return -EINVAL;
+		if (priv->wp_enable) {
+#ifndef CONFIG_SYS_FSL_ESDH_GPIO_WP
+			if (!(esdhc_read32(&regs->prsstat) & PRSSTAT_WPSPL)) {
+				printf("Cannot write to locked SD card.\n");
+				return -EINVAL;
+			}
+#endif
 		} else {
 #if CONFIG_IS_ENABLED(DM_GPIO)
 			if (dm_gpio_is_valid(&priv->wp_gpio) &&
