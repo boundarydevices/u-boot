@@ -603,12 +603,92 @@ void board_enable_lcd(const struct display_info_t *di, int enable)
 	gpio_direction_output(GP_BACKLIGHT_RGB, enable);
 }
 #endif
+/* hdmi settings */
+#define _IMX_VD_1280_720M_60(_mode, _detect, _bus, _addr, _flags) \
+{\
+	.bus	= _bus,\
+	.addr	= _addr,\
+	.pixfmt	= IPU_PIX_FMT_RGB24,\
+	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.enable	= fbp_enable_fb,\
+	.fbtype = FB_##_mode,\
+	.fbflags = _flags,\
+	.mode	= {\
+		.name           = "1280x720M@60",\
+		.refresh        = 60,\
+		.xres           = 1280,\
+		.yres           = 720,\
+		.pixclock       = 1000000000000ULL/((1280+216+72+80)*(720+22+3+5)*60),\
+		.left_margin    = 220,\
+		.right_margin   = 110,\
+		.upper_margin   = 20,\
+		.lower_margin   = 5,\
+		.hsync_len      = 40,\
+		.vsync_len      = 5,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
+#define _IMX_VD_1920_1080M_60(_mode, _detect, _bus, _addr, _flags) \
+{\
+	.bus	= _bus,\
+	.addr	= _addr,\
+	.pixfmt	= IPU_PIX_FMT_RGB24,\
+	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.enable	= fbp_enable_fb,\
+	.fbtype = FB_##_mode,\
+	.fbflags = _flags,\
+	.mode	= {\
+		.name           = "1920x1080M@60",\
+		.refresh        = 60,\
+		.xres           = 1920,\
+		.yres           = 1080,\
+		.pixclock       = 1000000000000ULL/((1920+148+88+44)*(1080+36+4+5)*60),\
+		.left_margin    = 148,\
+		.right_margin   = 88,\
+		.upper_margin   = 36,\
+		.lower_margin   = 4,\
+		.hsync_len      = 44,\
+		.vsync_len      = 5,\
+		.sync           = 0,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
+
+#define _IMX_VD_1024_768M_60(_mode, _detect, _bus, _addr, _flags) \
+{\
+	.bus	= _bus,\
+	.addr	= _addr,\
+	.pixfmt	= IPU_PIX_FMT_RGB24,\
+	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.enable	= fbp_enable_fb,\
+	.fbtype = FB_##_mode,\
+	.fbflags = _flags,\
+	.mode	= {\
+		.name           = "1024x768M@60",\
+		.refresh        = 60,\
+		.xres           = 1024,\
+		.yres           = 768,\
+		.pixclock       = 1000000000000ULL/((1024+220+40+60)*(768+21+7+10)*60),\
+		.left_margin    = 220,\
+		.right_margin   = 40,\
+		.upper_margin   = 21,\
+		.lower_margin   = 7,\
+		.hsync_len      = 60,\
+		.vsync_len      = 10,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
 
 static const struct display_info_t displays[] = {
-	/* hdmi */
-	IMX_VD50_1280_720M_60(LCD, 1, 2),
-	IMX_VD50_1920_1080M_60(LCD, 0, 2),
-	IMX_VD50_1024_768M_60(LCD, 0, 2),
+	/* hdmi/lcd */
+	_IMX_VD_1280_720M_60(LCD, 1, 2, 50, 0),
+	_IMX_VD_1920_1080M_60(LCD, 0, 2, 50, 0),
+	_IMX_VD_1024_768M_60(LCD, 0, 2, 50, 0),
 
 	/* ft5x06 */
 	IMX_VD38_LG1280_800(LVDS, 1, 2),
