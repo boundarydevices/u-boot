@@ -251,6 +251,7 @@ static int esdhc_setup_data(struct mmc *mmc, struct mmc_data *data)
 #endif
 		if (wml_value > WML_WR_WML_MAX)
 			wml_value = WML_WR_WML_MAX_VAL;
+#ifndef CONFIG_SYS_FSL_ESDH_GPIO_WP
 		if (priv->wp_enable) {
 			if ((esdhc_read32(&regs->prsstat) &
 			    PRSSTAT_WPSPL) == 0) {
@@ -258,7 +259,7 @@ static int esdhc_setup_data(struct mmc *mmc, struct mmc_data *data)
 				return -ETIMEDOUT;
 			}
 		}
-
+#endif
 		esdhc_clrsetbits32(&regs->wml, WML_WR_WML_MASK,
 					wml_value << 16);
 #ifndef CONFIG_SYS_FSL_ESDHC_USE_PIO
