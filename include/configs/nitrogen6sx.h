@@ -54,6 +54,7 @@
 /* MMC Configs */
 #define CONFIG_SYS_FSL_ESDHC_ADDR      0
 #define CONFIG_SYS_FSL_USDHC_NUM       2
+#define CONFIG_SYS_FSL_ESDH_GPIO_WP
 #define CONFIG_EFI_PARTITION
 
 #define CONFIG_CMD_PING
