@@ -612,6 +612,13 @@ void ipuv3_fb_shutdown(void)
 	g_dp_in_use = 0;
 }
 
+static void __board_video_enable(void)
+{
+}
+
+void board_video_enable(void)
+	__attribute__((weak, alias("__board_video_enable")));
+
 #if CONFIG_IS_ENABLED(DM_VIDEO)
 struct udevice *gdev;
 #endif
@@ -625,7 +632,7 @@ void *ipuv3_fb_init2(void)
 	return NULL;
 #else
 	mxcfb_probe(gpixfmt, gdisp, gmode);
-
+	board_video_enable();
 	debug("Framebuffer at 0x%x\n", (unsigned int)panel.frameAdrs);
 	return (void *)&panel;
 #endif
@@ -635,15 +642,16 @@ void *ipuv3_fb_init2(void)
 void *video_hw_init(void)
 {
 	int ret;
+	void *ret2;
 
 	ret = ipu_probe();
 	if (ret)
 		puts("Error initializing IPU\n");
 
-	ret = ipuv3_fb_init2();
+	ret2 = ipuv3_fb_init2();
 	gd->fb_base = panel.frameAdrs;
 
-	return ret;
+	return ret2;
 }
 #endif
 
