@@ -516,6 +516,7 @@ void board_enable_lcd(const struct display_info_t *di, int enable)
 		if (di->fbflags & FBF_SPI)
 			enable_spi_rgb(di);
 #endif
+		mdelay(100); /* let panel sync up before enabling backlight */
 		gpio_direction_output(GP_BACKLIGHT_RGB, enable);
 	} else {
 		gpio_direction_output(GP_BACKLIGHT_RGB, enable);
@@ -572,6 +573,8 @@ int board_cfb_skip(void)
 #endif
 
 static const unsigned short gpios_out_low[] = {
+	GP_BACKLIGHT_LVDS,
+	GP_BACKLIGHT_RGB,
 	/* Disable wl1271 */
 	GP_REG_WLAN_EN,
 	GP_BT_RFKILL_RESET,
@@ -593,8 +596,6 @@ static const unsigned short gpios_in[] = {
 	GP_GPIOKEY_POWER,
 	GP_GPIOKEY_VOL_DOWN,
 	GP_GPIOKEY_VOL_UP,
-	GP_BACKLIGHT_LVDS,
-	GP_BACKLIGHT_RGB,
 	GPIRQ_ENET_PHY,
 	GPIRQ_RTC_ISL1208,
 	GPIRQ_WL1271_WL,
