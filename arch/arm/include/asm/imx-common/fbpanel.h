@@ -237,7 +237,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 {\
 	.bus	= _bus,\
 	.addr	= 0x48,\
-	.pixfmt	= IPU_PIX_FMT_LVDS666,\
+	.pixfmt	= IPU_PIX_FMT_RGB666,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
@@ -343,7 +343,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 {\
 	.bus	= _bus,\
 	.addr	= 0x41,\
-	.pixfmt	= IPU_PIX_FMT_LVDS666,\
+	.pixfmt	= IPU_PIX_FMT_RGB666,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
@@ -397,7 +397,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 {\
 	.bus	= _bus,\
 	.addr	= 0x38,\
-	.pixfmt	= IPU_PIX_FMT_LVDS666,\
+	.pixfmt	= IPU_PIX_FMT_RGB666,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
@@ -424,7 +424,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 {\
 	.bus	= _bus,\
 	.addr	= 0x38,\
-	.pixfmt	= IPU_PIX_FMT_LVDS666,\
+	.pixfmt	= IPU_PIX_FMT_RGB666,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
@@ -509,7 +509,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 {\
 	.bus	= _bus,\
 	.addr	= 0x4,\
-	.pixfmt	= IPU_PIX_FMT_LVDS666,\
+	.pixfmt	= IPU_PIX_FMT_RGB666,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
@@ -534,7 +534,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 {\
 	.bus	= _bus,\
 	.addr	= 0x4,\
-	.pixfmt	= IPU_PIX_FMT_LVDS666,\
+	.pixfmt	= IPU_PIX_FMT_RGB666,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
@@ -560,7 +560,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 {\
 	.bus	= _bus,\
 	.addr	= 0x4,\
-	.pixfmt	= IPU_PIX_FMT_LVDS666,\
+	.pixfmt	= IPU_PIX_FMT_RGB666,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
@@ -714,7 +714,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 {\
 	.bus	= _bus,\
 	.addr	= 0,\
-	.pixfmt	= IPU_PIX_FMT_LVDS666,\
+	.pixfmt	= IPU_PIX_FMT_RGB666,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\

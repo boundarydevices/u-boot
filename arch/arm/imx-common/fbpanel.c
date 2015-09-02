@@ -203,7 +203,7 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 
 		sz = snprintf(buf, size, "fdt set %s fsl,data-width <%u>;",
 				ch_names[fb],
-				(di->pixfmt == IPU_PIX_FMT_LVDS666) ? 18 : 24);
+				(di->pixfmt == IPU_PIX_FMT_RGB24) ? 24 : 18);
 		buf += sz;
 		size -= sz;
 
@@ -464,8 +464,7 @@ static const struct display_info_t * parse_mode(
 		return NULL;
 	}
 	p = endp;
-	di->pixfmt = (value == 24) ? IPU_PIX_FMT_RGB24 : (di->fbtype >= FB_LVDS) ?
-			IPU_PIX_FMT_LVDS666 : IPU_PIX_FMT_RGB666;
+	di->pixfmt = (value == 24) ? IPU_PIX_FMT_RGB24 : IPU_PIX_FMT_RGB666;
 	c = *p;
 	if (*p != ':') {
 		printf("expected ':', %s\n", p);
