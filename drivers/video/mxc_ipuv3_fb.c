@@ -601,10 +601,17 @@ void ipuv3_fb_shutdown(void)
 	g_dp_in_use = 0;
 }
 
+static void __board_video_enable(void)
+{
+}
+
+void board_video_enable(void)
+	__attribute__((weak, alias("__board_video_enable")));
+
 void *ipuv3_fb_init2(void)
 {
 	mxcfb_probe(gpixfmt, gdisp, gmode);
-
+	board_video_enable();
 	debug("Framebuffer at 0x%x\n", (unsigned int)panel.frameAdrs);
 	return (void *)&panel;
 }
