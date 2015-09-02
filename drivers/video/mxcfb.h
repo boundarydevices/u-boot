@@ -49,4 +49,6 @@ struct mxcfb_gamma {
 	int slopek[16];
 };
 
+void board_video_enable(void);
+
 #endif

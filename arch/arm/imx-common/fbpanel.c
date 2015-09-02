@@ -1166,6 +1166,15 @@ static int g_display_cnt;
 static const struct display_info_t *g_di_active;
 #endif
 
+void board_video_enable(void)
+{
+#ifndef CONFIG_MX6SX
+	const struct display_info_t *di = g_di_active;
+	if (di && di->enable)
+		di->enable(di, 1);
+#endif
+}
+
 static int init_display(const struct display_info_t *di)
 {
 #ifndef CONFIG_MX6SX
@@ -1180,8 +1189,6 @@ static int init_display(const struct display_info_t *di)
 		printf("LCD %s cannot be configured: %d\n", di->mode.name, ret);
 		return -EINVAL;
 	}
-	if (di->enable)
-		di->enable(di, 1);
 	printf("Display: %s:%s (%ux%u)\n", short_names[di->fbtype],
 			di->mode.name, di->mode.xres, di->mode.yres);
 	g_di_active = di;
@@ -1268,6 +1275,7 @@ int board_video_skip(void)
 		return -EINVAL;
 	return init_display(di);
 }
+
 void fbp_setup_display(const struct display_info_t *displays, int cnt)
 {
 	g_displays = displays;
