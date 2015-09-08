@@ -1,0 +1,6 @@
+CONFIG_ARM=y
+CONFIG_TARGET_NITROGEN6X=y
+CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/boundary/nitrogen6x/nitrogen6dl.cfg,MX6DL,DDR_MB=1024,BOARD_NAME=\"Nit6_LUM_DL1\",BOARD_TYPE=\"nitrogen6x\",DEFCONFIG=\"nitrogen6_lum_dl1\""
+# CONFIG_CMD_IMLS is not set
+# CONFIG_CMD_FLASH is not set
+CONFIG_SPI_FLASH=y
