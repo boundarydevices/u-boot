@@ -1694,11 +1694,12 @@ int video_display_bitmap(ulong bmp_image, int x, int y)
 }
 #endif
 
-
-#ifdef CONFIG_VIDEO_LOGO
+#if defined(CONFIG_VIDEO_LOGO) || defined(CONFIG_SPLASH_SCREEN)
 static int video_logo_xpos;
 static int video_logo_ypos;
+#endif
 
+#ifdef CONFIG_VIDEO_LOGO
 static void plot_logo_or_black(void *screen, int x, int y, int black);
 
 static void logo_plot(void *screen, int x, int y)
@@ -1854,13 +1855,19 @@ static void plot_logo_or_black(void *screen, int x, int y, int black)
 #endif
 }
 
+#endif
+
+#if defined(CONFIG_VIDEO_LOGO) || defined(CONFIG_SPLASH_SCREEN)
 static void *video_logo(void)
 {
+#ifdef CONFIG_VIDEO_LOGO
 	char info[128];
+	__maybe_unused int len, space;
+#endif
 	__maybe_unused int y_off = 0;
 	__maybe_unused ulong addr;
 	__maybe_unused char *s;
-	__maybe_unused int len, ret, space;
+	__maybe_unused int ret;
 
 	splash_get_pos(&video_logo_xpos, &video_logo_ypos);
 
@@ -1881,6 +1888,7 @@ static void *video_logo(void)
 	}
 #endif /* CONFIG_SPLASH_SCREEN */
 
+#ifdef CONFIG_VIDEO_LOGO
 	logo_plot(video_fb_address, video_logo_xpos, video_logo_ypos);
 
 #ifdef CONFIG_SPLASH_SCREEN_ALIGN
@@ -1976,6 +1984,7 @@ static void *video_logo(void)
 #endif
 #endif
 
+#endif
 	return (video_fb_address + video_logo_height * VIDEO_LINE_LEN);
 }
 #endif
@@ -2109,11 +2118,12 @@ static int cfg_video_init(void)
 	if (!CONFIG_IS_ENABLED(NO_FB_CLEAR))
 		video_clear();
 
-#ifdef CONFIG_VIDEO_LOGO
+#if defined(CONFIG_VIDEO_LOGO) || defined(CONFIG_SPLASH_SCREEN)
 	/* Plot the logo and get start point of console */
 	debug("Video: Drawing the logo ...\n");
 	video_console_address = video_logo();
-#else
+#endif
+#ifndef CONFIG_VIDEO_LOGO
 	if (!board_cfb_skip()){
 		video_console_address = video_fb_address;
 		video_drawstring(VIDEO_FONT_WIDTH, 0, (uchar *)version_string);
