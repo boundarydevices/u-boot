@@ -409,6 +409,8 @@ int splash_screen_prepare(void)
 
 void board_enable_lvds(const struct display_info_t *di, int enable)
 {
+	if (enable)
+		mdelay(100);	/* let panel sync up before enabling backlight */
 	gpio_direction_output(GP_BACKLIGHT_LVDS, enable);
 }
 
@@ -438,6 +440,7 @@ static const unsigned short gpios_out_low[] = {
 	GP_UART3_TX_EN,
 	GP_UART4_TX_EN,
 	GP_UART5_TX_EN,
+	GP_BACKLIGHT_LVDS,
 };
 
 static const unsigned short gpios_out_high[] = {
@@ -445,7 +448,6 @@ static const unsigned short gpios_out_high[] = {
 };
 
 static const unsigned short gpios_in[] = {
-	GP_BACKLIGHT_LVDS,
 	GP_4_5_WIRE_SELECT,
 	GP_4_5_WIRE_SELECT_R1,
 	GPIRQ_ENET_PHY,
