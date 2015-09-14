@@ -1,0 +1,128 @@
+0			/* 0 dqs_loopback=0 or 1*/ /* The binary file can be built using "./qspi_param.awk qspi-W25Q128BV | xxd -r >qspi-W25Q128BV.nitrogen7" */
+0			/* 4 hold_delay=0 to 3*/
+0			/* 8 reserved */
+0			/* c reserved */
+1			/*10 device_quad_mode_en=1 to enable sending command to SPI device*/
+0200			/*14 device_cmd=command to device for enabling Quad I/O mode(status reg1 & 2 write) */
+03000002		/*18 write_cmd_ipcr=hex value to be written to IPCR register for write cmd of device*/
+02000000		/*1c write_enable_ipcr=hex value to be written to IPCR register for write enable of device*/
+3			/*20 cs_hold_time=0 to 0xF*/
+3			/*24 cs_setup_time=0 to 0xF*/
+1000000			/*28 sflash_A1_size=size in byte(hex)*/
+0			/*2c sflash_A2_size=size in byte(hex)*/
+0			/*30 sflash_B1_size=size in byte(hex)*/
+0			/*34 sflash_B2_size=size in byte(hex)*/
+6			/*38 sclk_freq=0 to 6*/
+0			/*3c busy_bit_offset=bit position of device BUSY in device status register*/
+4			/*40 sflash_type=1 (Single), 2 (Dual), 4 (Quad mode of operation)*/
+0			/*44 sflash_port=0 or 1 (Port B used)*/
+0			/*48 ddr_mode_enable=0 or 1*/
+0			/*4c dqs_enable=0 or 1*/
+0			/*50 parallel_mode_enable=0 or 1*/
+0			/*54 portA_cs1=0 or 1*/
+0			/*58 portB_cs1=0 or 1*/
+0			/*5c fsphs=0 (Full Speed Phase sampling at non-inverted clock) or 1 (sampling at inverted clock)*/
+0			/*60 fsdly=0 (Full Speed Delay One clk delay) or 1 (two clk cycle delay)*/
+0			/*64 ddrsmp=0 to 7 (sampling point for incoming data in DDR mode)*/
+0a1804eb		/*68 lut[0] Fast Read Quad I/O, needs status reg write to enable cmd */
+0e041200		/*6c lut[1] */
+24001e04		/*70 lut[2] */
+0			/*74 lut[3] */
+1c010405		/*78 lut[4] QSPI_CMD_RDSR(Read status register 1) */
+2400			/*7c lut[5] */
+0			/*80 lut[6] */
+0			/*84 lut[7] */
+24000406		/*88 lut[8] QSPI_CMD_WREN(write enable) */
+0			/*8c lut[9] */
+0			/*90 lut[10] */
+0			/*94 lut[11] */
+20010401		/*98 lut[12] QSPI_CMD_WRITE_STATUS(Write status register 1) */
+2400			/*9c lut[13] */
+0			/*a0 lut[14] */
+0			/*a4 lut[15] */
+1c010435		/*a8 lut[16] QSPI_CMD_RDSR2(Read status register 2) */
+2400			/*ac lut[17] */
+0			/*b0 lut[18] */
+0			/*b4 lut[19] */
+0			/*b8 lut[20] */
+0			/*bc lut[21] */
+0			/*c0 lut[22] */
+0			/*c4 lut[23] */
+0			/*c8 lut[24] */
+0			/*cc lut[25] */
+0			/*d0 lut[26] */
+0			/*d4 lut[27] */
+0			/*d8 lut[28] */
+0			/*dc lut[29] */
+0			/*e0 lut[30] */
+0			/*e4 lut[31] */
+0			/*e8 lut[32] */
+0			/*ec lut[33] */
+0			/*f0 lut[34] */
+0			/*f4 lut[35] */
+0			/*f8 lut[36] */
+0			/*fc lut[37] */
+0			/*100 lut[38] */
+0			/*104 lut[39] */
+0			/*108 lut[40] */
+0			/*10c lut[41] */
+0			/*110 lut[42] */
+0			/*114 lut[43] */
+0			/*118 lut[44] */
+0			/*11c lut[45] */
+0			/*120 lut[46] */
+0			/*124 lut[47] */
+0			/*128 lut[48] */
+0			/*12c lut[49] */
+0			/*130 lut[50] */
+0			/*134 lut[51] */
+0			/*138 lut[52] */
+0			/*13c lut[53] */
+0			/*140 lut[54] */
+0			/*144 lut[55] */
+0			/*148 lut[56] */
+0			/*14c lut[57] */
+0			/*150 lut[58] */
+0			/*154 lut[59] */
+0			/*158 lut[60] */
+0			/*15c lut[61] */
+0			/*160 lut[62] */
+0			/*164 lut[63] */
+1000001			/*168 read_status_ipcr=hex value to be written to IPCR register for reading status reg of device */
+0			/*16c enable_dqs_phase=0 or 1 */
+0			/*170 Not used */
+0			/*174 */
+0			/*178 */
+0			/*17c */
+0			/*180 */
+0			/*184 */
+0			/*188 */
+0			/*18c */
+0			/*190 */
+0			/*194 DQS pin pad setting override */
+0			/*198 SCLK pin pad setting override */
+0			/*19c DATA pins pad setting override */
+0			/*1a0 CS pins pad setting override */
+0			/*1a4 0: dqs loopback from pad/1: dqs loopback internally */
+0			/*1a8 dqs phase selection */
+0			/*1ac dqs fa delay chain selection */
+0			/*1b0 dqs fb delay chain selection */
+0			/*1b4 sclk fa delay chain selection */
+0			/*1b8 sclk fb delay chain selection */
+0			/*1bc */
+0			/*1c0 reserve[0] */
+0			/*1c4 reserve[1] */
+0			/*1c8 reserve[2] */
+0			/*1cc reserve[3] */
+0			/*1d0 reserve[4] */
+0			/*1d4 reserve[5] */
+0			/*1d8 reserve[6] */
+0			/*1dc reserve[7] */
+0			/*1e0 reserve[8] */
+0			/*1e4 reserve[9] */
+0			/*1e8 reserve[10] */
+0			/*1ec reserve[11] */
+0			/*1f0 reserve[12] */
+0			/*1f4 reserve[13] */
+0			/*1f8 reserve[14] */
+c0ffee01		/*1fc tag, QSPI configuration tag, should be 0xc0ffee01 */

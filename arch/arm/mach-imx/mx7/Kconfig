@@ -76,11 +76,18 @@ config TARGET_COLIBRI_IMX7
 	select DM_THERMAL
 	imply CMD_DM
 
+config TARGET_NITROGEN7
+	bool "nitrogen7"
+	select MX7D
+	select DM
+	select DM_THERMAL
+
 endchoice
 
 config SYS_SOC
 	default "mx7"
 
+source "board/boundary/nitrogen7/Kconfig"
 source "board/compulab/cl-som-imx7/Kconfig"
 source "board/freescale/mx7dsabresd/Kconfig"
 source "board/novtech/meerkat96/Kconfig"
