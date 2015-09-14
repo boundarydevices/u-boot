@@ -1,0 +1,722 @@
+/*
+ * Copyright (C) 2015 Freescale Semiconductor, Inc.
+ *
+ * SPDX-License-Identifier:	GPL-2.0+
+ */
+
+#include <asm/arch/clock.h>
+#include <asm/arch/imx-regs.h>
+#include <asm/arch/mx7-pins.h>
+#include <asm/arch/sys_proto.h>
+#include <asm/gpio.h>
+#include <asm/imx-common/iomux-v3.h>
+#include <asm/imx-common/boot_mode.h>
+#include <asm/io.h>
+#include <linux/sizes.h>
+#include <common.h>
+#include <fsl_esdhc.h>
+#include <mmc.h>
+#include <miiphy.h>
+#include <netdev.h>
+#include <power/pmic.h>
+#include <power/pfuze3000_pmic.h>
+#include "../../freescale/common/pfuze.h"
+#include <i2c.h>
+#include <asm/imx-common/mxc_i2c.h>
+#include <asm/arch/crm_regs.h>
+#include <usb.h>
+
+DECLARE_GLOBAL_DATA_PTR;
+
+#define UART_PAD_CTRL  (PAD_CTL_DSE_3P3V_49OHM | \
+	PAD_CTL_PUS_PU100KOHM | PAD_CTL_HYS)
+
+#define USDHC_PAD_CTRL (PAD_CTL_DSE_3P3V_32OHM | PAD_CTL_SRE_SLOW | \
+	PAD_CTL_HYS | PAD_CTL_PUE | PAD_CTL_PUS_PU47KOHM)
+
+#define ENET_PAD_CTRL  (PAD_CTL_PUS_PU100KOHM | PAD_CTL_DSE_3P3V_49OHM)
+#define ENET_PAD_CTRL_MII  (PAD_CTL_DSE_3P3V_32OHM)
+
+#define ENET_RX_DN_PAD_CTRL	(PAD_CTL_PUS_PD100KOHM | PAD_CTL_DSE_3P3V_49OHM)
+#define ENET_RX_UP_PAD_CTRL	(PAD_CTL_PUS_PU100KOHM | PAD_CTL_DSE_3P3V_49OHM)
+
+
+#define I2C_PAD_CTRL    (PAD_CTL_DSE_3P3V_32OHM | PAD_CTL_SRE_SLOW | \
+	PAD_CTL_HYS | PAD_CTL_PUE | PAD_CTL_PUS_PU100KOHM)
+
+#define QSPI_PAD_CTRL	(PAD_CTL_SRE_FAST | PAD_CTL_PUS_PU100KOHM | PAD_CTL_DSE_3P3V_49OHM)
+
+#define RGB_PAD_CTRL	PAD_CTL_DSE_120ohm
+
+#define WEAK_PULLUP	(PAD_CTL_PUS_PU100KOHM | PAD_CTL_DSE_3P3V_49OHM | \
+	PAD_CTL_HYS | PAD_CTL_SRE_SLOW)
+
+#define WEAK_PULLDN_OUTPUT (PAD_CTL_PUS_PD100KOHM | PAD_CTL_DSE_3P3V_49OHM | \
+	PAD_CTL_SRE_SLOW)
+
+#define WEAK_PULLUP_OUTPUT (PAD_CTL_PUS_PU100KOHM | PAD_CTL_DSE_3P3V_49OHM | \
+	PAD_CTL_SRE_SLOW)
+
+#define SETUP_IOMUX_PADS(x)					\
+	imx_iomux_v3_setup_multiple_pads(x, ARRAY_SIZE(x))
+
+static const iomux_v3_cfg_t init_pads[] = {
+	/* fec */
+#ifdef CONFIG_FEC_MXC
+	IOMUX_PAD_CTRL(ENET1_RGMII_TX_CTL__ENET1_RGMII_TX_CTL, ENET_PAD_CTRL),
+	IOMUX_PAD_CTRL(ENET1_RGMII_TD0__ENET1_RGMII_TD0, ENET_PAD_CTRL),
+	IOMUX_PAD_CTRL(ENET1_RGMII_TD1__ENET1_RGMII_TD1, ENET_PAD_CTRL),
+	IOMUX_PAD_CTRL(ENET1_RGMII_TD2__ENET1_RGMII_TD2, ENET_PAD_CTRL),
+	IOMUX_PAD_CTRL(ENET1_RGMII_TD3__ENET1_RGMII_TD3, ENET_PAD_CTRL),
+	IOMUX_PAD_CTRL(ENET1_RGMII_TXC__ENET1_RGMII_TXC, ENET_PAD_CTRL),
+	/* PHY - AR8035 */
+	IOMUX_PAD_CTRL(GPIO1_IO10__ENET1_MDIO, ENET_PAD_CTRL_MII),
+	IOMUX_PAD_CTRL(GPIO1_IO11__ENET1_MDC, ENET_PAD_CTRL_MII),
+	IOMUX_PAD_CTRL(GPIO1_IO12__CCM_ENET_REF_CLK1, ENET_PAD_CTRL_MII),
+#endif
+#define GP_ENET_PHY_RESET	IMX_GPIO_NR(6, 10)
+	IOMUX_PAD_CTRL(SD3_STROBE__GPIO6_IO10, WEAK_PULLUP),
+#define GPIRQ_ENET_PHY		IMX_GPIO_NR(1, 2)
+	IOMUX_PAD_CTRL(GPIO1_IO02__GPIO1_IO2, WEAK_PULLUP),
+
+	/* flexcan2 */
+	IOMUX_PAD_CTRL(GPIO1_IO14__FLEXCAN2_RX, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(GPIO1_IO15__FLEXCAN2_TX, WEAK_PULLUP),
+#define GP_CAN_STANDBY		IMX_GPIO_NR(2, 14)
+	IOMUX_PAD_CTRL(EPDC_DATA14__GPIO2_IO14, WEAK_PULLUP),
+
+	/* GPIOs - J2 */
+	IOMUX_PAD_CTRL(SAI1_TX_DATA__GPIO6_IO15, WEAK_PULLUP),	/* pin 1 */
+	IOMUX_PAD_CTRL(SAI1_RX_DATA__GPIO6_IO12, WEAK_PULLUP),	/* pin 3 */
+	IOMUX_PAD_CTRL(SD1_WP__GPIO5_IO1, WEAK_PULLUP),		/* pin 5 */
+	IOMUX_PAD_CTRL(SD1_RESET_B__GPIO5_IO2, WEAK_PULLUP),	/* pin 7 */
+	IOMUX_PAD_CTRL(EPDC_DATA07__GPIO2_IO7, WEAK_PULLUP),	/* pin 15 */
+	IOMUX_PAD_CTRL(EPDC_DATA08__GPIO2_IO8, WEAK_PULLUP),	/* pin 17 */
+	IOMUX_PAD_CTRL(EPDC_DATA09__GPIO2_IO9, WEAK_PULLUP),	/* pin 19 */
+	IOMUX_PAD_CTRL(EPDC_DATA10__GPIO2_IO10, WEAK_PULLUP),	/* pin 21 */
+	IOMUX_PAD_CTRL(EPDC_DATA11__GPIO2_IO11, WEAK_PULLUP),	/* pin 23 */
+	IOMUX_PAD_CTRL(EPDC_DATA12__GPIO2_IO12, WEAK_PULLUP),	/* pin 25 */
+	IOMUX_PAD_CTRL(EPDC_DATA13__GPIO2_IO13, WEAK_PULLUP),	/* pin 27 */
+	IOMUX_PAD_CTRL(EPDC_GDCLK__GPIO2_IO24, WEAK_PULLUP),	/* pin 33 */
+	IOMUX_PAD_CTRL(EPDC_GDOE__GPIO2_IO25, WEAK_PULLUP),	/* pin 35 */
+	IOMUX_PAD_CTRL(EPDC_GDRL__GPIO2_IO26, WEAK_PULLUP),	/* pin 37 */
+	IOMUX_PAD_CTRL(EPDC_SDCE0__GPIO2_IO20, WEAK_PULLUP),	/* pin 39 */
+	IOMUX_PAD_CTRL(EPDC_SDCE1__GPIO2_IO21, WEAK_PULLUP),	/* pin 41 */
+	IOMUX_PAD_CTRL(EPDC_SDCE2__GPIO2_IO22, WEAK_PULLUP),	/* pin 43 */
+	IOMUX_PAD_CTRL(EPDC_SDCE3__GPIO2_IO23, WEAK_PULLUP),	/* pin 45 */
+	IOMUX_PAD_CTRL(EPDC_GDSP__GPIO2_IO27, WEAK_PULLUP),	/* pin 47 */
+	IOMUX_PAD_CTRL(EPDC_SDCLK__GPIO2_IO16, WEAK_PULLUP),	/* pin 51 */
+	IOMUX_PAD_CTRL(EPDC_SDLE__GPIO2_IO17, WEAK_PULLUP),	/* pin 53 */
+	IOMUX_PAD_CTRL(EPDC_SDOE__GPIO2_IO18, WEAK_PULLUP),	/* pin 55 */
+	IOMUX_PAD_CTRL(EPDC_PWR_COM__GPIO2_IO30, WEAK_PULLUP),	/* pin 57 */
+	IOMUX_PAD_CTRL(EPDC_PWR_STAT__GPIO2_IO31, WEAK_PULLUP),	/* pin 59 */
+
+	IOMUX_PAD_CTRL(EPDC_BDR0__GPIO2_IO28, WEAK_PULLUP),	/* pin 2 */
+	IOMUX_PAD_CTRL(EPDC_BDR1__GPIO2_IO29, WEAK_PULLUP),	/* pin 4 */
+	IOMUX_PAD_CTRL(EPDC_SDSHR__GPIO2_IO19, WEAK_PULLUP),	/* pin 6 */
+	IOMUX_PAD_CTRL(SD2_RESET_B__GPIO5_IO11, WEAK_PULLUP),	/* pin 10 */
+	IOMUX_PAD_CTRL(SAI1_TX_SYNC__GPIO6_IO14, WEAK_PULLUP),	/* pin 26 */
+	IOMUX_PAD_CTRL(SAI1_TX_BCLK__GPIO6_IO13, WEAK_PULLUP),	/* pin 28 */
+	IOMUX_PAD_CTRL(SD2_CD_B__GPIO5_IO9, WEAK_PULLUP),	/* pin 30 */
+	IOMUX_PAD_CTRL(SAI2_RX_DATA__GPIO6_IO21, WEAK_PULLUP),	/* pin 34 */
+	IOMUX_PAD_CTRL(SAI2_TX_DATA__GPIO6_IO22, WEAK_PULLUP),	/* pin 38 */
+	IOMUX_PAD_CTRL(SAI2_TX_BCLK__GPIO6_IO20, WEAK_PULLUP),	/* pin 40 */
+	IOMUX_PAD_CTRL(SAI2_TX_SYNC__GPIO6_IO19, WEAK_PULLUP),	/* pin 42 */
+
+	/* i2c1 - pmic */
+#define GP_PMIC_INT_B	IMX_GPIO_NR(4, 22)
+	IOMUX_PAD_CTRL(ECSPI2_MISO__GPIO4_IO22, WEAK_PULLUP),
+
+	/* i2c2 - rv4162 */
+#define GP_RTC			IMX_GPIO_NR(2, 15)
+	IOMUX_PAD_CTRL(EPDC_DATA15__GPIO2_IO15, WEAK_PULLUP),
+
+	/* i2c2a */
+#define GP_I2C2A_EN		IMX_GPIO_NR(1, 7)
+	IOMUX_PAD_CTRL(GPIO1_IO07__GPIO1_IO7, WEAK_PULLUP),
+#define GP_MIPI			IMX_GPIO_NR(1, 6)
+	IOMUX_PAD_CTRL(GPIO1_IO06__GPIO1_IO6, WEAK_PULLUP),
+#define GP_MIPI_BACKLIGHT	 IMX_GPIO_NR(1, 13)
+	IOMUX_PAD_CTRL(GPIO1_IO13__GPIO1_IO13, WEAK_PULLUP),
+
+	/* i2c3 - J9, J2(gpio connector), J20(rgb connector) */
+#define GP_I2C_TOUCH	IMX_GPIO_NR(5, 10)
+//	IOMUX_PAD_CTRL(SD2_WP__GPIO5_IO10, WEAK_PULLUP),
+	/* i2c4 - PCIe, WM8960*/
+
+	/* PCIe */
+#define GP_PCIE_DISABLE		IMX_GPIO_NR(6, 17)
+	IOMUX_PAD_CTRL(SAI1_RX_BCLK__GPIO6_IO17, WEAK_PULLUP),
+#define GP_PCIE_RESET		IMX_GPIO_NR(6, 16)
+	IOMUX_PAD_CTRL(SAI1_RX_SYNC__GPIO6_IO16, WEAK_PULLUP),
+
+	/* PWM1 - rgb */
+	IOMUX_PAD_CTRL(GPIO1_IO01__PWM1_OUT, WEAK_PULLUP),
+
+	/* PWM2 */
+	IOMUX_PAD_CTRL(GPIO1_IO09__PWM2_OUT, WEAK_PULLUP),
+
+	/* QSPIA */
+	IOMUX_PAD_CTRL(EPDC_DATA00__QSPI_A_DATA0, QSPI_PAD_CTRL),
+	IOMUX_PAD_CTRL(EPDC_DATA01__QSPI_A_DATA1, QSPI_PAD_CTRL),
+#if 1
+	IOMUX_PAD_CTRL(EPDC_DATA02__QSPI_A_DATA2, QSPI_PAD_CTRL),
+	IOMUX_PAD_CTRL(EPDC_DATA03__QSPI_A_DATA3, QSPI_PAD_CTRL),
+#else
+#define GP_SPI_nWP		IMX_GPIO_NR(2, 2)
+	IOMUX_PAD_CTRL(EPDC_DATA02__GPIO2_IO2, WEAK_PULLUP),
+#define GP_SPI_nHOLD		IMX_GPIO_NR(2, 3)
+	IOMUX_PAD_CTRL(EPDC_DATA03__GPIO2_IO3, WEAK_PULLUP),
+#endif
+	IOMUX_PAD_CTRL(EPDC_DATA05__QSPI_A_SCLK, QSPI_PAD_CTRL),
+	IOMUX_PAD_CTRL(EPDC_DATA06__QSPI_A_SS0_B, QSPI_PAD_CTRL),
+
+	/* SAI1 - wm8960 on i2c4 */
+	IOMUX_PAD_CTRL(ENET1_CRS__SAI1_TX_SYNC, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(ENET1_RX_CLK__SAI1_TX_BCLK, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(ENET1_TX_CLK__SAI1_RX_DATA0, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(ENET1_COL__SAI1_TX_DATA0, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(SAI1_MCLK__SAI1_MCLK, WEAK_PULLUP),
+
+	/* uart1 */
+	IOMUX_PAD_CTRL(UART1_TX_DATA__UART1_DCE_TX, UART_PAD_CTRL),
+	IOMUX_PAD_CTRL(UART1_RX_DATA__UART1_DCE_RX, UART_PAD_CTRL),
+
+	/* uart2 */
+	IOMUX_PAD_CTRL(UART2_TX_DATA__UART2_DCE_TX, UART_PAD_CTRL),
+	IOMUX_PAD_CTRL(UART2_RX_DATA__UART2_DCE_RX, UART_PAD_CTRL),
+
+	/* uart3 */
+	IOMUX_PAD_CTRL(UART3_TX_DATA__UART3_DCE_TX, UART_PAD_CTRL),
+	IOMUX_PAD_CTRL(UART3_RX_DATA__UART3_DCE_RX, UART_PAD_CTRL),
+#define GP_UART3_RS485_TX	IMX_GPIO_NR(2, 4)
+	IOMUX_PAD_CTRL(EPDC_DATA04__GPIO2_IO4, WEAK_PULLUP),
+
+	/* uart6 - bluetooth */
+	IOMUX_PAD_CTRL(ECSPI1_MOSI__UART6_DCE_TX, UART_PAD_CTRL),
+	IOMUX_PAD_CTRL(ECSPI1_SCLK__UART6_DCE_RX, UART_PAD_CTRL),
+	IOMUX_PAD_CTRL(ECSPI1_MISO__UART6_DCE_RTS, UART_PAD_CTRL),
+	IOMUX_PAD_CTRL(ECSPI1_SS0__UART6_DCE_CTS, UART_PAD_CTRL),
+
+#ifdef CONFIG_USB_EHCI_MX7
+	/* usbotg1 */
+	IOMUX_PAD_CTRL(GPIO1_IO04__USB_OTG1_OC, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(GPIO1_IO05__USB_OTG1_PWR, WEAK_PULLUP),
+//	IOMUX_PAD_CTRL(SD2_WP__USB_OTG1_ID, WEAK_PULLUP),
+#define GP_OTG1_ID	IMX_GPIO_NR(5, 10)
+	IOMUX_PAD_CTRL(SD2_WP__GPIO5_IO10, WEAK_PULLUP),
+
+	/* usbotg2 */
+	IOMUX_PAD_CTRL(UART3_RTS_B__USB_OTG2_OC, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(UART3_CTS_B__USB_OTG2_PWR, WEAK_PULLUP),
+#endif
+
+	/* usdhc1 */
+	IOMUX_PAD_CTRL(SD1_CLK__SD1_CLK, USDHC_PAD_CTRL),
+	IOMUX_PAD_CTRL(SD1_CMD__SD1_CMD, USDHC_PAD_CTRL),
+	IOMUX_PAD_CTRL(SD1_DATA0__SD1_DATA0, USDHC_PAD_CTRL),
+	IOMUX_PAD_CTRL(SD1_DATA1__SD1_DATA1, USDHC_PAD_CTRL),
+	IOMUX_PAD_CTRL(SD1_DATA2__SD1_DATA2, USDHC_PAD_CTRL),
+	IOMUX_PAD_CTRL(SD1_DATA3__SD1_DATA3, USDHC_PAD_CTRL),
+#define GP_USDHC1_CD		IMX_GPIO_NR(5, 0)
+	IOMUX_PAD_CTRL(SD1_CD_B__GPIO5_IO0, USDHC_PAD_CTRL),
+#define GP_PMIC_SD1_VSEL	IMX_GPIO_NR(1, 8)
+	IOMUX_PAD_CTRL(GPIO1_IO08__SD1_VSELECT, WEAK_PULLUP),
+
+	/* usdhc2 - murata wifi */
+	IOMUX_PAD_CTRL(SD2_CLK__SD2_CLK, USDHC_PAD_CTRL),
+	IOMUX_PAD_CTRL(SD2_CMD__SD2_CMD, USDHC_PAD_CTRL),
+	IOMUX_PAD_CTRL(SD2_DATA0__SD2_DATA0, USDHC_PAD_CTRL),
+	IOMUX_PAD_CTRL(SD2_DATA1__SD2_DATA1, USDHC_PAD_CTRL),
+	IOMUX_PAD_CTRL(SD2_DATA2__SD2_DATA2, USDHC_PAD_CTRL),
+	IOMUX_PAD_CTRL(SD2_DATA3__SD2_DATA3, USDHC_PAD_CTRL),
+	IOMUX_PAD_CTRL(GPIO1_IO03__CCM_CLKO2, WEAK_PULLUP),	/* Slow clock */
+#define GP_BT_REG_ON	IMX_GPIO_NR(4, 23)
+	IOMUX_PAD_CTRL(ECSPI2_SS0__GPIO4_IO23, WEAK_PULLUP),
+#define GP_WL_HOST_WAKE	IMX_GPIO_NR(4, 20)
+	IOMUX_PAD_CTRL(ECSPI2_SCLK__GPIO4_IO20, WEAK_PULLUP),
+#define GP_WL_REG_ON	IMX_GPIO_NR(4, 21)
+	IOMUX_PAD_CTRL(ECSPI2_MOSI__GPIO4_IO21, WEAK_PULLUP),
+
+	/* usdhc3 - emmc */
+	IOMUX_PAD_CTRL(SD3_CLK__SD3_CLK, USDHC_PAD_CTRL),
+	IOMUX_PAD_CTRL(SD3_CMD__SD3_CMD, USDHC_PAD_CTRL),
+	IOMUX_PAD_CTRL(SD3_DATA0__SD3_DATA0, USDHC_PAD_CTRL),
+	IOMUX_PAD_CTRL(SD3_DATA1__SD3_DATA1, USDHC_PAD_CTRL),
+	IOMUX_PAD_CTRL(SD3_DATA2__SD3_DATA2, USDHC_PAD_CTRL),
+	IOMUX_PAD_CTRL(SD3_DATA3__SD3_DATA3, USDHC_PAD_CTRL),
+	IOMUX_PAD_CTRL(SD3_DATA4__SD3_DATA4, USDHC_PAD_CTRL),
+	IOMUX_PAD_CTRL(SD3_DATA5__SD3_DATA5, USDHC_PAD_CTRL),
+	IOMUX_PAD_CTRL(SD3_DATA6__SD3_DATA6, USDHC_PAD_CTRL),
+	IOMUX_PAD_CTRL(SD3_DATA7__SD3_DATA7, USDHC_PAD_CTRL),
+#define GP_EMMC_RESET	IMX_GPIO_NR(6, 11)
+	IOMUX_PAD_CTRL(SD3_RESET_B__GPIO6_IO11, USDHC_PAD_CTRL),
+
+	/* watchdog */
+	IOMUX_PAD_CTRL(GPIO1_IO00__WDOG1_WDOG_B, WEAK_PULLUP_OUTPUT),
+
+	/* LCD */
+#if 0
+	IOMUX_PAD_CTRL(LCD_CLK__LCD_CLK, RGB_PAD_CTRL),
+	IOMUX_PAD_CTRL(LCD_ENABLE__LCD_ENABLE, RGB_PAD_CTRL),
+	IOMUX_PAD_CTRL(LCD_HSYNC__LCD_HSYNC, RGB_PAD_CTRL),
+	IOMUX_PAD_CTRL(LCD_VSYNC__LCD_VSYNC, RGB_PAD_CTRL),
+	IOMUX_PAD_CTRL(LCD_RESET__LCD_RESET, RGB_PAD_CTRL),
+	IOMUX_PAD_CTRL(LCD_DATA00__LCD_DATA0, RGB_PAD_CTRL),
+	IOMUX_PAD_CTRL(LCD_DATA01__LCD_DATA1, RGB_PAD_CTRL),
+	IOMUX_PAD_CTRL(LCD_DATA02__LCD_DATA2, RGB_PAD_CTRL),
+	IOMUX_PAD_CTRL(LCD_DATA03__LCD_DATA3, RGB_PAD_CTRL),
+	IOMUX_PAD_CTRL(LCD_DATA04__LCD_DATA4, RGB_PAD_CTRL),
+	IOMUX_PAD_CTRL(LCD_DATA05__LCD_DATA5, RGB_PAD_CTRL),
+	IOMUX_PAD_CTRL(LCD_DATA06__LCD_DATA6, RGB_PAD_CTRL),
+	IOMUX_PAD_CTRL(LCD_DATA07__LCD_DATA7, RGB_PAD_CTRL),
+	IOMUX_PAD_CTRL(LCD_DATA08__LCD_DATA8, RGB_PAD_CTRL),
+	IOMUX_PAD_CTRL(LCD_DATA09__LCD_DATA9, RGB_PAD_CTRL),
+	IOMUX_PAD_CTRL(LCD_DATA10__LCD_DATA10, RGB_PAD_CTRL),
+	IOMUX_PAD_CTRL(LCD_DATA11__LCD_DATA11, RGB_PAD_CTRL),
+	IOMUX_PAD_CTRL(LCD_DATA12__LCD_DATA12, RGB_PAD_CTRL),
+	IOMUX_PAD_CTRL(LCD_DATA13__LCD_DATA13, RGB_PAD_CTRL),
+	IOMUX_PAD_CTRL(LCD_DATA14__LCD_DATA14, RGB_PAD_CTRL),
+	IOMUX_PAD_CTRL(LCD_DATA15__LCD_DATA15, RGB_PAD_CTRL),
+	IOMUX_PAD_CTRL(LCD_DATA16__LCD_DATA16, RGB_PAD_CTRL),
+	IOMUX_PAD_CTRL(LCD_DATA17__LCD_DATA17, RGB_PAD_CTRL),
+	IOMUX_PAD_CTRL(LCD_DATA18__LCD_DATA18, RGB_PAD_CTRL),
+	IOMUX_PAD_CTRL(LCD_DATA19__LCD_DATA19, RGB_PAD_CTRL),
+	IOMUX_PAD_CTRL(LCD_DATA20__LCD_DATA20, RGB_PAD_CTRL),
+	IOMUX_PAD_CTRL(LCD_DATA21__LCD_DATA21, RGB_PAD_CTRL),
+	IOMUX_PAD_CTRL(LCD_DATA22__LCD_DATA22, RGB_PAD_CTRL),
+	IOMUX_PAD_CTRL(LCD_DATA23__LCD_DATA23, RGB_PAD_CTRL),
+#else
+	IOMUX_PAD_CTRL(LCD_CLK__GPIO3_IO0, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(LCD_ENABLE__GPIO3_IO1, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(LCD_HSYNC__GPIO3_IO2, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(LCD_VSYNC__GPIO3_IO3, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(LCD_RESET__GPIO3_IO4, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(LCD_DATA00__GPIO3_IO5, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(LCD_DATA01__GPIO3_IO6, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(LCD_DATA02__GPIO3_IO7, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(LCD_DATA03__GPIO3_IO8, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(LCD_DATA04__GPIO3_IO9, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(LCD_DATA05__GPIO3_IO10, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(LCD_DATA06__GPIO3_IO11, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(LCD_DATA07__GPIO3_IO12, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(LCD_DATA08__GPIO3_IO13, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(LCD_DATA09__GPIO3_IO14, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(LCD_DATA10__GPIO3_IO15, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(LCD_DATA11__GPIO3_IO16, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(LCD_DATA12__GPIO3_IO17, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(LCD_DATA13__GPIO3_IO18, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(LCD_DATA14__GPIO3_IO19, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(LCD_DATA15__GPIO3_IO20, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(LCD_DATA16__GPIO3_IO21, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(LCD_DATA17__GPIO3_IO22, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(LCD_DATA18__GPIO3_IO23, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(LCD_DATA19__GPIO3_IO24, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(LCD_DATA20__GPIO3_IO25, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(LCD_DATA21__GPIO3_IO26, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(LCD_DATA22__GPIO3_IO27, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(LCD_DATA23__GPIO3_IO28, WEAK_PULLUP),
+#endif
+};
+
+static const iomux_v3_cfg_t enet_gpio_pads[] = {
+#define GP_PHY1_AD0	IMX_GPIO_NR(7, 0)
+	IOMUX_PAD_CTRL(ENET1_RGMII_RD0__GPIO7_IO0, WEAK_PULLDN_OUTPUT),
+#define GP_PHY1_AD1	IMX_GPIO_NR(7, 1)
+	IOMUX_PAD_CTRL(ENET1_RGMII_RD1__GPIO7_IO1, WEAK_PULLDN_OUTPUT),
+	/* MODE - 1100 */
+#define GP_PHY1_MODE0	IMX_GPIO_NR(7, 4)
+	IOMUX_PAD_CTRL(ENET1_RGMII_RX_CTL__GPIO7_IO4, WEAK_PULLDN_OUTPUT),
+#define GP_PHY1_MODE1	IMX_GPIO_NR(7, 2)
+	IOMUX_PAD_CTRL(ENET1_RGMII_RD2__GPIO7_IO2, WEAK_PULLDN_OUTPUT),
+#define GP_PHY1_MODE3	IMX_GPIO_NR(7, 3)
+	IOMUX_PAD_CTRL(ENET1_RGMII_RD3__GPIO7_IO3, WEAK_PULLUP_OUTPUT),
+	/* 1.8V(1)/1.5V select(0) */
+#define GP_PHY1_1P8_SEL	IMX_GPIO_NR(7, 5)
+	IOMUX_PAD_CTRL(ENET1_RGMII_RXC__GPIO7_IO5, WEAK_PULLUP_OUTPUT),
+};
+
+static const iomux_v3_cfg_t enet_pads[] = {
+	IOMUX_PAD_CTRL(ENET1_RGMII_RD0__ENET1_RGMII_RD0, ENET_RX_DN_PAD_CTRL),
+	IOMUX_PAD_CTRL(ENET1_RGMII_RD1__ENET1_RGMII_RD1, ENET_RX_DN_PAD_CTRL),
+	IOMUX_PAD_CTRL(ENET1_RGMII_RX_CTL__ENET1_RGMII_RX_CTL, ENET_RX_DN_PAD_CTRL),
+	IOMUX_PAD_CTRL(ENET1_RGMII_RD2__ENET1_RGMII_RD2, ENET_RX_DN_PAD_CTRL),
+	IOMUX_PAD_CTRL(ENET1_RGMII_RD3__ENET1_RGMII_RD3, ENET_RX_UP_PAD_CTRL),
+	IOMUX_PAD_CTRL(ENET1_RGMII_RXC__ENET1_RGMII_RXC, ENET_RX_UP_PAD_CTRL),
+};
+
+#ifdef CONFIG_SYS_I2C_MXC
+/* I2C1 for PMIC */
+struct i2c_pads_info i2c_pads[] = {
+{
+	.scl = {
+		.i2c_mode = IOMUX_PAD_CTRL(I2C1_SCL__I2C1_SCL, I2C_PAD_CTRL),
+		.gpio_mode = IOMUX_PAD_CTRL(I2C1_SCL__GPIO4_IO8, I2C_PAD_CTRL),
+		.gp = IMX_GPIO_NR(4, 8),
+	},
+	.sda = {
+		.i2c_mode = IOMUX_PAD_CTRL(I2C1_SDA__I2C1_SDA, I2C_PAD_CTRL),
+		.gpio_mode = IOMUX_PAD_CTRL(I2C1_SDA__GPIO4_IO9, I2C_PAD_CTRL),
+		.gp = IMX_GPIO_NR(4, 9),
+	},
+},
+{
+	.scl = {
+		.i2c_mode = IOMUX_PAD_CTRL(I2C2_SCL__I2C2_SCL, I2C_PAD_CTRL),
+		.gpio_mode = IOMUX_PAD_CTRL(I2C2_SCL__GPIO4_IO10, I2C_PAD_CTRL),
+		.gp = IMX_GPIO_NR(4, 10),
+	},
+	.sda = {
+		.i2c_mode = IOMUX_PAD_CTRL(I2C2_SDA__I2C2_SDA, I2C_PAD_CTRL),
+		.gpio_mode = IOMUX_PAD_CTRL(I2C2_SDA__GPIO4_IO11, I2C_PAD_CTRL),
+		.gp = IMX_GPIO_NR(4, 11),
+	},
+},
+{
+	.scl = {
+		.i2c_mode = IOMUX_PAD_CTRL(I2C3_SCL__I2C3_SCL, I2C_PAD_CTRL),
+		.gpio_mode = IOMUX_PAD_CTRL(I2C3_SCL__GPIO4_IO12, I2C_PAD_CTRL),
+		.gp = IMX_GPIO_NR(4, 12),
+	},
+	.sda = {
+		.i2c_mode = IOMUX_PAD_CTRL(I2C3_SDA__I2C3_SDA, I2C_PAD_CTRL),
+		.gpio_mode = IOMUX_PAD_CTRL(I2C3_SDA__GPIO4_IO13, I2C_PAD_CTRL),
+		.gp = IMX_GPIO_NR(4, 13),
+	},
+},
+{
+	.scl = {
+		.i2c_mode = IOMUX_PAD_CTRL(I2C4_SCL__I2C4_SCL, I2C_PAD_CTRL),
+		.gpio_mode = IOMUX_PAD_CTRL(I2C4_SCL__GPIO4_IO14, I2C_PAD_CTRL),
+		.gp = IMX_GPIO_NR(4, 14),
+	},
+	.sda = {
+		.i2c_mode = IOMUX_PAD_CTRL(I2C4_SDA__I2C4_SDA, I2C_PAD_CTRL),
+		.gpio_mode = IOMUX_PAD_CTRL(I2C4_SDA__GPIO4_IO15, I2C_PAD_CTRL),
+		.gp = IMX_GPIO_NR(4, 15),
+	},
+},
+};
+#endif
+
+int dram_init(void)
+{
+	gd->ram_size = RAM_SIZE;
+	return 0;
+}
+
+#ifdef CONFIG_FSL_ESDHC
+
+static struct fsl_esdhc_cfg usdhc_cfg[3] = {
+	{USDHC1_BASE_ADDR, 0, 4},
+	{USDHC3_BASE_ADDR},
+};
+
+int board_mmc_getcd(struct mmc *mmc)
+{
+	struct fsl_esdhc_cfg *cfg = (struct fsl_esdhc_cfg *)mmc->priv;
+
+	if (cfg->esdhc_base == USDHC3_BASE_ADDR)
+		return 1; /* Assume uSDHC3 emmc is always present */
+	return !gpio_get_value(GP_USDHC1_CD);
+}
+
+int board_mmc_init(bd_t *bis)
+{
+	int i, ret;
+	/*
+	 * According to the board_mmc_init() the following map is done:
+	 * (U-boot device node)    (Physical Port)
+	 * mmc0                    USDHC1
+	 * mmc2                    USDHC3 (eMMC)
+	 */
+	for (i = 0; i < CONFIG_SYS_FSL_USDHC_NUM; i++) {
+		switch (i) {
+		case 0:
+			gpio_request(GP_USDHC1_CD, "usdhc1_cd");
+			gpio_direction_input(GP_USDHC1_CD);
+			usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC_CLK);
+			break;
+		case 1:
+			gpio_request(GP_EMMC_RESET, "usdhc3_reset");
+			gpio_direction_output(GP_EMMC_RESET, 0);
+			udelay(500);
+			gpio_direction_output(GP_EMMC_RESET, 1);
+			usdhc_cfg[1].sdhc_clk = mxc_get_clock(MXC_ESDHC3_CLK);
+			break;
+		default:
+			printf("Warning: you configured more USDHC controllers"
+				"(%d) than supported by the board\n", i + 1);
+			return -EINVAL;
+			}
+
+			ret = fsl_esdhc_initialize(bis, &usdhc_cfg[i]);
+			if (ret)
+				return ret;
+	}
+
+	return 0;
+}
+
+#endif
+
+#ifdef CONFIG_FEC_MXC
+int board_eth_init(bd_t *bis)
+{
+	int ret;
+
+	ret = fecmxc_initialize_multi(bis, 0,
+		CONFIG_FEC_MXC_PHYADDR, IMX_FEC_BASE);
+	if (ret)
+		printf("FEC0 MXC: %s:failed\n", __func__);
+
+#ifdef CONFIG_CI_UDC
+	/* For otg ethernet*/
+	if (!getenv("eth1addr"))
+		setenv("eth1addr", getenv("usbnet_devaddr"));
+	usb_eth_initialize(bis);
+#endif
+	return ret;
+}
+
+static int setup_fec(void)
+{
+	struct iomuxc_gpr_base_regs *const iomuxc_gpr_regs
+		= (struct iomuxc_gpr_base_regs *) IOMUXC_GPR_BASE_ADDR;
+
+	/* Reset AR8031 PHYs */
+	gpio_direction_output(GP_ENET_PHY_RESET, 0);
+	gpio_direction_output(GP_PHY1_AD0, 0);
+	gpio_direction_output(GP_PHY1_AD1, 0);
+	gpio_direction_output(GP_PHY1_MODE0, 0);
+	gpio_direction_output(GP_PHY1_MODE1, 0);
+	gpio_direction_output(GP_PHY1_MODE3, 1);
+	gpio_direction_output(GP_PHY1_1P8_SEL, 1); /* AD2 also */
+	SETUP_IOMUX_PADS(enet_gpio_pads);
+
+	udelay(1000);	/* 1 ms minimum reset pulse */
+	gpio_set_value(GP_ENET_PHY_RESET, 1);
+	/* strap hold time, 18 fails, 19 works, so 40 should be safe */
+	udelay(40);
+
+	SETUP_IOMUX_PADS(enet_pads);
+
+	/* Use 125M anatop REF_CLK1 for ENET1, clear gpr1[13], gpr1[17]*/
+	clrsetbits_le32(&iomuxc_gpr_regs->gpr[1],
+		(IOMUXC_GPR_GPR1_GPR_ENET1_TX_CLK_SEL_MASK |
+		 IOMUXC_GPR_GPR1_GPR_ENET1_CLK_DIR_MASK), 0);
+
+	return set_clk_enet(ENET_125MHz);
+}
+
+int board_phy_config(struct phy_device *phydev)
+{
+	int val;
+
+        /*
+         * Ar803x phy SmartEEE feature cause link status generates glitch,
+         * which cause ethernet link down/up issue, so disable SmartEEE
+         */
+	phy_write(phydev, MDIO_DEVAD_NONE, 0xd, 0x3);
+	phy_write(phydev, MDIO_DEVAD_NONE, 0xe, 0x805d);
+	phy_write(phydev, MDIO_DEVAD_NONE, 0xd, 0x4003);
+	val = phy_read(phydev, MDIO_DEVAD_NONE, 0xe);
+	phy_write(phydev, MDIO_DEVAD_NONE, 0xe, val & ~(1 << 8));
+
+	/* rgmii tx clock delay enable */
+#if 0 //done in ar8035_config
+	phy_write(phydev, MDIO_DEVAD_NONE, 0x1d, 0x05);
+	val = phy_read(phydev, MDIO_DEVAD_NONE, 0x1e);
+	phy_write(phydev, MDIO_DEVAD_NONE, 0x1e, (val|0x0100));
+
+	phydev->supported = phydev->drv->features;
+#endif
+	if (phydev->drv->config)
+		phydev->drv->config(phydev);
+	return 0;
+}
+#endif
+
+static const unsigned short gpios_out_low[] = {
+	GP_ENET_PHY_RESET,
+	GP_I2C2A_EN,
+	GP_MIPI_BACKLIGHT,
+	GP_PCIE_DISABLE,
+	GP_PCIE_RESET,
+	GP_UART3_RS485_TX,
+	GP_PMIC_SD1_VSEL,
+	GP_BT_REG_ON,
+	GP_WL_REG_ON,
+	GP_EMMC_RESET,
+};
+
+static const unsigned short gpios_out_high[] = {
+	GP_CAN_STANDBY,
+#ifdef GP_SPI_nWP
+	GP_SPI_nWP,
+#endif
+#ifdef GP_SPI_nHOLD
+	GP_SPI_nHOLD,
+#endif
+};
+
+static const unsigned short gpios_in[] = {
+	GPIRQ_ENET_PHY,
+	GP_PMIC_INT_B,
+	GP_RTC,
+	GP_MIPI,
+	GP_I2C_TOUCH,
+	GP_USDHC1_CD,
+	GP_WL_HOST_WAKE,
+	GP_OTG1_ID,
+};
+
+static void set_gpios_in(const unsigned short *p, int cnt)
+{
+	int i;
+
+	for (i = 0; i < cnt; i++)
+		gpio_direction_input(*p++);
+}
+
+static void set_gpios(const unsigned short *p, int cnt, int val)
+{
+	int i;
+
+	for (i = 0; i < cnt; i++)
+		gpio_direction_output(*p++, val);
+}
+
+int board_early_init_f(void)
+{
+	set_gpios_in(gpios_in, ARRAY_SIZE(gpios_in));
+	set_gpios(gpios_out_high, ARRAY_SIZE(gpios_out_high), 1);
+	set_gpios(gpios_out_low, ARRAY_SIZE(gpios_out_low), 0);
+	SETUP_IOMUX_PADS(init_pads);
+	setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pads[0]);
+	return 0;
+}
+
+int board_init(void)
+{
+	int i;
+	struct i2c_pads_info *p = &i2c_pads[1];
+	/* address of boot parameters */
+	gd->bd->bi_boot_params = PHYS_SDRAM + 0x100;
+
+#ifdef CONFIG_FEC_MXC
+	setup_fec();
+#endif
+
+	for (i = 1; i < 4; i++) {
+		setup_i2c(i, CONFIG_SYS_I2C_SPEED, 0x7f, p);
+		p++;
+	}
+	return 0;
+}
+
+#ifdef CONFIG_CMD_BMODE
+static const struct boot_mode board_boot_modes[] = {
+	/* 4 bit bus width */
+	{"sd1", MAKE_CFGVAL(0x10, 0x10, 0x00, 0x00)},
+	{"emmc", MAKE_CFGVAL(0x10, 0x2a, 0x00, 0x00)},
+	{NULL,   0},
+};
+#endif
+
+#ifdef CONFIG_POWER
+#define I2C_PMIC	0
+int power_init_board(void)
+{
+	struct pmic *p;
+	int ret;
+	unsigned int reg, rev_id;
+
+	ret = power_pfuze3000_init(I2C_PMIC);
+	if (ret)
+		return ret;
+
+	p = pmic_get("PFUZE3000");
+	ret = pmic_probe(p);
+	if (ret)
+		return ret;
+
+	pmic_reg_read(p, PFUZE3000_DEVICEID, &reg);
+	pmic_reg_read(p, PFUZE3000_REVID, &rev_id);
+	printf("PMIC: PFUZE3000 DEV_ID=0x%x REV_ID=0x%x\n", reg, rev_id);
+
+	/* disable Low Power Mode during standby mode */
+	pmic_reg_read(p, PFUZE3000_LDOGCTL, &reg);
+	reg |= 0x1;
+	pmic_reg_write(p, PFUZE3000_LDOGCTL, reg);
+
+	return 0;
+}
+#endif
+
+u32 get_board_rev(void)
+{
+	return get_cpu_rev();
+}
+
+int checkboard(void)
+{
+	puts("Board: i.MX7D Nitrogen7\n");
+
+	return 0;
+}
+
+#ifdef CONFIG_USB_EHCI_MX7
+int board_usb_phy_mode(int port)
+{
+	if (port)
+		return USB_INIT_HOST;
+	return gpio_get_value(GP_OTG1_ID) ? USB_INIT_DEVICE : USB_INIT_HOST;
+}
+
+int board_ehci_hcd_init(int port)
+{
+	switch (port) {
+	case 0:
+		break;
+	case 1:
+		break;
+	default:
+		printf("MXC USB port %d not yet supported\n", port);
+		return -EINVAL;
+	}
+	return 0;
+}
+#endif
+
+int misc_init_r(void)
+{
+#ifdef CONFIG_CMD_BMODE
+	add_board_boot_modes(board_boot_modes);
+#endif
+
+	set_wdog_reset((struct wdog_regs *)WDOG1_BASE_ADDR);
+	return 0;
+
+}
+
+int board_late_init(void)
+{
+	unsigned char mac_address[8];
+	char macbuf[18];
+	int cpurev = get_cpu_rev();
+
+	setenv("cpu", get_imx_type((cpurev & 0xFF000) >> 12));
+	if (!getenv("board"))
+		setenv("board", "nitrogen7");
+	setenv("uboot_defconfig", CONFIG_DEFCONFIG);
+	if (!getenv("wlmac")) {
+		imx_get_mac_from_fuse(0, mac_address);
+		if (is_valid_ethaddr(mac_address)) {
+			mac_address[3] |= 0x80;
+			snprintf(macbuf, sizeof(macbuf), "%pM", mac_address);
+			setenv("wlmac", macbuf);
+		}
+	}
+	return 0;
+}
