@@ -1,0 +1,6 @@
+NITROGEN7 BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/nitrogen7
+F:	include/configs/nitrogen7.h
+F:	configs/nitrogen7_defconfig

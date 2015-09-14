@@ -18,11 +18,18 @@ config TARGET_MX7DSABRESD
 	select DM
 	select DM_THERMAL
 
+config TARGET_NITROGEN7
+	bool "nitrogen7"
+	select CPU_V7
+	select DM
+	select DM_THERMAL
+
 endchoice
 
 config SYS_SOC
 	default "mx7"
 
 source "board/freescale/mx7dsabresd/Kconfig"
+source "board/boundary/nitrogen7/Kconfig"
 
 endif
