@@ -36,6 +36,9 @@
 #define CONFIG_ENV_OVERWRITE
 #define CONFIG_CONS_INDEX               1
 
+/* Filesystems and image support */
+#define CONFIG_SUPPORT_RAW_INITRD
+ 
 /* Miscellaneous configurable options */
 #define CONFIG_SYS_LONGHELP
 #define CONFIG_CMDLINE_EDITING

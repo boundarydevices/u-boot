@@ -1,0 +1,21 @@
+if TARGET_NITROGEN7
+
+config SYS_BOARD
+	default "nitrogen7"
+
+config SYS_VENDOR
+	default "boundary"
+
+config SYS_SOC
+	default "mx7"
+
+config SYS_CONFIG_NAME
+	default "nitrogen7"
+
+config ENV_WLMAC
+	bool
+	default	y
+
+source "board/boundary/common/Kconfig"
+
+endif
