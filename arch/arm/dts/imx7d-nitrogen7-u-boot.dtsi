@@ -1,0 +1,3 @@
+&flash {
+	compatible = "jedec,spi-nor";
+};
