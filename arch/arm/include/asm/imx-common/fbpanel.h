@@ -365,7 +365,8 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 }
 
 /* ft5x06 touch screen */
-#define IMX_VD38_LG1280_800(_mode, _detect, _bus) \
+/* LG panel LD101WX1 is a 24 bit spwg panel */
+#define IMX_VD38_LD101WX1(_mode, _detect, _bus) \
 {\
 	.bus	= _bus,\
 	.addr	= 0x38,\
@@ -373,15 +374,42 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
-	.fbflags = FBF_JEIDA,\
+	.fbflags = 0,\
+	.mode	= {\
+		.name           = "ld101wx1",\
+		.refresh        = 60,\
+		.xres           = 1280,\
+		.yres           = 800,\
+		.pixclock       = 1000000000000ULL/((1280+80+48+32)*(800+15+2+6)*60),\
+		.left_margin    = 80,\
+		.right_margin   = 48,\
+		.upper_margin   = 15,\
+		.lower_margin   = 2,\
+		.hsync_len      = 32,\
+		.vsync_len      = 6,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
+/* lg1280x800(LP101WX1) == hannstar7 */
+#define IMX_VD38_LG1280_800(_mode, _detect, _bus) \
+{\
+	.bus	= _bus,\
+	.addr	= 0x38,\
+	.pixfmt	= IPU_PIX_FMT_RGB666,\
+	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.enable	= fbp_enable_fb,\
+	.fbtype = FB_##_mode,\
+	.fbflags = 0,\
 	.mode	= {\
 		.name           = "lg1280x800",\
 		.refresh        = 60,\
 		.xres           = 1280,\
 		.yres           = 800,\
-		.pixclock       = 1000000000000ULL/((1280+48+80+32)*(800+15+2+6)*60),\
-		.left_margin    = 48,\
-		.right_margin   = 80,\
+		.pixclock       = 1000000000000ULL/((1280+80+48+32)*(800+15+2+6)*60),\
+		.left_margin    = 80,\
+		.right_margin   = 48,\
 		.upper_margin   = 15,\
 		.lower_margin   = 2,\
 		.hsync_len      = 32,\
@@ -392,7 +420,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 }
 
 /* ft5x06_ts */
-/* lg1280x800 is Jeida, this is not */
+/* lg1280x800(LP101WX1) == hannstar7 */
 #define IMX_VD38_HANNSTAR7(_mode, _detect, _bus) \
 {\
 	.bus	= _bus,\
@@ -407,9 +435,9 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 		.refresh        = 60,\
 		.xres           = 1280,\
 		.yres           = 800,\
-		.pixclock       = 1000000000000ULL/((1280+48+80+32)*(800+15+2+6)*60),\
-		.left_margin    = 48,\
-		.right_margin   = 80,\
+		.pixclock       = 1000000000000ULL/((1280+80+48+32)*(800+15+2+6)*60),\
+		.left_margin    = 80,\
+		.right_margin   = 48,\
 		.upper_margin   = 15,\
 		.lower_margin   = 2,\
 		.hsync_len      = 32,\
