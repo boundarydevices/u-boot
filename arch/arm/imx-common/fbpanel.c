@@ -186,8 +186,14 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 	size -= sz;
 
 	if (di && ((fb == FB_LCD) || (fb == FB_LVDS) || (fb == FB_LVDS2))) {
+#ifdef CONFIG_MX6SX
+		sz = snprintf(buf, size, "fdt set %s bus-width <%u>;", short_names[fb],
+				(di->pixfmt == IPU_PIX_FMT_RGB24) ? 24 : 18);
+
+#else
 		sz = snprintf(buf, size, "fdt set %s interface_pix_fmt %s;", fbnames[fb],
 				(di->pixfmt == IPU_PIX_FMT_RGB24) ? "RGB24" : "RGB666");
+#endif
 		buf += sz;
 		size -= sz;
 	}
