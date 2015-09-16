@@ -473,6 +473,33 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
+/* Also works for ER-TFT050-3 */
+#define IMX_VD38_ASIT500MA6F5D(_mode, _detect, _bus) \
+{\
+	.bus	= _bus,\
+	.addr	= 0x38,\
+	.pixfmt	= IPU_PIX_FMT_RGB24,\
+	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.enable	= fbp_enable_fb,\
+	.fbtype = FB_##_mode,\
+	.fbflags = FBF_MODESTR,\
+	.mode	= {\
+		.name           = "ASIT500MA6F5D",\
+		.refresh        = 60,\
+		.xres           = 800,\
+		.yres           = 480,\
+		.pixclock       = 1000000000000ULL / (800+88+40+48) / (480+32+13+3) / 60,\
+		.left_margin    = 88,\
+		.right_margin   = 40,\
+		.upper_margin   = 32,\
+		.lower_margin   = 13,\
+		.hsync_len      = 48,\
+		.vsync_len      = 3,\
+		.sync           = FB_SYNC_CLK_LAT_FALL,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
 /*
  * hitachi 640x240
  * vsync = 60
