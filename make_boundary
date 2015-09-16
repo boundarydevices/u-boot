@@ -6,6 +6,7 @@ numboards=0;
 numsuccess=0;
 numfailures=0;
 for board in $boards ; do
+    if [ $board != "mx6qsabrelite" ] ; then
 	make distclean ; make ${board}_defconfig
 	make all 
 	if [ $? -ne 0 ]; then
@@ -18,6 +19,7 @@ for board in $boards ; do
 		numsuccess=`expr $numsuccess + 1`;
 	fi
 	numboards=`expr $numboards + 1`;
+    fi
 done
 make distclean ;
 echo -e "\n\n\nbuilt for ${numboards} boards. ${numsuccess} succeeded and ${numfailures} failed";
