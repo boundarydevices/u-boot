@@ -437,6 +437,8 @@ static const struct display_info_t displays[] = {
 	IMX_VD48_HITACHI_HVGA(LCD, 0, 2),
 	IMX_VD48_CLAA_WVGA(LCD, 0, 2),
 
+	IMX_VD38_ASIT500MA6F5D(LCD, 0, 2),
+
 	/* hdmi */
 	IMX_VD50_1280_720M_60(HDMI, 1, 1),
 	IMX_VD50_1920_1080M_60(HDMI, 0, 1),
@@ -444,7 +446,7 @@ static const struct display_info_t displays[] = {
 
 	IMX_VD04_HANNSTAR(LVDS, 1, 2),
 	IMX_VD04_LG9_7(LVDS, 0, 2),
-	IMX_VD38_WSVGA(LVDS, 1, 2),
+	IMX_VD38_WSVGA(LVDS, 0, 2),
 
 	IMX_VD_WXGA_J(LVDS, 0, 0),
 	IMX_VD_WVGA_J(LVDS, 0, 0),
@@ -509,6 +511,7 @@ int board_early_init_f(void)
 	set_gpios(gpios_out_high, ARRAY_SIZE(gpios_out_high), 1);
 	set_gpios(gpios_out_low, ARRAY_SIZE(gpios_out_low), 0);
 	SETUP_IOMUX_PADS(init_pads);
+	SETUP_IOMUX_PADS(rgb_gpio_pads);
 	return 0;
 }
 
