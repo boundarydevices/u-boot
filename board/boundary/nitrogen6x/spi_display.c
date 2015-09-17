@@ -296,6 +296,7 @@ void enable_spi_rgb(struct display_info_t const *dev)
 	g_dev = dev;
 	init_spi(dev);
 	gpio_direction_output(cs_gpio, 1);
+	SETUP_IOMUX_PADS(spi_mosi_w_pads);
 
 	enable_spi_clk(1, dev->bus);
 
