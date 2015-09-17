@@ -563,6 +563,7 @@ static const struct display_info_t displays[] = {
 #ifdef CONFIG_MXC_SPI_DISPLAY
 	IMX_VD_AUO_G050(LCD, 0, 1),
 	IMX_VD_A030JN01_UPS051(LCD, 0, 1),
+	IMX_VD_A030JN01_YUV720(LCD, 0, 1),
 #endif
 };
 
