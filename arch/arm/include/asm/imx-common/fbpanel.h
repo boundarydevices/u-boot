@@ -935,7 +935,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 		.refresh        = 60,\
 		.xres           = 640,\
 		.yres           = 480,\
-		.pixclock       = 29668,1000000000000ULL/((960+40+48+20)*(480+27+18+1)*60),\
+		.pixclock       = 1000000000000ULL/((960+40+48+20)*(480+27+18+1)*60),\
 		.left_margin    = 40,\
 		.right_margin   = 48,\
 		.upper_margin   = 27,\
@@ -946,4 +946,32 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 		.vmode          = FB_VMODE_NONINTERLACED\
 	}\
 }
+
+/* 27.11 MHz pixel clock */
+#define IMX_VD_A030JN01_YUV720(_mode, _detect, _bus) \
+{\
+	.bus    = _bus,\
+	.addr   = 1,\
+	.pixfmt = IPU_PIX_FMT_YUYV,\
+	.detect = NULL,\
+	.enable = fbp_enable_fb,\
+	.fbtype = FB_##_mode,\
+	.fbflags = FBF_MODESTR | FBF_SPI,\
+	.mode   = {\
+		.name           = "A030JN01_YUV720",\
+		.refresh        = 60,\
+		.xres           = 720,\
+		.yres           = 480,\
+		.pixclock       =  1000000000000ULL/((720+40+98+1)*(480+27+18+1)*60),\
+		.left_margin    = 40,\
+		.right_margin   = 98,\
+		.upper_margin   = 27,\
+		.lower_margin   = 18,\
+		.hsync_len      = 1,\
+		.vsync_len      = 1,\
+		.sync           = 0,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
 #endif
