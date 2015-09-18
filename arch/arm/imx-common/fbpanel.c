@@ -149,6 +149,9 @@ static unsigned get_fb_available_mask(const struct display_info_t *di, int cnt)
 
 	return mask;
 }
+static const char rgb24[] = "RGB24";
+static const char rgb666[] = "RGB666";
+static const char yuyv16[] = "YUYV16";
 
 static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf, int size)
 {
@@ -157,6 +160,7 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 	int sz;
 	const char *buf_start = buf;
 	const struct fb_videomode *mode;
+	const char * fmt;
 
 	if (getenv("cmd_frozen") && getenv(cmd_fbnames[fb]))
 		return;		/* don't override if already set */
@@ -185,22 +189,28 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 	buf += sz;
 	size -= sz;
 
+	if (di->pixfmt == IPU_PIX_FMT_RGB24)
+		fmt = rgb24;
+	else if (di->pixfmt == IPU_PIX_FMT_YUYV)
+		fmt = yuyv16;
+	else
+		fmt = rgb666;
+
 	if (di && ((fb == FB_LCD) || (fb == FB_LVDS) || (fb == FB_LVDS2))) {
 #ifdef CONFIG_MX6SX
 		sz = snprintf(buf, size, "fdt set %s bus-width <%u>;", short_names[fb],
 				(di->pixfmt == IPU_PIX_FMT_RGB24) ? 24 : 18);
 
 #else
-		sz = snprintf(buf, size, "fdt set %s interface_pix_fmt %s;", fbnames[fb],
-				(di->pixfmt == IPU_PIX_FMT_RGB24) ? "RGB24" : "RGB666");
+		sz = snprintf(buf, size, "fdt set %s interface_pix_fmt %s;",
+				fbnames[fb], fmt);
 #endif
 		buf += sz;
 		size -= sz;
 	}
 
 	if (di && (fb == FB_LCD)) {
-		sz = snprintf(buf, size, "fdt set lcd interface_pix_fmt %s;",
-				(di->pixfmt == IPU_PIX_FMT_RGB24) ? "RGB24" : "RGB666");
+		sz = snprintf(buf, size, "fdt set lcd default_ifmt %s;", fmt);
 		buf += sz;
 		size -= sz;
 	}
