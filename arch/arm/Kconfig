@@ -550,6 +550,10 @@ config TARGET_H
 	bool "Support h"
 	select CPU_V7
 
+config TARGET_H4
+	bool "Support h4"
+	select CPU_V7
+
 config TARGET_INSP
 	bool "Support insp"
 	select CPU_V7
@@ -1000,6 +1004,7 @@ source "board/boundary/cob/Kconfig"
 source "board/boundary/dash/Kconfig"
 source "board/boundary/eo/Kconfig"
 source "board/boundary/h/Kconfig"
+source "board/boundary/h4/Kconfig"
 source "board/boundary/insp/Kconfig"
 source "board/boundary/ioc/Kconfig"
 source "board/boundary/ls/Kconfig"
