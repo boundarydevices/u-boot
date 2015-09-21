@@ -1,0 +1,7 @@
+NITROGEN6_MAX BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/h4/
+F:	include/configs/h4.h
+F:	configs/h4_defconfig
+
