@@ -125,7 +125,7 @@ if itest.s "x" != "x${show_env}" ; then
 	printenv
 fi
 
-if load ${dtype} ${disk}:${bootpart} ${a_zImage} /vmlinuz ; then
+if load ${dtype} ${disk}:${bootpart} ${a_zImage} /zImage ; then
 	bootz ${a_zImage} - ${a_fdt}
 fi
 echo "Error loading kernel image"
