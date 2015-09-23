@@ -414,8 +414,47 @@ void board_enable_lvds(const struct display_info_t *di, int enable)
 	gpio_direction_output(GP_BACKLIGHT_LVDS, enable);
 }
 
+int fbp_detect_gpio(struct display_info_t const *di)
+{
+	int val;
+
+	val = gpio_get_value(GP_4_5_WIRE_SELECT);
+	if (val)
+		return 1;	/* 5 wire */
+	val = gpio_get_value(GP_4_5_WIRE_SELECT_R1);
+	return val;
+}
+
+/* has 5 - wire touchscreen */
+#define IMX_VD_INNOLUX(_mode, _detect, _bus) \
+{\
+	.bus	= _bus,\
+	.addr	= 0,\
+	.pixfmt	= IPU_PIX_FMT_RGB24,\
+	.detect	= _detect ? fbp_detect_gpio : NULL,\
+	.enable	= fbp_enable_fb,\
+	.fbtype = FB_##_mode,\
+	.mode	= {\
+		.name           = "innolux",\
+		.refresh        = 60,\
+		.xres           = 1280,\
+		.yres           = 800,\
+		.pixclock       = 1000000000000ULL/((1280+80+48+32)*(800+15+2+6)*60),\
+		.left_margin    = 80,\
+		.right_margin   = 48,\
+		.upper_margin   = 15,\
+		.lower_margin   = 2,\
+		.hsync_len      = 32,\
+		.vsync_len      = 6,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
+
 static const struct display_info_t displays[] = {
-	IMX_VD_WXGA(LVDS, 0, 0),
+	IMX_VD38_HANNSTAR7(LVDS, 0, 0),
+	IMX_VD_INNOLUX(LVDS, 1, 0),
 };
 
 int board_cfb_skip(void)
