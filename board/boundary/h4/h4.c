@@ -120,8 +120,8 @@ static const iomux_v3_cfg_t init_pads[] = {
 #define GP_SPARE		IMX_GPIO_NR(1, 16)
 	IOMUX_PAD_CTRL(SD1_DAT0__GPIO1_IO16, WEAK_PULLUP),
 
-#define GP_MAIN_POWER_EN	IMX_GPIO_NR(1, 19)
-	IOMUX_PAD_CTRL(SD1_DAT2__GPIO1_IO19, WEAK_PULLUP),
+#define GP_MAIN_POWER_EN	IMX_GPIO_NR(1, 19)		/* low is on */
+	IOMUX_PAD_CTRL(SD1_DAT2__GPIO1_IO19, WEAK_PULLDN),
 
 	/* hdmi cec - tc358743 and micro hdmi connector */
 	IOMUX_PAD_CTRL(EIM_A25__HDMI_TX_CEC_LINE, CEC_PAD_CTRL),
@@ -458,6 +458,7 @@ int board_cfb_skip(void)
 #endif
 
 static const unsigned short gpios_out_low[] = {
+	GP_MAIN_POWER_EN,
 	GP_TC3587_RESET,
 	GP_J8_RESET,
 	GP_SPI_DISPLAY_RESET,
@@ -474,7 +475,6 @@ static const unsigned short gpios_out_low[] = {
 static const unsigned short gpios_out_high[] = {
 	GP_ECSPI1_NOR_CS,	/* SS1 of spi nor */
 	GP_ECSPI2_CS,
-	GP_MAIN_POWER_EN,
 };
 
 static const unsigned short gpios_in[] = {
