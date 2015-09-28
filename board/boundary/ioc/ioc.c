@@ -142,12 +142,11 @@ static const iomux_v3_cfg_t init_pads[] = {
 #define GP_OV5642_RESET		IMX_GPIO_NR(1, 8)
 	IOMUX_PAD_CTRL(GPIO_8__GPIO1_IO08, OUTPUT_40OHM),
 
-	/* PWM1 - Backlight on RGB connector: J15 */
-#define GP_BACKLIGHT_RGB IMX_GPIO_NR(1, 21)
+	/* PWM1  */
+#define GP_BACKLIGHT	 IMX_GPIO_NR(1, 21)
 	IOMUX_PAD_CTRL(SD1_DAT3__GPIO1_IO21, WEAK_PULLDN),
 
-	/* PWM4 - Backlight on LVDS connector: J6 */
-#define GP_BACKLIGHT_LVDS IMX_GPIO_NR(1, 18)
+	/* PWM4  */
 	IOMUX_PAD_CTRL(SD1_CMD__GPIO1_IO18, WEAK_PULLDN),
 
 	/* reg_usbotg_vbus */
@@ -497,7 +496,7 @@ int splash_screen_prepare(void)
 #ifdef CONFIG_CMD_FBPANEL
 void board_enable_lvds(const struct display_info_t *di, int enable)
 {
-	gpio_direction_output(GP_BACKLIGHT_LVDS, enable);
+	gpio_direction_output(GP_BACKLIGHT, enable);
 }
 
 void board_enable_lcd(const struct display_info_t *di, int enable)
@@ -508,9 +507,9 @@ void board_enable_lcd(const struct display_info_t *di, int enable)
 		if (di->fbflags & FBF_SPI)
 			enable_spi_rgb(di);
 #endif
-		gpio_direction_output(GP_BACKLIGHT_RGB, enable);
+		gpio_direction_output(GP_BACKLIGHT, enable);
 	} else {
-		gpio_direction_output(GP_BACKLIGHT_RGB, enable);
+		gpio_direction_output(GP_BACKLIGHT, enable);
 		SETUP_IOMUX_PADS(rgb_gpio_pads);
 	}
 }
@@ -586,8 +585,7 @@ static const unsigned short gpios_in[] = {
 	GP_GPIOKEY_POWER,
 	GP_GPIOKEY_VOL_DOWN,
 	GP_GPIOKEY_VOL_UP,
-	GP_BACKLIGHT_LVDS,
-	GP_BACKLIGHT_RGB,
+	GP_BACKLIGHT,
 	GPIRQ_ENET_PHY,
 	GPIRQ_WL1271_WL,
 	GP_USDHC4_CD,
