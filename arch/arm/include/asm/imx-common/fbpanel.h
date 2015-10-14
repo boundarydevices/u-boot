@@ -145,6 +145,32 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
+#define IMX_VD50_720_480M_60(_mode, _detect, _bus) \
+{\
+	.bus	= _bus,\
+	.addr	= 0x50,\
+	.pixfmt	= IPU_PIX_FMT_RGB24,\
+	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.enable	= fbp_enable_fb,\
+	.fbtype = FB_##_mode,\
+	.fbflags = FBF_MODESTR,\
+	.mode	= {\
+		.name           = "720x480M@60",\
+		.refresh        = 60,\
+		.xres           = 720,\
+		.yres           = 480,\
+		.pixclock       = 1000000000000ULL/((720+60+16+62)*(480+30+9+6)*60),\
+		.left_margin    = 60,\
+		.right_margin   = 16,\
+		.upper_margin   = 30,\
+		.lower_margin   = 9,\
+		.hsync_len      = 62,\
+		.vsync_len      = 6,\
+		.sync           = 0,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
 /* tsc2004 */
 #define IMX_VD48_CLAA_WVGA(_mode, _detect, _bus) \
 {\
