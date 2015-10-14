@@ -530,6 +530,7 @@ static const struct display_info_t displays[] = {
 	IMX_VD50_1920_1080M_60(HDMI, 0, 1),
 	IMX_VD50_1024_768M_60(HDMI, 0, 1),
 	IMX_VD50_640_480M_60(HDMI, 0, 1),
+	IMX_VD50_720_480M_60(HDMI, 0, 1),
 
 	/* ft5x06 */
 	IMX_VD38_LG1280_800(LVDS, 1, 2),
