@@ -113,18 +113,8 @@ struct fsl_qspi_regs {
 
 #define LUT_KEY_VALUE			0x5af05af0
 
-#define OPRND0_SHIFT			0
-#define OPRND0(x)			((x) << OPRND0_SHIFT)
-#define PAD0_SHIFT			8
-#define PAD0(x)				((x) << PAD0_SHIFT)
-#define INSTR0_SHIFT			10
-#define INSTR0(x)			((x) << INSTR0_SHIFT)
-#define OPRND1_SHIFT			16
-#define OPRND1(x)			((x) << OPRND1_SHIFT)
-#define PAD1_SHIFT			24
-#define PAD1(x)				((x) << PAD1_SHIFT)
-#define INSTR1_SHIFT			26
-#define INSTR1(x)			((x) << INSTR1_SHIFT)
+#define LUT0(inst, op, pad)		(((inst) << 10) | (op) | ((pad) << 8))
+#define LUT1(inst, op, pad)		(LUT0(inst, op, pad) << 16)
 
 #define LUT_CMD				1
 #define LUT_ADDR			2
