@@ -350,7 +350,7 @@ int enable_i2c_clk(unsigned char enable, unsigned i2c_num);
 #ifdef CONFIG_FEC_MXC
 int set_clk_enet(enum enet_freq type);
 #endif
-int set_clk_qspi(void);
+int set_clk_qspi(u32 freq);
 int set_clk_nand(void);
 #ifdef CONFIG_MXC_OCOTP
 void enable_ocotp_clk(unsigned char enable);
