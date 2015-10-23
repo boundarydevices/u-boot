@@ -852,17 +852,37 @@ static int enable_pll_video(u32 pll_div, u32 pll_num, u32 pll_denom,
 	return 1;
 }
 
-int set_clk_qspi(void)
+int set_clk_qspi(u32 freq)
 {
 	u32 target;
+	u32 div, pre, post;
+	u32 best = 64 * 8;
+	u32 best_pre = 8;
+	u32 best_post = 64;
 
 	/* disable the clock gate first */
 	clock_enable(CCGR_QSPI, 0);
+	if (!freq)
+		return 0;
+
+
+	target = ((392000000/4 - 1)/ freq) + 1;
+	for (pre = 1; pre <= 8; pre++) {
+		post = ((target - 1)/ pre) + 1;
+		if (post > 64)
+			continue;
+		div = pre * post;
+		if (best >= div) {
+			best = div;
+			best_pre = pre;
+			best_post = post;
+		}
+	}
 
 	/* 49M: 392/2/4 */
 	target = CLK_ROOT_ON | QSPI_CLK_ROOT_FROM_PLL_SYS_PFD4_CLK |
-		 CLK_ROOT_PRE_DIV(CLK_ROOT_PRE_DIV1) |
-		 CLK_ROOT_POST_DIV(CLK_ROOT_POST_DIV2);
+		 CLK_ROOT_PRE_DIV(best_pre - 1) |
+		 CLK_ROOT_POST_DIV(best_post - 1);
 	clock_set_target_val(QSPI_CLK_ROOT, target);
 
 	/* enable the clock gate */
