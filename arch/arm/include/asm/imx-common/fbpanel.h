@@ -119,6 +119,32 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
+#define IMX_VD50_800_600MR_60(_mode, _detect, _bus) \
+{\
+	.bus	= _bus,\
+	.addr	= 0,\
+	.pixfmt	= IPU_PIX_FMT_RGB24,\
+	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.enable	= fbp_enable_fb,\
+	.fbtype = FB_##_mode,\
+	.fbflags = FBF_MODESTR,\
+	.mode	= {\
+		.name           = "800x600MR@60",\
+		.refresh        = 60,\
+		.xres           = 800,\
+		.yres           = 600,\
+		.pixclock       = (800+88+40+128) * 1000 / (600+23+1+4) / 60,\
+		.left_margin    = 88,\
+		.right_margin   = 40,\
+		.upper_margin   = 23,\
+		.lower_margin   = 2,	/* must be >=2 */\
+		.hsync_len      = 128,\
+		.vsync_len      = 3,\
+		.sync           = FB_SYNC_CLK_LAT_FALL,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
 #define IMX_VD50_640_480M_60(_mode, _detect, _bus) \
 {\
 	.bus	= _bus,\
