@@ -494,13 +494,19 @@ void board_enable_lcd(const struct display_info_t *di, int enable)
 	gpio_direction_output(GP_RGB_BACKLIGHT, enable);
 }
 
-static const struct display_info_t displays[] = {
-	IMX_VD_LSA40AT9001(LCD, 0, 2),
+void board_enable_hdmi(const struct display_info_t *di, int enable)
+{
+	board_enable_lcd(di, enable);
+}
 
+static const struct display_info_t displays[] = {
 	/* hdmi */
-	IMX_VD50_1280_720M_60(HDMI, 1, (GP_HDMI_I2C_EN << 8) | 1),
+	IMX_VD50_800_600MR_60(HDMI, 1, (GP_HDMI_I2C_EN << 8) | 1),
+	IMX_VD50_1280_720M_60(HDMI, 0, (GP_HDMI_I2C_EN << 8) | 1),
 	IMX_VD50_1920_1080M_60(HDMI, 0, (GP_HDMI_I2C_EN << 8) | 1),
 	IMX_VD50_1024_768M_60(HDMI, 0, (GP_HDMI_I2C_EN << 8) | 1),
+
+	IMX_VD_LSA40AT9001(LCD, 0, 2),
 };
 
 int board_cfb_skip(void)
