@@ -133,7 +133,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 		.refresh        = 60,\
 		.xres           = 800,\
 		.yres           = 600,\
-		.pixclock       = (800+88+40+128) * 1000 / (600+23+1+4) / 60,\
+		.pixclock       = 1000000000000ULL/((800+88+40+128)*(600+23+2+3)*60),\
 		.left_margin    = 88,\
 		.right_margin   = 40,\
 		.upper_margin   = 23,\
@@ -958,7 +958,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 		.refresh        = 60,\
 		.xres           = 800,\
 		.yres           = 600,\
-		.pixclock       = (800+46+210+10) * 1000 / (600+23+12+1) / 60,\
+		.pixclock       = 1000000000000ULL/((800+46+210+10)*(600+23+12+1)*60),\
 		.left_margin    = 46,\
 		.right_margin   = 210,\
 		.upper_margin   = 23,\
