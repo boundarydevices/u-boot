@@ -15,6 +15,11 @@ if itest.s x6SX == "x${cpu}" ; then
 	a_initrd=0x83a00000
 fi
 
+if itest.s "x" == "x${board}" ; then
+	echo "!!!! Error: Your u-boot is outdated. Please upgrade.";
+	exit;
+fi
+
 if itest.s "x" == "x${dtbname}" ; then
 	if itest.s x6SOLO == "x${cpu}" ; then
 		dtbname=imx6dl-${board}.dtb;
