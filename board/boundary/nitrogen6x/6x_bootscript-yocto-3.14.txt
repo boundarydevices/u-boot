@@ -25,6 +25,8 @@ if itest.s "x" == "x${dtbname}" ; then
 		dtbname=imx6dl-${board}.dtb;
 	elif itest.s x6DL == "x${cpu}" ; then
 		dtbname=imx6dl-${board}.dtb;
+	elif itest.s x6QP == "x${cpu}" ; then
+		dtbname=imx6qp-${board}.dtb;
 	elif itest.s x6SX == "x${cpu}" ; then
 		dtbname=imx6sx-${board}.dtb;
 	else
