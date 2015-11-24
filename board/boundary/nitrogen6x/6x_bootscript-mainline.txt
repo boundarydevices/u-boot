@@ -1,34 +1,52 @@
 setenv bootargs ''
 
-if ${fs}load ${dtype} ${disk}:1 10800000 uEnv.txt ; then
-    env import -t 10800000 $filesize
+a_script=0x10800000
+a_zImage=0x10800000
+a_fdt=0x13000000
+a_ramdisk=0x13800000
+a_initrd=0x13a00000
+
+setenv initrd_high 0xffffffff
+if itest.s x6SX == "x${cpu}" ; then
+	a_script=0x80800000
+	a_zImage=0x80800000
+	a_fdt=0x83000000
+	a_ramdisk=0x83800000
+	a_initrd=0x83a00000
 fi
 
-if itest.s "x" == "x$dtbname" ; then
-	dtbname="imx6";
-	if itest.s x6SOLO == "x$cpu" ; then
-		dtbname=${dtbname}dl-;
-	elif itest.s x6DL == "x$cpu" ; then
-		dtbname=${dtbname}dl-;
+if itest.s "x" == "x${board}" ; then
+	echo "!!!! Error: Your u-boot is outdated. Please upgrade.";
+	exit;
+fi
+
+if itest.s "x" == "x${dtbname}" ; then
+	if itest.s x6SOLO == "x${cpu}" ; then
+		dtbname=imx6dl-${board}.dtb;
+	elif itest.s x6DL == "x${cpu}" ; then
+		dtbname=imx6dl-${board}.dtb;
+	elif itest.s x6QP == "x${cpu}" ; then
+		dtbname=imx6qp-${board}.dtb;
+	elif itest.s x6SX == "x${cpu}" ; then
+		dtbname=imx6sx-${board}.dtb;
 	else
-		dtbname=${dtbname}q-;
+		dtbname=imx6q-${board}.dtb;
 	fi
-	if itest.s x == "x$board" ; then
-		board=sabrelite
-	fi
-	dtbname=${dtbname}${board}.dtb;
+fi
+
+if load ${dtype} ${disk}:1 ${a_script} uEnv.txt ; then
+    env import -t ${a_script} ${filesize}
 fi
 
 if itest.s x == x${bootdir} ; then
 	bootdir=/boot/
 fi
 
-setenv fdt_addr 0x12000000
-if ${fs}load ${dtype} ${disk}:1 $fdt_addr ${bootdir}$dtbname ; then
-	fdt addr $fdt_addr
+if load ${dtype} ${disk}:${bootpart} ${a_fdt} ${bootdir}${dtbname} ; then
+	fdt addr ${a_fdt}
 	setenv fdt_high 0xffffffff
 else
-	echo "!!!! Error loading ${bootdir}$dtbname";
+	echo "!!!! Error loading ${bootdir}${dtbname}";
 	exit;
 fi
 
@@ -77,7 +95,7 @@ elif i2c probe 0x4d ; then
 	echo "------- found AR1020 touch controller";
 fi
 
-setenv bootargs "$bootargs console=ttymxc1,115200 vmalloc=400M cma=256M consoleblank=0 rootwait"
+setenv bootargs "$bootargs console=${console},115200 vmalloc=400M cma=256M consoleblank=0 rootwait"
 
 # ------------------- Disabling displays not connected
 if itest.s "x" == "x$have_lvds" ; then
@@ -117,7 +135,7 @@ if itest.s "x" != "x$show_env" ; then
 	printenv
 fi
 
-if ${fs}load ${dtype} ${disk}:1 10800000 ${bootdir}uImage ; then
-	bootm 10800000 - $fdt_addr
+if load ${dtype} ${disk}:${bootpart} ${a_zImage} ${bootdir}zImage ; then
+	bootz ${a_zImage} - ${a_fdt}
 fi
 echo "Error loading kernel image"
