@@ -167,6 +167,10 @@ config TARGET_PER
 	bool "per"
 	depends on MX6DL || MX6Q || MX6QDL || MX6S
 
+config TARGET_RC
+	bool "rc"
+	depends on MX6DL || MX6Q || MX6QDL || MX6S
+
 endchoice
 
 source "board/boundary/a/Kconfig"
@@ -209,3 +213,4 @@ source "board/boundary/nitrogen6x/Kconfig"
 source "board/boundary/nw/Kconfig"
 source "board/boundary/oc/Kconfig"
 source "board/boundary/per/Kconfig"
+source "board/boundary/rc/Kconfig"
