@@ -1,0 +1,7 @@
+RC BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/rc/
+F:	include/configs/rc.h
+F:	configs/rc_defconfig
+
