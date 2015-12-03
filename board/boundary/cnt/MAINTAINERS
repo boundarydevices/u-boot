@@ -1,0 +1,6 @@
+CNT BOARD
+M:	Gary Bisson <gary.bisson@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/cnt/
+F:	include/configs/cnt.h
+F:	configs/cnt_defconfig
