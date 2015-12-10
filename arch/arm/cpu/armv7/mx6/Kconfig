@@ -178,6 +178,9 @@ config TARGET_NIT6XLITE
 config TARGET_NITROGEN6_MAX
 	bool "nitrogen6_max"
 
+config TARGET_NITROGEN6_SOM2
+	bool "nitrogen6_som2"
+
 config TARGET_NITROGEN6X
 	bool "nitrogen6x"
 
@@ -249,6 +252,7 @@ source "board/boundary/mtp/Kconfig"
 source "board/boundary/mx6_r/Kconfig"
 source "board/boundary/nit6xlite/Kconfig"
 source "board/boundary/nitrogen6_max/Kconfig"
+source "board/boundary/nitrogen6_som2/Kconfig"
 source "board/boundary/nitrogen6x/Kconfig"
 source "board/boundary/vp/Kconfig"
 source "board/compulab/cm_fx6/Kconfig"
