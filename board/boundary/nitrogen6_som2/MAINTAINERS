@@ -1,0 +1,8 @@
+NITROGEN6_SOM2 BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/nitrogen6_som2/
+F:	include/configs/nitrogen6_som2.h
+F:	configs/nitrogen6q_som2_1g_defconfig
+F:	configs/nitrogen6q_som2_2g_defconfig
+F:	configs/nitrogen6q_som2_4g_defconfig
