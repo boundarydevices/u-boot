@@ -1,0 +1,6 @@
+CONFIG_ARM=y
+CONFIG_TARGET_NITROGEN6_SOM2=y
+CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/boundary/nitrogen6_som2/nitrogen6q_som2_2g.cfg,MX6Q,DDR_MB=2048,DEFCONFIG=\"nitrogen6q_som2_2g\""
+# CONFIG_CMD_IMLS is not set
+# CONFIG_CMD_FLASH is not set
+CONFIG_SPI_FLASH=y

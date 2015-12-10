@@ -590,6 +590,10 @@ config TARGET_NITROGEN6_MAX
 	bool "Support nitrogen6_max"
 	select CPU_V7
 
+config TARGET_NITROGEN6_SOM2
+	bool "Support nitrogen6_som2"
+	select CPU_V7
+
 config TARGET_NITROGEN6_VM
 	bool "Support nitrogen6_vm"
 	select CPU_V7
@@ -1018,6 +1022,7 @@ source "board/boundary/mtp/Kconfig"
 source "board/boundary/mx6_r/Kconfig"
 source "board/boundary/nit6xlite/Kconfig"
 source "board/boundary/nitrogen6_max/Kconfig"
+source "board/boundary/nitrogen6_som2/Kconfig"
 source "board/boundary/nitrogen6_vm/Kconfig"
 source "board/boundary/nitrogen6sx/Kconfig"
 source "board/boundary/nitrogen6x/Kconfig"
