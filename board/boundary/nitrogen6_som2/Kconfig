@@ -1,0 +1,21 @@
+if TARGET_NITROGEN6_SOM2
+
+config SYS_BOARD
+	default "nitrogen6_som2"
+
+config SYS_VENDOR
+	default "boundary"
+
+config SYS_SOC
+	default "mx6"
+
+config SYS_CONFIG_NAME
+	default "nitrogen6_som2"
+
+config ENV_WLMAC
+	bool
+	default	y
+
+source "board/boundary/common/Kconfig"
+
+endif
