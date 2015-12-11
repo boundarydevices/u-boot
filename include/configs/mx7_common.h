@@ -55,6 +55,8 @@
 /* Filesystems and image support */
 #define CONFIG_OF_LIBFDT
 #define CONFIG_CMD_BOOTZ
+#define CONFIG_SUPPORT_RAW_INITRD
+#define CONFIG_CMD_FS_GENERIC
 #define CONFIG_DOS_PARTITION
 #define CONFIG_CMD_EXT2
 #define CONFIG_CMD_EXT4
