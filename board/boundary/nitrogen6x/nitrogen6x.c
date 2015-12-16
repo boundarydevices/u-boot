@@ -334,7 +334,7 @@ int dram_init(void)
 int board_ehci_hcd_init(int port)
 {
 	/* Reset USB hub */
-	gpio_direction_output(GP_USB_HUB_RESET, 0);
+	gpio_set_value(GP_USB_HUB_RESET, 0);
 	mdelay(2);
 	gpio_set_value(GP_USB_HUB_RESET, 1);
 	return 0;
@@ -584,6 +584,7 @@ static const unsigned short gpios_out_low[] = {
 	GP_REG_USBOTG,
 	GP_OV5640_MIPI_RESET,
 	GP_OV5642_RESET,
+	GP_USB_HUB_RESET,
 };
 
 static const unsigned short gpios_out_high[] = {
