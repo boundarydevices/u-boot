@@ -552,6 +552,33 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 }
 
 /* ft5x06_ts */
+#define IMX_VD38_DT070BTFT(_mode, _detect, _bus) \
+{\
+	.bus	= _bus,\
+	.addr	= 0x38,\
+	.pixfmt	= IPU_PIX_FMT_RGB24,\
+	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.enable	= fbp_enable_fb,\
+	.fbtype = FB_##_mode,\
+	.fbflags = FBF_JEIDA,\
+	.mode	= {\
+		.name           = "dt070btft",\
+		.refresh        = 60,\
+		.xres           = 1024,\
+		.yres           = 600,\
+		.pixclock       = 1000000000000ULL/((1024+220+40+60)*(600+21+4+10)*60),\
+		.left_margin    = 220,\
+		.right_margin   = 40,\
+		.upper_margin   = 21,\
+		.lower_margin   = 4,\
+		.hsync_len      = 60,\
+		.vsync_len      = 10,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
+/* ft5x06_ts */
 #define IMX_VD38_WSVGA(_mode, _detect, _bus) \
 {\
 	.bus	= _bus,\
