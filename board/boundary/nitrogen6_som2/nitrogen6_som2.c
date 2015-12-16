@@ -620,6 +620,7 @@ static const struct display_info_t displays[] = {
 
 	/* ft5x06 */
 	IMX_VD38_HANNSTAR7(LVDS, 1, 2),
+	IMX_VD38_AUO_B101EW05(LVDS, 0, 2),
 	IMX_VD38_LG1280_800(LVDS, 0, 2),
 	IMX_VD38_WSVGA(LVDS, 0, 2),
 
@@ -653,6 +654,7 @@ static const struct display_info_t displays[] = {
 	IMX_VD_1080P60(LVDS, 0, 0),
 
 	IMX_VD38_HANNSTAR7(LVDS2, 0, 2),
+	IMX_VD38_AUO_B101EW05(LVDS2, 0, 2),
 };
 
 int board_cfb_skip(void)
