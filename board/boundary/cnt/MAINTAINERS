@@ -3,4 +3,5 @@ M:	Gary Bisson <gary.bisson@boundarydevices.com>
 S:	Maintained
 F:	board/boundary/cnt/
 F:	include/configs/cnt.h
-F:	configs/cnt_defconfig
+F:	configs/cnt1g_defconfig
+F:	configs/cnt2g_defconfig
