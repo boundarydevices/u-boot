@@ -125,7 +125,9 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IOMUX_PAD_CTRL(EIM_A16__GPIO2_IO22, WEAK_PULLDN),	/* Led 1 */
 #define GP_LED2		IMX_GPIO_NR(2, 21)
 	IOMUX_PAD_CTRL(EIM_A17__GPIO2_IO21, WEAK_PULLDN),	/* Led 2 */
+#define GP_RXACT	IMX_GPIO_NR(1, 3)
 	IOMUX_PAD_CTRL(GPIO_3__GPIO1_IO03, WEAK_PULLUP),	/* RX_ACT led */
+#define GP_TXACT	IMX_GPIO_NR(1, 4)
 	IOMUX_PAD_CTRL(GPIO_4__GPIO1_IO04, WEAK_PULLUP),	/* TX_ACT led */
 
 	/* reg_usbotg_vbus */
@@ -368,6 +370,8 @@ static const unsigned short gpios_out_low[] = {
 static const unsigned short gpios_out_high[] = {
 	GP_ECSPI1_NOR_CS,		/* SS1 of spi nor */
 	GP_FLEXCAN_STANDBY,
+	GP_RXACT,
+	GP_TXACT,
 	GP_MODEM_OFF,			/* assert MODEM off */
 };
 
