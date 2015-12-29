@@ -355,7 +355,7 @@ static const unsigned short gpios_out_low[] = {
 	GP_LEDRED,
 	GP_LED2,
 	GP_REG_USBOTG, 			/* disable USB otg power */
-	GP_MODEM_OFF,			/* de-assert MODEM off */
+	GP_MODEM_RESET,			/* assert MODEM nRESET */
 	GP_EMMC_RESET,			/* assert eMMC reset*/
 	GP_UART3_RX_EN,
 	GP_UART3_TX_EN,
@@ -368,7 +368,7 @@ static const unsigned short gpios_out_low[] = {
 static const unsigned short gpios_out_high[] = {
 	GP_ECSPI1_NOR_CS,		/* SS1 of spi nor */
 	GP_FLEXCAN_STANDBY,
-	GP_MODEM_RESET,			/* de-assert MODEM nRESET */
+	GP_MODEM_OFF,			/* assert MODEM off */
 };
 
 static const unsigned short gpios_in[] = {
