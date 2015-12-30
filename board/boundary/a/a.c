@@ -266,7 +266,6 @@ int board_mmc_getcd(struct mmc *mmc)
 
 int board_mmc_init(bd_t *bis)
 {
-	printf("%s:\n", __func__ );
 	usdhc_cfg.sdhc_clk = mxc_get_clock(MXC_ESDHC4_CLK);
 	gpio_set_value(GP_EMMC_RESET, 1);	/* release reset */
 	return fsl_esdhc_initialize(bis, &usdhc_cfg);
