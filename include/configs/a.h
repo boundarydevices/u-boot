@@ -85,14 +85,15 @@
 #define BOOTDEVS "usb mmc"
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
+	"bootcmd=script=/6x_bootscript; run runscript;" \
+		"ums 0 mmc 0;\0" \
 	"bootdevs=" BOOTDEVS "\0" \
-	"console=ttymxc1\0" \
-	"disable_giga=1\0" \
 	"clearenv=if sf probe || sf probe || sf probe 1 ; then " \
 		"sf erase 0xc0000 0x2000 && " \
 		"echo restored environment to factory default ; fi\0" \
-	"bootcmd=script=/6x_bootscript; run runscript;" \
-		"ums 0 mmc 0;\0" \
+	"console=ttymxc1\0" \
+	"cmd_custom= \0" \
+	"disable_giga=1\0" \
 	"fdt_addr=0x13000000\0" \
 	"fdt_high=0xffffffff\0" \
 	"initrd_high=0xffffffff\0" \
