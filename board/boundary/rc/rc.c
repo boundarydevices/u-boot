@@ -264,22 +264,24 @@ static const iomux_v3_cfg_t init_pads[] = {
 };
 
 static const iomux_v3_cfg_t enet_gpio_pads[] = {
-	/* pin 35 - 1 (PHY_AD2) on reset */
+	/* pin 31 - 1 (1P8_SEL) on reset */
 #define GP_PHY_1P8_SEL		IMX_GPIO_NR(6, 30)
 	IOMUX_PAD_CTRL(RGMII_RXC__GPIO6_IO30, WEAK_PULLUP_OUTPUT),
-	/* pin 32 - 1 - (MODE0) all */
+	/* pin 29 - 0 - AD0 */
 #define GP_PHY_AD0		IMX_GPIO_NR(6, 25)
 	IOMUX_PAD_CTRL(RGMII_RD0__GPIO6_IO25, WEAK_PULLDN_OUTPUT),
-	/* pin 31 - 1 - (MODE1) all */
+	/* pin 28 - 0 - AD1 */
 #define GP_PHY_AD1		IMX_GPIO_NR(6, 27)
 	IOMUX_PAD_CTRL(RGMII_RD1__GPIO6_IO27, WEAK_PULLDN_OUTPUT),
-	/* pin 28 - 1 - (MODE2) all */
+
+	/* mode = 1100 - plloff mode */
+	/* pin 26 - 0 - MODE1 */
 #define GP_PHY_MODE1		IMX_GPIO_NR(6, 28)
 	IOMUX_PAD_CTRL(RGMII_RD2__GPIO6_IO28, WEAK_PULLDN_OUTPUT),
-	/* pin 27 - 1 - (MODE3) all */
+	/* pin 25 - 1 - MODE3 */
 #define GP_PHY_MODE3		IMX_GPIO_NR(6, 29)
 	IOMUX_PAD_CTRL(RGMII_RD3__GPIO6_IO29, WEAK_PULLUP_OUTPUT),
-	/* pin 33 - 1 - (CLK125_EN) 125Mhz clockout enabled */
+	/* pin 30 - 0 - MODE0 */
 #define GP_PHY_MODE0		IMX_GPIO_NR(6, 24)
 	IOMUX_PAD_CTRL(RGMII_RX_CTL__GPIO6_IO24, WEAK_PULLDN_OUTPUT),
 };
