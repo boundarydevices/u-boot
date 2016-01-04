@@ -320,7 +320,7 @@ int board_eth_init(bd_t *bis)
 		free(bus);
 		return 0;
 	}
-	printf("using phy at %d\n", phydev->addr);
+	printf("%s at %d\n", phydev->drv->name, phydev->addr);
 	ret  = fec_probe(bis, -1, base, bus, phydev);
 	if (ret) {
 		printf("FEC MXC: %s:failed\n", __func__);
