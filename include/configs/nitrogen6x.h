@@ -86,6 +86,7 @@
 #define CONFIG_PHYLIB
 #define CONFIG_PHY_MICREL
 #define CONFIG_PHY_MICREL_KSZ9021
+#define CONFIG_PHY_ATHEROS
 
 /* USB Configs */
 #define CONFIG_CMD_USB
