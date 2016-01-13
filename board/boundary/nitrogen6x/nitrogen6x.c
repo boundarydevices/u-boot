@@ -140,6 +140,9 @@ static const iomux_v3_cfg_t init_pads[] = {
 
 	/* i2c1_SGTL5000 sys_mclk */
 	IOMUX_PAD_CTRL(GPIO_0__CCM_CLKO1, OUTPUT_40OHM),
+	/* Needed if inappropriately used with SOM2 carrier board */
+#define GP_SGTL5000_HP_MUTE	IMX_GPIO_NR(3, 29)		/* Low is muted */
+	IOMUX_PAD_CTRL(EIM_D29__GPIO3_IO29, WEAK_PULLUP),
 
 	/* i2c2 ov5640 mipi Camera controls */
 #define GP_OV5640_MIPI_POWER_DOWN	IMX_GPIO_NR(6, 9)
@@ -636,6 +639,7 @@ static const unsigned short gpios_out_low[] = {
 
 static const unsigned short gpios_out_high[] = {
 	GP_ECSPI1_NOR_CS,
+	GP_SGTL5000_HP_MUTE,
 	GP_OV5642_POWER_DOWN,
 	GP_OV5640_MIPI_POWER_DOWN,
 };
