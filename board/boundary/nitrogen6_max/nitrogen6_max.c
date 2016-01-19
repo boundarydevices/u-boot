@@ -596,6 +596,7 @@ static const struct display_info_t displays[] = {
 
 	IMX_VD_SHARP_LQ101K1LY04(LVDS, 0, 0),
 	IMX_VD_WXGA(LVDS, 0, 0),
+	IMX_VD_LD070WSVGA(LVDS, 0, 0),
 	IMX_VD_WVGA(LVDS, 0, 0),
 	IMX_VD_AA065VE11(LVDS, 0, 0),
 	IMX_VD_VGA(LVDS, 0, 0),
