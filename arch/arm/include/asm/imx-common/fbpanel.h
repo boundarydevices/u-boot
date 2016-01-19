@@ -870,6 +870,32 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
+#define IMX_VD_LD070WSVGA(_mode, _detect, _bus) \
+{\
+	.bus	= _bus,\
+	.addr	= 0,\
+	.pixfmt	= IPU_PIX_FMT_RGB24,\
+	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.enable	= fbp_enable_fb,\
+	.fbtype = FB_##_mode,\
+	.fbflags = 0,\
+	.mode	= {\
+		.name           = "ld070wsvga",\
+		.refresh        = 55,\
+		.xres           = 1024,\
+		.yres           = 600,\
+		.pixclock       = 1000000000000ULL/((1024+160+160+10)*(600+23+12+3)*55),\
+		.left_margin    = 160,\
+		.right_margin   = 160,\
+		.upper_margin   = 23,\
+		.lower_margin   = 12,\
+		.hsync_len      = 10,\
+		.vsync_len      = 3,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
 #define IMX_VD_SVGA(_mode, _detect, _bus) \
 {\
 	.bus	= _bus,\
