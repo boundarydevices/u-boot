@@ -470,6 +470,34 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
+/* ft5x06 touch screen */
+/* Tianma panel TM070JDHG30 is a 24 bit spwg panel */
+#define IMX_VD38_TM070JDHG30(_mode, _detect, _bus) \
+{\
+	.bus	= _bus,\
+	.addr	= 0x38,\
+	.pixfmt	= IPU_PIX_FMT_RGB24,\
+	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.enable	= fbp_enable_fb,\
+	.fbtype = FB_##_mode,\
+	.fbflags = 0,\
+	.mode	= {\
+		.name           = "tm070jdhg30",\
+		.refresh        = 60,\
+		.xres           = 1280,\
+		.yres           = 800,\
+		.pixclock       = 1000000000000ULL/((1280+5+63+1)*(800+2+39+1)*60),\
+		.left_margin    = 5,\
+		.right_margin   = 63,\
+		.upper_margin   = 2,\
+		.lower_margin   = 39,\
+		.hsync_len      = 1,\
+		.vsync_len      = 1,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
 #define IMX_VD38_AUO_B101EW05(_mode, _detect, _bus) \
 {\
 	.bus	= _bus,\
