@@ -166,6 +166,7 @@ fi
 
 if itest.s x${haverd} == x ; then
 	if load ${dtype} ${disk}:${bootpart} ${a_zImage} /vmlinuz ; then
+		setenv bootargs ${bootargs} rw
 		bootz ${a_zImage} - ${a_fdt}
 	fi
 else
