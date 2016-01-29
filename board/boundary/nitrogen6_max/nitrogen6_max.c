@@ -582,6 +582,7 @@ static const struct display_info_t displays[] = {
 	IMX_VD38_LG1280_800(LVDS2, 0, 2),
 	IMX_VD38_DT070BTFT(LVDS, 0, 2),
 	IMX_VD38_WSVGA(LVDS, 0, 2),
+	IMX_VD38_TM070JDHG30(LVDS, 0, 2),
 
 	/* ili210x */
 	IMX_VD41_AMP1024_600(LVDS, 1, 2),
