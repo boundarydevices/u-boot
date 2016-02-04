@@ -821,6 +821,32 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
+#define IMX_VD_1080P60_J(_mode, _detect, _bus) \
+{\
+	.bus	= _bus,\
+	.addr	= 0,\
+	.pixfmt	= IPU_PIX_FMT_RGB24,\
+	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.enable	= fbp_enable_fb,\
+	.fbtype = FB_##_mode,\
+	.fbflags = FBF_SPLITMODE | FBF_JEIDA,\
+	.mode	= {\
+		.name           = "1080P60_J",\
+		.refresh        = 60,\
+		.xres           = 1920,\
+		.yres           = 1080,\
+		.pixclock       = 1000000000000ULL/((1920+148+88+44)*(1080+36+4+5)*60),\
+		.left_margin    = 148,\
+		.right_margin   = 88,\
+		.upper_margin   = 36,\
+		.lower_margin   = 4,\
+		.hsync_len      = 44,\
+		.vsync_len      = 5,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
 #define IMX_VD_SHARP_LQ101K1LY04(_mode, _detect, _bus) \
 {\
 	.bus	= _bus,\
