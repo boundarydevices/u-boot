@@ -604,6 +604,7 @@ static const struct display_info_t displays[] = {
 
 	/* uses both lvds connectors */
 	IMX_VD_1080P60(LVDS, 0, 0),
+	IMX_VD_1080P60_J(LVDS, 0, 0),
 
 	/* tsc2004 */
 	IMX_VD48_CLAA_WVGA(LCD, 1, 2),
