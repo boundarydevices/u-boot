@@ -419,6 +419,9 @@ config TARGET_INSP
 config TARGET_IOC
 	bool "ioc"
 
+config TARGET_JLM
+	bool "jlm"
+
 config TARGET_NITROGEN6X
 	bool "nitrogen6x"
 	imply USB_HOST_ETHER
@@ -581,6 +584,7 @@ source "board/boundary/hl/Kconfig"
 source "board/boundary/hp/Kconfig"
 source "board/boundary/insp/Kconfig"
 source "board/boundary/ioc/Kconfig"
+source "board/boundary/jlm/Kconfig"
 source "board/boundary/nitrogen6x/Kconfig"
 source "board/boundary/ys/Kconfig"
 source "board/bticino/mamoj/Kconfig"
