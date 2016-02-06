@@ -1,0 +1,15 @@
+if TARGET_JLM
+
+config SYS_BOARD
+	default "jlm"
+
+config SYS_VENDOR
+	default "boundary"
+
+config SYS_SOC
+	default "mx6"
+
+config SYS_CONFIG_NAME
+	default "jlm"
+
+endif

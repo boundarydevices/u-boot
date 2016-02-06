@@ -566,6 +566,10 @@ config TARGET_IOC
 	bool "Support ioc"
 	select CPU_V7
 
+config TARGET_JLM
+	bool "Support jlm"
+	select CPU_V7
+
 config TARGET_LS
 	bool "Support ls"
 	select CPU_V7
@@ -1020,6 +1024,7 @@ source "board/boundary/h/Kconfig"
 source "board/boundary/h4/Kconfig"
 source "board/boundary/insp/Kconfig"
 source "board/boundary/ioc/Kconfig"
+source "board/boundary/jlm/Kconfig"
 source "board/boundary/ls/Kconfig"
 source "board/boundary/mcs/Kconfig"
 source "board/boundary/med/Kconfig"
