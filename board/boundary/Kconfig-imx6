@@ -15,6 +15,10 @@ config TARGET_AP
 	bool "ap"
 	depends on MX6DL || MX6Q || MX6QDL || MX6S
 
+config TARGET_ASH
+	bool "ash"
+	depends on MX6DL || MX6Q || MX6QDL || MX6S
+
 config TARGET_NITROGEN6X
 	bool "nitrogen6x"
 	depends on MX6DL || MX6Q || MX6QDL || MX6S
@@ -28,4 +32,5 @@ endchoice
 source "board/boundary/a/Kconfig"
 source "board/boundary/acl/Kconfig"
 source "board/boundary/ap/Kconfig"
+source "board/boundary/ash/Kconfig"
 source "board/boundary/nitrogen6x/Kconfig"
