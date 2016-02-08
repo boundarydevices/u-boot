@@ -976,6 +976,62 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
+/* 40.0 ns (25 Mhz) to 28.6 ns (34.965 MHz)
+ * 35.35 ns(28.28 Mhz)
+ * 1000000000/1056/525/40 =  45.094 frames/second
+ * 1000000000/1056/525/35.35 = 51 frames/second
+ * 1000000000/1056/525/28.6 =  63.068 frames/second
+ */
+#define IMX_VD_WVGA_TX23D200_24(_mode, _detect, _bus) \
+{\
+	.bus	= _bus,\
+	.addr	= 0,\
+	.pixfmt	= IPU_PIX_FMT_RGB24,\
+	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.enable	= fbp_enable_fb,\
+	.fbtype = FB_##_mode,\
+	.mode	= {\
+		.name           = "tx23d200_24",\
+		.refresh        = 60,\
+		.xres           = 800,\
+		.yres           = 480,\
+		.pixclock       = 1000000000000ULL/((800+220+18+18)*(480+21+14+10)*51),\
+		.left_margin    = 220,\
+		.right_margin   = 18,\
+		.upper_margin   = 21,\
+		.lower_margin   = 14,\
+		.hsync_len      = 18,\
+		.vsync_len      = 10,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
+#define IMX_VD_WVGA_TX23D200_18(_mode, _detect, _bus) \
+{\
+	.bus	= _bus,\
+	.addr	= 0,\
+	.pixfmt	= IPU_PIX_FMT_RGB666,\
+	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.enable	= fbp_enable_fb,\
+	.fbtype = FB_##_mode,\
+	.mode	= {\
+		.name           = "tx23d200_18",\
+		.refresh        = 60,\
+		.xres           = 800,\
+		.yres           = 480,\
+		.pixclock       = 1000000000000ULL/((800+220+18+18)*(480+21+14+10)*51),\
+		.left_margin    = 220,\
+		.right_margin   = 18,\
+		.upper_margin   = 21,\
+		.lower_margin   = 14,\
+		.hsync_len      = 18,\
+		.vsync_len      = 10,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
 #define IMX_VD_WVGA(_mode, _detect, _bus) \
 {\
 	.bus	= _bus,\
