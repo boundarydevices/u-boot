@@ -526,6 +526,10 @@ config TARGET_A
 	bool "Support a"
 	select CPU_V7
 
+config TARGET_ASH
+	bool "Support ash"
+	select CPU_V7
+
 config TARGET_BT
 	bool "Support bt"
 	select CPU_V7
@@ -1014,6 +1018,7 @@ source "board/barco/platinum/Kconfig"
 source "board/barco/titanium/Kconfig"
 source "board/bluegiga/apx4devkit/Kconfig"
 source "board/boundary/a/Kconfig"
+source "board/boundary/ash/Kconfig"
 source "board/boundary/bt/Kconfig"
 source "board/boundary/cad/Kconfig"
 source "board/boundary/cnt/Kconfig"
