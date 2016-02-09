@@ -507,8 +507,11 @@ struct mxc_ccm_reg {
 #define MXC_CCM_CHSCCDR_EPDC_CLK_SEL_MASK		(0x7 << 9)
 #define MXC_CCM_CHSCCDR_EPDC_CLK_SEL_OFFSET		9
 
+#define CHSCCDR_CLK_SEL_IPU1_DI0			0
 #define CHSCCDR_CLK_SEL_LDB_DI0				3
+
 #define CHSCCDR_PODF_DIVIDE_BY_3			2
+#define CHSCCDR_IPU_PRE_CLK_PLL5			2
 #define CHSCCDR_IPU_PRE_CLK_540M_PFD			5
 
 /* Define the bits in register CSCDR2 */
