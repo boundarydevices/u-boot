@@ -384,8 +384,11 @@ struct mxc_ccm_reg {
 #define MXC_CCM_CHSCCDR_IPU1_DI0_CLK_SEL_OFFSET		0
 #endif
 
+#define CHSCCDR_CLK_SEL_IPU1_DI0			0
 #define CHSCCDR_CLK_SEL_LDB_DI0				3
+
 #define CHSCCDR_PODF_DIVIDE_BY_3			2
+#define CHSCCDR_IPU_PRE_CLK_PLL5			2
 #define CHSCCDR_IPU_PRE_CLK_540M_PFD			5
 
 /* Define the bits in register CSCDR2 */
