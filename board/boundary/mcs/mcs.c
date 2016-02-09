@@ -462,19 +462,6 @@ int board_cfb_skip(void)
 	return NULL != getenv("novideo");
 }
 
-static void setup_display(void)
-{
-	struct mxc_ccm_reg *mxc_ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
-	int reg;
-
-	reg = readl(&mxc_ccm->chsccdr);
-	reg &= ~(MXC_CCM_CHSCCDR_IPU1_DI0_PODF_MASK |
-		 MXC_CCM_CHSCCDR_IPU1_DI0_PRE_CLK_SEL_MASK);
-	reg |= (CHSCCDR_PODF_DIVIDE_BY_3 <<MXC_CCM_CHSCCDR_IPU1_DI0_PODF_OFFSET) |
-	       (CHSCCDR_IPU_PRE_CLK_540M_PFD <<MXC_CCM_CHSCCDR_IPU1_DI0_PRE_CLK_SEL_OFFSET);
-	writel(reg, &mxc_ccm->chsccdr);
-}
-
 static const unsigned short gpios_out_low[] = {
 	GP_UART3_TX_EN,
 	GP_UART4_TX_EN,
@@ -548,7 +535,6 @@ int board_init(void)
 		p += I2C_PADS_INFO_ENTRY_SPACING;
 	}
 	fbp_setup_display(displays, ARRAY_SIZE(displays));
-	setup_display();
 	return 0;
 }
 
