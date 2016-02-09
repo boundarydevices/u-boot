@@ -29,6 +29,7 @@ struct display_info_t {
 	int	fbflags;
 	struct	fb_videomode mode;
 };
+int ipu_set_ldb_clock(int rate);
 
 void board_enable_hdmi(const struct display_info_t *di, int enable);
 void board_enable_lcd(const struct display_info_t *di, int enable);
