@@ -88,7 +88,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 		.lower_margin   = 4,\
 		.hsync_len      = 44,\
 		.vsync_len      = 5,\
-		.sync           = 0,\
+		.sync           = FB_SYNC_EXT,\
 		.vmode          = FB_VMODE_NONINTERLACED\
 	}\
 }
@@ -141,7 +141,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 		.lower_margin   = 2,	/* must be >=2 */\
 		.hsync_len      = 128,\
 		.vsync_len      = 3,\
-		.sync           = FB_SYNC_CLK_LAT_FALL,\
+		.sync           = FB_SYNC_EXT | FB_SYNC_CLK_LAT_FALL,\
 		.vmode          = FB_VMODE_NONINTERLACED\
 	}\
 }
@@ -193,7 +193,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 		.lower_margin   = 9,\
 		.hsync_len      = 62,\
 		.vsync_len      = 6,\
-		.sync           = 0,\
+		.sync           = FB_SYNC_EXT,\
 		.vmode          = FB_VMODE_NONINTERLACED\
 	}\
 }
@@ -220,7 +220,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 		.lower_margin   = 10,\
 		.hsync_len      = 20,\
 		.vsync_len      = 10,\
-		.sync           = FB_SYNC_CLK_LAT_FALL,\
+		.sync           = FB_SYNC_EXT | FB_SYNC_CLK_LAT_FALL,\
 		.vmode          = FB_VMODE_NONINTERLACED\
 	}\
 }
@@ -248,7 +248,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 		.lower_margin   = 11,\
 		.hsync_len      = 48,\
 		.vsync_len      = 3,\
-		.sync           = FB_SYNC_CLK_LAT_FALL,\
+		.sync           = FB_SYNC_EXT |FB_SYNC_CLK_LAT_FALL,\
 		.vmode          = FB_VMODE_NONINTERLACED\
 	}\
 }
@@ -280,7 +280,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 		.lower_margin	= 3,\
 		.hsync_len	= 125,\
 		.vsync_len	= 9,\
-		.sync           = FB_SYNC_CLK_LAT_FALL,\
+		.sync           = FB_SYNC_EXT | FB_SYNC_CLK_LAT_FALL,\
 		.vmode          = FB_VMODE_NONINTERLACED\
 	}\
 }
@@ -307,7 +307,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 		.lower_margin   = 10,\
 		.hsync_len      = 40,\
 		.vsync_len      = 32,\
-		.sync           = FB_SYNC_CLK_LAT_FALL,\
+		.sync           = FB_SYNC_EXT | FB_SYNC_CLK_LAT_FALL,\
 		.vmode          = FB_VMODE_NONINTERLACED\
 	}\
 }
@@ -332,7 +332,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 		.lower_margin = 635 - 1 - 22 - 480,\
 		.hsync_len = 1,\
 		.vsync_len = 1,\
-		.sync = 0,\
+		.sync = FB_SYNC_EXT,\
 		.vmode = FB_VMODE_NONINTERLACED,\
 	}\
 }
@@ -358,7 +358,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 		.lower_margin   = 2,\
 		.hsync_len      = 41,\
 		.vsync_len      = 10,\
-		.sync           = FB_SYNC_CLK_LAT_FALL,\
+		.sync           = FB_SYNC_EXT | FB_SYNC_CLK_LAT_FALL,\
 		.vmode          = FB_VMODE_NONINTERLACED\
 	}\
 }
@@ -385,7 +385,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 		.lower_margin   = 15,\
 		.hsync_len      = 30,\
 		.vsync_len      = 3,\
-		.sync           = 0,\
+		.sync           = FB_SYNC_EXT,\
 		.vmode          = FB_VMODE_NONINTERLACED\
 	}\
 }
@@ -412,7 +412,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 		.lower_margin   = 9,\
 		.hsync_len      = 30,\
 		.vsync_len      = 3,\
-		.sync           = 0,\
+		.sync           = FB_SYNC_EXT,\
 		.vmode          = FB_VMODE_NONINTERLACED\
 	}\
 }
@@ -655,7 +655,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 		.lower_margin   = 13,\
 		.hsync_len      = 48,\
 		.vsync_len      = 3,\
-		.sync           = FB_SYNC_CLK_LAT_FALL,\
+		.sync           = FB_SYNC_EXT | FB_SYNC_CLK_LAT_FALL,\
 		.vmode          = FB_VMODE_NONINTERLACED\
 	}\
 }
@@ -687,7 +687,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 		.lower_margin	= 3,\
 		.hsync_len	= 125,\
 		.vsync_len	= 9,\
-		.sync           = FB_SYNC_CLK_LAT_FALL,\
+		.sync           = FB_SYNC_EXT | FB_SYNC_CLK_LAT_FALL,\
 		.vmode          = FB_VMODE_NONINTERLACED\
 	}\
 }
@@ -714,7 +714,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 		.lower_margin   = 11,\
 		.hsync_len      = 136,\
 		.vsync_len      = 3,\
-		.sync           = FB_SYNC_CLK_LAT_FALL,\
+		.sync           = FB_SYNC_EXT | FB_SYNC_CLK_LAT_FALL,\
 		.vmode          = FB_VMODE_NONINTERLACED\
 	}\
 }
@@ -972,7 +972,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 		.lower_margin   = 7,\
 		.hsync_len      = 60,\
 		.vsync_len      = 10,\
-		.sync           = 0,\
+		.sync           = FB_SYNC_EXT,\
 		.vmode          = FB_VMODE_NONINTERLACED\
 	}\
 }
@@ -1155,7 +1155,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 		.lower_margin   = 12,\
 		.hsync_len      = 10,\
 		.vsync_len      = 1,\
-		.sync           = FB_SYNC_CLK_LAT_FALL,\
+		.sync           = FB_SYNC_EXT | FB_SYNC_CLK_LAT_FALL,\
 		.vmode          = FB_VMODE_NONINTERLACED\
 	}\
 }
@@ -1182,7 +1182,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 		.lower_margin   = 16,\
 		.hsync_len      = 2,\
 		.vsync_len      = 2,\
-		.sync           = 0,\
+		.sync           = FB_SYNC_EXT,\
 		.vmode          = FB_VMODE_NONINTERLACED\
 	}\
 }
@@ -1210,7 +1210,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 		.lower_margin   = 18,\
 		.hsync_len      = 20,\
 		.vsync_len      = 1,\
-		.sync           = 0,\
+		.sync           = FB_SYNC_EXT,\
 		.vmode          = FB_VMODE_NONINTERLACED\
 	}\
 }
@@ -1237,7 +1237,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 		.lower_margin   = 18,\
 		.hsync_len      = 1,\
 		.vsync_len      = 1,\
-		.sync           = 0,\
+		.sync           = FB_SYNC_EXT,\
 		.vmode          = FB_VMODE_NONINTERLACED\
 	}\
 }

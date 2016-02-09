@@ -291,6 +291,134 @@ int fbp_detect_i2c(struct display_info_t const *di)
 	return (ret == 0);
 }
 
+int calc_gcd(int a, int b)
+{
+	int n;
+
+	while (b) {
+		if (a > b) {
+			n = a;
+			a = b;
+			b = n;
+		}
+		n = b / a;
+		b -= n * a;
+	}
+	return a;
+}
+
+void setup_clock(struct display_info_t const *di)
+{
+	struct mxc_ccm_reg *ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
+	int desired_freq;
+	int lvds = ((di->fbtype == FB_LVDS) | (di->fbtype == FB_LVDS2)) ? 1 : 0;
+	int ipu1_di0_clk_sel = lvds ? CHSCCDR_CLK_SEL_LDB_DI0 :
+				      CHSCCDR_CLK_SEL_IPU1_DI0;
+	u64 lval = 1000000000000ULL;
+	int timeout = 1000;
+	int post_div = 2;
+	int multiplier;
+	int gcd;
+	int num, denom;
+	int reg;
+	int ipu_podf = 6;
+
+	if (!(di->mode.sync & FB_SYNC_EXT))
+		return;
+	/* gate ipu1_di0_clk */
+	clrbits_le32(&ccm->CCGR3, MXC_CCM_CCGR3_LDB_DI0_MASK |
+			MXC_CCM_CCGR3_IPU1_IPU_DI0_MASK);
+
+	reg = readl(&ccm->analog_pll_video);
+	reg |= BM_ANADIG_PLL_VIDEO_POWERDOWN;
+	reg &= BM_ANADIG_PLL_VIDEO_ENABLE;
+	writel(reg, &ccm->analog_pll_video);
+
+	do_div(lval, di->mode.pixclock);
+	desired_freq = (u32)lval;
+	debug("desired_freq=%d\n", desired_freq);
+	ipu_set_ldb_clock(desired_freq);	/* used for all ext clocks */
+	if (lvds) {
+		reg = readl(&ccm->cs2cdr);
+		/* select pll 5 clock */
+		reg &= ~(MXC_CCM_CS2CDR_LDB_DI0_CLK_SEL_MASK
+			| MXC_CCM_CS2CDR_LDB_DI1_CLK_SEL_MASK);
+		writel(reg, &ccm->cs2cdr);
+
+		desired_freq *= 7;
+		if (di->fbflags & FBF_SPLITMODE)
+			desired_freq >>= 1;
+	}
+	debug("desired_freq=%d\n", desired_freq);
+
+	while (desired_freq < 24000000 * 27) {
+		desired_freq <<= 1;
+		if (--post_div <= 0)
+			break;
+	}
+	debug("desired_freq=%d\n", desired_freq);
+	if (!lvds) {
+		ipu_podf = (24000000 * 27 - 1)/ desired_freq;
+		if (ipu_podf > 7)
+			ipu_podf = 7;
+		desired_freq *= (ipu_podf + 1);
+		debug("desired_freq=%d ipu div=%d\n", desired_freq, ipu_podf + 1);
+	}
+	debug("desired_freq=%d\n", desired_freq);
+
+	multiplier = desired_freq / 24000000;
+	if (multiplier > 54) {
+		multiplier = 54;
+		desired_freq = 24000000 * 54;
+	}
+
+	reg &= ~(BM_ANADIG_PLL_VIDEO_DIV_SELECT |
+		 BM_ANADIG_PLL_VIDEO_POST_DIV_SELECT);
+	reg |= 	BF_ANADIG_PLL_VIDEO_DIV_SELECT(multiplier) |
+		BF_ANADIG_PLL_VIDEO_POST_DIV_SELECT(post_div);
+	writel(reg, &ccm->analog_pll_video);
+
+	desired_freq -= multiplier * 24000000;
+	gcd = calc_gcd(desired_freq, 24000000);
+	debug("gcd=%d desired_freq=%d 24000000\n", gcd, desired_freq);
+	num = desired_freq / gcd;
+	denom = 24000000 / gcd;
+	debug("desired_freq=%d multiplier=%d %d/%d\n", desired_freq, multiplier, num, denom);
+
+	writel(BF_ANADIG_PLL_VIDEO_NUM_A(num),
+			&ccm->analog_pll_video_num);
+	writel(BF_ANADIG_PLL_VIDEO_DENOM_B(denom),
+			&ccm->analog_pll_video_denom);
+
+	reg &= ~BM_ANADIG_PLL_VIDEO_POWERDOWN;
+	writel(reg, &ccm->analog_pll_video);
+
+	while (!(readl(&ccm->analog_pll_video) & BM_ANADIG_PLL_VIDEO_LOCK)) {
+		udelay(100);
+		if (--timeout < 0) {
+			printf("Warning: video pll lock timeout!\n");
+			break;
+		}
+	}
+
+	reg &= ~BM_ANADIG_PLL_VIDEO_BYPASS;
+	reg |= BM_ANADIG_PLL_VIDEO_ENABLE;
+	writel(reg, &ccm->analog_pll_video);
+
+	reg = readl(&ccm->chsccdr);
+	reg &= ~(MXC_CCM_CHSCCDR_IPU1_DI0_CLK_SEL_MASK |
+		 MXC_CCM_CHSCCDR_IPU1_DI0_PODF_MASK |
+		 MXC_CCM_CHSCCDR_IPU1_DI0_PRE_CLK_SEL_MASK);
+	reg |= (ipu1_di0_clk_sel << MXC_CCM_CHSCCDR_IPU1_DI0_CLK_SEL_OFFSET) |
+		(ipu_podf << MXC_CCM_CHSCCDR_IPU1_DI0_PODF_OFFSET) |
+		(CHSCCDR_IPU_PRE_CLK_PLL5 << MXC_CCM_CHSCCDR_IPU1_DI0_PRE_CLK_SEL_OFFSET);
+	writel(reg, &ccm->chsccdr);
+
+	/* enable ipu1_di0_clk */
+	setbits_le32(&ccm->CCGR3, MXC_CCM_CCGR3_IPU1_IPU_DI0_MASK |
+			(lvds ? MXC_CCM_CCGR3_LDB_DI0_MASK : 0));
+}
+
 void fbp_enable_fb(struct display_info_t const *di, int enable)
 {
 	struct mxc_ccm_reg *mxc_ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
@@ -388,12 +516,6 @@ static void imx_prepare_display(void)
 	reg |= (3<<MXC_CCM_CS2CDR_LDB_DI0_CLK_SEL_OFFSET)
 	      |(3<<MXC_CCM_CS2CDR_LDB_DI1_CLK_SEL_OFFSET);
 	writel(reg, &mxc_ccm->cs2cdr);
-
-	reg = readl(&mxc_ccm->chsccdr);
-	reg &= ~MXC_CCM_CHSCCDR_IPU1_DI0_CLK_SEL_MASK;
-	reg |= (CHSCCDR_CLK_SEL_LDB_DI0
-		<<MXC_CCM_CHSCCDR_IPU1_DI0_CLK_SEL_OFFSET);
-	writel(reg, &mxc_ccm->chsccdr);
 
 	reg = IOMUXC_GPR2_BGREF_RRMODE_EXTERNAL_RES
 	     |IOMUXC_GPR2_DI1_VS_POLARITY_ACTIVE_LOW
@@ -510,6 +632,8 @@ static const struct display_info_t * parse_mode(
 		if (*p == ' ')
 			p++;
 	}
+
+	di->mode.sync |= FB_SYNC_EXT;
 	if (*p) {
 		printf("extra parameters found:%s\n", p);
 		return NULL;
@@ -746,7 +870,10 @@ void board_video_enable(void)
 static int init_display(const struct display_info_t *di)
 {
 #ifndef CONFIG_MX6SX
-	int ret = ipuv3_fb_init(&di->mode, 0, di->pixfmt);
+	int ret;
+
+	setup_clock(di);
+	ret = ipuv3_fb_init(&di->mode, 0, di->pixfmt);
 	if (ret) {
 		printf("LCD %s cannot be configured: %d\n", di->mode.name, ret);
 		return -EINVAL;
