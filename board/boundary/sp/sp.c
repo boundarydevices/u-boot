@@ -265,19 +265,6 @@ static const struct display_info_t displays[] = {
 	/* egalax_ts */
 	IMX_VD04_LG9_7(LVDS, 1, 2),
 };
-
-static void setup_display(void)
-{
-	struct mxc_ccm_reg *mxc_ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
-	int reg;
-
-	reg = readl(&mxc_ccm->chsccdr);
-	reg &= ~(MXC_CCM_CHSCCDR_IPU1_DI0_PRE_CLK_SEL_MASK
-		|MXC_CCM_CHSCCDR_IPU1_DI0_PODF_MASK);
-	reg |= (CHSCCDR_IPU_PRE_CLK_540M_PFD << MXC_CCM_CHSCCDR_IPU1_DI0_PRE_CLK_SEL_OFFSET |
-	       (CHSCCDR_PODF_DIVIDE_BY_3 << MXC_CCM_CHSCCDR_IPU1_DI0_PODF_OFFSET));
-	writel(reg, &mxc_ccm->chsccdr);
-}
 #endif
 
 static const unsigned short gpios_out_low[] = {
@@ -362,7 +349,6 @@ int board_init(void)
 	}
 #ifdef CONFIG_CMD_FBPANEL
 	fbp_setup_display(displays, ARRAY_SIZE(displays));
-	setup_display();
 #endif
 	return 0;
 }
