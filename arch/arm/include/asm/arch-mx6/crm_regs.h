@@ -103,6 +103,10 @@ struct mxc_ccm_reg {
 	u32 analog_pfd_528_set;
 	u32 analog_pfd_528_clr;
 	u32 analog_pfd_528_tog;
+	u32 analog_reserved8[16];		/* 0x4110 */
+	u32 analog_misc0[4];			/* 0x4150 */
+	u32 analog_misc1[4];			/* 0x4160 */
+	u32 analog_misc2[4];			/* 0x4170 */
 };
 #endif
 
@@ -1097,5 +1101,7 @@ struct mxc_ccm_reg {
 	(((v) << 0) & BM_ANADIG_PFD_528_PFD0_FRAC)
 
 #define BM_ANADIG_ANA_MISC0_REFTOP_SELBIASOFF 0x00000008
+
+#define BF_ANADIG_MISC2_VIDEO_DIV(v)  ((v) << 30)
 
 #endif /*__ARCH_ARM_MACH_MX6_CCM_REGS_H__ */
