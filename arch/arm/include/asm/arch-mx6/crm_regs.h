@@ -1309,4 +1309,6 @@ struct mxc_ccm_reg {
 	((v & BM_PMU_MISC2_AUDIO_DIV_LSB) >> \
 	 BP_PMU_MISC2_AUDIO_DIV_LSB))
 
+#define BF_PMU_MISC2_VIDEO_DIV(v)  ((v) << 30)
+
 #endif /*__ARCH_ARM_MACH_MX6_CCM_REGS_H__ */
