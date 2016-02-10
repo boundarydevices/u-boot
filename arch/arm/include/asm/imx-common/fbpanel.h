@@ -378,7 +378,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 		.refresh        = 60,\
 		.xres           = 320,\
 		.yres           = 240,\
-		.pixclock       = 37037,\
+		.pixclock       = 1000000000000ULL/((320+38+37+30)*(240+16+15+3)*60),\
 		.left_margin    = 38,\
 		.right_margin   = 37,\
 		.upper_margin   = 16,\
