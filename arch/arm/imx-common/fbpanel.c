@@ -7,6 +7,7 @@
 #include <asm/arch/clock.h>
 #include <asm/arch/crm_regs.h>
 #include <asm/arch/mxc_hdmi.h>
+#include <asm/arch/sys_proto.h>
 #include <asm/gpio.h>
 #include <asm/imx-common/fbpanel.h>
 #include <asm/io.h>
@@ -310,34 +311,40 @@ int calc_gcd(int a, int b)
 void setup_clock(struct display_info_t const *di)
 {
 	struct mxc_ccm_reg *ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
-	int desired_freq;
+	u32 desired_freq;
+	u32 out_freq;
 	int lvds = ((di->fbtype == FB_LVDS) | (di->fbtype == FB_LVDS2)) ? 1 : 0;
 	int ipu1_di0_clk_sel = lvds ? CHSCCDR_CLK_SEL_LDB_DI0 :
 				      CHSCCDR_CLK_SEL_IPU1_DI0;
 	u64 lval = 1000000000000ULL;
 	int timeout = 1000;
 	int post_div = 2;
+	int misc2_div = 0;
 	int multiplier;
 	int gcd;
 	int num, denom;
-	int reg;
-	int ipu_podf = 6;
+	u32 pll_video;
+	u32 reg;
+	int ipu_div = 7;
+	int x = 1;
 
 	if (!(di->mode.sync & FB_SYNC_EXT))
 		return;
+
 	/* gate ipu1_di0_clk */
 	clrbits_le32(&ccm->CCGR3, MXC_CCM_CCGR3_LDB_DI0_MASK |
 			MXC_CCM_CCGR3_IPU1_IPU_DI0_MASK);
 
-	reg = readl(&ccm->analog_pll_video);
-	reg |= BM_ANADIG_PLL_VIDEO_POWERDOWN;
-	reg &= BM_ANADIG_PLL_VIDEO_ENABLE;
-	writel(reg, &ccm->analog_pll_video);
+	pll_video = readl(&ccm->analog_pll_video);
+	pll_video &= BM_ANADIG_PLL_VIDEO_ENABLE;
+	pll_video |= BM_ANADIG_PLL_VIDEO_POWERDOWN;
+	writel(pll_video, &ccm->analog_pll_video);
 
 	do_div(lval, di->mode.pixclock);
 	desired_freq = (u32)lval;
 	debug("desired_freq=%d\n", desired_freq);
-	ipu_set_ldb_clock(desired_freq);	/* used for all ext clocks */
+	out_freq = desired_freq;
+
 	if (lvds) {
 		reg = readl(&ccm->cs2cdr);
 		/* select pll 5 clock */
@@ -351,20 +358,35 @@ void setup_clock(struct display_info_t const *di)
 	}
 	debug("desired_freq=%d\n", desired_freq);
 
-	while (desired_freq < 24000000 * 27) {
-		desired_freq <<= 1;
-		if (--post_div <= 0)
-			break;
-	}
-	debug("desired_freq=%d\n", desired_freq);
+#define MIN_FREQ 648000000	/* 24000000 * 27 */
+
+	if (!(is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D)) ||
+			soc_rev() > CHIP_REV_1_0) {
+		while (desired_freq < MIN_FREQ) {
+			desired_freq <<= 1;
+			if (--post_div <= 0)
+				break;
+		}
+		debug("desired_freq=%d\n", desired_freq);
+
+		while (desired_freq < MIN_FREQ) {
+			desired_freq <<= 1;
+			misc2_div = (misc2_div << 1) + 1;
+			if (misc2_div >= 3)
+				break;
+		}
+		debug("desired_freq=%d\n", desired_freq);
+	};
 	if (!lvds) {
-		ipu_podf = (24000000 * 27 - 1)/ desired_freq;
-		if (ipu_podf > 7)
-			ipu_podf = 7;
-		desired_freq *= (ipu_podf + 1);
-		debug("desired_freq=%d ipu div=%d\n", desired_freq, ipu_podf + 1);
+		num = (MIN_FREQ - 1) / desired_freq + 1;
+		x = (num + 7) / 8;
+		ipu_div =  (num - 1) / x + 1;
+		desired_freq *= ipu_div * x;
+	} else if (desired_freq < MIN_FREQ) {
+		printf("desired_freq=%d is too low\n", desired_freq);
 	}
-	debug("desired_freq=%d\n", desired_freq);
+	ipu_set_ldb_clock(out_freq * x);	/* used for all ext clocks */
+	debug("desired_freq=%d ipu div=%d x=%d\n", desired_freq, ipu_div, x);
 
 	multiplier = desired_freq / 24000000;
 	if (multiplier > 54) {
@@ -372,11 +394,16 @@ void setup_clock(struct display_info_t const *di)
 		desired_freq = 24000000 * 54;
 	}
 
-	reg &= ~(BM_ANADIG_PLL_VIDEO_DIV_SELECT |
+	reg = readl(&ccm->analog_misc2);
+	reg &= ~(BF_ANADIG_MISC2_VIDEO_DIV(3));
+	reg |= BF_ANADIG_MISC2_VIDEO_DIV(misc2_div);
+	writel(reg, &ccm->analog_misc2);
+
+	pll_video &= ~(BM_ANADIG_PLL_VIDEO_DIV_SELECT |
 		 BM_ANADIG_PLL_VIDEO_POST_DIV_SELECT);
-	reg |= 	BF_ANADIG_PLL_VIDEO_DIV_SELECT(multiplier) |
+	pll_video |= BF_ANADIG_PLL_VIDEO_DIV_SELECT(multiplier) |
 		BF_ANADIG_PLL_VIDEO_POST_DIV_SELECT(post_div);
-	writel(reg, &ccm->analog_pll_video);
+	writel(pll_video, &ccm->analog_pll_video);
 
 	desired_freq -= multiplier * 24000000;
 	gcd = calc_gcd(desired_freq, 24000000);
@@ -385,13 +412,11 @@ void setup_clock(struct display_info_t const *di)
 	denom = 24000000 / gcd;
 	debug("desired_freq=%d multiplier=%d %d/%d\n", desired_freq, multiplier, num, denom);
 
-	writel(BF_ANADIG_PLL_VIDEO_NUM_A(num),
-			&ccm->analog_pll_video_num);
-	writel(BF_ANADIG_PLL_VIDEO_DENOM_B(denom),
-			&ccm->analog_pll_video_denom);
+	writel(num, &ccm->analog_pll_video_num);
+	writel(denom, &ccm->analog_pll_video_denom);
 
-	reg &= ~BM_ANADIG_PLL_VIDEO_POWERDOWN;
-	writel(reg, &ccm->analog_pll_video);
+	pll_video &= ~BM_ANADIG_PLL_VIDEO_POWERDOWN;
+	writel(pll_video, &ccm->analog_pll_video);
 
 	while (!(readl(&ccm->analog_pll_video) & BM_ANADIG_PLL_VIDEO_LOCK)) {
 		udelay(100);
@@ -401,16 +426,16 @@ void setup_clock(struct display_info_t const *di)
 		}
 	}
 
-	reg &= ~BM_ANADIG_PLL_VIDEO_BYPASS;
-	reg |= BM_ANADIG_PLL_VIDEO_ENABLE;
-	writel(reg, &ccm->analog_pll_video);
+	pll_video &= ~BM_ANADIG_PLL_VIDEO_BYPASS;
+	pll_video |= BM_ANADIG_PLL_VIDEO_ENABLE;
+	writel(pll_video, &ccm->analog_pll_video);
 
 	reg = readl(&ccm->chsccdr);
 	reg &= ~(MXC_CCM_CHSCCDR_IPU1_DI0_CLK_SEL_MASK |
 		 MXC_CCM_CHSCCDR_IPU1_DI0_PODF_MASK |
 		 MXC_CCM_CHSCCDR_IPU1_DI0_PRE_CLK_SEL_MASK);
 	reg |= (ipu1_di0_clk_sel << MXC_CCM_CHSCCDR_IPU1_DI0_CLK_SEL_OFFSET) |
-		(ipu_podf << MXC_CCM_CHSCCDR_IPU1_DI0_PODF_OFFSET) |
+		((ipu_div - 1) << MXC_CCM_CHSCCDR_IPU1_DI0_PODF_OFFSET) |
 		(CHSCCDR_IPU_PRE_CLK_PLL5 << MXC_CCM_CHSCCDR_IPU1_DI0_PRE_CLK_SEL_OFFSET);
 	writel(reg, &ccm->chsccdr);
 
