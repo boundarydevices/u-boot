@@ -696,6 +696,12 @@ int overwrite_console(void)
 	return 1;
 }
 
+void board_poweroff(void)
+{
+	gpio_set_value(GP_POWER_OFF, 1);
+	mdelay(500);
+}
+
 int board_init(void)
 {
 	int i;
@@ -838,3 +844,15 @@ int board_late_init(void)
 		setenv("uboot_defconfig", CONFIG_DEFCONFIG);
 	return 0;
 }
+
+static int do_poweroff(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+	board_poweroff();
+	return 0;
+}
+
+U_BOOT_CMD(
+	poweroff, 70, 0, do_poweroff,
+	"power down board",
+	""
+);
