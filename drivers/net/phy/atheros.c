@@ -7,6 +7,7 @@
  * author Andy Fleming
  */
 #include <phy.h>
+#include <common.h>
 
 #define AR803x_PHY_DEBUG_ADDR_REG	0x1d
 #define AR803x_PHY_DEBUG_DATA_REG	0x1e
@@ -54,6 +55,8 @@ static int ar8031_config(struct phy_device *phydev)
 
 static int ar8035_config(struct phy_device *phydev)
 {
+	unsigned ctrl1000 = 0;
+	unsigned features = phydev->drv->features;
 	int regval;
 
 	phy_write(phydev, MDIO_DEVAD_NONE, 0xd, 0x0007);
@@ -82,8 +85,15 @@ static int ar8035_config(struct phy_device *phydev)
 		phy_write(phydev, MDIO_DEVAD_NONE, 0x1E, 0x8000);
 	}
 
-	phydev->supported = phydev->drv->features;
-
+	if (getenv("disable_giga"))
+		features &= ~(SUPPORTED_1000baseT_Half |
+				SUPPORTED_1000baseT_Full);
+	if (features & SUPPORTED_1000baseT_Half)
+		ctrl1000 |= ADVERTISE_1000HALF;
+	if (features & SUPPORTED_1000baseT_Full)
+		ctrl1000 |= ADVERTISE_1000FULL;
+	phydev->advertising = phydev->supported = features;
+	phy_write(phydev, MDIO_DEVAD_NONE, MII_CTRL1000, ctrl1000);
 	genphy_config_aneg(phydev);
 	genphy_restart_aneg(phydev);
 
