@@ -12,6 +12,7 @@
 #include <linux/bitfield.h>
 #include <linux/bitops.h>
 #include <dt-bindings/net/qca-ar803x.h>
+#include <env.h>
 
 #define AR803x_PHY_DEBUG_ADDR_REG	0x1d
 #define AR803x_PHY_DEBUG_DATA_REG	0x1e
@@ -314,6 +315,8 @@ static int ar803x_of_init(struct phy_device *phydev)
 static int ar803x_config(struct phy_device *phydev)
 {
 	int ret;
+	unsigned ctrl1000 = 0;
+	unsigned features = phydev->drv->features;
 
 	ret = ar803x_of_init(phydev);
 	if (ret < 0)
@@ -327,8 +330,15 @@ static int ar803x_config(struct phy_device *phydev)
 	if (ret < 0)
 		return ret;
 
-	phydev->supported = phydev->drv->features;
-
+	if (env_get("disable_giga"))
+		features &= ~(SUPPORTED_1000baseT_Half |
+				SUPPORTED_1000baseT_Full);
+	if (features & SUPPORTED_1000baseT_Half)
+		ctrl1000 |= ADVERTISE_1000HALF;
+	if (features & SUPPORTED_1000baseT_Full)
+		ctrl1000 |= ADVERTISE_1000FULL;
+	phydev->advertising = phydev->supported = features;
+	phy_write(phydev, MDIO_DEVAD_NONE, MII_CTRL1000, ctrl1000);
 	genphy_config_aneg(phydev);
 	genphy_restart_aneg(phydev);
 
