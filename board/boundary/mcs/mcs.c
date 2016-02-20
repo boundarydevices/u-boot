@@ -122,7 +122,7 @@ static iomux_v3_cfg_t const init_pads[] = {
 	/* PWM4 on LVDS connector: J6 */
 #define GP_BACKLIGHT_LVDS	IMX_GPIO_NR(1, 18)
 	IOMUX_PAD_CTRL(SD1_CMD__GPIO1_IO18, WEAK_PULLDN),
-#define GP_LVDS_DE_15_4	IMX_GPIO_NR(4, 7)
+#define GP_LVDS_DE_15_4	IMX_GPIO_NR(4, 9)
 	IOMUX_PAD_CTRL(KEY_ROW1__GPIO4_IO09, WEAK_PULLUP),
 
 	/* reg_usbotg_vbus */
