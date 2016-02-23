@@ -374,6 +374,9 @@ config TARGET_ASH2
 config TARGET_BT
 	bool "bt"
 
+config TARGET_BT2
+	bool "bt2"
+
 config TARGET_NITROGEN6X
 	bool "nitrogen6x"
 	imply USB_HOST_ETHER
@@ -521,6 +524,7 @@ source "board/boundary/ap/Kconfig"
 source "board/boundary/ash/Kconfig"
 source "board/boundary/ash2/Kconfig"
 source "board/boundary/bt/Kconfig"
+source "board/boundary/bt2/Kconfig"
 source "board/boundary/nitrogen6x/Kconfig"
 source "board/boundary/ys/Kconfig"
 source "board/bticino/mamoj/Kconfig"
