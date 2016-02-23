@@ -534,6 +534,10 @@ config TARGET_BT
 	bool "Support bt"
 	select CPU_V7
 
+config TARGET_BT2
+	bool "Support bt2"
+	select CPU_V7
+
 config TARGET_CAD
 	bool "Support cad"
 	select CPU_V7
@@ -1020,6 +1024,7 @@ source "board/bluegiga/apx4devkit/Kconfig"
 source "board/boundary/a/Kconfig"
 source "board/boundary/ash/Kconfig"
 source "board/boundary/bt/Kconfig"
+source "board/boundary/bt2/Kconfig"
 source "board/boundary/cad/Kconfig"
 source "board/boundary/cnt/Kconfig"
 source "board/boundary/cob/Kconfig"
