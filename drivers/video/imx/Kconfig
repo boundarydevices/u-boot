@@ -6,3 +6,17 @@ config VIDEO_IPUV3
 	  This enables framebuffer driver for i.MX processors working
 	  on the IPUv3(Image Processing Unit) internal graphic processor.
 
+config VIDEO_IMXDCSS
+	bool "i.MX8 DCSS display support"
+	default n
+	depends on VIDEO && IMX8M
+	help
+	  Support for DCSS display controller for i.MX8 processors.
+
+config VIDEO_IMX8_HDMI
+	bool "i.MX8 HDMI Splash screen"
+	default n
+	depends on VIDEO && IMX8M
+	help
+	  Support for HDMI i.MX8 processors.
+

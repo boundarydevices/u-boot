@@ -6,6 +6,7 @@
 #define _FS_H
 
 #include <common.h>
+#include <command.h>
 
 struct cmd_tbl;
 
@@ -18,6 +19,9 @@ struct cmd_tbl;
 #define FS_TYPE_SQUASHFS 6
 
 struct blk_desc;
+
+/* common/cmd_fat.c */
+int do_fat_size(struct cmd_tbl *, int, int, char * const []);
 
 /**
  * do_fat_fsload - Run the fatload command
