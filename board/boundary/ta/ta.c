@@ -428,14 +428,16 @@ void board_enable_lvds(const struct display_info_t *di, int enable)
 }
 
 static const struct display_info_t displays[] = {
+	/* ft5x06 */
+	IMX_VD38_HANNSTAR7(LVDS, 1, 2),
+	IMX_VD38_WSVGA(LVDS, 0, 2),
+
 	IMX_VD_WXGA_J(LVDS, 0, 0),
 	IMX_VD_WXGA(LVDS, 0, 0),
 
 	/* egalax_ts */
 	IMX_VD04_HANNSTAR(LVDS, 1, 2),
 	IMX_VD04_LG9_7(LVDS, 0, 2),
-
-	IMX_VD38_WSVGA(LVDS, 1, 2),
 };
 
 int board_cfb_skip(void)
