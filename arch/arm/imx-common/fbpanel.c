@@ -314,8 +314,6 @@ void setup_clock(struct display_info_t const *di)
 	u32 desired_freq;
 	u32 out_freq;
 	int lvds = ((di->fbtype == FB_LVDS) | (di->fbtype == FB_LVDS2)) ? 1 : 0;
-	int ipu1_di0_clk_sel = lvds ? CHSCCDR_CLK_SEL_LDB_DI0 :
-				      CHSCCDR_CLK_SEL_IPU1_DI0;
 	u64 lval = 1000000000000ULL;
 	int timeout = 1000;
 	int post_div = 2;
@@ -331,9 +329,14 @@ void setup_clock(struct display_info_t const *di)
 	if (!(di->mode.sync & FB_SYNC_EXT))
 		return;
 
+#ifdef CONFIG_MX6SX
+	clrbits_le32(&ccm->CCGR2, MXC_CCM_CCGR2_LCD_MASK);
+	clrbits_le32(&ccm->CCGR5, 0x3f << 8);
+#else
 	/* gate ipu1_di0_clk */
 	clrbits_le32(&ccm->CCGR3, MXC_CCM_CCGR3_LDB_DI0_MASK |
 			MXC_CCM_CCGR3_IPU1_IPU_DI0_MASK);
+#endif
 
 	pll_video = readl(&ccm->analog_pll_video);
 	pll_video &= BM_ANADIG_PLL_VIDEO_ENABLE;
@@ -430,11 +433,25 @@ void setup_clock(struct display_info_t const *di)
 	pll_video |= BM_ANADIG_PLL_VIDEO_ENABLE;
 	writel(pll_video, &ccm->analog_pll_video);
 
+#ifdef CONFIG_MX6SX
+	reg = readl(&ccm->cs2cdr);
+	reg &= ~(MXC_CCM_CS2CDR_LDB_DI0_CLK_SEL_MASK);
+	writel(reg, &ccm->cs2cdr);
+
+	reg = readl(&ccm->cscdr2);
+	reg &= ~((7 << 9) | (7 << 12) | (7 << 15));
+	reg |= ((2 << 15) | ((lvds ? 3 : 0) << 9) | (ipu_div - 1) << 12);
+	writel(reg, &ccm->cscdr2);
+
+	setbits_le32(&ccm->CCGR2, MXC_CCM_CCGR2_LCD_MASK);
+	setbits_le32(&ccm->CCGR5, (3 << 10) | (lvds ? (3 << 12) : 0));
+#else
 	reg = readl(&ccm->chsccdr);
 	reg &= ~(MXC_CCM_CHSCCDR_IPU1_DI0_CLK_SEL_MASK |
 		 MXC_CCM_CHSCCDR_IPU1_DI0_PODF_MASK |
 		 MXC_CCM_CHSCCDR_IPU1_DI0_PRE_CLK_SEL_MASK);
-	reg |= (ipu1_di0_clk_sel << MXC_CCM_CHSCCDR_IPU1_DI0_CLK_SEL_OFFSET) |
+	reg |= ((lvds ? CHSCCDR_CLK_SEL_LDB_DI0 : CHSCCDR_CLK_SEL_IPU1_DI0)
+			<< MXC_CCM_CHSCCDR_IPU1_DI0_CLK_SEL_OFFSET) |
 		((ipu_div - 1) << MXC_CCM_CHSCCDR_IPU1_DI0_PODF_OFFSET) |
 		(CHSCCDR_IPU_PRE_CLK_PLL5 << MXC_CCM_CHSCCDR_IPU1_DI0_PRE_CLK_SEL_OFFSET);
 	writel(reg, &ccm->chsccdr);
@@ -442,6 +459,7 @@ void setup_clock(struct display_info_t const *di)
 	/* enable ipu1_di0_clk */
 	setbits_le32(&ccm->CCGR3, MXC_CCM_CCGR3_IPU1_IPU_DI0_MASK |
 			(lvds ? MXC_CCM_CCGR3_LDB_DI0_MASK : 0));
+#endif
 }
 
 void fbp_enable_fb(struct display_info_t const *di, int enable)
