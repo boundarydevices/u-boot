@@ -9,6 +9,7 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
+#define CONFIG_BOOTDELAY   1
 #include "mx6_common.h"
 
 #define CONFIG_MACH_TYPE	3778
@@ -151,6 +152,7 @@
 #define CONFIG_DRIVE_TYPES CONFIG_DRIVE_MMC CONFIG_DRIVE_USB
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
+	"bootdelay=1\0" \
 	"bootdevs=" CONFIG_DRIVE_TYPES "\0" \
 	"console=ttymxc1\0" \
 	"clearenv=if sf probe || sf probe || sf probe 1 ; then " \
