@@ -228,10 +228,10 @@ static const iomux_v3_cfg_t init_pads[] = {
 	IOMUX_PAD_CTRL(EIM_CS0__GPIO2_IO23, WEAK_PULLUP),
 #define GP_PWR_J4	IMX_GPIO_NR(2, 25)
 	IOMUX_PAD_CTRL(EIM_OE__GPIO2_IO25, WEAK_PULLUP),
-#define GP_PWR_J6	IMX_GPIO_NR(2, 27)
-	IOMUX_PAD_CTRL(EIM_LBA__GPIO2_IO27, WEAK_PULLUP),
-#define GP_PWR_J7	IMX_GPIO_NR(2, 26)
-	IOMUX_PAD_CTRL(EIM_RW__GPIO2_IO26, WEAK_PULLUP),
+#define GP_PWR_J5V	IMX_GPIO_NR(2, 27)
+	IOMUX_PAD_CTRL(EIM_LBA__GPIO2_IO27, WEAK_PULLUP),	/* J6 new, J7 old board */
+#define GP_PWR_J12V	IMX_GPIO_NR(2, 26)
+	IOMUX_PAD_CTRL(EIM_RW__GPIO2_IO26, WEAK_PULLUP),	/* J7 new, J6 old board */
 
 	/* Hogs - TW6869 mic bias */
 #define GP_TW6869_MIC_BIAS_EN	IMX_GPIO_NR(3, 29)
@@ -677,8 +677,8 @@ static const unsigned short gpios_out_high[] = {
 	GP_PWR_J2,
 	GP_PWR_J3,
 	GP_PWR_J4,
-	GP_PWR_J6,
-	GP_PWR_J7,
+	GP_PWR_J5V,
+	GP_PWR_J12V,
 	GP_J92_PIN7,
 };
 
