@@ -22,7 +22,6 @@
 #include <asm/imx-common/spi.h>
 #include <mmc.h>
 #include <fsl_esdhc.h>
-#include <micrel.h>
 #include <miiphy.h>
 #include <netdev.h>
 #include <linux/fb.h>
