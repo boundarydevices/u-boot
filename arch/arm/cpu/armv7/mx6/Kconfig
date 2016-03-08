@@ -361,6 +361,9 @@ config TARGET_SP
 config TARGET_TA
 	bool "ta"
 
+config TARGET_USD
+	bool "usd"
+
 config TARGET_YS
 	bool "ys"
 	select MX6SX
@@ -503,6 +506,7 @@ source "board/boundary/s/Kconfig"
 source "board/boundary/snap/Kconfig"
 source "board/boundary/sp/Kconfig"
 source "board/boundary/ta/Kconfig"
+source "board/boundary/usd/Kconfig"
 source "board/boundary/ys/Kconfig"
 source "board/ccv/xpress/Kconfig"
 source "board/compulab/cm_fx6/Kconfig"
