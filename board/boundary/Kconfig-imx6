@@ -210,6 +210,10 @@ config TARGET_TC
 	depends on MX6ULL
 	select BOARD_LATE_INIT
 
+config TARGET_USD
+	bool "usd"
+	depends on MX6DL || MX6Q || MX6QDL || MX6S
+
 endchoice
 
 config MX6QP
@@ -266,3 +270,4 @@ source "board/boundary/snap/Kconfig"
 source "board/boundary/sp/Kconfig"
 source "board/boundary/ta/Kconfig"
 source "board/boundary/tc/Kconfig"
+source "board/boundary/usd/Kconfig"
