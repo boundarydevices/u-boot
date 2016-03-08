@@ -196,6 +196,10 @@ config TARGET_TA
 	bool "ta"
 	depends on MX6DL || MX6Q || MX6QDL || MX6S
 
+config TARGET_USD
+	bool "usd"
+	depends on MX6DL || MX6Q || MX6QDL || MX6S
+
 endchoice
 
 source "board/boundary/a/Kconfig"
@@ -245,3 +249,4 @@ source "board/boundary/ses/Kconfig"
 source "board/boundary/snap/Kconfig"
 source "board/boundary/sp/Kconfig"
 source "board/boundary/ta/Kconfig"
+source "board/boundary/usd/Kconfig"
