@@ -75,6 +75,9 @@ DECLARE_GLOBAL_DATA_PTR;
 	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm |			\
 	PAD_CTL_HYS | PAD_CTL_SRE_SLOW)
 
+#define WEAK_PULLUP_OUTPUT (PAD_CTL_PUS_100K_UP |		\
+	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm |			\
+	PAD_CTL_SRE_SLOW)
 /*
  *
  */
@@ -268,28 +271,28 @@ static const iomux_v3_cfg_t init_pads[] = {
 	IOMUX_PAD_CTRL(NANDF_CS0__GPIO6_IO11, WEAK_PULLDN),
 };
 
-static const iomux_v3_cfg_t enet_pads1[] = {
+static const iomux_v3_cfg_t enet_ksz9021_gpio_pads[] = {
 	/* pin 35 - 1 (PHY_AD2) on reset */
-#define GP_PHY_AD2		IMX_GPIO_NR(6, 30)
-	IOMUX_PAD_CTRL(RGMII_RXC__GPIO6_IO30, WEAK_PULLUP),
+#define GP_KSZ9021_AD2		IMX_GPIO_NR(6, 30)
+	IOMUX_PAD_CTRL(RGMII_RXC__GPIO6_IO30, WEAK_PULLUP_OUTPUT),
 	/* pin 32 - 1 - (MODE0) all */
-#define GP_PHY_MODE0		IMX_GPIO_NR(6, 25)
-	IOMUX_PAD_CTRL(RGMII_RD0__GPIO6_IO25, WEAK_PULLUP),
+#define GP_KSZ9021_MODE0	IMX_GPIO_NR(6, 25)
+	IOMUX_PAD_CTRL(RGMII_RD0__GPIO6_IO25, WEAK_PULLUP_OUTPUT),
 	/* pin 31 - 1 - (MODE1) all */
-#define GP_PHY_MODE1		IMX_GPIO_NR(6, 27)
-	IOMUX_PAD_CTRL(RGMII_RD1__GPIO6_IO27, WEAK_PULLUP),
+#define GP_KSZ9021_MODE1	IMX_GPIO_NR(6, 27)
+	IOMUX_PAD_CTRL(RGMII_RD1__GPIO6_IO27, WEAK_PULLUP_OUTPUT),
 	/* pin 28 - 1 - (MODE2) all */
-#define GP_PHY_MODE2		IMX_GPIO_NR(6, 28)
-	IOMUX_PAD_CTRL(RGMII_RD2__GPIO6_IO28, WEAK_PULLUP),
+#define GP_KSZ9021_MODE2	IMX_GPIO_NR(6, 28)
+	IOMUX_PAD_CTRL(RGMII_RD2__GPIO6_IO28, WEAK_PULLUP_OUTPUT),
 	/* pin 27 - 1 - (MODE3) all */
-#define GP_PHY_MODE3		IMX_GPIO_NR(6, 29)
-	IOMUX_PAD_CTRL(RGMII_RD3__GPIO6_IO29, WEAK_PULLUP),
+#define GP_KSZ9021_MODE3	IMX_GPIO_NR(6, 29)
+	IOMUX_PAD_CTRL(RGMII_RD3__GPIO6_IO29, WEAK_PULLUP_OUTPUT),
 	/* pin 33 - 1 - (CLK125_EN) 125Mhz clockout enabled */
-#define GP_PHY_CLK125		IMX_GPIO_NR(6, 24)
-	IOMUX_PAD_CTRL(RGMII_RX_CTL__GPIO6_IO24, WEAK_PULLUP),
+#define GP_KSZ9021_CLK125	IMX_GPIO_NR(6, 24)
+	IOMUX_PAD_CTRL(RGMII_RX_CTL__GPIO6_IO24, WEAK_PULLUP_OUTPUT),
 };
 
-static const iomux_v3_cfg_t enet_pads2[] = {
+static const iomux_v3_cfg_t enet_pads[] = {
 	IOMUX_PAD_CTRL(RGMII_RXC__RGMII_RXC, ENET_PAD_CTRL),
 	IOMUX_PAD_CTRL(RGMII_RD0__RGMII_RD0, ENET_PAD_CTRL),
 	IOMUX_PAD_CTRL(RGMII_RD1__RGMII_RD1, ENET_PAD_CTRL),
@@ -473,19 +476,20 @@ int board_phy_config(struct phy_device *phydev)
 static void setup_iomux_enet(void)
 {
 	gpio_direction_output(GP_ENET_PHY_RESET, 0); /* PHY rst */
-	gpio_direction_output(GP_PHY_AD2, 1);
-	gpio_direction_output(GP_PHY_MODE0, 1);
-	gpio_direction_output(GP_PHY_MODE1, 1);
-	gpio_direction_output(GP_PHY_MODE2, 1);
-	gpio_direction_output(GP_PHY_MODE3, 1);
-	gpio_direction_output(GP_PHY_CLK125, 1);
-	SETUP_IOMUX_PADS(enet_pads1);
+	gpio_direction_output(GP_KSZ9021_AD2, 1);
+	gpio_direction_output(GP_KSZ9021_MODE0, 1);
+	gpio_direction_output(GP_KSZ9021_MODE1, 1);
+	gpio_direction_output(GP_KSZ9021_MODE2, 1);
+	gpio_direction_output(GP_KSZ9021_MODE3, 1);
+	gpio_direction_output(GP_KSZ9021_CLK125, 1);
+	SETUP_IOMUX_PADS(enet_ksz9021_gpio_pads);
 
 	/* Need delay 10ms according to KSZ9021 spec */
 	udelay(1000 * 10);
 	gpio_set_value(GP_ENET_PHY_RESET, 1); /* PHY reset */
+	udelay(12);
 
-	SETUP_IOMUX_PADS(enet_pads2);
+	SETUP_IOMUX_PADS(enet_pads);
 	udelay(100);	/* Wait 100 us before using mii interface */
 }
 
@@ -508,7 +512,7 @@ int board_eth_init(bd_t *bis)
 		free(bus);
 		return 0;
 	}
-	printf("using phy at %d\n", phydev->addr);
+	printf("%s at %d\n", phydev->drv->name, phydev->addr);
 	ret  = fec_probe(bis, -1, base, bus, phydev);
 	if (ret) {
 		printf("FEC MXC: %s:failed\n", __func__);
