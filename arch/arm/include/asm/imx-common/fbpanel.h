@@ -40,11 +40,66 @@ void fbp_enable_fb(struct display_info_t const *di, int enable);
 int fbp_detect_i2c(struct display_info_t const *di);
 void fbp_setup_display(const struct display_info_t *displays, int cnt);
 
+/* edid */
+#define IMX_VD50_1280_720M_60(_mode, _detect, _bus)	VD_1280_720M_60(_mode, _detect, _bus, 0x50)
+#define IMX_VD50_1920_1080M_60(_mode, _detect, _bus)	VD_1920_1080M_60(_mode, _detect, _bus, 0x50)
+#define IMX_VD50_1024_768M_60(_mode, _detect, _bus)	VD_1024_768M_60(_mode, _detect, _bus, 0x50)
+#define IMX_VD50_800_600MR_60(_mode, _detect, _bus)	VD_800_600MR_60(_mode, _detect, _bus, 0x50)
+#define IMX_VD50_640_480M_60(_mode, _detect, _bus)	VD_640_480M_60(_mode, _detect, _bus, 0x50)
+#define IMX_VD50_720_480M_60(_mode, _detect, _bus)	VD_720_480M_60(_mode, _detect, _bus, 0x50)
+
+/* tsc2004 */
+#define IMX_VD48_CLAA_WVGA(_mode, _detect, _bus)	VD_CLAA_WVGA(_mode, _detect, _bus, 0x48)
+#define IMX_VD48_SHARP_WVGA(_mode, _detect, _bus)	VD_SHARP_WVGA(_mode, _detect, _bus, 0x48)
+#define IMX_VD48_HITACHI_HVGA(_mode, _detect, _bus)	VD_HITACHI_HVGA(_mode, _detect, _bus, 0x48)
+#define IMX_VD48_DC050WX(_mode, _detect, _bus)		VD_DC050WX(_mode, _detect, _bus, 0x48)
+#define IMX_VD48_INNOLUX_WVGA(_mode, _detect, _bus)	VD_INNOLUX_WVGA(_mode, _detect, _bus, 0x48)
+#define IMX_VD48_OKAYA_480_272(_mode, _detect, _bus)	VD_OKAYA_480_272(_mode, _detect, _bus, 0x48)
+#define IMX_VD48_QVGA(_mode, _detect, _bus)		VD_QVGA(_mode, _detect, _bus, 0x48)
+#define IMX_VD48_AT035GT_07ET3(_mode, _detect, _bus)	VD_AT035GT_07ET3(_mode, _detect, _bus, 0x48)
+/* ili210x touch screen */
+#define IMX_VD41_AMP1024_600(_mode, _detect, _bus)	VD_AMP1024_600(_mode, _detect, _bus, 0x41)
+/* ft5x06_ts */
+#define IMX_VD38_LD101WX1(_mode, _detect, _bus)		VD_LD101WX1(_mode, _detect, _bus, 0x38)
+#define IMX_VD38_TM070JDHG30(_mode, _detect, _bus)	VD_TM070JDHG30(_mode, _detect, _bus, 0x38)
+#define IMX_VD38_AUO_B101EW05(_mode, _detect, _bus)	VD_AUO_B101EW05(_mode, _detect, _bus, 0x38)
+#define IMX_VD38_LG1280_800(_mode, _detect, _bus)	VD_LG1280_800(_mode, _detect, _bus, 0x38)
+#define IMX_VD38_HANNSTAR7(_mode, _detect, _bus)	VD_HANNSTAR7(_mode, _detect, _bus, 0x38)
+#define IMX_VD38_DT070BTFT(_mode, _detect, _bus)	VD_DT070BTFT(_mode, _detect, _bus, 0x38)
+#define IMX_VD38_WSVGA(_mode, _detect, _bus)		VD_WSVGA(_mode, _detect, _bus, 0x38)
+#define IMX_VD38_ASIT500MA6F5D(_mode, _detect, _bus)	VD_ASIT500MA6F5D(_mode, _detect, _bus, 0x38)
+#define IMX_VD38_HITACHI_HVGA(_mode, _detect, _bus)	VD_HITACHI_HVGA(_mode, _detect, _bus, 0x38)
+/* fusion7 */
+#define IMX_VD10_FUSION7(_mode, _detect, _bus)		VD_FUSION7(_mode, _detect, _bus, 0x10)
+/* egalax_ts */
+#define IMX_VD04_HANNSTAR(_mode, _detect, _bus)		VD_HANNSTAR(_mode, _detect, _bus, 0x04)
+#define IMX_VD04_1024_600(_mode, _detect, _bus)		VD_1024_600(_mode, _detect, _bus, 0x04)
+#define IMX_VD04_LG9_7(_mode, _detect, _bus)		VD_LG9_7(_mode, _detect, _bus, 0x04)
+
+#define IMX_VD_1080P60(_mode, _detect, _bus)		VD_1080P60(_mode, _detect, _bus, 0x00)
+#define IMX_VD_1080P60_J(_mode, _detect, _bus)		VD_1080P60_J(_mode, _detect, _bus, 0x00)
+#define IMX_VD_SHARP_LQ101K1LY04(_mode, _detect, _bus)	VD_SHARP_LQ101K1LY04(_mode, _detect, _bus, 0x00)
+#define IMX_VD_WXGA(_mode, _detect, _bus)		VD_WXGA(_mode, _detect, _bus, 0x00)
+#define IMX_VD_WXGA_J(_mode, _detect, _bus)		VD_WXGA_J(_mode, _detect, _bus, 0x00)
+#define IMX_VD_LD070WSVGA(_mode, _detect, _bus)		VD_LD070WSVGA(_mode, _detect, _bus, 0x00)
+#define IMX_VD_SVGA(_mode, _detect, _bus)		VD_SVGA(_mode, _detect, _bus, 0x00)
+#define IMX_VD_WVGA_TX23D200_24(_mode, _detect, _bus)	VD_WVGA_TX23D200_24(_mode, _detect, _bus, 0x00)
+#define IMX_VD_WVGA_TX23D200_18(_mode, _detect, _bus)	VD_WVGA_TX23D200_18(_mode, _detect, _bus, 0x00)
+#define IMX_VD_WVGA(_mode, _detect, _bus)		VD_WVGA(_mode, _detect, _bus, 0x00)
+#define IMX_VD_WVGA_J(_mode, _detect, _bus)		VD_WVGA_J(_mode, _detect, _bus, 0x00)
+#define IMX_VD_AA065VE11(_mode, _detect, _bus)		VD_AA065VE11(_mode, _detect, _bus, 0x00)
+#define IMX_VD_VGA(_mode, _detect, _bus)		VD_VGA(_mode, _detect, _bus, 0x00)
+#define IMX_VD_LSA40AT9001(_mode, _detect, _bus)	VD_LSA40AT9001(_mode, _detect, _bus, 0x00)
+/* spi panels */
+#define IMX_VD_AUO_G050(_mode, _detect, _bus)		VD_AUO_G050(_mode, _detect, _bus, 0x00)
+#define IMX_VD_A030JN01_UPS051(_mode, _detect, _bus)	VD_A030JN01_UPS051(_mode, _detect, _bus, 2)
+#define IMX_VD_A030JN01_YUV720(_mode, _detect, _bus)	VD_A030JN01_YUV720(_mode, _detect, _bus, 1)
+
 /* hdmi settings */
-#define IMX_VD50_1280_720M_60(_mode, _detect, _bus) \
+#define VD_1280_720M_60(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
-	.addr	= 0x50,\
+	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
@@ -67,10 +122,10 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
-#define IMX_VD50_1920_1080M_60(_mode, _detect, _bus) \
+#define VD_1920_1080M_60(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
-	.addr	= 0x50,\
+	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
@@ -94,10 +149,10 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 }
 
 
-#define IMX_VD50_1024_768M_60(_mode, _detect, _bus) \
+#define VD_1024_768M_60(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
-	.addr	= 0x50,\
+	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
@@ -120,10 +175,10 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
-#define IMX_VD50_800_600MR_60(_mode, _detect, _bus) \
+#define VD_800_600MR_60(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
-	.addr	= 0,\
+	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
@@ -146,10 +201,10 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
-#define IMX_VD50_640_480M_60(_mode, _detect, _bus) \
+#define VD_640_480M_60(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
-	.addr	= 0x50,\
+	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
@@ -172,10 +227,10 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
-#define IMX_VD50_720_480M_60(_mode, _detect, _bus) \
+#define VD_720_480M_60(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
-	.addr	= 0x50,\
+	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
@@ -199,10 +254,10 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 }
 
 /* tsc2004 */
-#define IMX_VD48_CLAA_WVGA(_mode, _detect, _bus) \
+#define VD_CLAA_WVGA(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
-	.addr	= 0x48,\
+	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB666,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
@@ -227,10 +282,10 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 
 /* tsc2004 */
 /* keep compatible with LQ050Y3DC01 */
-#define IMX_VD48_SHARP_WVGA(_mode, _detect, _bus) \
+#define VD_SHARP_WVGA(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
-	.addr	= 0x48,\
+	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
@@ -259,10 +314,10 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
  * hsync = 260 * vsync = 15.6 Khz
  * pixclk = 800 * hsync = 12.48 MHz
  */
-#define IMX_VD48_HITACHI_HVGA(_mode, _detect, _bus) \
+#define VD_HITACHI_HVGA(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
-	.addr	= 0x48,\
+	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB666,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
@@ -286,10 +341,10 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 }
 
 /* tsc2004 */
-#define IMX_VD48_DC050WX(_mode, _detect, _bus) \
+#define VD_DC050WX(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
-	.addr	= 0x48,\
+	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
@@ -312,10 +367,10 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
-#define IMX_VD48_INNOLUX_WVGA(_mode, _detect, _bus) \
+#define VD_INNOLUX_WVGA(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
-	.addr	= 0x48,\
+	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB666,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
@@ -337,10 +392,10 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
-#define IMX_VD48_OKAYA_480_272(_mode, _detect, _bus) \
+#define VD_OKAYA_480_272(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
-	.addr	= 0x48,\
+	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
@@ -364,10 +419,10 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 }
 
 /* tsc2004 */
-#define IMX_VD48_QVGA(_mode, _detect, _bus) \
+#define VD_QVGA(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
-	.addr	= 0x48,\
+	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
@@ -391,10 +446,10 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 }
 
 /* tsc2004 */
-#define IMX_VD48_AT035GT_07ET3(_mode, _detect, _bus) \
+#define VD_AT035GT_07ET3(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
-	.addr	= 0x48,\
+	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
@@ -418,10 +473,10 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 }
 
 /* ili210x touch screen */
-#define IMX_VD41_AMP1024_600(_mode, _detect, _bus) \
+#define VD_AMP1024_600(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
-	.addr	= 0x41,\
+	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB666,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
@@ -445,10 +500,10 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 
 /* ft5x06 touch screen */
 /* LG panel LD101WX1 is a 24 bit spwg panel */
-#define IMX_VD38_LD101WX1(_mode, _detect, _bus) \
+#define VD_LD101WX1(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
-	.addr	= 0x38,\
+	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
@@ -473,10 +528,10 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 
 /* ft5x06 touch screen */
 /* Tianma panel TM070JDHG30 is a 24 bit spwg panel */
-#define IMX_VD38_TM070JDHG30(_mode, _detect, _bus) \
+#define VD_TM070JDHG30(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
-	.addr	= 0x38,\
+	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
@@ -499,10 +554,10 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
-#define IMX_VD38_AUO_B101EW05(_mode, _detect, _bus) \
+#define VD_AUO_B101EW05(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
-	.addr	= 0x38,\
+	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB666,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
@@ -526,10 +581,10 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 }
 
 /* lg1280x800(LP101WX1) == hannstar7 */
-#define IMX_VD38_LG1280_800(_mode, _detect, _bus) \
+#define VD_LG1280_800(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
-	.addr	= 0x38,\
+	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB666,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
@@ -554,10 +609,10 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 
 /* ft5x06_ts */
 /* lg1280x800(LP101WX1) == hannstar7 */
-#define IMX_VD38_HANNSTAR7(_mode, _detect, _bus) \
+#define VD_HANNSTAR7(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
-	.addr	= 0x38,\
+	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB666,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
@@ -581,10 +636,10 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 }
 
 /* ft5x06_ts */
-#define IMX_VD38_DT070BTFT(_mode, _detect, _bus) \
+#define VD_DT070BTFT(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
-	.addr	= 0x38,\
+	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
@@ -608,10 +663,10 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 }
 
 /* ft5x06_ts */
-#define IMX_VD38_WSVGA(_mode, _detect, _bus) \
+#define VD_WSVGA(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
-	.addr	= 0x38,\
+	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB666,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
@@ -634,10 +689,10 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 }
 
 /* Also works for ER-TFT050-3 */
-#define IMX_VD38_ASIT500MA6F5D(_mode, _detect, _bus) \
+#define VD_ASIT500MA6F5D(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
-	.addr	= 0x38,\
+	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
@@ -666,10 +721,10 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
  * hsync = 260 * vsync = 15.6 Khz
  * pixclk = 800 * hsync = 12.48 MHz
  */
-#define IMX_VD38_HITACHI_HVGA(_mode, _detect, _bus) \
+#define VD_HITACHI_HVGA(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
-	.addr	= 0x38,\
+	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB666,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
@@ -693,10 +748,10 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 }
 
 /* fusion7 */
-#define IMX_VD10_FUSION7(_mode, _detect, _bus) \
+#define VD_FUSION7(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
-	.addr	= 0x10,\
+	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB666,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
@@ -720,10 +775,10 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 }
 
 /* egalax_ts */
-#define IMX_VD04_HANNSTAR(_mode, _detect, _bus) \
+#define VD_HANNSTAR(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
-	.addr	= 0x4,\
+	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB666,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
@@ -745,10 +800,10 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
-#define IMX_VD04_1024_600(_mode, _detect, _bus) \
+#define VD_1024_600(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
-	.addr	= 0x4,\
+	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB666,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
@@ -771,10 +826,10 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 }
 
 /* egalax_ts */
-#define IMX_VD04_LG9_7(_mode, _detect, _bus) \
+#define VD_LG9_7(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
-	.addr	= 0x4,\
+	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB666,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
@@ -796,10 +851,10 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
-#define IMX_VD_1080P60(_mode, _detect, _bus) \
+#define VD_1080P60(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
-	.addr	= 0,\
+	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
@@ -822,10 +877,10 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
-#define IMX_VD_1080P60_J(_mode, _detect, _bus) \
+#define VD_1080P60_J(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
-	.addr	= 0,\
+	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
@@ -848,10 +903,10 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
-#define IMX_VD_SHARP_LQ101K1LY04(_mode, _detect, _bus) \
+#define VD_SHARP_LQ101K1LY04(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
-	.addr	= 0,\
+	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
@@ -874,10 +929,10 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
-#define IMX_VD_WXGA(_mode, _detect, _bus) \
+#define VD_WXGA(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
-	.addr	= 0,\
+	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
@@ -899,10 +954,10 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
-#define IMX_VD_WXGA_J(_mode, _detect, _bus) \
+#define VD_WXGA_J(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
-	.addr	= 0,\
+	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
@@ -925,10 +980,10 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
-#define IMX_VD_LD070WSVGA(_mode, _detect, _bus) \
+#define VD_LD070WSVGA(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
-	.addr	= 0,\
+	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
@@ -951,10 +1006,10 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
-#define IMX_VD_SVGA(_mode, _detect, _bus) \
+#define VD_SVGA(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
-	.addr	= 0,\
+	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB666,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
@@ -983,10 +1038,10 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
  * 1000000000/1056/525/35.35 = 51 frames/second
  * 1000000000/1056/525/28.6 =  63.068 frames/second
  */
-#define IMX_VD_WVGA_TX23D200_24(_mode, _detect, _bus) \
+#define VD_WVGA_TX23D200_24(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
-	.addr	= 0,\
+	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
@@ -1008,10 +1063,10 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
-#define IMX_VD_WVGA_TX23D200_18(_mode, _detect, _bus) \
+#define VD_WVGA_TX23D200_18(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
-	.addr	= 0,\
+	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB666,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
@@ -1033,10 +1088,10 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
-#define IMX_VD_WVGA(_mode, _detect, _bus) \
+#define VD_WVGA(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
-	.addr	= 0,\
+	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB666,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
@@ -1058,10 +1113,10 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
-#define IMX_VD_WVGA_J(_mode, _detect, _bus) \
+#define VD_WVGA_J(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
-	.addr	= 0,\
+	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
@@ -1084,10 +1139,10 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
-#define IMX_VD_AA065VE11(_mode, _detect, _bus) \
+#define VD_AA065VE11(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
-	.addr	= 0,\
+	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
@@ -1109,10 +1164,10 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
-#define IMX_VD_VGA(_mode, _detect, _bus) \
+#define VD_VGA(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
-	.addr	= 0,\
+	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
@@ -1134,10 +1189,10 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
-#define IMX_VD_LSA40AT9001(_mode, _detect, _bus) \
+#define VD_LSA40AT9001(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
-	.addr	= 0,\
+	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
 	.detect	= _detect ? fbp_detect_i2c : NULL,\
 	.enable	= fbp_enable_fb,\
@@ -1161,10 +1216,10 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 }
 
 /* spi panels */
-#define IMX_VD_AUO_G050(_mode, _detect, _bus) \
+#define VD_AUO_G050(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
-	.addr	= 0,\
+	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
 	.detect	= NULL,\
 	.enable	= fbp_enable_fb,\
@@ -1189,10 +1244,10 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 
 //640 * 3/2 = 960, (1.5 clocks per pixel)
 //33.7M
-#define IMX_VD_A030JN01_UPS051(_mode, _detect, _bus) \
+#define VD_A030JN01_UPS051(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
-	.addr	= 2,\
+	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_UPS051,\
 	.detect	= NULL,\
 	.enable	= fbp_enable_fb,\
@@ -1216,10 +1271,10 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 }
 
 /* 27.11 MHz pixel clock */
-#define IMX_VD_A030JN01_YUV720(_mode, _detect, _bus) \
+#define VD_A030JN01_YUV720(_mode, _detect, _bus, _addr) \
 {\
 	.bus    = _bus,\
-	.addr   = 1,\
+	.addr   = _addr,\
 	.pixfmt = IPU_PIX_FMT_YUYV,\
 	.detect = NULL,\
 	.enable = fbp_enable_fb,\
