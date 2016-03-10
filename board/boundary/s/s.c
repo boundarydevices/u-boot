@@ -34,8 +34,13 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
-#define BUTTON_PAD_CTRL	(PAD_CTL_PUS_100K_UP |			\
-	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm | PAD_CTL_HYS)
+#define AUD_PAD_CTRL  (PAD_CTL_PUS_100K_UP |			\
+	PAD_CTL_SPEED_LOW | PAD_CTL_DSE_40ohm |			\
+	PAD_CTL_HYS | PAD_CTL_SRE_FAST)
+
+#define CSI_PAD_CTRL	(PAD_CTL_PUS_100K_UP |			\
+	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm |			\
+	PAD_CTL_HYS | PAD_CTL_SRE_FAST)
 
 #define ENET_PAD_CTRL	(PAD_CTL_PUS_100K_UP |			\
 	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm | PAD_CTL_HYS)
@@ -61,14 +66,27 @@ DECLARE_GLOBAL_DATA_PTR;
 	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm |			\
 	PAD_CTL_HYS | PAD_CTL_SRE_SLOW)
 
+#define WEAK_PULLDN_OUTPUT (PAD_CTL_PUS_100K_DOWN |		\
+	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm |			\
+	PAD_CTL_SRE_SLOW)
+
 #define WEAK_PULLUP	(PAD_CTL_PUS_100K_UP |			\
 	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm |			\
 	PAD_CTL_HYS | PAD_CTL_SRE_SLOW)
 
+#define WEAK_PULLUP_OUTPUT (PAD_CTL_PUS_100K_UP |		\
+	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm |			\
+	PAD_CTL_SRE_SLOW)
 /*
  *
  */
 static const iomux_v3_cfg_t init_pads[] = {
+	/* AUDMUX */
+	IOMUX_PAD_CTRL(CSI0_DAT7__AUD3_RXD, AUD_PAD_CTRL),
+	IOMUX_PAD_CTRL(CSI0_DAT4__AUD3_TXC, AUD_PAD_CTRL),
+	IOMUX_PAD_CTRL(CSI0_DAT5__AUD3_TXD, AUD_PAD_CTRL),
+	IOMUX_PAD_CTRL(CSI0_DAT6__AUD3_TXFS, AUD_PAD_CTRL),
+
 	/* bt_rfkill */
 #define GP_BT_RFKILL_RESET	IMX_GPIO_NR(6, 16)
 	IOMUX_PAD_CTRL(NANDF_CS3__GPIO6_IO16, WEAK_PULLDN),
@@ -79,6 +97,13 @@ static const iomux_v3_cfg_t init_pads[] = {
 	IOMUX_PAD_CTRL(EIM_D16__ECSPI1_SCLK, SPI_PAD_CTRL),
 #define GP_ECSPI1_NOR_CS	IMX_GPIO_NR(3, 19)
 	IOMUX_PAD_CTRL(EIM_D19__GPIO3_IO19, WEAK_PULLUP),
+
+	/* ECSPI2 */
+	IOMUX_PAD_CTRL(EIM_OE__ECSPI2_MISO, SPI_PAD_CTRL),
+	IOMUX_PAD_CTRL(EIM_CS1__ECSPI2_MOSI, SPI_PAD_CTRL),
+	IOMUX_PAD_CTRL(EIM_CS0__ECSPI2_SCLK, SPI_PAD_CTRL),
+#define GP_ECSPI2_CS1		IMX_GPIO_NR(2, 27)
+	IOMUX_PAD_CTRL(EIM_LBA__GPIO2_IO27, WEAK_PULLUP),
 
 	/* ENET pads that don't change for PHY reset */
 	IOMUX_PAD_CTRL(ENET_MDIO__ENET_MDIO, ENET_PAD_CTRL),
@@ -91,46 +116,99 @@ static const iomux_v3_cfg_t init_pads[] = {
 	IOMUX_PAD_CTRL(RGMII_TX_CTL__RGMII_TX_CTL, ENET_PAD_CTRL),
 	IOMUX_PAD_CTRL(ENET_REF_CLK__ENET_TX_CLK, ENET_PAD_CTRL),
 	/* pin 42 PHY nRST */
-#define GP_ENET_PHY_RESET_SABRELITE	IMX_GPIO_NR(3, 23)
-	IOMUX_PAD_CTRL(EIM_D23__GPIO3_IO23, WEAK_PULLUP),
-#define GP_ENET_PHY_RESET_NITROGEN6X	IMX_GPIO_NR(1, 27)
-	IOMUX_PAD_CTRL(ENET_RXD0__GPIO1_IO27, WEAK_PULLUP),
+#define GP_ENET_PHY_RESET	IMX_GPIO_NR(1, 27)
+	IOMUX_PAD_CTRL(ENET_RXD0__GPIO1_IO27, WEAK_PULLDN),
 #define GPIRQ_ENET_PHY		IMX_GPIO_NR(1, 28)
 	IOMUX_PAD_CTRL(ENET_TX_EN__GPIO1_IO28, WEAK_PULLUP),
 
-	/* gpio_Keys - Button assignments for J14 */
-#define GP_GPIOKEY_BACK		IMX_GPIO_NR(2, 2)
-	IOMUX_PAD_CTRL(NANDF_D2__GPIO2_IO02, BUTTON_PAD_CTRL),
-#define GP_GPIOKEY_HOME		IMX_GPIO_NR(2, 4)
-	IOMUX_PAD_CTRL(NANDF_D4__GPIO2_IO04, BUTTON_PAD_CTRL),
-#define GP_GPIOKEY_MENU		IMX_GPIO_NR(2, 1)
-	IOMUX_PAD_CTRL(NANDF_D1__GPIO2_IO01, BUTTON_PAD_CTRL),
-	/* Labeled Search (mapped to Power under Android) */
-#define GP_GPIOKEY_POWER	IMX_GPIO_NR(2, 3)
-	IOMUX_PAD_CTRL(NANDF_D3__GPIO2_IO03, BUTTON_PAD_CTRL),
-#define GP_GPIOKEY_VOL_DOWN	IMX_GPIO_NR(4, 5)
-	IOMUX_PAD_CTRL(GPIO_19__GPIO4_IO05, BUTTON_PAD_CTRL),
-#define GP_GPIOKEY_VOL_UP	IMX_GPIO_NR(7, 13)
-	IOMUX_PAD_CTRL(GPIO_18__GPIO7_IO13, BUTTON_PAD_CTRL),
+	/* FLEXCAN */
+	IOMUX_PAD_CTRL(KEY_COL2__FLEXCAN1_TX, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(KEY_ROW2__FLEXCAN1_RX, WEAK_PULLUP),
+#define GP_FLEXCAN_STANDBY	IMX_GPIO_NR(1, 2)
+	IOMUX_PAD_CTRL(GPIO_2__GPIO1_IO02, WEAK_PULLUP),
+
+	/* gpio_Keys */
+#define GP_TEMP_ALARM		IMX_GPIO_NR(2, 21)
+	IOMUX_PAD_CTRL(EIM_A17__GPIO2_IO21, WEAK_PULLUP),
+#define GP_FAN_FAIL		IMX_GPIO_NR(2, 19)
+	IOMUX_PAD_CTRL(EIM_A19__GPIO2_IO19, WEAK_PULLUP),
+#define GP_AC_FAIL		IMX_GPIO_NR(2, 18)
+	IOMUX_PAD_CTRL(EIM_A20__GPIO2_IO18, WEAK_PULLUP),
+#define GP_J5_PIN33		IMX_GPIO_NR(1, 16)
+	IOMUX_PAD_CTRL(SD1_DAT0__GPIO1_IO16, WEAK_PULLUP),
+#define GP_J34_PIN6		IMX_GPIO_NR(5, 4)
+	IOMUX_PAD_CTRL(EIM_A24__GPIO5_IO04, WEAK_PULLUP),
+#define GP_J34_PIN8		IMX_GPIO_NR(6, 6)
+	IOMUX_PAD_CTRL(EIM_A23__GPIO6_IO06, WEAK_PULLUP),
+#define GP_ON_OFF		IMX_GPIO_NR(2, 7)
+	IOMUX_PAD_CTRL(NANDF_D7__GPIO2_IO07, WEAK_PULLUP),
+
+	/* gpio outputs */
+#define GP_LED_RED		IMX_GPIO_NR(4, 15)
+	IOMUX_PAD_CTRL(KEY_ROW4__GPIO4_IO15, WEAK_PULLUP_OUTPUT),
+#define GP_LED_GREEN		IMX_GPIO_NR(1, 7)
+	IOMUX_PAD_CTRL(GPIO_7__GPIO1_IO07, WEAK_PULLUP_OUTPUT),
+#define GP_LED_AMBER		IMX_GPIO_NR(1, 9)
+	IOMUX_PAD_CTRL(GPIO_9__GPIO1_IO09, WEAK_PULLUP_OUTPUT),
+#define GP_J34_DRY1		IMX_GPIO_NR(2, 16)
+	IOMUX_PAD_CTRL(EIM_A22__GPIO2_IO16, WEAK_PULLDN_OUTPUT),
+#define GP_J34_DRY2		IMX_GPIO_NR(5, 2)
+	IOMUX_PAD_CTRL(EIM_A25__GPIO5_IO02, WEAK_PULLDN_OUTPUT),
+
+	/* gpio test points */
+#define GP_TP_R201	IMX_GPIO_NR(4, 16)
+	IOMUX_PAD_CTRL(DI0_DISP_CLK__GPIO4_IO16, WEAK_PULLUP),
+
+	/* i2c1_isl1208 */
+#define GPIRQ_RTC_ISL1208	IMX_GPIO_NR(6, 7)
+	IOMUX_PAD_CTRL(NANDF_CLE__GPIO6_IO07, WEAK_PULLUP),
 
 	/* i2c1_SGTL5000 sys_mclk */
 	IOMUX_PAD_CTRL(GPIO_0__CCM_CLKO1, OUTPUT_40OHM),
+#define GP_TDA7491P_GAIN0	IMX_GPIO_NR(3, 20)
+	IOMUX_PAD_CTRL(EIM_D20__GPIO3_IO20, WEAK_PULLDN_OUTPUT),
+#define GP_TDA7491P_GAIN1	IMX_GPIO_NR(3, 30)
+	IOMUX_PAD_CTRL(EIM_D30__GPIO3_IO30, WEAK_PULLDN_OUTPUT),
+#define GP_TDA7491P_STBY	IMX_GPIO_NR(2, 20)
+	IOMUX_PAD_CTRL(EIM_A18__GPIO2_IO20, WEAK_PULLDN_OUTPUT),
+#define GP_TDA7491P_MUTE	IMX_GPIO_NR(2, 22)
+	IOMUX_PAD_CTRL(EIM_A16__GPIO2_IO22, WEAK_PULLDN_OUTPUT),
+#define GPIRQ_MIC_DET		IMX_GPIO_NR(1, 24)
+	IOMUX_PAD_CTRL(ENET_RX_ER__GPIO1_IO24, WEAK_PULLUP),
 
-	/* i2c2 ov5640 mipi Camera controls */
-#define GP_OV5640_MIPI_POWER_DOWN	IMX_GPIO_NR(6, 9)
-	IOMUX_PAD_CTRL(NANDF_WP_B__GPIO6_IO09, WEAK_PULLUP),
-#define GP_OV5640_MIPI_RESET		IMX_GPIO_NR(2, 5)
-	IOMUX_PAD_CTRL(NANDF_D5__GPIO2_IO05, WEAK_PULLDN),
-
-	/* i2c2 ov5642 Camera controls, J5 */
+	/* i2c3, ov5642 Camera controls, J5 */
+	IOMUX_PAD_CTRL(CSI0_DAT8__IPU1_CSI0_DATA08, CSI_PAD_CTRL),
+	IOMUX_PAD_CTRL(CSI0_DAT9__IPU1_CSI0_DATA09, CSI_PAD_CTRL),
+	IOMUX_PAD_CTRL(CSI0_DAT10__IPU1_CSI0_DATA10, CSI_PAD_CTRL),
+	IOMUX_PAD_CTRL(CSI0_DAT11__IPU1_CSI0_DATA11, CSI_PAD_CTRL),
+	IOMUX_PAD_CTRL(CSI0_DAT12__IPU1_CSI0_DATA12, CSI_PAD_CTRL),
+	IOMUX_PAD_CTRL(CSI0_DAT13__IPU1_CSI0_DATA13, CSI_PAD_CTRL),
+	IOMUX_PAD_CTRL(CSI0_DAT14__IPU1_CSI0_DATA14, CSI_PAD_CTRL),
+	IOMUX_PAD_CTRL(CSI0_DAT15__IPU1_CSI0_DATA15, CSI_PAD_CTRL),
+	IOMUX_PAD_CTRL(CSI0_DAT16__IPU1_CSI0_DATA16, CSI_PAD_CTRL),
+	IOMUX_PAD_CTRL(CSI0_DAT17__IPU1_CSI0_DATA17, CSI_PAD_CTRL),
+	IOMUX_PAD_CTRL(CSI0_DAT18__IPU1_CSI0_DATA18, CSI_PAD_CTRL),
+	IOMUX_PAD_CTRL(CSI0_DAT19__IPU1_CSI0_DATA19, CSI_PAD_CTRL),
+	IOMUX_PAD_CTRL(CSI0_DATA_EN__IPU1_CSI0_DATA_EN, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(CSI0_PIXCLK__IPU1_CSI0_PIXCLK, CSI_PAD_CTRL),
+	IOMUX_PAD_CTRL(CSI0_MCLK__GPIO5_IO19, WEAK_PULLUP),	/* Hsync */
+	IOMUX_PAD_CTRL(CSI0_VSYNC__GPIO5_IO21, WEAK_PULLUP),	/* Vsync */
 	IOMUX_PAD_CTRL(GPIO_3__CCM_CLKO2, OUTPUT_40OHM),	/* mclk */
-#define GP_OV5642_POWER_DOWN	IMX_GPIO_NR(1, 6)
-	IOMUX_PAD_CTRL(GPIO_6__GPIO1_IO06, WEAK_PULLUP),
+#define GP_OV5642_POWER_DOWN	IMX_GPIO_NR(3, 29)
+	IOMUX_PAD_CTRL(EIM_D29__GPIO3_IO29, WEAK_PULLUP),
 #define GP_OV5642_RESET		IMX_GPIO_NR(1, 8)
 	IOMUX_PAD_CTRL(GPIO_8__GPIO1_IO08, WEAK_PULLDN),
 
-	/* PWM1 - Backlight on RGB connector: J15 */
-#define GP_BACKLIGHT_RGB	IMX_GPIO_NR(1, 21)
+	/* i2c3 edid enable*/
+#define GP_I2C3_EDID		IMX_GPIO_NR(2, 17)
+	IOMUX_PAD_CTRL(EIM_A21__GPIO2_IO17, WEAK_PULLDN_OUTPUT),
+
+	/* Power off */
+#define GP_POWER_OFF		IMX_GPIO_NR(7, 1)
+	IOMUX_PAD_CTRL(SD3_DAT4__GPIO7_IO01, WEAK_PULLDN_OUTPUT),	/* 0 is on */
+
+	/* PWM1 - Backlight on LVDS connector: J6 */
+#define GP_BACKLIGHT_TPS	IMX_GPIO_NR(1, 21)
 	IOMUX_PAD_CTRL(SD1_DAT3__GPIO1_IO21, WEAK_PULLDN),
 
 	/* PWM4 - Backlight on LVDS connector: J6 */
@@ -149,13 +227,26 @@ static const iomux_v3_cfg_t init_pads[] = {
 	IOMUX_PAD_CTRL(SD3_DAT6__UART1_RX_DATA, UART_PAD_CTRL),
 	IOMUX_PAD_CTRL(SD3_DAT7__UART1_TX_DATA, UART_PAD_CTRL),
 
-	/* UART4 */
+	/* UART2 */
+	IOMUX_PAD_CTRL(EIM_D26__UART2_TX_DATA, UART_PAD_CTRL),
+	IOMUX_PAD_CTRL(EIM_D27__UART2_RX_DATA, UART_PAD_CTRL),
+
+	/* UART3 for wl1271 */
+	IOMUX_PAD_CTRL(EIM_D24__UART3_TX_DATA, UART_PAD_CTRL),
+	IOMUX_PAD_CTRL(EIM_D25__UART3_RX_DATA, UART_PAD_CTRL),
+	IOMUX_PAD_CTRL(EIM_D23__UART3_CTS_B, UART_PAD_CTRL),
+	IOMUX_PAD_CTRL(EIM_D31__UART3_RTS_B, UART_PAD_CTRL),
+
+	/* UART4 - J27 pins 2, 4 */
 	IOMUX_PAD_CTRL(KEY_COL0__UART4_TX_DATA, UART_PAD_CTRL),
 	IOMUX_PAD_CTRL(KEY_ROW0__UART4_RX_DATA, UART_PAD_CTRL),
 
+	/* UART5 - J32 pins 2, 4 */
+	IOMUX_PAD_CTRL(KEY_COL1__UART5_TX_DATA, UART_PAD_CTRL),
+	IOMUX_PAD_CTRL(KEY_ROW1__UART5_RX_DATA, UART_PAD_CTRL),
+
 	/* USBH1 */
-	IOMUX_PAD_CTRL(EIM_D30__USB_H1_OC, WEAK_PULLUP),
-#define GP_USB_HUB_RESET	IMX_GPIO_NR(7, 12)
+#define GP_USBH1_HUB_RESET	IMX_GPIO_NR(7, 12)
 	IOMUX_PAD_CTRL(GPIO_17__GPIO7_IO12, WEAK_PULLDN),
 
 	/* USBOTG */
@@ -169,6 +260,7 @@ static const iomux_v3_cfg_t init_pads[] = {
 	IOMUX_PAD_CTRL(SD2_DAT1__SD2_DATA1, USDHC_PAD_CTRL),
 	IOMUX_PAD_CTRL(SD2_DAT2__SD2_DATA2, USDHC_PAD_CTRL),
 	IOMUX_PAD_CTRL(SD2_DAT3__SD2_DATA3, USDHC_PAD_CTRL),
+//	IOMUX_PAD_CTRL(SD1_CLK__OSC32K_32K_OUT, OUTPUT_40OHM),	/* slow clock */
 
 	/* USDHC3 - sdcard */
 	IOMUX_PAD_CTRL(SD3_CLK__SD3_CLK, USDHC_PAD_CTRL),
@@ -195,28 +287,28 @@ static const iomux_v3_cfg_t init_pads[] = {
 	IOMUX_PAD_CTRL(NANDF_CS1__GPIO6_IO14, WEAK_PULLDN),
 };
 
-static const iomux_v3_cfg_t enet_pads1[] = {
+static const iomux_v3_cfg_t enet_ksz9021_gpio_pads[] = {
 	/* pin 35 - 1 (PHY_AD2) on reset */
-#define GP_PHY_AD2		IMX_GPIO_NR(6, 30)
-	IOMUX_PAD_CTRL(RGMII_RXC__GPIO6_IO30, WEAK_PULLUP),
+#define GP_KSZ9021_AD2		IMX_GPIO_NR(6, 30)
+	IOMUX_PAD_CTRL(RGMII_RXC__GPIO6_IO30, WEAK_PULLUP_OUTPUT),
 	/* pin 32 - 1 - (MODE0) all */
-#define GP_PHY_MODE0		IMX_GPIO_NR(6, 25)
-	IOMUX_PAD_CTRL(RGMII_RD0__GPIO6_IO25, WEAK_PULLUP),
+#define GP_KSZ9021_MODE0	IMX_GPIO_NR(6, 25)
+	IOMUX_PAD_CTRL(RGMII_RD0__GPIO6_IO25, WEAK_PULLUP_OUTPUT),
 	/* pin 31 - 1 - (MODE1) all */
-#define GP_PHY_MODE1		IMX_GPIO_NR(6, 27)
-	IOMUX_PAD_CTRL(RGMII_RD1__GPIO6_IO27, WEAK_PULLUP),
+#define GP_KSZ9021_MODE1	IMX_GPIO_NR(6, 27)
+	IOMUX_PAD_CTRL(RGMII_RD1__GPIO6_IO27, WEAK_PULLUP_OUTPUT),
 	/* pin 28 - 1 - (MODE2) all */
-#define GP_PHY_MODE2		IMX_GPIO_NR(6, 28)
-	IOMUX_PAD_CTRL(RGMII_RD2__GPIO6_IO28, WEAK_PULLUP),
+#define GP_KSZ9021_MODE2	IMX_GPIO_NR(6, 28)
+	IOMUX_PAD_CTRL(RGMII_RD2__GPIO6_IO28, WEAK_PULLUP_OUTPUT),
 	/* pin 27 - 1 - (MODE3) all */
-#define GP_PHY_MODE3		IMX_GPIO_NR(6, 29)
-	IOMUX_PAD_CTRL(RGMII_RD3__GPIO6_IO29, WEAK_PULLUP),
+#define GP_KSZ9021_MODE3	IMX_GPIO_NR(6, 29)
+	IOMUX_PAD_CTRL(RGMII_RD3__GPIO6_IO29, WEAK_PULLUP_OUTPUT),
 	/* pin 33 - 1 - (CLK125_EN) 125Mhz clockout enabled */
-#define GP_PHY_CLK125		IMX_GPIO_NR(6, 24)
-	IOMUX_PAD_CTRL(RGMII_RX_CTL__GPIO6_IO24, WEAK_PULLUP),
+#define GP_KSZ9021_CLK125	IMX_GPIO_NR(6, 24)
+	IOMUX_PAD_CTRL(RGMII_RX_CTL__GPIO6_IO24, WEAK_PULLUP_OUTPUT),
 };
 
-static const iomux_v3_cfg_t enet_pads2[] = {
+static const iomux_v3_cfg_t enet_pads[] = {
 	IOMUX_PAD_CTRL(RGMII_RXC__RGMII_RXC, ENET_PAD_CTRL),
 	IOMUX_PAD_CTRL(RGMII_RD0__RGMII_RD0, ENET_PAD_CTRL),
 	IOMUX_PAD_CTRL(RGMII_RD1__RGMII_RD1, ENET_PAD_CTRL),
@@ -247,9 +339,9 @@ int dram_init(void)
 int board_ehci_hcd_init(int port)
 {
 	/* Reset USB hub */
-	gpio_direction_output(GP_USB_HUB_RESET, 0);
+	gpio_direction_output(GP_USBH1_HUB_RESET, 0);
 	mdelay(2);
-	gpio_set_value(GP_USB_HUB_RESET, 1);
+	gpio_set_value(GP_USBH1_HUB_RESET, 1);
 	return 0;
 }
 
@@ -330,22 +422,21 @@ int board_phy_config(struct phy_device *phydev)
 
 static void setup_iomux_enet(void)
 {
-	gpio_direction_output(GP_ENET_PHY_RESET_SABRELITE, 0);
-	gpio_direction_output(GP_ENET_PHY_RESET_NITROGEN6X, 0);
-	gpio_direction_output(GP_PHY_AD2, 1);
-	gpio_direction_output(GP_PHY_MODE0, 1);
-	gpio_direction_output(GP_PHY_MODE1, 1);
-	gpio_direction_output(GP_PHY_MODE2, 1);
-	gpio_direction_output(GP_PHY_MODE3, 1);
-	gpio_direction_output(GP_PHY_CLK125, 1);
-	SETUP_IOMUX_PADS(enet_pads1);
+	gpio_direction_output(GP_ENET_PHY_RESET, 0);
+	gpio_direction_output(GP_KSZ9021_AD2, 1);
+	gpio_direction_output(GP_KSZ9021_MODE0, 1);
+	gpio_direction_output(GP_KSZ9021_MODE1, 1);
+	gpio_direction_output(GP_KSZ9021_MODE2, 1);
+	gpio_direction_output(GP_KSZ9021_MODE3, 1);
+	gpio_direction_output(GP_KSZ9021_CLK125, 1);
+	SETUP_IOMUX_PADS(enet_ksz9021_gpio_pads);
 
 	/* Need delay 10ms according to KSZ9021 spec */
 	udelay(1000 * 10);
-	gpio_set_value(GP_ENET_PHY_RESET_SABRELITE, 1);
-	gpio_set_value(GP_ENET_PHY_RESET_NITROGEN6X, 1);
+	gpio_set_value(GP_ENET_PHY_RESET, 1);
+	udelay(12);
 
-	SETUP_IOMUX_PADS(enet_pads2);
+	SETUP_IOMUX_PADS(enet_pads);
 	udelay(100);	/* Wait 100 us before using mii interface */
 }
 
@@ -368,7 +459,7 @@ int board_eth_init(bd_t *bis)
 		free(bus);
 		return 0;
 	}
-	printf("using phy at %d\n", phydev->addr);
+	printf("%s at %d\n", phydev->drv->name, phydev->addr);
 	ret  = fec_probe(bis, -1, base, bus, phydev);
 	if (ret) {
 		printf("FEC MXC: %s:failed\n", __func__);
@@ -410,15 +501,18 @@ int splash_screen_prepare(void)
 #ifdef CONFIG_CMD_FBPANEL
 void board_enable_lvds(const struct display_info_t *di, int enable)
 {
-	gpio_direction_output(GP_BACKLIGHT_LVDS, enable);
+	gpio_set_value(GP_BACKLIGHT_TPS, enable);
+	gpio_set_value(GP_BACKLIGHT_LVDS, enable);
 }
 
 static const struct display_info_t displays[] = {
+	/* lvds */
+	VD_AUO_B101EW05(LVDS, 1, 2, 0x50),
+	VD_WXGA_J(LVDS, 0, 0, 0),
 	/* hdmi */
-	IMX_VD50_1280_720M_60(HDMI, 1, 1),
-	IMX_VD50_1920_1080M_60(HDMI, 0, 1),
-	IMX_VD50_1024_768M_60(HDMI, 0, 1),
-	IMX_VD_WXGA_J(LVDS, 0, 0),
+	VD_1280_720M_60(HDMI, 1, (GP_I2C3_EDID << 8 ) | 2, 0x3a),
+	VD_1920_1080M_60(HDMI, 0, (GP_I2C3_EDID << 8 ) | 2, 0x3a),
+	VD_1024_768M_60(HDMI, 0, (GP_I2C3_EDID << 8 ) | 2, 0x3a),
 };
 
 int board_cfb_skip(void)
@@ -429,32 +523,49 @@ int board_cfb_skip(void)
 
 static const unsigned short gpios_out_low[] = {
 	/* Disable wl1271 */
-	GP_REG_WLAN_EN,
 	GP_BT_RFKILL_RESET,
-	GP_REG_USBOTG,
-	GP_OV5640_MIPI_RESET,
+	GP_ENET_PHY_RESET,
+	GP_J34_DRY1,
+	GP_J34_DRY2,
+	GP_TDA7491P_GAIN0,
+	GP_TDA7491P_GAIN1,
+	GP_TDA7491P_STBY,
+	GP_TDA7491P_MUTE,
 	GP_OV5642_RESET,
+	GP_I2C3_EDID,
+	GP_POWER_OFF,
+	GP_BACKLIGHT_TPS,
+	GP_BACKLIGHT_LVDS,
+	GP_REG_USBOTG,
+	GP_REG_WLAN_EN,
+	GP_USBH1_HUB_RESET,
 };
 
 static const unsigned short gpios_out_high[] = {
 	GP_ECSPI1_NOR_CS,
+	GP_ECSPI2_CS1,
+	GP_FLEXCAN_STANDBY,
+	GP_LED_RED,
+	GP_LED_GREEN,
+	GP_LED_AMBER,
 	GP_OV5642_POWER_DOWN,
-	GP_OV5640_MIPI_POWER_DOWN,
 };
 
 static const unsigned short gpios_in[] = {
-	GP_GPIOKEY_BACK,
-	GP_GPIOKEY_HOME,
-	GP_GPIOKEY_MENU,
-	GP_GPIOKEY_POWER,
-	GP_GPIOKEY_VOL_DOWN,
-	GP_GPIOKEY_VOL_UP,
-	GP_BACKLIGHT_LVDS,
-	GP_BACKLIGHT_RGB,
 	GPIRQ_ENET_PHY,
-	GPIRQ_WL1271_WL,
+	GP_TEMP_ALARM,
+	GP_FAN_FAIL,
+	GP_AC_FAIL,
+	GP_J5_PIN33,
+	GP_J34_PIN6,
+	GP_J34_PIN8,
+	GP_ON_OFF,
+	GP_TP_R201,
+	GPIRQ_RTC_ISL1208,
+	GPIRQ_MIC_DET,
 	GP_USDHC3_CD,
 	GP_USDHC4_CD,
+	GPIRQ_WL1271_WL,
 };
 
 static void set_gpios_in(const unsigned short *p, int cnt)
@@ -489,6 +600,12 @@ int board_early_init_f(void)
 int overwrite_console(void)
 {
 	return 1;
+}
+
+void board_poweroff(void)
+{
+	gpio_set_value(GP_POWER_OFF, 1);
+	mdelay(500);
 }
 
 int board_init(void)
@@ -526,12 +643,7 @@ struct button_key {
 };
 
 static struct button_key const buttons[] = {
-	{"back",	GP_GPIOKEY_BACK,	'B'},
-	{"home",	GP_GPIOKEY_HOME,	'H'},
-	{"menu",	GP_GPIOKEY_MENU,	'M'},
-	{"search",	GP_GPIOKEY_POWER,	'S'},
-	{"volup",	GP_GPIOKEY_VOL_UP,	'V'},
-	{"voldown",	GP_GPIOKEY_VOL_DOWN,	'v'},
+	{"power",	GP_ON_OFF,	'P'},
 };
 
 /*
@@ -625,6 +737,8 @@ int misc_init_r(void)
 
 int board_late_init(void)
 {
+	unsigned char mac_address[6];
+	char macbuf[18];
 	int cpurev = get_cpu_rev();
 
 	setenv("cpu", get_imx_type((cpurev & 0xFF000) >> 12));
@@ -632,5 +746,22 @@ int board_late_init(void)
 		setenv("board", "s");
 	if (!getenv("uboot_defconfig"))
 		setenv("uboot_defconfig", CONFIG_DEFCONFIG);
+	if (!getenv("wlmac")) {
+		imx_get_mac_from_fuse(1, mac_address);
+		snprintf(macbuf, sizeof(macbuf), "%pM", mac_address);
+		setenv("wlmac", macbuf);
+	}
 	return 0;
 }
+
+static int do_poweroff(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+	board_poweroff();
+	return 0;
+}
+
+U_BOOT_CMD(
+	poweroff, 70, 0, do_poweroff,
+	"power down board",
+	""
+);
