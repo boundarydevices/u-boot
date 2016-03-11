@@ -119,7 +119,7 @@
 #define CONFIG_DRIVE_TYPES CONFIG_DRIVE_MMC
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
-	"console=ttymxc3,115200\0" \
+	"console=ttymxc3\0" \
 	"clearenv=if sf probe || sf probe || sf probe 1 ; then " \
 		"sf erase 0xc0000 0x2000 && " \
 		"echo restored environment to factory default ; fi\0" \
