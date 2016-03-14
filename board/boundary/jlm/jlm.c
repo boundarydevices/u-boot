@@ -324,8 +324,8 @@ int board_ehci_power(int port, int on)
 
 #ifdef CONFIG_FSL_ESDHC
 static struct fsl_esdhc_cfg usdhc_cfg[] = {
-	{.esdhc_base = USDHC3_BASE_ADDR, .max_bus_width = 8},
 	{.esdhc_base = USDHC4_BASE_ADDR, .max_bus_width = 4},
+	{.esdhc_base = USDHC3_BASE_ADDR, .max_bus_width = 8},
 };
 
 int board_mmc_getcd(struct mmc *mmc)
