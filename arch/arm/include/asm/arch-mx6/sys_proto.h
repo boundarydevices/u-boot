@@ -9,6 +9,7 @@
 
 #include <asm/mach-imx/sys_proto.h>
 #include <asm/arch/iomux.h>
+#include <asm/arch/module_fuse.h>
 
 #define USBPHY_PWD		0x00000000
 

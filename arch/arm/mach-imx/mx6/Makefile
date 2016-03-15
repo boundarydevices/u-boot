@@ -10,3 +10,4 @@ obj-$(CONFIG_SPL_BUILD)	     += ddr.o
 obj-$(CONFIG_MP)             += mp.o
 obj-$(CONFIG_MX6UL_LITESOM)  += litesom.o
 obj-$(CONFIG_MX6UL_OPOS6UL)  += opos6ul.o
+obj-$(CONFIG_MODULE_FUSE)        += module_fuse.o
