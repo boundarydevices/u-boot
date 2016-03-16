@@ -144,6 +144,10 @@ void lcdif_power_down(void)
 	struct mxs_lcdif_regs *regs = (struct mxs_lcdif_regs *)MXS_LCDIF_BASE;
 	int timeout = 1000000;
 
+#ifdef CONFIG_MX6
+	if (check_module_fused(MX6_MODULE_LCDIF))
+		return;
+#endif
 	if (!panel.frameAdrs)
 		return;
 
@@ -171,6 +175,12 @@ static struct graphic_device *mxsfb_probe(int bpp, struct ctfb_res_modes *mode)
 	void *fb;
 	unsigned mem_size;
 
+#ifdef CONFIG_MX6
+	if (check_module_fused(MX6_MODULE_LCDIF)) {
+		printf("LCDIF@0x%x is fused, disable it\n", MXS_LCDIF_BASE);
+		return NULL;
+	}
+#endif
 	/* fill in Graphic device struct */
 	sprintf(panel.modeIdent, "%dx%dx%d",
 			mode->xres, mode->yres, bpp);
