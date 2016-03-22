@@ -145,6 +145,8 @@
 #define CONFIG_UMSDEVS CONFIG_DRIVE_SATA CONFIG_DRIVE_MMC
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
+	"allow_noncea=1\0" \
+	"bootdelay=1\0" \
 	"bootdevs=" CONFIG_DRIVE_TYPES "\0" \
 	"umsdevs=" CONFIG_UMSDEVS "\0" \
 	"console=ttymxc1\0" \
@@ -202,7 +204,8 @@
 				"&& source 10008000 ; " \
 		"done ; " \
 	"done\0" \
-	"disable_giga=1\0" \
+	"preboot=sf probe && if itest 0 != 0x$splashsize ; then sf read 10008000 0xc2000 $splashsize && bmp d 10008000 ; fi\0" \
+	"splashsize=2b7a\0" \
 	"usbnet_devaddr=00:19:b8:00:00:02\0" \
 	"usbnet_hostaddr=00:19:b8:00:00:01\0" \
 	"usbrecover=setenv ethact usb_ether; " \
