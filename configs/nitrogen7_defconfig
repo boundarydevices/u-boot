@@ -1,4 +1,4 @@
-CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/boundary/nitrogen7/imximage.cfg,MX7D,DDR_MB=1024,DEFCONFIG=\"nitrogen7\""
+CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/boundary/nitrogen7/nitrogen7.cfg,MX7D,DDR_MB=1024,DEFCONFIG=\"nitrogen7\""
 CONFIG_ARM=y
 CONFIG_ARCH_MX7=y
 CONFIG_TARGET_NITROGEN7=y
