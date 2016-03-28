@@ -175,7 +175,7 @@ static const iomux_v3_cfg_t init_pads[] = {
 	IOMUX_PAD_CTRL(SD1_DAT3__GPIO1_IO21, WEAK_PULLDN),
 
 	/* PWM2 - Backlight on LVDS2 connector: J11, pin 20 */
-#define GP_BACKLIGHT_LVDS2	IMX_GPIO_NR(1, 18)
+#define GP_BACKLIGHT_LVDS2	IMX_GPIO_NR(1, 19)
 	IOMUX_PAD_CTRL(SD1_DAT2__GPIO1_IO19, WEAK_PULLDN),
 
 	/* PWM3  */
