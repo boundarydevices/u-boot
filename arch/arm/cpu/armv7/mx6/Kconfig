@@ -154,6 +154,9 @@ config TARGET_INSP
 config TARGET_IOC
 	bool "ioc"
 
+config TARGET_ITW
+	bool "itw"
+
 config TARGET_JLM
 	bool "jlm"
 
@@ -280,6 +283,7 @@ source "board/boundary/h/Kconfig"
 source "board/boundary/h4/Kconfig"
 source "board/boundary/insp/Kconfig"
 source "board/boundary/ioc/Kconfig"
+source "board/boundary/itw/Kconfig"
 source "board/boundary/jlm/Kconfig"
 source "board/boundary/ls/Kconfig"
 source "board/boundary/mcs/Kconfig"

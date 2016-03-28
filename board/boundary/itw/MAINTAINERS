@@ -1,0 +1,8 @@
+H BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/itw/
+F:	include/configs/itw.h
+F:	configs/itw_solo1g_defconfig
+F:	configs/itw_2g_defconfig
+
