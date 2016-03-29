@@ -188,8 +188,6 @@ static const iomux_v3_cfg_t init_pads[] = {
 	IOMUX_PAD_CTRL(EIM_EB2__GPIO2_IO30, WEAK_PULLUP),
 #define GP_TP85			IMX_GPIO_NR(2, 31)
 	IOMUX_PAD_CTRL(EIM_EB3__GPIO2_IO31, WEAK_PULLUP),
-#define GP_TP86			IMX_GPIO_NR(7, 13)
-	IOMUX_PAD_CTRL(GPIO_18__GPIO7_IO13, WEAK_PULLUP),
 #define GP_TP_R218		IMX_GPIO_NR(1, 3)
 	IOMUX_PAD_CTRL(GPIO_3__GPIO1_IO03, WEAK_PULLUP),
 
@@ -249,6 +247,8 @@ static const iomux_v3_cfg_t init_pads[] = {
 	/* 0 is 8 bit */
 #define GP_8BIT_LVDS		IMX_GPIO_NR(4, 15)
 	IOMUX_PAD_CTRL(KEY_ROW4__GPIO4_IO15, WEAK_PULLDN_OUTPUT),
+#define GP_BACKLIGHT_LVDS_EN	IMX_GPIO_NR(7, 13)
+	IOMUX_PAD_CTRL(GPIO_18__GPIO7_IO13, WEAK_PULLDN),
 
 	/* reg_usbotg_vbus */
 #define GP_REG_USBOTG		IMX_GPIO_NR(3, 22)
@@ -566,6 +566,7 @@ void board_enable_lvds(const struct display_info_t *di, int enable)
 	gpio_set_value(GP_8BIT_LVDS,
 			(di->pixfmt == IPU_PIX_FMT_RGB666) ? 1 : 0);
 	gpio_set_value(GP_BACKLIGHT_LVDS, enable ^ 1);
+	gpio_set_value(GP_BACKLIGHT_LVDS_EN, enable);
 }
 
 void board_enable_lcd(const struct display_info_t *di, int enable)
@@ -627,6 +628,7 @@ static const unsigned short gpios_out_low[] = {
 	GP_PCIE_RESET,
 	GP_BACKLIGHT_RGB,
 	GP_8BIT_LVDS,
+	GP_BACKLIGHT_LVDS_EN,
 	GP_REG_USBOTG,		/* disable USB otg power */
 	GP_EMMC_RESET,		/* hold in reset */
 };
@@ -659,7 +661,6 @@ static const unsigned short gpios_in[] = {
 	GP_TP74,
 	GP_TP84,
 	GP_TP85,
-	GP_TP86,
 	GP_TP_R218,
 	GP_USDHC3_CD,
 };
