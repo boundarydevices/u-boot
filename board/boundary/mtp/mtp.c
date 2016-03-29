@@ -55,6 +55,10 @@ DECLARE_GLOBAL_DATA_PTR;
 	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm |			\
 	PAD_CTL_HYS | PAD_CTL_SRE_FAST)
 
+#define USBH2_CTRL	(PAD_CTL_PUS_100K_DOWN | 		\
+	PAD_CTL_DSE_34ohm | PAD_CTL_SPEED_HIGH |		\
+	PAD_CTL_HYS | PAD_CTL_SRE_FAST)
+
 #define USDHC_PAD_CTRL	(PAD_CTL_PUS_47K_UP |			\
 	PAD_CTL_SPEED_LOW | PAD_CTL_DSE_80ohm |			\
 	PAD_CTL_HYS | PAD_CTL_SRE_FAST)
@@ -111,7 +115,11 @@ static const iomux_v3_cfg_t init_pads[] = {
 
 	/* USBH1 */
 	IOMUX_PAD_CTRL(EIM_D30__USB_H1_OC, WEAK_PULLUP),
-#define GP_USB_HUB_RESET	IMX_GPIO_NR(7, 12)
+
+	/* USBH2 */
+	IOMUX_PAD_CTRL(RGMII_TX_CTL__USB_H2_STROBE, USBH2_CTRL),
+	IOMUX_PAD_CTRL(RGMII_TXC__USB_H2_DATA, USBH2_CTRL),
+#define GP_USBH2_HUB_RESET	IMX_GPIO_NR(7, 12)
 	IOMUX_PAD_CTRL(GPIO_17__GPIO7_IO12, OUTPUT_40OHM),
 
 	/* USB OTG */
@@ -177,10 +185,12 @@ int dram_init(void)
 #ifdef CONFIG_USB_EHCI_MX6
 int board_ehci_hcd_init(int port)
 {
+	if (port != 2)
+		return 0;
 	/* Reset USB hub */
-	gpio_direction_output(GP_USB_HUB_RESET, 0);
+	gpio_direction_output(GP_USBH2_HUB_RESET, 0);
 	mdelay(2);
-	gpio_set_value(GP_USB_HUB_RESET, 1);
+	gpio_set_value(GP_USBH2_HUB_RESET, 1);
 	return 0;
 }
 
@@ -259,7 +269,7 @@ int board_eth_init(bd_t *bis)
 
 static const unsigned short gpios_out_low[] = {
 	GP_REG_USBOTG,
-	GP_USB_HUB_RESET,
+	GP_USBH2_HUB_RESET,
 	/* Disable wl1271 */
 	GP_REG_WLAN_EN,
 	GP_BT_RFKILL_RESET, 	/* disable bluetooth */
