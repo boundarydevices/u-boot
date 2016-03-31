@@ -9,6 +9,9 @@
 #ifndef __NITROGEN7_CONFIG_H
 #define __NITROGEN7_CONFIG_H
 
+/* Boot in secure mode for CAAM to work */
+#define CONFIG_MX7_SEC
+
 #include "mx7_common.h"
 
 #define CONFIG_MISC_INIT_R
