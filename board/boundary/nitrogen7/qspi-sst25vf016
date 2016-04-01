@@ -1,4 +1,4 @@
-0			/* 0 dqs_loopback=0 or 1*/ /* The binary file can be built using "./qspi_param.awk qspi-parameter-config | xxd -r >qspi.bin" */
+0			/* 0 dqs_loopback=0 or 1*/ /* The binary file can be built using "./qspi_param.awk qspi-sst25vf016 | xxd -r >qspi.bin" */
 0			/* 4 hold_delay=0 to 3*/
 0			/* 8 reserved */
 0			/* c reserved */
