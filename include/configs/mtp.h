@@ -84,6 +84,8 @@
 #define CONFIG_CMD_DHCP
 #define CONFIG_CMD_MII
 
+#define CONFIG_FEC_MAC_FUSE
+
 /* USB Configs */
 #define CONFIG_CMD_USB
 #define CONFIG_USB_EHCI
