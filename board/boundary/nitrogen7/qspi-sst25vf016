@@ -4,13 +4,13 @@
 0			/* c reserved */
 0			/*10 device_quad_mode_en=1 to enable sending command to SPI device*/
 0			/*14 device_cmd=command to device for enabling Quad I/O mode*/
-3000002			/*18 write_cmd_ipcr=hex value to be written to IPCR register for write cmd of device*/
-2000000			/*1c write_enable_ipcr=hex value to be written to IPCR register for write enable of device*/
+03000002		/*18 write_cmd_ipcr=hex value to be written to IPCR register for write cmd of device*/
+02000000		/*1c write_enable_ipcr=hex value to be written to IPCR register for write enable of device*/
 3			/*20 cs_hold_time=0 to 0xF*/
 3			/*24 cs_setup_time=0 to 0xF*/
 1000000			/*28 sflash_A1_size=size in byte(hex)*/
 0			/*2c sflash_A2_size=size in byte(hex)*/
-1000000			/*30 sflash_B1_size=size in byte(hex)*/
+0			/*30 sflash_B1_size=size in byte(hex)*/
 0			/*34 sflash_B2_size=size in byte(hex)*/
 1			/*38 sclk_freq=0 to 6*/
 0			/*3c busy_bit_offset=bit position of device BUSY in device status register*/
@@ -28,15 +28,15 @@
 1c040c08		/*6c lut[1] */
 2400			/*70 lut[2] */
 0			/*74 lut[3] */
-1c010405		/*78 lut[4] QSPI_CMD_RDSR */
+1c010405		/*78 lut[4] QSPI_CMD_RDSR(Read status register 1) */
 2400			/*7c lut[5] */
 0			/*80 lut[6] */
 0			/*84 lut[7] */
-24000406		/*88 lut[8] QSPI_CMD_WREN */
+24000406		/*88 lut[8] QSPI_CMD_WREN(write enable) */
 0			/*8c lut[9] */
 0			/*90 lut[10] */
 0			/*94 lut[11] */
-20010401		/*98 lut[12] QSPI_CMD_WRITE_STATUS */
+20010401		/*98 lut[12] QSPI_CMD_WRITE_STATUS(Write status register 1) */
 2400			/*9c lut[13] */
 0			/*a0 lut[14] */
 0			/*a4 lut[15] */
@@ -88,8 +88,8 @@
 0			/*15c lut[61] */
 0			/*160 lut[62] */
 0			/*164 lut[63] */
-1000001			/*168 read_status_ipcr=hex value to be written to IPCR register for reading status reg of device*/
-0			/*16c enable_dqs_phase=0 or 1*/
+1000001			/*168 read_status_ipcr=hex value to be written to IPCR register for reading status reg of device */
+0			/*16c enable_dqs_phase=0 or 1 */
 0			/*170 Not used */
 0			/*174 */
 0			/*178 */
