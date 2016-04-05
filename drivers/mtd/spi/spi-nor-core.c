@@ -13,6 +13,7 @@
 #include <log.h>
 #include <dm/device_compat.h>
 #include <dm/devres.h>
+#include <env.h>
 #include <linux/bitops.h>
 #include <linux/err.h>
 #include <linux/errno.h>
@@ -2633,6 +2634,7 @@ int spi_nor_scan(struct spi_nor *nor)
 	nor->sector_size = mtd->erasesize;
 
 #ifndef CONFIG_SPL_BUILD
+	env_set("sfname", nor->name);
 	printf("SF: Detected %s with page size ", nor->name);
 	print_size(nor->page_size, ", erase size ");
 	print_size(nor->erase_size, ", total ");
