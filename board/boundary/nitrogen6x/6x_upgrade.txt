@@ -4,15 +4,49 @@ if itest.s a$uboot_defconfig == a; then
 fi
 
 offset=0x400
-a_uImage1=0x12000000
-a_uImage2=0x12400000
+erase_size=0xC0000
+qspi_offset=0x0
+a_base=0x12000000
 
 if itest.s x6SX == "x${cpu}" || itest.s x7D == "x${cpu}"; then
-	a_uImage1=0x82000000
-	a_uImage2=0x82400000
+	a_base=0x82000000
 fi
 
+qspi_match=1
+setexpr a_qspi1 ${a_base}
+setexpr a_qspi2 ${a_qspi1} + 0x400000
+setexpr a_uImage1 ${a_qspi1} + 0x400
+setexpr a_uImage2 ${a_qspi2} + 0x400
+
 setenv stdout serial,vga
+
+if sf probe || sf probe || sf probe 1 27000000 || sf probe 1 27000000 ; then
+	echo "probed SPI ROM" ;
+else
+	echo "Error initializing EEPROM"
+	exit
+fi
+
+if itest.s x7D == "x${cpu}"; then
+	echo "check qspi parameter block" ;
+	if load ${dtype} ${disk}:1 ${a_qspi1} qspi.${uboot_defconfig} ; then
+	else
+		echo "No qspi parameter file found on SD card"
+		exit
+	fi
+	if sf read ${a_qspi2} ${qspi_offset} 0x200 ; then
+	else
+		echo "Error reading qspi parameter from EEPROM"
+		exit
+	fi
+	if cmp.b ${a_qspi1} ${a_qspi2} 0x200 ; then
+		echo "------- qspi parameters match"
+	else
+		echo "------- qspi parameters mismatch"
+		qspi_match=0
+	fi
+fi
+
 echo "check U-Boot" ;
 
 if load ${dtype} ${disk}:1 ${a_uImage1} u-boot.$uboot_defconfig ; then
@@ -21,21 +55,22 @@ else
 	exit
 fi
 echo "read $filesize bytes from SD card" ;
-if sf probe || sf probe || sf probe 1 27000000 || sf probe 1 27000000 ; then
-	echo "probed SPI ROM" ;
-else
-	echo "Error initializing EEPROM" ;
-	exit
-fi ;
 if sf read ${a_uImage2} $offset $filesize ; then
 else
 	echo "Error reading boot loader from EEPROM" ;
 	exit
 fi
+
 if cmp.b ${a_uImage1} ${a_uImage2} $filesize ; then
 	echo "------- U-Boot versions match" ;
-	exit
+	if itest.s "${qspi_match}" == "1" ; then
+		echo "------- upgrade not needed" ;
+		exit
+	fi
+	setexpr filesize 0x1000 - $offset
+	erase_size=0x1000
 fi
+
 echo "Need U-Boot upgrade" ;
 echo "Program in 5 seconds" ;
 for n in 5 4 3 2 1 ; do
@@ -43,7 +78,7 @@ for n in 5 4 3 2 1 ; do
 	sleep 1 ;
 done
 echo "erasing" ;
-sf erase 0 0xC0000 ;
+sf erase 0 ${erase_size} ;
 
 # two steps to prevent bricking
 echo "programming" ;
@@ -52,6 +87,10 @@ setexpr o1 ${offset} + 0x400
 setexpr s1 ${filesize} - 0x400
 sf write ${a1} ${o1} ${s1} ;
 sf write ${a_uImage1} $offset 0x400 ;
+
+if itest.s x7D == "x${cpu}"; then
+	sf write ${a_qspi1} ${qspi_offset} 0x200
+fi
 
 echo "verifying" ;
 if sf read ${a_uImage2} $offset $filesize ; then
@@ -64,6 +103,21 @@ else
 	echo "Read verification error" ;
 	exit
 fi
+
+if itest.s x7D == "x${cpu}"; then
+	if sf read ${a_qspi2} ${qspi_offset} 0x200 ; then
+	else
+		echo "Error re-reading qspi" ;
+		exit
+	fi
+	if cmp.b ${a_qspi1} ${a_qspi2} 0x200 ; then
+	else
+		echo "qspi parameter block verification error" ;
+		exit
+	fi
+fi
+
+
 while echo "---- U-Boot upgraded. reset" ; do
 	sleep 120
 done
