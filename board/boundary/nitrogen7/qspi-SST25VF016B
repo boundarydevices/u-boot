@@ -1,4 +1,4 @@
-0			/* 0 dqs_loopback=0 or 1*/ /* The binary file can be built using "./qspi_param.awk qspi-sst25vf016 | xxd -r >qspi.bin" */
+0			/* 0 dqs_loopback=0 or 1*/ /* The binary file can be built using "./qspi_param.awk qspi-SST25VF016B | xxd -r >qspi-SST25VF016B.nitrogen7" */
 0			/* 4 hold_delay=0 to 3*/
 0			/* 8 reserved */
 0			/* c reserved */
@@ -12,7 +12,7 @@
 0			/*2c sflash_A2_size=size in byte(hex)*/
 0			/*30 sflash_B1_size=size in byte(hex)*/
 0			/*34 sflash_B2_size=size in byte(hex)*/
-1			/*38 sclk_freq=0 to 6*/
+5			/*38 sclk_freq=0 to 6, 6 - 76 MHz, max 80 MHz*/
 0			/*3c busy_bit_offset=bit position of device BUSY in device status register*/
 1			/*40 sflash_type=1 (Single), 2 (Dual), 4 (Quad mode of operation)*/
 0			/*44 sflash_port=0 or 1 (Port B used)*/
