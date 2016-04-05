@@ -1305,6 +1305,7 @@ int spi_flash_scan(struct spi_flash *flash)
 #endif
 
 #ifndef CONFIG_SPL_BUILD
+	env_set("sfname", flash->name);
 	printf("SF: Detected %s with page size ", flash->name);
 	print_size(flash->page_size, ", erase size ");
 	print_size(flash->erase_size, ", total ");
