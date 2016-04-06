@@ -12,7 +12,7 @@
 #define CONFIG_MACH_TYPE	3769
 
 /* Size of malloc() pool */
-#define CONFIG_SYS_MALLOC_LEN		(10 * 1024 * 1024)
+#define CONFIG_SYS_MALLOC_LEN		(12 * 1024 * 1024)
 
 #define CONFIG_BOARD_EARLY_INIT_F
 #define CONFIG_MISC_INIT_R
@@ -86,7 +86,8 @@
 #define CONFIG_USB_HOST_ETHER
 #define CONFIG_USB_ETHER_ASIX
 #define CONFIG_USB_ETHER_SMSC95XX
-#define CONFIG_MXC_USB_PORT	1
+#define CONFIG_USB_MAX_CONTROLLER_COUNT 2
+#define CONFIG_EHCI_HCD_INIT_AFTER_RESET	/* For OTG port */
 #define CONFIG_MXC_USB_PORTSC	(PORT_PTS_UTMI | PORT_PTS_PTW)
 #define CONFIG_MXC_USB_FLAGS	0
 #define CONFIG_USB_KEYBOARD
@@ -104,13 +105,17 @@
 #define CONFIG_SYS_CONSOLE_OVERWRITE_ROUTINE
 #define CONFIG_VIDEO_BMP_RLE8
 #define CONFIG_SPLASH_SCREEN
+#define CONFIG_SPLASH_SCREEN_ALIGN
+#define CONFIG_VIDEO_BMP_GZIP
+#define CONFIG_SYS_VIDEO_LOGO_MAX_SIZE (6 * 1024 * 1024)
 #define CONFIG_BMP_16BPP
-#define CONFIG_VIDEO_LOGO
 #define CONFIG_IPUV3_CLK 264000000
 #define CONFIG_CMD_HDMIDETECT
 #define CONFIG_CONSOLE_MUX
 #define CONFIG_IMX_HDMI
 #define CONFIG_CMD_FBPANEL
+
+#define CONFIG_PREBOOT                 ""
 
 #ifdef CONFIG_CMD_SATA
 #define CONFIG_DRIVE_SATA "sata "
@@ -124,40 +129,72 @@
 #define CONFIG_DRIVE_MMC
 #endif
 
-#define CONFIG_DRIVE_TYPES CONFIG_DRIVE_SATA CONFIG_DRIVE_MMC
+#ifdef CONFIG_USB_STORAGE
+#define CONFIG_DRIVE_USB "usb "
+#else
+#define CONFIG_DRIVE_USB
+#endif
+
+#define CONFIG_DRIVE_TYPES CONFIG_DRIVE_SATA CONFIG_DRIVE_MMC CONFIG_DRIVE_USB
+#define CONFIG_UMSDEVS CONFIG_DRIVE_SATA CONFIG_DRIVE_MMC
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
+	"bootdevs=" CONFIG_DRIVE_TYPES "\0" \
+	"umsdevs=" CONFIG_UMSDEVS "\0" \
 	"console=ttymxc1\0" \
-	"disable_giga=1\0" \
 	"clearenv=if sf probe || sf probe || sf probe 1 ; then " \
 		"sf erase 0xc0000 0x2000 && " \
 		"echo restored environment to factory default ; fi\0" \
-	"bootcmd=for dtype in " CONFIG_DRIVE_TYPES \
+	"bootcmd=for dtype in ${bootdevs}" \
 		"; do " \
+			"if itest.s \"xusb\" == \"x${dtype}\" ; then " \
+				"usb start ;" \
+			"fi; " \
 			"for disk in 0 1 ; do ${dtype} dev ${disk} ;" \
 				"load ${dtype} ${disk}:1 10008000 " \
-						"/6x_bootscript" \
-						"&& source 10008000 ; " \
+					"/6x_bootscript" \
+					"&& source 10008000 ; " \
 			"done ; " \
 		"done; " \
 		"setenv stdout serial,vga ; " \
 		"echo ; echo 6x_bootscript not found ; " \
 		"echo ; echo serial console at 115200, 8N1 ; echo ; " \
 		"echo details at http://boundarydevices.com/6q_bootscript ; " \
-		"usb start; " \
-		"setenv stdin serial,usbkbd\0" \
-	"uboot_defconfig=" CONFIG_DEFCONFIG "\0" \
-	"upgradeu=for dtype in " CONFIG_DRIVE_TYPES \
-		"; do " \
-		"for disk in 0 1 ; do ${dtype} dev ${disk} ;" \
-			"load ${dtype} ${disk}:1 10008000 " \
-					"/6x_upgrade " \
-					"&& source 10008000 ; " \
-		"done ; " \
-	"done\0" \
+		"setenv stdout serial;" \
+		"setenv stdin serial,usbkbd;" \
+		"for dtype in ${umsdevs} ; do " \
+			"if itest.s sata == ${dtype}; then " \
+				"initcmd='sata init' ;" \
+			"else " \
+				"initcmd='mmc rescan' ;" \
+			"fi; " \
+			"for disk in 0 1 ; do " \
+				"if $initcmd && $dtype dev $disk ; then " \
+					"setenv stdout serial,vga; " \
+					"echo expose ${dtype} ${disk} " \
+						"over USB; " \
+					"ums 0 $dtype $disk ;" \
+				"fi; " \
+			"done;" \
+		"done;" \
+		"setenv stdout serial,vga; " \
+		"echo no block devices found;" \
+		"\0" \
+	"dfu_alt_info=u-boot raw 0x0 0xc0000\0" \
 	"fdt_addr=0x13000000\0" \
 	"fdt_high=0xffffffff\0" \
 	"initrd_high=0xffffffff\0" \
+	"loadsplash=if sf probe ; then sf read ${splashimage} c2000 ${splashsize} ; fi\0" \
+	"rundfu=dfu 0 sf 0:0:25000000:0\0" \
+	"uboot_defconfig=" CONFIG_DEFCONFIG "\0" \
+	"upgradeu=for dtype in ${bootdevs}" \
+		"; do " \
+		"for disk in 0 1 ; do ${dtype} dev ${disk} ;" \
+			"load ${dtype} ${disk}:1 10008000 " \
+				"/6x_upgrade " \
+				"&& source 10008000 ; " \
+		"done ; " \
+	"done\0" \
 	"usbnet_devaddr=00:19:b8:00:00:02\0" \
 	"usbnet_hostaddr=00:19:b8:00:00:01\0" \
 	"usbrecover=setenv ethact usb_ether; " \
@@ -165,11 +202,9 @@
 		"setenv netmask 255.255.255.0; " \
 		"setenv serverip 10.0.0.1; " \
 		"setenv bootargs console=ttymxc1,115200; " \
-		"tftpboot 10800000 10.0.0.1:uImage-h-recovery" \
-		"&& tftpboot 12800000 10.0.0.1:uramdisk-h-recovery.img " \
+		"tftpboot 10800000 10.0.0.1:uImage-${board}-recovery" \
+		"&& tftpboot 12800000 10.0.0.1:uramdisk-${board}-recovery.img " \
 		"&& bootm 10800000 12800000\0" \
-
-#define CONFIG_ARP_TIMEOUT     200UL
 
 /* Miscellaneous configurable options */
 #define CONFIG_SYS_MEMTEST_START       0x10000000
@@ -179,6 +214,7 @@
 /* Physical Memory Map */
 #define CONFIG_NR_DRAM_BANKS	       1
 #define PHYS_SDRAM		       MMDC0_ARB_BASE_ADDR
+#define CONFIG_RESET_CAUSE_ADDR	       (PHYS_SDRAM + 0x80)
 
 #define CONFIG_SYS_SDRAM_BASE	       PHYS_SDRAM
 #define CONFIG_SYS_INIT_RAM_ADDR       IRAM_BASE_ADDR
@@ -192,7 +228,6 @@
 /* Environment organization */
 #define CONFIG_ENV_SIZE			(8 * 1024)
 
-/* #define CONFIG_ENV_IS_IN_MMC */
 #define CONFIG_ENV_IS_IN_SPI_FLASH
 
 #if defined(CONFIG_ENV_IS_IN_MMC)
@@ -207,11 +242,6 @@
 #define CONFIG_ENV_SPI_MAX_HZ		CONFIG_SF_DEFAULT_SPEED
 #endif
 
-
-#ifndef CONFIG_SYS_DCACHE_OFF
-#define CONFIG_CMD_CACHE
-#endif
-
 #define CONFIG_CMD_BMP
 
 #define CONFIG_CMD_TIME
@@ -219,7 +249,19 @@
 #define CONFIG_SYS_ALT_MEMTEST
 #define CONFIG_BOARD_LATE_INIT
 
+/*
+ * PCI express
+ */
+/* #define CONFIG_CMD_PCI */
+#ifdef CONFIG_CMD_PCI
+#define CONFIG_PCI
+#define CONFIG_PCI_PNP
+#define CONFIG_PCI_SCAN_SHOW
+#define CONFIG_PCIE_IMX
+#endif
+
 #define CONFIG_CMD_UNZIP
+
 #define CONFIG_USB_GADGET
 #define CONFIG_CMD_USB_MASS_STORAGE
 #define CONFIG_USB_FUNCTION_MASS_STORAGE
@@ -230,5 +272,22 @@
 #define CONFIG_G_DNL_VENDOR_NUM 0x0525
 #define CONFIG_G_DNL_PRODUCT_NUM 0xa4a5
 #define CONFIG_G_DNL_MANUFACTURER "Boundary"
+
+#define CONFIG_USB_FUNCTION_FASTBOOT
+#define CONFIG_CMD_FASTBOOT
+#define CONFIG_ANDROID_BOOT_IMAGE
+#define CONFIG_FASTBOOT_BUF_ADDR   CONFIG_SYS_LOAD_ADDR
+#define CONFIG_FASTBOOT_BUF_SIZE   0x17000000
+#define CONFIG_FASTBOOT_FLASH
+#define CONFIG_FASTBOOT_FLASH_MMC_DEV   1
+#define CONFIG_CMD_GPT
+#define CONFIG_PARTITION_UUIDS
+
+/* USB Device Firmware Update support */
+#define CONFIG_USB_FUNCTION_DFU
+#define CONFIG_DFU_SF
+#define CONFIG_CMD_DFU
+#define CONFIG_SYS_DFU_DATA_BUF_SIZE	0xc0000
+#define DFU_MANIFEST_POLL_TIMEOUT	25000
 
 #endif	       /* __CONFIG_H */
