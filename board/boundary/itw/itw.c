@@ -576,6 +576,13 @@ void board_enable_lvds2(const struct display_info_t *di, int enable)
 }
 
 static const struct display_info_t displays[] = {
+	/* hdmi */
+	VD_1280_720M_60(HDMI, 1, 1, 0x50),
+	VD_1920_1080M_60(HDMI, 0, 1, 0x50),
+	VD_1024_768M_60(HDMI, 0, 1, 0x50),
+	VD_640_480M_60(HDMI, 0, 1, 0x50),
+	VD_720_480M_60(HDMI, 0, 1, 0x50),
+
 	VD_1024_600(LVDS, 1, 2, 0x04),
 	VD_INNOLUX_WVGA(LVDS2, 1, 2, 0x48),
 };
