@@ -335,6 +335,7 @@ void setup_clock(struct display_info_t const *di)
 #else
 	/* gate ipu1_di0_clk */
 	clrbits_le32(&ccm->CCGR3, MXC_CCM_CCGR3_LDB_DI0_MASK |
+			MXC_CCM_CCGR3_LDB_DI1_MASK |
 			MXC_CCM_CCGR3_IPU1_IPU_DI0_MASK);
 #endif
 
@@ -450,7 +451,9 @@ void setup_clock(struct display_info_t const *di)
 	reg &= ~(MXC_CCM_CHSCCDR_IPU1_DI0_CLK_SEL_MASK |
 		 MXC_CCM_CHSCCDR_IPU1_DI0_PODF_MASK |
 		 MXC_CCM_CHSCCDR_IPU1_DI0_PRE_CLK_SEL_MASK);
-	reg |= ((lvds ? CHSCCDR_CLK_SEL_LDB_DI0 : CHSCCDR_CLK_SEL_IPU1_DI0)
+	reg |= ((lvds ? ((di->fbtype == FB_LVDS2) ?
+			 CHSCCDR_CLK_SEL_LDB_DI1 : CHSCCDR_CLK_SEL_LDB_DI0)
+		: CHSCCDR_CLK_SEL_IPU1_DI0)
 			<< MXC_CCM_CHSCCDR_IPU1_DI0_CLK_SEL_OFFSET) |
 		((ipu_div - 1) << MXC_CCM_CHSCCDR_IPU1_DI0_PODF_OFFSET) |
 		(CHSCCDR_IPU_PRE_CLK_PLL5 << MXC_CCM_CHSCCDR_IPU1_DI0_PRE_CLK_SEL_OFFSET);
@@ -458,7 +461,9 @@ void setup_clock(struct display_info_t const *di)
 
 	/* enable ipu1_di0_clk */
 	setbits_le32(&ccm->CCGR3, MXC_CCM_CCGR3_IPU1_IPU_DI0_MASK |
-			(lvds ? MXC_CCM_CCGR3_LDB_DI0_MASK : 0));
+			(lvds ? ((di->fbtype == FB_LVDS2) ?
+				 MXC_CCM_CCGR3_LDB_DI1_MASK : MXC_CCM_CCGR3_LDB_DI0_MASK)
+			 : 0));
 #endif
 }
 
