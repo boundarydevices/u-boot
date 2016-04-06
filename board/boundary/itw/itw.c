@@ -166,8 +166,8 @@ static const iomux_v3_cfg_t init_pads[] = {
 #define GP_AT91_RESET	IMX_GPIO_NR(5, 17)
 	IOMUX_PAD_CTRL(DISP0_DAT23__GPIO5_IO17, WEAK_PULLUP),
 	/* This output can be used to reset the imx6 like pushing the reset button */
-#define GP_CPU_RESET	IMX_GPIO_NR(1, 3)
-	IOMUX_PAD_CTRL(GPIO_3__GPIO1_IO03, WEAK_PULLUP),
+#define GP_CPU_RESET	IMX_GPIO_NR(1, 3)		/* High active */
+	IOMUX_PAD_CTRL(GPIO_3__GPIO1_IO03, WEAK_PULLDN),
 
 	/* hdmi_cec */
 	IOMUX_PAD_CTRL(EIM_A25__HDMI_TX_CEC_LINE, CEC_PAD_CTRL),
@@ -582,6 +582,7 @@ static const struct display_info_t displays[] = {
 #endif
 
 static const unsigned short gpios_out_low[] = {
+	GP_CPU_RESET,	/* high active */
 	GP_ENET_PHY_RESET,
 	GP_LED_USB3,
 	GP_LED_SATA,
@@ -615,7 +616,6 @@ static const unsigned short gpios_out_high[] = {
 	GP_CAN1_STANDBY,
 	GP_CAN2_STANDBY,
 	GP_AT91_RESET,
-	GP_CPU_RESET,
 	GP_OV5640_MIPI_POWER_DOWN,
 	GP_LVDS0_PWR_EN,
 	GP_LVDS1_PWR_EN,
