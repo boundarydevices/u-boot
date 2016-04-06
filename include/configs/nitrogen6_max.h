@@ -80,16 +80,21 @@
 #define CONFIG_SYS_FSL_USDHC_NUM       2
 #define CONFIG_EFI_PARTITION
 
+#ifdef CONFIG_MX6Q
+#define CONFIG_CMD_SATA
+#endif
+
 /*
  * SATA Configs
  */
-#define CONFIG_CMD_SATA
+#ifdef CONFIG_CMD_SATA
 #define CONFIG_DWC_AHSATA
 #define CONFIG_SYS_SATA_MAX_DEVICE	1
 #define CONFIG_DWC_AHSATA_PORT_ID	0
 #define CONFIG_DWC_AHSATA_BASE_ADDR	SATA_ARB_BASE_ADDR
 #define CONFIG_LBA48
 #define CONFIG_LIBATA
+#endif
 
 #define CONFIG_CMD_PING
 #define CONFIG_CMD_DHCP
@@ -110,6 +115,9 @@
 #define CONFIG_USB_EHCI_MX6
 #define CONFIG_USB_STORAGE
 #define CONFIG_USB_HOST_ETHER
+#define CONFIG_USB_ETHER_ASIX
+#define CONFIG_USB_ETHER_MCS7830
+#define CONFIG_USB_ETHER_SMSC95XX
 #define CONFIG_USB_MAX_CONTROLLER_COUNT 2
 #define CONFIG_EHCI_HCD_INIT_AFTER_RESET	/* For OTG port */
 #define CONFIG_MXC_USB_PORTSC	(PORT_PTS_UTMI | PORT_PTS_PTW)
@@ -130,10 +138,8 @@
 #define CONFIG_VIDEO_BMP_RLE8
 #define CONFIG_SPLASH_SCREEN
 #define CONFIG_SPLASH_SCREEN_ALIGN
-
 #define CONFIG_VIDEO_BMP_GZIP
 #define CONFIG_SYS_VIDEO_LOGO_MAX_SIZE (6 * 1024 * 1024)
-
 #define CONFIG_BMP_16BPP
 #define CONFIG_IPUV3_CLK 264000000
 #define CONFIG_CMD_HDMIDETECT
@@ -162,9 +168,11 @@
 #endif
 
 #define CONFIG_DRIVE_TYPES CONFIG_DRIVE_SATA CONFIG_DRIVE_MMC CONFIG_DRIVE_USB
+#define CONFIG_UMSDEVS CONFIG_DRIVE_SATA CONFIG_DRIVE_MMC
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	"bootdevs=" CONFIG_DRIVE_TYPES "\0" \
+	"umsdevs=" CONFIG_UMSDEVS "\0" \
 	"console=ttymxc1\0" \
 	"clearenv=if sf probe || sf probe || sf probe 1 ; then " \
 		"sf erase 0xc0000 0x2000 && " \
@@ -175,9 +183,7 @@
 				"usb start ;" \
 			"fi; " \
 			"for disk in 0 1 ; do ${dtype} dev ${disk} ;" \
-				"load " \
-					"${dtype} ${disk}:1 " \
-					"10008000 " \
+				"load ${dtype} ${disk}:1 10008000 " \
 					"/6x_bootscript" \
 					"&& source 10008000 ; " \
 			"done ; " \
@@ -186,24 +192,32 @@
 		"echo ; echo 6x_bootscript not found ; " \
 		"echo ; echo serial console at 115200, 8N1 ; echo ; " \
 		"echo details at http://boundarydevices.com/6q_bootscript ; " \
-		"setenv stdout serial; " \
-		"if sata init && sata dev 0; then " \
-			"setenv stdout serial,vga; " \
-			"echo expose SATA drive over USB; " \
-			"ums 0 sata 0;" \
-		"fi ;" \
-		"for disk in 1 0 ; do " \
-			"if mmc dev ${disk} ; then " \
-				"setenv stdout serial,vga; " \
-				"echo expose MMC ${disk} over USB; " \
-				"ums 0 mmc ${disk}; " \
-			"fi ;" \
-		"done; " \
+		"setenv stdout serial;" \
+		"setenv stdin serial,usbkbd;" \
+		"for dtype in ${umsdevs} ; do " \
+			"if itest.s sata == ${dtype}; then " \
+				"initcmd='sata init' ;" \
+			"else " \
+				"initcmd='mmc rescan' ;" \
+			"fi; " \
+			"for disk in 0 1 ; do " \
+				"if $initcmd && $dtype dev $disk ; then " \
+					"setenv stdout serial,vga; " \
+					"echo expose ${dtype} ${disk} " \
+						"over USB; " \
+					"ums 0 $dtype $disk ;" \
+				"fi; " \
+			"done;" \
+		"done;" \
+		"setenv stdout serial,vga; " \
+		"echo no block devices found;" \
 		"\0" \
+	"dfu_alt_info=u-boot raw 0x0 0xc0000\0" \
 	"fdt_addr=0x13000000\0" \
 	"fdt_high=0xffffffff\0" \
 	"initrd_high=0xffffffff\0" \
 	"loadsplash=if sf probe ; then sf read ${splashimage} c2000 ${splashsize} ; fi\0" \
+	"rundfu=dfu 0 sf 0:0:25000000:0\0" \
 	"uboot_defconfig=" CONFIG_DEFCONFIG "\0" \
 	"upgradeu=for dtype in ${bootdevs}" \
 		"; do " \
@@ -300,5 +314,12 @@
 #define CONFIG_FASTBOOT_FLASH_MMC_DEV   1
 #define CONFIG_CMD_GPT
 #define CONFIG_PARTITION_UUIDS
+
+/* USB Device Firmware Update support */
+#define CONFIG_USB_FUNCTION_DFU
+#define CONFIG_DFU_SF
+#define CONFIG_CMD_DFU
+#define CONFIG_SYS_DFU_DATA_BUF_SIZE	0xc0000
+#define DFU_MANIFEST_POLL_TIMEOUT	25000
 
 #endif	       /* __CONFIG_H */
