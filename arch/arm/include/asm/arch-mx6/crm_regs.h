@@ -509,6 +509,7 @@ struct mxc_ccm_reg {
 
 #define CHSCCDR_CLK_SEL_IPU1_DI0			0
 #define CHSCCDR_CLK_SEL_LDB_DI0				3
+#define CHSCCDR_CLK_SEL_LDB_DI1				4
 
 #define CHSCCDR_PODF_DIVIDE_BY_3			2
 #define CHSCCDR_IPU_PRE_CLK_PLL5			2
