@@ -147,7 +147,10 @@ static const iomux_v3_cfg_t init_pads[] = {
 #define GP_LED_GREEN	IMX_GPIO_NR(3, 12)
 	IOMUX_PAD_CTRL(EIM_DA12__GPIO3_IO12, WEAK_PULLDN),
 
-	/* gpio - outputs */
+	/* hdmi_cec */
+	IOMUX_PAD_CTRL(EIM_A25__HDMI_TX_CEC_LINE, CEC_PAD_CTRL),
+
+	/* hog - gpio - outputs */
 #define GP_RESET1	IMX_GPIO_NR(5, 26)
 	IOMUX_PAD_CTRL(CSI0_DAT8__GPIO5_IO26, WEAK_PULLDN),
 #define GP_RESET2	IMX_GPIO_NR(5, 27)
@@ -169,15 +172,12 @@ static const iomux_v3_cfg_t init_pads[] = {
 #define GP_CPU_RESET	IMX_GPIO_NR(1, 3)		/* High active */
 	IOMUX_PAD_CTRL(GPIO_3__GPIO1_IO03, WEAK_PULLDN),
 
-	/* hdmi_cec */
-	IOMUX_PAD_CTRL(EIM_A25__HDMI_TX_CEC_LINE, CEC_PAD_CTRL),
-
 	/* Hogs - test points */
 #define GP_TP80		IMX_GPIO_NR(5, 31)
 	IOMUX_PAD_CTRL(CSI0_DAT13__GPIO5_IO31, WEAK_PULLUP),
 #define GP_TP82		IMX_GPIO_NR(2, 23)
 	IOMUX_PAD_CTRL(EIM_CS0__GPIO2_IO23, WEAK_PULLUP),
-#define GP_TP83		IMX_GPIO_NR(2, 19)
+#define GP_TP83		IMX_GPIO_NR(3, 23)
 	IOMUX_PAD_CTRL(EIM_D23__GPIO3_IO23, WEAK_PULLUP),
 #define GP_TP87		IMX_GPIO_NR(1, 20)
 	IOMUX_PAD_CTRL(SD1_CLK__GPIO1_IO20, WEAK_PULLUP),
@@ -229,7 +229,7 @@ static const iomux_v3_cfg_t init_pads[] = {
 #define GP_BACKLIGHT_LVDS	IMX_GPIO_NR(1, 21)
 	IOMUX_PAD_CTRL(SD1_DAT3__GPIO1_IO21, WEAK_PULLDN),
 #define GP_LVDS0_PWR_EN		IMX_GPIO_NR(7, 13)
-	IOMUX_PAD_CTRL(GPIO_18__GPIO7_IO13, WEAK_PULLUP),	/* 0 enable Power, J6 pin 20,22 */
+	IOMUX_PAD_CTRL(GPIO_18__GPIO7_IO13, WEAK_PULLDN),	/* 1 enable Power, J6 pin 20,22 */
 #define GP_LVDS0_12V_5V_BL_SELECT IMX_GPIO_NR(1, 9)
 	IOMUX_PAD_CTRL(GPIO_9__GPIO1_IO09, WEAK_PULLDN),	/* 0:5V, 1:12V, J6 pin 20,22 */
 
@@ -253,7 +253,7 @@ static const iomux_v3_cfg_t init_pads[] = {
 	IOMUX_PAD_CTRL(NANDF_ALE__GPIO6_IO08, WEAK_PULLUP),
 
 #define GP_LVDS1_PWR_EN		IMX_GPIO_NR(4, 5)
-	IOMUX_PAD_CTRL(GPIO_19__GPIO4_IO05, WEAK_PULLUP),	/* 0 enable Power, J10 pin 2,4 */
+	IOMUX_PAD_CTRL(GPIO_19__GPIO4_IO05, WEAK_PULLDN),	/* 1 enable Power, J10 pin 2,4 */
 #define GP_LVDS1_12V_5V_BL_SELECT IMX_GPIO_NR(1, 7)
 	IOMUX_PAD_CTRL(GPIO_7__GPIO1_IO07, WEAK_PULLDN),	/* 0:5V, 1:12V, J10 pin 2,4*/
 
@@ -271,7 +271,7 @@ static const iomux_v3_cfg_t init_pads[] = {
 #define GP_BACKLIGHT_RGB	IMX_GPIO_NR(1, 18)
 	IOMUX_PAD_CTRL(SD1_CMD__GPIO1_IO18, WEAK_PULLDN),
 #define GP_RGB_PWR_EN		IMX_GPIO_NR(1, 2)
-	IOMUX_PAD_CTRL(GPIO_2__GPIO1_IO02, WEAK_PULLUP),	/* 0 enable Power, J15 pin 40*/
+	IOMUX_PAD_CTRL(GPIO_2__GPIO1_IO02, WEAK_PULLDN),	/* 1 enable Power, J15 pin 40*/
 #define GP_RGB_12V_5V_BL_SELECT	IMX_GPIO_NR(1, 8)
 	IOMUX_PAD_CTRL(GPIO_8__GPIO1_IO08, WEAK_PULLDN),	/* 0:5V, 1:12V, J15 pin 40*/
 #define GP_RGB_MIRROR_H		IMX_GPIO_NR(2, 25)
@@ -559,19 +559,19 @@ void board_enable_lcd(const struct display_info_t *di, int enable)
 		SETUP_IOMUX_PADS(rgb_pads);
 	else
 		SETUP_IOMUX_PADS(rgb_gpio_pads);
-	gpio_set_value(GP_RGB_PWR_EN, enable ^ 1);
+	gpio_set_value(GP_RGB_PWR_EN, enable);
 	gpio_set_value(GP_BACKLIGHT_RGB, enable);
 }
 
 void board_enable_lvds(const struct display_info_t *di, int enable)
 {
-	gpio_set_value(GP_LVDS0_PWR_EN, enable ^ 1);
+	gpio_set_value(GP_LVDS0_PWR_EN, enable);
 	gpio_set_value(GP_BACKLIGHT_LVDS, enable);
 }
 
 void board_enable_lvds2(const struct display_info_t *di, int enable)
 {
-	gpio_set_value(GP_LVDS1_PWR_EN, enable ^ 1);
+	gpio_set_value(GP_LVDS1_PWR_EN, enable);
 	gpio_set_value(GP_BACKLIGHT_LVDS, enable);
 }
 
@@ -590,6 +590,7 @@ static const struct display_info_t displays[] = {
 
 static const unsigned short gpios_out_low[] = {
 	GP_CPU_RESET,	/* high active */
+	GP_12V_EN,
 	GP_ENET_PHY_RESET,
 	GP_LED_USB3,
 	GP_LED_SATA,
@@ -600,7 +601,6 @@ static const unsigned short gpios_out_low[] = {
 	GP_RESET3,
 	GP_RESET4,
 	GP_RESET5,
-	GP_12V_EN,
 	GP_J24_EN,
 	GP_SGTL5000_HP_MUTE,
 	GP_OV5640_MIPI_RESET,
@@ -616,6 +616,9 @@ static const unsigned short gpios_out_low[] = {
 	GP_UART5_RS485_OUTPUT,
 	GP_USB_HUB_RESET,
 	GP_RGB_MIRROR_V,
+	GP_LVDS0_PWR_EN,
+	GP_LVDS1_PWR_EN,
+	GP_RGB_PWR_EN,
 };
 
 static const unsigned short gpios_out_high[] = {
@@ -624,9 +627,6 @@ static const unsigned short gpios_out_high[] = {
 	GP_CAN2_STANDBY,
 	GP_AT91_RESET,
 	GP_OV5640_MIPI_POWER_DOWN,
-	GP_LVDS0_PWR_EN,
-	GP_LVDS1_PWR_EN,
-	GP_RGB_PWR_EN,
 	GP_RGB_MIRROR_H,
 };
 
@@ -713,6 +713,8 @@ int board_init(void)
 	        setup_i2c(i, CONFIG_SYS_I2C_SPEED, 0x7f, p);
 		p += I2C_PADS_INFO_ENTRY_SPACING;
 	}
+	gpio_set_value(GP_12V_EN, 1);
+
 #ifdef CONFIG_CMD_SATA
 	setup_sata();
 #endif
