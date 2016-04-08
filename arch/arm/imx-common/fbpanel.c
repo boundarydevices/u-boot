@@ -177,8 +177,17 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 			}
 		}
 		if (!mode_str) {
-			snprintf(buf, size, "fdt set %s status disabled", fbnames[fb]);
-			setenv(cmd_fbnames[fb], buf);
+			sz = snprintf(buf, size, "fdt set %s status disabled", fbnames[fb]);
+			buf += sz;
+			size -= sz;
+			if ((fb == FB_LVDS) || (fb == FB_LVDS2)) {
+				sz = snprintf(buf, size, ";fdt set ldb/lvds-channel@%d status disabled", fb - FB_LVDS);
+				buf += sz;
+				size -= sz;
+				if (fb == FB_LVDS)
+					snprintf(buf, size, ";fdt set ldb/lvds-channel@1 primary");
+			}
+			setenv(cmd_fbnames[fb], buf_start);
 			return;
 		}
 	} else {
