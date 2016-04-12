@@ -33,6 +33,7 @@
 #include <input.h>
 #include <netdev.h>
 #include <usb/ehci-fsl.h>
+#include <pwm.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -423,6 +424,14 @@ static const iomux_v3_cfg_t rgb_gpio_pads[] = {
 };
 #endif
 
+static const iomux_v3_cfg_t pwm1_pads[] = {
+	IOMUX_PAD_CTRL(SD1_DAT3__PWM1_OUT, WEAK_PULLDN),
+};
+
+static const iomux_v3_cfg_t pwm1_gpio_pads[] = {
+	IOMUX_PAD_CTRL(SD1_DAT3__GPIO1_IO21, WEAK_PULLDN),
+};
+
 static struct i2c_pads_info i2c_pads[] = {
 	/* I2C1, SGTL5000, RV4162 */
 	I2C_PADS_INFO_ENTRY(I2C1, EIM_D21, 3, 21, EIM_D28, 3, 28, I2C_PAD_CTRL),
@@ -567,6 +576,23 @@ int board_eth_init(bd_t *bis)
 }
 
 #ifdef CONFIG_CMD_FBPANEL
+static void configure_pwm1(const struct display_info_t *di, int enable)
+{
+	if (enable) {
+		/* enable backlight PWM 1 */
+		pwm_init(0, 0, 0);
+
+		/* 300 Hz, duty cycle 2 ms, period: 3.3 ms */
+		pwm_config(0, 1666667, 3333333);
+		pwm_enable(0);
+		SETUP_IOMUX_PADS(pwm1_pads);
+	} else {
+		gpio_set_value(GP_BACKLIGHT_LVDS, 0);
+		SETUP_IOMUX_PADS(pwm1_gpio_pads);
+		pwm_disable(0);
+	}
+}
+
 void board_enable_lcd(const struct display_info_t *di, int enable)
 {
 	if (enable)
@@ -579,14 +605,14 @@ void board_enable_lcd(const struct display_info_t *di, int enable)
 
 void board_enable_lvds(const struct display_info_t *di, int enable)
 {
+	configure_pwm1(di, enable);
 	gpio_set_value(GP_LVDS1_PWR_EN, enable);
-	gpio_set_value(GP_BACKLIGHT_LVDS, enable);
 }
 
 void board_enable_lvds2(const struct display_info_t *di, int enable)
 {
+	configure_pwm1(di, enable);
 	gpio_set_value(GP_LVDS2_PWR_EN, enable);
-	gpio_set_value(GP_BACKLIGHT_LVDS, enable);
 }
 
 static const struct display_info_t displays[] = {

@@ -114,6 +114,8 @@
 #define CONFIG_CONSOLE_MUX
 #define CONFIG_IMX_HDMI
 #define CONFIG_CMD_FBPANEL
+#define CONFIG_PWM_IMX
+#define CONFIG_IMX6_PWM_PER_CLK  66000000
 
 #define CONFIG_PREBOOT                 ""
 
