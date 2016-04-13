@@ -325,7 +325,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 		.refresh = 57,\
 		.xres = 800,\
 		.yres = 480,\
-		.pixclock = 25000,\
+		.pixclock = 1000000000000ULL / 1056 / 635 / 57,\
 		.left_margin = 45,\
 		.right_margin = 1056 - 1 - 45 - 800,\
 		.upper_margin = 22,\
@@ -333,6 +333,32 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 		.hsync_len = 1,\
 		.vsync_len = 1,\
 		.sync = FB_SYNC_EXT,\
+		.vmode = FB_VMODE_NONINTERLACED,\
+	}\
+}
+
+#define VD_INNOLUX_WVGA_M(_mode, _detect, _bus, _addr) \
+{\
+	.bus	= _bus,\
+	.addr	= _addr,\
+	.pixfmt	= IPU_PIX_FMT_RGB666,\
+	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.enable	= fbp_enable_fb,\
+	.fbtype = FB_##_mode,\
+	.fbflags = FBF_MODESTR,\
+	.mode	= {\
+		.name = "INNOLUX-WVGA",\
+		.refresh = 57,\
+		.xres = 800,\
+		.yres = 480,\
+		.pixclock = 1000000000000ULL / 1056 / 635 / 57,\
+		.left_margin = 45,\
+		.right_margin = 1056 - 1 - 45 - 800,\
+		.upper_margin = 22,\
+		.lower_margin = 635 - 1 - 22 - 480,\
+		.hsync_len = 1,\
+		.vsync_len = 1,\
+		.sync = FB_SYNC_EXT | FB_SYNC_CLK_LAT_FALL,\
 		.vmode = FB_VMODE_NONINTERLACED,\
 	}\
 }
