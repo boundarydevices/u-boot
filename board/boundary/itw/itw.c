@@ -626,7 +626,7 @@ static const struct display_info_t displays[] = {
 	VD_1024_600(LVDS, 1, 2, 0x04),
 	VD_INNOLUX_WVGA(LVDS2, 1, 2, 0x48),
 
-	VD_INNOLUX_WVGA(LCD, 0, 2, 0x48),
+	VD_INNOLUX_WVGA_M(LCD, 0, 2, 0x48),
 };
 #endif
 
