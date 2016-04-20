@@ -435,7 +435,7 @@ void board_enable_lvds(const struct display_info_t *di, int enable)
 
 static const struct display_info_t displays[] = {
 	/* uses both lvds connectors */
-	VD_1080P60(LVDS, 0, 0, 0x00),
+	VD_1080P60(LVDS, NULL, 0, 0x00),
 };
 
 int board_cfb_skip(void)
