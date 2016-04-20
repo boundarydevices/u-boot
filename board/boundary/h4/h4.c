@@ -447,9 +447,9 @@ void board_enable_lcd(const struct display_info_t *di, int enable)
 
 static const struct display_info_t displays[] = {
 #ifdef CONFIG_MXC_SPI_DISPLAY
-	VD_A030JN01_YUV720(LCD, 0, 1, 1),
-	VD_A030JN01_UPS051(LCD, 0, 1, 2),
-	VD_AUO_G050(LCD, 0, 1, 0),
+	VD_A030JN01_YUV720(LCD, NULL, 1, 1),
+	VD_A030JN01_UPS051(LCD, NULL, 1, 2),
+	VD_AUO_G050(LCD, NULL, 1, 0),
 #endif
 };
 
