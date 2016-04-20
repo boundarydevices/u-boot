@@ -477,21 +477,21 @@ void board_enable_lcd(const struct display_info_t *di, int enable)
 
 static const struct display_info_t displays[] = {
 	/* hdmi */
-	VD_1280_720M_60(HDMI, 1, 1, 0x50),
-	VD_1920_1080M_60(HDMI, 0, 1, 0x50),
-	VD_1024_768M_60(HDMI, 0, 1, 0x50),
+	VD_1280_720M_60(HDMI, fbp_detect_i2c, 1, 0x50),
+	VD_1920_1080M_60(HDMI, NULL, 1, 0x50),
+	VD_1024_768M_60(HDMI, NULL, 1, 0x50),
 
 	/* egalax_ts */
-	VD_HANNSTAR(LVDS, 1, 2, 0x04),
+	VD_HANNSTAR(LVDS, fbp_detect_i2c, 2, 0x04),
 
 	/* ft5x06 */
-	VD_WSVGA(LVDS, 1, 2, 0x38),
+	VD_WSVGA(LVDS, fbp_detect_i2c, 2, 0x38),
 
 	/* tsc2004 */
-	VD_CLAA_WVGA(LCD, 1, 2, 0x48),
-	VD_QVGA(LCD, 0, 2, 0x48),
+	VD_CLAA_WVGA(LCD, fbp_detect_i2c, 2, 0x48),
+	VD_QVGA(LCD, NULL, 2, 0x48),
 
-	VD_WXGA_J(LVDS, 0, 0, 0x00),
+	VD_WXGA_J(LVDS, NULL, 0, 0x00),
 };
 #endif
 
