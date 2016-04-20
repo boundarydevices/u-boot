@@ -455,8 +455,8 @@ int fbp_detect_gpio(struct display_info_t const *di)
 
 
 static const struct display_info_t displays[] = {
-	VD_HANNSTAR7(LVDS, 0, 0, 0x38),
-	VD_INNOLUX(LVDS, 1, 0, 0x00),
+	VD_HANNSTAR7(LVDS, NULL, 0, 0x38),
+	VD_INNOLUX(LVDS, fbp_detect_i2c, 0, 0x00),
 };
 
 int board_cfb_skip(void)
