@@ -214,28 +214,28 @@ static const iomux_v3_cfg_t init_pads[] = {
 	IOMUX_PAD_CTRL(DISP0_DAT19__GPIO5_IO13, WEAK_PULLUP),
 	IOMUX_PAD_CTRL(DISP0_DAT20__GPIO5_IO14, WEAK_PULLUP),
 
-#define GP_LVDS1_LINK1		IMX_GPIO_NR(6, 16)
+#define GP_J54_LVDS_BIT0	IMX_GPIO_NR(6, 16)	/* Link1 schem */
 	IOMUX_PAD_CTRL(NANDF_CS3__GPIO6_IO16, WEAK_PULLUP),
-#define GP_LVDS1_LINK2		IMX_GPIO_NR(6, 7)
+#define GP_J54_LVDS_BIT1	IMX_GPIO_NR(6, 7)	/* Link2 schem */
 	IOMUX_PAD_CTRL(NANDF_CLE__GPIO6_IO07, WEAK_PULLUP),
-#define GP_LVDS1_LINK3		IMX_GPIO_NR(2, 2)
+#define GP_LVDS_BIT2		IMX_GPIO_NR(2, 2)	/* J6 pin 18 Link3 schem */
 	IOMUX_PAD_CTRL(NANDF_D2__GPIO2_IO02, WEAK_PULLUP),
-#define GP_LVDS1_LINK4		IMX_GPIO_NR(2, 1)
-	IOMUX_PAD_CTRL(NANDF_D1__GPIO2_IO01, WEAK_PULLUP),
-#define GP_LVDS1_LINK5		IMX_GPIO_NR(6, 10)
-	IOMUX_PAD_CTRL(NANDF_RB0__GPIO6_IO10, WEAK_PULLUP),
-#define GP_LVDS1_LINK6		IMX_GPIO_NR(6, 15)
-	IOMUX_PAD_CTRL(NANDF_CS2__GPIO6_IO15, WEAK_PULLUP),
-#define GP_LVDS1_LINK7		IMX_GPIO_NR(6, 14)
-	IOMUX_PAD_CTRL(NANDF_CS1__GPIO6_IO14, WEAK_PULLUP),
-#define GP_LVDS1_LINK8		IMX_GPIO_NR(6, 11)
-	IOMUX_PAD_CTRL(NANDF_CS0__GPIO6_IO11, WEAK_PULLUP),
-#define GP_LVDS1_LINK9		IMX_GPIO_NR(6, 8)
-	IOMUX_PAD_CTRL(NANDF_ALE__GPIO6_IO08, WEAK_PULLUP),
 
-#define GP_LVDS2_LINK6		IMX_GPIO_NR(2, 3)
+#define GP_J54_LVDS2_BIT0	IMX_GPIO_NR(2, 1)	/* Link4 schem */
+	IOMUX_PAD_CTRL(NANDF_D1__GPIO2_IO01, WEAK_PULLUP),
+#define GP_J54_LVDS2_BIT1	IMX_GPIO_NR(6, 10)	/* Link5 schem */
+	IOMUX_PAD_CTRL(NANDF_RB0__GPIO6_IO10, WEAK_PULLUP),
+#define GP_LVDS2_BIT2		IMX_GPIO_NR(2, 3)	/* J10 pin 20 Link6 schem */
 	IOMUX_PAD_CTRL(NANDF_D3__GPIO2_IO03, WEAK_PULLUP),
 
+#define GP_J54_RGB_BIT0		IMX_GPIO_NR(6, 15)	/* Link6 schem */
+	IOMUX_PAD_CTRL(NANDF_CS2__GPIO6_IO15, WEAK_PULLUP),
+#define GP_J54_RGB_BIT1		IMX_GPIO_NR(6, 14)	/* Link7 schem */
+	IOMUX_PAD_CTRL(NANDF_CS1__GPIO6_IO14, WEAK_PULLUP),
+#define GP_J54_RGB_BIT2		IMX_GPIO_NR(6, 11)	/* Link8 schem */
+	IOMUX_PAD_CTRL(NANDF_CS0__GPIO6_IO11, WEAK_PULLUP),
+#define GP_J54_L9		IMX_GPIO_NR(6, 8)	/* Link9 schem */
+	IOMUX_PAD_CTRL(NANDF_ALE__GPIO6_IO08, WEAK_PULLUP),
 
 	/* i2c1_rv4172 rtc */
 #define GPIRQ_RTC_RV4162	IMX_GPIO_NR(2, 24)
@@ -576,6 +576,33 @@ int board_eth_init(bd_t *bis)
 }
 
 #ifdef CONFIG_CMD_FBPANEL
+
+static const unsigned short switch_lvds1[] = {
+	GP_LVDS_BIT2,  GP_J54_LVDS_BIT1, GP_J54_LVDS_BIT0
+};
+
+static const unsigned short switch_lvds2[] = {
+	GP_LVDS2_BIT2,  GP_J54_LVDS2_BIT1, GP_J54_LVDS2_BIT0
+};
+
+static const unsigned short switch_lcd[] = {
+	GP_J54_RGB_BIT2,  GP_J54_RGB_BIT1, GP_J54_RGB_BIT0
+};
+
+static int read_switch(const unsigned short *gpios, int cnt)
+{
+	int i;
+	int val = 0;
+
+	for (i = 0; i < cnt ; i++) {
+		int v = gpio_get_value(*gpios++) ? 1 : 0;
+
+		val <<= 1;
+		val |= v;
+	}
+	return val;
+}
+
 static void configure_pwm1(const struct display_info_t *di, int enable)
 {
 	if (enable) {
@@ -599,34 +626,92 @@ void board_enable_lcd(const struct display_info_t *di, int enable)
 		SETUP_IOMUX_PADS(rgb_pads);
 	else
 		SETUP_IOMUX_PADS(rgb_gpio_pads);
+	gpio_set_value(GP_RGB_12V_5V_BL_SELECT, 0);
 	gpio_set_value(GP_RGB_PWR_EN, enable);
 	gpio_set_value(GP_BACKLIGHT_RGB, enable);
+}
+
+int detect_lcd(struct display_info_t const *di)
+{
+	return (di->addr >> read_switch(switch_lcd, ARRAY_SIZE(switch_lcd))) & 1;
 }
 
 void board_enable_lvds(const struct display_info_t *di, int enable)
 {
 	configure_pwm1(di, enable);
-	gpio_set_value(GP_LVDS1_PWR_EN, enable);
+	if (enable) {
+		gpio_set_value(GP_LVDS1_12V_5V_BL_SELECT,
+				(di->addr & (BIT(1) | BIT(6))) ? 1 : 0);
+		gpio_set_value(GP_LVDS1_PWR_EN, 1);
+	} else {
+		gpio_set_value(GP_LVDS1_PWR_EN, 0);
+		gpio_set_value(GP_LVDS1_12V_5V_BL_SELECT, 0);
+	}
+}
+
+int detect_lvds(struct display_info_t const *di)
+{
+	return (di->addr >> read_switch(switch_lvds1, ARRAY_SIZE(switch_lvds1))) & 1;
 }
 
 void board_enable_lvds2(const struct display_info_t *di, int enable)
 {
 	configure_pwm1(di, enable);
-	gpio_set_value(GP_LVDS2_PWR_EN, enable);
+	if (enable) {
+		gpio_set_value(GP_LVDS2_12V_5V_BL_SELECT,
+				(di->addr & (BIT(0) | BIT(1))) ? 1 : 0);
+		gpio_set_value(GP_LVDS2_PWR_EN, 1);
+	} else {
+		gpio_set_value(GP_LVDS2_PWR_EN, 0);
+		gpio_set_value(GP_LVDS2_12V_5V_BL_SELECT, 0);
+	}
 }
 
+int detect_lvds2(struct display_info_t const *di)
+{
+	return (di->addr >> read_switch(switch_lvds2, ARRAY_SIZE(switch_lvds2))) & 1;
+}
+/*
+ * LVDS Operator display type is determined by link bits 3,2,1.
+ * 1   WXGA-IN14 12v	| 14.0" Innolux 24-bit
+ * 6   WXGA-IN11 12v	| 11.6" AUO 24-bit
+ * 0   WVGA 5v		| 7"    Innolux 18-bit base
+ * 2   WSVGA 5v		| 10.1" OSD 24-bit
+ * 3   WSVGA 5v		| N/A
+ * 4   WSVGA 5v		| N/A
+ * 5   WSVGA 5v		| N/A
+ * 7   WSVGA 5v		| 10.1  OSD 24-bit
+
+
+ * LVDS2/LCD Customer display type is determined by link bits 6,5,4.
+ * 0   WXGA-IN14 12v	| 14.0" Innolux 24-bit
+ * 1   WVGA 12v		| 7"    Innolux 18-bit
+ * 2   WSVGA 5v		| 10.1" OSD 24-bit
+ * 3   WVGA 5v		| 7"    Innolux 18-bit
+ * 4   NO display	| N/A
+ * 5   NO display	| N/A
+ * 6   NO display	| N/A
+ * 7   NO display	| N/A
+ */
 static const struct display_info_t displays[] = {
 	/* hdmi */
-	VD_1280_720M_60(HDMI, 1, 1, 0x50),
-	VD_1920_1080M_60(HDMI, 0, 1, 0x50),
-	VD_1024_768M_60(HDMI, 0, 1, 0x50),
-	VD_640_480M_60(HDMI, 0, 1, 0x50),
-	VD_720_480M_60(HDMI, 0, 1, 0x50),
+	VD_1280_720M_60(HDMI, fbp_detect_i2c, 1, 0x50),
+	VD_1920_1080M_60(HDMI, NULL, 1, 0x50),
+	VD_1024_768M_60(HDMI, NULL, 1, 0x50),
+	VD_640_480M_60(HDMI, NULL, 1, 0x50),
+	VD_720_480M_60(HDMI, NULL, 1, 0x50),
 
-	VD_1024_600(LVDS, 1, 2, 0x04),
-	VD_INNOLUX_WVGA(LVDS2, 1, 2, 0x48),
+	VD_OSD_WSVGA(LVDS, detect_lvds, 0, BIT(7)|BIT(5)|BIT(4)|BIT(3)|BIT(2)),
+	VD_INNOLUX_WVGA(LVDS, detect_lvds, 0, BIT(0)),
+	VD_INNOLUX_WXGA_14IN_12V(LVDS, detect_lvds, 0, BIT(1)),
+	VD_AUO_WXGA_11IN_12V(LVDS, detect_lvds, 0, BIT(6)),
 
-	VD_INNOLUX_WVGA_M(LCD, 0, 2, 0x48),
+	VD_OSD_WSVGA(LVDS2, detect_lvds2, 0, BIT(6)|BIT(2)),
+	VD_INNOLUX_WVGA(LVDS2, detect_lvds2, 0, BIT(3)),
+	VD_INNOLUX_WXGA_14IN_12V(LVDS2, detect_lvds2, 0, BIT(0)),
+	VD_INNOLUX_WVGA_12V(LVDS2, detect_lvds2, 0, BIT(1)),
+
+	VD_INNOLUX_WVGA_M(LCD, detect_lcd, 0, BIT(3)),
 };
 #endif
 
@@ -689,16 +774,16 @@ static const unsigned short gpios_in[] = {
 	GPIRQ_RTC_RV4162,
 	GPIRQ_TC3587,
 	GPIRQ_AR1020,
-	GP_LVDS1_LINK1,
-	GP_LVDS1_LINK2,
-	GP_LVDS1_LINK3,
-	GP_LVDS1_LINK4,
-	GP_LVDS1_LINK5,
-	GP_LVDS1_LINK6,
-	GP_LVDS1_LINK7,
-	GP_LVDS1_LINK8,
-	GP_LVDS1_LINK9,
-	GP_LVDS2_LINK6,
+	GP_J54_LVDS_BIT0,
+	GP_J54_LVDS_BIT1,
+	GP_LVDS_BIT2,
+	GP_J54_LVDS2_BIT0,
+	GP_J54_LVDS2_BIT1,
+	GP_LVDS2_BIT2,
+	GP_J54_RGB_BIT0,
+	GP_J54_RGB_BIT1,
+	GP_J54_RGB_BIT2,
+	GP_J54_L9,
 	GP_USBOTG_OC,
 	GP_USDHC3_CD,
 	GP_USDHC4_CD,
@@ -772,6 +857,45 @@ int checkboard(void)
 
 	return 0;
 }
+
+struct button_key {
+	char const	*name;
+	unsigned	gpnum;
+	char		ident;
+};
+
+static struct button_key const buttons[] = {
+	{"reset",	GP_GPIOKEY_RESET_REQUEST,	'R'},
+};
+
+/*
+ * generate a null-terminated string containing the buttons pressed
+ * returns number of keys pressed
+ */
+static int read_keys(char *buf)
+{
+	int i, numpressed = 0;
+	for (i = 0; i < ARRAY_SIZE(buttons); i++) {
+		if (!gpio_get_value(buttons[i].gpnum))
+			buf[numpressed++] = buttons[i].ident;
+	}
+	buf[numpressed] = '\0';
+	return numpressed;
+}
+
+static int do_kbd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+	char envvalue[ARRAY_SIZE(buttons)+1];
+	int numpressed = read_keys(envvalue);
+	setenv("keybd", envvalue);
+	return numpressed == 0;
+}
+
+U_BOOT_CMD(
+	kbd, 1, 1, do_kbd,
+	"Tests for keypresses, sets 'keybd' environment variable",
+	"Returns 0 (true) to shell if key is pressed."
+);
 
 #ifdef CONFIG_CMD_BMODE
 static const struct boot_mode board_boot_modes[] = {

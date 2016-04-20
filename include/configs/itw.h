@@ -117,7 +117,7 @@
 #define CONFIG_PWM_IMX
 #define CONFIG_IMX6_PWM_PER_CLK  66000000
 
-#define CONFIG_PREBOOT                 ""
+#define CONFIG_PREBOOT                 "if kbd ; then run set_fix_live_partition ; fi"
 
 #ifdef CONFIG_CMD_SATA
 #define CONFIG_DRIVE_SATA "sata "
@@ -186,8 +186,9 @@
 	"fdt_addr=0x13000000\0" \
 	"fdt_high=0xffffffff\0" \
 	"initrd_high=0xffffffff\0" \
-	"loadsplash=if sf probe ; then sf read ${splashimage} c2000 ${splashsize} ; fi\0" \
+	"loadsplash=if sf probe ; then sf read ${splashimage} 0x1e0000 ${splashsize} ; fi\0" \
 	"rundfu=dfu 0 sf 0:0:25000000:0\0" \
+	"set_fix_live_partition=setenv active_partition 2; setenv recovery_action fix_disk\0" \
 	"uboot_defconfig=" CONFIG_DEFCONFIG "\0" \
 	"upgradeu=for dtype in ${bootdevs}" \
 		"; do " \
