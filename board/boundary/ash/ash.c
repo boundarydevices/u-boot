@@ -580,21 +580,21 @@ void board_enable_lcd(const struct display_info_t *di, int enable)
 
 static const struct display_info_t displays[] = {
 	/* lvds */
-	VD_WVGA_TX23D200_24(LVDS, 0, 0, 0x00),
-	VD_WVGA_TX23D200_18(LVDS, 0, 0, 0x00),
+	VD_WVGA_TX23D200_24(LVDS, NULL, 0, 0x00),
+	VD_WVGA_TX23D200_18(LVDS, NULL, 0, 0x00),
 
 	/* hdmi */
-	VD_1280_720M_60(HDMI, 1, 1, 0x50),
-	VD_1920_1080M_60(HDMI, 0, 1, 0x50),
-	VD_1024_768M_60(HDMI, 0, 1, 0x50),
+	VD_1280_720M_60(HDMI, fbp_detect_i2c, 1, 0x50),
+	VD_1920_1080M_60(HDMI, NULL, 1, 0x50),
+	VD_1024_768M_60(HDMI, NULL, 1, 0x50),
 
 	/* tsc2004 */
-	VD_CLAA_WVGA(LCD, 1, 2, 0x48),
-	VD_SHARP_WVGA(LCD, 0, 2, 0x48),
-	VD_DC050WX(LCD, 0, 2, 0x48),
+	VD_CLAA_WVGA(LCD, fbp_detect_i2c, 2, 0x48),
+	VD_SHARP_WVGA(LCD, NULL, 2, 0x48),
+	VD_DC050WX(LCD, NULL, 2, 0x48),
 
 	/* fusion7 specific touchscreen */
-	VD_FUSION7(LCD, 1, 2, 0x10),
+	VD_FUSION7(LCD, fbp_detect_i2c, 2, 0x10),
 };
 
 int board_cfb_skip(void)
