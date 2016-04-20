@@ -431,15 +431,15 @@ void board_enable_lvds(const struct display_info_t *di, int enable)
 
 static const struct display_info_t displays[] = {
 	/* ft5x06 */
-	VD_HANNSTAR7(LVDS, 1, 2, 0x38),
-	VD_WSVGA(LVDS, 0, 2, 0x38),
+	VD_HANNSTAR7(LVDS, fbp_detect_i2c, 2, 0x38),
+	VD_WSVGA(LVDS, NULL, 2, 0x38),
 
-	VD_WXGA_J(LVDS, 0, 0, 0x00),
-	VD_WXGA(LVDS, 0, 0, 0x00),
+	VD_WXGA_J(LVDS, NULL, 0, 0x00),
+	VD_WXGA(LVDS, NULL, 0, 0x00),
 
 	/* egalax_ts */
-	VD_HANNSTAR(LVDS, 1, 2, 0x04),
-	VD_LG9_7(LVDS, 0, 2, 0x04),
+	VD_HANNSTAR(LVDS, fbp_detect_i2c, 2, 0x04),
+	VD_LG9_7(LVDS, NULL, 2, 0x04),
 };
 
 int board_cfb_skip(void)
