@@ -435,30 +435,30 @@ void board_enable_lcd(const struct display_info_t *di, int enable)
 
 static const struct display_info_t displays[] = {
 	/* don't auto-detect because TSC2004 is on-board */
-	VD_OKAYA_480_272(LCD, 0, 2, 0x48),
-	VD_HITACHI_HVGA(LCD, 0, 2, 0x48),
-	VD_CLAA_WVGA(LCD, 0, 2, 0x48),
+	VD_OKAYA_480_272(LCD, NULL, 2, 0x48),
+	VD_HITACHI_HVGA(LCD, NULL, 2, 0x48),
+	VD_CLAA_WVGA(LCD, NULL, 2, 0x48),
 
-	VD_ASIT500MA6F5D(LCD, 0, 2, 0x38),
+	VD_ASIT500MA6F5D(LCD, NULL, 2, 0x38),
 
 	/* hdmi */
-	VD_1280_720M_60(HDMI, 1, 1, 0x50),
-	VD_1920_1080M_60(HDMI, 0, 1, 0x50),
-	VD_1024_768M_60(HDMI, 0, 1, 0x50),
+	VD_1280_720M_60(HDMI, fbp_detect_i2c, 1, 0x50),
+	VD_1920_1080M_60(HDMI, NULL, 1, 0x50),
+	VD_1024_768M_60(HDMI, NULL, 1, 0x50),
 
 	/* ft5x06 */
-	VD_HANNSTAR7(LVDS, 1, 2, 0x38),
-	VD_AUO_B101EW05(LVDS, 0, 2, 0x38),
-	VD_LG1280_800(LVDS, 0, 2, 0x38),
-	VD_DT070BTFT(LVDS, 0, 2, 0x38),
-	VD_WSVGA(LVDS, 0, 2, 0x38),
+	VD_HANNSTAR7(LVDS, fbp_detect_i2c, 2, 0x38),
+	VD_AUO_B101EW05(LVDS, NULL, 2, 0x38),
+	VD_LG1280_800(LVDS, NULL, 2, 0x38),
+	VD_DT070BTFT(LVDS, NULL, 2, 0x38),
+	VD_WSVGA(LVDS, NULL, 2, 0x38),
 
-	VD_HANNSTAR(LVDS, 1, 2, 0x04),
-	VD_LG9_7(LVDS, 0, 2, 0x04),
-	VD_SHARP_LQ101K1LY04(LVDS, 0, 0, 0x00),
+	VD_HANNSTAR(LVDS, fbp_detect_i2c, 2, 0x04),
+	VD_LG9_7(LVDS, NULL, 2, 0x04),
+	VD_SHARP_LQ101K1LY04(LVDS, NULL, 0, 0x00),
 
-	VD_WXGA_J(LVDS, 0, 0, 0x00),
-	VD_WVGA_J(LVDS, 0, 0, 0x00),
+	VD_WXGA_J(LVDS, NULL, 0, 0x00),
+	VD_WVGA_J(LVDS, NULL, 0, 0x00),
 };
 #endif
 
