@@ -368,7 +368,7 @@ void board_enable_lvds(const struct display_info_t *di, int enable)
 }
 
 static const struct display_info_t displays[] = {
-	VD_LG1280_800(LVDS, 0, 0, 0x38),
+	VD_LG1280_800(LVDS, NULL, 0, 0x38),
 };
 
 int board_cfb_skip(void)
