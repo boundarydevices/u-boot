@@ -298,7 +298,7 @@ void board_enable_lcd(const struct display_info_t *di, int enable)
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= NULL,\
+	.detect	= _detect,\
 	.enable	= board_enable_lcd,\
 	.fbtype = FB_##_mode,\
 	.fbflags = FBF_MODESTR | FBF_SPI,\
@@ -320,7 +320,7 @@ void board_enable_lcd(const struct display_info_t *di, int enable)
 }
 
 static const struct display_info_t displays[] = {
-	VD_SPI_QVGA(LCD, 1, 1, 0x70),
+	VD_SPI_QVGA(LCD, NULL, 1, 0x70),
 };
 
 int board_eth_init(bd_t *bis)
