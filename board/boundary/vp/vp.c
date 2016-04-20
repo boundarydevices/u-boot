@@ -489,12 +489,12 @@ void board_enable_lcd(const struct display_info_t *di, int enable)
 
 static const struct display_info_t displays[] = {
 	/* hdmi */
-	VD_1280_720M_60(HDMI, 1, 1, 0x50),
-	VD_1920_1080M_60(HDMI, 0, 1, 0x50),
-	VD_1024_768M_60(HDMI, 0, 1, 0x50),
+	VD_1280_720M_60(HDMI, fbp_detect_i2c, 1, 0x50),
+	VD_1920_1080M_60(HDMI, NULL, 1, 0x50),
+	VD_1024_768M_60(HDMI, NULL, 1, 0x50),
 
 	/* tsc2004 */
-	VD_OKAYA_480_272(LCD, 1, 2, 0x48),
+	VD_OKAYA_480_272(LCD, fbp_detect_i2c, 2, 0x48),
 };
 
 int board_cfb_skip(void)
