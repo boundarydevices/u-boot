@@ -509,12 +509,12 @@ void board_enable_lvds(const struct display_info_t *di, int enable)
 
 static const struct display_info_t displays[] = {
 	/* lvds */
-	VD_AUO_B101EW05(LVDS, 1, 2, 0x50),
-	VD_WXGA_J(LVDS, 0, 0, 0),
+	VD_AUO_B101EW05(LVDS, fbp_detect_i2c, 2, 0x50),
+	VD_WXGA_J(LVDS, NULL, 0, 0),
 	/* hdmi */
-	VD_1280_720M_60(HDMI, 1, (GP_I2C3_EDID << 8 ) | 2, 0x3a),
-	VD_1920_1080M_60(HDMI, 0, (GP_I2C3_EDID << 8 ) | 2, 0x3a),
-	VD_1024_768M_60(HDMI, 0, (GP_I2C3_EDID << 8 ) | 2, 0x3a),
+	VD_1280_720M_60(HDMI, fbp_detect_i2c, (GP_I2C3_EDID << 8 ) | 2, 0x3a),
+	VD_1920_1080M_60(HDMI, NULL, (GP_I2C3_EDID << 8 ) | 2, 0x3a),
+	VD_1024_768M_60(HDMI, NULL, (GP_I2C3_EDID << 8 ) | 2, 0x3a),
 };
 
 int board_cfb_skip(void)
