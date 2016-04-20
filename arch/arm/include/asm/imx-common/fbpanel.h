@@ -46,7 +46,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.fbflags = FBF_MODESTR,\
@@ -72,7 +72,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.fbflags = FBF_MODESTR,\
@@ -99,7 +99,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.fbflags = FBF_MODESTR,\
@@ -125,7 +125,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.fbflags = FBF_MODESTR,\
@@ -151,7 +151,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.fbflags = FBF_MODESTR,\
@@ -177,7 +177,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.fbflags = FBF_MODESTR,\
@@ -204,7 +204,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB666,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.fbflags = FBF_MODESTR,\
@@ -232,7 +232,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.fbflags = FBF_MODESTR,\
@@ -264,7 +264,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB666,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.fbflags = FBF_MODESTR,\
@@ -291,7 +291,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.fbflags = FBF_MODESTR,\
@@ -312,24 +312,77 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
-#define VD_INNOLUX_WVGA(_mode, _detect, _bus, _addr) \
+
+
+#define VD_INNOLUX_WXGA_14IN_12V(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
 	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB666,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.pixfmt	= IPU_PIX_FMT_RGB24,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.mode	= {\
-		.name = "INNOLUX-WVGA",\
-		.refresh = 57,\
-		.xres = 800,\
-		.yres = 480,\
-		.pixclock = 1000000000000ULL / 1056 / 635 / 57,\
+		.name = "INNOLUX-WXGA-IN14-12V",\
+		.refresh = 60,\
+		.xres = 1366,\
+		.yres = 768,\
+		.pixclock = 1000000000000ULL / (1366+113+113+226) / (768+16+16+32) / 60,\
+		.left_margin = 113,\
+		.right_margin = 113,\
+		.upper_margin = 16,\
+		.lower_margin = 16,\
+		.hsync_len = 226,\
+		.vsync_len = 32,\
+		.sync = FB_SYNC_EXT,\
+		.vmode = FB_VMODE_NONINTERLACED,\
+	}\
+}
+
+
+#define VD_AUO_WXGA_11IN_12V(_mode, _detect, _bus, _addr) \
+{\
+	.bus	= _bus,\
+	.addr	= _addr,\
+	.pixfmt	= IPU_PIX_FMT_RGB24,\
+	.detect	= _detect,\
+	.enable	= fbp_enable_fb,\
+	.fbtype = FB_##_mode,\
+	.mode	= {\
+		.name = "AUO-WXGA-IN11-12V",\
+		.refresh = 60,\
+		.xres = 1366,\
+		.yres = 768,\
+		.pixclock = 1000000000000ULL / (1366+67+67+134) / (768+10+10+20) / 60,\
+		.left_margin = 67,\
+		.right_margin = 67,\
+		.upper_margin = 10,\
+		.lower_margin = 10,\
+		.hsync_len = 134,\
+		.vsync_len = 20,\
+		.sync = FB_SYNC_EXT,\
+		.vmode = FB_VMODE_NONINTERLACED,\
+	}\
+}
+
+#define VD_OSD_WSVGA(_mode, _detect, _bus, _addr) \
+{\
+	.bus	= _bus,\
+	.addr	= _addr,\
+	.pixfmt	= IPU_PIX_FMT_RGB24,\
+	.detect	= _detect,\
+	.enable	= fbp_enable_fb,\
+	.fbtype = FB_##_mode,\
+	.mode	= {\
+		.name = "INNOLUX-WSVGA",\
+		.refresh = 60,\
+		.xres = 1024,\
+		.yres = 600,\
+		.pixclock = 1000000000000ULL / (1024+45+210+1) / (600+22+132+1) / 60,\
 		.left_margin = 45,\
-		.right_margin = 1056 - 1 - 45 - 800,\
+		.right_margin = 210,\
 		.upper_margin = 22,\
-		.lower_margin = 635 - 1 - 22 - 480,\
+		.lower_margin = 132,\
 		.hsync_len = 1,\
 		.vsync_len = 1,\
 		.sync = FB_SYNC_EXT,\
@@ -337,30 +390,55 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
+#define INNOLUX_WVGA_MODE(_name) \
+	.mode	= {\
+		.name = _name,\
+		.refresh = 60,\
+		.xres = 800,\
+		.yres = 480,\
+		.pixclock = 1000000000000ULL / (800+45+16+1) / (480+22+125+1) / 60,\
+		.left_margin = 45,\
+		.right_margin = 16,\
+		.upper_margin = 22,\
+		.lower_margin = 125,\
+		.hsync_len = 1,\
+		.vsync_len = 1,\
+		.sync = FB_SYNC_EXT | FB_SYNC_CLK_LAT_FALL,\
+		.vmode = FB_VMODE_NONINTERLACED,\
+	}
+
+#define VD_INNOLUX_WVGA(_mode, _detect, _bus, _addr) \
+{\
+	.bus	= _bus,\
+	.addr	= _addr,\
+	.pixfmt	= IPU_PIX_FMT_RGB666,\
+	.detect	= _detect,\
+	.enable	= fbp_enable_fb,\
+	.fbtype = FB_##_mode,\
+	INNOLUX_WVGA_MODE("INNOLUX-WVGA") \
+}
+
+#define VD_INNOLUX_WVGA_12V(_mode, _detect, _bus, _addr) \
+{\
+	.bus	= _bus,\
+	.addr	= _addr,\
+	.pixfmt	= IPU_PIX_FMT_RGB666,\
+	.detect	= _detect,\
+	.enable	= fbp_enable_fb,\
+	.fbtype = FB_##_mode,\
+	INNOLUX_WVGA_MODE("INNOLUX-WVGA-12V") \
+}
+
 #define VD_INNOLUX_WVGA_M(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB666,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.fbflags = FBF_MODESTR,\
-	.mode	= {\
-		.name = "INNOLUX-WVGA",\
-		.refresh = 57,\
-		.xres = 800,\
-		.yres = 480,\
-		.pixclock = 1000000000000ULL / 1056 / 635 / 57,\
-		.left_margin = 45,\
-		.right_margin = 1056 - 1 - 45 - 800,\
-		.upper_margin = 22,\
-		.lower_margin = 635 - 1 - 22 - 480,\
-		.hsync_len = 1,\
-		.vsync_len = 1,\
-		.sync = FB_SYNC_EXT | FB_SYNC_CLK_LAT_FALL,\
-		.vmode = FB_VMODE_NONINTERLACED,\
-	}\
+	INNOLUX_WVGA_MODE("INNOLUX-WVGA") \
 }
 
 #define VD_OKAYA_480_272(_mode, _detect, _bus, _addr) \
@@ -368,7 +446,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.fbflags = FBF_MODESTR,\
@@ -395,7 +473,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.fbflags = FBF_MODESTR,\
@@ -422,7 +500,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.fbflags = FBF_MODESTR,\
@@ -449,7 +527,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB666,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.mode	= {\
@@ -476,7 +554,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.fbflags = 0,\
@@ -504,7 +582,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.fbflags = 0,\
@@ -530,7 +608,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB666,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.fbflags = 0,\
@@ -557,7 +635,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB666,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.fbflags = 0,\
@@ -585,7 +663,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB666,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.fbflags = 0,\
@@ -612,7 +690,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.fbflags = FBF_JEIDA,\
@@ -639,7 +717,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB666,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.mode	= {\
@@ -665,7 +743,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.fbflags = FBF_MODESTR,\
@@ -697,7 +775,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB666,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.fbflags = FBF_MODESTR,\
@@ -724,7 +802,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB666,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.fbflags = FBF_MODESTR,\
@@ -751,7 +829,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB666,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.mode	= {\
@@ -776,7 +854,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB666,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.mode	= {\
@@ -802,7 +880,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB666,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.mode	= {\
@@ -827,7 +905,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.fbflags = FBF_SPLITMODE,\
@@ -853,7 +931,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.fbflags = FBF_SPLITMODE | FBF_JEIDA,\
@@ -879,7 +957,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.fbflags = FBF_JEIDA,\
@@ -905,7 +983,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.mode	= {\
@@ -930,7 +1008,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.fbflags = FBF_JEIDA,\
@@ -956,7 +1034,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.fbflags = 0,\
@@ -982,7 +1060,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB666,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.fbflags = FBF_MODESTR,\
@@ -1014,7 +1092,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.mode	= {\
@@ -1039,7 +1117,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB666,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.mode	= {\
@@ -1064,7 +1142,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB666,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.mode	= {\
@@ -1089,7 +1167,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.fbflags = FBF_JEIDA,\
@@ -1115,7 +1193,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.mode	= {\
@@ -1140,7 +1218,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.mode	= {\
@@ -1165,7 +1243,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.fbflags = FBF_MODESTR,\
