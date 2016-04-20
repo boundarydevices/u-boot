@@ -262,11 +262,11 @@ void board_enable_lvds(const struct display_info_t *di, int enable)
 }
 
 static const struct display_info_t displays[] = {
-	VD_WXGA_J(LVDS, 0, 0, 0x00),
-	VD_WXGA(LVDS, 0, 0, 0x00),
-	VD_HANNSTAR(LVDS, 1, 2, 0x04),
-	VD_LG9_7(LVDS, 0, 2, 0x04),
-	VD_WSVGA(LVDS, 1, 2, 0x38),
+	VD_WXGA_J(LVDS, NULL, 0, 0x00),
+	VD_WXGA(LVDS, NULL, 0, 0x00),
+	VD_HANNSTAR(LVDS, fbp_detect_i2c, 2, 0x04),
+	VD_LG9_7(LVDS, NULL, 2, 0x04),
+	VD_WSVGA(LVDS, fbp_detect_i2c, 2, 0x38),
 };
 
 int board_cfb_skip(void)
