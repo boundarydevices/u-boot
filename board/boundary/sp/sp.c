@@ -263,7 +263,7 @@ void board_enable_lvds(const struct display_info_t *di, int enable)
 
 static const struct display_info_t displays[] = {
 	/* egalax_ts */
-	VD_LG9_7(LVDS, 1, 2, 0x04),
+	VD_LG9_7(LVDS, fbp_detect_i2c, 2, 0x04),
 };
 #endif
 
