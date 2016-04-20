@@ -257,9 +257,9 @@ int splash_screen_prepare(void)
 #ifdef CONFIG_CMD_FBPANEL
 static const struct display_info_t displays[] = {
 	/* hdmi */
-	VD_1280_720M_60(HDMI, 1, 1, 0x50),
-	VD_1920_1080M_60(HDMI, 0, 1, 0x50),
-	VD_1024_768M_60(HDMI, 0, 1, 0x50),
+	VD_1280_720M_60(HDMI, fbp_detect_i2c, 1, 0x50),
+	VD_1920_1080M_60(HDMI, NULL, 1, 0x50),
+	VD_1024_768M_60(HDMI, NULL, 1, 0x50),
 };
 #endif
 
