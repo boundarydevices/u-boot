@@ -411,11 +411,11 @@ void board_enable_lcd(const struct display_info_t *di, int enable)
 
 static const struct display_info_t displays[] = {
 	/* tsc2004 */
-	VD_DC050WX(LCD, 1, 2, 0x48),
-	VD_QVGA(LCD, 0, 2, 0x48),
+	VD_DC050WX(LCD, fbp_detect_i2c, 2, 0x48),
+	VD_QVGA(LCD, NULL, 2, 0x48),
 
 	/* fusion7 specific touchscreen */
-	VD_FUSION7(LCD, 1, 2, 0x10),
+	VD_FUSION7(LCD, fbp_detect_i2c, 2, 0x10),
 };
 
 int board_cfb_skip(void)
