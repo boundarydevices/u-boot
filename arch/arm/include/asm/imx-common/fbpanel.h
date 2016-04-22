@@ -373,8 +373,9 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
+	.fbflags = FBF_JEIDA,\
 	.mode	= {\
-		.name = "INNOLUX-WSVGA",\
+		.name = "OSD-WSVGA",\
 		.refresh = 60,\
 		.xres = 1024,\
 		.yres = 600,\
