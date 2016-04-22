@@ -93,7 +93,26 @@ static int splash_load_raw(struct splash_location *location, u32 bmp_load_addr)
 		return res;
 
 	bmp_hdr = (struct bmp_header *)bmp_load_addr;
-	bmp_size = le32_to_cpu(bmp_hdr->file_size);
+
+	if ((bmp_hdr->signature[0] == 'B') &&
+	      (bmp_hdr->signature[1] == 'M')) {
+		bmp_size = le32_to_cpu(bmp_hdr->file_size);
+	} else if ((bmp_hdr->signature[0] == 0x1f) &&
+			      (bmp_hdr->signature[1] == 0x8b)) {
+		char *sz = getenv("splashsize");
+
+		bmp_size = 0;
+		if (sz)
+			bmp_size = simple_strtoul(sz, 0, 16);
+		if (!bmp_size) {
+			printf("Error: specify env splashsize\n");
+			return -EINVAL;
+		}
+	} else {
+		printf("Error: unrecognized splash file type %02x %02x\n",
+			bmp_hdr->signature[0], bmp_hdr->signature[1]);
+		return -EINVAL;
+	}
 
 	if (bmp_load_addr + bmp_size >= gd->start_addr_sp)
 		goto splash_address_too_high;
@@ -272,9 +291,9 @@ int splash_source_load(struct splash_location *locations, uint size)
 	if (!splash_location)
 		return -EINVAL;
 
-	if (splash_location->flags & SPLASH_STORAGE_RAW)
+	if (splash_location->flags == SPLASH_STORAGE_RAW)
 		return splash_load_raw(splash_location, bmp_load_addr);
-	else if (splash_location->flags & SPLASH_STORAGE_FS)
+	else if (splash_location->flags == SPLASH_STORAGE_FS)
 		return splash_load_fs(splash_location, bmp_load_addr);
 
 	return -EINVAL;
