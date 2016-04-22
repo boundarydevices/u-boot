@@ -106,6 +106,8 @@
 #define CONFIG_VIDEO_BMP_RLE8
 #define CONFIG_SPLASH_SCREEN
 #define CONFIG_SPLASH_SCREEN_ALIGN
+#define CONFIG_SPLASH_SF_OFFSET		0x1e0000
+#define CONFIG_SPLASH_SOURCE
 #define CONFIG_VIDEO_BMP_GZIP
 #define CONFIG_SYS_VIDEO_LOGO_MAX_SIZE (6 * 1024 * 1024)
 #define CONFIG_BMP_16BPP
@@ -186,7 +188,6 @@
 	"fdt_addr=0x13000000\0" \
 	"fdt_high=0xffffffff\0" \
 	"initrd_high=0xffffffff\0" \
-	"loadsplash=if sf probe ; then sf read ${splashimage} 0x1e0000 ${splashsize} ; fi\0" \
 	"rundfu=dfu 0 sf 0:0:25000000:0\0" \
 	"set_fix_live_partition=setenv active_partition 2; setenv recovery_action fix_disk\0" \
 	"uboot_defconfig=" CONFIG_DEFCONFIG "\0" \

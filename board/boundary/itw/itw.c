@@ -34,6 +34,7 @@
 #include <netdev.h>
 #include <usb/ehci-fsl.h>
 #include <pwm.h>
+#include <splash.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -576,6 +577,21 @@ int board_eth_init(bd_t *bis)
 }
 
 #ifdef CONFIG_CMD_FBPANEL
+
+struct splash_location splash_locations[] = {
+	{
+		.name = "sf",
+		.storage = SPLASH_STORAGE_SF,
+		.flags = SPLASH_STORAGE_RAW,
+		.offset = CONFIG_SPLASH_SF_OFFSET,
+	},
+};
+
+int splash_screen_prepare(void)
+{
+	return splash_source_load(splash_locations,
+				  ARRAY_SIZE(splash_locations));
+}
 
 static const unsigned short switch_lvds1[] = {
 	GP_LVDS_BIT2,  GP_J54_LVDS_BIT1, GP_J54_LVDS_BIT0
