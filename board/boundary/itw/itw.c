@@ -689,21 +689,21 @@ int detect_lvds2(struct display_info_t const *di)
 }
 /*
  * LVDS Operator display type is determined by link bits 3,2,1.
- * 1   WXGA-IN14 12v	| 14.0" Innolux 24-bit
- * 6   WXGA-IN11 12v	| 11.6" AUO 24-bit
- * 0   WVGA 5v		| 7"    Innolux 18-bit base
- * 2   WSVGA 5v		| 10.1" OSD 24-bit
+ * 1   WXGA-IN14 12v	| 14.0" Innolux 18-bit model N140BGE
+ * 6   WXGA-IN11 12v	| 11.6" AUO 24-bit model B116XAN03.0
+ * 0   WVGA 5v		| 7"    Innolux 18-bit base model AT070TN83
+ * 2   WSVGA 5v		| 10.1" OSD 18-bit model OSD101T1315-45
  * 3   WSVGA 5v		| N/A
  * 4   WSVGA 5v		| N/A
  * 5   WSVGA 5v		| N/A
- * 7   WSVGA 5v		| 10.1  OSD 24-bit
+ * 7   WSVGA 5v		| 10.1  OSD 18-bit model OSD101T1315-45
 
 
  * LVDS2/LCD Customer display type is determined by link bits 6,5,4.
- * 0   WXGA-IN14 12v	| 14.0" Innolux 24-bit
- * 1   WVGA 12v		| 7"    Innolux 18-bit
- * 2   WSVGA 5v		| 10.1" OSD 24-bit
- * 3   WVGA 5v		| 7"    Innolux 18-bit
+ * 0   WXGA-IN14 12v	| 14.0" Innolux 18-bit model N140BGE
+ * 1   WVGA 12v		| 7"    Innolux 18-bit model AT070TN83
+ * 2   WSVGA 5v		| 10.1" OSD 18-bit model OSD101T1315-45
+ * 3   WVGA 5v		| 7"    Innolux 18-bit model AT070TN83
  * 4   NO display	| N/A
  * 5   NO display	| N/A
  * 6   NO display	| N/A
