@@ -313,12 +313,12 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 }
 
 
-
+/* INNOLUX model N140BGE, 18 bit LVDS */
 #define VD_INNOLUX_WXGA_14IN_12V(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
 	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB24,\
+	.pixfmt	= IPU_PIX_FMT_RGB666,\
 	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
@@ -327,19 +327,19 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 		.refresh = 60,\
 		.xres = 1366,\
 		.yres = 768,\
-		.pixclock = 1000000000000ULL / (1366+113+113+226) / (768+16+16+32) / 60,\
-		.left_margin = 113,\
-		.right_margin = 113,\
-		.upper_margin = 16,\
-		.lower_margin = 16,\
-		.hsync_len = 226,\
-		.vsync_len = 32,\
+		.pixclock = 1000000000000ULL / (1366+108+108+10) / (768+8+8+16) / 60,\
+		.left_margin = 108,\
+		.right_margin = 108,\
+		.upper_margin = 8,\
+		.lower_margin = 8,\
+		.hsync_len = 10,\
+		.vsync_len = 16,\
 		.sync = FB_SYNC_EXT,\
 		.vmode = FB_VMODE_NONINTERLACED,\
 	}\
 }
 
-
+/* AUO model B116XAN03.0, 11.6", 1366x768, 24 bit lvds */
 #define VD_AUO_WXGA_11IN_12V(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
@@ -353,27 +353,27 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 		.refresh = 60,\
 		.xres = 1366,\
 		.yres = 768,\
-		.pixclock = 1000000000000ULL / (1366+67+67+134) / (768+10+10+20) / 60,\
+		.pixclock = 1000000000000ULL / (1366+67+67+100) / (768+10+10+6) / 60,\
 		.left_margin = 67,\
 		.right_margin = 67,\
 		.upper_margin = 10,\
 		.lower_margin = 10,\
-		.hsync_len = 134,\
-		.vsync_len = 20,\
+		.hsync_len = 100,\
+		.vsync_len = 6,\
 		.sync = FB_SYNC_EXT,\
 		.vmode = FB_VMODE_NONINTERLACED,\
 	}\
 }
 
+/* OSD model OSD101T1315-45, 18 bit LVDS*/
 #define VD_OSD_WSVGA(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
 	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB24,\
+	.pixfmt	= IPU_PIX_FMT_RGB666,\
 	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
-	.fbflags = FBF_JEIDA,\
 	.mode	= {\
 		.name = "OSD-WSVGA",\
 		.refresh = 60,\
@@ -391,6 +391,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
+/* INNOLUX model AT070TN83 */
 #define INNOLUX_WVGA_MODE(_name) \
 	.mode	= {\
 		.name = _name,\
@@ -408,6 +409,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 		.vmode = FB_VMODE_NONINTERLACED,\
 	}
 
+/* INNOLUX model AT070TN83, 800x480  18 bit RGB with LVDS converter board */
 #define VD_INNOLUX_WVGA(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
@@ -430,6 +432,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	INNOLUX_WVGA_MODE("INNOLUX-WVGA-12V") \
 }
 
+/* INNOLUX model AT070TN83, 800x480 straight 18 bit RGB no converter board */
 #define VD_INNOLUX_WVGA_M(_mode, _detect, _bus, _addr) \
 {\
 	.bus	= _bus,\
