@@ -433,7 +433,7 @@ int fbp_detect_gpio(struct display_info_t const *di)
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect ? fbp_detect_gpio : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.mode	= {\
@@ -456,7 +456,7 @@ int fbp_detect_gpio(struct display_info_t const *di)
 
 static const struct display_info_t displays[] = {
 	VD_HANNSTAR7(LVDS, NULL, 0, 0x38),
-	VD_INNOLUX(LVDS, fbp_detect_i2c, 0, 0x00),
+	VD_INNOLUX(LVDS, fbp_detect_gpio, 0, 0x00),
 };
 
 int board_cfb_skip(void)
