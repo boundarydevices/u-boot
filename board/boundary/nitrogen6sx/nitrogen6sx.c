@@ -610,7 +610,7 @@ void board_enable_lcd(const struct display_info_t *di, int enable)
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.fbflags = _flags,\
@@ -636,7 +636,7 @@ void board_enable_lcd(const struct display_info_t *di, int enable)
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.fbflags = _flags,\
@@ -663,7 +663,7 @@ void board_enable_lcd(const struct display_info_t *di, int enable)
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect ? fbp_detect_i2c : NULL,\
+	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
 	.fbflags = _flags,\
