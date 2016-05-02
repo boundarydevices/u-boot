@@ -257,6 +257,16 @@ static const iomux_v3_cfg_t init_pads[] = {
 	/* UART1 */
 	IOMUX_PAD_CTRL(SD3_DAT7__UART1_TX_DATA, UART_PAD_CTRL),
 	IOMUX_PAD_CTRL(SD3_DAT6__UART1_RX_DATA, UART_PAD_CTRL),
+#define GP_UART1_RX_EN		IMX_GPIO_NR(3, 14)
+	IOMUX_PAD_CTRL(EIM_DA14__GPIO3_IO14, WEAK_PULLDN_OUTPUT),	/* RS485 RX Enable: pull down */
+#define GP_UART1_TX_EN		IMX_GPIO_NR(3, 15)
+	IOMUX_PAD_CTRL(EIM_DA15__GPIO3_IO15, WEAK_PULLDN_OUTPUT),	/* RS485 DEN: pull down */
+#define GP_UART1_RS485_EN	IMX_GPIO_NR(3, 13)
+	IOMUX_PAD_CTRL(EIM_DA13__GPIO3_IO13, WEAK_PULLDN_OUTPUT),	/* RS485/!RS232 Select: pull down (rs232) */
+#define GP_UART1_AON		IMX_GPIO_NR(3, 12)
+	IOMUX_PAD_CTRL(EIM_DA12__GPIO3_IO12, WEAK_PULLDN_OUTPUT),	/* ON: pull down */
+#define GP_UART1_RS485_TERM	IMX_GPIO_NR(4, 5)
+	IOMUX_PAD_CTRL(GPIO_19__GPIO4_IO05, WEAK_PULLDN_OUTPUT),	/* pull down */
 
 	/* UART2 */
 	IOMUX_PAD_CTRL(EIM_D26__UART2_TX_DATA, UART_PAD_CTRL),
@@ -631,6 +641,11 @@ static const unsigned short gpios_out_low[] = {
 	GP_BACKLIGHT_LVDS_EN,
 	GP_REG_USBOTG,		/* disable USB otg power */
 	GP_EMMC_RESET,		/* hold in reset */
+	GP_UART1_RX_EN,
+	GP_UART1_TX_EN,
+	GP_UART1_RS485_EN,
+	GP_UART1_AON,
+	GP_UART1_RS485_TERM,
 };
 
 static const unsigned short gpios_out_high[] = {
