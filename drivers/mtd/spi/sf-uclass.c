@@ -14,6 +14,12 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
+#ifdef CONFIG_SPI_FLASH_DATAFLASH
+#define SPI_DRIVER "spi_dataflash"
+#else
+#define SPI_DRIVER "jedec_spi_nor"
+#endif
+
 int spi_flash_read_dm(struct udevice *dev, u32 offset, size_t len, void *buf)
 {
 	return log_ret(sf_get_ops(dev)->read(dev, offset, len, buf));
@@ -68,7 +74,7 @@ int spi_flash_probe_bus_cs(unsigned int busnum, unsigned int cs,
 	str = strdup(name);
 #endif
 	ret = spi_get_bus_and_cs(busnum, cs, max_hz, spi_mode,
-				  "jedec_spi_nor", str, &bus, &slave);
+				 SPI_DRIVER, str, &bus, &slave);
 	if (ret)
 		return ret;
 
