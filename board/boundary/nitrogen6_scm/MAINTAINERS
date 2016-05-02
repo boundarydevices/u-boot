@@ -1,0 +1,6 @@
+NITROGEN6_SCM BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/nitrogen6_scm/
+F:	include/configs/nitrogen6_scm.h
+F:	configs/nitrogen6_scm_defconfig
