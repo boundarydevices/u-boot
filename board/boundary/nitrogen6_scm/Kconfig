@@ -1,0 +1,20 @@
+if TARGET_NITROGEN6_SCM
+
+config SYS_CPU
+	default "armv7"
+
+config SYS_BOARD
+	default "nitrogen6_scm"
+
+config SYS_VENDOR
+	default "boundary"
+
+config SYS_SOC
+	default "mx6"
+
+config SYS_CONFIG_NAME
+	default "nitrogen6_scm"
+
+source "board/boundary/common/Kconfig"
+
+endif
