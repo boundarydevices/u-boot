@@ -1,0 +1,7 @@
+LSHORE BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/lshore/
+F:	include/configs/lshore.h
+F:	configs/lshore_defconfig
+
