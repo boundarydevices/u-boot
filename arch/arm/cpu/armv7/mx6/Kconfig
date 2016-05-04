@@ -163,6 +163,9 @@ config TARGET_JLM
 config TARGET_LS
 	bool "ls"
 
+config TARGET_LSHORE
+	bool "lshore"
+
 config TARGET_MCS
 	bool "mcs"
 
@@ -286,6 +289,7 @@ source "board/boundary/ioc/Kconfig"
 source "board/boundary/itw/Kconfig"
 source "board/boundary/jlm/Kconfig"
 source "board/boundary/ls/Kconfig"
+source "board/boundary/lshore/Kconfig"
 source "board/boundary/mcs/Kconfig"
 source "board/boundary/med/Kconfig"
 source "board/boundary/mtp/Kconfig"
