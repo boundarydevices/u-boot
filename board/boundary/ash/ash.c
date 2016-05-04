@@ -507,7 +507,7 @@ static void setup_iomux_enet(void)
 	udelay(12);
 
 	SETUP_IOMUX_PADS(enet_pads);
-	udelay(100);	/* Wait 100 us before using mii interface */
+	udelay(150);	/* Wait 150 us before using mii interface */
 }
 
 int board_eth_init(bd_t *bis)
