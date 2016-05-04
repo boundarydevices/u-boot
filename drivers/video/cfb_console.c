@@ -2118,16 +2118,16 @@ static int cfg_video_init(void)
 	if (!CONFIG_IS_ENABLED(NO_FB_CLEAR))
 		video_clear();
 
-#if defined(CONFIG_VIDEO_LOGO) || defined(CONFIG_SPLASH_SCREEN)
-	/* Plot the logo and get start point of console */
-	debug("Video: Drawing the logo ...\n");
-	video_console_address = video_logo();
-#endif
 #ifndef CONFIG_VIDEO_LOGO
 	if (!board_cfb_skip()){
 		video_console_address = video_fb_address;
 		video_drawstring(VIDEO_FONT_WIDTH, 0, (uchar *)version_string);
 	}
+#endif
+#if defined(CONFIG_VIDEO_LOGO) || defined(CONFIG_SPLASH_SCREEN)
+	/* Plot the logo and get start point of console */
+	debug("Video: Drawing the logo ...\n");
+	video_console_address = video_logo();
 #endif
 
 	/* Initialize the console */
