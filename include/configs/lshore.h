@@ -10,6 +10,8 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
+#define CONFIG_BOOTDELAY	1
+
 #include "mx6_common.h"
 
 #define CONFIG_MACH_TYPE	3771
@@ -136,11 +138,11 @@
 		"\0" \
 	"uboot_defconfig=" CONFIG_DEFCONFIG "\0" \
 	"upgradeu=for dtype in mmc usb ; do " \
-			"disk=0;" \
+		"for disk in 0 1 ; do ${dtype} dev ${disk} ;" \
 			"load ${dtype} ${disk}:1 10008000 /6x_upgrade " \
 				"&& source 10008000 ; " \
-		"done ;\0" \
-	"disable_giga=1\0" \
+		"done ; " \
+	"done\0" \
 	"fdt_addr=0x13000000\0" \
 	"fdt_high=0xffffffff\0" \
 	"initrd_high=0xffffffff\0" \
