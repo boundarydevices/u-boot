@@ -10,25 +10,42 @@
 #include <common.h>
 #include <i2c.h>
 
-struct i2c_adapter *i2c_get_adapter(int index)
+struct i2c_adapter *i2c_get_adapter(int bus)
 {
-	struct i2c_adapter *i2c_adap_p = ll_entry_start(struct i2c_adapter,
-						i2c);
-	int max = ll_entry_count(struct i2c_adapter, i2c);
-	int i;
+	struct i2c_adapter *i2cp = ll_entry_start(struct i2c_adapter, i2c);
 
-	if (index >= max) {
-		printf("Error, wrong i2c adapter %d max %d possible\n",
-		       index, max);
-		return i2c_adap_p;
+	bus = I2C_ADAPTER(bus);
+#ifndef CONFIG_SYS_I2C_DIRECT_BUS
+	if (bus >= CONFIG_SYS_NUM_I2C_BUSES) {
+		printf("Invalid bus %d, max is %d\n", bus,
+				CONFIG_SYS_NUM_I2C_BUSES - 1);
+		return NULL;
 	}
-	if (index == 0)
-		return i2c_adap_p;
+#endif
 
-	for (i = 0; i < index; i++)
-		i2c_adap_p++;
+#ifdef CONFIG_SYS_I2C_MASK
+	if (!(BIT(bus) & CONFIG_SYS_I2C_MASK)) {
+		printf("Invalid bus %d\n", bus);
+		return NULL;
+	}
+#else
+	{
+		int max = ll_entry_count(struct i2c_adapter, i2c);
+		if (bus >= max) {
+			printf("Error, wrong i2c adapter %d max %d possible\n",
+					bus, max);
+			return NULL;
+		}
+	}
+#endif
+	return i2cp + bus;
+}
 
-	return i2c_adap_p;
+struct i2c_adapter *i2c_get_adapter_valid(int bus)
+{
+	struct i2c_adapter *i2cp = i2c_get_adapter(bus);
+
+	return i2cp ? i2cp : ll_entry_start(struct i2c_adapter, i2c);
 }
 
 #if !defined(CONFIG_SYS_I2C_DIRECT_BUS)
@@ -235,22 +252,11 @@ unsigned int i2c_get_bus_num(void)
  */
 int i2c_set_bus_num(unsigned int bus)
 {
-	int max;
-
 	if ((bus == I2C_BUS) && (I2C_ADAP->init_done > 0))
 		return 0;
 
-#ifndef CONFIG_SYS_I2C_DIRECT_BUS
-	if (bus >= CONFIG_SYS_NUM_I2C_BUSES)
+	if (!i2c_get_adapter(bus))
 		return -1;
-#endif
-
-	max = ll_entry_count(struct i2c_adapter, i2c);
-	if (I2C_ADAPTER(bus) >= max) {
-		printf("Error, wrong i2c adapter %d max %d possible\n",
-		       I2C_ADAPTER(bus), max);
-		return -2;
-	}
 
 #ifndef CONFIG_SYS_I2C_DIRECT_BUS
 	i2c_mux_disconnect_all();

@@ -615,6 +615,7 @@ struct i2c_adapter {
 		 _set_speed, _speed, _slaveaddr, _hwadapnr, _name);
 
 struct i2c_adapter *i2c_get_adapter(int index);
+struct i2c_adapter *i2c_get_adapter_valid(int index);
 
 #ifndef CONFIG_SYS_I2C_DIRECT_BUS
 struct i2c_mux {
@@ -641,7 +642,7 @@ extern struct i2c_bus_hose	i2c_bus[];
 #endif
 #define	I2C_BUS			gd->cur_i2c_bus
 
-#define	I2C_ADAP_NR(bus)	i2c_get_adapter(I2C_ADAPTER(bus))
+#define	I2C_ADAP_NR(bus)	i2c_get_adapter_valid(bus)
 #define	I2C_ADAP		I2C_ADAP_NR(gd->cur_i2c_bus)
 #define I2C_ADAP_HWNR		(I2C_ADAP->hwadapnr)
 

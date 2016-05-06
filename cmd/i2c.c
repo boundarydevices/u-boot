@@ -1823,11 +1823,9 @@ static int do_i2c_bus_num(cmd_tbl_t *cmdtp, int flag, int argc,
 		printf("Current bus is %d\n", bus_no);
 	} else {
 		bus_no = simple_strtoul(argv[1], NULL, 10);
-#if defined(CONFIG_SYS_I2C)
-		if (bus_no >= CONFIG_SYS_NUM_I2C_BUSES) {
-			printf("Invalid bus %d\n", bus_no);
+#ifndef CONFIG_DM_I2C
+		if (!i2c_get_adapter(bus_no))
 			return -1;
-		}
 #endif
 		printf("Setting bus to %d\n", bus_no);
 #ifdef CONFIG_DM_I2C
