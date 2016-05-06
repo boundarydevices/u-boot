@@ -604,92 +604,12 @@ void board_enable_lcd(const struct display_info_t *di, int enable)
 	gpio_direction_output(GP_BACKLIGHT_RGB, enable);
 }
 #endif
-/* hdmi settings */
-#define _VD_1280_720M_60(_mode, _detect, _bus, _addr, _flags) \
-{\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
-	.fbflags = _flags,\
-	.mode	= {\
-		.name           = "1280x720M@60",\
-		.refresh        = 60,\
-		.xres           = 1280,\
-		.yres           = 720,\
-		.pixclock       = 1000000000000ULL/((1280+216+72+80)*(720+22+3+5)*60),\
-		.left_margin    = 220,\
-		.right_margin   = 110,\
-		.upper_margin   = 20,\
-		.lower_margin   = 5,\
-		.hsync_len      = 40,\
-		.vsync_len      = 5,\
-		.sync           = FB_SYNC_EXT,\
-		.vmode          = FB_VMODE_NONINTERLACED\
-	}\
-}
-
-#define _VD_1920_1080M_60(_mode, _detect, _bus, _addr, _flags) \
-{\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
-	.fbflags = _flags,\
-	.mode	= {\
-		.name           = "1920x1080M@60",\
-		.refresh        = 60,\
-		.xres           = 1920,\
-		.yres           = 1080,\
-		.pixclock       = 1000000000000ULL/((1920+148+88+44)*(1080+36+4+5)*60),\
-		.left_margin    = 148,\
-		.right_margin   = 88,\
-		.upper_margin   = 36,\
-		.lower_margin   = 4,\
-		.hsync_len      = 44,\
-		.vsync_len      = 5,\
-		.sync           = 0,\
-		.vmode          = FB_VMODE_NONINTERLACED\
-	}\
-}
-
-
-#define _VD_1024_768M_60(_mode, _detect, _bus, _addr, _flags) \
-{\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
-	.fbflags = _flags,\
-	.mode	= {\
-		.name           = "1024x768M@60",\
-		.refresh        = 60,\
-		.xres           = 1024,\
-		.yres           = 768,\
-		.pixclock       = 1000000000000ULL/((1024+220+40+60)*(768+21+7+10)*60),\
-		.left_margin    = 220,\
-		.right_margin   = 40,\
-		.upper_margin   = 21,\
-		.lower_margin   = 7,\
-		.hsync_len      = 60,\
-		.vsync_len      = 10,\
-		.sync           = FB_SYNC_EXT,\
-		.vmode          = FB_VMODE_NONINTERLACED\
-	}\
-}
-
 
 static const struct display_info_t displays[] = {
 	/* hdmi/lcd */
-	_VD_1280_720M_60(LCD, fbp_detect_i2c, 2, 0x50, 0),
-	_VD_1920_1080M_60(LCD, NULL, 2, 0x50, 0),
-	_VD_1024_768M_60(LCD, NULL, 2, 0x50, 0),
+	VDF_1280_720M_60(LCD, "1280x720M@60", RGB24, 0, fbp_detect_i2c, 2, 0x50),
+	VDF_1920_1080M_60(LCD, "1920x1080M@60", RGB24, 0, NULL, 2, 0x50),
+	VDF_1024_768M_60(LCD, "1024x768M@60", RGB24, 0, NULL, 2, 0x50),
 
 	/* ft5x06 */
 	VD_HANNSTAR7(LVDS, fbp_detect_i2c, 2, 0x38),
@@ -706,7 +626,7 @@ static const struct display_info_t displays[] = {
 	VD_LG9_7(LVDS, NULL, 2, 0x04),
 
 	/* fusion7 specific touchscreen */
-	VD_FUSION7(LCD, fbp_detect_i2c, 2, 0x10),
+	VDF_FUSION7(LCD, "fusion7", RGB666, 0, fbp_detect_i2c, 2, 0x10),
 
 	VD_SHARP_LQ101K1LY04(LVDS, NULL, 0, 0x00),
 	VD_WXGA_J(LVDS, NULL, 0, 0x00),
@@ -716,13 +636,13 @@ static const struct display_info_t displays[] = {
 	VD_VGA(LVDS, NULL, 0, 0x00),
 
 	/* tsc2004 */
-	VD_CLAA_WVGA(LCD, fbp_detect_i2c, 2, 0x48),
-	VD_SHARP_WVGA(LCD, NULL, 2, 0x48),
-	VD_DC050WX(LCD, NULL, 2, 0x48),
-	VD_QVGA(LCD, NULL, 2, 0x48),
-	VD_AT035GT_07ET3(LCD, NULL, 2, 0x48),
+	VDF_CLAA_WVGA(LCD, "CLAA-WVGA", RGB666, 0, fbp_detect_i2c, 2, 0x48),
+	VDF_SHARP_WVGA(LCD, "sharp-wvga", RGB24, 0, NULL, 2, 0x48),
+	VDF_DC050WX(LCD, "DC050WX", RGB24, 0, NULL, 2, 0x48),
+	VDF_QVGA(LCD, "qvga", RGB24, 0, NULL, 2, 0x48),
+	VDF_AT035GT_07ET3(LCD, "AT035GT-07ET3", RGB24, 0, NULL, 2, 0x48),
 
-	VD_LSA40AT9001(LCD, NULL, 0, 0x00),
+	VDF_LSA40AT9001(LCD, "LSA40AT9001", RGB24, 0, NULL, 0, 0x00),
 };
 
 int board_cfb_skip(void)
