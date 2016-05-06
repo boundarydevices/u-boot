@@ -427,36 +427,10 @@ int fbp_detect_gpio(struct display_info_t const *di)
 	return val;
 }
 
-/* has 5 - wire touchscreen */
-#define VD_INNOLUX(_mode, _detect, _bus, _addr) \
-{\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
-	.mode	= {\
-		.name           = "innolux",\
-		.refresh        = 60,\
-		.xres           = 1280,\
-		.yres           = 800,\
-		.pixclock       = 1000000000000ULL/((1280+80+48+32)*(800+15+2+6)*60),\
-		.left_margin    = 80,\
-		.right_margin   = 48,\
-		.upper_margin   = 15,\
-		.lower_margin   = 2,\
-		.hsync_len      = 32,\
-		.vsync_len      = 6,\
-		.sync           = FB_SYNC_EXT,\
-		.vmode          = FB_VMODE_NONINTERLACED\
-	}\
-}
-
-
 static const struct display_info_t displays[] = {
 	VD_HANNSTAR7(LVDS, NULL, 0, 0x38),
-	VD_INNOLUX(LVDS, fbp_detect_gpio, 0, 0x00),
+	/* has 5 - wire touchscreen */
+	VD_LD101WX1(LVDS, fbp_detect_gpio, 0, 0x00),
 };
 
 int board_cfb_skip(void)
