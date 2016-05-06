@@ -347,10 +347,11 @@ int board_init(void)
 int checkboard(void)
 {
 #ifndef CONFIG_REV2
-	puts("Board: Boundary NW board\n");
+#define BOARD nw
 #else
-	puts("Board: Boundary NW board - Rev2\n");
+#define BOARD nw2
 #endif
+	puts("Board: Boundary " BOARD " board\n");
 	return 0;
 }
 
@@ -376,7 +377,7 @@ int board_late_init(void)
 
 	setenv("cpu", get_imx_type((cpurev & 0xFF000) >> 12));
 	if (!getenv("board"))
-		setenv("board", "nw");
+		setenv("board", BOARD);
 	setenv("uboot_defconfig", CONFIG_DEFCONFIG);
 	return 0;
 }
