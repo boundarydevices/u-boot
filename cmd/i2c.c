@@ -1786,11 +1786,9 @@ static int do_i2c_bus_num(struct cmd_tbl *cmdtp, int flag, int argc,
 		printf("Current bus is %d\n", bus_no);
 	} else {
 		bus_no = dectoul(argv[1], NULL);
-#if CONFIG_IS_ENABLED(SYS_I2C_LEGACY)
-		if (bus_no >= CONFIG_SYS_NUM_I2C_BUSES) {
-			printf("Invalid bus %d\n", bus_no);
+#ifndef CONFIG_DM_I2C
+		if (!i2c_get_adapter(bus_no))
 			return -1;
-		}
 #endif
 		printf("Setting bus to %d\n", bus_no);
 #if CONFIG_IS_ENABLED(DM_I2C)
