@@ -40,18 +40,71 @@ void fbp_enable_fb(struct display_info_t const *di, int enable);
 int fbp_detect_i2c(struct display_info_t const *di);
 void fbp_setup_display(const struct display_info_t *displays, int cnt);
 
-/* hdmi settings */
-#define VD_1280_720M_60(_mode, _detect, _bus, _addr) \
-{\
+#define VD_1280_720M_60(_mode, _detect, _bus, _addr)	VDF_1280_720M_60(_mode, "1280x720M@60", RGB24, FBF_MODESTR, _detect, _bus, _addr)
+#define VD_1920_1080M_60(_mode, _detect, _bus, _addr)	VDF_1920_1080M_60(_mode, "1920x1080M@60", RGB24, FBF_MODESTR, _detect, _bus, _addr)
+#define VD_1024_768M_60(_mode, _detect, _bus, _addr)	VDF_1024_768M_60(_mode, "1024x768M@60", RGB24, FBF_MODESTR, _detect, _bus, _addr)
+#define VD_800_600MR_60(_mode, _detect, _bus, _addr)	VDF_800_600MR_60(_mode, "800x600MR@60", RGB24, FBF_MODESTR, _detect, _bus, _addr)
+#define VD_640_480M_60(_mode, _detect, _bus, _addr)	VDF_640_480M_60(_mode, "640x480M@60", RGB24, FBF_MODESTR, _detect, _bus, _addr)
+#define VD_720_480M_60(_mode, _detect, _bus, _addr)	VDF_720_480M_60(_mode, "720x480M@60", RGB24, FBF_MODESTR, _detect, _bus, _addr)
+#define VD_CLAA_WVGA(_mode, _detect, _bus, _addr)	VDF_CLAA_WVGA(_mode, "CLAA-WVGA", RGB666, FBF_MODESTR, _detect, _bus, _addr)
+#define VD_SHARP_WVGA(_mode, _detect, _bus, _addr)	VDF_SHARP_WVGA(_mode, "sharp-wvga", RGB24, FBF_MODESTR, _detect, _bus, _addr)
+#define VD_HITACHI_HVGA(_mode, _detect, _bus, _addr)	VDF_HITACHI_HVGA(_mode, "hitachi_hvga", RGB666, FBF_MODESTR, _detect, _bus, _addr)
+#define VD_DC050WX(_mode, _detect, _bus, _addr)		VDF_DC050WX(_mode, "DC050WX", RGB24, FBF_MODESTR, _detect, _bus, _addr)
+#define VD_INNOLUX_WXGA_14IN_12V(_mode, _detect, _bus, _addr) VDF_INNOLUX_WXGA_14IN_12V(_mode, "INNOLUX-WXGA-IN14-12V", RGB666, 0, _detect, _bus, _addr)
+#define VD_AUO_WXGA_11IN_12V(_mode, _detect, _bus, _addr) VDF_AUO_WXGA_11IN_12V(_mode, "AUO-WXGA-IN11-12V", RGB24, 0, _detect, _bus, _addr)
+#define VD_OSD_WSVGA(_mode, _detect, _bus, _addr)	VDF_OSD_WSVGA(_mode, "OSD-WSVGA", RGB666, 0, _detect, _bus, _addr)
+#define VD_INNOLUX_WVGA(_mode, _detect, _bus, _addr)	VDF_INNOLUX_WVGA(_mode, "INNOLUX-WVGA", RGB666, 0, _detect, _bus, _addr)
+#define VD_INNOLUX_WVGA_12V(_mode, _detect, _bus, _addr) VDF_INNOLUX_WVGA(_mode, "INNOLUX-WVGA-12V", RGB666, 0, _detect, _bus, _addr)
+#define VD_INNOLUX_WVGA_M(_mode, _detect, _bus, _addr)	VDF_INNOLUX_WVGA(_mode, "INNOLUX-WVGA", RGB666, FBF_MODESTR, _detect, _bus, _addr)
+#define VD_OKAYA_480_272(_mode, _detect, _bus, _addr)	VDF_OKAYA_480_272(_mode, "okaya_480x272", RGB24, FBF_MODESTR, _detect, _bus, _addr)
+#define VD_QVGA(_mode, _detect, _bus, _addr)		VDF_QVGA(_mode, "qvga", RGB24, FBF_MODESTR, _detect, _bus, _addr)
+#define VD_AT035GT_07ET3(_mode, _detect, _bus, _addr)	VDF_AT035GT_07ET3(_mode, "AT035GT-07ET3", RGB24, FBF_MODESTR, _detect, _bus, _addr)
+#define VD_AMP1024_600(_mode, _detect, _bus, _addr)	VDF_AMP1024_600(_mode, "amp1024x600", RGB666, 0, _detect, _bus, _addr)
+#define VD_TM070JDHG30(_mode, _detect, _bus, _addr)	VDF_TM070JDHG30(_mode, "tm070jdhg30", RGB24, 0, _detect, _bus, _addr)
+#define VD_AUO_B101EW05(_mode, _detect, _bus, _addr)	VDF_AUO_B101EW05(_mode, "auo_b101ew05", RGB666, 0, _detect, _bus, _addr)
+#define VD_HANNSTAR7(_mode, _detect, _bus, _addr)	VDF_HANNSTAR7(_mode, "hannstar7", RGB666, 0, _detect, _bus, _addr)
+#define VD_LG1280_800(_mode, _detect, _bus, _addr)	VDF_HANNSTAR7(_mode, "lg1280x800", RGB666, 0, _detect, _bus, _addr)
+#define VD_LD101WX1(_mode, _detect, _bus, _addr)	VDF_HANNSTAR7(_mode, "ld101wx1", RGB24, 0, _detect, _bus, _addr)
+#define VD_DT070BTFT(_mode, _detect, _bus, _addr)	VDF_DT070BTFT(_mode, "dt070btft", RGB24, FBF_JEIDA, _detect, _bus, _addr)
+#define VD_WSVGA(_mode, _detect, _bus, _addr)		VDF_WSVGA(_mode, "wsvga", RGB666, 0, _detect, _bus, _addr)
+#define VD_ASIT500MA6F5D(_mode, _detect, _bus, _addr)	VDF_ASIT500MA6F5D(_mode, "ASIT500MA6F5D", RGB24, FBF_MODESTR, _detect, _bus, _addr)
+#define VD_FUSION7(_mode, _detect, _bus, _addr)		VDF_FUSION7(_mode, "fusion7", RGB666, FBF_MODESTR, _detect, _bus, _addr)
+#define VD_HANNSTAR(_mode, _detect, _bus, _addr)	VDF_HANNSTAR(_mode, "hannstar", RGB666, 0, _detect, _bus, _addr)
+#define VD_1024_600(_mode, _detect, _bus, _addr)	VDF_1024_600(_mode, "1024x600", RGB666, 0, _detect, _bus, _addr)
+#define VD_LG9_7(_mode, _detect, _bus, _addr)		VDF_LG9_7(_mode, "lg9.7", RGB666, 0, _detect, _bus, _addr)
+#define VD_1080P60(_mode, _detect, _bus, _addr)		VDF_1080P60(_mode, "1080P60", RGB24, FBF_SPLITMODE, _detect, _bus, _addr)
+#define VD_1080P60_J(_mode, _detect, _bus, _addr)	VDF_1080P60(_mode, "1080P60_J", RGB24, FBF_SPLITMODE | FBF_JEIDA, _detect, _bus, _addr)
+#define VD_SHARP_LQ101K1LY04(_mode, _detect, _bus, _addr) VDF_SHARP_LQ101K1LY04(_mode, "sharp-LQ101K1LY04", RGB24, FBF_JEIDA, _detect, _bus, _addr)
+#define VD_WXGA(_mode, _detect, _bus, _addr)		VDF_WXGA(_mode, "wxga", RGB24, 0, _detect, _bus, _addr)
+#define VD_WXGA_J(_mode, _detect, _bus, _addr)		VDF_WXGA(_mode, "wxga_j", RGB24, FBF_JEIDA, _detect, _bus, _addr)
+#define VD_LD070WSVGA(_mode, _detect, _bus, _addr)	VDF_LD070WSVGA(_mode, "ld070wsvga", RGB24, 0, _detect, _bus, _addr)
+#define VD_SVGA(_mode, _detect, _bus, _addr)		VDF_SVGA(_mode, "svga", RGB666, FBF_MODESTR, _detect, _bus, _addr)
+#define VD_WVGA_TX23D200_24(_mode, _detect, _bus, _addr) VDF_WVGA_TX23D200(_mode, "tx23d200_24", RGB24, 0, _detect, _bus, _addr)
+#define VD_WVGA_TX23D200_18(_mode, _detect, _bus, _addr) VDF_WVGA_TX23D200(_mode, "tx23d200_18", RGB666, 0, _detect, _bus, _addr)
+#define VD_WVGA(_mode, _detect, _bus, _addr)		VDF_WVGA(_mode, "wvga", RGB666, 0, _detect, _bus, _addr)
+#define VD_WVGA_J(_mode, _detect, _bus, _addr)		VDF_WVGA(_mode, "wvga_j", RGB24, FBF_JEIDA, _detect, _bus, _addr)
+#define VD_AA065VE11(_mode, _detect, _bus, _addr)	VDF_AA065VE11(_mode, "AA065VE11", RGB24, 0, _detect, _bus, _addr)
+#define VD_VGA(_mode, _detect, _bus, _addr)		VDF_VGA(_mode, "vga", RGB24, 0, _detect, _bus, _addr)
+#define VD_LSA40AT9001(_mode, _detect, _bus, _addr)	VDF_LSA40AT9001(_mode, "LSA40AT9001", RGB24, FBF_MODESTR, _detect, _bus, _addr)
+#define VD_AUO_G050(_mode, _detect, _bus, _addr)	VDF_AUO_G050(_mode, "AUO_G050", RGB24, FBF_MODESTR | FBF_SPI, _detect, _bus, _addr)
+#define VD_A030JN01_UPS051(_mode, _detect, _bus, _addr)	VDF_A030JN01_UPS051(_mode, "A030JN01_UPS051", UPS051, FBF_MODESTR | FBF_SPI, _detect, _bus, _addr)
+#define VD_A030JN01_YUV720(_mode, _detect, _bus, _addr) VDF_A030JN01_YUV720(_mode, "A030JN01_YUV720", YUYV, FBF_MODESTR | FBF_SPI, _detect, _bus, _addr)
+
+#define VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr) \
 	.bus	= _bus,\
 	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB24,\
+	.pixfmt	= IPU_PIX_FMT_##_fmt,\
 	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
-	.fbflags = FBF_MODESTR,\
+	.fbflags = _flags
+
+/* hdmi settings */
+#define VDF_1280_720M_60(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
 	.mode	= {\
-		.name           = "1280x720M@60",\
+		.name           = _name,\
 		.refresh        = 60,\
 		.xres           = 1280,\
 		.yres           = 720,\
@@ -67,17 +120,11 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
-#define VD_1920_1080M_60(_mode, _detect, _bus, _addr) \
+#define VDF_1920_1080M_60(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
 {\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
-	.fbflags = FBF_MODESTR,\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
 	.mode	= {\
-		.name           = "1920x1080M@60",\
+		.name           = _name,\
 		.refresh        = 60,\
 		.xres           = 1920,\
 		.yres           = 1080,\
@@ -94,17 +141,11 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 }
 
 
-#define VD_1024_768M_60(_mode, _detect, _bus, _addr) \
+#define VDF_1024_768M_60(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
 {\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
-	.fbflags = FBF_MODESTR,\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
 	.mode	= {\
-		.name           = "1024x768M@60",\
+		.name           = _name,\
 		.refresh        = 60,\
 		.xres           = 1024,\
 		.yres           = 768,\
@@ -120,17 +161,11 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
-#define VD_800_600MR_60(_mode, _detect, _bus, _addr) \
+#define VDF_800_600MR_60(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
 {\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
-	.fbflags = FBF_MODESTR,\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
 	.mode	= {\
-		.name           = "800x600MR@60",\
+		.name           = _name,\
 		.refresh        = 60,\
 		.xres           = 800,\
 		.yres           = 600,\
@@ -146,17 +181,11 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
-#define VD_640_480M_60(_mode, _detect, _bus, _addr) \
+#define VDF_640_480M_60(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
 {\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
-	.fbflags = FBF_MODESTR,\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
 	.mode	= {\
-		.name           = "640x480M@60",\
+		.name           = _name,\
 		.refresh        = 60,\
 		.xres           = 640,\
 		.yres           = 480,\
@@ -172,17 +201,11 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
-#define VD_720_480M_60(_mode, _detect, _bus, _addr) \
+#define VDF_720_480M_60(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
 {\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
-	.fbflags = FBF_MODESTR,\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
 	.mode	= {\
-		.name           = "720x480M@60",\
+		.name           = _name,\
 		.refresh        = 60,\
 		.xres           = 720,\
 		.yres           = 480,\
@@ -199,17 +222,11 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 }
 
 /* tsc2004 */
-#define VD_CLAA_WVGA(_mode, _detect, _bus, _addr) \
+#define VDF_CLAA_WVGA(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
 {\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB666,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
-	.fbflags = FBF_MODESTR,\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
 	.mode	= {\
-		.name           = "CLAA-WVGA",\
+		.name           = _name,\
 		.refresh        = 57,\
 		.xres           = 800,\
 		.yres           = 480,\
@@ -227,17 +244,11 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 
 /* tsc2004 */
 /* keep compatible with LQ050Y3DC01 */
-#define VD_SHARP_WVGA(_mode, _detect, _bus, _addr) \
+#define VDF_SHARP_WVGA(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
 {\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
-	.fbflags = FBF_MODESTR,\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
 	.mode	= {\
-		.name           = "sharp-wvga",\
+		.name           = _name,\
 		.refresh        = 60,\
 		.xres           = 800,\
 		.yres           = 480,\
@@ -259,17 +270,11 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
  * hsync = 260 * vsync = 15.6 Khz
  * pixclk = 800 * hsync = 12.48 MHz
  */
-#define VD_HITACHI_HVGA(_mode, _detect, _bus, _addr) \
+#define VDF_HITACHI_HVGA(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
 {\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB666,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
-	.fbflags = FBF_MODESTR,\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
 	.mode	= {\
-		.name		= "hitachi_hvga",\
+		.name		= _name,\
 		.refresh	= 60,\
 		.xres		= 640,\
 		.yres		= 240,\
@@ -286,17 +291,11 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 }
 
 /* tsc2004 */
-#define VD_DC050WX(_mode, _detect, _bus, _addr) \
+#define VDF_DC050WX(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
 {\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
-	.fbflags = FBF_MODESTR,\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
 	.mode	= {\
-		.name           = "DC050WX",\
+		.name           = _name,\
 		.refresh        = 60,\
 		.xres           = 800,\
 		.yres           = 480,\
@@ -314,175 +313,135 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 
 
 /* INNOLUX model N140BGE, 18 bit LVDS */
-#define VD_INNOLUX_WXGA_14IN_12V(_mode, _detect, _bus, _addr) \
+#define VDF_INNOLUX_WXGA_14IN_12V(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
 {\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB666,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
 	.mode	= {\
-		.name = "INNOLUX-WXGA-IN14-12V",\
-		.refresh = 60,\
-		.xres = 1366,\
-		.yres = 768,\
-		.pixclock = 1000000000000ULL / (1366+108+108+10) / (768+8+8+16) / 60,\
-		.left_margin = 108,\
-		.right_margin = 108,\
-		.upper_margin = 8,\
-		.lower_margin = 8,\
-		.hsync_len = 10,\
-		.vsync_len = 16,\
-		.sync = FB_SYNC_EXT,\
-		.vmode = FB_VMODE_NONINTERLACED,\
+		.name		= _name,\
+		.refresh	= 60,\
+		.xres		= 1366,\
+		.yres		= 768,\
+		.pixclock	= 1000000000000ULL / (1366+108+108+10) / (768+8+8+16) / 60,\
+		.left_margin	= 108,\
+		.right_margin	= 108,\
+		.upper_margin	= 8,\
+		.lower_margin	= 8,\
+		.hsync_len	= 10,\
+		.vsync_len	= 16,\
+		.sync		= FB_SYNC_EXT,\
+		.vmode		= FB_VMODE_NONINTERLACED,\
 	}\
 }
 
 /* AUO model B116XAN03.0, 11.6", 1366x768, 24 bit lvds */
-#define VD_AUO_WXGA_11IN_12V(_mode, _detect, _bus, _addr) \
+#define VDF_AUO_WXGA_11IN_12V(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
 {\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
 	.mode	= {\
-		.name = "AUO-WXGA-IN11-12V",\
-		.refresh = 60,\
-		.xres = 1366,\
-		.yres = 768,\
-		.pixclock = 1000000000000ULL / (1366+67+67+100) / (768+10+10+6) / 60,\
-		.left_margin = 67,\
-		.right_margin = 67,\
-		.upper_margin = 10,\
-		.lower_margin = 10,\
-		.hsync_len = 100,\
-		.vsync_len = 6,\
-		.sync = FB_SYNC_EXT,\
-		.vmode = FB_VMODE_NONINTERLACED,\
+		.name		= _name,\
+		.refresh	= 60,\
+		.xres		= 1366,\
+		.yres		= 768,\
+		.pixclock	= 1000000000000ULL / (1366+67+67+100) / (768+10+10+6) / 60,\
+		.left_margin	= 67,\
+		.right_margin	= 67,\
+		.upper_margin	= 10,\
+		.lower_margin	= 10,\
+		.hsync_len	= 100,\
+		.vsync_len	= 6,\
+		.sync		= FB_SYNC_EXT,\
+		.vmode		= FB_VMODE_NONINTERLACED,\
 	}\
 }
 
 /* OSD model OSD101T1315-45, 18 bit LVDS*/
-#define VD_OSD_WSVGA(_mode, _detect, _bus, _addr) \
+#define VDF_OSD_WSVGA(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
 {\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB666,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
 	.mode	= {\
-		.name = "OSD-WSVGA",\
-		.refresh = 60,\
-		.xres = 1024,\
-		.yres = 600,\
-		.pixclock = 1000000000000ULL / (1024+45+210+1) / (600+22+132+1) / 60,\
-		.left_margin = 45,\
-		.right_margin = 210,\
-		.upper_margin = 22,\
-		.lower_margin = 132,\
-		.hsync_len = 1,\
-		.vsync_len = 1,\
-		.sync = FB_SYNC_EXT,\
-		.vmode = FB_VMODE_NONINTERLACED,\
+		.name		= _name,\
+		.refresh	= 60,\
+		.xres		= 1024,\
+		.yres		= 600,\
+		.pixclock	= 1000000000000ULL / (1024+45+210+1) / (600+22+132+1) / 60,\
+		.left_margin	= 45,\
+		.right_margin	= 210,\
+		.upper_margin	= 22,\
+		.lower_margin	= 132,\
+		.hsync_len	= 1,\
+		.vsync_len	= 1,\
+		.sync		= FB_SYNC_EXT,\
+		.vmode		= FB_VMODE_NONINTERLACED,\
 	}\
 }
 
-/* INNOLUX model AT070TN83 */
-#define INNOLUX_WVGA_MODE(_name) \
+/* INNOLUX model AT070TN83, 800x480  18 bit RGB with or without LVDS converter board */
+#define VDF_INNOLUX_WVGA(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
 	.mode	= {\
-		.name = _name,\
-		.refresh = 60,\
-		.xres = 800,\
-		.yres = 480,\
-		.pixclock = 1000000000000ULL / (800+45+16+1) / (480+22+125+1) / 60,\
-		.left_margin = 45,\
-		.right_margin = 16,\
-		.upper_margin = 22,\
-		.lower_margin = 125,\
-		.hsync_len = 1,\
-		.vsync_len = 1,\
-		.sync = FB_SYNC_EXT | FB_SYNC_CLK_LAT_FALL,\
-		.vmode = FB_VMODE_NONINTERLACED,\
-	}
-
-/* INNOLUX model AT070TN83, 800x480  18 bit RGB with LVDS converter board */
-#define VD_INNOLUX_WVGA(_mode, _detect, _bus, _addr) \
-{\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB666,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
-	INNOLUX_WVGA_MODE("INNOLUX-WVGA") \
+		.name		= _name,\
+		.refresh	= 60,\
+		.xres		= 800,\
+		.yres		= 480,\
+		.pixclock	= 1000000000000ULL / (800+45+16+1) / (480+22+125+1) / 60,\
+		.left_margin	= 45,\
+		.right_margin	= 16,\
+		.upper_margin	= 22,\
+		.lower_margin	= 125,\
+		.hsync_len	= 1,\
+		.vsync_len	= 1,\
+		.sync		= FB_SYNC_EXT | FB_SYNC_CLK_LAT_FALL,\
+		.vmode		= FB_VMODE_NONINTERLACED,\
+	}\
 }
 
-#define VD_INNOLUX_WVGA_12V(_mode, _detect, _bus, _addr) \
+#define VDF_LB043(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
 {\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB666,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
-	INNOLUX_WVGA_MODE("INNOLUX-WVGA-12V") \
-}
-
-/* INNOLUX model AT070TN83, 800x480 straight 18 bit RGB no converter board */
-#define VD_INNOLUX_WVGA_M(_mode, _detect, _bus, _addr) \
-{\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB666,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
-	.fbflags = FBF_MODESTR,\
-	INNOLUX_WVGA_MODE("INNOLUX-WVGA") \
-}
-
-#define VD_OKAYA_480_272(_mode, _detect, _bus, _addr) \
-{\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
-	.fbflags = FBF_MODESTR,\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
 	.mode	= {\
-		.name           = "okaya_480x272",\
+		.name           = _name,\
 		.refresh        = 57,\
 		.xres           = 480,\
-		.yres           = 272,\
-		.pixclock       = 97786,\
-		.left_margin    = 2,\
-		.right_margin   = 1,\
-		.upper_margin   = 3,\
-		.lower_margin   = 2,\
-		.hsync_len      = 41,\
+		.yres           = 800,\
+		.pixclock       = 37037,\
+		.left_margin    = 40,\
+		.right_margin   = 60,\
+		.upper_margin   = 10,\
+		.lower_margin   = 10,\
+		.hsync_len      = 20,\
 		.vsync_len      = 10,\
 		.sync           = FB_SYNC_EXT | FB_SYNC_CLK_LAT_FALL,\
 		.vmode          = FB_VMODE_NONINTERLACED\
+	},\
+}
+
+#define VDF_OKAYA_480_272(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	.mode	= {\
+		.name		= _name,\
+		.refresh	= 57,\
+		.xres		= 480,\
+		.yres		= 272,\
+		.pixclock	= 97786,\
+		.left_margin	= 2,\
+		.right_margin	= 1,\
+		.upper_margin	= 3,\
+		.lower_margin	= 2,\
+		.hsync_len	= 41,\
+		.vsync_len	= 10,\
+		.sync		= FB_SYNC_EXT | FB_SYNC_CLK_LAT_FALL,\
+		.vmode		= FB_VMODE_NONINTERLACED\
 	}\
 }
 
 /* tsc2004 */
-#define VD_QVGA(_mode, _detect, _bus, _addr) \
+#define VDF_QVGA(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
 {\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
-	.fbflags = FBF_MODESTR,\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
 	.mode	= {\
-		.name           = "qvga",\
+		.name           = _name,\
 		.refresh        = 60,\
 		.xres           = 320,\
 		.yres           = 240,\
@@ -498,18 +457,32 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
-/* tsc2004 */
-#define VD_AT035GT_07ET3(_mode, _detect, _bus, _addr) \
+#define VDF_SPI_QVGA(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
 {\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
-	.fbflags = FBF_MODESTR,\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
 	.mode	= {\
-		.name           = "AT035GT-07ET3",\
+		.name           = _name,\
+		.refresh        = 60,\
+		.xres           = 320,\
+		.yres           = 240,\
+		.pixclock       = 1000000000000ULL/((320+16+20+52)*(240+16+4+2)*60),\
+		.left_margin    = 16,\
+		.right_margin   = 20,\
+		.upper_margin   = 16,\
+		.lower_margin   = 4,\
+		.hsync_len      = 52,\
+		.vsync_len      = 2,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
+/* tsc2004 */
+#define VDF_AT035GT_07ET3(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	.mode	= {\
+		.name           = _name,\
 		.refresh        = 60,\
 		.xres           = 320,\
 		.yres           = 240,\
@@ -526,16 +499,11 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 }
 
 /* ili210x touch screen */
-#define VD_AMP1024_600(_mode, _detect, _bus, _addr) \
+#define VDF_AMP1024_600(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
 {\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB666,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
 	.mode	= {\
-		.name           = "amp1024x600",\
+		.name           = _name,\
 		.refresh        = 60,\
 		.xres           = 1024,\
 		.yres           = 600,\
@@ -552,46 +520,12 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 }
 
 /* ft5x06 touch screen */
-/* LG panel LD101WX1 is a 24 bit spwg panel */
-#define VD_LD101WX1(_mode, _detect, _bus, _addr) \
-{\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
-	.fbflags = 0,\
-	.mode	= {\
-		.name           = "ld101wx1",\
-		.refresh        = 60,\
-		.xres           = 1280,\
-		.yres           = 800,\
-		.pixclock       = 1000000000000ULL/((1280+80+48+32)*(800+15+2+6)*60),\
-		.left_margin    = 80,\
-		.right_margin   = 48,\
-		.upper_margin   = 15,\
-		.lower_margin   = 2,\
-		.hsync_len      = 32,\
-		.vsync_len      = 6,\
-		.sync           = FB_SYNC_EXT,\
-		.vmode          = FB_VMODE_NONINTERLACED\
-	}\
-}
-
-/* ft5x06 touch screen */
 /* Tianma panel TM070JDHG30 is a 24 bit spwg panel */
-#define VD_TM070JDHG30(_mode, _detect, _bus, _addr) \
+#define VDF_TM070JDHG30(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
 {\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
-	.fbflags = 0,\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
 	.mode	= {\
-		.name           = "tm070jdhg30",\
+		.name           = _name,\
 		.refresh        = 60,\
 		.xres           = 1280,\
 		.yres           = 800,\
@@ -607,17 +541,11 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
-#define VD_AUO_B101EW05(_mode, _detect, _bus, _addr) \
+#define VDF_AUO_B101EW05(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
 {\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB666,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
-	.fbflags = 0,\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
 	.mode	= {\
-		.name           = "auo_b101ew05",\
+		.name           = _name,\
 		.refresh        = 60,\
 		.xres           = 1280,\
 		.yres           = 800,\
@@ -633,18 +561,14 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
+/* ft5x06_ts */
 /* lg1280x800(LP101WX1) == hannstar7 */
-#define VD_LG1280_800(_mode, _detect, _bus, _addr) \
+/* LG panel LD101WX1 is a 24 bit spwg panel */
+#define VDF_HANNSTAR7(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
 {\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB666,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
-	.fbflags = 0,\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
 	.mode	= {\
-		.name           = "lg1280x800",\
+		.name           = _name,\
 		.refresh        = 60,\
 		.xres           = 1280,\
 		.yres           = 800,\
@@ -661,45 +585,11 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 }
 
 /* ft5x06_ts */
-/* lg1280x800(LP101WX1) == hannstar7 */
-#define VD_HANNSTAR7(_mode, _detect, _bus, _addr) \
+#define VDF_DT070BTFT(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
 {\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB666,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
-	.fbflags = 0,\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
 	.mode	= {\
-		.name           = "hannstar7",\
-		.refresh        = 60,\
-		.xres           = 1280,\
-		.yres           = 800,\
-		.pixclock       = 1000000000000ULL/((1280+80+48+32)*(800+15+2+6)*60),\
-		.left_margin    = 80,\
-		.right_margin   = 48,\
-		.upper_margin   = 15,\
-		.lower_margin   = 2,\
-		.hsync_len      = 32,\
-		.vsync_len      = 6,\
-		.sync           = FB_SYNC_EXT,\
-		.vmode          = FB_VMODE_NONINTERLACED\
-	}\
-}
-
-/* ft5x06_ts */
-#define VD_DT070BTFT(_mode, _detect, _bus, _addr) \
-{\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
-	.fbflags = FBF_JEIDA,\
-	.mode	= {\
-		.name           = "dt070btft",\
+		.name           = _name,\
 		.refresh        = 60,\
 		.xres           = 1024,\
 		.yres           = 600,\
@@ -716,16 +606,11 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 }
 
 /* ft5x06_ts */
-#define VD_WSVGA(_mode, _detect, _bus, _addr) \
+#define VDF_WSVGA(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
 {\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB666,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
 	.mode	= {\
-		.name           = "wsvga",\
+		.name           = _name,\
 		.refresh        = 60,\
 		.xres           = 1024,\
 		.yres           = 600,\
@@ -742,17 +627,11 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 }
 
 /* Also works for ER-TFT050-3 */
-#define VD_ASIT500MA6F5D(_mode, _detect, _bus, _addr) \
+#define VDF_ASIT500MA6F5D(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
 {\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
-	.fbflags = FBF_MODESTR,\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
 	.mode	= {\
-		.name           = "ASIT500MA6F5D",\
+		.name           = _name,\
 		.refresh        = 60,\
 		.xres           = 800,\
 		.yres           = 480,\
@@ -768,50 +647,12 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
-/*
- * hitachi 640x240
- * vsync = 60
- * hsync = 260 * vsync = 15.6 Khz
- * pixclk = 800 * hsync = 12.48 MHz
- */
-#define VD_HITACHI_HVGA(_mode, _detect, _bus, _addr) \
-{\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB666,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
-	.fbflags = FBF_MODESTR,\
-	.mode	= {\
-		.name		= "hitachi_hvga",\
-		.refresh	= 60,\
-		.xres		= 640,\
-		.yres		= 240,\
-		.pixclock	= 1000000000000ULL / (640+34+1+125) / (240+8+3+9) / 60,\
-		.left_margin	= 34,\
-		.right_margin	= 1,\
-		.upper_margin	= 8,\
-		.lower_margin	= 3,\
-		.hsync_len	= 125,\
-		.vsync_len	= 9,\
-		.sync           = FB_SYNC_EXT | FB_SYNC_CLK_LAT_FALL,\
-		.vmode          = FB_VMODE_NONINTERLACED\
-	}\
-}
-
 /* fusion7 */
-#define VD_FUSION7(_mode, _detect, _bus, _addr) \
+#define VDF_FUSION7(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
 {\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB666,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
-	.fbflags = FBF_MODESTR,\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
 	.mode	= {\
-		.name           = "fusion7",\
+		.name           = _name,\
 		.refresh        = 60,\
 		.xres           = 800,\
 		.yres           = 480,\
@@ -828,16 +669,11 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 }
 
 /* egalax_ts */
-#define VD_HANNSTAR(_mode, _detect, _bus, _addr) \
+#define VDF_HANNSTAR(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
 {\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB666,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
 	.mode	= {\
-		.name           = "hannstar",\
+		.name           = _name,\
 		.refresh        = 60,\
 		.xres           = 1024,\
 		.yres           = 768,\
@@ -853,16 +689,11 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
-#define VD_1024_600(_mode, _detect, _bus, _addr) \
+#define VDF_1024_600(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
 {\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB666,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
 	.mode	= {\
-		.name           = "1024x600",\
+		.name           = _name,\
 		.refresh        = 60,\
 		.xres           = 1024,\
 		.yres           = 600,\
@@ -879,16 +710,11 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 }
 
 /* egalax_ts */
-#define VD_LG9_7(_mode, _detect, _bus, _addr) \
+#define VDF_LG9_7(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
 {\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB666,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
 	.mode	= {\
-		.name           = "lg9.7",\
+		.name           = _name,\
 		.refresh        = 60,\
 		.xres           = 1024,\
 		.yres           = 768,\
@@ -904,17 +730,11 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
-#define VD_1080P60(_mode, _detect, _bus, _addr) \
+#define VDF_1080P60(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
 {\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
-	.fbflags = FBF_SPLITMODE,\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
 	.mode	= {\
-		.name           = "1080P60",\
+		.name           = _name,\
 		.refresh        = 60,\
 		.xres           = 1920,\
 		.yres           = 1080,\
@@ -930,43 +750,11 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
-#define VD_1080P60_J(_mode, _detect, _bus, _addr) \
+#define VDF_SHARP_LQ101K1LY04(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
 {\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
-	.fbflags = FBF_SPLITMODE | FBF_JEIDA,\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
 	.mode	= {\
-		.name           = "1080P60_J",\
-		.refresh        = 60,\
-		.xres           = 1920,\
-		.yres           = 1080,\
-		.pixclock       = 1000000000000ULL/((1920+148+88+44)*(1080+36+4+5)*60),\
-		.left_margin    = 148,\
-		.right_margin   = 88,\
-		.upper_margin   = 36,\
-		.lower_margin   = 4,\
-		.hsync_len      = 44,\
-		.vsync_len      = 5,\
-		.sync           = FB_SYNC_EXT,\
-		.vmode          = FB_VMODE_NONINTERLACED\
-	}\
-}
-
-#define VD_SHARP_LQ101K1LY04(_mode, _detect, _bus, _addr) \
-{\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
-	.fbflags = FBF_JEIDA,\
-	.mode	= {\
-		.name           = "sharp-LQ101K1LY04",\
+		.name           = _name,\
 		.refresh        = 60,\
 		.xres           = 1280,\
 		.yres           = 800,\
@@ -982,16 +770,11 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
-#define VD_WXGA(_mode, _detect, _bus, _addr) \
+#define VDF_WXGA(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
 {\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
 	.mode	= {\
-		.name           = "wxga",\
+		.name           = _name,\
 		.refresh        = 60,\
 		.xres           = 1280,\
 		.yres           = 800,\
@@ -1007,43 +790,11 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
-#define VD_WXGA_J(_mode, _detect, _bus, _addr) \
+#define VDF_LD070WSVGA(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
 {\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
-	.fbflags = FBF_JEIDA,\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
 	.mode	= {\
-		.name           = "wxga_j",\
-		.refresh        = 60,\
-		.xres           = 1280,\
-		.yres           = 800,\
-		.pixclock       = 1000000000000ULL/((1280+40+40+10)*(800+3+80+10)*60),\
-		.left_margin    = 40,\
-		.right_margin   = 40,\
-		.upper_margin   = 3,\
-		.lower_margin   = 80,\
-		.hsync_len      = 10,\
-		.vsync_len      = 10,\
-		.sync           = FB_SYNC_EXT,\
-		.vmode          = FB_VMODE_NONINTERLACED\
-	}\
-}
-
-#define VD_LD070WSVGA(_mode, _detect, _bus, _addr) \
-{\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
-	.fbflags = 0,\
-	.mode	= {\
-		.name           = "ld070wsvga",\
+		.name           = _name,\
 		.refresh        = 55,\
 		.xres           = 1024,\
 		.yres           = 600,\
@@ -1059,17 +810,11 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
-#define VD_SVGA(_mode, _detect, _bus, _addr) \
+#define VDF_SVGA(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
 {\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB666,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
-	.fbflags = FBF_MODESTR,\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
 	.mode	= {\
-		.name           = "svga",\
+		.name           = _name,\
 		.refresh        = 60,\
 		.xres           = 800,\
 		.yres           = 600,\
@@ -1091,16 +836,11 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
  * 1000000000/1056/525/35.35 = 51 frames/second
  * 1000000000/1056/525/28.6 =  63.068 frames/second
  */
-#define VD_WVGA_TX23D200_24(_mode, _detect, _bus, _addr) \
+#define VDF_WVGA_TX23D200(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
 {\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
 	.mode	= {\
-		.name           = "tx23d200_24",\
+		.name           = _name,\
 		.refresh        = 60,\
 		.xres           = 800,\
 		.yres           = 480,\
@@ -1116,41 +856,11 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
-#define VD_WVGA_TX23D200_18(_mode, _detect, _bus, _addr) \
+#define VDF_WVGA(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
 {\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB666,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
 	.mode	= {\
-		.name           = "tx23d200_18",\
-		.refresh        = 60,\
-		.xres           = 800,\
-		.yres           = 480,\
-		.pixclock       = 1000000000000ULL/((800+220+18+18)*(480+21+14+10)*52),\
-		.left_margin    = 220,\
-		.right_margin   = 18,\
-		.upper_margin   = 21,\
-		.lower_margin   = 14,\
-		.hsync_len      = 18,\
-		.vsync_len      = 10,\
-		.sync           = FB_SYNC_EXT,\
-		.vmode          = FB_VMODE_NONINTERLACED\
-	}\
-}
-
-#define VD_WVGA(_mode, _detect, _bus, _addr) \
-{\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB666,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
-	.mode	= {\
-		.name           = "wvga",\
+		.name           = _name,\
 		.refresh        = 60,\
 		.xres           = 800,\
 		.yres           = 480,\
@@ -1166,42 +876,11 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
-#define VD_WVGA_J(_mode, _detect, _bus, _addr) \
+#define VDF_AA065VE11(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
 {\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
-	.fbflags = FBF_JEIDA,\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
 	.mode	= {\
-		.name           = "wvga_j",\
-		.refresh        = 60,\
-		.xres           = 800,\
-		.yres           = 480,\
-		.pixclock       = 1000000000000ULL/((800+220+40+60)*(480+21+7+10)*60),\
-		.left_margin    = 220,\
-		.right_margin   = 40,\
-		.upper_margin   = 21,\
-		.lower_margin   = 7,\
-		.hsync_len      = 60,\
-		.vsync_len      = 10,\
-		.sync           = FB_SYNC_EXT,\
-		.vmode          = FB_VMODE_NONINTERLACED\
-	}\
-}
-
-#define VD_AA065VE11(_mode, _detect, _bus, _addr) \
-{\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
-	.mode	= {\
-		.name           = "AA065VE11",\
+		.name           = _name,\
 		.refresh        = 70,\
 		.xres           = 640,\
 		.yres           = 480,\
@@ -1217,16 +896,11 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
-#define VD_VGA(_mode, _detect, _bus, _addr) \
+#define VDF_VGA(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
 {\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
 	.mode	= {\
-		.name           = "vga",\
+		.name           = _name,\
 		.refresh        = 60,\
 		.xres           = 640,\
 		.yres           = 480,\
@@ -1242,17 +916,11 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
-#define VD_LSA40AT9001(_mode, _detect, _bus, _addr) \
+#define VDF_LSA40AT9001(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
 {\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
-	.fbflags = FBF_MODESTR,\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
 	.mode	= {\
-		.name           = "LSA40AT9001",\
+		.name           = _name,\
 		.refresh        = 60,\
 		.xres           = 800,\
 		.yres           = 600,\
@@ -1269,17 +937,11 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 }
 
 /* spi panels */
-#define VD_AUO_G050(_mode, _detect, _bus, _addr) \
+#define VDF_AUO_G050(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
 {\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= NULL,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
-	.fbflags = FBF_MODESTR | FBF_SPI,\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
 	.mode	= {\
-		.name           = "AUO_G050",\
+		.name           = _name,\
 		.refresh        = 60,\
 		.xres           = 480,\
 		.yres           = 800,\
@@ -1297,17 +959,11 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 
 //640 * 3/2 = 960, (1.5 clocks per pixel)
 //33.7M
-#define VD_A030JN01_UPS051(_mode, _detect, _bus, _addr) \
+#define VDF_A030JN01_UPS051(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
 {\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_UPS051,\
-	.detect	= NULL,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
-	.fbflags = FBF_MODESTR | FBF_SPI,\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
 	.mode	= {\
-		.name           = "A030JN01_UPS051",\
+		.name           = _name,\
 		.refresh        = 60,\
 		.xres           = 640,\
 		.yres           = 480,\
@@ -1324,17 +980,11 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 }
 
 /* 27.11 MHz pixel clock */
-#define VD_A030JN01_YUV720(_mode, _detect, _bus, _addr) \
+#define VDF_A030JN01_YUV720(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
 {\
-	.bus    = _bus,\
-	.addr   = _addr,\
-	.pixfmt = IPU_PIX_FMT_YUYV,\
-	.detect = NULL,\
-	.enable = fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
-	.fbflags = FBF_MODESTR | FBF_SPI,\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
 	.mode   = {\
-		.name           = "A030JN01_YUV720",\
+		.name           = _name,\
 		.refresh        = 60,\
 		.xres           = 720,\
 		.yres           = 480,\
