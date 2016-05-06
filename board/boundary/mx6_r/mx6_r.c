@@ -639,35 +639,9 @@ void board_enable_lcd(const struct display_info_t *di, int enable)
 	gpio_direction_output(GP_BACKLIGHT_RGB, enable);
 }
 
-#define VD_LB043(_mode, _detect, _bus, _addr) \
-{\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect,\
-	.enable	= fbp_enable_fb,\
-	.fbtype = FB_##_mode,\
-	.fbflags = FBF_MODESTR | FBF_SPI,\
-	.mode	= {\
-		.name           = "LB043",\
-		.refresh        = 57,\
-		.xres           = 480,\
-		.yres           = 800,\
-		.pixclock       = 37037,\
-		.left_margin    = 40,\
-		.right_margin   = 60,\
-		.upper_margin   = 10,\
-		.lower_margin   = 10,\
-		.hsync_len      = 20,\
-		.vsync_len      = 10,\
-		.sync           = FB_SYNC_CLK_LAT_FALL,\
-		.vmode          = FB_VMODE_NONINTERLACED\
-	},\
-}
-
 static const struct display_info_t displays[] = {
 #ifdef CONFIG_MXC_SPI_DISPLAY
-	VD_LB043(LCD, detect_spi, 1, 0x70),
+	VDF_LB043(LCD, "LB043", RGB24, FBF_MODESTR | FBF_SPI, detect_spi, 1, 0x70),
 #endif
 	/* hdmi */
 	VD_1280_720M_60(HDMI, fbp_detect_i2c, 1, 0x50),
