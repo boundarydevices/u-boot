@@ -293,34 +293,8 @@ void board_enable_lcd(const struct display_info_t *di, int enable)
 	gpio_direction_output(GP_BACKLIGHT_RGB, enable);
 }
 
-#define VD_SPI_QVGA(_mode, _detect, _bus, _addr) \
-{\
-	.bus	= _bus,\
-	.addr	= _addr,\
-	.pixfmt	= IPU_PIX_FMT_RGB24,\
-	.detect	= _detect,\
-	.enable	= board_enable_lcd,\
-	.fbtype = FB_##_mode,\
-	.fbflags = FBF_MODESTR | FBF_SPI,\
-	.mode	= {\
-		.name           = "qvga",\
-		.refresh        = 60,\
-		.xres           = 320,\
-		.yres           = 240,\
-		.pixclock       = 1000000000 / 408 * 100 / 262 / 6,\
-		.left_margin    = 16,\
-		.right_margin   = 20,\
-		.upper_margin   = 16,\
-		.lower_margin   = 4,\
-		.hsync_len      = 52,\
-		.vsync_len      = 2,\
-		.sync           = 0,\
-		.vmode          = FB_VMODE_NONINTERLACED\
-	}\
-}
-
 static const struct display_info_t displays[] = {
-	VD_SPI_QVGA(LCD, NULL, 1, 0x70),
+	VDF_SPI_QVGA(LCD, "qvga", RGB24, FBF_MODESTR | FBF_SPI, NULL, 1, 0x70)
 };
 
 int board_eth_init(bd_t *bis)
