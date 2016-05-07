@@ -78,7 +78,7 @@ static iomux_v3_cfg_t const init_pads[] = {
 
 #define GPIRQ_BT		IMX_GPIO_NR(6, 16)
 	IOMUX_PAD_CTRL(NANDF_CS3__GPIO6_IO16, WEAK_PULLDN),
-#define GP_BT_WAKE
+#define GP_BT_WAKE		IMX_GPIO_NR(2, 2)
 	IOMUX_PAD_CTRL(NANDF_D2__GPIO2_IO02, WEAK_PULLUP),
 
 	/* i2c1_rv4172 rtc */
@@ -123,6 +123,7 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IOMUX_PAD_CTRL(SD2_DAT1__SD2_DATA1, USDHC_PAD_CTRL),
 	IOMUX_PAD_CTRL(SD2_DAT2__SD2_DATA2, USDHC_PAD_CTRL),
 	IOMUX_PAD_CTRL(SD2_DAT3__SD2_DATA3, USDHC_PAD_CTRL),
+//	IOMUX_PAD_CTRL(SD1_CLK__OSC32K_32K_OUT, OUTPUT_40OHM),	/* slow clock */
 
 #ifndef CONFIG_REV2
 	/* USDHC3 - sdcard */
@@ -163,10 +164,8 @@ static iomux_v3_cfg_t const init_pads[] = {
 static struct i2c_pads_info i2c_pads[] = {
 	/* I2C1, RTC */
 	I2C_PADS_INFO_ENTRY(I2C1, EIM_D21, 3, 21, EIM_D28, 3, 28, I2C_PAD_CTRL),
-	/* I2C2 Camera, MIPI */
+	/* I2C2 hdmi */
 	I2C_PADS_INFO_ENTRY(I2C2, KEY_COL3, 4, 12, KEY_ROW3, 4, 13, I2C_PAD_CTRL),
-	/* I2C3, J15 - RGB connector */
-	I2C_PADS_INFO_ENTRY(I2C3, GPIO_5, 1, 05, GPIO_16, 7, 11, I2C_PAD_CTRL),
 };
 
 int dram_init(void)
@@ -351,7 +350,7 @@ int board_init(void)
 
 	/* address of boot parameters */
 	gd->bd->bi_boot_params = PHYS_SDRAM + 0x100;
-	for (i = 0; i < 3; i++) {
+	for (i = 0; i < 2; i++) {
 	        setup_i2c(i, CONFIG_SYS_I2C_SPEED, 0x7f, p);
 		p += I2C_PADS_INFO_ENTRY_SPACING;
 	}
