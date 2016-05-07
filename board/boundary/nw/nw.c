@@ -64,9 +64,9 @@ DECLARE_GLOBAL_DATA_PTR;
  */
 static iomux_v3_cfg_t const init_pads[] = {
 	/* bt_rfkill */
-#define GP_BT_RFKILL_RESET	IMX_GPIO_NR(6, 16)
-	IOMUX_PAD_CTRL(NANDF_CS3__GPIO6_IO16, WEAK_PULLDN),
-#define GP_BT_SHUTDOWN	IMX_GPIO_NR(6, 15)
+#define GP_BT_RFKILL_RESET	IMX_GPIO_NR(6, 8)
+	IOMUX_PAD_CTRL(NANDF_ALE__GPIO6_IO08, WEAK_PULLDN),
+#define GP_BT_RFKILL_SHUTDOWN	IMX_GPIO_NR(6, 15)
 	IOMUX_PAD_CTRL(NANDF_CS2__GPIO6_IO15, WEAK_PULLDN),
 
 	/* ECSPI1 */
@@ -75,6 +75,16 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IOMUX_PAD_CTRL(EIM_D16__ECSPI1_SCLK, SPI_PAD_CTRL),
 #define GP_ECSPI1_NOR_CS		IMX_GPIO_NR(3, 19)
 	IOMUX_PAD_CTRL(EIM_D19__GPIO3_IO19, WEAK_PULLUP),
+
+#define GPIRQ_BT		IMX_GPIO_NR(6, 16)
+	IOMUX_PAD_CTRL(NANDF_CS3__GPIO6_IO16, WEAK_PULLDN),
+#define GP_BT_WAKE
+	IOMUX_PAD_CTRL(NANDF_D2__GPIO2_IO02, WEAK_PULLUP),
+
+	/* i2c1_rv4172 rtc */
+#define GPIRQ_RTC_RV4162	IMX_GPIO_NR(4, 6)
+	IOMUX_PAD_CTRL(KEY_COL0__GPIO4_IO06, WEAK_PULLUP),
+
 
 	/* reg_usbotg_vbus */
 #define GP_REG_USBOTG	IMX_GPIO_NR(3, 22)
@@ -92,6 +102,12 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IOMUX_PAD_CTRL(EIM_D26__UART2_TX_DATA, UART_PAD_CTRL),
 	IOMUX_PAD_CTRL(EIM_D27__UART2_RX_DATA, UART_PAD_CTRL),
 
+	/* UART3 for GB863021 bluetooth */
+	IOMUX_PAD_CTRL(EIM_D24__UART3_TX_DATA, UART_PAD_CTRL),
+	IOMUX_PAD_CTRL(EIM_D25__UART3_RX_DATA, UART_PAD_CTRL),
+	IOMUX_PAD_CTRL(EIM_D23__UART3_CTS_B, UART_PAD_CTRL),
+	IOMUX_PAD_CTRL(EIM_D31__UART3_RTS_B, UART_PAD_CTRL),
+
 	/* USBH1 */
 #define GP_USB_HUB_RESET	IMX_GPIO_NR(4, 15)
 	IOMUX_PAD_CTRL(KEY_ROW4__GPIO4_IO15, WEAK_PULLUP),
@@ -100,7 +116,7 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IOMUX_PAD_CTRL(GPIO_1__USB_OTG_ID, USDHC_PAD_CTRL), /* USBOTG ID pin */
 	IOMUX_PAD_CTRL(KEY_COL4__USB_OTG_OC, WEAK_PULLUP),
 
-	/* USDHC2 - wifi */
+	/* USDHC2 - GB863021 wifi */
 	IOMUX_PAD_CTRL(SD2_CLK__SD2_CLK, USDHC_PAD_CTRL),
 	IOMUX_PAD_CTRL(SD2_CMD__SD2_CMD, USDHC_PAD_CTRL),
 	IOMUX_PAD_CTRL(SD2_DAT0__SD2_DATA0, USDHC_PAD_CTRL),
@@ -134,9 +150,11 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IOMUX_PAD_CTRL(NANDF_D5__GPIO2_IO05, WEAK_PULLUP), /* RESET */
 #endif
 
-	/* wl1271 */
-#define GPIRQ_WL1271_WL	IMX_GPIO_NR(6, 14)
+	/* wlan wifi GB863021 */
+#define GPIRQ_WL		IMX_GPIO_NR(6, 14)
 	IOMUX_PAD_CTRL(NANDF_CS1__GPIO6_IO14, WEAK_PULLDN),
+#define GPIRQ_WL_CLK_REQ	IMX_GPIO_NR(6, 14)
+	IOMUX_PAD_CTRL(NANDF_WP_B__GPIO6_IO09, WEAK_PULLUP),
 };
 
 /*
@@ -270,7 +288,7 @@ static const unsigned short gpios_out_low[] = {
 	/* Disable WiFi/BT */
 	GP_REG_WLAN_EN,
 	GP_BT_RFKILL_RESET,
-	GP_BT_SHUTDOWN,
+	GP_BT_RFKILL_SHUTDOWN,
 };
 
 static const unsigned short gpios_out_high[] = {
@@ -278,10 +296,13 @@ static const unsigned short gpios_out_high[] = {
 };
 
 static const unsigned short gpios_in[] = {
+	GPIRQ_RTC_RV4162,
 #ifndef CONFIG_REV2
 	GP_USDHC3_CD,
 #endif
-	GPIRQ_WL1271_WL,
+	GPIRQ_BT,
+	GPIRQ_WL,
+	GPIRQ_WL_CLK_REQ,
 };
 
 static void set_gpios_in(const unsigned short *p, int cnt)
@@ -347,9 +368,9 @@ int board_init(void)
 int checkboard(void)
 {
 #ifndef CONFIG_REV2
-#define BOARD nw
+#define BOARD "nw"
 #else
-#define BOARD nw2
+#define BOARD "nw2"
 #endif
 	puts("Board: Boundary " BOARD " board\n");
 	return 0;
