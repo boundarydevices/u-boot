@@ -122,6 +122,10 @@ if itest.s "x" != "x${wlmac}" ; then
 	setenv bootargs ${bootargs} wlcore.mac=${wlmac}
 fi
 
+if itest.s "x" != "x${bd_addr}" ; then
+	setenv bootargs ${bootargs} bd_addr=${bd_addr}
+fi
+
 if itest.s "x" != "x${gpumem}" ; then
 	setenv bootargs ${bootargs} galcore.contiguousSize=${gpumem}
 fi
