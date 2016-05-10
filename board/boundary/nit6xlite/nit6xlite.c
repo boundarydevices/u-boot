@@ -574,8 +574,10 @@ int board_late_init(void)
 	/* Bluetooth mac */
 	if (!getenv("bd_addr")) {
 		imx_get_mac_from_fuse(0x800000, mac_address);
-		snprintf(macbuf, sizeof(macbuf), "%pM", mac_address);
-		setenv("bd_addr", macbuf);
+		if (is_valid_ethaddr(mac_address)) {
+			snprintf(macbuf, sizeof(macbuf), "%pM", mac_address);
+			setenv("bd_addr", macbuf);
+		}
 	}
 	return 0;
 }
