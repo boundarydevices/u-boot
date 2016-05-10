@@ -695,11 +695,22 @@ int misc_init_r(void)
 
 int board_late_init(void)
 {
+	unsigned char mac_address[8];
+	char macbuf[18];
 	int cpurev = get_cpu_rev();
 
 	setenv("cpu", get_imx_type((cpurev & 0xFF000) >> 12));
 	if (!getenv("board"))
 		setenv("board", "jlm");
 	setenv("uboot_defconfig", CONFIG_DEFCONFIG);
+	imx_get_mac_from_fuse(0, mac_address);
+	if (is_valid_ethaddr(mac_address)) {
+		if (!getenv("ethaddr"))
+			eth_setenv_enetaddr("ethaddr", mac_address);
+		if (!getenv("wlmac")) {
+			snprintf(macbuf, sizeof(macbuf), "%pM", mac_address);
+			setenv("wlmac", macbuf);
+		}
+	}
 	return 0;
 }
