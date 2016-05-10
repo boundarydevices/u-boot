@@ -944,7 +944,7 @@ int misc_init_r(void)
 
 int board_late_init(void)
 {
-	unsigned char mac_address[6];
+	unsigned char mac_address[8];
 	char macbuf[18];
 	int cpurev = get_cpu_rev();
 
@@ -953,8 +953,14 @@ int board_late_init(void)
 		setenv("board", "ls");
 	setenv("uboot_defconfig", CONFIG_DEFCONFIG);
 	imx_get_mac_from_fuse(0, mac_address);
-	snprintf(macbuf, sizeof(macbuf), "%pM", mac_address);
-	setenv("wlmac", macbuf);
+	if (is_valid_ethaddr(mac_address)) {
+		if (!getenv("ethaddr"))
+			eth_setenv_enetaddr("ethaddr", mac_address);
+		if (!getenv("wlmac")) {
+			snprintf(macbuf, sizeof(macbuf), "%pM", mac_address);
+			setenv("wlmac", macbuf);
+		}
+	}
 	return 0;
 }
 
