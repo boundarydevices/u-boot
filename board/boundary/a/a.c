@@ -538,6 +538,9 @@ static const struct boot_mode board_boot_modes[] = {
 
 int misc_init_r(void)
 {
+#ifdef CONFIG_PREBOOT
+	preboot_keys();
+#endif
 #ifdef CONFIG_CMD_BMODE
 	add_board_boot_modes(board_boot_modes);
 #endif
