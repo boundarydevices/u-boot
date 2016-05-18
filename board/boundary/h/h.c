@@ -149,6 +149,7 @@ static const iomux_v3_cfg_t init_pads[] = {
 	IOMUX_PAD_CTRL(EIM_D27__UART2_RX_DATA, UART_PAD_CTRL),
 
 	/* USB */
+#define GP_USB_HUB_RESET	IMX_GPIO_NR(7, 12)
 	IOMUX_PAD_CTRL(GPIO_17__GPIO7_IO12, WEAK_PULLUP),	/* Hub reset */
 	IOMUX_PAD_CTRL(GPIO_1__USB_OTG_ID, USDHC_PAD_CTRL), /* USBOTG ID pin */
 	IOMUX_PAD_CTRL(EIM_D22__GPIO3_IO22, WEAK_PULLUP),	/* usbotg power */
@@ -289,16 +290,15 @@ int dram_init(void)
 	return 0;
 }
 
-#define GP_USB_HUB_RESET	IMX_GPIO_NR(7, 12)
-
 #ifdef CONFIG_USB_EHCI_MX6
 int board_ehci_hcd_init(int port)
 {
-	/* Reset USB hub */
-	gpio_direction_output(GP_USB_HUB_RESET, 0);
-	mdelay(2);
-	gpio_set_value(GP_USB_HUB_RESET, 1);
-
+	if (port) {
+		/* Reset USB hub */
+		gpio_direction_output(GP_USB_HUB_RESET, 0);
+		mdelay(2);
+		gpio_set_value(GP_USB_HUB_RESET, 1);
+	}
 	return 0;
 }
 #endif
