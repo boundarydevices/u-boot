@@ -295,9 +295,11 @@ int dram_init(void)
 #ifdef CONFIG_USB_EHCI_MX6
 int board_ehci_hcd_init(int port)
 {
-	/* Connect H1 USB to imx */
-	gpio_direction_output(GP_USBH1_SOURCE, 1);
-	mdelay(2);
+	if (port) {
+		/* Connect H1 USB to imx */
+		gpio_direction_output(GP_USBH1_SOURCE, 1);
+		mdelay(2);
+	}
 	return 0;
 }
 
