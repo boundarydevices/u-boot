@@ -12,7 +12,7 @@
 0			/*2c sflash_A2_size=size in byte(hex)*/
 0			/*30 sflash_B1_size=size in byte(hex)*/
 0			/*34 sflash_B2_size=size in byte(hex)*/
-5			/*38 sclk_freq=0 to 6, 6 - 76 MHz, max 80 MHz*/
+5			/*38 sclk_freq=0 to 6, 0:18Mhz, 1:49Mhz, 2:55Mhz, 3:60Mhz, 4:66Mhz, 5:76MHz, 6:99Mhz, max 80 MHz*/
 0			/*3c busy_bit_offset=bit position of device BUSY in device status register*/
 1			/*40 sflash_type=1 (Single), 2 (Dual), 4 (Quad mode of operation)*/
 0			/*44 sflash_port=0 or 1 (Port B used)*/
