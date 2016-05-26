@@ -255,10 +255,13 @@
 #endif
 
 #ifdef CONFIG_VIDEO
+#define CONFIG_CMD_BMP
+#endif
+
+#if defined(CONFIG_VIDEO) && !defined(BD_NOVIDEO_CONSOLE)
 #define BD_STDOUT_SERIAL	"setenv stdout serial;"
 #define BD_STDOUT_VIDEO		"setenv stdout serial,vga; "
 #define BD_STDIN_USBKBD		"setenv stdin serial,usbkbd;"
-#define CONFIG_CMD_BMP
 #else
 #define BD_STDOUT_SERIAL
 #define BD_STDOUT_VIDEO
@@ -283,9 +286,9 @@
 #define BD_RAM_FDT	"13000000"
 #endif
 
-#define BD_BOUNDARY_ENV_SETTINGS \
-	"active_partition=1\0" \
-	"bootcmd=script=/6x_bootscript; run runscript;" \
+#define BD_BOOTCMD_STD \
+		"script=/6x_bootscript;" \
+		"run runscript;" \
 		BD_STDOUT_VIDEO \
 		"echo ; echo 6x_bootscript not found ; " \
 		"echo ; echo serial console at 115200, 8N1 ; echo ; " \
@@ -305,9 +308,16 @@
 			"done;" \
 		"done;" \
 		BD_STDOUT_VIDEO \
-		"echo no block devices found;" \
-		"\0" \
+		"echo no block devices found;"
+
+#ifndef BD_BOOTCMD
+#define BD_BOOTCMD BD_BOOTCMD_STD
+#endif
+
+#define BD_BOUNDARY_ENV_SETTINGS \
+	"active_partition=1\0" \
 	"bootdevs=" BD_BOOT_DEVS "\0" \
+	"bootcmd=" BD_BOOTCMD "\0" \
 	"clearenv=if sf probe || sf probe ; then " \
 		"sf erase 0xc0000 0x2000 && " \
 		"echo restored environment to factory default ; fi\0" \
