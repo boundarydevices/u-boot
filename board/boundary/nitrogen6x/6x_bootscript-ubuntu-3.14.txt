@@ -108,7 +108,7 @@ else
 	setenv bootargs "${bootargs} root=/dev/mmcblk${disk}p${bpart}"
 fi
 
-if itest.s "x" == "x${enable_msi}" ; then
+if itest.s "x" != "x${disable_msi}" ; then
 	setenv bootargs ${bootargs} pci=nomsi
 fi;
 
