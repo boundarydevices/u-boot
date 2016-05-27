@@ -29,7 +29,7 @@ fi
 
 if itest.s x7D == "x${cpu}"; then
 	echo "check qspi parameter block" ;
-	if dhcp ${a_qspi1} qspi-${sfname}.${uboot_defconfig} ; then
+	if tftp ${a_qspi1} qspi-${sfname}.${uboot_defconfig} ; then
 	else
 		echo "parameter file qspi-${sfname}.${uboot_defconfig} not found on TFTP server"
 		exit
@@ -58,7 +58,7 @@ fi
 
 echo "check U-Boot" ;
 
-if dhcp ${a_uImage1} u-boot.$uboot_defconfig ; then
+if tftp ${a_uImage1} u-boot.$uboot_defconfig ; then
 else
 	echo "File u-boot.$uboot_defconfig not found on TFTP server" ;
 	exit
@@ -75,7 +75,7 @@ if cmp.b ${a_uImage1} ${a_uImage2} $filesize ; then
 	if itest.s "${qspi_match}" == "1" ; then
 		echo "------- u-boot upgrade not needed" ;
 		if itest.s x != "x${net_upgrade_fs}" ; then
-			if dhcp ${a_base} ${net_upgrade_fs} ; then
+			if tftp ${a_base} ${net_upgrade_fs} ; then
 				echo "------- running ${net_upgrade_fs}" ;
 				source ${a_base}
 			else
