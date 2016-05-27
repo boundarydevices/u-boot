@@ -1,10 +1,10 @@
-setenv bootargs ''
-
 a_script=0x10800000
 a_zImage=0x10800000
 a_fdt=0x13000000
 a_ramdisk=0x13800000
 a_initrd=0x13a00000
+
+setenv bootargs console=${console},115200 vmalloc=400M consoleblank=0 rootwait fixrtc cpu=${cpu} board=${board}
 
 setenv initrd_high 0xffffffff
 if itest.s x6SX == "x${cpu}" || itest.s x7D == "x${cpu}"; then
@@ -36,16 +36,16 @@ if itest.s "x" == "x${dtbname}" ; then
 	fi
 fi
 
-if load ${dtype} ${disk}:1 ${a_script} uEnv.txt ; then
+if itest.s x${bootpart} == x ; then
+	bootpart=1
+fi
+
+if load ${dtype} ${disk}:${bootpart} ${a_script} uEnv.txt ; then
     env import -t ${a_script} ${filesize}
 fi
 
 if itest.s x == x${bootdir} ; then
 	bootdir=/boot/
-fi
-
-if itest.s x${bootpart} == x ; then
-	bootpart=1
 fi
 
 if load ${dtype} ${disk}:${bootpart} ${a_fdt} ${bootdir}${dtbname} ; then
@@ -94,9 +94,6 @@ if itest.s "x" == "x${cmd_xxx_present}" ; then
 	echo "!!!!!!!!!!!!!!!!"
 fi
 
-setenv bootargs "${bootargs} console=${console},115200 vmalloc=400M consoleblank=0 rootwait fixrtc"
-
-
 setexpr b0 ${bootpart} % 0x0a;
 setexpr b1 ${bootpart} / 0x0a;
 #this is to show a decimal number when really hex is output
@@ -110,6 +107,10 @@ elif test "usb" = "${dtype}" ; then
 else
 	setenv bootargs "${bootargs} root=/dev/mmcblk${disk}p${bpart}"
 fi
+
+if itest.s "x" == "x${enable_msi}" ; then
+	setenv bootargs ${bootargs} pci=nomsi
+fi;
 
 if itest.s "x" != "x${disable_giga}" ; then
 	setenv bootargs ${bootargs} fec.disable_giga=1
