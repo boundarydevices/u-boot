@@ -73,5 +73,6 @@
 		"\0" \
 	"initrd_addr=0x83800000\0" \
 	"bootcmd_mfg=run mfgtool_args;bootz ${loadaddr} ${initrd_addr} ${fdt_addr};\0" \
+	"cmd_custom=echo\0" \
 
 #endif	/* __CONFIG_H */
