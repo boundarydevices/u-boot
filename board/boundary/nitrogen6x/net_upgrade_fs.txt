@@ -19,7 +19,7 @@ setexpr i 0;
 setexpr offset 0;
 while test $i -le 99
 do
-	if dhcp ${a_base} ${imagefile}.$i ; then
+	if tftp ${a_base} ${imagefile}.$i ; then
 		echo "Extracting file ${imagefile}.$i to ${upgrade_device}"
 		gzwrite ${upgrade_device} ${a_base} 0x$filesize 0x100000 0x$offset ;
 	else
