@@ -701,8 +701,9 @@ int board_late_init(void)
 		setenv("board", "nitrogen7");
 	setenv("uboot_defconfig", CONFIG_DEFCONFIG);
 	if (!getenv("wlmac")) {
-		imx_get_mac_from_fuse(0x800000, mac_address);
+		imx_get_mac_from_fuse(0, mac_address);
 		if (is_valid_ethaddr(mac_address)) {
+			mac_address[3] |= 0x80;
 			snprintf(macbuf, sizeof(macbuf), "%pM", mac_address);
 			setenv("wlmac", macbuf);
 		}
