@@ -4,7 +4,7 @@ a_fdt=0x13000000
 a_ramdisk=0x13800000
 a_initrd=0x13a00000
 
-setenv bootargs console=${console},115200 vmalloc=400M consoleblank=0 rootwait fixrtc cpu=${cpu} board=${board}
+setenv bootargs ''
 
 setenv initrd_high 0xffffffff
 if itest.s x6SX == "x${cpu}" || itest.s x7D == "x${cpu}"; then
@@ -43,6 +43,7 @@ fi
 if load ${dtype} ${disk}:${bootpart} ${a_script} uEnv.txt ; then
     env import -t ${a_script} ${filesize}
 fi
+setenv bootargs ${bootargs} console=${console},115200 vmalloc=400M consoleblank=0 rootwait fixrtc cpu=${cpu} board=${board}
 
 if itest.s x == x${bootdir} ; then
 	bootdir=/boot/
