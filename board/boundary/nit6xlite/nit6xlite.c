@@ -32,6 +32,7 @@
 #include <i2c.h>
 #include <input.h>
 #include <netdev.h>
+#include <splash.h>
 #include <usb/ehci-fsl.h>
 
 /* Special MXCFB sync flags are here. */
@@ -415,6 +416,28 @@ int board_eth_init(bd_t *bis)
 		setenv("eth1addr", getenv("usbnet_devaddr"));
 	usb_eth_initialize(bis);
 #endif
+	return 0;
+}
+
+int splash_screen_prepare(void)
+{
+	char *env_loadsplash;
+
+	if (!getenv("splashimage") || !getenv("splashsize")) {
+		return -1;
+	}
+
+	env_loadsplash = getenv("loadsplash");
+	if (env_loadsplash == NULL) {
+		printf("Environment variable loadsplash not found!\n");
+		return -1;
+	}
+
+	if (run_command_list(env_loadsplash, -1, 0)) {
+		printf("failed to run loadsplash %s\n\n", env_loadsplash);
+		return -1;
+	}
+
 	return 0;
 }
 
