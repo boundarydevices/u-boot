@@ -159,7 +159,7 @@ static const iomux_v3_cfg_t init_pads[] = {
 	/* QSPIA */
 	IOMUX_PAD_CTRL(EPDC_DATA00__QSPI_A_DATA0, QSPI_PAD_CTRL),
 	IOMUX_PAD_CTRL(EPDC_DATA01__QSPI_A_DATA1, QSPI_PAD_CTRL),
-#if 0
+#if 1
 	IOMUX_PAD_CTRL(EPDC_DATA02__QSPI_A_DATA2, QSPI_PAD_CTRL),
 	IOMUX_PAD_CTRL(EPDC_DATA03__QSPI_A_DATA3, QSPI_PAD_CTRL),
 #else
@@ -546,8 +546,12 @@ static const unsigned short gpios_out_low[] = {
 
 static const unsigned short gpios_out_high[] = {
 	GP_CAN_STANDBY,
+#ifdef GP_SPI_nWP
 	GP_SPI_nWP,
+#endif
+#ifdef GP_SPI_nHOLD
 	GP_SPI_nHOLD,
+#endif
 };
 
 static const unsigned short gpios_in[] = {
