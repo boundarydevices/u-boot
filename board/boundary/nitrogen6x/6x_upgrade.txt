@@ -76,8 +76,11 @@ if cmp.b ${a_uImage1} ${a_uImage2} $filesize ; then
 		echo "------- upgrade not needed" ;
 		exit
 	fi
-	setexpr filesize 0x1000 - $offset
 	erase_size=0x1000
+	if itest.s xMX25L6405D == "x${sfname}"; then
+		erase_size=0x10000
+	fi
+	setexpr filesize ${erase_size} - ${offset}
 fi
 
 echo "Need U-Boot upgrade" ;
