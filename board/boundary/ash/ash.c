@@ -151,7 +151,7 @@ static const iomux_v3_cfg_t init_pads[] = {
 #define GP_ENABLE_BSL_OB	IMX_GPIO_NR(6, 5)
 	IOMUX_PAD_CTRL(CSI0_DAT19__GPIO6_IO05, WEAK_PULLDN_OUTPUT),
 #define GP_BSL_CB_ON_OFF	IMX_GPIO_NR(4, 8)
-	IOMUX_PAD_CTRL(KEY_COL1__GPIO4_IO08, WEAK_PULLDN_OUTPUT),
+	IOMUX_PAD_CTRL(KEY_COL1__GPIO4_IO08, WEAK_PULLUP_OUTPUT),
 #define GP_CALIBRATION_FLAG	IMX_GPIO_NR(4, 9)
 	IOMUX_PAD_CTRL(KEY_ROW1__GPIO4_IO09, WEAK_PULLDN_OUTPUT),
 
@@ -590,8 +590,8 @@ void board_enable_lcd(const struct display_info_t *di, int enable)
 
 static const struct display_info_t displays[] = {
 	/* lvds */
-	VD_WVGA_TX23D200_24(LVDS, NULL, 0, 0x00),
 	VD_WVGA_TX23D200_18(LVDS, NULL, 0, 0x00),
+	VD_WVGA_TX23D200_24(LVDS, NULL, 0, 0x00),
 
 	/* hdmi */
 	VD_1280_720M_60(HDMI, fbp_detect_i2c, 1, 0x50),
@@ -628,7 +628,6 @@ static const unsigned short gpios_out_low[] = {
 	GP_TEST_RBL,
 	GP_ENABLE_BSL_CB,
 	GP_ENABLE_BSL_OB,
-	GP_BSL_CB_ON_OFF,
 	GP_CALIBRATION_FLAG,
 	GP_TDA7491P_GAIN0,
 	GP_TDA7491P_GAIN1,
@@ -650,6 +649,7 @@ static const unsigned short gpios_out_low[] = {
 
 static const unsigned short gpios_out_high[] = {
 	GP_ECSPI1_NOR_CS,	/* SS1 of spi nor */
+	GP_BSL_CB_ON_OFF,
 	GP_FLEXCAN_STANDBY,
 	GP_OV5640_MIPI_POWER_DOWN,	/* camera power down */
 	GP_BACKLIGHT_LVDS,
