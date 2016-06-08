@@ -1834,7 +1834,9 @@ static int cfg_video_init(void)
 #ifndef CONFIG_VIDEO_LOGO
 	if (!board_cfb_skip()){
 		video_console_address = video_fb_address;
+#ifndef CONFIG_VIDEO_SKIP_VERSION
 		video_drawstring(VIDEO_FONT_WIDTH, 0, (uchar *)version_string);
+#endif
 	}
 #endif
 #if defined(CONFIG_VIDEO_LOGO) || defined(CONFIG_SPLASH_SCREEN)
