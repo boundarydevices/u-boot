@@ -1,0 +1,24 @@
+if TARGET_HP
+
+config SYS_CPU
+	default "armv7"
+
+config SYS_BOARD
+	default "hp"
+
+config SYS_VENDOR
+	default "boundary"
+
+config SYS_SOC
+	default "mx6"
+
+config SYS_CONFIG_NAME
+	default "hp"
+
+config ENV_WLMAC
+	bool
+	default	y
+
+source "board/boundary/common/Kconfig"
+
+endif
