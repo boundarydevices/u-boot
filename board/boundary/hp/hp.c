@@ -573,6 +573,8 @@ void board_enable_lvds(const struct display_info_t *di, int enable)
 }
 
 static const struct display_info_t displays[] = {
+	VD_AFK1024600A02(LVDS, fbp_detect_i2c, (GP_I2C3A_J6_RESET << 8) | 2, 0x4a),
+
 	/* ft5x06 */
 	VD_HANNSTAR7(LVDS, fbp_detect_i2c, 2, 0x38),
 	VD_AUO_B101EW05(LVDS, NULL, 2, 0x38),
