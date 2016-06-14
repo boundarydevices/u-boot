@@ -71,6 +71,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 #define VD_FUSION7(_mode, _detect, _bus, _addr)		VDF_FUSION7(_mode, "fusion7", RGB666, FBF_MODESTR, _detect, _bus, _addr)
 #define VD_HANNSTAR(_mode, _detect, _bus, _addr)	VDF_HANNSTAR(_mode, "hannstar", RGB666, 0, _detect, _bus, _addr)
 #define VD_1024_600(_mode, _detect, _bus, _addr)	VDF_1024_600(_mode, "1024x600", RGB666, 0, _detect, _bus, _addr)
+#define VD_AFK1024600A02(_mode, _detect, _bus, _addr)	VDF_AFK1024600A02(_mode, "AFK1024600A02", RGB24, 0, _detect, _bus, _addr)
 #define VD_LG9_7(_mode, _detect, _bus, _addr)		VDF_LG9_7(_mode, "lg9.7", RGB666, 0, _detect, _bus, _addr)
 #define VD_1080P60(_mode, _detect, _bus, _addr)		VDF_1080P60(_mode, "1080P60", RGB24, FBF_SPLITMODE, _detect, _bus, _addr)
 #define VD_1080P60_J(_mode, _detect, _bus, _addr)	VDF_1080P60(_mode, "1080P60_J", RGB24, FBF_SPLITMODE | FBF_JEIDA, _detect, _bus, _addr)
@@ -704,6 +705,26 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 		.lower_margin   = 11,\
 		.hsync_len      = 104,\
 		.vsync_len      = 10,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
+#define VDF_AFK1024600A02(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	.mode	= {\
+		.name           = _name,\
+		.refresh        = 60,\
+		.xres           = 1024,\
+		.yres           = 600,\
+		.pixclock       = 1000000000000ULL/((1024+160+80+80)*(600+19+8+8)*60),\
+		.left_margin    = 160,\
+		.right_margin   = 80,\
+		.upper_margin   = 19,\
+		.lower_margin   = 8,\
+		.hsync_len      = 80,\
+		.vsync_len      = 8,\
 		.sync           = FB_SYNC_EXT,\
 		.vmode          = FB_VMODE_NONINTERLACED\
 	}\
