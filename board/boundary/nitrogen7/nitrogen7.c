@@ -74,10 +74,10 @@ static const iomux_v3_cfg_t init_pads[] = {
 	IOMUX_PAD_CTRL(GPIO1_IO11__ENET1_MDC, ENET_PAD_CTRL_MII),
 	IOMUX_PAD_CTRL(GPIO1_IO12__CCM_ENET_REF_CLK1, ENET_PAD_CTRL_MII),
 #endif
-#define GP_PHY_RESET	IMX_GPIO_NR(6, 10)
+#define GP_ENET_PHY_RESET	IMX_GPIO_NR(6, 10)
 	IOMUX_PAD_CTRL(SD3_STROBE__GPIO6_IO10, WEAK_PULLUP),
-#define GP_PHY		IMX_GPIO_NR(1, 3)
-	IOMUX_PAD_CTRL(GPIO1_IO03__GPIO1_IO3, WEAK_PULLUP),
+#define GPIRQ_ENET_PHY		IMX_GPIO_NR(1, 2)
+	IOMUX_PAD_CTRL(GPIO1_IO02__GPIO1_IO2, WEAK_PULLUP),
 
 	/* flexcan2 */
 	IOMUX_PAD_CTRL(GPIO1_IO14__FLEXCAN2_RX, WEAK_PULLUP),
@@ -230,7 +230,7 @@ static const iomux_v3_cfg_t init_pads[] = {
 	IOMUX_PAD_CTRL(SD2_DATA1__SD2_DATA1, USDHC_PAD_CTRL),
 	IOMUX_PAD_CTRL(SD2_DATA2__SD2_DATA2, USDHC_PAD_CTRL),
 	IOMUX_PAD_CTRL(SD2_DATA3__SD2_DATA3, USDHC_PAD_CTRL),
-	IOMUX_PAD_CTRL(GPIO1_IO02__CCM_CLKO1, WEAK_PULLUP),	/* Slow clock */
+	IOMUX_PAD_CTRL(GPIO1_IO03__CCM_CLKO2, WEAK_PULLUP),	/* Slow clock */
 #define GP_BT_REG_ON	IMX_GPIO_NR(4, 23)
 	IOMUX_PAD_CTRL(ECSPI2_SS0__GPIO4_IO23, WEAK_PULLUP),
 #define GP_WL_HOST_WAKE	IMX_GPIO_NR(4, 20)
@@ -479,7 +479,7 @@ static int setup_fec(void)
 		= (struct iomuxc_gpr_base_regs *) IOMUXC_GPR_BASE_ADDR;
 
 	/* Reset AR8031 PHYs */
-	gpio_direction_output(GP_PHY_RESET, 0);
+	gpio_direction_output(GP_ENET_PHY_RESET, 0);
 	gpio_direction_output(GP_PHY1_AD0, 0);
 	gpio_direction_output(GP_PHY1_AD1, 0);
 	gpio_direction_output(GP_PHY1_MODE0, 0);
@@ -489,7 +489,7 @@ static int setup_fec(void)
 	SETUP_IOMUX_PADS(enet_gpio_pads);
 
 	udelay(1000);	/* 1 ms minimum reset pulse */
-	gpio_set_value(GP_PHY_RESET, 1);
+	gpio_set_value(GP_ENET_PHY_RESET, 1);
 	/* strap hold time, 18 fails, 19 works, so 40 should be safe */
 	udelay(40);
 
@@ -532,7 +532,7 @@ int board_phy_config(struct phy_device *phydev)
 #endif
 
 static const unsigned short gpios_out_low[] = {
-	GP_PHY_RESET,
+	GP_ENET_PHY_RESET,
 	GP_I2C2A_EN,
 	GP_MIPI_BACKLIGHT,
 	GP_PCIE_DISABLE,
@@ -555,7 +555,7 @@ static const unsigned short gpios_out_high[] = {
 };
 
 static const unsigned short gpios_in[] = {
-	GP_PHY,
+	GPIRQ_ENET_PHY,
 	GP_PMIC_INT_B,
 	GP_RTC,
 	GP_MIPI,
