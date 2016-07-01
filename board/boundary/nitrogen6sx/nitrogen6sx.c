@@ -460,7 +460,7 @@ int board_eth_init(bd_t *bis)
 		free(bus);
 		goto usbeth;
 	}
-	printf("using phy at %d\n", phydev->addr);
+	printf("%s at %d\n", phydev->drv->name, phydev->addr);
 	ret  = fec_probe(bis, 0, ENET_BASE_ADDR, bus, phydev);
 	if (ret) {
 		printf("FEC0 MXC: %s:failed\n", __func__);
@@ -473,7 +473,7 @@ int board_eth_init(bd_t *bis)
 	phydev = phy_find_by_mask(bus, (1 << 5), PHY_INTERFACE_MODE_RGMII);
 	if (!phydev)
 		goto usbeth;
-	printf("using phy at %d\n", phydev->addr);
+	printf("%s at %d\n", phydev->drv->name, phydev->addr);
 	ret  = fec_probe(bis, 1, ENET2_BASE_ADDR, bus, phydev);
 	if (ret) {
 		printf("FEC1 MXC: %s:failed\n", __func__);
