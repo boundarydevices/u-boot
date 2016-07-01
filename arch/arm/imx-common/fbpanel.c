@@ -154,6 +154,8 @@ static const char rgb24[] = "RGB24";
 static const char rgb666[] = "RGB666";
 static const char yuyv16[] = "YUYV16";
 
+static char lvds_enabled;
+
 static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf, int size)
 {
 	const char *mode_str = NULL;
@@ -166,6 +168,8 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 	if (getenv("cmd_frozen") && getenv(cmd_fbnames[fb]))
 		return;		/* don't override if already set */
 
+	if (fb == FB_LVDS)
+		lvds_enabled = 0;
 	if (!di) {
 		const char *name = getenv(fbnames[fb]);
 		if (name) {
@@ -182,10 +186,6 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 			size -= sz;
 			if ((fb == FB_LVDS) || (fb == FB_LVDS2)) {
 				sz = snprintf(buf, size, ";fdt set ldb/lvds-channel@%d status disabled", fb - FB_LVDS);
-				buf += sz;
-				size -= sz;
-				if (fb == FB_LVDS)
-					snprintf(buf, size, ";fdt set ldb/lvds-channel@1 primary");
 			}
 			setenv(cmd_fbnames[fb], buf_start);
 			return;
@@ -195,9 +195,16 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 			mode_str = di->mode.name;
 	}
 
+	if (fb == FB_LVDS)
+		lvds_enabled = 1;
 	sz = snprintf(buf, size, "fdt set %s status okay;", fbnames[fb]);
 	buf += sz;
 	size -= sz;
+	if ((fb == FB_LVDS2) && !lvds_enabled) {
+		snprintf(buf, size, "fdt set ldb/lvds-channel@1 primary;");
+		buf += sz;
+		size -= sz;
+	}
 
 	if (di->pixfmt == IPU_PIX_FMT_RGB24)
 		fmt = rgb24;
