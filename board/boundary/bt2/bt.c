@@ -636,6 +636,13 @@ int splash_screen_prepare(void)
 }
 
 #if defined(CONFIG_VIDEO_IPUV3)
+void board_enable_lcd(const struct display_info_t *di, int enable)
+{
+	if (enable)
+		SETUP_IOMUX_PADS(rgb_pads);
+	else
+		SETUP_IOMUX_PADS(rgb_gpio_pads);
+}
 
 static const struct display_info_t displays[] = {
 	/* hdmi */
@@ -728,6 +735,7 @@ int board_early_init_f(void)
 	set_gpios(gpios_out_high, ARRAY_SIZE(gpios_out_high), 1);
 	set_gpios(gpios_out_low, ARRAY_SIZE(gpios_out_low), 0);
 	SETUP_IOMUX_PADS(init_pads);
+	SETUP_IOMUX_PADS(rgb_gpio_pads);
 	return 0;
 }
 
