@@ -696,6 +696,7 @@ int board_early_init_f(void)
 	set_gpios(gpios_out_high, ARRAY_SIZE(gpios_out_high), 1);
 	set_gpios(gpios_out_low, ARRAY_SIZE(gpios_out_low), 0);
 	SETUP_IOMUX_PADS(init_pads);
+	SETUP_IOMUX_PADS(rgb_gpio_pads);
 	return 0;
 }
 
