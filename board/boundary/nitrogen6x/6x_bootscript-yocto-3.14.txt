@@ -3,6 +3,7 @@ a_zImage=0x10800000
 a_fdt=0x13000000
 a_ramdisk=0x13800000
 a_initrd=0x13a00000
+m4=''
 
 setenv bootargs ''
 
@@ -13,6 +14,10 @@ if itest.s x6SX == "x${cpu}" || itest.s x7D == "x${cpu}"; then
 	a_fdt=0x83000000
 	a_ramdisk=0x83800000
 	a_initrd=0x83a00000
+	if itest.s "x1" == "x$m4enabled" ; then
+		run m4boot;
+		m4='-m4';
+	fi
 fi
 
 if itest.s "x" == "x${board}" ; then
@@ -28,9 +33,9 @@ if itest.s "x" == "x${dtbname}" ; then
 	elif itest.s x6QP == "x${cpu}" ; then
 		dtbname=imx6qp-${board}.dtb;
 	elif itest.s x6SX == "x${cpu}" ; then
-		dtbname=imx6sx-${board}.dtb;
+		dtbname=imx6sx-${board}${m4}.dtb;
 	elif itest.s x7D == "x${cpu}" ; then
-		dtbname=imx7d-${board}.dtb;
+		dtbname=imx7d-${board}${m4}.dtb;
 	else
 		dtbname=imx6q-${board}.dtb;
 	fi
