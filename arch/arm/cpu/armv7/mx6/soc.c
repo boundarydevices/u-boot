@@ -460,31 +460,6 @@ valid:
 }
 #endif
 
-#ifdef CONFIG_MX6SX
-int arch_auxiliary_core_up(u32 core_id, u32 boot_private_data)
-{
-	struct src *src_reg;
-	u32 stack, pc;
-
-	if (!boot_private_data)
-		return 1;
-
-	stack = *(u32 *)boot_private_data;
-	pc = *(u32 *)(boot_private_data + 4);
-
-	/* Set the stack and pc to M4 bootROM */
-	writel(stack, M4_BOOTROM_BASE_ADDR);
-	writel(pc, M4_BOOTROM_BASE_ADDR + 4);
-
-	/* Enable M4 */
-	src_reg = (struct src *)SRC_BASE_ADDR;
-	setbits_le32(&src_reg->scr, 0x00400000);
-	clrbits_le32(&src_reg->scr, 0x00000010);
-
-	return 0;
-}
-#endif
-
 /*
  * cfg_val will be used for
  * Boot_cfg4[7:0]:Boot_cfg3[7:0]:Boot_cfg2[7:0]:Boot_cfg1[7:0]
