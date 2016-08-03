@@ -85,7 +85,6 @@ obj-$(CONFIG_MENU) += menu.o
 obj-$(CONFIG_UPDATE_TFTP) += update.o
 obj-$(CONFIG_DFU_TFTP) += update.o
 obj-$(CONFIG_USB_KEYBOARD) += usb_kbd.o
-obj-$(CONFIG_CMD_BOOTAUX) += cmd_bootaux.o
 
 endif # !CONFIG_SPL_BUILD
 
