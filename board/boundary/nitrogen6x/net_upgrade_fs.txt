@@ -1,3 +1,9 @@
+# remove from environment so they won't override local values
+setenv upgraded_fs
+setenv a_base
+setenv imagefile
+
+upgraded_fs=0
 a_base=0x10200000
 
 if itest.s x6SX == "x${cpu}" || itest.s x7D == "x${cpu}"; then
@@ -17,10 +23,10 @@ fi
  
 setexpr i 0;
 setexpr offset 0;
-while test $i -le 99
+while test ${i} -le 99
 do
-	if tftp ${a_base} ${imagefile}.$i ; then
-		echo "Extracting file ${imagefile}.$i to ${upgrade_device}"
+	if tftp ${a_base} ${imagefile}.${i} ; then
+		echo "Extracting file ${imagefile}.${i} to ${upgrade_device}"
 		setexpr end ${a_base} + ${filesize}
 		setexpr end ${end} - 1
 		setexpr.b sz3 *${end} * 0x1000000
@@ -34,28 +40,30 @@ do
 		setexpr sz ${sz} + ${sz1}
 		setexpr sz ${sz} + ${sz0}
 		if gzwrite ${upgrade_device} ${a_base} 0x${filesize} 0x100000 0x${offset} 0x${sz}; then
-			echo "Successfully wrote segment $i of ${sz} bytes"
+			echo "Successfully wrote segment ${i} of ${sz} bytes"
+			setexpr i ${i} + 1;
+			setexpr rem ${i} % 0x10;
+			if test ${rem} -eq 0x0a ; then
+				#this is to show a decimal number when really hex is output
+				setexpr i ${i} + 6;
+			fi;
+			setexpr offset ${offset} + ${sz}
 		else
-			echo "Error writing segment $i of ${sz} bytes"
-			exit
+			echo "Error writing segment ${i} of ${sz} bytes"
+			setexpr i ${i} + 1000;
 		fi
 	else
-		if test $i -eq 0 ; then
+		if test ${i} -eq 0 ; then
 			echo "image file not found or its too big to fit in the memory";
-			echo "expected file name : ${imagefile}.$i";
+			echo "expected file name : ${imagefile}.${i}";
 			echo "exiting..."
-			exit
+			setexpr i ${i} + 1000;
+		else
+			upgraded_fs=1
+			echo "---- ${upgrade_device} upgraded"
+			echo ; echo
+			sleep 2
+			setexpr i ${i} + 1000;
 		fi
-		echo "---- ${upgrade_device} upgraded"
-		echo ; echo
-		sleep 2
-		exit;
 	fi
-	setexpr i $i + 1;
-	setexpr rem $i % 0x10;
-	if test $rem -eq 0x0a ; then
-		#this is to show a decimal number when really hex is output
-		setexpr i $i + 6;
-	fi;
-	setexpr offset ${offset} + ${sz}
 done
