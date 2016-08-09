@@ -1,7 +1,15 @@
-if itest.s a$uboot_defconfig == a; then
+if itest.s a${uboot_defconfig} == a; then
         echo "Please set uboot_defconfig to the appropriate value"
         exit
 fi
+
+# remove from environment so they won't override local values
+setenv offset
+setenv erase_size
+setenv qspi_offset
+setenv a_base
+setenv qspi_match
+setenv n
 
 offset=0x400
 erase_size=0xC0000
@@ -58,19 +66,19 @@ fi
 
 echo "check U-Boot" ;
 
-if tftp ${a_uImage1} u-boot.$uboot_defconfig ; then
+if tftp ${a_uImage1} u-boot.${uboot_defconfig} ; then
 else
-	echo "File u-boot.$uboot_defconfig not found on TFTP server" ;
+	echo "File u-boot.${uboot_defconfig} not found on TFTP server" ;
 	exit
 fi
-echo "read $filesize bytes" ;
-if sf read ${a_uImage2} $offset $filesize ; then
+echo "read ${filesize} bytes" ;
+if sf read ${a_uImage2} ${offset} ${filesize} ; then
 else
 	echo "Error reading boot loader from EEPROM" ;
 	exit
 fi
 
-if cmp.b ${a_uImage1} ${a_uImage2} $filesize ; then
+if cmp.b ${a_uImage1} ${a_uImage2} ${filesize} ; then
 	echo "------- U-Boot versions match" ;
 	if itest.s "${qspi_match}" == "1" ; then
 		echo "------- u-boot upgrade not needed" ;
@@ -94,7 +102,7 @@ fi
 echo "Need U-Boot upgrade" ;
 echo "Program in 5 seconds" ;
 for n in 5 4 3 2 1 ; do
-	echo $n ;
+	echo ${n} ;
 	sleep 1 ;
 done
 echo "erasing" ;
@@ -106,19 +114,19 @@ setexpr a1 ${a_uImage1} + 0x400
 setexpr o1 ${offset} + 0x400
 setexpr s1 ${filesize} - 0x400
 sf write ${a1} ${o1} ${s1} ;
-sf write ${a_uImage1} $offset 0x400 ;
+sf write ${a_uImage1} ${offset} 0x400 ;
 
 if itest.s x7D == "x${cpu}"; then
 	sf write ${a_qspi1} ${qspi_offset} 0x200
 fi
 
 echo "verifying" ;
-if sf read ${a_uImage2} $offset $filesize ; then
+if sf read ${a_uImage2} ${offset} ${filesize} ; then
 else
 	echo "Error re-reading EEPROM" ;
 	exit
 fi
-if cmp.b ${a_uImage1} ${a_uImage2} $filesize ; then
+if cmp.b ${a_uImage1} ${a_uImage2} ${filesize} ; then
 else
 	echo "Read verification error" ;
 	exit
