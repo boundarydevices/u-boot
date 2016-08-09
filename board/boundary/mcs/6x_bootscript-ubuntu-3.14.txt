@@ -1,0 +1,157 @@
+setenv stdout serial,vga;
+setenv bootargs ''
+
+a_script=0x10800000
+a_zImage=0x10800000
+a_fdt=0x13000000
+a_ramdisk=0x13800000
+a_initrd=0x13a00000
+
+setenv initrd_high 0xffffffff
+if itest.s "x" == "x${dtbname}" ; then
+	if itest.s x6SOLO == "x${cpu}" ; then
+		dtbname=imx6dl-${board}.dtb;
+	elif itest.s x6DL == "x${cpu}" ; then
+		dtbname=imx6dl-${board}.dtb;
+	else
+		dtbname=imx6q-${board}.dtb;
+	fi
+fi
+
+
+if itest.s x${bootpart} == x ; then
+	bootpart=1
+fi
+
+if itest.s x${dtype} == x ; then
+	dtype=mmc
+fi
+
+if load ${dtype} ${disk}:${bootpart} ${a_script} uEnv.txt ; then
+    env import -t ${a_script} ${filesize}
+fi
+
+if itest.s x == x${bootdir} ; then
+	bootdir=/boot/
+fi
+
+if load ${dtype} ${disk}:${bootpart} ${a_fdt} ${bootdir}${dtbname} ; then
+	fdt addr ${a_fdt}
+	setenv fdt_high 0xffffffff
+else
+	echo "!!!! Error loading ${bootdir}${dtbname}";
+	exit;
+fi
+
+cmd_xxx_present=
+fdt resize
+if itest.s "x" != "x${cmd_custom}" ; then
+	run cmd_custom
+	cmd_xxx_present=1;
+fi
+
+setenv bootargs "${bootargs} enable_wait_mode=off console=${console},115200 consoleblank=0 rootwait fixrtc"
+
+fivewire='';
+if gpio input 193 ; then ; else fivewire=1 ; fi
+if gpio input 130 ; then ; else fivewire=1 ; fi
+
+if itest.s x == x$fivewire ; then
+        # pin 193 (GP7:1) is low - 4-wire screen
+        echo "------ Four wire screen" ;
+        setenv bootargs $bootargs video=mxcfb0:dev=ldb,1280x800MR@60,if=RGB666
+        setenv bootargs $bootargs fbcon=rotate:2
+else
+        echo "------ Five wire screen" ;
+        setenv bootargs $bootargs video=mxcfb0:dev=ldb,1280x800MR@60,if=RGB24
+fi
+setenv bootargs "${bootargs} ar1020_i2c.calibration=65536,0,0,0,65536,0,65536,4095,4095"
+
+setenv nextcon 1;
+while test "4" -ne $nextcon ; do
+        setenv bootargs "${bootargs} video=mxcfb${nextcon}:off"
+        setexpr nextcon $nextcon + 1 ;
+done
+
+if itest.s "x" != "x${cmd_lcd}" ; then
+	run cmd_lcd
+	cmd_xxx_present=1;
+fi
+if itest.s "x" != "x${cmd_lvds}" ; then
+	run cmd_lvds
+	cmd_xxx_present=1;
+fi
+if itest.s "x" != "x${cmd_lvds2}" ; then
+	run cmd_lvds2
+	cmd_xxx_present=1;
+fi
+
+if itest.s "x" == "x${cmd_xxx_present}" ; then
+	echo "!!!!!!!!!!!!!!!!"
+	echo "warning: your u-boot may be outdated, please upgrade"
+	echo "!!!!!!!!!!!!!!!!"
+fi
+
+
+if test "usb" = "${dtype}" ; then
+	setenv bootargs "${bootargs} root=/dev/sda${bootpart}" ;
+else
+	setenv bootargs "${bootargs} root=/dev/mmcblk${disk}p${bootpart}"
+fi
+
+if itest.s "yes" == "${dosplash}" ; then
+	setenv bootargs ${bootargs} splash quiet plymouth.ignore-serial-consoles
+fi
+
+if itest.s "x" != "x${overlayfs}" ; then
+	setenv bootargs ${bootargs} overlayfs=${overlayfs}
+	if itest.s "x" != "x${ofs-size}" ; then
+		setenv bootargs ${bootargs} ofs-size=${ofs-size}
+	fi
+fi
+
+if itest.s "x" != "x${cma}" ; then
+	setenv bootargs ${bootargs} cma=${cma}
+fi
+
+if itest.s "x" != "x${show_fdt}" ; then
+	fdt print /
+fi
+
+if itest.s "x" != "x${show_env}" ; then
+	printenv
+fi
+
+if kbd ; then
+        if itest.s xP == x${keybd} ; then
+                if ${fs}load ${dtype} ${disk}:${bootpart} ${a_zImage} ${bootdir}/uImage-usbwrite ; then
+                        if ${fs}load ${dtype} ${disk}:${bootpart} ${a_ramdisk} ${bootdir}/uramdisk-usbwrite.img ; then
+                           if itest.s x$havedtb == x ; then
+                                        bootm ${a_zImage} ${a_ramdisk} ;
+                           else
+                                        bootm ${a_zImage} ${a_initrd} ${a_fdt} ;
+                           fi
+                        fi
+                fi
+        fi
+fi
+
+echo "----------- trying to load /initrd.img";
+if load ${dtype} ${disk}:${bootpart} ${a_initrd} /initrd.img ; then
+	haverd=1;
+	setenv initrd_size ${filesize}
+else
+	haverd=
+fi
+
+echo 'Loading Linux...' ;
+if itest.s x${haverd} == x ; then
+	if load ${dtype} ${disk}:${bootpart} ${a_zImage} /vmlinuz ; then
+		bootz ${a_zImage} - ${a_fdt}
+	fi
+else
+	if load ${dtype} ${disk}:${bootpart} ${a_zImage} /vmlinuz ; then
+		bootz ${a_zImage} ${a_initrd}:${initrd_size} ${a_fdt} ;
+	fi
+fi
+echo "Error loading kernel image"
