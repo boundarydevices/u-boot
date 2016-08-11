@@ -180,8 +180,6 @@ static const iomux_v3_cfg_t init_pads[] = {
 	IOMUX_PAD_CTRL(EIM_A25__HDMI_TX_CEC_LINE, CEC_PAD_CTRL),
 
 	/* Hog Test points */
-#define GP_TP71			IMX_GPIO_NR(1, 30)
-	IOMUX_PAD_CTRL(ENET_TXD0__GPIO1_IO30, WEAK_PULLUP),
 #define GP_TP74			IMX_GPIO_NR(2, 7)
 	IOMUX_PAD_CTRL(NANDF_D7__GPIO2_IO07, WEAK_PULLUP),
 #define GP_TP84			IMX_GPIO_NR(2, 30)
@@ -284,14 +282,10 @@ static const iomux_v3_cfg_t init_pads[] = {
 	IOMUX_PAD_CTRL(KEY_COL4__USB_OTG_OC, WEAK_PULLUP),
 
 	/* USDHC3 - sdcard */
-	IOMUX_PAD_CTRL(SD3_CLK__SD3_CLK, USDHC_PAD_CTRL),
-	IOMUX_PAD_CTRL(SD3_CMD__SD3_CMD, USDHC_PAD_CTRL),
-	IOMUX_PAD_CTRL(SD3_DAT0__SD3_DATA0, USDHC_PAD_CTRL),
-	IOMUX_PAD_CTRL(SD3_DAT1__SD3_DATA1, USDHC_PAD_CTRL),
-	IOMUX_PAD_CTRL(SD3_DAT2__SD3_DATA2, USDHC_PAD_CTRL),
-	IOMUX_PAD_CTRL(SD3_DAT3__SD3_DATA3, USDHC_PAD_CTRL),
 #define GP_USDHC3_CD		IMX_GPIO_NR(7, 0)
 	IOMUX_PAD_CTRL(SD3_DAT5__GPIO7_IO00, WEAK_PULLUP),
+#define GP_USDHC3_POWER_EN	IMX_GPIO_NR(1, 30)
+	IOMUX_PAD_CTRL(ENET_TXD0__GPIO1_IO30, WEAK_PULLUP),	/* Pullup so that bmod mmc0 works */
 
 	/* USDHC4 - emmc */
 	IOMUX_PAD_CTRL(SD4_CLK__SD4_CLK, USDHC_PAD_CTRL),
@@ -306,6 +300,30 @@ static const iomux_v3_cfg_t init_pads[] = {
 	IOMUX_PAD_CTRL(SD4_DAT7__SD4_DATA7, USDHC_PAD_CTRL),
 #define GP_EMMC_RESET		IMX_GPIO_NR(2, 6)
 	IOMUX_PAD_CTRL(NANDF_D6__GPIO2_IO06, WEAK_PULLUP),
+};
+
+static const iomux_v3_cfg_t sd3_usdhc3_pads[] = {
+	IOMUX_PAD_CTRL(SD3_CLK__SD3_CLK, USDHC_PAD_CTRL),
+	IOMUX_PAD_CTRL(SD3_CMD__SD3_CMD, USDHC_PAD_CTRL),
+	IOMUX_PAD_CTRL(SD3_DAT0__SD3_DATA0, USDHC_PAD_CTRL),
+	IOMUX_PAD_CTRL(SD3_DAT1__SD3_DATA1, USDHC_PAD_CTRL),
+	IOMUX_PAD_CTRL(SD3_DAT2__SD3_DATA2, USDHC_PAD_CTRL),
+	IOMUX_PAD_CTRL(SD3_DAT3__SD3_DATA3, USDHC_PAD_CTRL),
+};
+
+static const iomux_v3_cfg_t sd3_gpio_pads[] = {
+#define GP_USDHC3_CLK	IMX_GPIO_NR(7, 3)
+	IOMUX_PAD_CTRL(SD3_CLK__GPIO7_IO03, WEAK_PULLDN),
+#define GP_USDHC3_CMD	IMX_GPIO_NR(7, 2)
+	IOMUX_PAD_CTRL(SD3_CMD__GPIO7_IO02, WEAK_PULLDN),
+#define GP_USDHC3_DAT0	IMX_GPIO_NR(7, 4)
+	IOMUX_PAD_CTRL(SD3_DAT0__GPIO7_IO04, WEAK_PULLDN),
+#define GP_USDHC3_DAT1	IMX_GPIO_NR(7, 5)
+	IOMUX_PAD_CTRL(SD3_DAT1__GPIO7_IO05, WEAK_PULLDN),
+#define GP_USDHC3_DAT2	IMX_GPIO_NR(7, 6)
+	IOMUX_PAD_CTRL(SD3_DAT2__GPIO7_IO06, WEAK_PULLDN),
+#define GP_USDHC3_DAT3	IMX_GPIO_NR(7, 7)
+	IOMUX_PAD_CTRL(SD3_DAT3__GPIO7_IO07, WEAK_PULLDN),
 };
 
 static const iomux_v3_cfg_t enet_ar8035_gpio_pads[] = {
@@ -464,6 +482,9 @@ int board_mmc_init(bd_t *bis)
 	for (index = 0; index < CONFIG_SYS_FSL_USDHC_NUM; ++index) {
 		switch (index) {
 		case 0:
+			mdelay(2);
+			SETUP_IOMUX_PADS(sd3_usdhc3_pads);
+			gpio_set_value(GP_USDHC3_POWER_EN, 1);
 			break;
 		case 1:
 			gpio_set_value(GP_EMMC_RESET, 1); /* release reset */
@@ -646,6 +667,13 @@ static const unsigned short gpios_out_low[] = {
 	GP_UART1_RS485_EN,
 	GP_UART1_AON,
 	GP_UART1_RS485_TERM,
+	GP_USDHC3_CLK,
+	GP_USDHC3_CMD,
+	GP_USDHC3_DAT0,
+	GP_USDHC3_DAT1,
+	GP_USDHC3_DAT2,
+	GP_USDHC3_DAT3,
+	GP_USDHC3_POWER_EN,
 };
 
 static const unsigned short gpios_out_high[] = {
@@ -672,7 +700,6 @@ static const unsigned short gpios_in[] = {
 	GP_AR1021_5WIRE,
 	GPIRQ_I2C3_J6,
 	GP_PCIE_DISABLE,
-	GP_TP71,
 	GP_TP74,
 	GP_TP84,
 	GP_TP85,
@@ -701,6 +728,7 @@ int board_early_init_f(void)
 	set_gpios_in(gpios_in, ARRAY_SIZE(gpios_in));
 	set_gpios(gpios_out_high, ARRAY_SIZE(gpios_out_high), 1);
 	set_gpios(gpios_out_low, ARRAY_SIZE(gpios_out_low), 0);
+	SETUP_IOMUX_PADS(sd3_gpio_pads);
 	SETUP_IOMUX_PADS(init_pads);
 	SETUP_IOMUX_PADS(rgb_gpio_pads);
 	return 0;
@@ -717,6 +745,13 @@ int overwrite_console(void)
 
 void board_poweroff(void)
 {
+	/*
+	 * make all sd3 lines low so that voltage drops quicker.
+	 * Without this 10ms delay was not enough, now 2 is enough.
+	 */
+	SETUP_IOMUX_PADS(sd3_gpio_pads);
+	gpio_set_value(GP_USDHC3_POWER_EN, 0);
+	mdelay(2);
 	gpio_set_value(GP_POWER_OFF, 1);
 	mdelay(500);
 }
