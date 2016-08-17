@@ -282,7 +282,7 @@ static const iomux_v3_cfg_t enet_pads[] = {
 };
 
 #ifdef CONFIG_CMD_FBPANEL
-static const iomux_v3_cfg_t rgb_pads[] = {
+static const iomux_v3_cfg_t rgb666_pads[] = {
 	IOMUX_PAD_CTRL(DI0_DISP_CLK__IPU1_DI0_DISP_CLK, RGB_PAD_CTRL),
 	IOMUX_PAD_CTRL(DI0_PIN15__IPU1_DI0_PIN15, RGB_PAD_CTRL),	/* DRDY */
 	IOMUX_PAD_CTRL(DI0_PIN2__IPU1_DI0_PIN02, RGB_PAD_CTRL),		/* HSYNC */
@@ -305,6 +305,9 @@ static const iomux_v3_cfg_t rgb_pads[] = {
 	IOMUX_PAD_CTRL(DISP0_DAT15__IPU1_DISP0_DATA15, RGB_PAD_CTRL),
 	IOMUX_PAD_CTRL(DISP0_DAT16__IPU1_DISP0_DATA16, RGB_PAD_CTRL),
 	IOMUX_PAD_CTRL(DISP0_DAT17__IPU1_DISP0_DATA17, RGB_PAD_CTRL),
+};
+
+static const iomux_v3_cfg_t rgb24_pads[] = {
 	IOMUX_PAD_CTRL(DISP0_DAT18__IPU1_DISP0_DATA18, RGB_PAD_CTRL),
 	IOMUX_PAD_CTRL(DISP0_DAT19__IPU1_DISP0_DATA19, RGB_PAD_CTRL),
 	IOMUX_PAD_CTRL(DISP0_DAT20__IPU1_DISP0_DATA20, RGB_PAD_CTRL),
@@ -566,7 +569,9 @@ void board_enable_lvds(const struct display_info_t *di, int enable)
 void board_enable_lcd(const struct display_info_t *di, int enable)
 {
 	if (enable) {
-		SETUP_IOMUX_PADS(rgb_pads);
+		SETUP_IOMUX_PADS(rgb666_pads);
+		if (di->pixfmt == IPU_PIX_FMT_RGB24)
+			SETUP_IOMUX_PADS(rgb24_pads);
 #ifdef CONFIG_MXC_SPI_DISPLAY
 		if (di->fbflags & FBF_SPI)
 			enable_spi_rgb(di);
@@ -577,6 +582,12 @@ void board_enable_lcd(const struct display_info_t *di, int enable)
 		gpio_direction_output(GP_BACKLIGHT_RGB, enable);
 		SETUP_IOMUX_PADS(rgb_gpio_pads);
 	}
+}
+
+void board_enable_spi_rgb(const struct display_info_t *di)
+{
+	SETUP_IOMUX_PADS(rgb666_pads);
+	enable_spi_rgb(di);
 }
 
 static const struct display_info_t displays[] = {
@@ -624,6 +635,7 @@ static const struct display_info_t displays[] = {
 	VD_AUO_G050(LCD, NULL, 1, 0),
 	VD_A030JN01_UPS051(LCD, NULL, 1, 2),
 	VD_A030JN01_YUV720(LCD, NULL, 1, 1),
+	VD_KD024FM(LCD, NULL, 2, 3),
 #endif
 };
 
