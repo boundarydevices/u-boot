@@ -84,6 +84,20 @@ static const char *const cmd_fbnames[] = {
 [FB_LVDS2] = "cmd_lvds2"
 };
 
+static const char *const backlight_names[] = {
+[FB_HDMI] = "backlight_hdmi",
+[FB_LCD] = "backlight_lcd",
+[FB_LVDS] = "backlight_lvds",
+[FB_LVDS2] = "backlight_lvds2"
+};
+
+static const char *const pwm_names[] = {
+[FB_HDMI] = "pwm_hdmi",
+[FB_LCD] = "pwm_lcd",
+[FB_LVDS] = "pwm_lvds",
+[FB_LVDS2] = "pwm_lvds2"
+};
+
 static const char *const short_names[] = {
 [FB_HDMI] = "hdmi",
 [FB_LCD] = "lcd",
@@ -251,6 +265,13 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 			buf += sz;
 			size -= sz;
 		}
+	}
+
+	if (di && di->pwm_period) {
+		sz = snprintf(buf, size, "fdt get value pwm %s phandle; fdt set %s pwms <${pwm} 0x%x 0x%x>;",
+				pwm_names[fb], backlight_names[fb], 0, di->pwm_period);
+		buf += sz;
+		size -= sz;
 	}
 
 	if (mode_str) {
@@ -936,6 +957,8 @@ static int init_display(const struct display_info_t *di)
 #ifndef CONFIG_MX6SX
 	int ret;
 
+	if (di->pre_enable)
+		di->pre_enable(di);
 	setup_clock(di);
 	ret = ipuv3_fb_init(&di->mode, 0, di->pixfmt);
 	if (ret) {

@@ -14,7 +14,8 @@ struct display_info_t {
 	int	pixfmt;
 	int	(*detect)(struct display_info_t const *dev);
 	void	(*enable)(struct display_info_t const *dev, int enable);
-
+	void	(*pre_enable)(struct display_info_t const *dev);
+	int	pwm_period;
 #define FB_HDMI		0
 #define FB_LCD		1
 #define FB_LVDS		2
@@ -90,6 +91,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 #define VD_AUO_G050(_mode, _detect, _bus, _addr)	VDF_AUO_G050(_mode, "AUO_G050", RGB24, FBF_MODESTR | FBF_SPI, _detect, _bus, _addr)
 #define VD_A030JN01_UPS051(_mode, _detect, _bus, _addr)	VDF_A030JN01_UPS051(_mode, "A030JN01_UPS051", UPS051, FBF_MODESTR | FBF_SPI, _detect, _bus, _addr)
 #define VD_A030JN01_YUV720(_mode, _detect, _bus, _addr) VDF_A030JN01_YUV720(_mode, "A030JN01_YUV720", YUYV, FBF_MODESTR | FBF_SPI, _detect, _bus, _addr)
+#define VD_KD024FM(_mode, _detect, _bus, _addr)		VDF_KD024FM(_mode, "KD024FM", RGB666, FBF_MODESTR, _detect, _bus, _addr)
 
 #define VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr) \
 	.bus	= _bus,\
@@ -1021,4 +1023,25 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 	}\
 }
 
+#define VDF_KD024FM(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	.pre_enable = board_enable_spi_rgb, \
+	.pwm_period = 100000, \
+	.mode   = {\
+		.name           = _name,\
+		.refresh        = 60,\
+		.xres           = 240,\
+		.yres           = 320,\
+		.pixclock       =  1000000000000ULL/((240+10+38+10)*(320+4+8+4)*60),\
+		.left_margin    = 10,\
+		.right_margin   = 38,\
+		.upper_margin   = 4,\
+		.lower_margin   = 8,\
+		.hsync_len      = 10,\
+		.vsync_len      = 4,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
 #endif
