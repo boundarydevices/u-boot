@@ -58,7 +58,7 @@ static int fdt_value_setenv(const void *nodep, int len, const char *var)
 	else if (len == 4) {
 		char buf[11];
 
-		sprintf(buf, "0x%08X", *(uint32_t *)nodep);
+		sprintf(buf, "0x%x", be32_to_cpup(nodep));
 		setenv(var, buf);
 	} else if (len%4 == 0 && len <= 20) {
 		/* Needed to print things like sha1 hashes. */
