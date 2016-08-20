@@ -633,6 +633,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 #define VDF_ASIT500MA6F5D(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
 {\
 	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	.pwm_period = 100000, \
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
