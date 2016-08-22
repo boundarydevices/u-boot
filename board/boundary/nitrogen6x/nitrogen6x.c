@@ -584,7 +584,7 @@ void board_enable_lcd(const struct display_info_t *di, int enable)
 	}
 }
 
-void board_enable_spi_rgb(const struct display_info_t *di)
+void board_pre_enable(const struct display_info_t *di)
 {
 	SETUP_IOMUX_PADS(rgb666_pads);
 	enable_spi_rgb(di);
