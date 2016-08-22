@@ -1027,7 +1027,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 #define VDF_KD024FM(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
 {\
 	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
-	.pre_enable = board_enable_spi_rgb, \
+	.pre_enable = board_pre_enable, \
 	.pwm_period = 100000, \
 	.mode   = {\
 		.name           = _name,\
