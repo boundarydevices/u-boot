@@ -129,6 +129,10 @@ static const int timings_offsets[] = {
 	offsetof(struct fb_videomode, vsync_len),
 };
 
+static void __board_pre_enable(const struct display_info_t *di)
+{
+}
+
 static void __board_enable_hdmi(const struct display_info_t *di, int enable)
 {
 }
@@ -145,6 +149,8 @@ static void __board_enable_lvds2(const struct display_info_t *di, int enable)
 {
 }
 
+void board_pre_enable(const struct display_info_t *di)
+	__attribute__((weak, alias("__board_pre_enable")));
 void board_enable_hdmi(const struct display_info_t *di, int enable)
 	__attribute__((weak, alias("__board_enable_hdmi")));
 void board_enable_lcd(const struct display_info_t *di, int enable)
@@ -689,7 +695,51 @@ static const struct display_info_t * parse_mode(
 	p = endp;
 	di->pixfmt = (value == 24) ? IPU_PIX_FMT_RGB24 : IPU_PIX_FMT_RGB666;
 	c = *p;
-	if (*p != ':') {
+
+	if (c == 'S') {
+		di->fbflags |= FBF_SPI;
+		p++;
+		c = *p;
+	}
+	if (c == 'e') {
+		di->pre_enable = board_pre_enable;
+		p++;
+		c = *p;
+	}
+	if (c == 'x') {
+		p++;
+		value = simple_strtoul(p, &endp, 16);
+		if (endp <= p) {
+			printf("expecting bus\n");
+			return NULL;
+		}
+		p = endp;
+		di->bus = value;
+		c = *p;
+		if (c == ',') {
+			p++;
+			value = simple_strtoul(p, &endp, 16);
+			if (endp <= p) {
+				printf("expecting bus addr\n");
+				return NULL;
+			}
+			p = endp;
+			di->addr = value;
+			c = *p;
+		}
+	}
+	if (c == 'p') {
+		p++;
+		value = simple_strtoul(p, &endp, 10);
+		if (endp <= p) {
+			printf("expecting period of pwm\n");
+			return NULL;
+		}
+		p = endp;
+		di->pwm_period = value;
+		c = *p;
+	}
+	if (c != ':') {
 		printf("expected ':', %s\n", p);
 		return NULL;
 	}
@@ -807,11 +857,35 @@ static void str_mode(char *p, int size, const struct display_info_t *di, unsigne
 		*p++ = 's';
 		size--;
 	}
-	count = snprintf(p, size, "%d:", (di->pixfmt == IPU_PIX_FMT_RGB24) ? 24 : 18);
+	count = snprintf(p, size, "%d", (di->pixfmt == IPU_PIX_FMT_RGB24) ? 24 : 18);
 	if (size > count) {
 		p += count;
 		size -= count;
 	}
+	if (di->fbflags & FBF_SPI) {
+		*p++ = 'S';
+		size--;
+	}
+	if (di->pre_enable) {
+		*p++ = 'e';
+		size--;
+	}
+	if (di->bus || di->addr) {
+		count = snprintf(p, size, "x%x,%x", di->bus, di->addr);
+		if (size > count) {
+			p += count;
+			size -= count;
+		}
+	}
+	if (di->pwm_period) {
+		count = snprintf(p, size, "p%d", di->pwm_period);
+		if (size > count) {
+			p += count;
+			size -= count;
+		}
+	}
+	*p++ = ':';
+	size--;
 
 	for (i = 0; i < ARRAY_SIZE(timings_properties); i++) {
 		u32 *src = (u32 *)((char *)&di->mode + timings_offsets[i]);
@@ -1039,7 +1113,7 @@ static int do_fbpanel(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 
 U_BOOT_CMD(fbpanel, 3, 0, do_fbpanel,
            "show/set panel names available",
-           "fbpanel [hdmi|lcd|lvds|lvds2] [\"[*]mode_str[:[m][j][s][18|24]:pixclkfreq,xres,yres,hback-porch,hfront-porch,vback-porch,vfront-porch,hsync,vsync]\"]\n"
+           "fbpanel [hdmi|lcd|lvds|lvds2] [\"[*]mode_str[:[m][j][s][18|24][S][e][xhexbus,hexaddr][pnnn]:pixclkfreq,xres,yres,hback-porch,hfront-porch,vback-porch,vfront-porch,hsync,vsync]\"]\n"
            "\n"
            "fbpanel  - show all panels");
 
