@@ -393,6 +393,43 @@ void setup_clock(struct display_info_t const *di)
 	out_freq = desired_freq;
 
 	if (lvds) {
+		reg = readl(&ccm->cbcmr);
+		reg &= ~MXC_CCM_CBCMR_PERIPH2_CLK2_SEL;
+		writel(reg, &ccm->cbcmr);
+
+		/* Set MMDC_CH1 mask bit */
+		reg = readl(&ccm->ccdr);
+		reg |= MXC_CCM_CCDR_MMDC_CH1_HS_MASK;
+		writel(reg, &ccm->ccdr);
+
+		/*
+		 * Set the periph2_clk_sel to the top mux so that
+		 * mmdc_ch1 is from pll3_sw_clk.
+		 */
+		reg = readl(&ccm->cbcdr);
+		reg |= MXC_CCM_CBCDR_PERIPH2_CLK_SEL;
+		writel(reg, &ccm->cbcdr);
+
+		/* Wait for the clock switch */
+		while (readl(&ccm->cdhipr) != 0) {
+			udelay(100);
+		}
+
+		/* Disable pll3_sw_clk by selecting the bypass clock source */
+		reg = readl(&ccm->ccsr);
+		reg |= MXC_CCM_CCSR_PLL3_SW_CLK_SEL;
+		writel(reg, &ccm->ccsr);
+
+		/* Set the ldb_di0_clk and ldb_di1_clk to 111b */
+		reg = readl(&ccm->cs2cdr);
+		reg |= MXC_CCM_CS2CDR_LDB_DI0_CLK_SEL_MASK | MXC_CCM_CS2CDR_LDB_DI1_CLK_SEL_MASK;
+		writel(reg, &ccm->cs2cdr);
+
+		/* Set the ldb_di0_clk and ldb_di1_clk to 100b */
+		reg &= ~(MXC_CCM_CS2CDR_LDB_DI0_CLK_SEL_MASK | MXC_CCM_CS2CDR_LDB_DI1_CLK_SEL_MASK);
+		reg |= ((4 << 9) | (4 << 12));
+		writel(reg, &ccm->cs2cdr);
+
 		reg = readl(&ccm->cs2cdr);
 		/* select pll 5 clock */
 		reg &= ~(MXC_CCM_CS2CDR_LDB_DI0_CLK_SEL_MASK
@@ -402,6 +439,29 @@ void setup_clock(struct display_info_t const *di)
 		desired_freq *= 7;
 		if (di->fbflags & FBF_SPLITMODE)
 			desired_freq >>= 1;
+
+		/* Unbypass pll3_sw_clk */
+		reg = readl(&ccm->ccsr);
+		reg &= ~MXC_CCM_CCSR_PLL3_SW_CLK_SEL;
+		writel(reg, &ccm->ccsr);
+
+		/*
+		 * Set the periph2_clk_sel back to the bottom mux so that
+		 * mmdc_ch1 is from its original parent.
+		 */
+		reg = readl(&ccm->cbcdr);
+		reg &= ~MXC_CCM_CBCDR_PERIPH2_CLK_SEL;
+		writel(reg, &ccm->cbcdr);
+
+		/* Wait for the clock switch */
+		while (readl(&ccm->cdhipr)) {
+			udelay(100);
+		}
+
+		/* Clear MMDC_CH1 mask bit */
+		reg = readl(&ccm->ccdr);
+		reg &= ~MXC_CCM_CCDR_MMDC_CH1_HS_MASK;
+		writel(reg, &ccm->ccdr);
 	}
 	debug("desired_freq=%d\n", desired_freq);
 
