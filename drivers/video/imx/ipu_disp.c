@@ -725,6 +725,11 @@ void ipu_dp_dc_disable(ipu_channel_t channel, unsigned char swap)
 		/* Make sure that we leave at the irq starting edge */
 		__raw_writel(IPUIRQ_2_MASK(irq), IPUIRQ_2_STATREG(irq));
 		do {
+			udelay(2000);
+			if (--timeout <= 0) {
+				printf("%s: timeout\n", __func__);
+				break;
+			}
 			reg = __raw_readl(IPUIRQ_2_STATREG(irq));
 		} while (!(reg & IPUIRQ_2_MASK(irq)));
 
