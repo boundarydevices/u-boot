@@ -590,9 +590,9 @@ int board_eth_init(bd_t *bis)
 #ifdef CONFIG_FEC_MXC
 	bus = fec_get_miibus(base, -1);
 	if (!bus)
-		return 0;
-	/* scan phy 6 */
-	phydev = phy_find_by_mask(bus, (1 << 6), PHY_INTERFACE_MODE_RGMII);
+		return -EINVAL;
+	/* scan phy 4,5,6,7 */
+	phydev = phy_find_by_mask(bus, (0xf << 4), PHY_INTERFACE_MODE_RGMII);
 	if (!phydev) {
 		free(bus);
 		return 0;
