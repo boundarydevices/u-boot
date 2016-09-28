@@ -26,6 +26,7 @@
 #define CONFIG_VIDEO
 #define BD_I2C_MASK	7
 
+#define BD_BOOT_DEVS "usb mmc"
 #include "boundary.h"
 #define CONFIG_EXTRA_ENV_SETTINGS BD_BOUNDARY_ENV_SETTINGS \
 
