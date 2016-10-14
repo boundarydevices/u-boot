@@ -146,7 +146,9 @@ static const iomux_v3_cfg_t init_pads[] = {
 	/* i2c2b ov5640 Camera controls */
 #define GP_OV5640_MIPI_POWER_DOWN	IMX_GPIO_NR(6, 9)
 	IOMUX_PAD_CTRL(NANDF_WP_B__GPIO6_IO09, WEAK_PULLUP),
-#define GP_OV5640_MIPI_RESET	IMX_GPIO_NR(2, 5)
+
+	/* i2c2 TC358743 interrupt */
+#define GPIRQ_TC3587		IMX_GPIO_NR(2, 5)
 	IOMUX_PAD_CTRL(NANDF_D5__GPIO2_IO05, WEAK_PULLDN),
 
 	/* i2c2mux - ov5642 camera i2c enable */
@@ -639,7 +641,6 @@ static const unsigned short gpios_out_low[] = {
 	GP_ENET_PHY_RESET,
 	GP_OV5642_RESET,	/* camera reset */
 	GP_OV5640_RESET,	/* camera reset */
-	GP_OV5640_MIPI_RESET,	/* camera reset */
 	GP_PCIE_RESET,
 	GP_UART5_RX_EN,		/* power down uart5 */
 	GP_UART5_TX_EN,
@@ -670,6 +671,7 @@ static const unsigned short gpios_in[] = {
 	GP_BACKLIGHT_RGB,
 	GPIRQ_ENET_PHY,
 	GPIRQ_RTC_RV4162,
+	GPIRQ_TC3587,
 	GPIRQ_WL1271_WL,
 	GP_USDHC3_CD,
 };
