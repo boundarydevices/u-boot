@@ -7,7 +7,7 @@ a_ramdisk=0x13800000
 a_initrd=0x13a00000
 
 setenv initrd_high 0xffffffff
-if itest.s x6SX == "x${cpu}" ; then
+if itest.s x6SX == "x${cpu}" || itest.s x7D == "x${cpu}"; then
 	a_script=0x80800000
 	a_zImage=0x80800000
 	a_fdt=0x83000000
@@ -29,6 +29,8 @@ if itest.s "x" == "x${dtbname}" ; then
 		dtbname=imx6qp-${board}.dtb;
 	elif itest.s x6SX == "x${cpu}" ; then
 		dtbname=imx6sx-${board}.dtb;
+	elif itest.s x7D == "x${cpu}" ; then
+		dtbname=imx7d-${board}.dtb;
 	else
 		dtbname=imx6q-${board}.dtb;
 	fi
@@ -50,81 +52,61 @@ else
 	exit;
 fi
 
-# ------------------- HDMI detection
-i2c dev 1 ;
-if i2c probe 0x50 ; then
-	echo "------ have HDMI";
+fdt resize
+if itest.s "x" != "x${cmd_custom}" ; then
+	run cmd_custom
+fi
+
+## HDMI ##
+if itest.s "xoff" == "x$fb_hdmi" ; then
+	setenv bootargs $bootargs video=HDMI-A-1:d
+else
 	if itest.s "x" != "x$force_edid" ; then
 		echo "------ forcing EDID to /lib/firmware/$force_edid"
 		setenv bootargs $bootargs drm_kms_helper.edid_firmware=$force_edid
 	fi
 fi
 
-# ------------------- LVDS detection
-setenv have_lvds
-i2c dev 2
-if i2c probe 0x04 ; then
-	echo "------ have Hannstar 10";
-	fdt set /panel compatible "hannstar,hsd100pxn1"
-	setenv have_lvds 1
-fi
-if i2c probe 0x38 ; then
-	if itest.s "xLDB-WXGA" == "x$panel"; then
-		echo "------ have Hannstar 7";
-		fdt set /panel compatible "hannstar,hsd070pww1"
-		screenres=1280,800
-	else
-		echo "------ have Innolux 7";
-		fdt set /panel compatible "innolux,zj070na-01p"
-		screenres=1024,600
-	fi
-	setenv have_lvds 1
-	setenv bootargs $bootargs ft5x06_ts.screenres=$screenres
-	if itest.s "x" -ne "x$calibration" ; then
-		setenv bootargs $bootargs ft5x06_ts.calibration=$calibration
-	fi
-fi
-
-# ------------------- LCD detection
-setenv have_lcd
-if i2c probe 0x48 ; then
-	setenv have_lcd 1;
-	echo "------- found TSC2004 touch controller";
-elif i2c probe 0x4d ; then
-	setenv have_lcd 1;
-	echo "------- found AR1020 touch controller";
-fi
-
-setenv bootargs "$bootargs console=${console},115200 vmalloc=400M cma=256M consoleblank=0 rootwait"
-
-# ------------------- Disabling displays not connected
-if itest.s "x" == "x$have_lvds" ; then
+## LVDS ##
+if itest.s "xoff" == "x$fb_lvds" ; then
 	setenv bootargs $bootargs video=LVDS-1:d
+elif itest.s "xhannstar7" == "x$fb_lvds" ; then
+	fdt set /panel_lvds0 compatible "hannstar,hsd070pww1"
+elif itest.s "xdt070btft" == "x$fb_lvds" ; then
+	fdt set /panel_lvds0 compatible "innolux,zj070na-01p"
 fi
-if itest.s "x" == "x$have_lcd" ; then
+
+if itest.s "xoff" == "x$fb_lvds2" ; then
+	setenv bootargs $bootargs video=LVDS-2:d
+elif itest.s "xhannstar7" == "x$fb_lvds2" ; then
+	fdt set /panel_lvds1 compatible "hannstar,hsd070pww1"
+elif itest.s "xdt070btft" == "x$fb_lvds2" ; then
+	fdt set /panel_lvds1 compatible "innolux,zj070na-01p"
+fi
+
+## LCD ##
+if itest.s "xoff" == "x$fb_lcd" ; then
 	setenv bootargs $bootargs video=VGA-1:d
 fi
 
-if itest.s x$bootpart == x ; then
+if itest.s x${bootpart} == x ; then
 	bootpart=1
 fi
 
-if test "sata" = "${dtype}" ; then
-	setenv bootargs "$bootargs root=/dev/sda$bootpart" ;
-else
-        if test "usb" = "${dtype}" ; then
-                setenv bootargs "$bootargs root=/dev/sda$bootpart" ;
-        else
-                setenv bootargs "$bootargs root=/dev/mmcblk0p$bootpart" ;
-        fi
+if itest.s "x" == "x${root}"; then
+	if test "sata" = "${dtype}" || test "usb" = "${dtype}" ; then
+		root=/dev/sda${bootpart}
+	else
+		root=/dev/mmcblk${disk}p${bootpart}
+	fi
 fi
 
-if itest.s "x" != "x$disable_giga" ; then
-        setenv bootargs $bootargs fec.disable_giga=1
+if itest.s "x" == "x$cma" ; then
+	cma=256M
 fi
 
-if itest.s "x" != "x$wlmac" ; then
-        setenv bootargs $bootargs wlcore.mac=$wlmac
+if itest.s "x" == "x$vmalloc" ; then
+	vmalloc=400M
 fi
 
 if itest.s "x" != "x$show_fdt" ; then
@@ -134,6 +116,9 @@ fi
 if itest.s "x" != "x$show_env" ; then
 	printenv
 fi
+
+setenv bootargs "$bootargs console=${console},115200 vmalloc=${vmalloc}"
+setenv bootargs "$bootargs cma=${cma} consoleblank=0 root=${root} rootwait"
 
 if load ${dtype} ${disk}:${bootpart} ${a_zImage} ${bootdir}zImage ; then
 	bootz ${a_zImage} - ${a_fdt}
