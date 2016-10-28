@@ -357,6 +357,7 @@ void setup_clock(struct display_info_t const *di)
 	u32 desired_freq;
 	u32 out_freq;
 	int lvds = ((di->fbtype == FB_LVDS) | (di->fbtype == FB_LVDS2)) ? 1 : 0;
+	int ldb_sel_shift = (di->fbtype == FB_LVDS2) ? 12 : 9;
 	u64 lval = 1000000000000ULL;
 	int timeout = 1000;
 	int post_div = 2;
@@ -420,20 +421,17 @@ void setup_clock(struct display_info_t const *di)
 		reg |= MXC_CCM_CCSR_PLL3_SW_CLK_SEL;
 		writel(reg, &ccm->ccsr);
 
-		/* Set the ldb_di0_clk and ldb_di1_clk to 111b */
+		/* Set the ldb_di0/1_clk to 1xxb, to change to lower mux */
 		reg = readl(&ccm->cs2cdr);
-		reg |= MXC_CCM_CS2CDR_LDB_DI0_CLK_SEL_MASK | MXC_CCM_CS2CDR_LDB_DI1_CLK_SEL_MASK;
+		reg |= (4 << ldb_sel_shift);
 		writel(reg, &ccm->cs2cdr);
 
-		/* Set the ldb_di0_clk and ldb_di1_clk to 100b */
-		reg &= ~(MXC_CCM_CS2CDR_LDB_DI0_CLK_SEL_MASK | MXC_CCM_CS2CDR_LDB_DI1_CLK_SEL_MASK);
-		reg |= ((4 << 9) | (4 << 12));
+		/* Set the ldb_di0/1_clk to 100b, change upper mux to pll5 */
+		reg &= ~(3 << ldb_sel_shift);
 		writel(reg, &ccm->cs2cdr);
 
-		reg = readl(&ccm->cs2cdr);
-		/* select pll 5 clock */
-		reg &= ~(MXC_CCM_CS2CDR_LDB_DI0_CLK_SEL_MASK
-			| MXC_CCM_CS2CDR_LDB_DI1_CLK_SEL_MASK);
+		/* select upper mux, pll 5 clock */
+		reg &= ~(4 << ldb_sel_shift);
 		writel(reg, &ccm->cs2cdr);
 
 		desired_freq *= 7;
