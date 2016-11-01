@@ -351,13 +351,86 @@ int calc_gcd(int a, int b)
 	return a;
 }
 
+void reparent_lvds(int fbtype, int new_parent)
+{
+	struct mxc_ccm_reg *ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
+	int ldb_sel_shift = (fbtype == FB_LVDS2) ? 12 : 9;
+	u32 reg;
+
+	reg = readl(&ccm->cbcmr);
+	reg &= ~MXC_CCM_CBCMR_PERIPH2_CLK2_SEL;
+	writel(reg, &ccm->cbcmr);
+
+	/* Set MMDC_CH1 mask bit */
+	reg = readl(&ccm->ccdr);
+	reg |= MXC_CCM_CCDR_MMDC_CH1_HS_MASK;
+	writel(reg, &ccm->ccdr);
+
+	/*
+	 * Set the periph2_clk_sel to the top mux so that
+	 * mmdc_ch1 is from pll3_sw_clk.
+	 */
+	reg = readl(&ccm->cbcdr);
+	reg |= MXC_CCM_CBCDR_PERIPH2_CLK_SEL;
+	writel(reg, &ccm->cbcdr);
+
+	/* Wait for the clock switch */
+	while (readl(&ccm->cdhipr) != 0) {
+		udelay(100);
+	}
+
+	/* Disable pll3_sw_clk by selecting the bypass clock source */
+	reg = readl(&ccm->ccsr);
+	reg |= MXC_CCM_CCSR_PLL3_SW_CLK_SEL;
+	writel(reg, &ccm->ccsr);
+
+	/* Set the ldb_di0/1_clk to 1xxb, to change to lower mux */
+	reg = readl(&ccm->cs2cdr);
+	reg |= (4 << ldb_sel_shift);
+	writel(reg, &ccm->cs2cdr);
+	readl(&ccm->cs2cdr);	/* wait for write */
+
+	/* Set the ldb_di0/1_clk to 100b, change upper mux to pll5 */
+	reg &= ~(3 << ldb_sel_shift);
+	reg |= new_parent << ldb_sel_shift;
+	writel(reg, &ccm->cs2cdr);
+	readl(&ccm->cs2cdr);	/* wait for write */
+
+	/* select upper mux, pll 5 clock */
+	reg &= ~(4 << ldb_sel_shift);
+	writel(reg, &ccm->cs2cdr);
+	readl(&ccm->cs2cdr);	/* wait for write */
+
+	/* Unbypass pll3_sw_clk */
+	reg = readl(&ccm->ccsr);
+	reg &= ~MXC_CCM_CCSR_PLL3_SW_CLK_SEL;
+	writel(reg, &ccm->ccsr);
+
+	/*
+	 * Set the periph2_clk_sel back to the bottom mux so that
+	 * mmdc_ch1 is from its original parent.
+	 */
+	reg = readl(&ccm->cbcdr);
+	reg &= ~MXC_CCM_CBCDR_PERIPH2_CLK_SEL;
+	writel(reg, &ccm->cbcdr);
+
+	/* Wait for the clock switch */
+	while (readl(&ccm->cdhipr)) {
+		udelay(100);
+	}
+
+	/* Clear MMDC_CH1 mask bit */
+	reg = readl(&ccm->ccdr);
+	reg &= ~MXC_CCM_CCDR_MMDC_CH1_HS_MASK;
+	writel(reg, &ccm->ccdr);
+}
+
 void setup_clock(struct display_info_t const *di)
 {
 	struct mxc_ccm_reg *ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
 	u32 desired_freq;
 	u32 out_freq;
 	int lvds = ((di->fbtype == FB_LVDS) | (di->fbtype == FB_LVDS2)) ? 1 : 0;
-	int ldb_sel_shift = (di->fbtype == FB_LVDS2) ? 12 : 9;
 	u64 lval = 1000000000000ULL;
 	int timeout = 1000;
 	int post_div = 2;
@@ -394,72 +467,11 @@ void setup_clock(struct display_info_t const *di)
 	out_freq = desired_freq;
 
 	if (lvds) {
-		reg = readl(&ccm->cbcmr);
-		reg &= ~MXC_CCM_CBCMR_PERIPH2_CLK2_SEL;
-		writel(reg, &ccm->cbcmr);
-
-		/* Set MMDC_CH1 mask bit */
-		reg = readl(&ccm->ccdr);
-		reg |= MXC_CCM_CCDR_MMDC_CH1_HS_MASK;
-		writel(reg, &ccm->ccdr);
-
-		/*
-		 * Set the periph2_clk_sel to the top mux so that
-		 * mmdc_ch1 is from pll3_sw_clk.
-		 */
-		reg = readl(&ccm->cbcdr);
-		reg |= MXC_CCM_CBCDR_PERIPH2_CLK_SEL;
-		writel(reg, &ccm->cbcdr);
-
-		/* Wait for the clock switch */
-		while (readl(&ccm->cdhipr) != 0) {
-			udelay(100);
-		}
-
-		/* Disable pll3_sw_clk by selecting the bypass clock source */
-		reg = readl(&ccm->ccsr);
-		reg |= MXC_CCM_CCSR_PLL3_SW_CLK_SEL;
-		writel(reg, &ccm->ccsr);
-
-		/* Set the ldb_di0/1_clk to 1xxb, to change to lower mux */
-		reg = readl(&ccm->cs2cdr);
-		reg |= (4 << ldb_sel_shift);
-		writel(reg, &ccm->cs2cdr);
-
-		/* Set the ldb_di0/1_clk to 100b, change upper mux to pll5 */
-		reg &= ~(3 << ldb_sel_shift);
-		writel(reg, &ccm->cs2cdr);
-
-		/* select upper mux, pll 5 clock */
-		reg &= ~(4 << ldb_sel_shift);
-		writel(reg, &ccm->cs2cdr);
-
+		reparent_lvds(di->fbtype, 0);
 		desired_freq *= 7;
 		if (di->fbflags & FBF_SPLITMODE)
 			desired_freq >>= 1;
 
-		/* Unbypass pll3_sw_clk */
-		reg = readl(&ccm->ccsr);
-		reg &= ~MXC_CCM_CCSR_PLL3_SW_CLK_SEL;
-		writel(reg, &ccm->ccsr);
-
-		/*
-		 * Set the periph2_clk_sel back to the bottom mux so that
-		 * mmdc_ch1 is from its original parent.
-		 */
-		reg = readl(&ccm->cbcdr);
-		reg &= ~MXC_CCM_CBCDR_PERIPH2_CLK_SEL;
-		writel(reg, &ccm->cbcdr);
-
-		/* Wait for the clock switch */
-		while (readl(&ccm->cdhipr)) {
-			udelay(100);
-		}
-
-		/* Clear MMDC_CH1 mask bit */
-		reg = readl(&ccm->ccdr);
-		reg &= ~MXC_CCM_CCDR_MMDC_CH1_HS_MASK;
-		writel(reg, &ccm->ccdr);
 	}
 	debug("desired_freq=%d\n", desired_freq);
 
