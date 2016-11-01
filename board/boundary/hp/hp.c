@@ -511,7 +511,7 @@ static void setup_iomux_enet(void)
 	udelay(100);	/* Wait 100 us before using mii interface */
 }
 
-int board_eth_init(bd_t *bis)
+static int board_init_fec(bd_t *bis)
 {
 	uint32_t base = IMX_FEC_BASE;
 	struct mii_dev *bus = NULL;
@@ -537,7 +537,12 @@ int board_eth_init(bd_t *bis)
 		free(bus);
 	}
 #endif
+	return 0;
+}
 
+int board_eth_init(bd_t *bis)
+{
+	board_init_fec(bis);
 #ifdef CONFIG_CI_UDC
 	/* For otg ethernet*/
 	if (!getenv("eth1addr"))
