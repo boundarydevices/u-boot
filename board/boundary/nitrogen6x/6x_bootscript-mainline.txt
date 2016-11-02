@@ -71,17 +71,17 @@ fi
 if itest.s "xoff" == "x$fb_lvds" ; then
 	setenv bootargs $bootargs video=LVDS-1:d
 elif itest.s "xhannstar7" == "x$fb_lvds" ; then
-	fdt set /panel_lvds0 compatible "hannstar,hsd070pww1"
+	fdt set /panel-lvds0 compatible "hannstar,hsd070pww1"
 elif itest.s "xdt070btft" == "x$fb_lvds" ; then
-	fdt set /panel_lvds0 compatible "innolux,zj070na-01p"
+	fdt set /panel-lvds0 compatible "innolux,zj070na-01p"
 fi
 
 if itest.s "xoff" == "x$fb_lvds2" ; then
 	setenv bootargs $bootargs video=LVDS-2:d
 elif itest.s "xhannstar7" == "x$fb_lvds2" ; then
-	fdt set /panel_lvds1 compatible "hannstar,hsd070pww1"
+	fdt set /panel-lvds1 compatible "hannstar,hsd070pww1"
 elif itest.s "xdt070btft" == "x$fb_lvds2" ; then
-	fdt set /panel_lvds1 compatible "innolux,zj070na-01p"
+	fdt set /panel-lvds1 compatible "innolux,zj070na-01p"
 fi
 
 ## LCD ##
