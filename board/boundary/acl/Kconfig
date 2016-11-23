@@ -1,0 +1,12 @@
+if TARGET_ACL
+
+config SYS_BOARD
+	default "acl"
+
+config SYS_VENDOR
+	default "boundary"
+
+config SYS_CONFIG_NAME
+	default "acl"
+
+endif

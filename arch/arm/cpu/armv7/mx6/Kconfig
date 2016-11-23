@@ -118,6 +118,9 @@ config TARGET_MX6UL_14X14_EVK
 config TARGET_A
 	bool "a"
 
+config TARGET_ACL
+	bool "acl"
+
 config TARGET_ASH
 	bool "ash"
 
@@ -278,6 +281,7 @@ source "board/bachmann/ot1200/Kconfig"
 source "board/barco/platinum/Kconfig"
 source "board/barco/titanium/Kconfig"
 source "board/boundary/a/Kconfig"
+source "board/boundary/acl/Kconfig"
 source "board/boundary/ash/Kconfig"
 source "board/boundary/bt/Kconfig"
 source "board/boundary/bt2/Kconfig"
