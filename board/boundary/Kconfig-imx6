@@ -10,6 +10,11 @@ config TARGET_A2
 	bool "a2"
 	depends on MX6DL || MX6Q || MX6QDL || MX6S
 
+config TARGET_ACL
+	bool "acl"
+	select HAS_CAAM
+	select MX6_SMP
+
 config TARGET_NITROGEN6X
 	bool "nitrogen6x"
 	depends on MX6DL || MX6Q || MX6QDL || MX6S
@@ -26,4 +31,5 @@ config MX6QP
 
 source "board/boundary/a/Kconfig"
 source "board/boundary/a2/Kconfig"
+source "board/boundary/acl/Kconfig"
 source "board/boundary/nitrogen6x/Kconfig"
