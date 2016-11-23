@@ -1,0 +1,6 @@
+ACL BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/acl/
+F:	include/configs/acl.h
+F:	configs/acl_defconfig
