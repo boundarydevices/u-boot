@@ -145,6 +145,8 @@
 #define CONFIG_USB_EHCI
 #ifdef CONFIG_MX7D
 #define CONFIG_USB_EHCI_MX7
+#elif defined(CONFIG_MX51)
+#define CONFIG_USB_EHCI_MX5
 #else
 #define CONFIG_USB_EHCI_MX6
 #endif
@@ -154,8 +156,12 @@
 #define CONFIG_USB_ETHER_MCS7830
 #define CONFIG_USB_ETHER_SMSC95XX
 #define CONFIG_EHCI_HCD_INIT_AFTER_RESET	/* For OTG port */
+#ifndef CONFIG_MXC_USB_PORTSC
 #define CONFIG_MXC_USB_PORTSC	(PORT_PTS_UTMI | PORT_PTS_PTW)
+#endif
+#ifndef CONFIG_MXC_USB_FLAGS
 #define CONFIG_MXC_USB_FLAGS	0
+#endif
 #define CONFIG_USB_KEYBOARD
 #define CONFIG_SYS_USB_EVENT_POLL_VIA_CONTROL_EP
 #endif
@@ -287,6 +293,12 @@
 #define BD_RAM_KERNEL	"80800000"
 #define BD_RAM_RAMDISK	"82800000"
 #define BD_RAM_FDT	"83000000"
+#elif defined(CONFIG_MX51)
+#define BD_RAM_BASE	0x90000000
+#define BD_RAM_SCRIPT	"90008000"
+#define BD_RAM_KERNEL	"90800000"
+#define BD_RAM_RAMDISK	"92800000"
+#define BD_RAM_FDT	"93000000"
 #else
 #define BD_RAM_BASE	0x10000000
 #define BD_RAM_SCRIPT	"10008000"
@@ -382,7 +394,12 @@
 
 /* Physical Memory Map */
 #define CONFIG_NR_DRAM_BANKS	       1
+#if defined(CONFIG_MX51)
+#define PHYS_SDRAM		       CSD0_BASE_ADDR
+#else
 #define PHYS_SDRAM		       MMDC0_ARB_BASE_ADDR
+#endif
+
 #define CONFIG_RESET_CAUSE_ADDR	       (PHYS_SDRAM + 0x80)
 
 #define CONFIG_SYS_SDRAM_BASE	       PHYS_SDRAM
