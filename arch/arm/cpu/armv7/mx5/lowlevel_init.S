@@ -96,8 +96,8 @@
 #endif
 .endm /* init_m4if */
 
-.macro setup_pll pll, freq
-	ldr r0, =\pll
+.macro setup_pll r_pll, freq
+	mov r0, \r_pll
 	adr r2, W_DP_\freq
 	bl setup_pll_func
 .endm
@@ -133,23 +133,22 @@ setup_pll_func:
 	/* r10 saved upper lr */
 	mov pc, lr
 
-.macro setup_pll_errata pll, freq, r_zero
-	ldr r2, =\pll
-	str \r_zero, [r2, #PLL_DP_CONFIG] /* Disable auto-restart AREN bit */
+.macro setup_pll_errata r_pll, freq, r_zero
+	str \r_zero, [\r_pll, #PLL_DP_CONFIG] /* Disable auto-restart AREN bit */
 	ldr r1, =0x00001236
-	str r1, [r2, #PLL_DP_CTL]    /* Restart PLL with PLM=1 */
-1:	ldr r1, [r2, #PLL_DP_CTL]    /* Wait for lock */
+	str r1, [\r_pll, #PLL_DP_CTL]    /* Restart PLL with PLM=1 */
+1:	ldr r1, [\r_pll, #PLL_DP_CTL]    /* Wait for lock */
 	ands r1, r1, #0x1
 	beq 1b
 
 	ldr r1, \freq
-	str r1, [r2, #PLL_DP_MFN]    /* Modify MFN value */
-	str r1, [r2, #PLL_DP_HFS_MFN]
+	str r1, [\r_pll, #PLL_DP_MFN]    /* Modify MFN value */
+	str r1, [\r_pll, #PLL_DP_HFS_MFN]
 
 	mov r1, #0x1
-	str r1, [r2, #PLL_DP_CONFIG] /* Reload MFN value */
+	str r1, [\r_pll, #PLL_DP_CONFIG] /* Reload MFN value */
 
-2:	ldr r1, [r2, #PLL_DP_CONFIG]
+2:	ldr r1, [\r_pll, #PLL_DP_CONFIG]
 	tst r1, #1
 	bne 2b
 
@@ -158,7 +157,7 @@ setup_pll_func:
 	bge 3b
 
 	mov r1, #0x2
-	str r1, [r2, #PLL_DP_CONFIG] /* Enable auto-restart AREN bit */
+	str r1, [\r_pll, #PLL_DP_CONFIG] /* Enable auto-restart AREN bit */
 .endm
 
 .macro divisor_change_wait r_ccm
@@ -176,7 +175,7 @@ setup_pll_func:
 #define IPU_HANDSHAKE_DISABLE	(1<<21)
 #endif
 
-.macro init_clock r_zero, r_ccm
+.macro init_clock r_zero, r_ccm, r_pll1, r_pll2, r_pll3, r_pll4
 
 	mov r1, #IPU_HANDSHAKE_DISABLE
 	str r1, [\r_ccm, #CLKCTL_CCDR]
@@ -215,20 +214,20 @@ setup_pll_func:
 	str r1, [\r_ccm, #CLKCTL_CCSR]
 
 #if defined(CONFIG_MX51_PLL_ERRATA)
-	setup_pll PLL1_BASE_ADDR, 864
-	setup_pll_errata PLL1_BASE_ADDR, W_DP_MFN_800_DIT, \r_zero
+	setup_pll \r_pll1, 864
+	setup_pll_errata \r_pll1, W_DP_MFN_800_DIT, \r_zero
 #else
-	setup_pll PLL1_BASE_ADDR, 800
+	setup_pll \r_pll1, 800
 #endif
 
-	setup_pll PLL3_BASE_ADDR, 665
+	setup_pll \r_pll3, 665
 
 	/* Switch peripheral to PLL 3 */
 	ldr r1, =0x000010C0 | CONFIG_SYS_DDR_CLKSEL
 	str r1, [\r_ccm, #CLKCTL_CBCMR]
 	ldr r1, =0x13239145
 	str r1, [\r_ccm, #CLKCTL_CBCDR]
-	setup_pll PLL2_BASE_ADDR, 665
+	setup_pll \r_pll2, 665
 
 	/* Switch peripheral to PLL2 */
 	ldr r1, =0x19239145
@@ -236,7 +235,7 @@ setup_pll_func:
 	ldr r1, =0x000020C0 | CONFIG_SYS_DDR_CLKSEL
 	str r1, [\r_ccm, #CLKCTL_CBCMR]
 
-	setup_pll PLL3_BASE_ADDR, 216
+	setup_pll \r_pll3, 216
 
 	/* Set the platform clock dividers */
 	ldr r0, =ARM_BASE_ADDR
@@ -304,9 +303,9 @@ setup_pll_func:
 	mov r1, #0x4
 	str r1, [\r_ccm, #CLKCTL_CCSR]
 
-	setup_pll PLL1_BASE_ADDR, 800
+	setup_pll \r_pll1, 800
 
-	setup_pll PLL3_BASE_ADDR, 400
+	setup_pll \r_pll3, 400
 
 	/* Switch peripheral to PLL3 */
 	ldr r1, =0x00015154
@@ -315,7 +314,7 @@ setup_pll_func:
 	str r1, [\r_ccm, #CLKCTL_CBCDR]
 	divisor_change_wait \r_ccm
 
-	setup_pll PLL2_BASE_ADDR, 400
+	setup_pll \r_pll2, 400
 
 	/* Switch peripheral to PLL2 */
 	ldr r1, =0x00888945
@@ -332,9 +331,9 @@ setup_pll_func:
 
 	divisor_change_wait \r_ccm
 
-	setup_pll PLL3_BASE_ADDR, 216
+	setup_pll \r_pll3, 216
 
-	setup_pll PLL4_BASE_ADDR, 455
+	setup_pll \r_pll4, 455
 
 	/* Set the platform clock dividers */
 	ldr r0, =ARM_BASE_ADDR
@@ -396,7 +395,13 @@ ENTRY(lowlevel_init)
 	init_m4if r4
 
 	ldr r5, =CCM_BASE_ADDR
-	init_clock r4, r5
+	ldr r6, =PLL1_BASE_ADDR
+	ldr r7, =PLL2_BASE_ADDR
+	ldr r8, =PLL3_BASE_ADDR
+#ifdef CONFIG_MX53
+	ldr r9, =PLL4_BASE_ADDR
+#endif
+	init_clock r4, r5, r6, r7, r8, r9
 
 	mov pc, r10
 ENDPROC(lowlevel_init)
