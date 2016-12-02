@@ -58,6 +58,10 @@ config TARGET_USBARMORY
 	bool "Support USB armory"
 	select MX53
 
+config TARGET_NITROGEN51_VM
+	bool "Support Boundary Devices nitrogen51_vm board"
+	select CPU_V7
+
 endchoice
 
 config SYS_SOC
@@ -65,6 +69,7 @@ config SYS_SOC
 
 source "board/aries/m53evk/Kconfig"
 source "board/beckhoff/mx53cx9020/Kconfig"
+source "board/boundary/nitrogen51_vm/Kconfig"
 source "board/freescale/mx51evk/Kconfig"
 source "board/freescale/mx53ard/Kconfig"
 source "board/freescale/mx53evk/Kconfig"
