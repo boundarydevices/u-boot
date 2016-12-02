@@ -75,7 +75,7 @@
 .endm /* init_aips */
 
 /* M4IF setup */
-.macro init_m4if
+.macro init_m4if r_zero
 #ifdef CONFIG_MX51
 	/* VPU and IPU given higher priority (0x4)
 	 * IPU accesses with ID=0x1 given highest priority (=0xA)
@@ -85,7 +85,7 @@
 	ldr r1, =0x00000203
 	str r1, [r0, #0x40]
 
-	str r4, [r0, #0x44]
+	str \r_zero, [r0, #0x44]
 
 	ldr r1, =0x00120125
 	str r1, [r0, #0x9C]
@@ -133,9 +133,9 @@ setup_pll_func:
 	/* r10 saved upper lr */
 	mov pc, lr
 
-.macro setup_pll_errata pll, freq
+.macro setup_pll_errata pll, freq, r_zero
 	ldr r2, =\pll
-	str r4, [r2, #PLL_DP_CONFIG] /* Disable auto-restart AREN bit */
+	str \r_zero, [r2, #PLL_DP_CONFIG] /* Disable auto-restart AREN bit */
 	ldr r1, =0x00001236
 	str r1, [r2, #PLL_DP_CTL]    /* Restart PLL with PLM=1 */
 1:	ldr r1, [r2, #PLL_DP_CTL]    /* Wait for lock */
@@ -169,7 +169,7 @@ setup_pll_func:
 #define IPU_HANDSHAKE_DISABLE	(1<<21)
 #endif
 
-.macro init_clock
+.macro init_clock r_zero
 
 	ldr r0, =CCM_BASE_ADDR
 	mov r1, #IPU_HANDSHAKE_DISABLE
@@ -188,9 +188,9 @@ setup_pll_func:
 	/* Gate of clocks to the peripherals first */
 	ldr r1, =0x3FFFFFFF
 	str r1, [r0, #CLKCTL_CCGR0]
-	str r4, [r0, #CLKCTL_CCGR1]
-	str r4, [r0, #CLKCTL_CCGR2]
-	str r4, [r0, #CLKCTL_CCGR3]
+	str \r_zero, [r0, #CLKCTL_CCGR1]
+	str \r_zero, [r0, #CLKCTL_CCGR2]
+	str \r_zero, [r0, #CLKCTL_CCGR3]
 
 	ldr r1, =0x00030000
 	str r1, [r0, #CLKCTL_CCGR4]
@@ -213,7 +213,7 @@ setup_pll_func:
 
 #if defined(CONFIG_MX51_PLL_ERRATA)
 	setup_pll PLL1_BASE_ADDR, 864
-	setup_pll_errata PLL1_BASE_ADDR, W_DP_MFN_800_DIT
+	setup_pll_errata PLL1_BASE_ADDR, W_DP_MFN_800_DIT, \r_zero
 #else
 	setup_pll PLL1_BASE_ADDR, 800
 #endif
@@ -245,7 +245,7 @@ setup_pll_func:
 	ldr r0, =CCM_BASE_ADDR
 
 	/* Run 3.0 at Full speed, for other TO's wait till we increase VDDGP */
-	ldr r3, [r4, #ROM_SI_REV]
+	ldr r3, [\r_zero, #ROM_SI_REV]
 	cmp r3, #0x10
 	movls r1, #0x1
 	movhi r1, #0
@@ -253,7 +253,7 @@ setup_pll_func:
 	str r1, [r0, #CLKCTL_CACRR]
 
 	/* Switch ARM back to PLL 1 */
-	str r4, [r0, #CLKCTL_CCSR]
+	str \r_zero, [r0, #CLKCTL_CCSR]
 
 	/* setup the rest */
 	/* Use lp_apm (24MHz) source for perclk */
@@ -283,7 +283,7 @@ setup_pll_func:
 	cmp r1, #0x0
 	bne 1b
 
-	str r4, [r0, #CLKCTL_CCDR]
+	str \r_zero, [r0, #CLKCTL_CCDR]
 
 	/* for cko - for ARM div by 8 */
 	mov r1, #0x000A0000
@@ -293,10 +293,10 @@ setup_pll_func:
 	/* Gate of clocks to the peripherals first */
 	ldr r1, =0x3FFFFFFF
 	str r1, [r0, #CLKCTL_CCGR0]
-	str r4, [r0, #CLKCTL_CCGR1]
-	str r4, [r0, #CLKCTL_CCGR2]
-	str r4, [r0, #CLKCTL_CCGR3]
-	str r4, [r0, #CLKCTL_CCGR7]
+	str \r_zero, [r0, #CLKCTL_CCGR1]
+	str \r_zero, [r0, #CLKCTL_CCGR2]
+	str \r_zero, [r0, #CLKCTL_CCGR3]
+	str \r_zero, [r0, #CLKCTL_CCGR7]
 	ldr r1, =0x00030000
 	str r1, [r0, #CLKCTL_CCGR4]
 	ldr r1, =0x00FFF030
@@ -354,12 +354,10 @@ setup_pll_func:
 	str r1, [r0, #0x14]
 
 	ldr r0, =CCM_BASE_ADDR
-	mov r1, #0
-	str r1, [r0, #CLKCTL_CACRR]
+	str \r_zero, [r0, #CLKCTL_CACRR]
 
 	/* Switch ARM back to PLL 1. */
-	mov r1, #0x0
-	str r1, [r0, #CLKCTL_CCSR]
+	str \r_zero, [r0, #CLKCTL_CCSR]
 
 	/* make uart div=6 */
 	ldr r1, [r0, #CLKCTL_CSCDR1]
@@ -378,8 +376,7 @@ setup_pll_func:
 	str r1, [r0, #CLKCTL_CCGR6]
 	str r1, [r0, #CLKCTL_CCGR7]
 
-	mov r1, #0x00000
-	str r1, [r0, #CLKCTL_CCDR]
+	str \r_zero, [r0, #CLKCTL_CCDR]
 
 	/* for cko - for ARM div by 8 */
 	mov r1, #0x000A0000
@@ -409,9 +406,9 @@ ENTRY(lowlevel_init)
 
 	init_aips
 
-	init_m4if
+	init_m4if r4
 
-	init_clock
+	init_clock r4
 
 	mov pc, r10
 ENDPROC(lowlevel_init)
