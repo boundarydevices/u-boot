@@ -161,10 +161,21 @@ setup_pll_func:
 	str r1, [r2, #PLL_DP_CONFIG] /* Enable auto-restart AREN bit */
 .endm
 
-.macro init_clock
-#if defined (CONFIG_MX51)
-	ldr r0, =CCM_BASE_ADDR
+#ifdef CONFIG_MX51
+	/* Disable IPU and HSC handshake */
+#define IPU_HANDSHAKE_DISABLE	0x60000
+#else
+	/* Disable IPU handshake */
+#define IPU_HANDSHAKE_DISABLE	(1<<21)
+#endif
 
+.macro init_clock
+
+	ldr r0, =CCM_BASE_ADDR
+	mov r1, #IPU_HANDSHAKE_DISABLE
+	str r1, [r0, #CLKCTL_CCDR]
+
+#if defined (CONFIG_MX51)
 	/* Gate of clocks to the peripherals first */
 	ldr r1, =0x3FFFFFFF
 	str r1, [r0, #CLKCTL_CCGR0]
@@ -178,10 +189,6 @@ setup_pll_func:
 	str r1, [r0, #CLKCTL_CCGR5]
 	ldr r1, =0x00000300
 	str r1, [r0, #CLKCTL_CCGR6]
-
-	/* Disable IPU and HSC dividers */
-	mov r1, #0x60000
-	str r1, [r0, #CLKCTL_CCDR]
 
 	/* Make sure to switch the DDR away from PLL 1 */
 	ldr r1, =0x19239145
@@ -274,8 +281,6 @@ setup_pll_func:
 	add r1, r1, #0x00000F0
 	str r1, [r0, #CLKCTL_CCOSR]
 #else	/* CONFIG_MX53 */
-	ldr r0, =CCM_BASE_ADDR
-
 	/* Gate of clocks to the peripherals first */
 	ldr r1, =0x3FFFFFFF
 	str r1, [r0, #CLKCTL_CCGR0]
