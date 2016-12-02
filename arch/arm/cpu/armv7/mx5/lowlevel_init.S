@@ -23,27 +23,27 @@
 /*
  * L2CC Cache setup/invalidation/disable
  */
-.macro init_l2cc
+.macro init_l2cc r_zero
 	/* explicitly disable L2 cache */
 	mrc 15, 0, r0, c1, c0, 1
 	bic r0, r0, #0x2
-	mcr 15, 0, r0, c1, c0, 1
+	mcr 15, 0, r0, c1, c0, 1	/* Write Auxiliary Control Register */
 
 	/* reconfigure L2 cache aux control reg */
-	ldr r0, =0xC0 |			/* tag RAM */ \
-		 0x4 |			/* data RAM */ \
-		 1 << 24 |		/* disable write allocate delay */ \
-		 1 << 23 |		/* disable write allocate combine */ \
-		 1 << 22		/* disable write allocate */
+	mov r0, #0xC4			/* tag/data RAM */
+	orr r0, r0, #(1 << 24) |	/* disable write allocate delay */ \
+		 (1 << 23) |		/* disable write allocate combine */ \
+		 (1 << 22)		/* disable write allocate */
 
 #if defined(CONFIG_MX51)
-	ldr r3, [r4, #ROM_SI_REV]
+	ldr r3, [\r_zero, #ROM_SI_REV]
 	cmp r3, #0x10
 
 	/* disable write combine for TO 2 and lower revs */
 	orrls r0, r0, #1 << 25
 #endif
 
+	/* Write L2 Cache Auxiliary Control Register */
 	mcr 15, 1, r0, c9, c0, 2
 
 	/* enable L2 cache */
@@ -405,7 +405,7 @@ ENTRY(lowlevel_init)
 
 	init_arm_erratum
 
-	init_l2cc
+	init_l2cc r4
 
 	init_aips
 
