@@ -60,39 +60,38 @@ struct mxc_i2c_bus {
 #endif
 };
 
-#ifdef CONFIG_MX6SX
-#define I2C_PADS_INFO_CPU(cpu, i2cnum, scl_pad, scl_bank, scl_gp,	       \
-		sda_pad, sda_bank, sda_gp, ctrl) {			       \
+#define _I2C_PADS_INFO_CPU(cpu, i2cnum, scl_pad, scl_bank, scl_gp,	       \
+		sda_pad, sda_bank, sda_gp, ctrl, join_io) {		       \
     .scl = {								       \
 	.i2c_mode = NEW_PAD_CTRL(cpu##_PAD_##scl_pad##__##i2cnum##_SCL, ctrl), \
 	.gpio_mode = NEW_PAD_CTRL(					       \
-		cpu##_PAD_##scl_pad##__GPIO##scl_bank##_IO_##scl_gp, ctrl),    \
+		cpu##_PAD_##scl_pad##__GPIO##scl_bank##join_io##scl_gp, ctrl),    \
 	.gp = IMX_GPIO_NR(scl_bank, scl_gp)				       \
     },									       \
     .sda = {								       \
 	.i2c_mode = NEW_PAD_CTRL(cpu##_PAD_##sda_pad##__##i2cnum##_SDA, ctrl), \
 	.gpio_mode = NEW_PAD_CTRL(					       \
-		cpu##_PAD_##sda_pad##__GPIO##sda_bank##_IO_##sda_gp, ctrl),    \
+		cpu##_PAD_##sda_pad##__GPIO##sda_bank##join_io##sda_gp, ctrl),    \
 	.gp = IMX_GPIO_NR(sda_bank, sda_gp)				       \
     }									       \
 }
 
+#ifdef CONFIG_MX6SX
+#define I2C_PADS_INFO_CPU(cpu, i2cnum, scl_pad, scl_bank, scl_gp,	       \
+		sda_pad, sda_bank, sda_gp, ctrl) 			       \
+		_I2C_PADS_INFO_CPU(cpu, i2cnum, scl_pad, scl_bank, scl_gp,     \
+				sda_pad, sda_bank, sda_gp, ctrl, _IO_)
+
+#elif defined(CONFIG_MX51)
+#define I2C_PADS_INFO_CPU(cpu, i2cnum, scl_pad, scl_bank, scl_gp,	       \
+		sda_pad, sda_bank, sda_gp, ctrl) 			       \
+		_I2C_PADS_INFO_CPU(cpu, i2cnum, scl_pad, scl_bank, scl_gp,     \
+				sda_pad, sda_bank, sda_gp, ctrl, _)
 #else
 #define I2C_PADS_INFO_CPU(cpu, i2cnum, scl_pad, scl_bank, scl_gp,	       \
-		sda_pad, sda_bank, sda_gp, ctrl) {			       \
-    .scl = {								       \
-	.i2c_mode = NEW_PAD_CTRL(cpu##_PAD_##scl_pad##__##i2cnum##_SCL, ctrl), \
-	.gpio_mode = NEW_PAD_CTRL(					       \
-		cpu##_PAD_##scl_pad##__GPIO##scl_bank##_IO##scl_gp, ctrl),     \
-	.gp = IMX_GPIO_NR(scl_bank, scl_gp)				       \
-    },									       \
-    .sda = {								       \
-	.i2c_mode = NEW_PAD_CTRL(cpu##_PAD_##sda_pad##__##i2cnum##_SDA, ctrl), \
-	.gpio_mode = NEW_PAD_CTRL(					       \
-		cpu##_PAD_##sda_pad##__GPIO##sda_bank##_IO##sda_gp, ctrl),     \
-	.gp = IMX_GPIO_NR(sda_bank, sda_gp)				       \
-    }									       \
-}
+		sda_pad, sda_bank, sda_gp, ctrl) 			       \
+		_I2C_PADS_INFO_CPU(cpu, i2cnum, scl_pad, scl_bank, scl_gp,     \
+				sda_pad, sda_bank, sda_gp, ctrl, _IO)
 #endif
 
 #if defined(CONFIG_MX6QDL)
@@ -103,6 +102,12 @@ struct mxc_i2c_bus {
 	I2C_PADS_INFO_CPU(MX6DL, i2cnum, scl_pad, scl_bank, scl_gp,	\
 		sda_pad, sda_bank, sda_gp, ctrl)
 #define I2C_PADS_INFO_ENTRY_SPACING 2
+#elif defined(CONFIG_MX51)
+#define I2C_PADS_INFO_ENTRY(i2cnum, scl_pad, scl_bank, scl_gp,		\
+		sda_pad, sda_bank, sda_gp, ctrl)			\
+	I2C_PADS_INFO_CPU(MX51, i2cnum, scl_pad, scl_bank, scl_gp,	\
+		sda_pad, sda_bank, sda_gp, ctrl)
+#define I2C_PADS_INFO_ENTRY_SPACING 1
 #else
 #define I2C_PADS_INFO_ENTRY(i2cnum, scl_pad, scl_bank, scl_gp,		\
 		sda_pad, sda_bank, sda_gp, ctrl)			\
