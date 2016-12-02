@@ -18,9 +18,10 @@ struct display_info_t {
 	int	pwm_period;
 #define FB_HDMI		0
 #define FB_LCD		1
-#define FB_LVDS		2
-#define FB_LVDS2	3
-#define FB_COUNT	4
+#define FB_LCD2		2
+#define FB_LVDS		3
+#define FB_LVDS2	4
+#define FB_COUNT	5
 	int	fbtype;
 
 #define FBF_MODESTR	1
@@ -51,6 +52,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 #define VD_SHARP_WVGA(_mode, _detect, _bus, _addr)	VDF_SHARP_WVGA(_mode, "sharp-wvga", RGB24, FBF_MODESTR, _detect, _bus, _addr)
 #define VD_800X300_565(_mode, _detect, _bus, _addr)	VDF_800X300(_mode, "800x300rgb565", RGB565, FBF_MODESTR, _detect, _bus, _addr)
 #define VD_HITACHI_HVGA(_mode, _detect, _bus, _addr)	VDF_HITACHI_HVGA(_mode, "hitachi_hvga", RGB666, FBF_MODESTR, _detect, _bus, _addr)
+#define VD_HITACHI_HVGA565(_mode, _detect, _bus, _addr)	VDF_HITACHI_HVGA(_mode, "hitachi_hvga", RGB565, FBF_MODESTR, _detect, _bus, _addr)
 #define VD_DC050WX(_mode, _detect, _bus, _addr)		VDF_DC050WX(_mode, "DC050WX", RGB24, FBF_MODESTR, _detect, _bus, _addr)
 #define VD_INNOLUX_WXGA_14IN_12V(_mode, _detect, _bus, _addr) VDF_INNOLUX_WXGA_14IN_12V(_mode, "INNOLUX-WXGA-IN14-12V", RGB666, 0, _detect, _bus, _addr)
 #define VD_AUO_WXGA_11IN_12V(_mode, _detect, _bus, _addr) VDF_AUO_WXGA_11IN_12V(_mode, "AUO-WXGA-IN11-12V", RGB24, 0, _detect, _bus, _addr)

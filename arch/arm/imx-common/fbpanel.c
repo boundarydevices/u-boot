@@ -6,7 +6,9 @@
 #include <asm/errno.h>
 #include <asm/arch/clock.h>
 #include <asm/arch/crm_regs.h>
+#ifndef CONFIG_MX51
 #include <asm/arch/mxc_hdmi.h>
+#endif
 #include <asm/arch/sys_proto.h>
 #include <asm/gpio.h>
 #include <asm/imx-common/fbpanel.h>
@@ -59,6 +61,7 @@
 static const char *const fbnames[] = {
 [FB_HDMI] = "fb_hdmi",
 [FB_LCD] = "fb_lcd",
+[FB_LCD2] = "fb_lcd2",
 [FB_LVDS] = "fb_lvds",
 [FB_LVDS2] = "fb_lvds2"
 };
@@ -66,6 +69,7 @@ static const char *const fbnames[] = {
 static const char *const timings_names[] = {
 [FB_HDMI] = "t_hdmi",
 [FB_LCD] = "t_lcd",
+[FB_LCD2] = "t_lcd2",
 [FB_LVDS] = "t_lvds",
 [FB_LVDS2] = "t_lvds2"
 };
@@ -73,6 +77,7 @@ static const char *const timings_names[] = {
 static const char *const ch_names[] = {
 [FB_HDMI] = "",
 [FB_LCD] = "",
+[FB_LCD2] = "",
 [FB_LVDS] = "ldb/lvds-channel@0",
 [FB_LVDS2] = "ldb/lvds-channel@1"
 };
@@ -80,6 +85,7 @@ static const char *const ch_names[] = {
 static const char *const cmd_fbnames[] = {
 [FB_HDMI] = "cmd_hdmi",
 [FB_LCD] = "cmd_lcd",
+[FB_LCD2] = "cmd_lcd2",
 [FB_LVDS] = "cmd_lvds",
 [FB_LVDS2] = "cmd_lvds2"
 };
@@ -87,6 +93,7 @@ static const char *const cmd_fbnames[] = {
 static const char *const backlight_names[] = {
 [FB_HDMI] = "backlight_hdmi",
 [FB_LCD] = "backlight_lcd",
+[FB_LCD2] = "backlight_lcd2",
 [FB_LVDS] = "backlight_lvds",
 [FB_LVDS2] = "backlight_lvds2"
 };
@@ -94,6 +101,7 @@ static const char *const backlight_names[] = {
 static const char *const pwm_names[] = {
 [FB_HDMI] = "pwm_hdmi",
 [FB_LCD] = "pwm_lcd",
+[FB_LCD2] = "pwm_lcd2",
 [FB_LVDS] = "pwm_lvds",
 [FB_LVDS2] = "pwm_lvds2"
 };
@@ -101,6 +109,7 @@ static const char *const pwm_names[] = {
 static const char *const short_names[] = {
 [FB_HDMI] = "hdmi",
 [FB_LCD] = "lcd",
+[FB_LCD2] = "lcd2",
 [FB_LVDS] = "lvds",
 [FB_LVDS2] = "lvds2"
 };
@@ -171,6 +180,7 @@ static unsigned get_fb_available_mask(const struct display_info_t *di, int cnt)
 	return mask;
 }
 static const char rgb24[] = "RGB24";
+static const char rgb565[] = "RGB565";
 static const char rgb666[] = "RGB666";
 static const char yuyv16[] = "YUYV16";
 
@@ -232,10 +242,12 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		fmt = rgb24;
 	else if (di->pixfmt == IPU_PIX_FMT_YUYV)
 		fmt = yuyv16;
+	else if (di->pixfmt == IPU_PIX_FMT_RGB565)
+		fmt = rgb565;
 	else
 		fmt = rgb666;
 
-	if (di && ((fb == FB_LCD) || (fb == FB_LVDS) || (fb == FB_LVDS2))) {
+	if (di && (fb >= FB_LCD)) {
 #ifdef CONFIG_MX6SX
 		sz = snprintf(buf, size, "fdt set %s bus-width <%u>;", short_names[fb],
 				(di->pixfmt == IPU_PIX_FMT_RGB24) ? 24 : 18);
@@ -248,8 +260,14 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		size -= sz;
 	}
 
-	if (di && (fb == FB_LCD)) {
-		sz = snprintf(buf, size, "fdt set lcd default_ifmt %s;", fmt);
+	if (di && ((fb == FB_LCD) || (fb == FB_LCD2))) {
+		sz = snprintf(buf, size, "fdt set %s default_ifmt %s;",
+				short_names[fb], fmt);
+		buf += sz;
+		size -= sz;
+
+		sz = snprintf(buf, size, "fdt set %s status okay;",
+				short_names[fb]);
 		buf += sz;
 		size -= sz;
 	}
@@ -353,6 +371,7 @@ int calc_gcd(int a, int b)
 	return a;
 }
 
+#ifndef CONFIG_MX51
 void reparent_lvds(int fbtype, int new_parent)
 {
 	struct mxc_ccm_reg *ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
@@ -426,7 +445,57 @@ void reparent_lvds(int fbtype, int new_parent)
 	reg &= ~MXC_CCM_CCDR_MMDC_CH1_HS_MASK;
 	writel(reg, &ccm->ccdr);
 }
+#endif
 
+#if defined(CONFIG_MX51)
+int get_pll3_clock(void);
+
+void setup_clock(struct display_info_t const *di)
+{
+	struct mxc_ccm_reg *ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
+	u64 lval = 1000000000000ULL;
+	u32 desired_freq, freq;
+	u32 pll3_freq = get_pll3_clock();
+	u32 n, m;
+	u32 i;
+	u32 best = 8;
+	u32 best_diff = ~0;
+	u32 diff;
+	u32 reg;
+
+	if (!(di->mode.sync & FB_SYNC_EXT))
+		return;
+
+	do_div(lval, di->mode.pixclock);
+	desired_freq = ((u32)lval) * 16;
+
+	for (i = 8; i > 0 ; i--) {
+		n = pll3_freq / i;
+		m = n / desired_freq;
+		if (!m || (m & 1))
+			continue;
+		if (m > 16)
+			break;
+		freq = n / m;
+		if (freq >= desired_freq)
+			diff = freq - desired_freq;
+		else
+			diff = desired_freq - freq;
+
+		if (best_diff > diff) {
+			best_diff = diff;
+			best = i;
+		}
+	}
+	reg = readl(&ccm->cdcdr);
+	reg &= ~(7 << 6);
+	reg |= (best - 1) << 6;
+	writel(reg, &ccm->cdcdr);
+
+	ipu_set_ldb_clock(pll3_freq / best);	/* used for all ext clocks */
+}
+
+#else
 void setup_clock(struct display_info_t const *di)
 {
 	struct mxc_ccm_reg *ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
@@ -475,6 +544,7 @@ void setup_clock(struct display_info_t const *di)
 			desired_freq >>= 1;
 
 	}
+
 	debug("desired_freq=%d\n", desired_freq);
 
 #define MIN_FREQ 648000000	/* 24000000 * 27 */
@@ -581,14 +651,16 @@ void setup_clock(struct display_info_t const *di)
 			 : 0));
 #endif
 }
+#endif
 
 void fbp_enable_fb(struct display_info_t const *di, int enable)
 {
+#if !defined(CONFIG_MX51)
 	struct mxc_ccm_reg *mxc_ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
 	struct iomuxc *iomux = (struct iomuxc *)IOMUXC_BASE_ADDR;
 	u32 reg, cscmr2;
 	u32 tmp;
-
+#endif
 	switch (di->fbtype) {
 #ifdef CONFIG_IMX_HDMI
 	case FB_HDMI:
@@ -596,9 +668,11 @@ void fbp_enable_fb(struct display_info_t const *di, int enable)
 		board_enable_hdmi(di, enable);
 		break;
 #endif
+	case FB_LCD2:
 	case FB_LCD:
 		board_enable_lcd(di, enable);
 		break;
+#if !defined(CONFIG_MX51)
 	case FB_LVDS:
 		reg = readl(&iomux->gpr[2]);
 		cscmr2 = readl(&mxc_ccm->cscmr2);
@@ -653,12 +727,14 @@ void fbp_enable_fb(struct display_info_t const *di, int enable)
 		writel(reg, &iomux->gpr[2]);
 		board_enable_lvds2(di, enable);
 		break;
+#endif
 	}
 }
 
 static void imx_prepare_display(void)
 {
 #ifndef CONFIG_MX6SX
+#if !defined(CONFIG_MX51)
 	struct mxc_ccm_reg *mxc_ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
 	struct iomuxc *iomux = (struct iomuxc *)IOMUXC_BASE_ADDR;
 	int reg;
@@ -695,6 +771,7 @@ static void imx_prepare_display(void)
 	    | (IOMUXC_GPR3_MUX_SRC_IPU1_DI0
 	       <<IOMUXC_GPR3_LVDS0_MUX_CTL_OFFSET);
 	writel(reg, &iomux->gpr[3]);
+#endif
 #endif
 }
 
@@ -1106,7 +1183,8 @@ static int init_display(const struct display_info_t *di)
 	if (di->pre_enable)
 		di->pre_enable(di);
 	setup_clock(di);
-	ret = ipuv3_fb_init(&di->mode, 0, di->pixfmt);
+	ret = ipuv3_fb_init(&di->mode, (di->fbtype == FB_LCD2) ? 1 : 0,
+			di->pixfmt);
 	if (ret) {
 		printf("LCD %s cannot be configured: %d\n", di->mode.name, ret);
 		return -EINVAL;
