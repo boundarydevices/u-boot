@@ -88,6 +88,10 @@ config TARGET_NITROGEN51_E
 	bool "Support Boundary Devices nitrogen51_e board"
 	select MX51
 
+config TARGET_NITROGEN51_VM
+	bool "Support Boundary Devices nitrogen51_vm board"
+	select MX51
+
 endchoice
 
 config SYS_SOC
@@ -95,6 +99,7 @@ config SYS_SOC
 
 source "board/beckhoff/mx53cx9020/Kconfig"
 source "board/boundary/nitrogen51_e/Kconfig"
+source "board/boundary/nitrogen51_vm/Kconfig"
 source "board/freescale/mx51evk/Kconfig"
 source "board/freescale/mx53ard/Kconfig"
 source "board/freescale/mx53evk/Kconfig"
