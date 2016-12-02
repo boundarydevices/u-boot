@@ -133,8 +133,7 @@ setup_pll_func:
 	/* r10 saved upper lr */
 	mov pc, lr
 
-.macro setup_pll_errata r_pll, freq, r_zero
-	str \r_zero, [\r_pll, #PLL_DP_CONFIG] /* Disable auto-restart AREN bit */
+.macro setup_pll_errata r_pll, freq
 	ldr r1, =0x00001236
 	str r1, [\r_pll, #PLL_DP_CTL]    /* Restart PLL with PLM=1 */
 1:	ldr r1, [\r_pll, #PLL_DP_CTL]    /* Wait for lock */
@@ -155,9 +154,6 @@ setup_pll_func:
 	ldr r1, =100		     /* Wait at least 4 us */
 3:	subs r1, r1, #1
 	bge 3b
-
-	mov r1, #0x2
-	str r1, [\r_pll, #PLL_DP_CONFIG] /* Enable auto-restart AREN bit */
 .endm
 
 .macro divisor_change_wait r_ccm
@@ -189,6 +185,11 @@ setup_pll_func:
 	cmp r1, #0x22			/* wait for Oscillator and FPM ready */
 	bne 1b
 
+/* disable auto restart */
+	str     \r_zero, [\r_pll1, #PLL_DP_CONFIG]
+	str     \r_zero, [\r_pll2, #PLL_DP_CONFIG]
+	str     \r_zero, [\r_pll3, #PLL_DP_CONFIG]
+
 #if defined (CONFIG_MX51)
 	/* Gate of clocks to the peripherals first */
 	ldr r1, =0x3FFFFFFF
@@ -205,33 +206,46 @@ setup_pll_func:
 	str r1, [\r_ccm, #CLKCTL_CCGR6]
 
 	/* Make sure to switch the DDR away from PLL 1 */
-	ldr r1, =0x19239145
-	str r1, [\r_ccm, #CLKCTL_CBCDR]
+	/* keep the initial ddr podf value */
+	ldr r2, [\r_ccm, #CLKCTL_CBCDR]
+	ldr r3, =0x19239145
+	str r3, [\r_ccm, #CLKCTL_CBCDR]
 	divisor_change_wait \r_ccm
 
-	/* Switch ARM to step clock */
+	/* Switch ARM to step clock (clock source 4) */
+	ldr r0, [\r_ccm, #CLKCTL_CCSR]
+	/* deselect step clock for glitch free update */
+	bic r0, r0, #4
+	str r0, [\r_ccm, #CLKCTL_CCSR]
+	/* select clock source 4 as source for step clock */
+	str \r_zero, [\r_ccm, #CLKCTL_CCSR]
+
+	/* switch arm to step clock */
 	mov r1, #0x4
 	str r1, [\r_ccm, #CLKCTL_CCSR]
 
 #if defined(CONFIG_MX51_PLL_ERRATA)
 	setup_pll \r_pll1, 864
-	setup_pll_errata \r_pll1, W_DP_MFN_800_DIT, \r_zero
+	setup_pll_errata \r_pll1, W_DP_MFN_800_DIT
 #else
 	setup_pll \r_pll1, 800
 #endif
+
+	/* Switch ARM back to PLL 1 */
+	str \r_zero, [\r_ccm, #CLKCTL_CCSR]
 
 	setup_pll \r_pll3, 665
 
 	/* Switch peripheral to PLL 3 */
 	ldr r1, =0x000010C0 | CONFIG_SYS_DDR_CLKSEL
 	str r1, [\r_ccm, #CLKCTL_CBCMR]
-	ldr r1, =0x13239145
+	orr r1, r3, #1<<25		//[25] 0 -> 1 (periph was pll2, now apm)
 	str r1, [\r_ccm, #CLKCTL_CBCDR]
 	setup_pll \r_pll2, 665
 
 	/* Switch peripheral to PLL2 */
-	ldr r1, =0x19239145
-	str r1, [\r_ccm, #CLKCTL_CBCDR]
+	str r3, [\r_ccm, #CLKCTL_CBCDR]
+
 	ldr r1, =0x000020C0 | CONFIG_SYS_DDR_CLKSEL
 	str r1, [\r_ccm, #CLKCTL_CBCMR]
 
@@ -250,16 +264,22 @@ setup_pll_func:
 
 	str r1, [\r_ccm, #CLKCTL_CACRR]
 
-	/* Switch ARM back to PLL 1 */
-	str \r_zero, [\r_ccm, #CLKCTL_CCSR]
-
 	/* setup the rest */
 	/* Use lp_apm (24MHz) source for perclk */
 	ldr r1, =0x000020C2 | CONFIG_SYS_DDR_CLKSEL
 	str r1, [\r_ccm, #CLKCTL_CBCMR]
 	/* ddr clock from PLL 1, all perclk dividers are 1 since using 24MHz */
-	ldr r1, =CONFIG_SYS_CLKTL_CBCDR
+	ldr r1, =(CONFIG_SYS_CLKTL_CBCDR & ~(7 << 27))
+	and r2, r2, #(7 << 27)		//keep the initial ddr podf value
+	orr r1, r1, r2
 	str r1, [\r_ccm, #CLKCTL_CBCDR]
+
+	/* Use PLL 2 for UART's, get 66.5MHz from it */
+	ldr r1, =0xA5A2A020
+	str r1, [\r_ccm, #CLKCTL_CSCMR1]
+	ldr r1, =0x00C30321
+	str r1, [\r_ccm, #CLKCTL_CSCDR1]
+	divisor_change_wait \r_ccm
 
 	/* Restore the default values in the Gate registers */
 	ldr r1, =0xFFFFFFFF
@@ -270,13 +290,6 @@ setup_pll_func:
 	str r1, [\r_ccm, #CLKCTL_CCGR4]
 	str r1, [\r_ccm, #CLKCTL_CCGR5]
 	str r1, [\r_ccm, #CLKCTL_CCGR6]
-
-	/* Use PLL 2 for UART's, get 66.5MHz from it */
-	ldr r1, =0xA5A2A020
-	str r1, [\r_ccm, #CLKCTL_CSCMR1]
-	ldr r1, =0x00C30321
-	str r1, [\r_ccm, #CLKCTL_CSCDR1]
-	divisor_change_wait \r_ccm
 
 	str \r_zero, [\r_ccm, #CLKCTL_CCDR]
 
