@@ -81,8 +81,11 @@ void imx_get_mac_from_fuse(int dev_id, unsigned char *mac)
 	struct fuse_bank1_regs *fuse =
 			(struct fuse_bank1_regs *)bank->fuse_regs;
 
+#ifndef CONFIG_IIM_MAC_ADDR_INDEX
+#define CONFIG_IIM_MAC_ADDR_INDEX 0
+#endif
 	for (i = 0; i < 6; i++)
-		mac[i] = readl(&fuse->mac_addr[i]) & 0xff;
+		mac[i] = readl(&fuse->mac_addr[i + CONFIG_IIM_MAC_ADDR_INDEX]) & 0xff;
 }
 #endif
 
