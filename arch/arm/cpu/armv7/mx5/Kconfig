@@ -26,12 +26,17 @@ config TARGET_MX53CX9020
 	select DM
 	select DM_SERIAL
 
+config TARGET_NITROGEN51_VM
+	bool "Support Boundary Devices nitrogen51_vm board"
+	select CPU_V7
+
 endchoice
 
 config SYS_SOC
 	default "mx5"
 
 source "board/beckhoff/mx53cx9020/Kconfig"
+source "board/boundary/nitrogen51_vm/Kconfig"
 source "board/inversepath/usbarmory/Kconfig"
 
 endif
