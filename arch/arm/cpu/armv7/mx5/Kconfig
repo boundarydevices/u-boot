@@ -18,11 +18,16 @@ config TARGET_USBARMORY
 	bool "Support USB armory"
 	select CPU_V7
 
+config TARGET_NITROGEN51_VM
+	bool "Support Boundary Devices nitrogen51_vm board"
+	select CPU_V7
+
 endchoice
 
 config SYS_SOC
 	default "mx5"
 
 source "board/inversepath/usbarmory/Kconfig"
+source "board/boundary/nitrogen51_vm/Kconfig"
 
 endif
