@@ -161,6 +161,13 @@ setup_pll_func:
 	str r1, [r2, #PLL_DP_CONFIG] /* Enable auto-restart AREN bit */
 .endm
 
+.macro divisor_change_wait r_ccm
+	/* make sure divider effective */
+1:	ldr r0, [\r_ccm, #CLKCTL_CDHIPR]
+	cmp r0, #0x0
+	bne 1b
+.endm
+
 #ifdef CONFIG_MX51
 	/* Disable IPU and HSC handshake */
 #define IPU_HANDSHAKE_DISABLE	0x60000
@@ -201,10 +208,7 @@ setup_pll_func:
 	/* Make sure to switch the DDR away from PLL 1 */
 	ldr r1, =0x19239145
 	str r1, [\r_ccm, #CLKCTL_CBCDR]
-	/* make sure divider effective */
-1:	ldr r1, [\r_ccm, #CLKCTL_CDHIPR]
-	cmp r1, #0x0
-	bne 1b
+	divisor_change_wait \r_ccm
 
 	/* Switch ARM to step clock */
 	mov r1, #0x4
@@ -273,10 +277,7 @@ setup_pll_func:
 	str r1, [\r_ccm, #CLKCTL_CSCMR1]
 	ldr r1, =0x00C30321
 	str r1, [\r_ccm, #CLKCTL_CSCDR1]
-	/* make sure divider effective */
-1:	ldr r1, [\r_ccm, #CLKCTL_CDHIPR]
-	cmp r1, #0x0
-	bne 1b
+	divisor_change_wait \r_ccm
 
 	str \r_zero, [\r_ccm, #CLKCTL_CCDR]
 
@@ -312,10 +313,7 @@ setup_pll_func:
 	str r1, [\r_ccm, #CLKCTL_CBCMR]
 	ldr r1, =0x02898945
 	str r1, [\r_ccm, #CLKCTL_CBCDR]
-	/* make sure change is effective */
-1:      ldr r1, [\r_ccm, #CLKCTL_CDHIPR]
-	cmp r1, #0x0
-	bne 1b
+	divisor_change_wait \r_ccm
 
 	setup_pll PLL2_BASE_ADDR, 400
 
@@ -332,10 +330,7 @@ setup_pll_func:
 	orr r1, r1, #0x01000000
 	str r1, [\r_ccm, #CLKCTL_CSCMR1]
 
-	/* make sure change is effective */
-1:      ldr r1, [\r_ccm, #CLKCTL_CDHIPR]
-	cmp r1, #0x0
-	bne 1b
+	divisor_change_wait \r_ccm
 
 	setup_pll PLL3_BASE_ADDR, 216
 
