@@ -836,6 +836,16 @@ static unsigned long offset_mask_bitmap;
 #define DC_MAPPING_PTR_MAX	29
 static unsigned long mapping_bitmap;
 
+static void set_bit_(int nr, volatile void *addr)
+{
+	int     mask;
+	unsigned int *a = (unsigned int *)addr;
+
+	a += nr >> 5;
+	mask = 1 << (nr & 0x1f);
+	*a |= mask;
+}
+
 static int find_field(u32 val, u32 *reg_base, unsigned long* bitmap, int max)
 {
 	int i = 0;
@@ -865,7 +875,7 @@ static int find_field(u32 val, u32 *reg_base, unsigned long* bitmap, int max)
 	reg &= ~(0xFFFF << (16 * (i & 0x1)));
 	reg |= val << (16 * (i & 0x1));
 	__raw_writel(reg, &reg_base[i >> 1]);
-	set_bit(i, bitmap);
+	set_bit_(i, bitmap);
 	debug("%s: [%d] = 0x%x max=%d\n", __func__, i, val, max);
 	return i;
 }
