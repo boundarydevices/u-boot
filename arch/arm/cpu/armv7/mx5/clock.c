@@ -911,6 +911,10 @@ void mxc_set_sata_internal_clock(void)
 }
 #endif
 
+int get_pll3_clock(void)
+{
+	return decode_pll(mxc_plls[PLL3_CLOCK], MXC_HCLK);
+}
 /*
  * Dump some core clockes.
  */
