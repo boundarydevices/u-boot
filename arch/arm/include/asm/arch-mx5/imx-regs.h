@@ -249,44 +249,85 @@
 #define M4IF_GENP_WEIM_MM_MASK		0x00000001
 #define WEIM_GCR2_MUX16_BYP_GRANT_MASK	0x00001000
 
-/* Assuming 24MHz input clock with doubler ON */
-/*                            MFI         PDF */
+/*
+ * Assuming 24MHz input clock with doubler ON
+ * fdck_2 = 4 * fref * (MFI + (MFN/MFD))/PDF
+ * fdck_2 = (MFN/MFD + MFI) * 96 /PDF
+ *
+ * (MFI >= 5) && (MFI <= 15)
+ * (PDF >= 1) && (PDF <= 16)
+ * (MFD >= 1) && (MFD <= 0x3fffffe)
+ * (MFN >= -0x3fffffe) && (MFN <= 0x3fffffe) && (|MFN| <= MFD)
+ *
+ * BRM = 0 if MFD < 8
+ * BRM = 1 if MFD >= 8
+ */
+#define MAKE_OP(mfi, pdf) (((mfi) << 4) | (pdf - 1))
+
+#define DP_CTL_RESTART	0x10
+#define DP_CTL_BRMO	0x02
+
 #define DP_OP_864	((8 << 4) + ((1 - 1)  << 0))
 #define DP_MFD_864	(180 - 1) /* PL Dither mode */
 #define DP_MFN_864	180
 #define DP_MFN_800_DIT	60 /* PL Dither mode */
+#define DP_CTL_864	(0x1220 | DP_CTL_RESTART | DP_CTL_BRMO)
 
-#define DP_OP_850	((8 << 4) + ((1 - 1)  << 0))
+/* (41/48 + 8) * 96 / 1 = 850 */
+#define DP_OP_850	MAKE_OP(8, 1)
 #define DP_MFD_850	(48 - 1)
 #define DP_MFN_850	41
+#define DP_CTL_850	(0x1220 | DP_CTL_RESTART | DP_CTL_BRMO)
 
-#define DP_OP_800	((8 << 4) + ((1 - 1)  << 0))
+/* (1/3 + 8) * 96 / 1 = 800 */
+#define DP_OP_800	MAKE_OP(8, 1)
 #define DP_MFD_800	(3 - 1)
 #define DP_MFN_800	1
+#define DP_CTL_800	(0x1220 | DP_CTL_RESTART)
 
-#define DP_OP_700	((7 << 4) + ((1 - 1)  << 0))
+/* (7/24 + 7) * 96 / 1 = 700 */
+#define DP_OP_700	MAKE_OP(7, 1)
 #define DP_MFD_700	(24 - 1)
 #define DP_MFN_700	7
+#define DP_CTL_700	(0x1220 | DP_CTL_RESTART | DP_CTL_BRMO)
 
-#define DP_OP_665	((6 << 4) + ((1 - 1)  << 0))
+/* (89/96 + 6) * 96 / 1 = 665 */
+#define DP_OP_665	MAKE_OP(6, 1)
 #define DP_MFD_665	(96 - 1)
 #define DP_MFN_665	89
+#define DP_CTL_665	(0x1220 | DP_CTL_RESTART | DP_CTL_BRMO)
 
-#define DP_OP_532	((5 << 4) + ((1 - 1)  << 0))
+/* (13/24 + 5) * 96 / 1 = 532 */
+#define DP_OP_532	MAKE_OP(5, 1)
 #define DP_MFD_532	(24 - 1)
 #define DP_MFN_532	13
+#define DP_CTL_532	(0x1220 | DP_CTL_RESTART | DP_CTL_BRMO)
 
-#define DP_OP_400	((8 << 4) + ((2 - 1)  << 0))
+/* (1/3 + 8) * 96 / 2 = 400 */
+#define DP_OP_400	MAKE_OP(8, 2)
 #define DP_MFD_400	(3 - 1)
 #define DP_MFN_400	1
+#define DP_CTL_400	(0x1220 | DP_CTL_RESTART)
 
 #define DP_OP_455	((9 << 4) + ((2 - 1)  << 0))
 #define DP_MFD_455	(48 - 1)
 #define DP_MFN_455	23
 
-#define DP_OP_216	((6 << 4) + ((3 - 1)  << 0))
+#if 0
+/* Too low, output must be 300 - 800 */
+/* (3/4 + 6) * 96 / 3 = 216 */
+#define DP_OP_216	MAKE_OP(6, 3)
 #define DP_MFD_216	(4 - 1)
 #define DP_MFN_216	3
+#define DP_CTL_216	(0x1220 | DP_CTL_RESTART)
+#else
+/* (0/2 + 9) * 96 / 2 = 432 */
+/* 432 / 2 = 216 */
+#define DP_OP_216	MAKE_OP(9, 2)
+#define DP_MFD_216	(2 - 1)
+#define DP_MFN_216	0
+#define DP_CTL_216	(0x0220 | DP_CTL_RESTART)
+#endif
 
 #define IMX_IIM_BASE            (IIM_BASE_ADDR)
 
