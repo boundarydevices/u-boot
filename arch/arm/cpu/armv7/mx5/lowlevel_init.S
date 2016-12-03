@@ -96,43 +96,6 @@
 #endif
 .endm /* init_m4if */
 
-.macro setup_pll r_pll, freq
-	mov r0, \r_pll
-	adr r2, W_DP_\freq
-	bl setup_pll_func
-.endm
-
-#define W_DP_OP		0
-#define W_DP_MFD	4
-#define W_DP_MFN	8
-
-setup_pll_func:
-	ldr r1, =0x00001232
-	str r1, [r0, #PLL_DP_CTL] /* Set DPLL ON (set UPEN bit): BRMO=1 */
-	mov r1, #0x2
-	str r1, [r0, #PLL_DP_CONFIG] /* Enable auto-restart AREN bit */
-
-	ldr r1, [r2, #W_DP_OP]
-	str r1, [r0, #PLL_DP_OP]
-	str r1, [r0, #PLL_DP_HFS_OP]
-
-	ldr r1, [r2, #W_DP_MFD]
-	str r1, [r0, #PLL_DP_MFD]
-	str r1, [r0, #PLL_DP_HFS_MFD]
-
-	ldr r1, [r2, #W_DP_MFN]
-	str r1, [r0, #PLL_DP_MFN]
-	str r1, [r0, #PLL_DP_HFS_MFN]
-
-	ldr r1, =0x00001232
-	str r1, [r0, #PLL_DP_CTL]
-1:	ldr r1, [r0, #PLL_DP_CTL]
-	ands r1, r1, #0x1
-	beq 1b
-
-	/* r10 saved upper lr */
-	mov pc, lr
-
 .macro setup_pll_errata r_pll, freq
 	ldr r1, =0x00001236
 	str r1, [\r_pll, #PLL_DP_CTL]    /* Restart PLL with PLM=1 */
@@ -140,7 +103,7 @@ setup_pll_func:
 	ands r1, r1, #0x1
 	beq 1b
 
-	ldr r1, \freq
+	ldr r1, =\freq
 	str r1, [\r_pll, #PLL_DP_MFN]    /* Modify MFN value */
 	str r1, [\r_pll, #PLL_DP_HFS_MFN]
 
@@ -156,12 +119,36 @@ setup_pll_func:
 	bge 3b
 .endm
 
+.macro pll_op_mfd_mfn r_pll, dp_op, dp_mfd, dp_mfn, dp_ctl
+	mov r0, #\dp_op
+	str r0, [\r_pll, #PLL_DP_OP]
+	str r0, [\r_pll, #PLL_DP_HFS_OP]
+
+	mov r0, #\dp_mfd
+	str r0, [\r_pll, #PLL_DP_MFD]
+	str r0, [\r_pll, #PLL_DP_HFS_MFD]
+
+	mov r0, #\dp_mfn
+	str r0, [\r_pll, #PLL_DP_MFN]
+	str r0, [\r_pll, #PLL_DP_HFS_MFN]
+
+	ldr r0, =\dp_ctl
+	str r0, [\r_pll, #PLL_DP_CTL] /* Set DPLL ON (set UPEN bit) */
+1:	ldr r0, [\r_pll, #PLL_DP_CTL]
+	tst r0, #0x1
+	beq 1b
+.endm
+
 .macro divisor_change_wait r_ccm
 	/* make sure divider effective */
 1:	ldr r0, [\r_ccm, #CLKCTL_CDHIPR]
 	cmp r0, #0x0
 	bne 1b
 .endm
+
+#define setup_pll(pll, freq) \
+		pll_op_mfd_mfn pll, DP_OP_##freq, DP_MFD_##freq, \
+		DP_MFN_##freq, DP_CTL_##freq
 
 #ifdef CONFIG_MX51
 	/* Disable IPU and HSC handshake */
@@ -225,31 +212,35 @@ setup_pll_func:
 	str r1, [\r_ccm, #CLKCTL_CCSR]
 
 #if defined(CONFIG_MX51_PLL_ERRATA)
-	setup_pll \r_pll1, 864
-	setup_pll_errata \r_pll1, W_DP_MFN_800_DIT
+	setup_pll(\r_pll1, 864)
+	setup_pll_errata \r_pll1, DP_MFN_800_DIT
 #else
-	setup_pll \r_pll1, 800
+	setup_pll(\r_pll1, 800)
 #endif
 
 	/* Switch ARM back to PLL 1 */
 	str \r_zero, [\r_ccm, #CLKCTL_CCSR]
 
-	setup_pll \r_pll3, 665
+	setup_pll(\r_pll3, 665)
 
 	/* Switch peripheral to PLL 3 */
 	ldr r1, =0x000010C0 | CONFIG_SYS_DDR_CLKSEL
 	str r1, [\r_ccm, #CLKCTL_CBCMR]
-	orr r1, r3, #1<<25		//[25] 0 -> 1 (periph was pll2, now apm)
+	/* [25] 0 -> 1 (periph was pll2, now apm) */
+	orr r1, r3, #1<<25
 	str r1, [\r_ccm, #CLKCTL_CBCDR]
-	setup_pll \r_pll2, 665
+	divisor_change_wait \r_ccm
+
+	setup_pll(\r_pll2, 665)
 
 	/* Switch peripheral to PLL2 */
+	/* [25] 1 -> 0 (periph was apm, now pll2) */
 	str r3, [\r_ccm, #CLKCTL_CBCDR]
 
 	ldr r1, =0x000020C0 | CONFIG_SYS_DDR_CLKSEL
 	str r1, [\r_ccm, #CLKCTL_CBCMR]
 
-	setup_pll \r_pll3, 216
+	setup_pll(\r_pll3, 216)
 
 	/* Set the platform clock dividers */
 	ldr r0, =ARM_BASE_ADDR
@@ -316,9 +307,9 @@ setup_pll_func:
 	mov r1, #0x4
 	str r1, [\r_ccm, #CLKCTL_CCSR]
 
-	setup_pll \r_pll1, 800
+	setup_pll(\r_pll1, 800)
 
-	setup_pll \r_pll3, 400
+	setup_pll(\r_pll3, 400)
 
 	/* Switch peripheral to PLL3 */
 	ldr r1, =0x00015154
@@ -327,7 +318,7 @@ setup_pll_func:
 	str r1, [\r_ccm, #CLKCTL_CBCDR]
 	divisor_change_wait \r_ccm
 
-	setup_pll \r_pll2, 400
+	setup_pll(\r_pll2, 400)
 
 	/* Switch peripheral to PLL2 */
 	ldr r1, =0x00888945
@@ -344,9 +335,9 @@ setup_pll_func:
 
 	divisor_change_wait \r_ccm
 
-	setup_pll \r_pll3, 216
+	setup_pll(\r_pll3, 216)
 
-	setup_pll \r_pll4, 455
+	setup_pll(\r_pll4, 455)
 
 	/* Set the platform clock dividers */
 	ldr r0, =ARM_BASE_ADDR
@@ -418,29 +409,3 @@ ENTRY(lowlevel_init)
 
 	mov pc, r10
 ENDPROC(lowlevel_init)
-
-/* Board level setting value */
-#if defined(CONFIG_MX51_PLL_ERRATA)
-W_DP_864:		.word DP_OP_864
-			.word DP_MFD_864
-			.word DP_MFN_864
-W_DP_MFN_800_DIT:	.word DP_MFN_800_DIT
-#else
-W_DP_800:		.word DP_OP_800
-			.word DP_MFD_800
-			.word DP_MFN_800
-#endif
-#if defined(CONFIG_MX51)
-W_DP_665:		.word DP_OP_665
-			.word DP_MFD_665
-			.word DP_MFN_665
-#endif
-W_DP_216:		.word DP_OP_216
-			.word DP_MFD_216
-			.word DP_MFN_216
-W_DP_400:               .word DP_OP_400
-			.word DP_MFD_400
-			.word DP_MFN_400
-W_DP_455:               .word DP_OP_455
-			.word DP_MFD_455
-			.word DP_MFN_455
