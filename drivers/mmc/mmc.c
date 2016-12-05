@@ -410,7 +410,27 @@ static int mmc_read_blocks(struct mmc *mmc, void *dst, lbaint_t start,
 			return 0;
 		}
 	}
+#ifdef CONFIG_MMC_TRACE
+	{
+		int cnt = blkcnt;
+		unsigned *p = dst;
 
+		while (cnt--) {
+			int rem = mmc->read_bl_len;
+			int offset = 0;
+
+			printf("Block 0x%lx\n", start++);
+			while (rem > 0) {
+				printf("%03x: %08x %08x %08x %08x  %08x %08x %08x %08x\n",
+						offset, p[0], p[1], p[2], p[3],
+						p[4], p[5], p[6], p[7]);
+				rem -= 32;
+				offset += 32;
+				p += 8;
+			}
+		}
+	}
+#endif
 	return blkcnt;
 }
 
