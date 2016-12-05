@@ -315,7 +315,7 @@ static int esdhc_setup_data(struct fsl_esdhc_priv *priv, struct mmc *mmc,
 		if (wml_value > WML_WR_WML_MAX)
 			wml_value = WML_WR_WML_MAX_VAL;
 		if (priv->wp_enable) {
-#ifndef CONFIG_SYS_FSL_ESDH_GPIO_WP
+#ifndef CONFIG_SYS_FSL_ESDHC_GPIO_WP
 			if ((esdhc_read32(&regs->prsstat) &
 			    PRSSTAT_WPSPL) == 0) {
 				printf("\nThe SD card is locked. Can not write to a locked card.\n\n");
@@ -520,6 +520,7 @@ static int esdhc_send_cmd_common(struct fsl_esdhc_priv *priv, struct mmc *mmc,
 	}
 
 	if (irqstat & IRQSTAT_CTOE) {
+		printf("timeout irqstat=%x\n", irqstat);
 		err = -ETIMEDOUT;
 		goto out;
 	}
@@ -582,6 +583,11 @@ static int esdhc_send_cmd_common(struct fsl_esdhc_priv *priv, struct mmc *mmc,
 
 			if (irqstat & IRQSTAT_DTOE) {
 				err = -ETIMEDOUT;
+#ifdef ESDHCI_QUIRK_BROKEN_TIMEOUT_VALUE
+				printf("timeout.. irqstat=%x\n", irqstat);
+#else
+				printf("timeout.. irqstat=%x, do you need ESDHCI_QUIRK_BROKEN_TIMEOUT_VALUE\n", irqstat);
+#endif
 				goto out;
 			}
 
