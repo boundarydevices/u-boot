@@ -18,6 +18,16 @@
 	mrc 15, 0, r1, c1, c0, 1
 	orr r1, r1, #(1 << 5)    /* enable L1NEON bit */
 	mcr 15, 0, r1, c1, c0, 1
+
+	/*
+	 * Workaround for arm errata #709718
+	 * ARM: Load and Store operations on the shared device memory
+	 * regions may not complete in program order
+	 */
+	/* Setup PRRR so device is always mapped to non-shared */
+	mrc p15, 0, r1, c10, c2, 0
+	bic r1, r1, #3 << 0x10
+	mcr p15, 0, r1, c10, c2, 0
 .endm
 
 /*
@@ -53,9 +63,8 @@
 
 .endm /* init_l2cc */
 
-/* AIPS setup - Only setup MPROTx registers.
- * The PACR default values are good.*/
-.macro init_aips
+/* AIPS setup - setup MPROTx and PACR registers. */
+.macro init_aips r_zero
 	/*
 	 * Set all MPROTx to be non-bufferable, trusted for R/W,
 	 * not forced to user-mode.
@@ -64,6 +73,11 @@
 	ldr r1, =0x77777777
 	str r1, [r0, #0x0]
 	str r1, [r0, #0x4]
+	str \r_zero, [r0, #0x40]
+	str \r_zero, [r0, #0x44]
+	str \r_zero, [r0, #0x48]
+	str \r_zero, [r0, #0x4c]
+	str \r_zero, [r0, #0x50]
 	ldr r0, =AIPS2_BASE_ADDR
 	str r1, [r0, #0x0]
 	str r1, [r0, #0x4]
@@ -394,7 +408,7 @@ ENTRY(lowlevel_init)
 
 	init_l2cc r4
 
-	init_aips
+	init_aips r4
 
 	init_m4if r4
 
