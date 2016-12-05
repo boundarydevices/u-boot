@@ -290,7 +290,7 @@ static int esdhc_setup_data(struct fsl_esdhc_priv *priv, struct mmc *mmc,
 #endif
 		if (wml_value > WML_WR_WML_MAX)
 			wml_value = WML_WR_WML_MAX_VAL;
-#ifndef CONFIG_SYS_FSL_ESDH_GPIO_WP
+#ifndef CONFIG_SYS_FSL_ESDHC_GPIO_WP
 		if (priv->wp_enable) {
 			if ((esdhc_read32(&regs->prsstat) &
 			    PRSSTAT_WPSPL) == 0) {
@@ -464,6 +464,7 @@ static int esdhc_send_cmd_common(struct fsl_esdhc_priv *priv, struct mmc *mmc,
 	}
 
 	if (irqstat & IRQSTAT_CTOE) {
+		printf("timeout irqstat=%x\n", irqstat);
 		err = -ETIMEDOUT;
 		goto out;
 	}
@@ -526,6 +527,11 @@ static int esdhc_send_cmd_common(struct fsl_esdhc_priv *priv, struct mmc *mmc,
 
 			if (irqstat & IRQSTAT_DTOE) {
 				err = -ETIMEDOUT;
+#ifdef ESDHCI_QUIRK_BROKEN_TIMEOUT_VALUE
+				printf("timeout.. irqstat=%x\n", irqstat);
+#else
+				printf("timeout.. irqstat=%x, do you need ESDHCI_QUIRK_BROKEN_TIMEOUT_VALUE\n", irqstat);
+#endif
 				goto out;
 			}
 
