@@ -99,23 +99,21 @@
 .endm /* init_l2cc */
 
 /* AIPS setup - setup MPROTx and PACR registers. */
-.macro init_aips r_zero
+.macro init_aips r_zero, r_aips1, r_aips2
 	/*
 	 * Set all MPROTx to be non-bufferable, trusted for R/W,
 	 * not forced to user-mode.
 	 */
-	ldr r0, =AIPS1_BASE_ADDR
 	ldr r1, =0x77777777
-	str r1, [r0, #0x0]
-	str r1, [r0, #0x4]
-	str \r_zero, [r0, #0x40]
-	str \r_zero, [r0, #0x44]
-	str \r_zero, [r0, #0x48]
-	str \r_zero, [r0, #0x4c]
-	str \r_zero, [r0, #0x50]
-	ldr r0, =AIPS2_BASE_ADDR
-	str r1, [r0, #0x0]
-	str r1, [r0, #0x4]
+	str r1, [\r_aips1, #0x0]
+	str r1, [\r_aips1, #0x4]
+	str \r_zero, [\r_aips1, #0x40]
+	str \r_zero, [\r_aips1, #0x44]
+	str \r_zero, [\r_aips1, #0x48]
+	str \r_zero, [\r_aips1, #0x4c]
+	str \r_zero, [\r_aips1, #0x50]
+	str r1, [\r_aips2, #0x0]
+	str r1, [\r_aips2, #0x4]
 	/*
 	 * Clear the on and off peripheral modules Supervisor Protect bit
 	 * for SDMA to access them. Did not change the AIPS control registers
@@ -124,23 +122,21 @@
 .endm /* init_aips */
 
 /* M4IF setup */
-.macro init_m4if r_zero
+.macro init_m4if r_zero, r_m4if
 #ifdef CONFIG_MX51
 	/* VPU and IPU given higher priority (0x4)
 	 * IPU accesses with ID=0x1 given highest priority (=0xA)
 	 */
-	ldr r0, =M4IF_BASE_ADDR
-
 	ldr r1, =0x00000203
-	str r1, [r0, #0x40]
+	str r1, [\r_m4if, #0x40]
 
-	str \r_zero, [r0, #0x44]
+	str \r_zero, [\r_m4if, #0x44]
 
 	ldr r1, =0x00120125
-	str r1, [r0, #0x9C]
+	str r1, [\r_m4if, #0x9C]
 
 	ldr r1, =0x001901A3
-	str r1, [r0, #0x48]
+	str r1, [\r_m4if, #0x48]
 
 #endif
 .endm /* init_m4if */
@@ -444,9 +440,12 @@ ENTRY(lowlevel_init)
 	init_l1cc r4
 	init_l2cc r4
 
-	init_aips r4
+	ldr r5, =AIPS1_BASE_ADDR
+	ldr r6, =AIPS2_BASE_ADDR
+	init_aips r4, r5, r6
 
-	init_m4if r4
+	ldr r5, =M4IF_BASE_ADDR
+	init_m4if r4, r5
 
 	ldr r5, =CCM_BASE_ADDR
 	ldr r6, =PLL1_BASE_ADDR
