@@ -1,19 +1,20 @@
 setenv bootargs ''
 
-a_script=0x10800000
-a_zImage=0x10800000
-a_fdt=0x13000000
-a_ramdisk=0x13800000
-a_initrd=0x13a00000
-
 setenv initrd_high 0xffffffff
-if itest.s x6SX == "x${cpu}" || itest.s x7D == "x${cpu}"; then
-	a_script=0x80800000
-	a_zImage=0x80800000
-	a_fdt=0x83000000
-	a_ramdisk=0x83800000
-	a_initrd=0x83a00000
+a_base=0x10000000
+if itest.s x51 == "x${cpu}" ; then
+	a_base=0x90000000
+elif itest.s x53 == "x${cpu}"; then
+	a_base=0x70000000
+elif itest.s x6SX == "x${cpu}" || itest.s x7D == "x${cpu}"; then
+	a_base=0x80000000
 fi
+
+setexpr a_script  ${a_base} + 0x00800000
+setexpr a_zImage  ${a_base} + 0x00800000
+setexpr a_fdt     ${a_base} + 0x03000000
+setexpr a_ramdisk ${a_base} + 0x03800000
+setexpr a_initrd  ${a_base} + 0x03a00000
 
 if itest.s "x" == "x${board}" ; then
 	echo "!!!! Error: Your u-boot is outdated. Please upgrade.";
@@ -31,6 +32,10 @@ if itest.s "x" == "x${dtbname}" ; then
 		dtbname=imx6sx-${board}.dtb;
 	elif itest.s x7D == "x${cpu}" ; then
 		dtbname=imx7d-${board}.dtb;
+	elif itest.s x51 == "x${cpu}" ; then
+		dtbname=imx51-${board}${m4}.dtb;
+	elif itest.s x53 == "x${cpu}" ; then
+		dtbname=imx53-${board}${m4}.dtb;
 	else
 		dtbname=imx6q-${board}.dtb;
 	fi
