@@ -16,7 +16,11 @@ erase_size=0xC0000
 qspi_offset=0x0
 a_base=0x10100000
 
-if itest.s x6SX == "x${cpu}" || itest.s x7D == "x${cpu}"; then
+if itest.s x51 == "x${cpu}"; then
+	a_base=0x90100000
+elif itest.s x53 == "x${cpu}"; then
+	a_base=0x70100000
+elif itest.s x6SX == "x${cpu}" || itest.s x7D == "x${cpu}"; then
 	a_base=0x80100000
 fi
 
