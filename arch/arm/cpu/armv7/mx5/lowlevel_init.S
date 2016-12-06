@@ -175,6 +175,15 @@ setup_pll_func:
 	mov r1, #IPU_HANDSHAKE_DISABLE
 	str r1, [r0, #CLKCTL_CCDR]
 
+	mov r1, #0x2000
+	sub r1, r1, #1			/* =0x1fff */
+	str r1, [r0,#CLKCTL_CCMR]	/* Turn on oscillator */
+
+1:	ldr r1, [r0, #CLKCTL_CSR]
+	and r1, r1, #0x22
+	cmp r1, #0x22			/* wait for Oscillator and FPM ready */
+	bne 1b
+
 #if defined (CONFIG_MX51)
 	/* Gate of clocks to the peripherals first */
 	ldr r1, =0x3FFFFFFF
