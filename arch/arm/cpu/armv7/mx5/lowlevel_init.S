@@ -13,6 +13,41 @@
 
 .section ".text.init", "x"
 
+.macro init_l1cc r_zero
+	mcr	p15, 0, \r_zero, c8, c7, 0	@ invalidate I + D TLBs
+	mcr	p15, 0, \r_zero, c2, c0, 2	@ TTB control register
+
+	mcr	p15, 2, \r_zero, c0, c0, 0
+	mrc	p15, 1, r0, c0, c0, 0
+
+	ldr	r1, =0x7fff
+	and	r2, r1, r0, lsr #13
+
+	ldr	r1, =0x3ff
+
+	and	r3, r1, r0, lsr #3	@ NumWays - 1
+	add	r2, r2, #1		@ NumSets
+
+	and	r0, r0, #0x7
+	add	r0, r0, #4		@ SetShift
+
+	clz	r1, r3			@ WayShift
+	add	r7, r3, #1		@ NumWays
+1:	sub	r2, r2, #1		@ NumSets--
+	mov	r3, r7			@ Temp = NumWays
+2:	subs	r3, r3, #1		@ Temp--
+	mov	r5, r3, lsl r1
+	mov	r6, r2, lsl r0
+	orr	r5, r5, r6
+@ Reg = (Temp<<WayShift)|(NumSets<<SetShift)
+	mcr	p15, 0, r5, c7, c6, 2
+	bgt	2b
+	cmp	r2, #0
+	bgt	1b
+	dsb
+	isb
+.endm
+
 .macro init_arm_erratum
 	/* ARM erratum ID #468414 */
 	mrc 15, 0, r1, c1, c0, 1
@@ -406,6 +441,7 @@ ENTRY(lowlevel_init)
 
 	init_arm_erratum
 
+	init_l1cc r4
 	init_l2cc r4
 
 	init_aips r4
