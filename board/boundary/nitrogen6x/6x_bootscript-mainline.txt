@@ -15,6 +15,8 @@ setexpr a_zImage  ${a_base} + 0x00800000
 setexpr a_fdt     ${a_base} + 0x03000000
 setexpr a_ramdisk ${a_base} + 0x03800000
 setexpr a_initrd  ${a_base} + 0x03a00000
+setexpr a_reset_cause_marker ${a_base} + 0x80
+setexpr a_reset_cause	     ${a_base} + 0x84
 
 if itest.s "x" == "x${board}" ; then
 	echo "!!!! Error: Your u-boot is outdated. Please upgrade.";
@@ -127,6 +129,11 @@ setenv bootargs "$bootargs cma=${cma} consoleblank=0 root=${root} rootwait"
 
 if itest.s "x" != "x${loglevel}" ; then
 	setenv bootargs ${bootargs} loglevel=${loglevel}
+fi
+
+if itest *${a_reset_cause_marker} == 12345678 ; then
+	setexpr.l reset_cause *${a_reset_cause}
+	setenv bootargs $bootargs reset_cause=0x${reset_cause}
 fi
 
 if load ${dtype} ${disk}:${bootpart} ${a_zImage} ${bootdir}zImage ; then
