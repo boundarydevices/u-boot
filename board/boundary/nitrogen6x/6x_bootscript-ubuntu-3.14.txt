@@ -92,6 +92,10 @@ if itest.s "x" != "x${cmd_lcd}" ; then
 	run cmd_lcd
 	cmd_xxx_present=1;
 fi
+if itest.s "x" != "x${cmd_lcd2}" ; then
+	run cmd_lcd2
+	cmd_xxx_present=1;
+fi
 if itest.s "x" != "x${cmd_lvds}" ; then
 	run cmd_lvds
 	cmd_xxx_present=1;
