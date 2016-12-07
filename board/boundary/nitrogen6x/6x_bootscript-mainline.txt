@@ -125,6 +125,10 @@ fi
 setenv bootargs "$bootargs console=${console},115200 vmalloc=${vmalloc}"
 setenv bootargs "$bootargs cma=${cma} consoleblank=0 root=${root} rootwait"
 
+if itest.s "x" != "x${loglevel}" ; then
+	setenv bootargs ${bootargs} loglevel=${loglevel}
+fi
+
 if load ${dtype} ${disk}:${bootpart} ${a_zImage} ${bootdir}zImage ; then
 	bootz ${a_zImage} - ${a_fdt}
 fi
