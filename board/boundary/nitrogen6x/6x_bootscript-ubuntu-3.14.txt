@@ -139,8 +139,16 @@ if itest.s "x" != "x${gpumem}" ; then
 	setenv bootargs ${bootargs} galcore.contiguousSize=${gpumem}
 fi
 
+
 if itest.s "no" != "${dosplash}" ; then
-	setenv bootargs ${bootargs} splash quiet plymouth.ignore-serial-consoles
+	if itest.s "x" == "x${loglevel}" ; then
+		loglevel=4
+	fi
+	setenv bootargs ${bootargs} splash plymouth.ignore-serial-consoles
+fi
+
+if itest.s "x" != "x${loglevel}" ; then
+	setenv bootargs ${bootargs} loglevel=${loglevel}
 fi
 
 if itest.s "x" != "x${overlayfs}" ; then
