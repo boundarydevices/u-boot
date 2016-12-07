@@ -144,6 +144,10 @@ if itest.s "x" != "x${cma}" ; then
 	setenv bootargs ${bootargs} cma=${cma}
 fi
 
+if itest.s "x" != "x${loglevel}" ; then
+	setenv bootargs ${bootargs} loglevel=${loglevel}
+fi
+
 if itest.s "x" != "x${show_fdt}" ; then
 	fdt print /
 fi
