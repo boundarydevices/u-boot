@@ -337,6 +337,12 @@
 #define BD_BOOTCMD BD_BOOTCMD_STD
 #endif
 
+#ifdef BD_LOG_LEVEL
+#define LOG_LEVEL_STR "loglevel=" BD_LOG_LEVEL "\0"
+#else
+#define LOG_LEVEL_STR ""
+#endif
+
 #define BD_BOUNDARY_ENV_SETTINGS \
 	"active_partition=1\0" \
 	"bootdevs=" BD_BOOT_DEVS "\0" \
@@ -350,6 +356,7 @@
 	"fdt_high=0xffffffff\0" \
 	"initrd_high=0xffffffff\0" \
 	"loadsplash=if sf probe ; then sf read ${splashimage} ${splashflash} ${splashsize} ; fi\0" \
+	LOG_LEVEL_STR \
 	"mmc_disks=" BD_MMC_DISKS "\0" \
 	"mmc_ums_disks=" BD_MMC_UMS_DISKS "\0" \
 	"net_upgradeu=dhcp " BD_RAM_SCRIPT " net_upgradeu && source " BD_RAM_SCRIPT "\0" \
