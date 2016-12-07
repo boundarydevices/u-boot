@@ -343,6 +343,12 @@
 #define LOG_LEVEL_STR ""
 #endif
 
+#ifdef BD_CMA
+#define LOG_CMA_STR "cma=" BD_CMA "\0"
+#else
+#define LOG_CMA_STR ""
+#endif
+
 #define BD_BOUNDARY_ENV_SETTINGS \
 	"active_partition=1\0" \
 	"bootdevs=" BD_BOOT_DEVS "\0" \
@@ -350,6 +356,7 @@
 	"clearenv=if sf probe || sf probe ; then " \
 		"sf erase 0xc0000 0x2000 && " \
 		"echo restored environment to factory default ; fi\0" \
+	LOG_CMA_STR \
 	"console=" BD_CONSOLE "\0" \
 	"dfu_alt_info=u-boot raw 0x0 0xc0000\0" \
 	"fdt_addr=" BD_RAM_FDT "\0" \
