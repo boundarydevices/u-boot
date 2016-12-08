@@ -67,9 +67,10 @@
 
 .macro 	orr_mx51_tape2_or_lower	r_dest, value, r_zero
 #if defined(CONFIG_MX51)
-	ldr r0, [\r_zero, #ROM_SI_REV]
-	cmp r0, #0x10
-	orrls \r_dest, \r_dest, #\value
+	ldr r0, =IIM_BASE_ADDR
+	ldr r0, [r0, #IIM_SREV]
+	cmp r0, #0x10		/* 0x10 is for TO3 */
+	orrlo \r_dest, \r_dest, #\value
 #endif
 .endm
 
