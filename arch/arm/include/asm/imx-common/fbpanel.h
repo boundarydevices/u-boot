@@ -49,6 +49,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 #define VD_720_480M_60(_mode, _detect, _bus, _addr)	VDF_720_480M_60(_mode, "720x480M@60", RGB24, FBF_MODESTR, _detect, _bus, _addr)
 #define VD_CLAA_WVGA(_mode, _detect, _bus, _addr)	VDF_CLAA_WVGA(_mode, "CLAA-WVGA", RGB666, FBF_MODESTR, _detect, _bus, _addr)
 #define VD_SHARP_WVGA(_mode, _detect, _bus, _addr)	VDF_SHARP_WVGA(_mode, "sharp-wvga", RGB24, FBF_MODESTR, _detect, _bus, _addr)
+#define VD_800X300_565(_mode, _detect, _bus, _addr)	VDF_800X300(_mode, "800x300rgb565", RGB565, FBF_MODESTR, _detect, _bus, _addr)
 #define VD_HITACHI_HVGA(_mode, _detect, _bus, _addr)	VDF_HITACHI_HVGA(_mode, "hitachi_hvga", RGB666, FBF_MODESTR, _detect, _bus, _addr)
 #define VD_DC050WX(_mode, _detect, _bus, _addr)		VDF_DC050WX(_mode, "DC050WX", RGB24, FBF_MODESTR, _detect, _bus, _addr)
 #define VD_INNOLUX_WXGA_14IN_12V(_mode, _detect, _bus, _addr) VDF_INNOLUX_WXGA_14IN_12V(_mode, "INNOLUX-WXGA-IN14-12V", RGB666, 0, _detect, _bus, _addr)
@@ -263,6 +264,32 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 		.hsync_len      = 48,\
 		.vsync_len      = 3,\
 		.sync           = FB_SYNC_EXT |FB_SYNC_CLK_LAT_FALL,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
+/*
+ * 800x300
+ * vsync = 60
+ * hsync = 260 * vsync = 15.6 Khz
+ * pixclk = 800 * hsync = 12.48 MHz
+ */
+#define VDF_800X300(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	.mode	= {\
+		.name		= _name,\
+		.refresh	= 60,\
+		.xres		= 800,\
+		.yres		= 300,\
+		.pixclock	= 1000000000000ULL / (800+50+1+110) / (300+8+3+1) / 60,\
+		.left_margin	= 50,\
+		.right_margin	= 1,\
+		.upper_margin	= 8,\
+		.lower_margin	= 3,\
+		.hsync_len	= 110,\
+		.vsync_len	= 1,\
+		.sync           = FB_SYNC_EXT | FB_SYNC_CLK_LAT_FALL,\
 		.vmode          = FB_VMODE_NONINTERLACED\
 	}\
 }
