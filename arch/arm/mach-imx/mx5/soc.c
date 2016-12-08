@@ -25,30 +25,28 @@ u32 get_cpu_rev(void)
 {
 #ifdef CONFIG_MX51
 	int system_rev = 0x51000;
-#else
-	int system_rev = 0x53000;
-#endif
-	int reg = __raw_readl(ROM_SI_REV);
+	int reg = readl(&((struct iim_regs *)IIM_BASE_ADDR)->srev);
 
-#if defined(CONFIG_MX51)
-	switch (reg) {
-	case 0x02:
-		system_rev |= CHIP_REV_1_1;
-		break;
-	case 0x10:
-		if ((__raw_readl(GPIO1_BASE_ADDR + 0x0) & (0x1 << 22)) == 0)
-			system_rev |= CHIP_REV_2_5;
-		else
-			system_rev |= CHIP_REV_2_0;
-		break;
-	case 0x20:
+	if (reg >= 0x10) {
 		system_rev |= CHIP_REV_3_0;
-		break;
-	default:
-		system_rev |= CHIP_REV_1_0;
-		break;
+	} else {
+		reg = __raw_readl(ROM_SI_REV);
+		if (reg >= 0x10) {
+			/* Why read from UART3_RXD, surely this is board specific ? */
+			if ((__raw_readl(GPIO1_BASE_ADDR + 0x0) & (0x1 << 22)) == 0)
+				system_rev |= CHIP_REV_2_5;
+			else
+				system_rev |= CHIP_REV_2_0;
+		} else if (reg >= 0x02) {
+			system_rev |= CHIP_REV_1_1;
+		} else {
+			system_rev |= CHIP_REV_1_0;
+		}
 	}
 #else
+	int system_rev = 0x53000;
+	int reg = __raw_readl(ROM_SI_REV);
+
 	if (reg < 0x20)
 		system_rev |= CHIP_REV_1_0;
 	else
