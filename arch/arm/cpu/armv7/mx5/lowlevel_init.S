@@ -65,6 +65,14 @@
 	mcr p15, 0, r1, c10, c2, 0
 .endm
 
+.macro 	orr_mx51_tape2_or_lower	r_dest, value, r_zero
+#if defined(CONFIG_MX51)
+	ldr r0, [\r_zero, #ROM_SI_REV]
+	cmp r0, #0x10
+	orrls \r_dest, \r_dest, #\value
+#endif
+.endm
+
 /*
  * L2CC Cache setup/invalidation/disable
  */
@@ -75,21 +83,16 @@
 	mcr 15, 0, r0, c1, c0, 1	/* Write Auxiliary Control Register */
 
 	/* reconfigure L2 cache aux control reg */
-	mov r0, #0xC4			/* tag/data RAM */
-	orr r0, r0, #(1 << 24) |	/* disable write allocate delay */ \
+	mov r1, #0xC4			/* tag/data RAM */
+	orr r1, r1, #(1 << 24) |	/* disable write allocate delay */ \
 		 (1 << 23) |		/* disable write allocate combine */ \
 		 (1 << 22)		/* disable write allocate */
 
-#if defined(CONFIG_MX51)
-	ldr r3, [\r_zero, #ROM_SI_REV]
-	cmp r3, #0x10
-
 	/* disable write combine for TO 2 and lower revs */
-	orrls r0, r0, #1 << 25
-#endif
+	orr_mx51_tape2_or_lower	r1, (1 << 25), \r_zero
 
 	/* Write L2 Cache Auxiliary Control Register */
-	mcr 15, 1, r0, c9, c0, 2
+	mcr 15, 1, r1, c9, c0, 2
 
 	/* enable L2 cache */
 	mrc 15, 0, r0, c1, c0, 1
@@ -324,12 +327,8 @@
 	str r1, [r0, #ARM_ICGC]
 
 	mov r1, #0
-#ifdef CONFIG_MX51
 	/* Run 3.0 at Full speed, for other TO's wait till we increase VDDGP */
-	ldr r3, [\r_zero, #ROM_SI_REV]
-	cmp r3, #0x10
-	movls r1, #0x1
-#endif
+	orr_mx51_tape2_or_lower	r1, 1, \r_zero
 	str r1, [\r_ccm, #CLKCTL_CACRR]
 
 #ifdef CONFIG_MX51
