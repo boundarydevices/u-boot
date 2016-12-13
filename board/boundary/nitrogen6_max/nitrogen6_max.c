@@ -158,6 +158,9 @@ static const iomux_v3_cfg_t init_pads[] = {
 #define GP_I2C2MUX_B		IMX_GPIO_NR(4, 15)
 	IOMUX_PAD_CTRL(KEY_ROW4__GPIO4_IO15, WEAK_PULLDN),
 
+#define GP_LP8860_EN	IMX_GPIO_NR(5, 20)
+	IOMUX_PAD_CTRL(CSI0_DATA_EN__GPIO5_IO20, WEAK_PULLDN),
+
 	/* i2c3mux - pcie i2c enable */
 #define GP_I2C3MUX_A	IMX_GPIO_NR(2, 25)
 	IOMUX_PAD_CTRL(EIM_OE__GPIO2_IO25, WEAK_PULLDN),
@@ -558,9 +561,65 @@ int splash_screen_prepare(void)
 }
 
 #ifdef CONFIG_CMD_FBPANEL
+static unsigned char setup_i2c_data[] = {
+	0x0c, 0x03, 0xda,	/* passthough i2c accesses to de-serialized/backlight */
+	0x0c, 0x07, 0x5a,	/* setup backlight lp8860 address */
+	0x0c, 0x08, 0x5a,
+	0x0c, 0x0d, 0x05,	/* gpio0 output from de-serializer */
+	0x2c, 0x1d, 0x03,
+#if 0
+	0x0c, 0x0e, 0x03,	/* gpio1 output to de-serializer */
+	0x2c, 0x1e, 0x05,
+#else
+	0x2c, 0x1e, 0x01,	/* gpio1 local to de-serializer, low */
+	0x2c, 0x1e, 0x09,	/* gpio1 local to de-serializer, high */
+#endif
+	0xff,   60, 0x00,	/* delay 60 ms */
+	0x2d, 0x00, 0xff,	/* 100% brightness */
+	0x2d, 0x01, 0xff,
+};
+
+static unsigned char disable_backlight_data[] = {
+	0x2c, 0x1e, 0x01,	/* gpio1 local to de-serializer, low */
+};
+
+void write_i2c_table(unsigned char *p, int size)
+{
+	int ret;
+	int i;
+
+	for (i = 0; i < size; i += 3, p += 3) {
+		if (p[0] == 0xff) {
+//			gpio_direction_output(GP_LP8860_EN, enable);
+			mdelay(p[1]);
+			continue;
+		}
+		ret = i2c_write(p[0], p[1], 1, &p[2], 1);
+		if (ret) {
+			printf("error writing 0x%02x:0x%02x = 0x%02x\n",
+				p[0], p[1], p[2]);
+			return;
+		}
+	}
+}
+
 void board_enable_lvds(const struct display_info_t *di, int enable)
 {
-	gpio_direction_output(GP_BACKLIGHT_LVDS, enable);
+	if ((di->bus == 2) && (di->addr == 0x0c)) {
+		/* enable lp8860 backlight */
+		int ret = i2c_set_bus_num(di->bus & 0xff);
+
+		if (ret)
+			return;
+//		gpio_direction_output(GP_LP8860_EN, 0);
+		if (!enable) {
+			write_i2c_table(disable_backlight_data, sizeof(disable_backlight_data));
+			return;
+		}
+		write_i2c_table(setup_i2c_data, sizeof(setup_i2c_data));
+	} else {
+		gpio_direction_output(GP_BACKLIGHT_LVDS, enable);
+	}
 }
 
 void board_enable_lvds2(const struct display_info_t *di, int enable)
@@ -611,6 +670,9 @@ static const struct display_info_t displays[] = {
 	VD_WVGA(LVDS, NULL, 0, 0x00),
 	VD_AA065VE11(LVDS, NULL, 0, 0x00),
 	VD_VGA(LVDS, NULL, 0, 0x00),
+
+	/* 0x0c is a serializer */
+	VD_TFC_A9700LTWV35TC_C1(LVDS, fbp_detect_i2c, 2, 0x0c),
 
 	/* uses both lvds connectors */
 	VD_1080P60(LVDS, NULL, 0, 0x00),
