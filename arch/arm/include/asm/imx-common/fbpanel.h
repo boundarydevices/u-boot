@@ -50,6 +50,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 #define VD_720_480M_60(_mode, _detect, _bus, _addr)	VDF_720_480M_60(_mode, "720x480M@60", RGB24, FBF_MODESTR, _detect, _bus, _addr)
 #define VD_CLAA_WVGA(_mode, _detect, _bus, _addr)	VDF_CLAA_WVGA(_mode, "CLAA-WVGA", RGB666, FBF_MODESTR, _detect, _bus, _addr)
 #define VD_SHARP_WVGA(_mode, _detect, _bus, _addr)	VDF_SHARP_WVGA(_mode, "sharp-wvga", RGB24, FBF_MODESTR, _detect, _bus, _addr)
+#define VD_TFC_A9700LTWV35TC_C1(_mode, _detect, _bus, _addr)	VDF_TFC_A9700LTWV35TC_C1(_mode, "tfc-a9700ltwv35tc-c1", RGB24, 0, _detect, _bus, _addr)
 #define VD_800X300_565(_mode, _detect, _bus, _addr)	VDF_800X300(_mode, "800x300rgb565", RGB565, FBF_MODESTR, _detect, _bus, _addr)
 #define VD_HITACHI_HVGA(_mode, _detect, _bus, _addr)	VDF_HITACHI_HVGA(_mode, "hitachi_hvga", RGB666, FBF_MODESTR, _detect, _bus, _addr)
 #define VD_HITACHI_HVGA565(_mode, _detect, _bus, _addr)	VDF_HITACHI_HVGA(_mode, "hitachi_hvga", RGB565, FBF_MODESTR, _detect, _bus, _addr)
@@ -269,6 +270,27 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 		.vmode          = FB_VMODE_NONINTERLACED\
 	}\
 }
+
+#define VDF_TFC_A9700LTWV35TC_C1(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	.mode	= {\
+		.name           = _name,\
+		.refresh        = 60,\
+		.xres           = 800,\
+		.yres           = 480,\
+		.pixclock       = 1000000000000ULL/((800+40+40+48)*(480+29+13+3)*60),\
+		.left_margin    = 40,\
+		.right_margin   = 40,\
+		.upper_margin   = 29,\
+		.lower_margin   = 13,\
+		.hsync_len      = 48,\
+		.vsync_len      = 3,\
+		.sync           = FB_SYNC_EXT |FB_SYNC_CLK_LAT_FALL,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
 
 /*
  * 800x300
