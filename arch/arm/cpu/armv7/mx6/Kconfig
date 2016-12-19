@@ -195,6 +195,7 @@ config TARGET_NITROGEN6_VM
 
 config TARGET_NITROGEN6SX
 	bool "nitrogen6sx"
+	select MX6SX
 
 config TARGET_NITROGEN6X
 	bool "nitrogen6x"
