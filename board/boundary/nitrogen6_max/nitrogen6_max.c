@@ -577,6 +577,8 @@ static unsigned char setup_i2c_data[] = {
 	0xff,   60, 0x00,	/* delay 60 ms */
 	0x2d, 0x00, 0xff,	/* 100% brightness */
 	0x2d, 0x01, 0xff,
+	0x0c, 0x77, 0xba,	/* setup gt911 touch controller address */
+	0x0c, 0x70, 0xba,
 };
 
 static unsigned char disable_backlight_data[] = {
