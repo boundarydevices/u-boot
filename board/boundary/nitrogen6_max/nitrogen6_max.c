@@ -158,7 +158,11 @@ static const iomux_v3_cfg_t init_pads[] = {
 #define GP_I2C2MUX_B		IMX_GPIO_NR(4, 15)
 	IOMUX_PAD_CTRL(KEY_ROW4__GPIO4_IO15, WEAK_PULLDN),
 
-#define GP_LP8860_EN	IMX_GPIO_NR(5, 20)
+#define GP_LVDS_LP8860_EN	IMX_GPIO_NR(2, 0)
+	IOMUX_PAD_CTRL(NANDF_D0__GPIO2_IO00, WEAK_PULLDN),
+#define GP_LVDS2_LP8860_EN	IMX_GPIO_NR(2, 23)
+	IOMUX_PAD_CTRL(EIM_CS0__GPIO2_IO23, WEAK_PULLDN),
+
 	IOMUX_PAD_CTRL(CSI0_DATA_EN__GPIO5_IO20, WEAK_PULLDN),
 
 	/* i2c3mux - pcie i2c enable */
@@ -561,28 +565,28 @@ int splash_screen_prepare(void)
 }
 
 #ifdef CONFIG_CMD_FBPANEL
-static unsigned char setup_i2c_data[] = {
+static unsigned char setup_serializer_data[] = {
 	0x0c, 0x03, 0xda,	/* passthough i2c accesses to de-serialized/backlight */
 	0x0c, 0x07, 0x5a,	/* setup backlight lp8860 address */
 	0x0c, 0x08, 0x5a,
 	0x0c, 0x0d, 0x05,	/* gpio0 output from de-serializer */
 	0x2c, 0x1d, 0x03,
-#if 0
+	0x0c, 0x0f, 0x03,	/* gpio3 output to de-serializer */
+	0x2c, 0x1f, 0x05,
+#if 1
 	0x0c, 0x0e, 0x03,	/* gpio1 output to de-serializer */
 	0x2c, 0x1e, 0x05,
 #else
 	0x2c, 0x1e, 0x01,	/* gpio1 local to de-serializer, low */
 	0x2c, 0x1e, 0x09,	/* gpio1 local to de-serializer, high */
 #endif
-	0xff,   60, 0x00,	/* delay 60 ms */
-	0x2d, 0x00, 0xff,	/* 100% brightness */
-	0x2d, 0x01, 0xff,
 	0x0c, 0x77, 0xba,	/* setup gt911 touch controller address */
 	0x0c, 0x70, 0xba,
 };
 
-static unsigned char disable_backlight_data[] = {
-	0x2c, 0x1e, 0x01,	/* gpio1 local to de-serializer, low */
+static unsigned char enable_backlight_data[] = {
+	0x2d, 0x00, 0xff,	/* 100% brightness */
+	0x2d, 0x01, 0xff,
 };
 
 void write_i2c_table(unsigned char *p, int size)
@@ -591,42 +595,53 @@ void write_i2c_table(unsigned char *p, int size)
 	int i;
 
 	for (i = 0; i < size; i += 3, p += 3) {
-		if (p[0] == 0xff) {
-//			gpio_direction_output(GP_LP8860_EN, enable);
-			mdelay(p[1]);
-			continue;
-		}
 		ret = i2c_write(p[0], p[1], 1, &p[2], 1);
 		if (ret) {
 			printf("error writing 0x%02x:0x%02x = 0x%02x\n",
 				p[0], p[1], p[2]);
-			return;
 		}
+	}
+}
+
+void enable_backlight(const struct display_info_t *di, int enable, int gp_backlight, int gp_lp8860)
+{
+	if (di->addr == 0x0c) {
+		/* enable lp8860 backlight */
+		int gp = di->bus >> 8;
+		int ret = i2c_set_bus_num(di->bus & 0xff);
+
+		if (ret)
+			return;
+		if (gp)
+			gpio_set_value(gp, 1);
+
+		gpio_direction_output(gp_lp8860, 0);
+		if (!enable)
+			return;
+
+		write_i2c_table(setup_serializer_data,
+			sizeof(setup_serializer_data));
+		mdelay(2);
+		gpio_direction_output(gp_lp8860, enable);
+		mdelay(60);
+
+		write_i2c_table(enable_backlight_data,
+			sizeof(enable_backlight_data));
+		if (gp)
+			gpio_set_value(gp, 0);
+	} else {
+		gpio_direction_output(gp_backlight, enable);
 	}
 }
 
 void board_enable_lvds(const struct display_info_t *di, int enable)
 {
-	if ((di->bus == 2) && (di->addr == 0x0c)) {
-		/* enable lp8860 backlight */
-		int ret = i2c_set_bus_num(di->bus & 0xff);
-
-		if (ret)
-			return;
-//		gpio_direction_output(GP_LP8860_EN, 0);
-		if (!enable) {
-			write_i2c_table(disable_backlight_data, sizeof(disable_backlight_data));
-			return;
-		}
-		write_i2c_table(setup_i2c_data, sizeof(setup_i2c_data));
-	} else {
-		gpio_direction_output(GP_BACKLIGHT_LVDS, enable);
-	}
+	enable_backlight(di, enable, GP_BACKLIGHT_LVDS, GP_LVDS_LP8860_EN);
 }
 
 void board_enable_lvds2(const struct display_info_t *di, int enable)
 {
-	gpio_direction_output(GP_BACKLIGHT_LVDS2, enable);
+	enable_backlight(di, enable, GP_BACKLIGHT_LVDS2, GP_LVDS2_LP8860_EN);
 }
 
 void board_enable_lcd(const struct display_info_t *di, int enable)
@@ -636,6 +651,29 @@ void board_enable_lcd(const struct display_info_t *di, int enable)
 	else
 		SETUP_IOMUX_PADS(rgb_gpio_pads);
 	gpio_direction_output(GP_BACKLIGHT_RGB, enable);
+}
+
+int fbp_detect_serializer(struct display_info_t const *di)
+{
+	int ret;
+	int gp = di->bus >> 8;
+
+	if (gp)
+		gpio_set_value(gp, 1);
+	ret = i2c_set_bus_num(di->bus & 0xff);
+	if (ret == 0) {
+		int gp_lp8860 = (di->fbtype == FB_LVDS2) ? GP_LVDS2_LP8860_EN :
+				GP_LVDS_LP8860_EN;
+		ret = i2c_probe(di->addr);
+		if (!ret) {
+			gpio_direction_output(gp_lp8860, 0);
+			write_i2c_table(setup_serializer_data,
+				sizeof(setup_serializer_data));
+		}
+	}
+	if (gp)
+		gpio_set_value(gp, 0);
+	return (ret == 0);
 }
 
 static const struct display_info_t displays[] = {
@@ -674,7 +712,8 @@ static const struct display_info_t displays[] = {
 	VD_VGA(LVDS, NULL, 0, 0x00),
 
 	/* 0x0c is a serializer */
-	VD_TFC_A9700LTWV35TC_C1(LVDS, fbp_detect_i2c, 2, 0x0c),
+	VD_TFC_A9700LTWV35TC_C1(LVDS, fbp_detect_serializer, 2, 0x0c),
+	VD_TFC_A9700LTWV35TC_C1(LVDS2, fbp_detect_serializer, (GP_I2C2MUX_A << 8) | 1, 0x0c),
 
 	/* uses both lvds connectors */
 	VD_1080P60(LVDS, NULL, 0, 0x00),
