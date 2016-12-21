@@ -233,7 +233,7 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 	buf += sz;
 	size -= sz;
 	if ((fb == FB_LVDS2) && !lvds_enabled) {
-		snprintf(buf, size, "fdt set ldb/lvds-channel@1 primary;");
+		sz = snprintf(buf, size, "fdt set ldb/lvds-channel@1 primary;");
 		buf += sz;
 		size -= sz;
 	}
