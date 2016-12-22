@@ -337,7 +337,7 @@ static const struct display_info_t *find_panel(const struct display_info_t *di, 
 	return NULL;
 }
 
-static char g_mode_str[4][80];
+static char g_mode_str[FB_COUNT][80];
 static struct display_info_t g_di_temp[FB_COUNT];
 
 int fbp_detect_i2c(struct display_info_t const *di)
