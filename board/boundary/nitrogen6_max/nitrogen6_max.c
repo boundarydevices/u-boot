@@ -569,6 +569,8 @@ static unsigned char setup_serializer_data[] = {
 	0x0c, 0x03, 0xda,	/* passthough i2c accesses to de-serialized/backlight */
 	0x0c, 0x07, 0x5a,	/* setup backlight lp8860 address */
 	0x0c, 0x08, 0x5a,
+	0x0c, 0x77, 0xba,	/* setup gt911 touch controller address */
+	0x0c, 0x70, 0xba,
 	0x0c, 0x0d, 0x05,	/* gpio0 output from de-serializer */
 	0x2c, 0x1d, 0x03,
 	0x0c, 0x0f, 0x03,	/* gpio3 output to de-serializer */
@@ -580,8 +582,6 @@ static unsigned char setup_serializer_data[] = {
 	0x2c, 0x1e, 0x01,	/* gpio1 local to de-serializer, low */
 	0x2c, 0x1e, 0x09,	/* gpio1 local to de-serializer, high */
 #endif
-	0x0c, 0x77, 0xba,	/* setup gt911 touch controller address */
-	0x0c, 0x70, 0xba,
 };
 
 static unsigned char enable_backlight_data[] = {
@@ -595,10 +595,17 @@ void write_i2c_table(unsigned char *p, int size)
 	int i;
 
 	for (i = 0; i < size; i += 3, p += 3) {
-		ret = i2c_write(p[0], p[1], 1, &p[2], 1);
-		if (ret) {
-			printf("error writing 0x%02x:0x%02x = 0x%02x\n",
-				p[0], p[1], p[2]);
+		int retry = 0;
+		while (1) {
+			ret = i2c_write(p[0], p[1], 1, &p[2], 1);
+			if (!ret)
+				break;
+			if (retry++ > 10) {
+				printf("error writing 0x%02x:0x%02x = 0x%02x\n",
+					p[0], p[1], p[2]);
+				break;
+			}
+			mdelay(100);
 		}
 	}
 }
