@@ -1,0 +1,6 @@
+YS BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/ys/
+F:	include/configs/ys.h
+F:	configs/ys_defconfig

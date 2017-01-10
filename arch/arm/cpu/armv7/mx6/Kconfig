@@ -236,6 +236,10 @@ config TARGET_UTC
 config TARGET_VP
 	bool "vp"
 
+config TARGET_YS
+	bool "ys"
+	select MX6SX
+
 config TARGET_OT1200
 	bool "Bachmann OT1200"
 	select SUPPORT_SPL
@@ -320,6 +324,7 @@ source "board/boundary/ta/Kconfig"
 source "board/boundary/usd/Kconfig"
 source "board/boundary/utc/Kconfig"
 source "board/boundary/vp/Kconfig"
+source "board/boundary/ys/Kconfig"
 source "board/compulab/cm_fx6/Kconfig"
 source "board/congatec/cgtqmx6eval/Kconfig"
 source "board/embest/mx6boards/Kconfig"
