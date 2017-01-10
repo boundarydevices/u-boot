@@ -212,6 +212,10 @@ config TARGET_VP
 	bool "vp"
 	depends on MX6DL || MX6Q || MX6QDL || MX6S
 
+config TARGET_YS
+	bool "ys"
+	depends on MX6SX
+
 endchoice
 
 source "board/boundary/a/Kconfig"
@@ -265,3 +269,4 @@ source "board/boundary/usd/Kconfig"
 source "board/boundary/usd_mr2/Kconfig"
 source "board/boundary/utc/Kconfig"
 source "board/boundary/vp/Kconfig"
+source "board/boundary/ys/Kconfig"
