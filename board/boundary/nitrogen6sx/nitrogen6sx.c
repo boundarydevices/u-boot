@@ -530,7 +530,16 @@ usbeth:
 #endif
 
 #ifdef CONFIG_CI_UDC
+#if defined(CONFIG_FEC_MXC) && defined(CONFIG_RGMII1) && defined(CONFIG_RGMII2)
+#define USB_ETH "eth2addr"
+#elif defined(CONFIG_FEC_MXC) && defined(CONFIG_RGMII1)
+#define USB_ETH "eth1addr"
+#else
+#define USB_ETH "ethaddr"
+#endif
 	/* For otg ethernet*/
+	if (!getenv(USB_ETH))
+		setenv(USB_ETH, getenv("usbnet_devaddr"));
 	usb_eth_initialize(bis);
 #endif
 	return 0;
