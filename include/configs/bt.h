@@ -21,10 +21,11 @@
 #define CONFIG_USB_MAX_CONTROLLER_COUNT 2
 #define CONFIG_VIDEO
 #define BD_I2C_MASK	7
+#define BD_CMA		"384M"
 
 #include "boundary.h"
 #define CONFIG_EXTRA_ENV_SETTINGS BD_BOUNDARY_ENV_SETTINGS \
-	"cmd_custom=setenv bootargs $bootargs pci=nomsi pcie.force_gen=1 coherent_pool=32M cma=384M\0" \
+	"cmd_custom=setenv bootargs $bootargs pci=nomsi pcie.force_gen=1 coherent_pool=32M\0" \
 
 
 #endif	       /* __CONFIG_H */
