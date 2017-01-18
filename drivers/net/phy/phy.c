@@ -859,7 +859,7 @@ int phy_reset(struct phy_device *phydev)
 	}
 #endif
 
-	if (phy_write(phydev, devad, MII_BMCR, BMCR_RESET) < 0) {
+	if (phy_write(phydev, devad, MII_BMCR, BMCR_RESET|BMCR_ANENABLE) < 0) {
 		debug("PHY reset failed\n");
 		return -1;
 	}
