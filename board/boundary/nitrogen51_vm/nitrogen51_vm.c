@@ -560,9 +560,11 @@ void board_enable_lcd(const struct display_info_t *di, int enable)
 }
 
 static const struct display_info_t displays[] = {
-	/* ft5x06 */
+	/* PIC16F616 */
 	VD_HITACHI_HVGA565(LCD2, NULL, 0, 0x38),
+	/* PMIC touch controller */
 	VD_800X300_565(LCD2, NULL, 0, 0x38),
+	VD_OKAYA_480_272(LCD, NULL, 0, 0x48),
 };
 #endif
 
