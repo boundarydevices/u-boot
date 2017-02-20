@@ -33,7 +33,7 @@ fi
 
 if itest.s x7D == "x${cpu}"; then
 	echo "check qspi parameter block" ;
-	if load ${dtype} ${disk}:1 ${a_qspi1} qspi-${sfname}.${uboot_defconfig} ; then
+	if ${fs}load ${dtype} ${disk}:1 ${a_qspi1} qspi-${sfname}.${uboot_defconfig} ; then
 	else
 		echo "parameter file qspi-${sfname}.${uboot_defconfig} not found on SD card"
 		exit
@@ -62,7 +62,7 @@ fi
 
 echo "check U-Boot" ;
 
-if load ${dtype} ${disk}:1 ${a_uImage1} u-boot.$uboot_defconfig ; then
+if ${fs}load ${dtype} ${disk}:1 ${a_uImage1} u-boot.$uboot_defconfig ; then
 else
 	echo "File u-boot.$uboot_defconfig not found on SD card" ;
 	exit
