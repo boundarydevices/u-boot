@@ -51,7 +51,7 @@ struct ahci_uc_priv *probe_ent = NULL;
 
 /* Maximum timeouts for each event */
 #define WAIT_MS_SPINUP	20000
-#define WAIT_MS_DATAIO	10000
+#define WAIT_MS_DATAIO	20000
 #define WAIT_MS_FLUSH	5000
 #define WAIT_MS_LINKUP	200
 
