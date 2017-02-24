@@ -261,8 +261,8 @@ int board_eth_init(bd_t *bis)
 {
 #ifdef CONFIG_CI_UDC
 	/* For otg ethernet*/
-	if (!getenv("eth1addr"))
-		setenv("eth1addr", getenv("usbnet_devaddr"));
+	if (!getenv("ethaddr"))
+		setenv("ethaddr", getenv("usbnet_devaddr"));
 	usb_eth_initialize(bis);
 #endif
 	return 0;
