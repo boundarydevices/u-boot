@@ -62,6 +62,7 @@ int write_sparse_image(struct sparse_storage *info,
 	chunk_header_t *chunk_header;
 	uint32_t total_blocks = 0;
 	int fill_buf_num_blks;
+	int dcache_enabled = dcache_status();
 	int i;
 	int j;
 
@@ -105,6 +106,10 @@ int write_sparse_image(struct sparse_storage *info,
 	}
 
 	puts("Flashing Sparse Image\n");
+
+	/* Disable data cache since chunks might not be aligned */
+	if (dcache_enabled)
+		dcache_disable();
 
 	/* Start processing chunks */
 	blk = info->start;
@@ -247,6 +252,10 @@ int write_sparse_image(struct sparse_storage *info,
 			return -1;
 		}
 	}
+
+	/* Re-enable data cache it in case it was in the first place */
+	if (dcache_enabled)
+		dcache_enable();
 
 	debug("Wrote %d blocks, expected to write %d blocks\n",
 	      total_blocks, sparse_header->total_blks);
