@@ -60,7 +60,7 @@ int check_cache_range(unsigned long start, unsigned long stop)
 	if (stop & (CONFIG_SYS_CACHELINE_SIZE - 1))
 		ok = 0;
 
-	if (!ok) {
+	if (!ok && dcache_status()) {
 		warn_non_spl("CACHE: Misaligned operation at range [%08lx, %08lx]\n",
 			     start, stop);
 	}
