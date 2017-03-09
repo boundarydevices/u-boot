@@ -65,6 +65,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 #define VD_QVGA(_mode, _detect, _bus, _addr)		VDF_QVGA(_mode, "qvga", RGB24, FBF_MODESTR, _detect, _bus, _addr)
 #define VD_AT035GT_07ET3(_mode, _detect, _bus, _addr)	VDF_AT035GT_07ET3(_mode, "AT035GT-07ET3", RGB24, FBF_MODESTR, _detect, _bus, _addr)
 #define VD_AMP1024_600(_mode, _detect, _bus, _addr)	VDF_AMP1024_600(_mode, "amp1024x600", RGB666, 0, _detect, _bus, _addr)
+#define VD_ND1024_600(_mode, _detect, _bus, _addr)	VDF_ND1024_600(_mode, "ND-070PCAP-1024x600", RGB24, 0, _detect, _bus, _addr)
 #define VD_TM070JDHG30(_mode, _detect, _bus, _addr)	VDF_TM070JDHG30(_mode, "tm070jdhg30", RGB24, 0, _detect, _bus, _addr)
 #define VD_AUO_B101EW05(_mode, _detect, _bus, _addr)	VDF_AUO_B101EW05(_mode, "auo_b101ew05", RGB666, 0, _detect, _bus, _addr)
 #define VD_HANNSTAR7(_mode, _detect, _bus, _addr)	VDF_HANNSTAR7(_mode, "hannstar7", RGB666, 0, _detect, _bus, _addr)
@@ -568,6 +569,27 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 		.lower_margin   = 7,\
 		.hsync_len      = 60,\
 		.vsync_len      = 10,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
+/* ft5x06 touch screen */
+#define VDF_ND1024_600(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	.mode	= {\
+		.name           = _name,\
+		.refresh        = 60,\
+		.xres           = 1024,\
+		.yres           = 600,\
+		.pixclock       = 1000000000000ULL/((1024+160+80+80)*(600+19+8+8)*60),\
+		.left_margin    = 160,\
+		.right_margin   = 80,\
+		.upper_margin   = 19,\
+		.lower_margin   = 8,\
+		.hsync_len      = 80,\
+		.vsync_len      = 8,\
 		.sync           = FB_SYNC_EXT,\
 		.vmode          = FB_VMODE_NONINTERLACED\
 	}\
