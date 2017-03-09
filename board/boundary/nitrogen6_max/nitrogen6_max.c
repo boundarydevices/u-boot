@@ -699,6 +699,7 @@ static const struct display_info_t displays[] = {
 	VD_DT070BTFT(LVDS, NULL, 2, 0x38),
 	VD_WSVGA(LVDS, NULL, 2, 0x38),
 	VD_TM070JDHG30(LVDS, NULL, 2, 0x38),
+	VD_ND1024_600(LVDS, fbp_detect_i2c, 2, 0x38),
 
 	/* ili210x */
 	VD_AMP1024_600(LVDS, fbp_detect_i2c, 2, 0x41),
