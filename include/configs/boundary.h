@@ -297,6 +297,61 @@
 #define BD_RAM_FDT	"13000000"
 #endif
 
+#ifndef BD_FUSE1
+#if defined(CONFIG_MX6SX)
+#define BD_FUSE1		"0 5"
+#define BD_FUSE1_VAL		"08000030"	/* CS0 */
+#define BD_FUSE2		"0 6"
+#define BD_FUSE2_VAL		"00000010"
+#elif defined(CONFIG_MX6Q) || defined(CONFIG_MX6S) || defined(CONFIG_MX6DL)
+#define BD_FUSE1		"0 5"
+#define BD_FUSE1_VAL		"18000030"	/* CS1 */
+#define BD_FUSE2		"0 6"
+#define BD_FUSE2_VAL		"00000010"
+#elif defined(CONFIG_MX7D)
+#define BD_FUSE1		"1 3"
+#define BD_FUSE1_VAL		"10004000"	/* QSPI */
+#endif
+#endif
+
+#ifndef BD_FUSE_MAC1A
+#if defined(CONFIG_MX7D)
+#define BD_FUSE_MAC1A		"9 1"
+#define BD_FUSE_MAC1A_VAL	"00000019"
+#define BD_FUSE_MAC1B		"9 0"
+#else
+#define BD_FUSE_MAC1A		"4 3"
+#define BD_FUSE_MAC1A_VAL	"00000019"
+#define BD_FUSE_MAC1B		"4 2"
+#endif
+#endif
+
+#ifdef BD_FUSE1
+#define BD_FUSE1_STR		"fuse1=" BD_FUSE1 "\0"
+#define BD_FUSE1_VAL_STR	"fuse1_val=" BD_FUSE1_VAL "\0"
+#else
+#define BD_FUSE1_STR		""
+#define BD_FUSE1_VAL_STR	""
+#endif
+
+#ifdef BD_FUSE2
+#define BD_FUSE2_STR		"fuse2=" BD_FUSE2 "\0"
+#define BD_FUSE2_VAL_STR	"fuse2_val=" BD_FUSE2_VAL "\0"
+#else
+#define BD_FUSE2_STR		""
+#define BD_FUSE2_VAL_STR	""
+#endif
+
+#ifdef BD_FUSE_MAC1A
+#define BD_FUSE_MAC1A_STR	"fuse_mac1a=" BD_FUSE_MAC1A "\0"
+#define BD_FUSE_MAC1A_VAL_STR	"fuse_mac1a_val=" BD_FUSE_MAC1A_VAL "\0"
+#define BD_FUSE_MAC1B_STR	"fuse_mac1b=" BD_FUSE_MAC1B "\0"
+#else
+#define BD_FUSE_MAC1A_STR	""
+#define BD_FUSE_MAC1A_VAL_STR	""
+#define BD_FUSE_MAC1B_STR	""
+#endif
+
 #define BD_BOOTCMD_STD \
 		"script=/6x_bootscript;" \
 		"run runscript;" \
@@ -349,11 +404,20 @@
 	"dfu_alt_info=u-boot raw 0x0 0xc0000\0" \
 	"fdt_addr=" BD_RAM_FDT "\0" \
 	"fdt_high=0xffffffff\0" \
+	BD_FUSE1_STR \
+	BD_FUSE1_VAL_STR \
+	BD_FUSE2_STR \
+	BD_FUSE2_VAL_STR \
+	BD_FUSE_MAC1A_STR \
+	BD_FUSE_MAC1A_VAL_STR \
+	BD_FUSE_MAC1B_STR \
 	"initrd_high=0xffffffff\0" \
 	"loadsplash=if sf probe ; then sf read ${splashimage} ${splashflash} ${splashsize} ; fi\0" \
 	LOG_LEVEL_STR \
 	"mmc_disks=" BD_MMC_DISKS "\0" \
 	"mmc_ums_disks=" BD_MMC_UMS_DISKS "\0" \
+	"net_fuses=dhcp " BD_RAM_SCRIPT " prog_fuses && source " BD_RAM_SCRIPT "\0" \
+	"net_program=next=prog_fuses; run net_upgradeu\0" \
 	"net_upgradeu=dhcp " BD_RAM_SCRIPT " net_upgradeu && source " BD_RAM_SCRIPT "\0" \
 	"rundfu=dfu 0 sf 0:0:25000000:0\0" \
 	"runscript=" \
@@ -371,7 +435,10 @@
 				"source " BD_RAM_SCRIPT ";" \
 			"done ; " \
 		"done;\0" \
+	"otg_fuses=run usbnetwork; tftp " BD_RAM_SCRIPT " prog_fuses && source " BD_RAM_SCRIPT "\0" \
+	"otg_program=next=prog_fuses; run otg_upgradeu\0" \
 	"otg_upgradeu=run usbnetwork; tftp " BD_RAM_SCRIPT " net_upgradeu && source " BD_RAM_SCRIPT "\0" \
+	"program=next=prog_fuses; run upgradeu\0" \
 	"splashflash=" BD_SPLASH_FLASH "\0" \
 	"uboot_defconfig=" CONFIG_DEFCONFIG "\0" \
 	"umsdevs=" BD_UMSDEVS "\0" \
