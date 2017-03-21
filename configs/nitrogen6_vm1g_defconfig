@@ -1,7 +1,7 @@
 CONFIG_ARM=y
 CONFIG_ARCH_MX6=y
 CONFIG_TARGET_NITROGEN6_VM=y
-CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/boundary/nitrogen6_vm/nitrogen6_vm1g.cfg,MX6S,DDR_MB=1024,DEFCONFIG=\"nitrogen6_vm1g\""
+CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/boundary/nitrogen6_vm/nitrogen6_vm1g.cfg,MX6S,DDR_MB=1024,BOARD_NAME=\"nitrogen6_vm\",DEFCONFIG=\"nitrogen6_vm1g\""
 # CONFIG_CMD_IMLS is not set
 # CONFIG_CMD_FLASH is not set
 CONFIG_CMD_GPIO=y
