@@ -29,6 +29,7 @@ setexpr a_qspi1 ${a_base}
 setexpr a_qspi2 ${a_qspi1} + 0x400000
 setexpr a_uImage1 ${a_qspi1} + 0x400
 setexpr a_uImage2 ${a_qspi2} + 0x400
+setexpr a_script ${a_base}
 
 setenv stdout serial,vga
 
@@ -149,6 +150,13 @@ if itest.s x7D == "x${cpu}"; then
 	fi
 fi
 
+if itest.s "x" != "x${next}" ; then
+	if tftp ${a_script} ${next} ; then
+		source ${a_script}
+	else
+		echo "${next} not found"
+	fi
+fi
 
 echo "---- U-Boot upgraded. resetting"
 sleep 2
