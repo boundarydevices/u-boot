@@ -625,7 +625,7 @@ int board_init(void)
 
 int checkboard(void)
 {
-	puts("Board: Boundary nitrogen6_vm\n");
+	puts("Board: Boundary " CONFIG_BOARD_NAME "\n");
 	return 0;
 }
 
@@ -652,7 +652,7 @@ int board_late_init(void)
 
 	setenv("cpu", get_imx_type((cpurev & 0xFF000) >> 12));
 	if (!getenv("board"))
-		setenv("board", "nitrogen6_vm");
+		setenv("board", CONFIG_BOARD_NAME);
 	setenv("uboot_defconfig", CONFIG_DEFCONFIG);
 	return 0;
 }
