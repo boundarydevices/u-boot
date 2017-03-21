@@ -21,6 +21,7 @@ setexpr a_qspi1 ${a_base}
 setexpr a_qspi2 ${a_qspi1} + 0x400000
 setexpr a_uImage1 ${a_qspi1} + 0x400
 setexpr a_uImage2 ${a_qspi2} + 0x400
+setexpr a_script ${a_base}
 
 setenv stdout serial,vga
 
@@ -78,6 +79,13 @@ if cmp.b ${a_uImage1} ${a_uImage2} $filesize ; then
 	echo "------- U-Boot versions match" ;
 	if itest.s "${qspi_match}" == "1" ; then
 		echo "------- upgrade not needed" ;
+		if itest.s "x" != "x${next}" ; then
+			if ${fs}load ${dtype} ${disk}:1 ${a_script} ${next} ; then
+				source ${a_script}
+			else
+				echo "${next} not found on SD card"
+			fi
+		fi
 		exit
 	fi
 	erase_size=0x1000
@@ -133,6 +141,13 @@ if itest.s x7D == "x${cpu}"; then
 	fi
 fi
 
+if itest.s "x" != "x${next}" ; then
+	if ${fs}load ${dtype} ${disk}:1 ${a_script} ${next} ; then
+		source ${a_script}
+	else
+		echo "${next} not found on ${dtype} ${disk}"
+	fi
+fi
 
 while echo "---- U-Boot upgraded. reset" ; do
 	sleep 120
