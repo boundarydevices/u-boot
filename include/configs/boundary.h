@@ -268,7 +268,11 @@
 #endif
 
 #ifndef BD_CONSOLE
-#define BD_CONSOLE "ttymxc1"
+#if CONFIG_MXC_UART_BASE == UART2_BASE
+#define BD_CONSOLE	"ttymxc1"
+#elif CONFIG_MXC_UART_BASE == UART1_BASE
+#define BD_CONSOLE	"ttymxc0"
+#endif
 #endif
 
 #ifdef CONFIG_VIDEO
