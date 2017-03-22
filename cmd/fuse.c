@@ -62,14 +62,19 @@ static int do_fuse(cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[])
 
 		printf("Reading bank %u:\n", bank);
 		for (i = 0; i < cnt; i++, word++) {
+			char name[16];
+			char vbuf[16];
 			if (!(i % 4))
-				printf("\nWord 0x%.8x:", word);
+				printf("\nWord 0x%.8x: ", word);
 
 			ret = fuse_read(bank, word, &val);
 			if (ret)
 				goto err;
 
-			printf(" %.8x", val);
+			snprintf(name, sizeof(name), "fuse_read_val%x", i);
+			snprintf(vbuf, sizeof(vbuf), "%.8x", val);
+			env_set(name, vbuf);
+			puts(vbuf);
 		}
 		putc('\n');
 	} else if (!strcmp(op, "sense")) {
