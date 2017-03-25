@@ -48,7 +48,7 @@ if load ${dtype} ${disk}:1 ${a_script} uEnv.txt ; then
 fi
 
 if itest.s x == x${bootdir} ; then
-	bootdir=/boot/
+	bootdir=/
 fi
 
 if load ${dtype} ${disk}:${bootpart} ${a_fdt} ${bootdir}${dtbname} ; then
