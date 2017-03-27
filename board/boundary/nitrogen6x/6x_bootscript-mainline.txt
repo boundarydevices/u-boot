@@ -51,6 +51,10 @@ if itest.s x == x${bootdir} ; then
 	bootdir=/
 fi
 
+if itest.s x${bootpart} == x ; then
+	bootpart=1
+fi
+
 if load ${dtype} ${disk}:${bootpart} ${a_fdt} ${bootdir}${dtbname} ; then
 	fdt addr ${a_fdt}
 	setenv fdt_high 0xffffffff
@@ -100,18 +104,18 @@ if itest.s "xoff" == "x$fb_lcd" ; then
 	setenv bootargs $bootargs video=VGA-1:d
 fi
 
-if itest.s x${bootpart} == x ; then
-	bootpart=1
+if itest.s x${rfspart} == x ; then
+	rfspart=2
 fi
 
 if itest.s "x" == "x${root}"; then
-	part uuid ${dtype} ${disk}:${bootpart} uuid
+	part uuid ${dtype} ${disk}:${rfspart} uuid
 	if itest.s "x" != "x${uuid}"; then
 		root=PARTUUID=${uuid}
 	elif test "sata" = "${dtype}" || test "usb" = "${dtype}" ; then
-		root=/dev/sda${bootpart}
+		root=/dev/sda${rfspart}
 	else
-		root=/dev/mmcblk${disk}p${bootpart}
+		root=/dev/mmcblk${disk}p${rfspart}
 	fi
 fi
 
