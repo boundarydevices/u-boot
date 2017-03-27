@@ -105,7 +105,10 @@ if itest.s x${bootpart} == x ; then
 fi
 
 if itest.s "x" == "x${root}"; then
-	if test "sata" = "${dtype}" || test "usb" = "${dtype}" ; then
+	part uuid ${dtype} ${disk}:${bootpart} uuid
+	if itest.s "x" != "x${uuid}"; then
+		root=PARTUUID=${uuid}
+	elif test "sata" = "${dtype}" || test "usb" = "${dtype}" ; then
 		root=/dev/sda${bootpart}
 	else
 		root=/dev/mmcblk${disk}p${bootpart}
