@@ -17,7 +17,7 @@ It is based on the main-line upstream at [http://git.denx.de][denx].
 
 Latest stable branch is:
 
-* [boundary-v2016.03](https://github.com/boundarydevices/u-boot-imx6/tree/boundary-v2016.03): Based on v2016.03.
+* [boundary-v2017.03](https://github.com/boundarydevices/u-boot-imx6/tree/boundary-v2017.03): Based on v2017.03.
 
 [Other branches](http://github.com/boundarydevices/u-boot-imx6/branches) are used for work in progress, sharing experimental code and to
 preserve the history for customers who base their efforts on ours.
