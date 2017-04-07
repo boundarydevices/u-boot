@@ -17,6 +17,7 @@
 #include <asm/gpio.h>
 #include <asm/imx-common/boot_mode.h>
 #include <asm/imx-common/iomux-v3.h>
+#include <asm/imx-common/mxc_i2c.h>
 #include <asm/imx-common/spi.h>
 #include <mmc.h>
 #include <fsl_esdhc.h>
@@ -36,6 +37,10 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #define ENET_PAD_CTRL	(PAD_CTL_PUS_100K_UP |			\
 	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm | PAD_CTL_HYS)
+
+#define I2C_PAD_CTRL	(PAD_CTL_PUS_100K_UP |			\
+	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm | PAD_CTL_HYS |	\
+	PAD_CTL_ODE | PAD_CTL_SRE_FAST)
 
 #define OUTPUT_40OHM	(PAD_CTL_SPEED_MED|PAD_CTL_DSE_40ohm)
 
@@ -110,6 +115,10 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IOMUX_PAD_CTRL(KEY_COL1__GPIO4_IO08, WEAK_PULLUP),	/* S1:3 - Diagnostic Switch 2 */
 #define GP_S1_INPUT	IMX_GPIO_NR(2, 27)
 	IOMUX_PAD_CTRL(EIM_LBA__GPIO2_IO27, WEAK_PULLUP),	/* S1:4 */
+
+	/* i2c1 rtc rv4162 */
+#define GPIRQ_RTC_RV4162	IMX_GPIO_NR(4, 15)
+	IOMUX_PAD_CTRL(KEY_ROW4__GPIO4_IO15, WEAK_PULLUP),
 
 	/* led outputs*/
 	/*
@@ -224,6 +233,11 @@ static iomux_v3_cfg_t const enet_pads2[] = {
 	IOMUX_PAD_CTRL(RGMII_RD2__RGMII_RD2, ENET_PAD_CTRL),
 	IOMUX_PAD_CTRL(RGMII_RD3__RGMII_RD3, ENET_PAD_CTRL),
 	IOMUX_PAD_CTRL(RGMII_RX_CTL__RGMII_RX_CTL, ENET_PAD_CTRL),
+};
+
+static struct i2c_pads_info i2c_pads[] = {
+	/* I2C2 RV4162 RTC */
+	I2C_PADS_INFO_ENTRY(I2C2, KEY_COL3, 4, 12, KEY_ROW3, 4, 13, I2C_PAD_CTRL),
 };
 
 int dram_init(void)
@@ -386,6 +400,7 @@ static const unsigned short gpios_in[] = {
 	GP_S1_DIAG1,			/* S1:2 - Diagnostic Switch 1 */
 	GP_S1_DIAG2,			/* S1:3 - Diagnostic Switch 2 */
 	GP_S1_INPUT,			/* S1:4 */
+	GPIRQ_RTC_RV4162,
 };
 
 static void set_gpios_in(const unsigned short *p, int cnt)
@@ -424,6 +439,7 @@ int overwrite_console(void)
 
 int board_init(void)
 {
+	struct i2c_pads_info *p = i2c_pads + i2c_get_info_entry_offset();
 	struct iomuxc *const iomuxc_regs = (struct iomuxc *)IOMUXC_BASE_ADDR;
 
 	clrsetbits_le32(&iomuxc_regs->gpr[1],
@@ -432,6 +448,8 @@ int board_init(void)
 
 	/* address of boot parameters */
 	gd->bd->bi_boot_params = PHYS_SDRAM + 0x100;
+        setup_i2c(1, CONFIG_SYS_I2C_SPEED, 0x7f, p);
+
 	return 0;
 }
 
