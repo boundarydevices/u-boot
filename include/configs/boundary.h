@@ -297,6 +297,7 @@
 #define BD_RAM_FDT	"13000000"
 #endif
 
+#ifndef BD_SKIP_FUSES
 #ifndef BD_FUSE1
 #if defined(CONFIG_MX6SX)
 #define BD_FUSE1		"0 5"
@@ -323,6 +324,7 @@
 #define BD_FUSE_MAC1A		"4 3"
 #define BD_FUSE_MAC1A_VAL	"00000019"
 #define BD_FUSE_MAC1B		"4 2"
+#endif
 #endif
 #endif
 
