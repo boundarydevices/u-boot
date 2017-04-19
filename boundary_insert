@@ -1,0 +1,46 @@
+#!/bin/sh
+
+insert_config="CONFIG_BLOCK_CACHE"
+before_config="CONFIG_PARTITION_TYPE_GUID"
+boards=`ls -d board/boundary/* | sed 's.board/boundary/..'` ;
+
+numboards=0;
+numsuccess=0;
+numfailures=0;
+skipped=0;
+for board in ${boards} ; do
+	update_cnt=0;
+	already_there=0;
+	if [ -e board/boundary/${board}/Kconfig ] ; then
+		target=`grep TARGET_ board/boundary/${board}/Kconfig | sed 's.if ..'`
+		defconfigs=`git grep -w CONFIG_${target} configs/ | sed 's.configs/..'| sed 's/_defconfig:.*$//'`
+	else
+		defconfigs=""
+	fi
+	for defconfig in ${defconfigs} ; do
+		cnt=`sed -n "/${insert_config}=/=" configs/${defconfig}_defconfig`
+		if [ "${cnt}" != "" ] ; then
+			already_there=`expr $already_there + 1`;
+		else
+			sed "/${before_config}/i${insert_config}=y" -i configs/${defconfig}_defconfig
+			if [ $? -ne 0 ]; then
+				numfailures=`expr $numfailures + 1`;
+				echo -e "\n\n\n!!!!!!!! insert failure for $defconfig !!!!!!!!!!!!\n\n";
+				read line;
+			else
+				echo updated ${defconfig}_defconfig
+				git update-index configs/${defconfig}_defconfig
+				update_cnt=`expr $update_cnt + 1`;
+			fi
+		fi
+	done
+	if [ ${update_cnt} != "0" ] ; then
+		echo ${board}: ${update_cnt} defconfigs updated, ${already_there} already there
+		git c -m"${board}: add ${insert_config} to defconfigs"
+		numsuccess=`expr $numsuccess + 1`;
+	else
+		skipped=`expr $skipped + 1`;
+	fi
+	numboards=`expr $numboards + 1`;
+done
+echo "\n\ninsert for ${numboards} boards. ${numsuccess} succeeded and ${numfailures} failed, ${skipped} skipped";
