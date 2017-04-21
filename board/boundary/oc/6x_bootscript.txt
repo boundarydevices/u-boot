@@ -1,0 +1,34 @@
+setenv bootargs enable_wait_mode=off
+setenv nextcon 0;
+
+if test xXGA = "x$panel" ; then
+	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=ldb,LDB-XGA,if=RGB24
+else
+	if test xLDB-WXGA = "x$panel" ; then
+		setenv bootargs $bootargs video=mxcfb${nextcon}:dev=ldb,1280x800MR@60,if=RGB666
+	else
+		setenv bootargs $bootargs video=mxcfb${nextcon}:dev=ldb,OC-VGA,if=RGB24
+	fi
+fi
+
+setenv nextcon 1
+setenv fbmem "fbmem=10M";
+if hdmidet ; then
+	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=hdmi,1280x720M@60,if=RGB24
+	setenv fbmem $fbmem,28M;
+	setexpr nextcon $nextcon + 1;
+else
+	echo "------ no HDMI monitor";
+fi
+
+while test "4" -ne $nextcon ; do
+	setenv bootargs $bootargs video=mxcfb${nextcon}:off ;
+	setexpr nextcon $nextcon + 1 ;
+done
+
+setenv bootargs $bootargs $fbmem
+setenv bootargs $bootargs console=ttymxc1,115200 vmalloc=400M consoleblank=0 ;
+${fs}load ${dtype} ${disk}:1 10800000 /boot/uImage
+&& ${fs}load ${dtype} ${disk}:1 12800000 /boot/uramdisk.img
+&& bootm 10800000 12800000 ;
+echo "Error loading kernel image"

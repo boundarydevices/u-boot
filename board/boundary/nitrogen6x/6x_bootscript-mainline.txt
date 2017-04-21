@@ -1,0 +1,141 @@
+setenv bootargs ''
+
+a_script=0x10800000
+a_zImage=0x10800000
+a_fdt=0x13000000
+a_ramdisk=0x13800000
+a_initrd=0x13a00000
+
+setenv initrd_high 0xffffffff
+if itest.s x6SX == "x${cpu}" ; then
+	a_script=0x80800000
+	a_zImage=0x80800000
+	a_fdt=0x83000000
+	a_ramdisk=0x83800000
+	a_initrd=0x83a00000
+fi
+
+if itest.s "x" == "x${board}" ; then
+	echo "!!!! Error: Your u-boot is outdated. Please upgrade.";
+	exit;
+fi
+
+if itest.s "x" == "x${dtbname}" ; then
+	if itest.s x6SOLO == "x${cpu}" ; then
+		dtbname=imx6dl-${board}.dtb;
+	elif itest.s x6DL == "x${cpu}" ; then
+		dtbname=imx6dl-${board}.dtb;
+	elif itest.s x6QP == "x${cpu}" ; then
+		dtbname=imx6qp-${board}.dtb;
+	elif itest.s x6SX == "x${cpu}" ; then
+		dtbname=imx6sx-${board}.dtb;
+	else
+		dtbname=imx6q-${board}.dtb;
+	fi
+fi
+
+if load ${dtype} ${disk}:1 ${a_script} uEnv.txt ; then
+    env import -t ${a_script} ${filesize}
+fi
+
+if itest.s x == x${bootdir} ; then
+	bootdir=/boot/
+fi
+
+if load ${dtype} ${disk}:${bootpart} ${a_fdt} ${bootdir}${dtbname} ; then
+	fdt addr ${a_fdt}
+	setenv fdt_high 0xffffffff
+else
+	echo "!!!! Error loading ${bootdir}${dtbname}";
+	exit;
+fi
+
+# ------------------- HDMI detection
+i2c dev 1 ;
+if i2c probe 0x50 ; then
+	echo "------ have HDMI";
+	if itest.s "x" != "x$force_edid" ; then
+		echo "------ forcing EDID to /lib/firmware/$force_edid"
+		setenv bootargs $bootargs drm_kms_helper.edid_firmware=$force_edid
+	fi
+fi
+
+# ------------------- LVDS detection
+setenv have_lvds
+i2c dev 2
+if i2c probe 0x04 ; then
+	echo "------ have Hannstar 10";
+	fdt set /panel compatible "hannstar,hsd100pxn1"
+	setenv have_lvds 1
+fi
+if i2c probe 0x38 ; then
+	if itest.s "xLDB-WXGA" == "x$panel"; then
+		echo "------ have Hannstar 7";
+		fdt set /panel compatible "hannstar,hsd070pww1"
+		screenres=1280,800
+	else
+		echo "------ have Innolux 7";
+		fdt set /panel compatible "innolux,zj070na-01p"
+		screenres=1024,600
+	fi
+	setenv have_lvds 1
+	setenv bootargs $bootargs ft5x06_ts.screenres=$screenres
+	if itest.s "x" -ne "x$calibration" ; then
+		setenv bootargs $bootargs ft5x06_ts.calibration=$calibration
+	fi
+fi
+
+# ------------------- LCD detection
+setenv have_lcd
+if i2c probe 0x48 ; then
+	setenv have_lcd 1;
+	echo "------- found TSC2004 touch controller";
+elif i2c probe 0x4d ; then
+	setenv have_lcd 1;
+	echo "------- found AR1020 touch controller";
+fi
+
+setenv bootargs "$bootargs console=${console},115200 vmalloc=400M cma=256M consoleblank=0 rootwait"
+
+# ------------------- Disabling displays not connected
+if itest.s "x" == "x$have_lvds" ; then
+	setenv bootargs $bootargs video=LVDS-1:d
+fi
+if itest.s "x" == "x$have_lcd" ; then
+	setenv bootargs $bootargs video=VGA-1:d
+fi
+
+if itest.s x$bootpart == x ; then
+	bootpart=1
+fi
+
+if test "sata" = "${dtype}" ; then
+	setenv bootargs "$bootargs root=/dev/sda$bootpart" ;
+else
+        if test "usb" = "${dtype}" ; then
+                setenv bootargs "$bootargs root=/dev/sda$bootpart" ;
+        else
+                setenv bootargs "$bootargs root=/dev/mmcblk0p$bootpart" ;
+        fi
+fi
+
+if itest.s "x" != "x$disable_giga" ; then
+        setenv bootargs $bootargs fec.disable_giga=1
+fi
+
+if itest.s "x" != "x$wlmac" ; then
+        setenv bootargs $bootargs wlcore.mac=$wlmac
+fi
+
+if itest.s "x" != "x$show_fdt" ; then
+	fdt print /
+fi
+
+if itest.s "x" != "x$show_env" ; then
+	printenv
+fi
+
+if load ${dtype} ${disk}:${bootpart} ${a_zImage} ${bootdir}zImage ; then
+	bootz ${a_zImage} - ${a_fdt}
+fi
+echo "Error loading kernel image"

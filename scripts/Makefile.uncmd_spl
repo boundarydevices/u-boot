@@ -1,0 +1,20 @@
+# Makefile version of include/config_uncmd_spl.h
+#
+# TODO: Invent a better way
+
+ifdef CONFIG_SPL_BUILD
+ifdef CONFIG_SPL_DISABLE_OF_CONTROL
+CONFIG_OF_CONTROL=
+endif
+
+ifndef CONFIG_SPL_DM
+CONFIG_DM_SERIAL=
+CONFIG_DM_GPIO=
+CONIFG_DM_I2C=
+CONFIG_DM_SPI=
+CONFIG_DM_SPI_FLASH=
+endif
+
+CONFIG_DM_DEVICE_REMOVE=
+
+endif

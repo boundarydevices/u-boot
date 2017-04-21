@@ -1,0 +1,65 @@
+menu "Device Drivers"
+
+source "drivers/core/Kconfig"
+
+source "drivers/cpu/Kconfig"
+
+source "drivers/demo/Kconfig"
+
+source "drivers/pci/Kconfig"
+
+source "drivers/pcmcia/Kconfig"
+
+source "drivers/mtd/Kconfig"
+
+source "drivers/block/Kconfig"
+
+source "drivers/misc/Kconfig"
+
+source "drivers/net/Kconfig"
+
+source "drivers/input/Kconfig"
+
+source "drivers/serial/Kconfig"
+
+source "drivers/tpm/Kconfig"
+
+source "drivers/i2c/Kconfig"
+
+source "drivers/spi/Kconfig"
+
+source "drivers/gpio/Kconfig"
+
+source "drivers/power/Kconfig"
+
+source "drivers/hwmon/Kconfig"
+
+source "drivers/watchdog/Kconfig"
+
+source "drivers/video/Kconfig"
+
+source "drivers/sound/Kconfig"
+
+source "drivers/usb/Kconfig"
+
+source "drivers/dfu/Kconfig"
+
+source "drivers/mmc/Kconfig"
+
+source "drivers/rtc/Kconfig"
+
+source "drivers/dma/Kconfig"
+
+source "drivers/crypto/Kconfig"
+
+source "drivers/thermal/Kconfig"
+
+endmenu
+
+config PHYS_TO_BUS
+	bool "Custom physical to bus address mapping"
+	help
+	  Some SoCs use a different address map for CPU physical addresses and
+	  peripheral DMA master accesses. If yours does, select this option in
+	  your platform's Kconfig, and implement the appropriate mapping
+	  functions in your platform's support code.

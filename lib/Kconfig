@@ -1,0 +1,99 @@
+menu "Library routines"
+
+config CC_OPTIMIZE_LIBS_FOR_SPEED
+	bool "Optimize libraries for speed"
+	help
+	  Enabling this option will pass "-O2" to gcc when compiling
+	  under "lib" directory.
+
+	  If unsure, say N.
+
+config HAVE_PRIVATE_LIBGCC
+	bool
+
+config USE_PRIVATE_LIBGCC
+	bool "Use private libgcc"
+	depends on HAVE_PRIVATE_LIBGCC
+	help
+	  This option allows you to use the built-in libgcc implementation
+	  of U-boot instead of the one privided by the compiler.
+	  If unsure, say N.
+
+config SYS_HZ
+	int
+	default 1000
+	help
+	  The frequency of the timer returned by get_timer().
+	  get_timer() must operate in milliseconds and this option must be
+	  set to 1000.
+
+config SYS_VSNPRINTF
+	bool "Enable safe version of sprintf()"
+	help
+	  Since sprintf() can overflow its buffer, it is common to use
+	  snprintf() instead, which knows the buffer size and can avoid
+	  overflow. However, this does increase code size slightly (for
+	  Thumb-2, about 420 bytes). Enable this option for safety when
+	  using sprintf() with data you do not control.
+
+config REGEX
+	bool "Enable regular expression support"
+	default y if NET
+	help
+	  If this variable is defined, U-Boot is linked against the
+	  SLRE (Super Light Regular Expression) library, which adds
+	  regex support to some commands, for example "env grep" and
+	  "setexpr".
+
+config LIB_RAND
+	bool "Pseudo-random library support "
+	help
+	  This library provides pseudo-random number generator functions.
+
+source lib/rsa/Kconfig
+
+menu "Hashing Support"
+
+config SHA1
+	bool "Enable SHA1 support"
+	help
+	  This option enables support of hashing using SHA1 algorithm.
+	  The hash is calculated in software.
+	  The SHA1 algorithm produces a 160-bit (20-byte) hash value
+	  (digest).
+
+config SHA256
+	bool "Enable SHA256 support"
+	help
+	  This option enables support of hashing using SHA256 algorithm.
+	  The hash is calculated in software.
+	  The SHA256 algorithm produces a 256-bit (32-byte) hash value
+	  (digest).
+
+config SHA_HW_ACCEL
+	bool "Enable hashing using hardware"
+	help
+	  This option enables hardware acceleration
+	  for SHA1/SHA256 hashing.
+	  This affects the 'hash' command and also the
+	  hash_lookup_algo() function.
+
+config SHA_PROG_HW_ACCEL
+	bool "Enable Progressive hashing support using hardware"
+	depends on SHA_HW_ACCEL
+	help
+	  This option enables hardware-acceleration for
+	  SHA1/SHA256 progressive hashing.
+	  Data can be streamed in a block at a time and the hashing
+	  is performed in hardware.
+endmenu
+
+config ERRNO_STR
+	bool "Enable function for getting errno-related string message"
+	help
+	  The function errno_str(int errno), returns a pointer to the errno
+	  corresponding text message:
+	  - if errno is null or positive number - a pointer to "Success" message
+	  - if errno is negative - a pointer to errno related message
+
+endmenu

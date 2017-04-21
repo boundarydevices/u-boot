@@ -1,0 +1,8 @@
+BT BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/bt2/
+F:	include/configs/bt.h
+F:	configs/bt2_2g_defconfig
+F:	configs/bt2_4g_defconfig
+
