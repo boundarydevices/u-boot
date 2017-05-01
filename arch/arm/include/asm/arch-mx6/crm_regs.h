@@ -6,6 +6,7 @@
 #ifndef __ARCH_ARM_MACH_MX6_CCM_REGS_H__
 #define __ARCH_ARM_MACH_MX6_CCM_REGS_H__
 
+#define CCM_CBCMR		0x020c4018
 #define CCM_CCOSR		0x020c4060
 #define CCM_CCGR0		0x020C4068
 #define CCM_CCGR1		0x020C406c
@@ -16,6 +17,7 @@
 #define CCM_CCGR6		0x020C4080
 #define CCM_CCGR7		0x020C4084
 
+#define CCM_ANALOG_PFD_528	0x020c8100
 #define PMU_MISC2		0x020C8170
 
 #ifndef __ASSEMBLY__
