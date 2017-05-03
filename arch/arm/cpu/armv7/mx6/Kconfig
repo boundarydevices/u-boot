@@ -285,6 +285,9 @@ config TARGET_H
 config TARGET_H4
 	bool "h4"
 
+config TARGET_HL
+	bool "hl"
+
 config TARGET_HP
 	bool "hp"
 
@@ -487,6 +490,7 @@ source "board/boundary/dash/Kconfig"
 source "board/boundary/eo/Kconfig"
 source "board/boundary/h/Kconfig"
 source "board/boundary/h4/Kconfig"
+source "board/boundary/hl/Kconfig"
 source "board/boundary/hp/Kconfig"
 source "board/boundary/insp/Kconfig"
 source "board/boundary/ioc/Kconfig"
