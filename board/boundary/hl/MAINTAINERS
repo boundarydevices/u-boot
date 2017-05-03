@@ -1,0 +1,7 @@
+HL BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/hl/
+F:	include/configs/hl.h
+F:	configs/hl_1g_defconfig
+
