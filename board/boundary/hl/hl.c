@@ -665,12 +665,11 @@ int board_late_init(void)
 	if (!getenv("board"))
 		setenv("board","hl");
 	setenv("uboot_defconfig", CONFIG_DEFCONFIG);
-	/* Bluetooth mac */
-	if (!getenv("bd_addr")) {
+	if (!getenv("wlmac")) {
 		imx_get_mac_from_fuse(0x800000, mac_address);
 		if (is_valid_ethaddr(mac_address)) {
 			snprintf(macbuf, sizeof(macbuf), "%pM", mac_address);
-			setenv("bd_addr", macbuf);
+			setenv("wlmac", macbuf);
 		}
 	}
 	return 0;
