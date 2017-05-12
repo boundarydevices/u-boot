@@ -514,6 +514,14 @@ struct dm_mmc_ops {
 	 * @return maximum number of blocks for this transfer
 	 */
 	int (*get_b_max)(struct udevice *dev, void *dst, lbaint_t blkcnt);
+
+	/**
+	 * card_busy() - See whether a card is busy
+	 *
+	 * @dev:	Device to check
+	 * @return 1 if busy, O if not busy
+	 */
+	int (*card_busy)(struct udevice *dev);
 };
 
 #define mmc_get_ops(dev)        ((struct dm_mmc_ops *)(dev)->driver->ops)
@@ -529,6 +537,7 @@ int dm_mmc_wait_dat0(struct udevice *dev, int state, int timeout_us);
 int dm_mmc_host_power_cycle(struct udevice *dev);
 int dm_mmc_deferred_probe(struct udevice *dev);
 int dm_mmc_get_b_max(struct udevice *dev, void *dst, lbaint_t blkcnt);
+int dm_mmc_card_busy(struct udevice *dev);
 
 /* Transition functions for compatibility */
 int mmc_set_ios(struct mmc *mmc);
@@ -541,6 +550,7 @@ int mmc_set_enhanced_strobe(struct mmc *mmc);
 int mmc_host_power_cycle(struct mmc *mmc);
 int mmc_deferred_probe(struct mmc *mmc);
 int mmc_get_b_max(struct mmc *mmc, void *dst, lbaint_t blkcnt);
+int mmc_card_busy(struct mmc *mmc);
 
 #else
 struct mmc_ops {
@@ -553,6 +563,7 @@ struct mmc_ops {
 	int (*getwp)(struct mmc *mmc);
 	int (*host_power_cycle)(struct mmc *mmc);
 	int (*get_b_max)(struct mmc *mmc, void *dst, lbaint_t blkcnt);
+	int (*card_busy)(struct mmc *mmc);
 };
 #endif
 
