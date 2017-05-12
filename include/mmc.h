@@ -466,6 +466,14 @@ struct dm_mmc_ops {
 	 */
 	int (*wait_dat0)(struct udevice *dev, int state, int timeout);
 #endif
+
+	/**
+	 * card_busy() - See whether a card is busy
+	 *
+	 * @dev:	Device to check
+	 * @return 1 if busy, O if not busy
+	 */
+	int (*card_busy)(struct udevice *dev);
 };
 
 #define mmc_get_ops(dev)        ((struct dm_mmc_ops *)(dev)->driver->ops)
@@ -479,6 +487,7 @@ int dm_mmc_get_cd(struct udevice *dev);
 int dm_mmc_get_wp(struct udevice *dev);
 int dm_mmc_execute_tuning(struct udevice *dev, uint opcode);
 int dm_mmc_wait_dat0(struct udevice *dev, int state, int timeout);
+int dm_mmc_card_busy(struct udevice *dev);
 
 /* Transition functions for compatibility */
 int mmc_set_ios(struct mmc *mmc);
@@ -488,6 +497,7 @@ int mmc_getcd(struct mmc *mmc);
 int mmc_getwp(struct mmc *mmc);
 int mmc_execute_tuning(struct mmc *mmc, uint opcode);
 int mmc_wait_dat0(struct mmc *mmc, int state, int timeout);
+int mmc_card_busy(struct mmc *mmc);
 
 #else
 struct mmc_ops {
@@ -498,6 +508,7 @@ struct mmc_ops {
 	int (*set_vdd)(struct mmc *mmc, bool enable);
 	int (*getcd)(struct mmc *mmc);
 	int (*getwp)(struct mmc *mmc);
+	int (*card_busy)(struct mmc *mmc);
 };
 #endif
 
