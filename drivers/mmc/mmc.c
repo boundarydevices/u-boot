@@ -1590,6 +1590,16 @@ static int mmc_execute_tuning(struct mmc *mmc, uint opcode)
 }
 #endif
 
+static int mmc_set_vdd(struct mmc *mmc, bool enable)
+{
+	int ret = 0;
+
+	if (mmc->cfg->ops->set_vdd)
+		ret = mmc->cfg->ops->set_vdd(mmc, enable);
+
+	return ret;
+}
+
 static int mmc_set_ios(struct mmc *mmc)
 {
 	int ret = 0;
@@ -2834,6 +2844,7 @@ int mmc_get_op_cond(struct mmc *mmc, bool quiet)
 	if (err)
 		return err;
 	mmc->ddr_mode = 0;
+	mmc_set_vdd(mmc, true);
 
 retry:
 	mmc_set_initial_state(mmc);
