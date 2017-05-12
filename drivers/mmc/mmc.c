@@ -1484,6 +1484,16 @@ static void mmc_send_init_stream(struct mmc *mmc)
 {
 }
 
+static int mmc_set_vdd(struct mmc *mmc, bool enable)
+{
+	int ret = 0;
+
+	if (mmc->cfg->ops->set_vdd)
+		ret = mmc->cfg->ops->set_vdd(mmc, enable);
+
+	return ret;
+}
+
 static int mmc_set_ios(struct mmc *mmc)
 {
 	int ret = 0;
@@ -2580,6 +2590,7 @@ int mmc_start_init(struct mmc *mmc)
 		return err;
 #endif
 	mmc->ddr_mode = 0;
+	mmc_set_vdd(mmc, true);
 
 retry:
 	mmc_set_initial_state(mmc);

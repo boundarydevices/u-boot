@@ -419,6 +419,15 @@ struct dm_mmc_ops {
 	void (*send_init_stream)(struct udevice *dev);
 
 	/**
+	 * set_vdd() - Enable or Disable the Vdd line
+	 *
+	 * @dev:	Device to update
+	 * @enable:	true or false to enable or disable Vdd respectively
+	 * @return 0 if OK, -ve on error
+	 */
+	int (*set_vdd)(struct udevice *dev, bool enable);
+
+	/**
 	 * get_cd() - See whether a card is present
 	 *
 	 * @dev:	Device to check
@@ -465,6 +474,7 @@ int dm_mmc_send_cmd(struct udevice *dev, struct mmc_cmd *cmd,
 		    struct mmc_data *data);
 int dm_mmc_set_ios(struct udevice *dev);
 void dm_mmc_send_init_stream(struct udevice *dev);
+int dm_mmc_set_vdd(struct udevice *dev, bool enable);
 int dm_mmc_get_cd(struct udevice *dev);
 int dm_mmc_get_wp(struct udevice *dev);
 int dm_mmc_execute_tuning(struct udevice *dev, uint opcode);
@@ -473,6 +483,7 @@ int dm_mmc_wait_dat0(struct udevice *dev, int state, int timeout);
 /* Transition functions for compatibility */
 int mmc_set_ios(struct mmc *mmc);
 void mmc_send_init_stream(struct mmc *mmc);
+int mmc_set_vdd(struct mmc *mmc, bool enable);
 int mmc_getcd(struct mmc *mmc);
 int mmc_getwp(struct mmc *mmc);
 int mmc_execute_tuning(struct mmc *mmc, uint opcode);
@@ -484,6 +495,7 @@ struct mmc_ops {
 			struct mmc_cmd *cmd, struct mmc_data *data);
 	int (*set_ios)(struct mmc *mmc);
 	int (*init)(struct mmc *mmc);
+	int (*set_vdd)(struct mmc *mmc, bool enable);
 	int (*getcd)(struct mmc *mmc);
 	int (*getwp)(struct mmc *mmc);
 };

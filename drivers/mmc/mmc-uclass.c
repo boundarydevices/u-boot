@@ -76,6 +76,20 @@ int mmc_wait_dat0(struct mmc *mmc, int state, int timeout)
 }
 #endif
 
+int dm_mmc_set_vdd(struct udevice *dev, bool enable)
+{
+	struct dm_mmc_ops *ops = mmc_get_ops(dev);
+
+	if (!ops->set_vdd)
+		return -ENOSYS;
+	return ops->set_vdd(dev, enable);
+}
+
+int mmc_set_vdd(struct mmc *mmc, bool enable)
+{
+	return dm_mmc_set_vdd(mmc->dev, enable);
+}
+
 int dm_mmc_get_wp(struct udevice *dev)
 {
 	struct dm_mmc_ops *ops = mmc_get_ops(dev);
