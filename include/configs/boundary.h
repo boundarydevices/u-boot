@@ -139,7 +139,7 @@
 #ifdef CONFIG_USB_MAX_CONTROLLER_COUNT
 #ifndef CONFIG_MX7D
 #define CONFIG_USB_EHCI
-#if defined(CONFIG_MX51)
+#if defined(CONFIG_MX51) || defined(CONFIG_MX53)
 #define CONFIG_USB_EHCI_MX5
 #else
 #define CONFIG_USB_EHCI_MX6
@@ -289,6 +289,12 @@
 #define BD_RAM_KERNEL	"90800000"
 #define BD_RAM_RAMDISK	"92800000"
 #define BD_RAM_FDT	"93000000"
+#elif defined(CONFIG_MX53)
+#define BD_RAM_BASE	0x70000000
+#define BD_RAM_SCRIPT	"70008000"
+#define BD_RAM_KERNEL	"70800000"
+#define BD_RAM_RAMDISK	"72800000"
+#define BD_RAM_FDT	"73000000"
 #else
 #define BD_RAM_BASE	0x10000000
 #define BD_RAM_SCRIPT	"10008000"
@@ -466,7 +472,7 @@
 
 /* Physical Memory Map */
 #define CONFIG_NR_DRAM_BANKS	       1
-#if defined(CONFIG_MX51)
+#if defined(CONFIG_MX51) || defined(CONFIG_MX53)
 #define PHYS_SDRAM		       CSD0_BASE_ADDR
 #else
 #define PHYS_SDRAM		       MMDC0_ARB_BASE_ADDR
