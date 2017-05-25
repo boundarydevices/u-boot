@@ -6,7 +6,7 @@
 #include <errno.h>
 #include <asm/arch/clock.h>
 #include <asm/arch/crm_regs.h>
-#ifndef CONFIG_MX51
+#if !defined(CONFIG_MX51) && !defined(CONFIG_MX53)
 #include <asm/arch/mxc_hdmi.h>
 #endif
 #include <asm/arch/sys_proto.h>
@@ -371,7 +371,7 @@ int calc_gcd(int a, int b)
 	return a;
 }
 
-#ifndef CONFIG_MX51
+#if !defined(CONFIG_MX51) && !defined(CONFIG_MX53)
 void reparent_lvds(int fbtype, int new_parent)
 {
 	struct mxc_ccm_reg *ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
@@ -447,7 +447,7 @@ void reparent_lvds(int fbtype, int new_parent)
 }
 #endif
 
-#if defined(CONFIG_MX51)
+#if defined(CONFIG_MX51) || defined(CONFIG_MX53)
 int get_pll3_clock(void);
 
 void setup_clock(struct display_info_t const *di)
@@ -655,7 +655,7 @@ void setup_clock(struct display_info_t const *di)
 
 void fbp_enable_fb(struct display_info_t const *di, int enable)
 {
-#if !defined(CONFIG_MX51)
+#if !defined(CONFIG_MX51) && !defined(CONFIG_MX53)
 	struct mxc_ccm_reg *mxc_ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
 	struct iomuxc *iomux = (struct iomuxc *)IOMUXC_BASE_ADDR;
 	u32 reg, cscmr2;
@@ -672,7 +672,7 @@ void fbp_enable_fb(struct display_info_t const *di, int enable)
 	case FB_LCD:
 		board_enable_lcd(di, enable);
 		break;
-#if !defined(CONFIG_MX51)
+#if !defined(CONFIG_MX51) && !defined(CONFIG_MX53)
 	case FB_LVDS:
 		reg = readl(&iomux->gpr[2]);
 		cscmr2 = readl(&mxc_ccm->cscmr2);
@@ -734,7 +734,7 @@ void fbp_enable_fb(struct display_info_t const *di, int enable)
 static void imx_prepare_display(void)
 {
 #ifndef CONFIG_MX6SX
-#if !defined(CONFIG_MX51)
+#if !defined(CONFIG_MX51) && !defined(CONFIG_MX53)
 	struct mxc_ccm_reg *mxc_ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
 	struct iomuxc *iomux = (struct iomuxc *)IOMUXC_BASE_ADDR;
 	int reg;
