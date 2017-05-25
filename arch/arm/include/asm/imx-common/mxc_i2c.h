@@ -82,7 +82,7 @@ struct mxc_i2c_bus {
 		_I2C_PADS_INFO_CPU(cpu, i2cnum, scl_pad, scl_bank, scl_gp,     \
 				sda_pad, sda_bank, sda_gp, ctrl, _IO_)
 
-#elif defined(CONFIG_MX51)
+#elif defined(CONFIG_MX51) || defined(CONFIG_MX53)
 #define I2C_PADS_INFO_CPU(cpu, i2cnum, scl_pad, scl_bank, scl_gp,	       \
 		sda_pad, sda_bank, sda_gp, ctrl) 			       \
 		_I2C_PADS_INFO_CPU(cpu, i2cnum, scl_pad, scl_bank, scl_gp,     \
@@ -106,6 +106,12 @@ struct mxc_i2c_bus {
 #define I2C_PADS_INFO_ENTRY(i2cnum, scl_pad, scl_bank, scl_gp,		\
 		sda_pad, sda_bank, sda_gp, ctrl)			\
 	I2C_PADS_INFO_CPU(MX51, i2cnum, scl_pad, scl_bank, scl_gp,	\
+		sda_pad, sda_bank, sda_gp, ctrl)
+#define I2C_PADS_INFO_ENTRY_SPACING 1
+#elif defined(CONFIG_MX53)
+#define I2C_PADS_INFO_ENTRY(i2cnum, scl_pad, scl_bank, scl_gp,		\
+		sda_pad, sda_bank, sda_gp, ctrl)			\
+	I2C_PADS_INFO_CPU(MX53, i2cnum, scl_pad, scl_bank, scl_gp,	\
 		sda_pad, sda_bank, sda_gp, ctrl)
 #define I2C_PADS_INFO_ENTRY_SPACING 1
 #else
