@@ -309,9 +309,10 @@
 #define DP_MFN_400	1
 #define DP_CTL_400	(0x1220 | DP_CTL_RESTART)
 
-#define DP_OP_455	((9 << 4) + ((2 - 1)  << 0))
+#define DP_OP_455	MAKE_OP(9, 2)
 #define DP_MFD_455	(48 - 1)
 #define DP_MFN_455	23
+#define DP_CTL_455	(0x1220 | DP_CTL_RESTART | DP_CTL_BRMO)
 
 #if 0
 /* Too low, output must be 300 - 800 */
