@@ -266,6 +266,8 @@ if (is_cpu_type(MXC_CPU_MX6Q) || is_cpu_type(MXC_CPU_MX6D)) {				\
 #define IOMUX_PAD_CTRL(name, ctrl)	NEW_PAD_CTRL(MX7D_PAD_##name, ctrl)
 #elif defined(CONFIG_MX51)
 #define IOMUX_PAD_CTRL(name, ctrl)	NEW_PAD_CTRL(MX51_PAD_##name, ctrl)
+#elif defined(CONFIG_MX53)
+#define IOMUX_PAD_CTRL(name, ctrl)	NEW_PAD_CTRL(MX53_PAD_##name, ctrl)
 #else
 #define IOMUX_PAD_CTRL(name, ctrl)	NEW_PAD_CTRL(MX6_PAD_##name, ctrl)
 #endif
