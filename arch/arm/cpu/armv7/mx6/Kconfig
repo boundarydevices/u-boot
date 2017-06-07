@@ -267,6 +267,9 @@ config TARGET_BT2
 config TARGET_CAD
 	bool "cad"
 
+config TARGET_CID
+	bool "cid"
+
 config TARGET_CNT
 	bool "cnt"
 
@@ -484,6 +487,7 @@ source "board/boundary/ash/Kconfig"
 source "board/boundary/bt/Kconfig"
 source "board/boundary/bt2/Kconfig"
 source "board/boundary/cad/Kconfig"
+source "board/boundary/cid/Kconfig"
 source "board/boundary/cnt/Kconfig"
 source "board/boundary/cob/Kconfig"
 source "board/boundary/dash/Kconfig"
