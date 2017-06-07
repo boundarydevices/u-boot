@@ -1,0 +1,6 @@
+CID BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/cid/
+F:	include/configs/cid.h
+F:	configs/cid_2g_defconfig
