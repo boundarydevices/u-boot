@@ -445,6 +445,7 @@ int board_eth_init(bd_t *bis)
 		setenv("ethaddr", getenv("usbnet_devaddr"));
 	usb_eth_initialize(bis);
 #endif
+	return 0;
 }
 
 static const unsigned short gpios_out_low[] = {
