@@ -568,6 +568,7 @@ void board_enable_lcd(const struct display_info_t *di, int enable)
 
 static const struct display_info_t displays[] = {
 	/* PIC16F616 */
+	VD_NEON_TOUCH640X240(LCD2, NULL, 0, 0x38),
 	VD_HITACHI_HVGA565(LCD2, NULL, 0, 0x38),
 	/* PMIC touch controller */
 	VD_800X300_565(LCD2, NULL, 0, 0x38),
