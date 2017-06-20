@@ -315,7 +315,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 		.lower_margin	= 3,\
 		.hsync_len	= 110,\
 		.vsync_len	= 1,\
-		.sync           = FB_SYNC_EXT | FB_SYNC_CLK_LAT_FALL,\
+		.sync           = FB_SYNC_CLK_LAT_FALL,\
 		.vmode          = FB_VMODE_NONINTERLACED\
 	}\
 }
