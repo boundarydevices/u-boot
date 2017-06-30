@@ -443,6 +443,9 @@
 		"fi\0"                                                    \
 	\
 	"boot_a_script="                                                  \
+		"setenv disk ${devnum}; "                                 \
+		"setenv dtype ${devtype}; "                               \
+		"setenv bootpart ${distro_bootpart}; "                    \
 		"load ${devtype} ${devnum}:${distro_bootpart} "           \
 			"${scriptaddr} ${prefix}${script}; "              \
 		"source ${scriptaddr}\0"                                  \
