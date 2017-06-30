@@ -402,6 +402,12 @@
 	BOOTENV_DEV_NAME_##devtypeu(devtypeu, devtypel, instance)
 #define BOOTENV_BOOT_TARGETS \
 	"boot_targets=" BOOT_TARGET_DEVICES(BOOTENV_DEV_NAME) "\0"
+#ifndef BOOTENV_EXTRA_BOOT_PREFIXES
+#define BOOTENV_EXTRA_BOOT_PREFIXES ""
+#endif
+#ifndef BOOTENV_EXTRA_BOOT_SCRIPTS
+#define BOOTENV_EXTRA_BOOT_SCRIPTS ""
+#endif
 
 #define BOOTENV_DEV(devtypeu, devtypel, instance) \
 	BOOTENV_DEV_##devtypeu(devtypeu, devtypel, instance)
@@ -417,9 +423,9 @@
 	BOOTENV_SHARED_UBIFS \
 	BOOTENV_SHARED_EFI \
 	BOOTENV_SHARED_VIRTIO \
-	"boot_prefixes=/ /boot/\0" \
-	"boot_scripts=boot.scr.uimg boot.scr\0" \
-	"boot_script_dhcp=boot.scr.uimg\0" \
+	"boot_prefixes=/ /boot/" BOOTENV_EXTRA_BOOT_PREFIXES "\0" \
+	"boot_scripts=boot.scr.uimg boot.scr" BOOTENV_EXTRA_BOOT_SCRIPTS "\0" \
+	"boot_script_dhcp=boot.scr.uimg" BOOTENV_EXTRA_BOOT_SCRIPTS "\0" \
 	BOOTENV_BOOT_TARGETS \
 	\
 	"boot_syslinux_conf=extlinux/extlinux.conf\0" \
