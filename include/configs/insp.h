@@ -28,6 +28,7 @@
 	"allow_noncea=1\0" \
 	"bootdelay=1\0" \
 	"preboot=if itest 0 != 0x$splashsize ; then sf probe && sf read ${splashimage} ${splashflash} $splashsize && bmp d ${splashimage} ; fi\0" \
+	"splashimage=0x10008000\0" \
 	"splashsize=2b7a\0" \
 
 #endif	       /* __CONFIG_H */
