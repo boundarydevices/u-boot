@@ -1,0 +1,51 @@
+setenv stdout serial,vga
+
+if itest.s "x" == "x${imagefile}" ; then
+	imagefile=ubuntu.img.gz
+fi
+if itest.s "x" == "x${gzdest}" ; then
+	echo "Please set gzdest. ie. setenv gzdest 'mmc 1';"
+	exit;
+fi
+
+a_base=0x10000000
+if itest.s x51 == "x${imx_cpu}" ; then
+	a_base=0x90000000
+elif itest.s x53 == "x${imx_cpu}"; then
+	a_base=0x70000000
+elif itest.s x6SX == "x${imx_cpu}" || itest.s x6ULL == "x${imx_cpu}" || itest.s x7D == "x${imx_cpu}"; then
+	a_base=0x80000000
+elif itest.s x8MQ == "x${imx_cpu}" || itest.s x8MM == "x${imx_cpu}" || itest.s x8MMQ == "x${imx_cpu}" || itest.s x8MNano == "x${imx_cpu}"; then
+	a_base=0x40000000
+fi
+setexpr a_gz  ${a_base} + 0x00080000
+
+echo "Trying to load ${imagefile} (about 5...10 minutes)"
+
+setexpr i 0;
+setexpr offset 0;
+while test $i -le 99
+do
+	if load ${devtype} ${devnum} ${a_gz} ${imagefile}.$i ; then
+		echo "Extracting file ${imagefile}.$i to eMMC"
+		gzwrite ${gzdest} ${a_gz} 0x${filesize} 0x100000 0x${offset}00000 ;
+	else
+		if itest $i -eq 0 ; then
+			echo "image file not found or its too big to fit in the memory";
+			echo "expected file name : ${imagefile}.$i";
+			echo "exiting..."
+			exit
+		fi
+		echo "Done."
+		echo "Please remove the SD card, then reset board..."
+		exit;
+	fi
+	setexpr i $i + 1;
+	setexpr rem $i % 0x10;
+	if itest 0x$rem -eq 0x0a ; then
+		#this is to show a decimal number when really hex is output
+		setexpr i $i + 6;
+	fi;
+	# add 512M, units of offset is M
+	setexpr	offset $offset + 0x200
+done

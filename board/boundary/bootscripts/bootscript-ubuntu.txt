@@ -1,0 +1,232 @@
+setenv bootargs ''
+
+setenv initrd_high 0xffffffff
+m4=''
+kernelimage=vmlinuz
+bootcommand=bootz
+img_prefix=/
+a_base=0x10000000
+if itest.s x51 == "x${imx_cpu}" ; then
+	a_base=0x90000000
+elif itest.s x53 == "x${imx_cpu}"; then
+	a_base=0x70000000
+elif itest.s x6SX == "x${imx_cpu}" || itest.s x6ULL == "x${imx_cpu}" || itest.s x7D == "x${imx_cpu}"; then
+	a_base=0x80000000
+elif itest.s x8MQ == "x${imx_cpu}" || itest.s x8MM == "x${imx_cpu}" || itest.s x8MMQ == "x${imx_cpu}" || itest.s x8MNano == "x${imx_cpu}"; then
+	a_base=0x40000000
+	kernelimage=Image
+	bootcommand=booti
+	img_prefix=${prefix}
+fi
+if itest.s "x1" == "x$m4enabled" ; then
+	run m4boot;
+	m4='-m4';
+fi
+
+setexpr a_script  ${a_base} + 0x00800000
+setexpr a_zImage  ${a_base} + 0x00800000
+setexpr a_fdt     ${a_base} + 0x03000000
+setexpr a_ramdisk ${a_base} + 0x03800000
+setexpr a_initrd  ${a_base} + 0x03a00000
+setexpr a_reset_cause_marker ${a_base} + 0x80
+setexpr a_reset_cause	     ${a_base} + 0x84
+
+if itest.s "x" == "x${board}" ; then
+	echo "!!!! Error: Your u-boot is outdated. Please upgrade.";
+	exit;
+fi
+
+if itest.s "x" == "x${fdt_file}" ; then
+	if itest.s x6SOLO == "x${imx_cpu}" ; then
+		fdt_file=imx6dl-${board}.dtb;
+	elif itest.s x6DL == "x${imx_cpu}" ; then
+		fdt_file=imx6dl-${board}.dtb;
+	elif itest.s x6QP == "x${imx_cpu}" ; then
+		fdt_file=imx6qp-${board}.dtb;
+	elif itest.s x6SX == "x${imx_cpu}" ; then
+		fdt_file=imx6sx-${board}${m4}.dtb;
+	elif itest.s x6ULL == "x${imx_cpu}" ; then
+		fdt_file=imx6ull-${board}.dtb;
+	elif itest.s x7D == "x${imx_cpu}" ; then
+		fdt_file=imx7d-${board}${m4}.dtb;
+	elif itest.s x8MQ == "x${imx_cpu}" ; then
+		fdt_file=imx8mq-${board}${m4}.dtb;
+	elif itest.s x8MM == "x${imx_cpu}" ; then
+		fdt_file=imx8mm-${board}${m4}.dtb;
+	elif itest.s x8MMQ == "x${imx_cpu}" ; then
+		fdt_file=imx8mm-${board}.dtb;
+	elif itest.s x8MNano == "x${imx_cpu}" ; then
+		fdt_file=imx8mn-${board}.dtb;
+	elif itest.s x51 == "x${imx_cpu}" ; then
+		fdt_file=imx51-${board}${m4}.dtb;
+	elif itest.s x53 == "x${imx_cpu}" ; then
+		fdt_file=imx53-${board}${m4}.dtb;
+	else
+		fdt_file=imx6q-${board}.dtb;
+	fi
+fi
+
+if itest.s x${distro_bootpart} == x ; then
+	distro_bootpart=1
+fi
+
+if itest.s "x" != "x${upgradeu_pending}" ; then
+	echo upgradeu_pending is ${upgradeu_pending}
+	echo "Trying upgrade.scr"
+	if load ${devtype} ${devnum}:${distro_bootpart} ${a_script} upgrade.scr ; then
+		setenv upgradeu_pending
+		savee
+		echo "Running upgrade.scr"
+		reset=1
+		source ${a_script}
+	fi
+fi
+
+if load ${devtype} ${devnum}:${distro_bootpart} ${a_script} uEnv.txt ; then
+    env import -t ${a_script} ${filesize}
+fi
+
+if itest.s x${console} != x ; then
+	setenv bootargs ${bootargs} console=${console},115200
+fi
+if itest.s "x" == "x$vmalloc" ; then
+	vmalloc=400M
+fi
+if itest.s x${consoleblank} == x ; then
+	consoleblank=0
+fi
+setenv bootargs ${bootargs} vmalloc=${vmalloc} consoleblank=${consoleblank} rootwait fixrtc cpu=${imx_cpu} board=${board} uboot_release=${uboot_release}
+
+setenv bootargs ${bootargs} systemd.gpt_auto=0
+
+if load ${devtype} ${devnum}:${distro_bootpart} ${a_fdt} ${prefix}${fdt_file} ; then
+	fdt addr ${a_fdt}
+	setenv fdt_high 0xffffffff
+	echo "Device tree loaded: ${prefix}${fdt_file}";
+else
+	echo "!!!! Error loading ${prefix}${fdt_file}";
+	exit;
+fi
+
+fdt resize 4096
+if itest.s "x" != "x${cmd_board}" ; then
+	run cmd_board
+fi
+if itest.s "x" != "x${cmd_custom}" ; then
+	run cmd_custom
+fi
+if itest.s "x" != "x${cmd_hdmi}" ; then
+	run cmd_hdmi
+	if itest.s x != x${allow_noncea} ; then
+		setenv bootargs ${bootargs} mxc_hdmi.only_cea=0;
+		echo "non-CEA modes allowed on HDMI, audio may be affected";
+	fi
+fi
+if itest.s "x" != "x${cmd_lcd}" ; then
+	run cmd_lcd
+fi
+if itest.s "x" != "x${cmd_lcd2}" ; then
+	run cmd_lcd2
+fi
+if itest.s "x" != "x${cmd_lvds}" ; then
+	run cmd_lvds
+fi
+if itest.s "x" != "x${cmd_lvds2}" ; then
+	run cmd_lvds2
+fi
+if itest.s "x" != "x${cmd_mipi}" ; then
+	run cmd_mipi
+fi
+
+setexpr b0 ${distro_bootpart} % 0x0a;
+setexpr b1 ${distro_bootpart} / 0x0a;
+#this is to show a decimal number when really hex is output
+setexpr bpart ${b1} * 0x10
+setexpr bpart ${bpart} + ${b0};
+
+if itest.s "x" != "x${root_dev}" ; then
+	setenv bootargs "${bootargs} root=${root_dev}${bpart}" ;
+elif test "sata" = "${devtype}" ; then
+	setenv bootargs "${bootargs} root=/dev/sda${bpart}" ;
+elif test "usb" = "${devtype}" ; then
+	if itest.s "x1" == "x${devnum}" ; then
+		setenv bootargs "${bootargs} root=/dev/sdb${bpart}" ;
+	else
+		setenv bootargs "${bootargs} root=/dev/sda${bpart}" ;
+	fi
+else
+	setenv bootargs "${bootargs} root=/dev/mmcblk${devnum}p${bpart}"
+fi
+
+if itest.s "x" != "x${disable_msi}" ; then
+	setenv bootargs ${bootargs} pci=nomsi
+fi;
+
+if itest.s "x" != "x${disable_giga}" ; then
+	setenv bootargs ${bootargs} fec.disable_giga=1
+fi
+
+if itest.s "x" != "x${wlmac}" ; then
+	setenv bootargs ${bootargs} wlcore.mac=${wlmac}
+fi
+
+if itest.s "x" != "x${bd_addr}" ; then
+	setenv bootargs ${bootargs} bd_addr=${bd_addr}
+fi
+
+if itest.s "x" != "x${gpumem}" ; then
+	setenv bootargs ${bootargs} galcore.contiguousSize=${gpumem}
+fi
+
+if itest.s "no" != "${dosplash}" ; then
+	if itest.s "x" == "x${loglevel}" ; then
+		loglevel=4
+	fi
+	setenv bootargs ${bootargs} splash plymouth.ignore-serial-consoles
+fi
+
+if itest.s "x" != "x${loglevel}" ; then
+	setenv bootargs ${bootargs} loglevel=${loglevel}
+fi
+
+if itest *${a_reset_cause_marker} == 12345678 ; then
+	setexpr.l reset_cause *${a_reset_cause}
+	setenv bootargs $bootargs reset_cause=0x${reset_cause}
+fi
+
+if itest.s "x" != "x${overlayroot}" ; then
+	setenv bootargs ${bootargs} overlayroot=${overlayroot}
+fi
+
+if itest.s "x" != "x${cma}" ; then
+	setenv bootargs ${bootargs} cma=${cma}
+fi
+setenv bootargs ${bootargs} snd.slots=,snd-soc-imx-hdmi
+
+if itest.s "x" != "x${show_fdt}" ; then
+	fdt print /
+fi
+
+if itest.s "x" != "x${show_env}" ; then
+	printenv
+fi
+
+echo "----------- trying to load /initrd.img";
+if load ${devtype} ${devnum}:${distro_bootpart} ${a_initrd} ${img_prefix}initrd.img ; then
+	haverd=1;
+	setenv initrd_size ${filesize}
+else
+	haverd=
+fi
+
+if itest.s x${haverd} == x ; then
+	if load ${devtype} ${devnum}:${distro_bootpart} ${a_zImage} ${img_prefix}${kernelimage} ; then
+		setenv bootargs ${bootargs} rw
+		${bootcommand} ${a_zImage} - ${a_fdt}
+	fi
+else
+	if load ${devtype} ${devnum}:${distro_bootpart} ${a_zImage} ${img_prefix}${kernelimage} ; then
+		${bootcommand} ${a_zImage} ${a_initrd}:${initrd_size} ${a_fdt} ;
+	fi
+fi
+echo "Error loading kernel image"

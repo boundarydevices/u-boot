@@ -1,0 +1,75 @@
+# remove from environment so they won't override local values
+setenv upgraded_fs
+setenv a_base
+setenv imagefile
+
+upgraded_fs=0
+a_base=0x10200000
+
+if itest.s x51 == "x${imx_cpu}"; then
+	a_base=0x90200000
+elif itest.s x53 == "x${imx_cpu}"; then
+	a_base=0x70200000
+elif itest.s x6SX == "x${imx_cpu}" || itest.s x6ULL == "x${imx_cpu}" || itest.s x7D == "x${imx_cpu}"; then
+	a_base=0x80200000
+elif itest.s x8MQ == "x${imx_cpu}" || itest.s x8MM == "x${imx_cpu}" || itest.s x8MMQ == "x${imx_cpu}" || itest.s x8MNano == "x${imx_cpu}"; then
+	a_base=0x40200000
+fi
+
+if itest.s x != "x${upgrade_file}" ; then
+	imagefile=${upgrade_file}
+else
+	imagefile=trusty.img.gz
+fi
+
+echo "Trying to load ${imagefile} (about 5...10 minutes)"
+if itest.s x == "x${upgrade_device}" ; then
+	upgrade_device="mmc 1"
+fi
+ 
+setexpr i 0;
+setexpr offset 0;
+while test ${i} -le 99
+do
+	if tftp ${a_base} ${imagefile}.${i} ; then
+		echo "Extracting file ${imagefile}.${i} to ${upgrade_device}"
+		setexpr end ${a_base} + ${filesize}
+		setexpr end ${end} - 1
+		setexpr.b sz3 *${end} * 0x1000000
+		setexpr end ${end} - 1
+		setexpr.b sz2 *${end} * 0x10000
+		setexpr end ${end} - 1
+		setexpr.b sz1 *${end} * 0x100
+		setexpr end ${end} - 1
+		setexpr.b sz0 *${end}
+		setexpr sz ${sz3} + ${sz2}
+		setexpr sz ${sz} + ${sz1}
+		setexpr sz ${sz} + ${sz0}
+		if gzwrite ${upgrade_device} ${a_base} 0x${filesize} 0x100000 0x${offset} 0x${sz}; then
+			echo "Successfully wrote segment ${i} of ${sz} bytes"
+			setexpr i ${i} + 1;
+			setexpr rem ${i} % 0x10;
+			if test ${rem} -eq 0x0a ; then
+				#this is to show a decimal number when really hex is output
+				setexpr i ${i} + 6;
+			fi;
+			setexpr offset ${offset} + ${sz}
+		else
+			echo "Error writing segment ${i} of ${sz} bytes"
+			setexpr i ${i} + 1000;
+		fi
+	else
+		if test ${i} -eq 0 ; then
+			echo "image file not found or its too big to fit in the memory";
+			echo "expected file name : ${imagefile}.${i}";
+			echo "exiting..."
+			setexpr i ${i} + 1000;
+		else
+			upgraded_fs=1
+			echo "---- ${upgrade_device} upgraded"
+			echo ; echo
+			sleep 2
+			setexpr i ${i} + 1000;
+		fi
+	fi
+done

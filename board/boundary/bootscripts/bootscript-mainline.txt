@@ -1,0 +1,179 @@
+setenv bootargs ''
+
+setenv initrd_high 0xffffffff
+kernelimage=zImage
+bootcommand=bootz
+a_base=0x10000000
+if itest.s x51 == "x${imx_cpu}" ; then
+	a_base=0x90000000
+elif itest.s x53 == "x${imx_cpu}"; then
+	a_base=0x70000000
+elif itest.s x6SX == "x${imx_cpu}" || itest.s x6ULL == "x${imx_cpu}" || itest.s x7D == "x${imx_cpu}"; then
+	a_base=0x80000000
+elif itest.s x8MQ == "x${imx_cpu}" || itest.s x8MM == "x${imx_cpu}" || itest.s x8MMQ == "x${imx_cpu}" || itest.s x8MNano == "x${imx_cpu}"; then
+	a_base=0x40000000
+	kernelimage=Image
+	bootcommand=booti
+fi
+
+setexpr a_script  ${a_base} + 0x00800000
+setexpr a_zImage  ${a_base} + 0x00800000
+setexpr a_fdt     ${a_base} + 0x03000000
+setexpr a_ramdisk ${a_base} + 0x03800000
+setexpr a_initrd  ${a_base} + 0x03a00000
+setexpr a_reset_cause_marker ${a_base} + 0x80
+setexpr a_reset_cause	     ${a_base} + 0x84
+
+if itest.s "x" == "x${board}" ; then
+	echo "!!!! Error: Your u-boot is outdated. Please upgrade.";
+	exit;
+fi
+
+if itest.s "x" == "x${fdt_file}" ; then
+	if itest.s x6SOLO == "x${imx_cpu}" ; then
+		fdt_file=imx6dl-${board}.dtb;
+	elif itest.s x6DL == "x${imx_cpu}" ; then
+		fdt_file=imx6dl-${board}.dtb;
+	elif itest.s x6QP == "x${imx_cpu}" ; then
+		fdt_file=imx6qp-${board}.dtb;
+	elif itest.s x6SX == "x${imx_cpu}" ; then
+		fdt_file=imx6sx-${board}.dtb;
+	elif itest.s x6ULL == "x${imx_cpu}" ; then
+		fdt_file=imx6ull-${board}.dtb;
+	elif itest.s x7D == "x${imx_cpu}" ; then
+		fdt_file=imx7d-${board}.dtb;
+	elif itest.s x8MQ == "x${imx_cpu}" ; then
+		fdt_file=imx8mq-${board}.dtb;
+	elif itest.s x8MM == "x${imx_cpu}" ; then
+		fdt_file=imx8mm-${board}.dtb;
+	elif itest.s x8MMQ == "x${imx_cpu}" ; then
+		fdt_file=imx8mm-${board}.dtb;
+	elif itest.s x8MNano == "x${imx_cpu}" ; then
+		fdt_file=imx8mn-${board}.dtb;
+	elif itest.s x51 == "x${imx_cpu}" ; then
+		fdt_file=imx51-${board}.dtb;
+	elif itest.s x53 == "x${imx_cpu}" ; then
+		fdt_file=imx53-${board}.dtb;
+	else
+		fdt_file=imx6q-${board}.dtb;
+	fi
+fi
+
+if load ${devtype} ${devnum}:1 ${a_script} uEnv.txt ; then
+    env import -t ${a_script} ${filesize}
+fi
+
+if itest.s x${distro_bootpart} == x ; then
+	distro_bootpart=1
+fi
+
+if load ${devtype} ${devnum}:${distro_bootpart} ${a_fdt} ${prefix}${fdt_file} ; then
+	fdt addr ${a_fdt}
+	setenv fdt_high 0xffffffff
+else
+	echo "!!!! Error loading ${prefix}${fdt_file}";
+	exit;
+fi
+
+fdt resize 4096
+if itest.s "x" != "x${cmd_board}" ; then
+	run cmd_board
+fi
+if itest.s "x" != "x${cmd_custom}" ; then
+	run cmd_custom
+fi
+
+## HDMI ##
+if itest.s "xoff" == "x$fb_hdmi" ; then
+	setenv bootargs $bootargs video=HDMI-A-1:d
+else
+	if itest.s "x" != "x$force_edid" ; then
+		echo "------ forcing EDID to /lib/firmware/$force_edid"
+		setenv bootargs $bootargs drm_kms_helper.edid_firmware=$force_edid
+	fi
+fi
+
+## LVDS ##
+if itest.s "xoff" == "x$fb_lvds" ; then
+	setenv bootargs $bootargs video=LVDS-1:d
+elif itest.s "xhannstar7" == "x$fb_lvds" ; then
+	fdt set /panel-lvds0 compatible "hannstar,hsd070pww1"
+elif itest.s "xtm070jdhg30" == "x$fb_lvds" ; then
+	fdt set /panel-lvds0 compatible "tianma,tm070jdhg30"
+elif itest.s "xdt070btft" == "x$fb_lvds" ; then
+	fdt set /panel-lvds0 compatible "innolux,zj070na-01p"
+fi
+
+if itest.s "xoff" == "x$fb_lvds2" ; then
+	setenv bootargs $bootargs video=LVDS-2:d
+elif itest.s "xhannstar7" == "x$fb_lvds2" ; then
+	fdt set /panel-lvds1 compatible "hannstar,hsd070pww1"
+elif itest.s "xtm070jdhg30" == "x$fb_lvds2" ; then
+	fdt set /panel-lvds1 compatible "tianma,tm070jdhg30"
+elif itest.s "xdt070btft" == "x$fb_lvds2" ; then
+	fdt set /panel-lvds1 compatible "innolux,zj070na-01p"
+fi
+
+## LCD ##
+if itest.s "xoff" == "x$fb_lcd" ; then
+	setenv bootargs $bootargs video=VGA-1:d
+fi
+
+## MIPI DSI ##
+if itest.s "xoff" == "x$fb_mipi" ; then
+	setenv bootargs $bootargs video=DSI-1:d
+fi
+
+if itest.s x${rfspart} == x ; then
+	rfspart=2
+fi
+
+if itest.s "x" == "x${root}"; then
+	part uuid ${devtype} ${devnum}:${rfspart} uuid
+	if itest.s "x" != "x${uuid}"; then
+		root=PARTUUID=${uuid}
+	elif test "sata" = "${devtype}" || test "usb" = "${devtype}" ; then
+		root=/dev/sda${rfspart}
+	else
+		root=/dev/mmcblk${devnum}p${rfspart}
+	fi
+fi
+
+if itest.s "x" != "x$show_fdt" ; then
+	fdt print /
+fi
+
+if itest.s "x" != "x$show_env" ; then
+	printenv
+fi
+
+if itest.s x${console} != x ; then
+	setenv bootargs ${bootargs} console=${console},115200
+fi
+if itest.s "x" == "x$vmalloc" ; then
+	vmalloc=400M
+fi
+if itest.s x${consoleblank} == x ; then
+	consoleblank=0
+fi
+setenv bootargs ${bootargs} vmalloc=${vmalloc} consoleblank=${consoleblank} rootwait fixrtc cpu=${imx_cpu} board=${board} uboot_release=${uboot_release}
+
+if itest.s "x" == "x$cma" ; then
+	cma=256M
+fi
+setenv bootargs "${bootargs} cma=${cma} root=${root}"
+
+if itest.s "x" != "x${loglevel}" ; then
+	setenv bootargs ${bootargs} loglevel=${loglevel}
+fi
+
+if itest *${a_reset_cause_marker} == 12345678 ; then
+	setexpr.l reset_cause *${a_reset_cause}
+	setenv bootargs $bootargs reset_cause=0x${reset_cause}
+fi
+setenv bootargs ${bootargs} snd.slots=,snd-soc-imx-hdmi
+
+if load ${devtype} ${devnum}:${distro_bootpart} ${a_zImage} ${prefix}${kernelimage} ; then
+	${bootcommand} ${a_zImage} - ${a_fdt}
+fi
+echo "Error loading kernel image"

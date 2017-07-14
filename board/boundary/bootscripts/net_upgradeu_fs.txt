@@ -1,0 +1,37 @@
+# if upgrade_device is set in environment, it will override the value here
+# if net_upgrade_fs is set in environment, it will override the value here
+#
+# remove from environment so they won't override local values
+setenv a_script
+
+a_script=0x1000c000
+if itest.s x6SX == "x${imx_cpu}" || itest.s x6ULL == "x${imx_cpu}" || itest.s x7D == "x${imx_cpu}"; then
+	a_script=0x8000c000
+elif itest.s x8MQ == "x${imx_cpu}" || itest.s x8MM == "x${imx_cpu}" || itest.s x8MMQ == "x${imx_cpu}" || itest.s x8MNano == "x${imx_cpu}"; then
+	a_script=0x4000c000
+fi
+# uncomment below to force upgrade to eMMC,
+# regardless of where script was sourced.
+# devtype=mmc
+# devnum=1
+if itest.s "x${devtype}" == "x" ; then
+	# loading from network, default to eMMC
+	# may have to start script twice if loading from network
+	devtype=mmc
+	devnum=1
+fi
+run clearenv
+
+upgrade_device="${devtype} ${devnum}"
+net_upgrade_fs=net_upgrade_fs.scr;
+dhcp ${a_script} ${net_upgrade_fs} && source ${a_script}
+if itest.s "x${upgraded_fs}" == "x1" ; then
+	# file system has changed, load new bootscript
+	# and execute
+	${devtype} dev ${devnum}
+	load ${devtype} ${devnum}:${distro_bootpart} ${a_script} /boot.scr &&
+	source ${a_script}
+fi
+while echo "---- FS upgrade FAILED!!!" ; do
+	sleep 120
+done
