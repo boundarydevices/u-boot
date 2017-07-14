@@ -134,7 +134,7 @@ if itest.s "x" != "x${disable_giga}" ; then
 fi
 
 if itest.s "x" != "x${wlmac}" ; then
-	setenv bootargs ${bootargs} wlcore.mac=${wlmac}
+	setenv bootargs ${bootargs} wlan.mac=${wlmac} wlcore.mac=${wlmac}
 fi
 
 if itest.s "x" != "x${bd_addr}" ; then
