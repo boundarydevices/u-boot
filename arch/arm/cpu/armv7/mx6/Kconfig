@@ -321,6 +321,9 @@ config TARGET_MTP
 config TARGET_MX6_R
 	bool "mx6_r"
 
+config TARGET_NEOL
+	bool "neol"
+
 config TARGET_NIT6XLITE
 	bool "nit6xlite"
 
@@ -505,6 +508,7 @@ source "board/boundary/mcs/Kconfig"
 source "board/boundary/med/Kconfig"
 source "board/boundary/mtp/Kconfig"
 source "board/boundary/mx6_r/Kconfig"
+source "board/boundary/neol/Kconfig"
 source "board/boundary/nit6xlite/Kconfig"
 source "board/boundary/nitrogen6_max/Kconfig"
 source "board/boundary/nitrogen6_scm/Kconfig"
