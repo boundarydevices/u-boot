@@ -33,6 +33,7 @@
 #include <netdev.h>
 #include <splash.h>
 #include <usb/ehci-ci.h>
+#include "../padctrl.h"
 
 /* Special MXCFB sync flags are here. */
 #include "../drivers/video/mxcfb.h"
@@ -49,8 +50,6 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #define RGB_PAD_CTRL	PAD_CTL_DSE_120ohm
 
-#define OUTPUT_40OHM (PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm)
-
 #define SPI_PAD_CTRL (PAD_CTL_HYS |				\
 	PAD_CTL_PUS_100K_DOWN | PAD_CTL_SPEED_MED |		\
 	PAD_CTL_DSE_40ohm | PAD_CTL_SRE_FAST)
@@ -62,22 +61,6 @@ DECLARE_GLOBAL_DATA_PTR;
 #define USDHC_PAD_CTRL (PAD_CTL_PUS_47K_UP |			\
 	PAD_CTL_SPEED_LOW | PAD_CTL_DSE_40ohm |			\
 	PAD_CTL_SRE_FAST | PAD_CTL_HYS)
-
-#define WEAK_PULLDN	(PAD_CTL_PUS_100K_DOWN |		\
-	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm |			\
-	PAD_CTL_HYS | PAD_CTL_SRE_SLOW)
-
-#define WEAK_PULLDN_OUTPUT (PAD_CTL_PUS_100K_DOWN |		\
-	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm |			\
-	PAD_CTL_SRE_SLOW)
-
-#define WEAK_PULLUP	(PAD_CTL_PUS_100K_UP |			\
-	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm |			\
-	PAD_CTL_HYS | PAD_CTL_SRE_SLOW)
-
-#define WEAK_PULLUP_OUTPUT (PAD_CTL_PUS_100K_UP |		\
-	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm |			\
-	PAD_CTL_SRE_SLOW)
 
 static const iomux_v3_cfg_t init_pads[] = {
 	/* Audmux 3 */
@@ -351,6 +334,8 @@ static const iomux_v3_cfg_t init_pads[] = {
 	IOMUX_PAD_CTRL(NANDF_D6__GPIO2_IO06, WEAK_PULLUP),
 };
 
+#include "../eth.c"
+
 static struct i2c_pads_info i2c_pads[] = {
 	I2C_PADS_INFO_ENTRY(I2C1, EIM_D21, 3, 21, EIM_D28, 3, 28, I2C_PAD_CTRL),
 	I2C_PADS_INFO_ENTRY(I2C2, KEY_COL3, 4, 12, KEY_ROW3, 4, 13, I2C_PAD_CTRL),
@@ -436,17 +421,6 @@ int board_spi_cs_gpio(unsigned bus, unsigned cs)
 	return (bus == 0 && cs == 0) ? GP_ECSPI1_NOR_CS : -1;
 }
 #endif
-
-int board_eth_init(bd_t *bis)
-{
-#ifdef CONFIG_CI_UDC
-	/* For otg ethernet*/
-	if (!getenv("ethaddr"))
-		setenv("ethaddr", getenv("usbnet_devaddr"));
-	usb_eth_initialize(bis);
-#endif
-	return 0;
-}
 
 static const unsigned short gpios_out_low[] = {
 	GP_BT_RFKILL_RESET,
