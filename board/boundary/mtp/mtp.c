@@ -33,21 +33,17 @@
 #include <netdev.h>
 #include <splash.h>
 #include <usb/ehci-ci.h>
+#include "../padctrl.h"
 
 DECLARE_GLOBAL_DATA_PTR;
 
 #define BUTTON_PAD_CTRL	(PAD_CTL_PUS_100K_UP |			\
 	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm | PAD_CTL_HYS)
 
-#define ENET_PAD_CTRL	(PAD_CTL_PUS_100K_UP |			\
-	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm | PAD_CTL_HYS)
-
 /* PAD_CTL_DSE_80ohm is 50 Ohms at 3.3V */
 #define I2C_PAD_CTRL_3P3V (PAD_CTL_PUS_100K_UP |		\
 	PAD_CTL_SPEED_MED | PAD_CTL_DSE_80ohm | PAD_CTL_HYS |	\
 	PAD_CTL_ODE | PAD_CTL_SRE_FAST)
-
-#define OUTPUT_40OHM	(PAD_CTL_SPEED_MED|PAD_CTL_DSE_40ohm)
 
 #define SPI_PAD_CTRL	(PAD_CTL_HYS | PAD_CTL_SPEED_MED |	\
 	PAD_CTL_DSE_40ohm | PAD_CTL_SRE_FAST)
@@ -63,14 +59,6 @@ DECLARE_GLOBAL_DATA_PTR;
 #define USDHC_PAD_CTRL	(PAD_CTL_PUS_47K_UP |			\
 	PAD_CTL_SPEED_LOW | PAD_CTL_DSE_80ohm |			\
 	PAD_CTL_HYS | PAD_CTL_SRE_FAST)
-
-#define WEAK_PULLDN	(PAD_CTL_PUS_100K_DOWN |		\
-	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm |			\
-	PAD_CTL_HYS | PAD_CTL_SRE_SLOW)
-
-#define WEAK_PULLUP	(PAD_CTL_PUS_100K_UP |			\
-	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm |			\
-	PAD_CTL_HYS | PAD_CTL_SRE_SLOW)
 
 static const iomux_v3_cfg_t init_pads[] = {
 	/* bt_rfkill */
@@ -164,9 +152,8 @@ static const iomux_v3_cfg_t init_pads[] = {
 	IOMUX_PAD_CTRL(NANDF_CS1__GPIO6_IO14, WEAK_PULLDN),
 };
 
-/*
- *
- */
+#include "../eth.c"
+
 static struct i2c_pads_info i2c_pads[] = {
 	/* I2C1, SGTL5000 */
 	I2C_PADS_INFO_ENTRY(I2C1, EIM_D21, 3, 21, EIM_D28, 3, 28, I2C_PAD_CTRL_3P3V),
@@ -255,17 +242,6 @@ int board_mmc_init(bd_t *bis)
 int board_spi_cs_gpio(unsigned bus, unsigned cs)
 {
 	return (bus == 0 && cs == 0) ? GP_ECSPI1_NOR_CS : -1;
-}
-
-int board_eth_init(bd_t *bis)
-{
-#ifdef CONFIG_CI_UDC
-	/* For otg ethernet*/
-	if (!getenv("ethaddr"))
-		setenv("ethaddr", getenv("usbnet_devaddr"));
-	usb_eth_initialize(bis);
-#endif
-	return 0;
 }
 
 static const unsigned short gpios_out_low[] = {
