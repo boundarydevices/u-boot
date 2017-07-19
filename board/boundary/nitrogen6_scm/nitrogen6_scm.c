@@ -26,22 +26,11 @@
 #include <netdev.h>
 #include <usb.h>
 #include <usb/ehci-ci.h>
+#include "../padctrl.h"
 
 DECLARE_GLOBAL_DATA_PTR;
 
 #define CSI_PAD_CTL	PAD_CTL_DSE_120ohm
-
-#define ENET_PAD_CTRL  (PAD_CTL_PUS_100K_DOWN | PAD_CTL_SPEED_HIGH | \
-	PAD_CTL_DSE_48ohm | PAD_CTL_SRE_FAST)
-
-#define ENET_CLK_PAD_CTRL  (PAD_CTL_SPEED_MED | \
-	PAD_CTL_DSE_120ohm   | PAD_CTL_SRE_FAST)
-
-#define ENET_RXD_DN_PAD_CTRL  (PAD_CTL_PUS_100K_DOWN | PAD_CTL_SPEED_HIGH | \
-	PAD_CTL_DSE_48ohm | PAD_CTL_SRE_FAST)
-
-#define ENET_RXD_UP_PAD_CTRL  (PAD_CTL_PUS_100K_UP | PAD_CTL_SPEED_HIGH | \
-	PAD_CTL_DSE_48ohm | PAD_CTL_SRE_FAST)
 
 #define ESAI_PAD_CTRL  (PAD_CTL_PUS_100K_UP | PAD_CTL_SPEED_LOW | \
 	PAD_CTL_DSE_40ohm | PAD_CTL_HYS | PAD_CTL_SRE_FAST)
@@ -50,8 +39,6 @@ DECLARE_GLOBAL_DATA_PTR;
 	PAD_CTL_DSE_40ohm | PAD_CTL_HYS | PAD_CTL_ODE)
 
 #define LCDIF_PAD_CTL	PAD_CTL_DSE_120ohm
-
-#define OUTPUT_40OHM (PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm)
 
 #define SPI_PAD_CTRL (PAD_CTL_HYS | PAD_CTL_SPEED_MED |		\
 	PAD_CTL_DSE_40ohm | PAD_CTL_SRE_FAST)
@@ -70,18 +57,6 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #define USDHC2_CLK_PAD_CTRL (PAD_CTL_SPEED_LOW | \
 	PAD_CTL_DSE_80ohm | PAD_CTL_HYS | PAD_CTL_SRE_FAST)
-
-#define WEAK_PULLDN	(PAD_CTL_PUS_100K_DOWN | PAD_CTL_SPEED_MED | \
-	PAD_CTL_DSE_40ohm | PAD_CTL_HYS | PAD_CTL_SRE_SLOW)
-
-#define WEAK_PULLDN_OUTPUT (PAD_CTL_PUS_100K_DOWN | PAD_CTL_SPEED_MED | \
-	PAD_CTL_DSE_40ohm | PAD_CTL_SRE_SLOW)
-
-#define WEAK_PULLUP	(PAD_CTL_PUS_100K_UP | PAD_CTL_SPEED_MED | \
-	PAD_CTL_DSE_40ohm | PAD_CTL_HYS | PAD_CTL_SRE_SLOW)
-
-#define WEAK_PULLUP_OUTPUT (PAD_CTL_PUS_100K_UP | PAD_CTL_SPEED_MED | \
-	PAD_CTL_DSE_40ohm | PAD_CTL_SRE_SLOW)
 
 static const iomux_v3_cfg_t init_pads[] = {
 	/* bt_rfkill */
@@ -296,6 +271,8 @@ static const iomux_v3_cfg_t rgb_gpio_pads[] = {
 	IOMUX_PAD_CTRL(LCD1_DATA23__GPIO3_IO_24, LCDIF_PAD_CTL),
 };
 
+#include "../eth.c"
+
 static struct i2c_pads_info i2c_pads[] = {
 	I2C_PADS_INFO_ENTRY(I2C2, GPIO1_IO02, 1, 2, GPIO1_IO03, 1, 3, I2C_PAD_CTRL),	/* PMIC */
 	I2C_PADS_INFO_ENTRY(I2C3, ENET2_RX_CLK, 2, 8, ENET2_TX_CLK, 2, 9, I2C_PAD_CTRL), /* J4 touch */
@@ -305,18 +282,6 @@ static struct i2c_pads_info i2c_pads[] = {
 int dram_init(void)
 {
 	gd->ram_size = ((ulong)CONFIG_DDR_MB * 1024 * 1024);
-	return 0;
-}
-
-
-int board_eth_init(bd_t *bis)
-{
-#ifdef CONFIG_CI_UDC
-	/* For otg ethernet*/
-	if (!getenv("eth1addr"))
-		setenv("eth1addr", getenv("usbnet_devaddr"));
-	usb_eth_initialize(bis);
-#endif
 	return 0;
 }
 
