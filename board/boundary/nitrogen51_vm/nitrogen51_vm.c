@@ -33,6 +33,7 @@
 #include <fsl_pmic.h>
 #include <mc13892.h>
 #include <usb/ehci-ci.h>
+#include "../padctrl.h"
 
 /* Special MXCFB sync flags are here. */
 #include "../drivers/video/mxcfb.h"
@@ -58,9 +59,6 @@ DECLARE_GLOBAL_DATA_PTR;
 #define ESDHC_PAD_CTRL	(PAD_CTL_DSE_HIGH | PAD_CTL_DVS | \
 			PAD_CTL_PUS_47K_UP | PAD_CTL_SRE_FAST)
 
-#define ENET_PAD_CTRL	(PAD_CTL_PUS_100K_UP |			\
-	PAD_CTL_DSE_MED | PAD_CTL_HYS)
-
 #define HIGH_Z_SLOW	(PAD_CTL_HYS|PAD_CTL_SPEED_LOW | PAD_CTL_DSE_DISABLE)
 
 #define I2C_PAD_CTRL	(PAD_CTL_PUS_100K_UP |			\
@@ -71,8 +69,6 @@ DECLARE_GLOBAL_DATA_PTR;
 	PAD_CTL_DSE_HIGH | PAD_CTL_HYS |	\
 	PAD_CTL_ODE | PAD_CTL_SRE_FAST)
 
-#define OUTPUT_40OHM	(PAD_CTL_DSE_MED)
-
 #define RGB_PAD_CTRL	(PAD_CTL_DSE_MED | PAD_CTL_SRE_FAST)
 
 #define SPI_PAD_CTRL	(PAD_CTL_HYS | PAD_CTL_DSE_MED | PAD_CTL_SRE_FAST)
@@ -80,22 +76,6 @@ DECLARE_GLOBAL_DATA_PTR;
 #define UART_PAD_CTRL	(PAD_CTL_PUS_100K_UP |			\
 	PAD_CTL_DSE_MED |			\
 	PAD_CTL_HYS | PAD_CTL_SRE_FAST)
-
-#define WEAK_PULLDN	(PAD_CTL_PUS_100K_DOWN |		\
-	PAD_CTL_DSE_MED |			\
-	PAD_CTL_HYS | PAD_CTL_SRE_SLOW)
-
-#define WEAK_PULLDN_OUTPUT (PAD_CTL_PUS_100K_DOWN |		\
-	PAD_CTL_DSE_MED |			\
-	PAD_CTL_SRE_SLOW)
-
-#define WEAK_PULLUP	(PAD_CTL_PUS_100K_UP |			\
-	PAD_CTL_DSE_MED |			\
-	PAD_CTL_HYS | PAD_CTL_SRE_SLOW)
-
-#define WEAK_PULLUP_OUTPUT (PAD_CTL_PUS_100K_UP |		\
-	PAD_CTL_DSE_MED |			\
-	PAD_CTL_SRE_SLOW)
 
 /*
  *
@@ -314,9 +294,9 @@ static const iomux_v3_cfg_t usbotg_power_off_pads[] = {
 	IOMUX_PAD_CTRL(EIM_D26__KEY_COL7, WEAK_PULLUP_OUTPUT),		/* high is off */
 };
 
-/*
- *
- */
+#define ETH_PHY_MASK	(0xf << 4)
+#include "../eth.c"
+
 static struct i2c_pads_info i2c_pads[] = {
 	/* I2C1, SGTL5000 */
 	I2C_PADS_INFO_ENTRY(I2C1, EIM_D19, 2, 3, EIM_D16, 2, 0, I2C_PAD_CTRL),
@@ -524,41 +504,6 @@ int board_spi_cs_gpio(unsigned bus, unsigned cs)
 	return -1;
 }
 #endif
-
-
-int board_eth_init(bd_t *bis)
-{
-	uint32_t base = IMX_FEC_BASE;
-	struct mii_dev *bus = NULL;
-	struct phy_device *phydev = NULL;
-	int ret;
-
-#ifdef CONFIG_FEC_MXC
-	bus = fec_get_miibus(base, -1);
-	if (!bus)
-		return 0;
-	/* scan phy 4,5,6,7 */
-	phydev = phy_find_by_mask(bus, (0xf << 4), PHY_INTERFACE_MODE_RGMII);
-	if (!phydev) {
-		free(bus);
-		return 0;
-	}
-	printf("using phy at %d\n", phydev->addr);
-	ret  = fec_probe(bis, -1, base, bus, phydev);
-	if (ret) {
-		printf("FEC MXC: %s:failed\n", __func__);
-		free(phydev);
-		free(bus);
-	}
-#endif
-#ifdef CONFIG_CI_UDC
-	/* For otg ethernet*/
-	if (!getenv("eth1addr"))
-		setenv("eth1addr", getenv("usbnet_devaddr"));
-	usb_eth_initialize(bis);
-#endif
-	return 0;
-}
 
 #ifdef CONFIG_CMD_FBPANEL
 void board_enable_lcd(const struct display_info_t *di, int enable)
