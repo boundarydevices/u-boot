@@ -1,0 +1,7 @@
+NEOL BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/neol/
+F:	include/configs/neol.h
+F:	configs/neol_q2g_defconfig
+
