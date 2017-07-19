@@ -6,4 +6,4 @@
 # SPDX-License-Identifier:	GPL-2.0+
 #
 
-obj-y  := bt.o
+obj-y  := bt2.o
