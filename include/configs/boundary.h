@@ -109,7 +109,11 @@
 #define IMX_FEC_BASE			ENET_BASE_ADDR
 #endif
 #define CONFIG_FEC_XCV_TYPE		RGMII
+#ifdef CONFIG_RGMII2
+#define CONFIG_ETHPRIME			"FEC0"
+#else
 #define CONFIG_ETHPRIME			"FEC"
+#endif
 #endif
 
 
