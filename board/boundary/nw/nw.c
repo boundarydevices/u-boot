@@ -31,14 +31,13 @@
 #include <netdev.h>
 #include <splash.h>
 #include <usb/ehci-ci.h>
+#include "../padctrl.h"
 
 DECLARE_GLOBAL_DATA_PTR;
 
 #define I2C_PAD_CTRL	(PAD_CTL_PUS_100K_UP |			\
 	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm | PAD_CTL_HYS |	\
 	PAD_CTL_ODE | PAD_CTL_SRE_FAST)
-
-#define OUTPUT_40OHM	(PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm)
 
 #define SPI_PAD_CTRL	(PAD_CTL_HYS | PAD_CTL_SPEED_MED |	\
 	PAD_CTL_DSE_40ohm | PAD_CTL_SRE_FAST)
@@ -50,14 +49,6 @@ DECLARE_GLOBAL_DATA_PTR;
 #define USDHC_PAD_CTRL	(PAD_CTL_PUS_47K_UP |			\
 	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm |			\
 	PAD_CTL_SRE_FAST  | PAD_CTL_HYS)
-
-#define WEAK_PULLDN	(PAD_CTL_PUS_100K_DOWN |		\
-	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm |			\
-	PAD_CTL_HYS | PAD_CTL_SRE_SLOW)
-
-#define WEAK_PULLUP	(PAD_CTL_PUS_100K_UP |			\
-	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm |			\
-	PAD_CTL_HYS | PAD_CTL_SRE_SLOW)
 
 /*
  *
@@ -158,9 +149,8 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IOMUX_PAD_CTRL(NANDF_WP_B__GPIO6_IO09, WEAK_PULLUP),
 };
 
-/*
- *
- */
+#include "../eth.c"
+
 static struct i2c_pads_info i2c_pads[] = {
 	/* I2C1, RTC */
 	I2C_PADS_INFO_ENTRY(I2C1, EIM_D21, 3, 21, EIM_D28, 3, 28, I2C_PAD_CTRL),
@@ -240,17 +230,6 @@ static void setup_spi(void)
 	gpio_direction_output(CONFIG_SF_DEFAULT_CS, 1);
 }
 #endif
-
-int board_eth_init(bd_t *bis)
-{
-#ifdef CONFIG_CI_UDC
-	/* For otg ethernet*/
-	if (!getenv("eth1addr"))
-		setenv("eth1addr", getenv("usbnet_devaddr"));
-	usb_eth_initialize(bis);
-#endif
-	return 0;
-}
 
 int splash_screen_prepare(void)
 {
