@@ -35,6 +35,7 @@
 #include <netdev.h>
 #include <splash.h>
 #include <usb/ehci-ci.h>
+#include "../padctrl.h"
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -56,7 +57,6 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #define OTGID_PAD_CTRL		USDHC_PAD_CTRL_50MHZ
 #define HDMICEC_PAD_CTRL	(PADCFG_INPUT_UP | PAD_CTL_ODE | PAD_CTL_SRE_SLOW)
-#define ENET_PAD_CTRL		PADCFG_INPUT_UP
 
 #define SPI_PAD_CTRL (PAD_CTL_HYS | PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm | \
 		PAD_CTL_SRE_FAST)
@@ -68,17 +68,6 @@ DECLARE_GLOBAL_DATA_PTR;
 	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm | PAD_CTL_HYS |	\
 	PAD_CTL_ODE | PAD_CTL_SRE_FAST)
 
-#define WEAK_PULLDN	(PAD_CTL_PUS_100K_DOWN |		\
-	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm |			\
-	PAD_CTL_HYS | PAD_CTL_SRE_SLOW)
-
-#define WEAK_PULLUP	(PAD_CTL_PUS_100K_UP |			\
-	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm |			\
-	PAD_CTL_HYS | PAD_CTL_SRE_SLOW)
-
-#define OUTPUT_40OHM (PAD_CTL_SPEED_MED|PAD_CTL_DSE_40ohm)
-#define OUTPUT_40OHM_UP	(OUTPUT_40OHM | PAD_CTL_PUS_100K_UP)
-#define OUTPUT_40OHM_DN	(OUTPUT_40OHM | PAD_CTL_PUS_100K_DOWN)
 #define SPDIF_PAD_CTRL	WEAK_PULLUP
 
 /*
@@ -229,27 +218,27 @@ static const iomux_v3_cfg_t init_pads[] = {
 	IOMUX_PAD_CTRL(EIM_CS1__ECSPI2_MOSI, SPI_PAD_CTRL),
 	IOMUX_PAD_CTRL(EIM_CS0__ECSPI2_SCLK, SPI_PAD_CTRL),
 #define GP_ECSPI2_GS2971_CS	IMX_GPIO_NR(2, 26)
-	IOMUX_PAD_CTRL(EIM_RW__GPIO2_IO26, OUTPUT_40OHM_UP),
+	IOMUX_PAD_CTRL(EIM_RW__GPIO2_IO26, WEAK_PULLUP_OUTPUT),
 
 	/* ECSPI3 - WM5102 */
 	IOMUX_PAD_CTRL(DISP0_DAT2__ECSPI3_MISO, SPI_PAD_CTRL),
 	IOMUX_PAD_CTRL(DISP0_DAT1__ECSPI3_MOSI, SPI_PAD_CTRL),
 	IOMUX_PAD_CTRL(DISP0_DAT0__ECSPI3_SCLK, SPI_PAD_CTRL),
 #define GP_ECSPI3_WM5102_CS	IMX_GPIO_NR(4, 25)
-	IOMUX_PAD_CTRL(DISP0_DAT4__GPIO4_IO25, OUTPUT_40OHM_UP),
+	IOMUX_PAD_CTRL(DISP0_DAT4__GPIO4_IO25, WEAK_PULLUP_OUTPUT),
 
 	/* ENET pads that don't change for PHY reset */
-	IOMUX_PAD_CTRL(ENET_MDIO__ENET_MDIO, ENET_PAD_CTRL),
-	IOMUX_PAD_CTRL(ENET_MDC__ENET_MDC, ENET_PAD_CTRL),
-	IOMUX_PAD_CTRL(RGMII_TXC__RGMII_TXC, ENET_PAD_CTRL),
-	IOMUX_PAD_CTRL(RGMII_TD0__RGMII_TD0, ENET_PAD_CTRL),
-	IOMUX_PAD_CTRL(RGMII_TD1__RGMII_TD1, ENET_PAD_CTRL),
-	IOMUX_PAD_CTRL(RGMII_TD2__RGMII_TD2, ENET_PAD_CTRL),
-	IOMUX_PAD_CTRL(RGMII_TD3__RGMII_TD3, ENET_PAD_CTRL),
-	IOMUX_PAD_CTRL(RGMII_TX_CTL__RGMII_TX_CTL, ENET_PAD_CTRL),
-	IOMUX_PAD_CTRL(ENET_REF_CLK__ENET_TX_CLK, ENET_PAD_CTRL),
+	IOMUX_PAD_CTRL(ENET_MDIO__ENET_MDIO, PAD_CTRL_ENET_MDIO),
+	IOMUX_PAD_CTRL(ENET_MDC__ENET_MDC, PAD_CTRL_ENET_MDIO),
+	IOMUX_PAD_CTRL(RGMII_TXC__RGMII_TXC, PAD_CTRL_ENET_TX),
+	IOMUX_PAD_CTRL(RGMII_TD0__RGMII_TD0, PAD_CTRL_ENET_TX),
+	IOMUX_PAD_CTRL(RGMII_TD1__RGMII_TD1, PAD_CTRL_ENET_TX),
+	IOMUX_PAD_CTRL(RGMII_TD2__RGMII_TD2, PAD_CTRL_ENET_TX),
+	IOMUX_PAD_CTRL(RGMII_TD3__RGMII_TD3, PAD_CTRL_ENET_TX),
+	IOMUX_PAD_CTRL(RGMII_TX_CTL__RGMII_TX_CTL, PAD_CTRL_ENET_TX),
+	IOMUX_PAD_CTRL(ENET_REF_CLK__ENET_TX_CLK, PAD_CTRL_ENET_TX),
 	/* pin 42 PHY nRST */
-#define GP_ENET_PHY_RESET	IMX_GPIO_NR(1, 27)
+#define GP_RGMII_PHY_RESET	IMX_GPIO_NR(1, 27)
 	IOMUX_PAD_CTRL(ENET_RXD0__GPIO1_IO27, OUTPUT_40OHM),	/* Micrel RGMII Phy Reset */
 #define GP_ENET_PHY_INT		IMX_GPIO_NR(1, 28)
 	IOMUX_PAD_CTRL(ENET_TX_EN__GPIO1_IO28, WEAK_PULLUP),	/* Micrel RGMII Phy Interrupt */
@@ -262,23 +251,23 @@ static const iomux_v3_cfg_t init_pads[] = {
 
 	/* Hogs */
 #define GP_ANX7738_RESET	IMX_GPIO_NR(2, 0)
-	IOMUX_PAD_CTRL(NANDF_D0__GPIO2_IO00, OUTPUT_40OHM_DN),
+	IOMUX_PAD_CTRL(NANDF_D0__GPIO2_IO00, WEAK_PULLDN_OUTPUT),
 
 	/* i2c1 mux enables */
 #define GP_I2C1_MUX_KL04	IMX_GPIO_NR(5, 27)
-	IOMUX_PAD_CTRL(CSI0_DAT9__GPIO5_IO27, OUTPUT_40OHM_DN),
+	IOMUX_PAD_CTRL(CSI0_DAT9__GPIO5_IO27, WEAK_PULLDN_OUTPUT),
 #define GP_I2C1_MUX_ANX7814	IMX_GPIO_NR(1, 10)
-	IOMUX_PAD_CTRL(SD2_CLK__GPIO1_IO10, OUTPUT_40OHM_DN),
+	IOMUX_PAD_CTRL(SD2_CLK__GPIO1_IO10, WEAK_PULLDN_OUTPUT),
 #define GP_I2C1_MUX_AX7738	IMX_GPIO_NR(2, 1)
-	IOMUX_PAD_CTRL(NANDF_D1__GPIO2_IO01, OUTPUT_40OHM_DN),
+	IOMUX_PAD_CTRL(NANDF_D1__GPIO2_IO01, WEAK_PULLDN_OUTPUT),
 #define GP_I2C1_MUX_TC3587	IMX_GPIO_NR(6, 16)
-	IOMUX_PAD_CTRL(NANDF_CS3__GPIO6_IO16, OUTPUT_40OHM_DN),
+	IOMUX_PAD_CTRL(NANDF_CS3__GPIO6_IO16, WEAK_PULLDN_OUTPUT),
 
 	/* i2c1 anx7814 - hdmi to mydp transmitter */
 #define GP_ANX7814_P_DWN       IMX_GPIO_NR(1, 13)
-	IOMUX_PAD_CTRL(SD2_DAT2__GPIO1_IO13, OUTPUT_40OHM_UP),
+	IOMUX_PAD_CTRL(SD2_DAT2__GPIO1_IO13, WEAK_PULLUP_OUTPUT),
 #define GP_ANX7814_RESET       IMX_GPIO_NR(2, 5)
-	IOMUX_PAD_CTRL(NANDF_D5__GPIO2_IO05, OUTPUT_40OHM_DN),
+	IOMUX_PAD_CTRL(NANDF_D5__GPIO2_IO05, WEAK_PULLDN_OUTPUT),
 #define GP_ANX7814_CBL_DET     IMX_GPIO_NR(2, 3)
 	IOMUX_PAD_CTRL(NANDF_D3__GPIO2_IO03, WEAK_PULLDN),
 #define GP_ANX7814_HDMI_INTR   IMX_GPIO_NR(1, 14)
@@ -286,7 +275,7 @@ static const iomux_v3_cfg_t init_pads[] = {
 
 	/* i2c2 mux enables */
 #define GP_I2C2_MUX_ANX7814_DDC	 IMX_GPIO_NR(1, 15)
-	IOMUX_PAD_CTRL(SD2_DAT0__GPIO1_IO15, OUTPUT_40OHM_DN),
+	IOMUX_PAD_CTRL(SD2_DAT0__GPIO1_IO15, WEAK_PULLDN_OUTPUT),
 
 	/* PCIe */
 #define GP_PCIE_RESET		IMX_GPIO_NR(5, 2)
@@ -386,39 +375,8 @@ static const iomux_v3_cfg_t init_pads[] = {
 	IOMUX_PAD_CTRL(DISP0_DAT22__GPIO5_IO16, WEAK_PULLUP),
 };
 
-static const iomux_v3_cfg_t enet_pads1[] = {
-	/* pin 35 - 1 (PHY_AD2) on reset */
-#define GP_PHY_AD2		IMX_GPIO_NR(6, 30)
-	IOMUX_PAD_CTRL(RGMII_RXC__GPIO6_IO30, OUTPUT_40OHM),
-	/* pin 32 - 1 - (MODE0) all */
-#define GP_PHY_MODE0		IMX_GPIO_NR(6, 25)
-	IOMUX_PAD_CTRL(RGMII_RD0__GPIO6_IO25, OUTPUT_40OHM),
-	/* pin 31 - 1 - (MODE1) all */
-#define GP_PHY_MODE1		IMX_GPIO_NR(6, 27)
-	IOMUX_PAD_CTRL(RGMII_RD1__GPIO6_IO27, OUTPUT_40OHM),
-	/* pin 28 - 1 - (MODE2) all */
-#define GP_PHY_MODE2		IMX_GPIO_NR(6, 28)
-	IOMUX_PAD_CTRL(RGMII_RD2__GPIO6_IO28, OUTPUT_40OHM),
-	/* pin 27 - 1 - (MODE3) all */
-#define GP_PHY_MODE3		IMX_GPIO_NR(6, 29)
-	IOMUX_PAD_CTRL(RGMII_RD3__GPIO6_IO29, OUTPUT_40OHM),
-	/* pin 33 - 1 - (CLK125_EN) 125Mhz clockout enabled */
-#define GP_PHY_CLK125		IMX_GPIO_NR(6, 24)
-	IOMUX_PAD_CTRL(RGMII_RX_CTL__GPIO6_IO24, OUTPUT_40OHM),
-};
+#include "../eth.c"
 
-static const iomux_v3_cfg_t enet_pads2[] = {
-	IOMUX_PAD_CTRL(RGMII_RXC__RGMII_RXC, ENET_PAD_CTRL),
-	IOMUX_PAD_CTRL(RGMII_RD0__RGMII_RD0, ENET_PAD_CTRL),
-	IOMUX_PAD_CTRL(RGMII_RD1__RGMII_RD1, ENET_PAD_CTRL),
-	IOMUX_PAD_CTRL(RGMII_RD2__RGMII_RD2, ENET_PAD_CTRL),
-	IOMUX_PAD_CTRL(RGMII_RD3__RGMII_RD3, ENET_PAD_CTRL),
-	IOMUX_PAD_CTRL(RGMII_RX_CTL__RGMII_RX_CTL, ENET_PAD_CTRL),
-};
-
-/*
- *
- */
 static struct i2c_pads_info i2c_pads[] = {
 	/* I2C1, SGTL5000 */
 	I2C_PADS_INFO_ENTRY(I2C1, EIM_D21, 3, 21, EIM_D28, 3, 28, I2C_PAD_CTRL),
@@ -499,80 +457,6 @@ int board_spi_cs_gpio(unsigned bus, unsigned cs)
 	return (bus == 0 && cs == 0) ? GP_ECSPI1_NOR_CS : -1;
 }
 
-int board_phy_config(struct phy_device *phydev)
-{
-	/* min rx data delay */
-	ksz9021_phy_extended_write(phydev,
-			MII_KSZ9021_EXT_RGMII_RX_DATA_SKEW, 0x0);
-	/* min tx data delay */
-	ksz9021_phy_extended_write(phydev,
-			MII_KSZ9021_EXT_RGMII_TX_DATA_SKEW, 0x0);
-	/* max rx/tx clock delay, min rx/tx control */
-	ksz9021_phy_extended_write(phydev,
-			MII_KSZ9021_EXT_RGMII_CLOCK_SKEW, 0xf0f0);
-	if (phydev->drv->config)
-		phydev->drv->config(phydev);
-
-	return 0;
-}
-
-static void setup_iomux_enet(void)
-{
-	gpio_direction_output(GP_ENET_PHY_RESET, 0);
-	gpio_direction_output(GP_PHY_AD2, 1);
-	gpio_direction_output(GP_PHY_MODE0, 1);
-	gpio_direction_output(GP_PHY_MODE1, 1);
-	gpio_direction_output(GP_PHY_MODE2, 1);
-	gpio_direction_output(GP_PHY_MODE3, 1);
-	gpio_direction_output(GP_PHY_CLK125, 1);
-	SETUP_IOMUX_PADS(enet_pads1);
-
-	/* Need delay 10ms according to KSZ9021 spec */
-	udelay(1000 * 10);
-	gpio_set_value(GP_ENET_PHY_RESET, 1);
-
-	SETUP_IOMUX_PADS(enet_pads2);
-	udelay(100);	/* Wait 100 us before using mii interface */
-}
-
-int board_eth_init(bd_t *bis)
-{
-	uint32_t base = IMX_FEC_BASE;
-	struct mii_dev *bus = NULL;
-	struct phy_device *phydev = NULL;
-	int ret;
-
-	setup_iomux_enet();
-
-#ifdef CONFIG_FEC_MXC
-	bus = fec_get_miibus(base, -1);
-	if (!bus)
-		return 0;
-	/* scan phy 4,5,6,7 */
-	phydev = phy_find_by_mask(bus, (0xf << 4), PHY_INTERFACE_MODE_RGMII);
-	if (!phydev) {
-		free(bus);
-		return 0;
-	}
-	printf("using phy at %d\n", phydev->addr);
-	ret  = fec_probe(bis, -1, base, bus, phydev);
-	if (ret) {
-		printf("FEC MXC: %s:failed\n", __func__);
-		free(phydev);
-		free(bus);
-	}
-#endif
-
-#ifdef CONFIG_CI_UDC
-	/* For otg ethernet*/
-	if (!getenv("eth1addr"))
-		setenv("eth1addr", getenv("usbnet_devaddr"));
-	usb_eth_initialize(bis);
-#endif
-	return 0;
-}
-
-
 int splash_screen_prepare(void)
 {
 	char *env_loadsplash;
@@ -619,7 +503,7 @@ static const unsigned short gpios_out_low[] = {
 	GP_USB_OTG_PWR,		/* disable USB otg power */
 	GP_USB_HUB_RESET,	/* disable hub */
 	GP_J6_POWER_EN,
-	GP_ENET_PHY_RESET,
+	GP_RGMII_PHY_RESET,
 	GP_PCIE_RADIO_ON,
 	GP_PCIE_RESET,
 	GP_GS2971_RESET,
