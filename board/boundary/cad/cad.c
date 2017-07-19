@@ -31,14 +31,13 @@
 #include <usb/ehci-ci.h>
 #include <netdev.h>
 #include "spi_display.h"
+#include "../padctrl.h"
 
 DECLARE_GLOBAL_DATA_PTR;
 
 #define I2C_PAD_CTRL	(PAD_CTL_PUS_100K_UP |			\
 	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm | PAD_CTL_HYS |	\
 	PAD_CTL_ODE | PAD_CTL_SRE_FAST)
-
-#define OUTPUT_40OHM	(PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm)
 
 #define RGB_PAD_CTRL	PAD_CTL_DSE_120ohm
 
@@ -64,14 +63,6 @@ DECLARE_GLOBAL_DATA_PTR;
 #define USDHC4_PAD_CTRL	(PAD_CTL_PUS_47K_UP |			\
 	PAD_CTL_SPEED_LOW | PAD_CTL_DSE_40ohm |			\
 	PAD_CTL_SRE_FAST  | PAD_CTL_HYS)
-
-#define WEAK_PULLDN	(PAD_CTL_PUS_100K_DOWN |		\
-	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm |			\
-	PAD_CTL_HYS | PAD_CTL_SRE_SLOW)
-
-#define WEAK_PULLUP	(PAD_CTL_PUS_100K_UP |			\
-	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm |			\
-	PAD_CTL_HYS | PAD_CTL_SRE_SLOW)
 
 /*
  *
@@ -203,9 +194,9 @@ static const iomux_v3_cfg_t rgb_gpio_pads[] = {
 	IOMUX_PAD_CTRL(DISP0_DAT22__GPIO5_IO16, WEAK_PULLUP),
 	IOMUX_PAD_CTRL(DISP0_DAT23__GPIO5_IO17, WEAK_PULLUP),
 };
-/*
- *
- */
+
+#include "../eth.c"
+
 static struct i2c_pads_info i2c_pads[] = {
 	/* I2C1, SGTL5000, RTC */
 	I2C_PADS_INFO_ENTRY(I2C1, EIM_D21, 3, 21, EIM_D28, 3, 28, I2C_PAD_CTRL),
@@ -296,17 +287,6 @@ void board_enable_lcd(const struct display_info_t *di, int enable)
 static const struct display_info_t displays[] = {
 	VDF_SPI_QVGA(LCD, "qvga", RGB24, FBF_MODESTR | FBF_SPI, NULL, 1, 0x70)
 };
-
-int board_eth_init(bd_t *bis)
-{
-	/* For otg ethernet*/
-	if (!getenv("eth1addr"))
-		setenv("eth1addr", getenv("usbnet_devaddr"));
-	usb_eth_initialize(bis);
-	mdelay(23);	/* Wait 14 frames for display to come on,  20 is too low*/
-	gpio_set_value(GP_BACKLIGHT_RGB, 1);
-	return 0;
-}
 
 static const unsigned short gpios_out_low[] = {
 	GP_BACKLIGHT_RGB,
