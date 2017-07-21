@@ -2,6 +2,7 @@
 /*
  * Copyright (C) 2014 Gateworks Corporation
  * Copyright (C) 2011-2012 Freescale Semiconductor, Inc.
+ * Copyright 2017 NXP
  *
  * Author: Tim Harvey <tharvey@gateworks.com>
  */
@@ -158,6 +159,37 @@ int g_dnl_bind_fixup(struct usb_device_descriptor *dev, const char *name)
 
 #if defined(CONFIG_SPL_MMC_SUPPORT)
 /* called from spl_mmc to see type of boot mode for storage (RAW or FAT) */
+#if defined(CONFIG_IMX8M)
+u32 spl_boot_mode(const u32 boot_device)
+{
+	switch (get_boot_device()) {
+	/* for MMC return either RAW or FAT mode */
+	case SD1_BOOT:
+	case SD2_BOOT:
+	case SD3_BOOT:
+#if defined(CONFIG_SPL_FAT_SUPPORT)
+		return MMCSD_MODE_FS;
+#else
+		return MMCSD_MODE_RAW;
+#endif
+		break;
+
+	case MMC1_BOOT:
+	case MMC2_BOOT:
+#if defined(CONFIG_SPL_FAT_SUPPORT)
+		return MMCSD_MODE_FS;
+#elif defined(CONFIG_SUPPORT_EMMC_BOOT)
+		return MMCSD_MODE_EMMCBOOT;
+#else
+		return MMCSD_MODE_RAW;
+#endif
+		break;
+	default:
+		puts("spl: ERROR:  unsupported device\n");
+		hang();
+	}
+}
+#else
 u32 spl_boot_mode(const u32 boot_device)
 {
 	switch (spl_boot_device()) {
@@ -177,6 +209,7 @@ u32 spl_boot_mode(const u32 boot_device)
 		hang();
 	}
 }
+#endif
 #endif
 
 #if defined(CONFIG_SECURE_BOOT)
