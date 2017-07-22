@@ -319,6 +319,8 @@ int board_phy_config(struct phy_device *phydev)
 #endif
 
 #ifdef CONFIG_PHY_MICREL_KSZ9021
+#define PHY_ID_KSZ9021	0x221610
+
 int board_phy_config(struct phy_device *phydev)
 {
 #ifdef CONFIG_PHY_ATHEROS
@@ -326,7 +328,7 @@ int board_phy_config(struct phy_device *phydev)
 		phy_ar8031_config(phydev);
 	} else if (((phydev->drv->uid ^ PHY_ID_AR8035) & 0xffffffef) == 0) {
 		phy_ar8035_config(phydev);
-	} else if (phydev->drv->uid == 0x221610) {
+	} else if (((phydev->drv->uid ^ PHY_ID_KSZ9021) & 0xfffffff0) == 0) {
 		/* found KSZ, reinit phy for KSZ */
 		setup_iomux_enet(1);
 #else
