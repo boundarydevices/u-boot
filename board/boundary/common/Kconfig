@@ -1,0 +1,152 @@
+config CMD_KBD
+	bool "Enable KBD cmd"
+	default y
+
+config LOGO_BMP
+	string "Select logo bmp to display"
+	default "boundarydevices" if TARGET_NITROGEN6_MAX
+	default "boundarydevices" if TARGET_NITROGEN6_SCM
+	default "boundarydevices" if TARGET_NITROGEN6_VM
+	default "boundarydevices" if TARGET_NITROGEN6SX
+	default "boundarydevices" if TARGET_NITROGEN6X
+	default "boundarydevices" if TARGET_NITROGEN7
+	default "boundarydevices" if TARGET_NITROGEN8_LITE
+	default "boundarydevices" if TARGET_NITROGEN8_NANO
+	default "boundarydevices" if TARGET_NITROGEN8M
+	default "boundarydevices" if TARGET_NITROGEN8MM
+	default "boundarydevices" if TARGET_NITROGEN8MN
+	default "boundarydevices" if TARGET_NITROGEN8MM_TAB
+	default "boundarydevices" if TARGET_NITROGEN8MP
+	default "boundary"
+
+config MAX77823
+	bool
+	default y if TARGET_C2_IMX8MM
+	default y if TARGET_CID
+	default y if TARGET_CID_TAB
+	default y if TARGET_H4
+	default y if TARGET_LS
+	default y if TARGET_NITROGEN6_SCM
+	default y if TARGET_VP
+
+config MAX77975
+	bool
+	default y if TARGET_NITROGEN8MM_TAB
+
+config MAX17260
+	bool
+	default y if TARGET_NITROGEN8MM_TAB
+
+config BQ25898
+	bool
+	default y if TARGET_DS
+
+config FEC_RESET_PULLUP
+	bool "fec pullup on reset"
+	default y if IMX8MP && PHY_ATHEROS
+	default y if IMX8MM && PHY_ATHEROS
+	default y if IMX8MN && PHY_ATHEROS
+	default y if TARGET_NITROGEN7
+
+config OTG_CHARGER
+	bool "otg_charger"
+	depends on MAX77823
+	default y if TARGET_C2_IMX8MM
+	default y if TARGET_CID
+
+config I2C_BUS_MAX77823
+	int
+	depends on MAX77823
+	default 1 if TARGET_C2_IMX8MM
+	default 3 if TARGET_NITROGEN6_SCM
+	default 2
+
+config I2C_BUS_MAX77975
+	int
+	depends on MAX77975
+	default 0 if TARGET_NITROGEN8MM_TAB
+
+config I2C_BUS_MAX17260
+	hex
+	depends on MAX17260
+	default 0x41 if TARGET_NITROGEN8MM_TAB
+
+config FAN53526
+	bool
+	default y if TARGET_CID
+	default y if TARGET_CID_TAB
+
+config I2C_BUS_FAN53526
+	int
+	depends on FAN53526
+	default 2
+
+config SPLASH_SCREEN_PREPARE
+	bool "Prepare splash screen for display"
+	default y if SPLASH_SCREEN
+
+config DEFAULT_HITACHI_HVGA
+	bool "hvga display as default"
+
+config DEFAULT_DISPLAY_PM9598
+	bool "PM9598 display as default"
+
+config DEFAULT_DISPLAY_TM070JDHG30
+	bool "TM070JDHG30 (Tianma) display as default"
+
+config DEFAULT_DISPLAY_WXGA
+	bool "WXGA display as default"
+
+config TAMPER
+	bool "Enable tamper detection gpio"
+
+config CMD_OTG_CABLE
+	bool "Enable otg cable detection"
+	depends on ARCH_MX6
+	default y
+
+config HDMI_CLK2
+	bool "clk2 is routed to hdmi refclk"
+	depends on ARCH_IMX8M
+
+config EXTRA_ENV_SETTINGS_DEFCONFIG
+	string "defconfig specific environment variables"
+	default ""
+
+config USB_BOOT_FIRST
+	bool "Try booting from USB before mmc/sata"
+
+config CONFIG_LPDDR4_AB
+	bool "Channel A to A, B to B"
+	default y if TARGET_DWE
+
+config DDR_DRIVE_STRENGTH
+	int "ddr drive strength(5, 6 or 7)"
+	default 6
+
+config DDR_RANK_BITS
+	int "ddr rank bits"
+	depends on ARCH_IMX8M || ARCH_IMX8ULP
+	default 1
+
+config DDR_CHANNEL_CNT
+	int "ddr channel count"
+	depends on ARCH_IMX8M || ARCH_IMX8ULP
+	default 1 if IMX8MN
+	default 2
+
+config DDR_CHANNEL_CNT_1_OR_2
+	bool "Try other channel count if ddr setup fails"
+
+config DDR_MB
+	int "Memory size in MB"
+
+config BOARD_TYPE
+	string "board override name"
+
+config BOARD_TYPE_SET
+	bool "BOARD_TYPE value given"
+	default y if BOARD_TYPE != ""
+
+config DEFCONFIG
+	string "defconfig name"
