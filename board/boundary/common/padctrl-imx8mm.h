@@ -1,0 +1,24 @@
+/*
+ * Copyright (C) 2018, Boundary Devices <info@boundarydevices.com>
+ *
+ * SPDX-License-Identifier:	GPL-2.0+
+ */
+#define PAD_CTRL_ENET_MDC	(PAD_CTL_DSE0)
+/* PAD_CTL_ODE is screwy on MDIO, it behaves like a strong hysteresis */
+#define PAD_CTRL_ENET_MDIO	(PAD_CTL_DSE0)
+
+#define PAD_CTRL_ENET_RX	(PAD_CTL_DSE1 | PAD_CTL_FSEL2 | PAD_CTL_HYS)
+#define PAD_CTRL_ENET_RX_DN	(PAD_CTRL_ENET_RX | PAD_CTL_PE)
+#define PAD_CTRL_ENET_RX_UP	(PAD_CTRL_ENET_RX | PAD_CTL_PE | PAD_CTL_PUE)
+
+#define PAD_CTRL_ENET_TX	0x1f
+
+#define WEAK_PULLUP		(PAD_CTL_DSE6 | PAD_CTL_FSEL2 | PAD_CTL_PE | PAD_CTL_PUE | PAD_CTL_HYS)
+#define WEAK_PULLUP_OUTPUT	(PAD_CTL_DSE6 | PAD_CTL_FSEL2 | PAD_CTL_PE | PAD_CTL_PUE)
+#define WEAK_PULLDN_OUTPUT	(PAD_CTL_DSE6 | PAD_CTL_FSEL2 | PAD_CTL_PE)
+
+#define QSPI_PAD_CTRL	(PAD_CTL_DSE2 | PAD_CTL_HYS)
+
+#define UART_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_FSEL1)
+
+#define WDOG_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_ODE | PAD_CTL_PUE | PAD_CTL_PE)

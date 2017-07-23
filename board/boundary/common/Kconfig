@@ -1,0 +1,89 @@
+config CMD_KBD
+	bool "Enable KBD cmd"
+	default y
+
+config MAX77823
+	bool
+	default y if TARGET_CID
+	default y if TARGET_CID_TAB
+	default y if TARGET_H4
+	default y if TARGET_LS
+	default y if TARGET_NITROGEN6_SCM
+	default y if TARGET_VP
+
+config FEC_RESET_PULLUP
+	bool "fec pullup on reset"
+	default y if IMX8MM
+	default y if IMX8MN
+	default y if TARGET_NITROGEN7
+
+config OTG_CHARGER
+	bool "otg_charger"
+	depends on MAX77823
+	default y if TARGET_CID
+
+config I2C_BUS_MAX77823
+	int
+	depends on MAX77823
+	default 3 if TARGET_NITROGEN6_SCM
+	default 2
+
+config FAN53526
+	bool
+	default y if TARGET_CID
+	default y if TARGET_CID_TAB
+
+config I2C_BUS_FAN53526
+	int
+	depends on FAN53526
+	default 2
+
+config SPLASH_SCREEN_PREPARE
+	bool "Prepare splash screen for display"
+	default y if SPLASH_SCREEN
+
+config DEFAULT_HITACHI_HVGA
+	bool "hvga display as default"
+
+config DEFAULT_DISPLAY_PM9598
+	bool "PM9598 display as default"
+
+config DEFAULT_DISPLAY_TM070JDHG30
+	bool "TM070JDHG30 (Tianma) display as default"
+
+config DEFAULT_DISPLAY_WXGA
+	bool "WXGA display as default"
+
+config TAMPER
+	bool "Enable tamper detection gpio"
+
+config CMD_OTG_CABLE
+	bool "Enable otg cable detection"
+	depends on ARCH_MX6
+	default y
+
+config HDMI_CLK2
+	bool "clk2 is routed to hdmi refclk"
+	depends on ARCH_IMX8M
+
+config EXTRA_ENV_SETTINGS_DEFCONFIG
+	string "defconfig specific environment variables"
+	default ""
+
+config USB_BOOT_FIRST
+	bool "Try booting from USB before mmc/sata"
+
+config CONFIG_LPDDR4_AB
+	bool "Channel A to A, B to B"
+	default y if TARGET_DWE
+
+config DDR_RANK_BITS
+	int "ddr rank bits"
+	depends on ARCH_IMX8M
+	default 1
+
+config DDR_CHANNEL_CNT
+	int "ddr channel count"
+	depends on ARCH_IMX8M
+	default 1 if IMX8MN
+	default 2
