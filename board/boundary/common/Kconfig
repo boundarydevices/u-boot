@@ -1,0 +1,48 @@
+config CMD_KBD
+	bool "Enable KBD cmd"
+	default y
+
+config MAX77823
+	bool
+	default y if TARGET_CID
+	default y if TARGET_CID_TAB
+	default y if TARGET_H4
+	default y if TARGET_LS
+	default y if TARGET_NITROGEN6_SCM
+	default y if TARGET_VP
+
+config OTG_CHARGER
+	bool "otg_charger"
+	depends on MAX77823
+	default y if TARGET_CID
+
+config I2C_BUS_MAX77823
+	int
+	depends on MAX77823
+	default 3 if TARGET_NITROGEN6_SCM
+	default 2
+
+config FAN53526
+	bool
+	default y if TARGET_CID
+	default y if TARGET_CID_TAB
+
+config I2C_BUS_FAN53526
+	int
+	depends on FAN53526
+	default 2
+
+config SPLASH_SCREEN_PREPARE
+	bool "Prepare splash screen for display"
+	default y if SPLASH_SCREEN
+
+config DEFAULT_HITACHI_HVGA
+	bool "hvga display as default"
+
+config TAMPER
+	bool "Enable tamper detection gpio"
+
+config CMD_OTG_CABLE
+	bool "Enable otg cable detection"
+	depends on ARCH_MX6
+	default y
