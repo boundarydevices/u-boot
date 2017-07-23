@@ -1,0 +1,21 @@
+config CMD_KBD
+	bool "Enable KBD cmd"
+	default y
+
+config MAX77823
+	bool
+	default y if TARGET_CID
+	default y if TARGET_H4
+	default y if TARGET_LS
+	default y if TARGET_NITROGEN6_SCM
+	default y if TARGET_VP
+
+config I2C_BUS_MAX77823
+	int
+	depends on MAX77823
+	default 3 if TARGET_NITROGEN6_SCM
+	default 2
+
+config SPLASH_SCREEN_PREPARE
+	bool "Prepare splash screen for display"
+	default y if SPLASH_SCREEN
