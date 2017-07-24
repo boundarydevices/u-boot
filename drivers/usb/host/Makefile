@@ -49,6 +49,7 @@ obj-$(CONFIG_USB_XHCI_DWC3) += xhci-dwc3.o
 obj-$(CONFIG_USB_XHCI_DWC3_OF_SIMPLE) += dwc3-of-simple.o
 obj-$(CONFIG_USB_XHCI_EXYNOS) += xhci-exynos5.o
 obj-$(CONFIG_USB_XHCI_FSL) += xhci-fsl.o
+obj-$(CONFIG_USB_XHCI_IMX8M) += xhci-imx8m.o
 obj-$(CONFIG_USB_XHCI_MTK) += xhci-mtk.o
 obj-$(CONFIG_USB_XHCI_MVEBU) += xhci-mvebu.o
 obj-$(CONFIG_USB_XHCI_OMAP) += xhci-omap.o
