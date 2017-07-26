@@ -109,7 +109,7 @@ static const iomux_v3_cfg_t init_pads[] = {
 	/* Hog pins*/
 	/* will be reg_5v_dlp */
 #define GP_5V_DLP_EN	IMX_GPIO_NR(2, 23)
-	IOMUX_PAD_CTRL(EIM_CS0__GPIO2_IO23, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(EIM_CS0__GPIO2_IO23, WEAK_PULLDN),
 #define GP_STDBY_MODE	IMX_GPIO_NR(2, 24)
 	IOMUX_PAD_CTRL(EIM_CS1__GPIO2_IO24, WEAK_PULLUP),
 #define GP_DLPC_BOOTED	IMX_GPIO_NR(2, 22)
@@ -480,6 +480,7 @@ int board_cfb_skip(void)
 static const unsigned short gpios_out_low[] = {
 	GP_BT_RFKILL_RESET, 	/* disable bluetooth */
 	GP_RGMII_PHY_RESET,
+	GP_5V_DLP_EN,
 	GP_BACKLIGHT_RGB,
 	GP_REG_USBOTG,		/* disable USB otg power */
 	GP_REG_WLAN_EN,		/* disable wireless */
@@ -490,7 +491,6 @@ static const unsigned short gpios_out_low[] = {
 static const unsigned short gpios_out_high[] = {
 	GP_ECSPI1_NOR_CS,	/* SS1 of spi nor */
 	GP_ECSPI2_SS0,
-	GP_5V_DLP_EN,
 	GP_STDBY_MODE,
 	GP_DLPC_BOOTED,
 	GP_INIT_DONE,
