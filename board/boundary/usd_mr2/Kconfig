@@ -1,0 +1,24 @@
+if TARGET_USD_MR2
+
+config SYS_CPU
+	default "armv7"
+
+config SYS_BOARD
+	default "usd_mr2"
+
+config SYS_VENDOR
+	default "boundary"
+
+config SYS_SOC
+	default "mx6"
+
+config SYS_CONFIG_NAME
+	default "usd_mr2"
+
+config BOARD_LATE_SPECIFIC_INIT
+	bool
+	default	y
+
+source "board/boundary/common/Kconfig"
+
+endif
