@@ -1,0 +1,7 @@
+NITROGEN6_MAX BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/usd_mr2/
+F:	include/configs/usd_mr2.h
+F:	configs/usd_mr2_q2g_defconfig
+
