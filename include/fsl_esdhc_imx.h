@@ -221,10 +221,16 @@
 #define	ESDHC_FLAG_HS400_ES		BIT(11)
 
 struct fsl_esdhc_cfg {
-	phys_addr_t esdhc_base;
+	union
+	{
+		phys_addr_t esdhc_base;
+		struct fsl_esdhc *esdhc_regs;
+	};
 	u32	sdhc_clk;
-	u8	max_bus_width;
-	int	wp_enable;
+	u8	bus_width;
+	u8	wp_enable;
+	u16	gp_cd;
+	u16	gp_reset;
 	int	vs18_enable; /* Use 1.8V if set to 1 */
 	struct mmc_config cfg;
 };

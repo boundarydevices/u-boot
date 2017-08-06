@@ -143,19 +143,16 @@ struct esdhc_soc_data {
  * @wp_gpio: gpio for write protection
  */
 struct fsl_esdhc_priv {
-	struct fsl_esdhc *esdhc_regs;
-	unsigned int sdhc_clk;
+	struct fsl_esdhc_cfg c;
 	struct clk per_clk;
 	unsigned int clock;
 	unsigned int mode;
-	unsigned int bus_width;
 #if !CONFIG_IS_ENABLED(BLK)
 	struct mmc *mmc;
 #endif
 	struct udevice *dev;
 	int non_removable;
 	int broken_cd;
-	int wp_enable;
 	int vs18_enable;
 	u32 flags;
 	u32 caps;
@@ -220,7 +217,7 @@ static uint esdhc_xfertyp(struct mmc_cmd *cmd, struct mmc_data *data)
 static void esdhc_pio_read_write(struct fsl_esdhc_priv *priv,
 				 struct mmc_data *data)
 {
-	struct fsl_esdhc *regs = priv->esdhc_regs;
+	struct fsl_esdhc *regs = priv->c.esdhc_regs;
 	uint blocks;
 	char *buffer;
 	uint databuf;
@@ -282,7 +279,7 @@ static int esdhc_setup_data(struct fsl_esdhc_priv *priv, struct mmc *mmc,
 			    struct mmc_data *data)
 {
 	int timeout;
-	struct fsl_esdhc *regs = priv->esdhc_regs;
+	struct fsl_esdhc *regs = priv->c.esdhc_regs;
 #if defined(CONFIG_S32V234) || defined(CONFIG_IMX8) || defined(CONFIG_IMX8M)
 	dma_addr_t addr;
 #endif
@@ -314,7 +311,7 @@ static int esdhc_setup_data(struct fsl_esdhc_priv *priv, struct mmc *mmc,
 #endif
 		if (wml_value > WML_WR_WML_MAX)
 			wml_value = WML_WR_WML_MAX_VAL;
-		if (priv->wp_enable) {
+		if (priv->c.wp_enable) {
 #ifndef CONFIG_SYS_FSL_ESDHC_GPIO_WP
 			if ((esdhc_read32(&regs->prsstat) &
 			    PRSSTAT_WPSPL) == 0) {
@@ -445,7 +442,7 @@ static int esdhc_send_cmd_common(struct fsl_esdhc_priv *priv, struct mmc *mmc,
 	uint	xfertyp;
 	uint	irqstat;
 	u32	flags = IRQSTAT_CC | IRQSTAT_CTOE;
-	struct fsl_esdhc *regs = priv->esdhc_regs;
+	struct fsl_esdhc *regs = priv->c.esdhc_regs;
 	unsigned long start;
 
 #ifdef CONFIG_SYS_FSL_ERRATUM_ESDHC111
@@ -639,7 +636,7 @@ out:
 
 static void set_sysctl(struct fsl_esdhc_priv *priv, struct mmc *mmc, uint clock)
 {
-	struct fsl_esdhc *regs = priv->esdhc_regs;
+	struct fsl_esdhc *regs = priv->c.esdhc_regs;
 	int div = 1;
 	u32 tmp;
 	int ret;
@@ -654,7 +651,7 @@ static void set_sysctl(struct fsl_esdhc_priv *priv, struct mmc *mmc, uint clock)
 	int pre_div = 2;
 #endif
 	int ddr_pre_div = mmc->ddr_mode ? 2 : 1;
-	int sdhc_clk = priv->sdhc_clk;
+	int sdhc_clk = priv->c.sdhc_clk;
 	uint clk;
 
 	while (sdhc_clk / (16 * pre_div * ddr_pre_div) > clock && pre_div < 256)
@@ -720,7 +717,7 @@ static int esdhc_change_pinstate(struct udevice *dev)
 static void esdhc_reset_tuning(struct mmc *mmc)
 {
 	struct fsl_esdhc_priv *priv = dev_get_priv(mmc->dev);
-	struct fsl_esdhc *regs = priv->esdhc_regs;
+	struct fsl_esdhc *regs = priv->c.esdhc_regs;
 
 	if (priv->flags & ESDHC_FLAG_USDHC) {
 		if (priv->flags & ESDHC_FLAG_STD_TUNING) {
@@ -734,7 +731,7 @@ static void esdhc_reset_tuning(struct mmc *mmc)
 static void esdhc_set_strobe_dll(struct mmc *mmc)
 {
 	struct fsl_esdhc_priv *priv = dev_get_priv(mmc->dev);
-	struct fsl_esdhc *regs = priv->esdhc_regs;
+	struct fsl_esdhc *regs = priv->c.esdhc_regs;
 	u32 val;
 
 	if (priv->clock > ESDHC_STROBE_DLL_CLK_FREQ) {
@@ -761,7 +758,7 @@ static void esdhc_set_strobe_dll(struct mmc *mmc)
 static int esdhc_set_timing(struct mmc *mmc)
 {
 	struct fsl_esdhc_priv *priv = dev_get_priv(mmc->dev);
-	struct fsl_esdhc *regs = priv->esdhc_regs;
+	struct fsl_esdhc *regs = priv->c.esdhc_regs;
 	u32 mixctrl;
 
 	mixctrl = readl(&regs->mixctrl);
@@ -806,7 +803,7 @@ static int esdhc_set_timing(struct mmc *mmc)
 static int esdhc_set_voltage(struct mmc *mmc)
 {
 	struct fsl_esdhc_priv *priv = dev_get_priv(mmc->dev);
-	struct fsl_esdhc *regs = priv->esdhc_regs;
+	struct fsl_esdhc *regs = priv->c.esdhc_regs;
 	int ret;
 
 	priv->signal_voltage = mmc->signal_voltage;
@@ -869,7 +866,7 @@ static int fsl_esdhc_execute_tuning(struct udevice *dev, uint32_t opcode)
 {
 	struct fsl_esdhc_plat *plat = dev_get_platdata(dev);
 	struct fsl_esdhc_priv *priv = dev_get_priv(dev);
-	struct fsl_esdhc *regs = priv->esdhc_regs;
+	struct fsl_esdhc *regs = priv->c.esdhc_regs;
 	struct mmc *mmc = &plat->mmc;
 	u32 irqstaten = readl(&regs->irqstaten);
 	u32 irqsigen = readl(&regs->irqsigen);
@@ -945,7 +942,7 @@ static int fsl_esdhc_execute_tuning(struct udevice *dev, uint32_t opcode)
 
 static int esdhc_set_ios_common(struct fsl_esdhc_priv *priv, struct mmc *mmc)
 {
-	struct fsl_esdhc *regs = priv->esdhc_regs;
+	struct fsl_esdhc *regs = priv->c.esdhc_regs;
 	int ret __maybe_unused;
 	u32 clock;
 
@@ -1004,7 +1001,7 @@ static int esdhc_set_ios_common(struct fsl_esdhc_priv *priv, struct mmc *mmc)
 
 static int esdhc_init_common(struct fsl_esdhc_priv *priv, struct mmc *mmc)
 {
-	struct fsl_esdhc *regs = priv->esdhc_regs;
+	struct fsl_esdhc *regs = priv->c.esdhc_regs;
 	ulong start;
 
 	/* Reset the entire host controller */
@@ -1067,7 +1064,7 @@ static int esdhc_init_common(struct fsl_esdhc_priv *priv, struct mmc *mmc)
 
 static int esdhc_getcd_common(struct fsl_esdhc_priv *priv)
 {
-	struct fsl_esdhc *regs = priv->esdhc_regs;
+	struct fsl_esdhc *regs = priv->c.esdhc_regs;
 	int timeout = 1000;
 
 #ifdef CONFIG_ESDHC_DETECT_QUIRK
@@ -1161,7 +1158,7 @@ static int fsl_esdhc_init(struct fsl_esdhc_priv *priv,
 	if (!priv)
 		return -EINVAL;
 
-	regs = priv->esdhc_regs;
+	regs = priv->c.esdhc_regs;
 
 	/* First reset the eSDHC controller */
 	ret = esdhc_reset(regs);
@@ -1237,9 +1234,9 @@ static int fsl_esdhc_init(struct fsl_esdhc_priv *priv,
 		return -1;
 	}
 
-	if (priv->bus_width == 8)
+	if (priv->c.bus_width == 8)
 		cfg->host_caps = MMC_MODE_4BIT | MMC_MODE_8BIT;
-	else if (priv->bus_width == 4)
+	else if (priv->c.bus_width == 4)
 		cfg->host_caps = MMC_MODE_4BIT;
 
 	cfg->host_caps = MMC_MODE_4BIT | MMC_MODE_8BIT;
@@ -1247,10 +1244,10 @@ static int fsl_esdhc_init(struct fsl_esdhc_priv *priv,
 	cfg->host_caps |= MMC_MODE_DDR_52MHz;
 #endif
 
-	if (priv->bus_width > 0) {
-		if (priv->bus_width < 8)
+	if (priv->c.bus_width > 0) {
+		if (priv->c.bus_width < 8)
 			cfg->host_caps &= ~MMC_MODE_8BIT;
-		if (priv->bus_width < 4)
+		if (priv->c.bus_width < 4)
 			cfg->host_caps &= ~MMC_MODE_4BIT;
 	}
 
@@ -1265,7 +1262,7 @@ static int fsl_esdhc_init(struct fsl_esdhc_priv *priv,
 	cfg->host_caps |= priv->caps;
 
 	cfg->f_min = 400000;
-	cfg->f_max = min(priv->sdhc_clk, (u32)200000000);
+	cfg->f_max = min(priv->c.sdhc_clk, (u32)200000000);
 
 	cfg->b_max = CONFIG_SYS_MMC_MAX_BLK_COUNT;
 
@@ -1305,11 +1302,8 @@ static int fsl_esdhc_cfg_to_priv(struct fsl_esdhc_cfg *cfg,
 	if (!cfg || !priv)
 		return -EINVAL;
 
-	priv->esdhc_regs = (struct fsl_esdhc *)(unsigned long)(cfg->esdhc_base);
-	priv->bus_width = cfg->max_bus_width;
-	priv->sdhc_clk = cfg->sdhc_clk;
-	priv->wp_enable  = cfg->wp_enable;
-	priv->vs18_enable  = cfg->vs18_enable;
+	priv->c = *cfg;
+	priv->c.esdhc_regs = (struct fsl_esdhc *)(unsigned long)(cfg->esdhc_base);
 
 	return 0;
 };
@@ -1417,17 +1411,17 @@ static int fsl_esdhc_ofdata_to_platdata(struct udevice *dev)
 	addr = dev_read_addr(dev);
 	if (addr == FDT_ADDR_T_NONE)
 		return -EINVAL;
-	priv->esdhc_regs = (struct fsl_esdhc *)addr;
+	priv->c.esdhc_regs = (struct fsl_esdhc *)addr;
 	priv->dev = dev;
 	priv->mode = -1;
 
 	val = dev_read_u32_default(dev, "bus-width", -1);
 	if (val == 8)
-		priv->bus_width = 8;
+		priv->c.bus_width = 8;
 	else if (val == 4)
-		priv->bus_width = 4;
+		priv->c.bus_width = 4;
 	else
-		priv->bus_width = 1;
+		priv->c.bus_width = 1;
 
 	val = fdtdec_get_int(fdt, node, "fsl,tuning-step", 1);
 	priv->tuning_step = val;
@@ -1452,9 +1446,9 @@ static int fsl_esdhc_ofdata_to_platdata(struct udevice *dev)
 	}
 
 	if (dev_read_prop(dev, "fsl,wp-controller", NULL)) {
-		priv->wp_enable = 1;
+		priv->c.wp_enable = 1;
 	} else {
-		priv->wp_enable = 0;
+		priv->c.wp_enable = 0;
 #if CONFIG_IS_ENABLED(DM_GPIO)
 		gpio_request_by_name(dev, "wp-gpios", 0, &priv->wp_gpio,
 				   GPIOD_IS_IN);
@@ -1506,14 +1500,14 @@ static int fsl_esdhc_probe(struct udevice *dev)
 	struct dtd_fsl_esdhc *dtplat = &plat->dtplat;
 	unsigned int val;
 
-	priv->esdhc_regs = map_sysmem(dtplat->reg[0], dtplat->reg[1]);
+	priv->c.esdhc_regs = map_sysmem(dtplat->reg[0], dtplat->reg[1]);
 	val = plat->dtplat.bus_width;
 	if (val == 8)
-		priv->bus_width = 8;
+		priv->c.bus_width = 8;
 	else if (val == 4)
-		priv->bus_width = 4;
+		priv->c.bus_width = 4;
 	else
-		priv->bus_width = 1;
+		priv->c.bus_width = 1;
 
 	if (dtplat->non_removable)
 		priv->non_removable = 1;
@@ -1578,10 +1572,10 @@ static int fsl_esdhc_probe(struct udevice *dev)
 		return ret;
 	}
 
-	priv->sdhc_clk = clk_get_rate(&priv->per_clk);
+	priv->c.sdhc_clk = clk_get_rate(&priv->per_clk);
 #else
-	priv->sdhc_clk = mxc_get_clock(MXC_ESDHC_CLK + dev->seq);
-	if (priv->sdhc_clk <= 0) {
+	priv->c.sdhc_clk = mxc_get_clock(MXC_ESDHC_CLK + dev->seq);
+	if (priv->c.sdhc_clk <= 0) {
 		dev_err(dev, "Unable to get clk for %s\n", dev->name);
 		return -EINVAL;
 	}
@@ -1662,7 +1656,7 @@ static int fsl_esdhc_set_ios(struct udevice *dev)
 static int fsl_esdhc_set_enhanced_strobe(struct udevice *dev)
 {
 	struct fsl_esdhc_priv *priv = dev_get_priv(dev);
-	struct fsl_esdhc *regs = priv->esdhc_regs;
+	struct fsl_esdhc *regs = priv->c.esdhc_regs;
 	u32 m;
 
 	m = readl(&regs->mixctrl);
