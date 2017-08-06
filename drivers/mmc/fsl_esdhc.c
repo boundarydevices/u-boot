@@ -96,14 +96,11 @@ struct fsl_esdhc {
  * @wp_gpio: gpio for write protection
  */
 struct fsl_esdhc_priv {
-	struct fsl_esdhc *esdhc_regs;
-	unsigned int sdhc_clk;
-	unsigned int bus_width;
+	struct fsl_esdhc_cfg c;
 	struct mmc_config cfg;
 	struct mmc *mmc;
 	struct udevice *dev;
 	int non_removable;
-	int wp_enable;
 #ifdef CONFIG_DM_GPIO
 	struct gpio_desc cd_gpio;
 	struct gpio_desc wp_gpio;
@@ -157,7 +154,7 @@ static void
 esdhc_pio_read_write(struct mmc *mmc, struct mmc_data *data)
 {
 	struct fsl_esdhc_priv *priv = mmc->priv;
-	struct fsl_esdhc *regs = priv->esdhc_regs;
+	struct fsl_esdhc *regs = priv->c.esdhc_regs;
 	uint blocks;
 	char *buffer;
 	uint databuf;
@@ -219,7 +216,7 @@ static int esdhc_setup_data(struct mmc *mmc, struct mmc_data *data)
 {
 	int timeout;
 	struct fsl_esdhc_priv *priv = mmc->priv;
-	struct fsl_esdhc *regs = priv->esdhc_regs;
+	struct fsl_esdhc *regs = priv->c.esdhc_regs;
 #if defined(CONFIG_FSL_LAYERSCAPE) || defined(CONFIG_S32V234)
 	dma_addr_t addr;
 #endif
@@ -252,7 +249,7 @@ static int esdhc_setup_data(struct mmc *mmc, struct mmc_data *data)
 		if (wml_value > WML_WR_WML_MAX)
 			wml_value = WML_WR_WML_MAX_VAL;
 #ifndef CONFIG_SYS_FSL_ESDHC_GPIO_WP
-		if (priv->wp_enable) {
+		if (priv->c.wp_enable) {
 			if ((esdhc_read32(&regs->prsstat) &
 			    PRSSTAT_WPSPL) == 0) {
 				printf("\nThe SD card is locked. Can not write to a locked card.\n\n");
@@ -354,7 +351,7 @@ esdhc_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd, struct mmc_data *data)
 	uint	xfertyp;
 	uint	irqstat;
 	struct fsl_esdhc_priv *priv = mmc->priv;
-	struct fsl_esdhc *regs = priv->esdhc_regs;
+	struct fsl_esdhc *regs = priv->c.esdhc_regs;
 
 #ifdef CONFIG_SYS_FSL_ERRATUM_ESDHC111
 	if (cmd->cmdidx == MMC_CMD_STOP_TRANSMISSION)
@@ -536,8 +533,8 @@ static void set_sysctl(struct mmc *mmc, uint clock)
 #endif
 	int ddr_pre_div = mmc->ddr_mode ? 2 : 1;
 	struct fsl_esdhc_priv *priv = mmc->priv;
-	struct fsl_esdhc *regs = priv->esdhc_regs;
-	int sdhc_clk = priv->sdhc_clk;
+	struct fsl_esdhc *regs = priv->c.esdhc_regs;
+	int sdhc_clk = priv->c.sdhc_clk;
 	uint clk;
 
 	if (clock < mmc->cfg->f_min)
@@ -576,7 +573,7 @@ static void set_sysctl(struct mmc *mmc, uint clock)
 static void esdhc_clock_control(struct mmc *mmc, bool enable)
 {
 	struct fsl_esdhc_priv *priv = mmc->priv;
-	struct fsl_esdhc *regs = priv->esdhc_regs;
+	struct fsl_esdhc *regs = priv->c.esdhc_regs;
 	u32 value;
 	u32 time_out;
 
@@ -605,7 +602,7 @@ static void esdhc_clock_control(struct mmc *mmc, bool enable)
 static int esdhc_set_ios(struct mmc *mmc)
 {
 	struct fsl_esdhc_priv *priv = mmc->priv;
-	struct fsl_esdhc *regs = priv->esdhc_regs;
+	struct fsl_esdhc *regs = priv->c.esdhc_regs;
 
 #ifdef CONFIG_FSL_ESDHC_USE_PERIPHERAL_CLK
 	/* Select to use peripheral clock */
@@ -630,7 +627,7 @@ static int esdhc_set_ios(struct mmc *mmc)
 static int esdhc_init(struct mmc *mmc)
 {
 	struct fsl_esdhc_priv *priv = mmc->priv;
-	struct fsl_esdhc *regs = priv->esdhc_regs;
+	struct fsl_esdhc *regs = priv->c.esdhc_regs;
 	int timeout = 1000;
 
 	/* Reset the entire host controller */
@@ -687,7 +684,7 @@ static int esdhc_init(struct mmc *mmc)
 static int esdhc_getcd(struct mmc *mmc)
 {
 	struct fsl_esdhc_priv *priv = mmc->priv;
-	struct fsl_esdhc *regs = priv->esdhc_regs;
+	struct fsl_esdhc *regs = priv->c.esdhc_regs;
 	int timeout = 1000;
 
 #ifdef CONFIG_ESDHC_DETECT_QUIRK
@@ -740,7 +737,7 @@ static int fsl_esdhc_init(struct fsl_esdhc_priv *priv)
 	if (!priv)
 		return -EINVAL;
 
-	regs = priv->esdhc_regs;
+	regs = priv->c.esdhc_regs;
 
 	/* First reset the eSDHC controller */
 	esdhc_reset(regs);
@@ -788,9 +785,9 @@ static int fsl_esdhc_init(struct fsl_esdhc_priv *priv)
 		return -1;
 	}
 
-	if (priv->bus_width == 8)
+	if (priv->c.bus_width == 8)
 		priv->cfg.host_caps = MMC_MODE_4BIT | MMC_MODE_8BIT;
-	else if (priv->bus_width == 4)
+	else if (priv->c.bus_width == 4)
 		priv->cfg.host_caps = MMC_MODE_4BIT;
 
 	priv->cfg.host_caps = MMC_MODE_4BIT | MMC_MODE_8BIT;
@@ -798,10 +795,10 @@ static int fsl_esdhc_init(struct fsl_esdhc_priv *priv)
 	priv->cfg.host_caps |= MMC_MODE_DDR_52MHz;
 #endif
 
-	if (priv->bus_width > 0) {
-		if (priv->bus_width < 8)
+	if (priv->c.bus_width > 0) {
+		if (priv->c.bus_width < 8)
 			priv->cfg.host_caps &= ~MMC_MODE_8BIT;
-		if (priv->bus_width < 4)
+		if (priv->c.bus_width < 4)
 			priv->cfg.host_caps &= ~MMC_MODE_4BIT;
 	}
 
@@ -814,7 +811,7 @@ static int fsl_esdhc_init(struct fsl_esdhc_priv *priv)
 #endif
 
 	priv->cfg.f_min = 400000;
-	priv->cfg.f_max = min(priv->sdhc_clk, (u32)52000000);
+	priv->cfg.f_max = min(priv->c.sdhc_clk, (u32)52000000);
 
 	priv->cfg.b_max = CONFIG_SYS_MMC_MAX_BLK_COUNT;
 
@@ -834,11 +831,8 @@ static int fsl_esdhc_cfg_to_priv(struct fsl_esdhc_cfg *cfg,
 	if (!cfg || !priv)
 		return -EINVAL;
 
-	priv->esdhc_regs = (struct fsl_esdhc *)(unsigned long)(cfg->esdhc_base);
-	priv->bus_width = cfg->max_bus_width;
-	priv->sdhc_clk = cfg->sdhc_clk;
-	priv->wp_enable  = cfg->wp_enable;
-
+	priv->c = *cfg;
+	priv->c.esdhc_regs = (struct fsl_esdhc *)(unsigned long)(cfg->esdhc_base);
 	return 0;
 };
 
@@ -977,16 +971,16 @@ static int fsl_esdhc_probe(struct udevice *dev)
 	if (addr == FDT_ADDR_T_NONE)
 		return -EINVAL;
 
-	priv->esdhc_regs = (struct fsl_esdhc *)addr;
+	priv->c.esdhc_regs = (struct fsl_esdhc *)addr;
 	priv->dev = dev;
 
 	val = fdtdec_get_int(fdt, node, "bus-width", -1);
 	if (val == 8)
-		priv->bus_width = 8;
+		priv->c.bus_width = 8;
 	else if (val == 4)
-		priv->bus_width = 4;
+		priv->c.bus_width = 4;
 	else
-		priv->bus_width = 1;
+		priv->c.bus_width = 1;
 
 	if (fdt_get_property(fdt, node, "non-removable", NULL)) {
 		priv->non_removable = 1;
@@ -998,13 +992,13 @@ static int fsl_esdhc_probe(struct udevice *dev)
 #endif
 	}
 
-	priv->wp_enable = 1;
+	priv->c.wp_enable = 1;
 
 #ifdef CONFIG_DM_GPIO
 	ret = gpio_request_by_name_nodev(offset_to_ofnode(node), "wp-gpios", 0,
 					 &priv->wp_gpio, GPIOD_IS_IN);
 	if (ret)
-		priv->wp_enable = 0;
+		priv->c.wp_enable = 0;
 #endif
 	/*
 	 * TODO:
@@ -1028,8 +1022,8 @@ static int fsl_esdhc_probe(struct udevice *dev)
 
 	init_clk_usdhc(dev->seq);
 
-	priv->sdhc_clk = mxc_get_clock(MXC_ESDHC_CLK + dev->seq);
-	if (priv->sdhc_clk <= 0) {
+	priv->c.sdhc_clk = mxc_get_clock(MXC_ESDHC_CLK + dev->seq);
+	if (priv->c.sdhc_clk <= 0) {
 		dev_err(dev, "Unable to get clk for %s\n", dev->name);
 		return -EINVAL;
 	}

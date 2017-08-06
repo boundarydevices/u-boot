@@ -174,11 +174,16 @@
 #define ESDHC_VENDORSPEC_VSELECT 0x00000002 /* Use 1.8V */
 
 struct fsl_esdhc_cfg {
-	phys_addr_t esdhc_base;
+	union
+	{
+		phys_addr_t esdhc_base;
+		struct fsl_esdhc *esdhc_regs;
+	};
 	u32	sdhc_clk;
-	u8	max_bus_width;
+	u8	bus_width;
 	u8	wp_enable;
-	struct mmc_config cfg;
+	u16	gp_cd;
+	u16	gp_reset;
 };
 
 /* Select the correct accessors depending on endianess */
