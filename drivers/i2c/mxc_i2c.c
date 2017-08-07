@@ -634,7 +634,7 @@ int enable_i2c_clk(unsigned char enable, unsigned i2c_num)
 	__attribute__((weak, alias("__enable_i2c_clk")));
 
 void bus_i2c_init(int index, int speed, int unused,
-		  int (*idle_bus_fn)(void *p), void *idle_bus_data)
+		  int (*idle_bus_fn)(const void *p), const void *idle_bus_data)
 {
 	int ret;
 
