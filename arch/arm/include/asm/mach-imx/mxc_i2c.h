@@ -56,8 +56,8 @@ struct mxc_i2c_bus {
 	struct clk per_clk;
 #endif
 #ifndef CONFIG_DM_I2C
-	int (*idle_bus_fn)(void *p);
-	void *idle_bus_data;
+	int (*idle_bus_fn)(const void *p);
+	const void *idle_bus_data;
 #else
 	struct udevice *bus;
 	/* Use gpio to force bus idle when bus state is abnormal */
@@ -173,10 +173,10 @@ struct mxc_i2c_bus {
 #endif
 
 int setup_i2c(unsigned i2c_index, int speed, int slave_addr,
-	      struct i2c_pads_info *p);
+	      const struct i2c_pads_info *p);
 void bus_i2c_init(int index, int speed, int slave_addr,
-		int (*idle_bus_fn)(void *p), void *p);
-int force_idle_bus(void *priv);
+		int (*idle_bus_fn)(const void *p), const void *p);
+int force_idle_bus(const void *priv);
 int i2c_idle_bus(struct mxc_i2c_bus *i2c_bus);
 
 static inline int i2c_get_info_entry_offset(void) {

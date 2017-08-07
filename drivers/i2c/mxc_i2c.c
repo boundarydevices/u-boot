@@ -760,7 +760,7 @@ static int mxc_i2c_probe(struct i2c_adapter *adap, uint8_t chip)
 }
 
 void bus_i2c_init(int index, int speed, int unused,
-		  int (*idle_bus_fn)(void *p), void *idle_bus_data)
+		  int (*idle_bus_fn)(const void *p), const void *idle_bus_data)
 {
 	int ret;
 
