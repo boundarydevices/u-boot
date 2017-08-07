@@ -12,12 +12,12 @@
 #include <asm/mach-imx/mxc_i2c.h>
 #include <watchdog.h>
 
-int force_idle_bus(void *priv)
+int force_idle_bus(const void *priv)
 {
 	int i;
 	int sda, scl;
 	ulong elapsed, start_time;
-	struct i2c_pads_info *p = (struct i2c_pads_info *)priv;
+	const struct i2c_pads_info *p = (struct i2c_pads_info *)priv;
 	int ret = 0;
 
 	gpio_direction_input(p->sda.gp);
@@ -74,7 +74,7 @@ static void * const i2c_bases[] = {
 
 /* i2c_index can be from 0 - 3 */
 int setup_i2c(unsigned i2c_index, int speed, int slave_addr,
-	      struct i2c_pads_info *p)
+	      const struct i2c_pads_info *p)
 {
 	char name[9];
 	int ret;
