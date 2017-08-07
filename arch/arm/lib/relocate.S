@@ -78,6 +78,7 @@ ENDPROC(relocate_vectors)
  */
 
 ENTRY(relocate_code)
+	stmdb   sp!, {lr}
 	ldr	r1, =__image_copy_start	/* r1 <- SRC &__image_copy_start */
 	subs	r4, r0, r1		/* r4 <- relocation offset */
 	beq	relocate_done		/* skip relocation */
@@ -100,6 +101,20 @@ fixloop:
 	cmp	r1, #R_ARM_RELATIVE
 	bne	fixnext
 
+	tst	r0, #3
+	beq	1f
+	sub	r0, r2, #8
+	bl	prhex
+	mov	r0, #':'
+	bl	pr_c
+	ldr	r0,[r2, #-8]
+	bl	prhex
+	mov	r0, #'_'
+	bl	pr_c
+	ldr	r0,[r2, #-4]
+	bl	prhex
+	b	fixnext
+1:
 	/* relative fix: increase location by offset */
 	add	r0, r0, r4
 	ldr	r1, [r0]
@@ -125,7 +140,81 @@ relocate_done:
 #ifdef __ARM_ARCH_4__
 	mov	pc, lr
 #else
-	bx	lr
+	ldmia	sp!, {pc}
 #endif
 
 ENDPROC(relocate_code)
+
+ENTRY(prhex)
+	stmdb   sp!, {r0-r6,lr}
+	mov	r6, #8
+	mov	r5, r0
+1:	mov	r0, r5, lsr #28
+	cmp	r0, #10
+	addlt	r0, r0, #'0'
+	addge	r0, r0, #'a' - 10
+	bl	pr_c
+	mov	r5, r5, lsl #4
+	subs	r6, r6, #1
+	bne	1b
+
+	mov	r0,#'\n'
+	bl	pr_c
+	mov	r0,#'\r'
+	bl	pr_c
+	ldmia	sp!, {r0-r6,pc}
+ENDPROC(prhex)
+
+#define UTXD		0x40
+#define UTS		0xb4
+#define UTS_TXEMPTY	(1<<6)
+
+ENTRY(pr_c)
+	stmdb   sp!, {r0-r1,lr}
+	ldr	r1, =CONFIG_MXC_UART_BASE
+	str	r0, [r1,#UTXD]
+
+1:	ldr	r0, [r1,#UTS]
+	tst	r0, #UTS_TXEMPTY
+	beq	1b
+	ldmia	sp!, {r0-r1,pc}
+ENDPROC(pr_c)
+
+#if 0
+ENTRY(verify_relocate_table)
+	stmdb   sp!, {lr}
+	/*
+	 * check .rel.dyn relocations
+	 */
+	ldr	r2, =__rel_dyn_start	/* r2 <- SRC &__rel_dyn_start */
+	ldr	r3, =__rel_dyn_end	/* r3 <- SRC &__rel_dyn_end */
+1:
+	ldmia	r2!, {r0-r1}		/* (r0,r1) <- (SRC location,fixup) */
+	and	r1, r1, #0xff
+	cmp	r1, #R_ARM_RELATIVE
+	bne	3f
+
+	tst	r0, #3
+	beq	2f
+	sub	r0, r2, #8
+	bl	prhex
+	mov	r0, #':'
+	bl	pr_c
+	ldr	r0,[r2, #-8]
+	bl	prhex
+	mov	r0, #'_'
+	bl	pr_c
+	ldr	r0,[r2, #-4]
+	bl	prhex
+	mov	r0, #1
+	ldmia	sp!, {pc}
+2:
+3:
+	cmp	r2, r3
+	blo	1b
+
+	mov	r0, #0
+	ldmia	sp!, {pc}
+
+ENDPROC(verify_relocate_table)
+#endif
