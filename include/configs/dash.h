@@ -14,6 +14,7 @@
 #define CONFIG_MACH_TYPE	3769
 
 #define CONFIG_ETHPRIME			"usb_ether"
+#define CONFIG_FEC_MAC_FUSE
 
 #ifdef CONFIG_MX6Q
 #define CONFIG_CMD_SATA
