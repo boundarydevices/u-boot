@@ -440,8 +440,21 @@ int board_eth_init(bd_t *bis)
 #define USB_ETH "ethaddr"
 #endif
 	/* For otg ethernet*/
+#ifndef CONFIG_FEC_MXC
+	/* ethaddr should be set from fuses */
+	if (!getenv(USB_ETH)) {
+		unsigned char mac[8];
+
+		imx_get_mac_from_fuse(0, mac);
+		if (is_valid_ethaddr(mac))
+			eth_setenv_enetaddr(USB_ETH, mac);
+		else
+			setenv(USB_ETH, getenv("usbnet_devaddr"));
+	}
+#else
 	if (!getenv(USB_ETH))
 		setenv(USB_ETH, getenv("usbnet_devaddr"));
+#endif
 	usb_eth_initialize(bis);
 #endif
 	return 0;
