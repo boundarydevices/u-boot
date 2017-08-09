@@ -12,6 +12,8 @@
 #include "mx6_common.h"
 
 #define CONFIG_MACH_TYPE	3769
+#define CONFIG_ETHPRIME			"usb_ether"
+#define CONFIG_FEC_MAC_FUSE
 
 #define CONFIG_IMX_HDMI
 #define CONFIG_SYS_FSL_USDHC_NUM	2
