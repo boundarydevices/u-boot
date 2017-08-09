@@ -16,6 +16,7 @@
 #define CONFIG_BOARD_NAME	"cad"
 
 #define CONFIG_ETHPRIME			"usb_ether"
+#define CONFIG_FEC_MAC_FUSE
 
 #define CONFIG_MXC_SPI_DISPLAY
 
