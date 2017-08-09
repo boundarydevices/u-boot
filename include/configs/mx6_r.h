@@ -14,6 +14,8 @@
 
 #define CONFIG_MACH_TYPE	3774
 #define CONFIG_BOARD_NAME	"mx6_r"
+#define CONFIG_ETHPRIME			"usb_ether"
+#define CONFIG_FEC_MAC_FUSE
 
 #define CONFIG_MXC_SPI_DISPLAY
 
