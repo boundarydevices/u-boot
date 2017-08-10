@@ -26,5 +26,6 @@
 	"bootdelay=1\0" \
 	"disable_giga=1\0" \
 	"fb_lvds=tm070jdhg30\0" \
+	"panel=tm070jdhg30\0" \
 
 #endif	       /* __CONFIG_H */
