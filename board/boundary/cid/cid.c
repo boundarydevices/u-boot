@@ -390,8 +390,7 @@ int board_ehci_power(int port, int on)
 {
 	if (port)
 		return 0;
-	/* Fixme, should use max77818 */
-//	gpio_set_value(GP_REG_USBOTG, on);
+	max77823_otg_power(on);
 	return 0;
 }
 #endif
