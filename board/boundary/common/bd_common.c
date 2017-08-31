@@ -122,7 +122,7 @@ int board_mmc_init(bd_t *bis)
 }
 #endif
 
-#ifdef CONFIG_SPLASH_SCREEN_PREPARE
+#ifdef CONFIG_SPLASH_SCREEN
 int splash_screen_prepare(void)
 {
 	char *env_loadsplash;
@@ -144,7 +144,6 @@ int splash_screen_prepare(void)
 
 	return 0;
 }
-
 #endif
 
 #ifdef CONFIG_CMD_FBPANEL
