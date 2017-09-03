@@ -113,6 +113,8 @@ int	drv_lcd_init (void);
 #endif
 #if defined(CONFIG_VIDEO) || defined(CONFIG_CFB_CONSOLE)
 int	drv_video_init (void);
+struct graphic_device;
+int	drv_video_init2(struct graphic_device *fb);
 #endif
 #ifdef CONFIG_KEYBOARD
 int	drv_keyboard_init (void);
