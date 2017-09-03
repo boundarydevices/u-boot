@@ -20,6 +20,10 @@
 #include <asm/arch/clock.h>
 #include <asm/arch/imx-regs.h>
 #include <asm/arch/sys_proto.h>
+#include <linux/fb.h>
+#include <ipu_pixfmt.h>
+#include <stdio_dev.h>
+
 #include <asm/mach-imx/dma.h>
 #include <asm/io.h>
 
@@ -91,8 +95,10 @@ static void mxs_lcd_init(struct udevice *dev, u32 fb_addr,
 		return;
 	}
 #else
+#if !defined(CONFIG_CMD_FBPANEL)
 	/* Kick in the LCDIF clock */
 	mxs_set_lcdclk(MXS_LCDIF_BASE, timings->pixelclock.typ / 1000);
+#endif
 #endif
 
 	/* Restart the LCDIF block */
@@ -236,40 +242,34 @@ static int mxs_remove_common(u32 fb)
 
 #ifndef CONFIG_DM_VIDEO
 
-static GraphicDevice panel;
+static struct graphic_device panel;
 
 void lcdif_power_down(void)
 {
 	mxs_remove_common(panel.frameAdrs);
 }
 
-void *video_hw_init(void)
+static void __board_video_enable(void)
 {
-	int bpp = -1;
-	int ret = 0;
-	char *penv;
-	void *fb = NULL;
-	struct ctfb_res_modes mode;
+}
+
+void board_video_enable(void)
+	__attribute__((weak, alias("__board_video_enable")));
+
+static struct graphic_device *mxsfb_probe(int bpp, struct ctfb_res_modes *mode)
+{
 	struct display_timing timings;
-
-	puts("Video: ");
-
-	/* Suck display configuration from "videomode" variable */
-	penv = env_get("videomode");
-	if (!penv) {
-		puts("MXSFB: 'videomode' variable not set!\n");
-		return NULL;
-	}
-
-	bpp = video_get_params(&mode, penv);
+	void *fb;
+	unsigned mem_size;
+	int ret;
 
 	/* fill in Graphic device struct */
-	sprintf(panel.modeIdent, "%dx%dx%d", mode.xres, mode.yres, bpp);
+	sprintf(panel.modeIdent, "%dx%dx%d", mode->xres, mode->yres, bpp);
 
-	panel.winSizeX = mode.xres;
-	panel.winSizeY = mode.yres;
-	panel.plnSizeX = mode.xres;
-	panel.plnSizeY = mode.yres;
+	panel.winSizeX = mode->xres;
+	panel.winSizeY = mode->yres;
+	panel.plnSizeX = mode->xres;
+	panel.plnSizeY = mode->yres;
 
 	switch (bpp) {
 	case 24:
@@ -290,24 +290,30 @@ void *video_hw_init(void)
 		return NULL;
 	}
 
-	panel.memSize = mode.xres * mode.yres * panel.gdfBytesPP;
-
-	/* Allocate framebuffer */
-	fb = memalign(ARCH_DMA_MINALIGN,
-		      roundup(panel.memSize, ARCH_DMA_MINALIGN));
-	if (!fb) {
-		printf("MXSFB: Error allocating framebuffer!\n");
-		return NULL;
+	mem_size = mode->xres * mode->yres * panel.gdfBytesPP;
+	fb = (void *)panel.frameAdrs;
+	if (fb) {
+		if (panel.memSize < mem_size) {
+			free(fb);
+			fb = NULL;
+			panel.frameAdrs = (u32)fb;
+		}
 	}
-
+	if (!fb) {
+		/* Allocate framebuffer */
+		fb = memalign(ARCH_DMA_MINALIGN,
+			roundup(mem_size, ARCH_DMA_MINALIGN));
+		if (!fb) {
+			printf("MXSFB: Error allocating framebuffer!\n");
+			return NULL;
+		}
+		panel.memSize = mem_size;
+		panel.frameAdrs = (u32)fb;
+	}
 	/* Wipe framebuffer */
-	memset(fb, 0, panel.memSize);
+	memset(fb, 0, mem_size);
 
-	panel.frameAdrs = (u32)fb;
-
-	printf("%s\n", panel.modeIdent);
-
-	video_ctfb_mode_to_display_timing(&mode, &timings);
+	video_ctfb_mode_to_display_timing(mode, &timings);
 
 	ret = mxs_probe_common(NULL, &timings, bpp, (u32)fb);
 	if (ret)
@@ -318,6 +324,7 @@ void *video_hw_init(void)
 	mxc_enable_gis();
 #endif
 
+	board_video_enable();
 	return (void *)&panel;
 
 dealloc_fb:
@@ -477,3 +484,86 @@ U_BOOT_DRIVER(mxs_video) = {
 	.flags	= DM_FLAG_PRE_RELOC | DM_FLAG_OS_PREPARE,
 };
 #endif /* ifndef CONFIG_DM_VIDEO */
+
+void cvt_fb_videomode_to_ctfb_res_modes(const struct fb_videomode *fb, struct ctfb_res_modes *ct)
+{
+	ct->xres = fb->xres;
+	ct->yres = fb->yres;
+	ct->refresh = fb->refresh;
+	ct->pixclock = fb->pixclock;
+	ct->pixclock_khz = 0;
+	ct->left_margin = fb->left_margin;
+	ct->right_margin = fb->right_margin;
+	ct->upper_margin = fb->upper_margin;
+	ct->lower_margin = fb->lower_margin;
+	ct->hsync_len = fb->hsync_len;
+	ct->vsync_len = fb->vsync_len;
+	ct->sync = fb->sync;
+	ct->vmode = fb->vmode;
+}
+
+static struct fb_videomode const *gmode;
+static uint32_t gpixfmt;
+
+static struct graphic_device *mxsfb_probe2(void)
+{
+	struct ctfb_res_modes ct;
+	int bpp = -1;
+
+	switch (gpixfmt) {
+	case IPU_PIX_FMT_RGB32:
+		bpp = 32;
+		break;
+	case IPU_PIX_FMT_RGB24:
+		bpp = 24;
+		break;
+	case IPU_PIX_FMT_RGB666:
+		bpp = 18;
+		break;
+	case IPU_PIX_FMT_RGB565:
+		bpp = 16;
+		break;
+	}
+
+	cvt_fb_videomode_to_ctfb_res_modes(gmode, &ct);
+	return mxsfb_probe(bpp, &ct);
+}
+
+void *mxsfb_init2(void)
+{
+	struct graphic_device *fb = mxsfb_probe2();
+
+	if (fb) {
+		drv_video_init2(fb);
+		debug("Framebuffer at 0x%x\n", (unsigned int)fb->frameAdrs);
+	}
+	return fb;
+}
+
+int mxsfb_init(struct fb_videomode const *mode, uint32_t pixfmt)
+{
+	gmode = mode;
+	gpixfmt = pixfmt;
+	return 0;
+}
+
+void *video_hw_init(void)
+{
+	char *penv;
+	int bpp = -1;
+	struct ctfb_res_modes mode;
+
+	if (gmode)
+		return mxsfb_probe2();
+	puts("Video: ");
+
+	/* Suck display configuration from "videomode" variable */
+	penv = env_get("videomode");
+	if (!penv) {
+		puts("MXSFB: 'videomode' variable not set!\n");
+		return NULL;
+	}
+
+	bpp = video_get_params(&mode, penv);
+	return mxsfb_probe(bpp, &mode);
+}

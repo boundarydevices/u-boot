@@ -199,6 +199,10 @@ u32 get_ahb_clk(void);
 u32 get_periph_clk(void);
 
 void lcdif_power_down(void);
+struct fb_videomode;
+int mxsfb_init(struct fb_videomode const *mode, uint32_t pixfmt);
+void *mxsfb_init2(void);
+
 
 int mxs_reset_block(struct mxs_register_32 *reg);
 int mxs_wait_mask_set(struct mxs_register_32 *reg, u32 mask, u32 timeout);
