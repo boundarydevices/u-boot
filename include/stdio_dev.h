@@ -100,6 +100,8 @@ struct stdio_dev *stdio_clone(struct stdio_dev *dev);
 
 int drv_lcd_init(void);
 int drv_video_init(void);
+struct graphic_device;
+int drv_video_init2(struct graphic_device *fb);
 int drv_keyboard_init(void);
 int drv_usbtty_init(void);
 int drv_nc_init(void);
