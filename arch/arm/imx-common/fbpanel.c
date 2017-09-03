@@ -6,7 +6,7 @@
 #include <errno.h>
 #include <asm/arch/clock.h>
 #include <asm/arch/crm_regs.h>
-#if !defined(CONFIG_MX51) && !defined(CONFIG_MX53)
+#if !defined(CONFIG_MX51) && !defined(CONFIG_MX53) && !defined(CONFIG_MX7D)
 #include <asm/arch/mxc_hdmi.h>
 #endif
 #include <asm/arch/sys_proto.h>
@@ -248,7 +248,7 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		fmt = rgb666;
 
 	if (di && (fb >= FB_LCD)) {
-#ifdef CONFIG_MX6SX
+#if defined(CONFIG_MX6SX) || defined(CONFIG_MX7D)
 		sz = snprintf(buf, size, "fdt set %s bus-width <%u>;", short_names[fb],
 				(di->pixfmt == IPU_PIX_FMT_RGB24) ? 24 : 18);
 
@@ -371,7 +371,21 @@ int calc_gcd(int a, int b)
 	return a;
 }
 
-#if !defined(CONFIG_MX51) && !defined(CONFIG_MX53)
+#ifdef CONFIG_MX6SX
+void reparent_lvds(int fbtype, int new_parent)
+{
+	struct mxc_ccm_reg *ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
+	int ldb_sel_shift = 9;
+	u32 reg = readl(&ccm->cs2cdr);
+
+	reg &= ~(7 << ldb_sel_shift);
+
+	reg |= new_parent << ldb_sel_shift;
+	writel(reg, &ccm->cs2cdr);
+	readl(&ccm->cs2cdr);	/* wait for write */
+}
+
+#elif !defined(CONFIG_MX51) && !defined(CONFIG_MX53) && !defined(CONFIG_MX7D)
 void reparent_lvds(int fbtype, int new_parent)
 {
 	struct mxc_ccm_reg *ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
@@ -492,34 +506,47 @@ void setup_clock(struct display_info_t const *di)
 	reg |= (best - 1) << 6;
 	writel(reg, &ccm->cdcdr);
 
+#ifndef CONFIG_MX6SX
 	ipu_set_ldb_clock(pll3_freq / best);	/* used for all ext clocks */
+#endif
 }
 
 #else
 void setup_clock(struct display_info_t const *di)
 {
+#if defined(CONFIG_MX7D)
+	struct mxc_ccm_anatop_reg *ccm_anatop = (struct mxc_ccm_anatop_reg *)
+						 ANATOP_BASE_ADDR;
+	u32 target;
+#else
 	struct mxc_ccm_reg *ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
-	u32 desired_freq;
+	u32 reg;
+	u32 pll_video;
+#if !defined(CONFIG_MX6SX)
 	u32 out_freq;
+#endif
+#endif
+	u32 desired_freq;
+	int post_div = 2;	/* 0: /4, 1: /2, 2: /1 */
+	int misc2_div = 0;	/* 0: /1, 1: /2, 3: /4 */
 	int lvds = ((di->fbtype == FB_LVDS) | (di->fbtype == FB_LVDS2)) ? 1 : 0;
 	u64 lval = 1000000000000ULL;
 	int timeout = 1000;
-	int post_div = 2;
-	int misc2_div = 0;
 	int multiplier;
 	int gcd;
 	int num, denom;
-	u32 pll_video;
-	u32 reg;
 	int ipu_div = 7;
 	int x = 1;
 
 	if (!(di->mode.sync & FB_SYNC_EXT))
 		return;
 
-#ifdef CONFIG_MX6SX
+#if defined(CONFIG_MX6SX)
 	clrbits_le32(&ccm->CCGR2, MXC_CCM_CCGR2_LCD_MASK);
-	clrbits_le32(&ccm->CCGR5, 0x3f << 8);
+	/* gate LCDIF2/LCDIF1/LDB_DI0 */
+	clrbits_le32(&ccm->CCGR3, 0x3f << 8);
+#elif defined(CONFIG_MX7D)
+	clock_enable(CCGR_LCDIF, 0);
 #else
 	/* gate ipu1_di0_clk */
 	clrbits_le32(&ccm->CCGR3, MXC_CCM_CCGR3_LDB_DI0_MASK |
@@ -527,16 +554,30 @@ void setup_clock(struct display_info_t const *di)
 			MXC_CCM_CCGR3_IPU1_IPU_DI0_MASK);
 #endif
 
+#if defined(CONFIG_MX7D)
+	/* Power up video PLL and disable its output */
+	writel(CCM_ANALOG_PLL_VIDEO_CLR_ENABLE_CLK_MASK |
+		CCM_ANALOG_PLL_VIDEO_CLR_POWERDOWN_MASK |
+		CCM_ANALOG_PLL_VIDEO_CLR_BYPASS_MASK |
+		CCM_ANALOG_PLL_VIDEO_CLR_DIV_SELECT_MASK |
+		CCM_ANALOG_PLL_VIDEO_CLR_POST_DIV_SEL_MASK |
+		CCM_ANALOG_PLL_VIDEO_CLR_TEST_DIV_SELECT_MASK,
+		&ccm_anatop->pll_video_clr);
+#else
 	pll_video = readl(&ccm->analog_pll_video);
 	pll_video &= BM_ANADIG_PLL_VIDEO_ENABLE;
 	pll_video |= BM_ANADIG_PLL_VIDEO_POWERDOWN;
 	writel(pll_video, &ccm->analog_pll_video);
+#endif
 
 	do_div(lval, di->mode.pixclock);
 	desired_freq = (u32)lval;
 	debug("desired_freq=%d\n", desired_freq);
+#if !defined(CONFIG_MX6SX) && !defined(CONFIG_MX7D)
 	out_freq = desired_freq;
+#endif
 
+#if !defined(CONFIG_MX7D)
 	if (lvds) {
 		reparent_lvds(di->fbtype, 0);
 		desired_freq *= 7;
@@ -544,7 +585,7 @@ void setup_clock(struct display_info_t const *di)
 			desired_freq >>= 1;
 
 	}
-
+#endif
 	debug("desired_freq=%d\n", desired_freq);
 
 #define MIN_FREQ 648000000	/* 24000000 * 27 */
@@ -566,15 +607,26 @@ void setup_clock(struct display_info_t const *di)
 		}
 		debug("desired_freq=%d\n", desired_freq);
 	};
+
 	if (!lvds) {
 		num = (MIN_FREQ - 1) / desired_freq + 1;
 		x = (num + 7) / 8;
 		ipu_div =  (num - 1) / x + 1;
 		desired_freq *= ipu_div * x;
+#if defined(CONFIG_MX6SX)
+		if (x > 8) {
+			printf("div changed from %d to 64\n", num);
+			ipu_div = 8;
+			x = 8;
+			desired_freq = MIN_FREQ;
+		}
+#endif
 	} else if (desired_freq < MIN_FREQ) {
 		printf("desired_freq=%d is too low\n", desired_freq);
 	}
+#if !defined(CONFIG_MX6SX) && !defined(CONFIG_MX7D)
 	ipu_set_ldb_clock(out_freq * x);	/* used for all ext clocks */
+#endif
 	debug("desired_freq=%d ipu div=%d x=%d\n", desired_freq, ipu_div, x);
 
 	multiplier = desired_freq / 24000000;
@@ -583,6 +635,12 @@ void setup_clock(struct display_info_t const *di)
 		desired_freq = 24000000 * 54;
 	}
 
+#if defined(CONFIG_MX7D)
+	writel(CCM_ANALOG_PLL_VIDEO_SET_DIV_SELECT(multiplier) |
+		CCM_ANALOG_PLL_VIDEO_SET_TEST_DIV_SELECT(post_div) |
+		CCM_ANALOG_PLL_VIDEO_SET_POST_DIV_SEL(misc2_div),
+		&ccm_anatop->pll_video_set);
+#else
 	reg = readl(&ccm->pmu_misc2);
 	reg &= ~(BF_PMU_MISC2_VIDEO_DIV(3));
 	reg |= BF_PMU_MISC2_VIDEO_DIV(misc2_div);
@@ -593,7 +651,7 @@ void setup_clock(struct display_info_t const *di)
 	pll_video |= BF_ANADIG_PLL_VIDEO_DIV_SELECT(multiplier) |
 		BF_ANADIG_PLL_VIDEO_POST_DIV_SELECT(post_div);
 	writel(pll_video, &ccm->analog_pll_video);
-
+#endif
 	desired_freq -= multiplier * 24000000;
 	gcd = calc_gcd(desired_freq, 24000000);
 	debug("gcd=%d desired_freq=%d 24000000\n", gcd, desired_freq);
@@ -601,6 +659,22 @@ void setup_clock(struct display_info_t const *di)
 	denom = 24000000 / gcd;
 	debug("desired_freq=%d multiplier=%d %d/%d\n", desired_freq, multiplier, num, denom);
 
+#if defined(CONFIG_MX7D)
+	writel(num, &ccm_anatop->pll_video_num);
+	writel(denom, &ccm_anatop->pll_video_denom);
+
+	while (!(readl(&ccm_anatop->pll_video) & CCM_ANALOG_PLL_VIDEO_LOCK_MASK)) {
+		udelay(100);
+		if (--timeout < 0) {
+			printf("Warning: video pll lock timeout!\n");
+			break;
+		}
+	}
+
+	/* Enable PLL out */
+	writel(CCM_ANALOG_PLL_VIDEO_CLR_ENABLE_CLK_MASK,
+			&ccm_anatop->pll_video_set);
+#else
 	writel(num, &ccm->analog_pll_video_num);
 	writel(denom, &ccm->analog_pll_video_denom);
 
@@ -618,19 +692,44 @@ void setup_clock(struct display_info_t const *di)
 	pll_video &= ~BM_ANADIG_PLL_VIDEO_BYPASS;
 	pll_video |= BM_ANADIG_PLL_VIDEO_ENABLE;
 	writel(pll_video, &ccm->analog_pll_video);
+#endif
 
-#ifdef CONFIG_MX6SX
-	reg = readl(&ccm->cs2cdr);
-	reg &= ~(MXC_CCM_CS2CDR_LDB_DI0_CLK_SEL_MASK);
-	writel(reg, &ccm->cs2cdr);
+#if defined(CONFIG_MX6SX)
+	/* Select pll5 clock for ldb di0 */
+	clrbits_le32(&ccm->cs2cdr, MXC_CCM_CS2CDR_LDB_DI0_CLK_SEL_MASK);
 
-	reg = readl(&ccm->cscdr2);
-	reg &= ~((7 << 9) | (7 << 12) | (7 << 15));
-	reg |= ((2 << 15) | ((lvds ? 3 : 0) << 9) | (ipu_div - 1) << 12);
-	writel(reg, &ccm->cscdr2);
+	/* lvds:
+	 *   lcdif1 from ldb_di0
+	 * lcd:
+	 *   lcdif1 from pre-muxed lcdif1 clock / ipu_div
+	 *   pre-muxed from PLL5
+	 */
+	clrsetbits_le32(&ccm->cscdr2,
+		(MXC_CCM_CSCDR2_LCDIF1_CLK_SEL_MASK |
+		MXC_CCM_CSCDR2_LCDIF1_PRE_DIV_MASK |
+		MXC_CCM_CSCDR2_LCDIF1_PRED_SEL_MASK),
+		(((lvds ? 3 : 0) << MXC_CCM_CSCDR2_LCDIF1_CLK_SEL_OFFSET) |
+		((ipu_div - 1) << MXC_CCM_CSCDR2_LCDIF1_PRE_DIV_OFFSET) |
+		(2 << MXC_CCM_CSCDR2_LCDIF1_PRED_SEL_OFFSET)));
+
+	/* Set the post divider */
+	clrsetbits_le32(&ccm->cbcmr,
+			MXC_CCM_CBCMR_LCDIF1_PODF_MASK,
+			((x - 1) <<
+			MXC_CCM_CBCMR_LCDIF1_PODF_OFFSET));
 
 	setbits_le32(&ccm->CCGR2, MXC_CCM_CCGR2_LCD_MASK);
-	setbits_le32(&ccm->CCGR5, (3 << 10) | (lvds ? (3 << 12) : 0));
+	/* enable lcdif1/ ldb_di0 (if lvds)*/
+	setbits_le32(&ccm->CCGR3, MXC_CCM_CCGR3_LCDIF1_PIX_MASK |
+		MXC_CCM_CCGR3_DISP_AXI_MASK |
+		(lvds ? MXC_CCM_CCGR3_LDB_DI0_MASK : 0));
+
+#elif defined(CONFIG_MX7D)
+	target = CLK_ROOT_ON | LCDIF_PIXEL_CLK_ROOT_FROM_PLL_VIDEO_MAIN_CLK |
+		 CLK_ROOT_PRE_DIV((ipu_div - 1)) | CLK_ROOT_POST_DIV((x - 1));
+	clock_set_target_val(LCDIF_PIXEL_CLK_ROOT, target);
+	clock_enable(CCGR_LCDIF, 1);
+
 #else
 	reg = readl(&ccm->chsccdr);
 	reg &= ~(MXC_CCM_CHSCCDR_IPU1_DI0_CLK_SEL_MASK |
@@ -655,7 +754,7 @@ void setup_clock(struct display_info_t const *di)
 
 void fbp_enable_fb(struct display_info_t const *di, int enable)
 {
-#if !defined(CONFIG_MX51) && !defined(CONFIG_MX53)
+#if !defined(CONFIG_MX51) && !defined(CONFIG_MX53) && !defined(CONFIG_MX7D)
 	struct mxc_ccm_reg *mxc_ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
 	struct iomuxc *iomux = (struct iomuxc *)IOMUXC_BASE_ADDR;
 	u32 reg, cscmr2;
@@ -672,9 +771,14 @@ void fbp_enable_fb(struct display_info_t const *di, int enable)
 	case FB_LCD:
 		board_enable_lcd(di, enable);
 		break;
-#if !defined(CONFIG_MX51) && !defined(CONFIG_MX53)
+#if !defined(CONFIG_MX51) && !defined(CONFIG_MX53) && !defined(CONFIG_MX7D)
 	case FB_LVDS:
-		reg = readl(&iomux->gpr[2]);
+#ifdef CONFIG_MX6SX
+#define GPR_LDB	6
+#else
+#define GPR_LDB	2
+#endif
+		reg = readl(&iomux->gpr[GPR_LDB]);
 		cscmr2 = readl(&mxc_ccm->cscmr2);
 		reg &= ~(IOMUXC_GPR2_DATA_WIDTH_CH0_24BIT |
 			 IOMUXC_GPR2_BIT_MAPPING_CH0_JEIDA |
@@ -703,9 +807,10 @@ void fbp_enable_fb(struct display_info_t const *di, int enable)
 		if (enable)
 			reg |= tmp | IOMUXC_GPR2_LVDS_CH0_MODE_ENABLED_DI0;
 
-		writel(reg, &iomux->gpr[2]);
+		writel(reg, &iomux->gpr[GPR_LDB]);
 		board_enable_lvds(di, enable);
 		break;
+#ifndef CONFIG_MX6SX
 	case FB_LVDS2:
 		reg = readl(&iomux->gpr[2]);
 		cscmr2 = readl(&mxc_ccm->cscmr2);
@@ -728,34 +833,42 @@ void fbp_enable_fb(struct display_info_t const *di, int enable)
 		board_enable_lvds2(di, enable);
 		break;
 #endif
+#endif
 	}
 }
 
 static void imx_prepare_display(void)
 {
-#ifndef CONFIG_MX6SX
-#if !defined(CONFIG_MX51) && !defined(CONFIG_MX53)
+#if !defined(CONFIG_MX51) && !defined(CONFIG_MX53) && \
+		!defined(CONFIG_MX7D)
 	struct mxc_ccm_reg *mxc_ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
-	struct iomuxc *iomux = (struct iomuxc *)IOMUXC_BASE_ADDR;
 	int reg;
+#if !defined(CONFIG_MX6SX)
+	struct iomuxc *iomux = (struct iomuxc *)IOMUXC_BASE_ADDR;
 
 	enable_ipu_clock();
 #ifdef CONFIG_IMX_HDMI
 	imx_setup_hdmi();
+#endif
 #endif
 	/* Turn on LDB0,IPU,IPU DI0 clocks */
 	reg = __raw_readl(&mxc_ccm->CCGR3);
 	reg |=  MXC_CCM_CCGR3_LDB_DI0_MASK;
 	writel(reg, &mxc_ccm->CCGR3);
 
-	/* set LDB0, LDB1 clk select to 011/011 */
 	reg = readl(&mxc_ccm->cs2cdr);
 	reg &= ~(MXC_CCM_CS2CDR_LDB_DI0_CLK_SEL_MASK
-		 |MXC_CCM_CS2CDR_LDB_DI1_CLK_SEL_MASK);
+		| MXC_CCM_CS2CDR_LDB_DI1_CLK_SEL_MASK);
+#ifdef CONFIG_MX6SX
+	/* Select pll5 clock for ldb di0 */
+#else
+	/* set LDB0, LDB1 clk select to 011/011 */
 	reg |= (3<<MXC_CCM_CS2CDR_LDB_DI0_CLK_SEL_OFFSET)
 	      |(3<<MXC_CCM_CS2CDR_LDB_DI1_CLK_SEL_OFFSET);
+#endif
 	writel(reg, &mxc_ccm->cs2cdr);
 
+#ifndef CONFIG_MX6SX
 	reg = IOMUXC_GPR2_BGREF_RRMODE_EXTERNAL_RES
 	     |IOMUXC_GPR2_DI1_VS_POLARITY_ACTIVE_LOW
 	     |IOMUXC_GPR2_DI0_VS_POLARITY_ACTIVE_LOW
@@ -1162,29 +1275,28 @@ static const struct display_info_t *select_display(
 static const struct display_info_t *g_displays;
 static int g_display_cnt;
 
-#ifndef CONFIG_MX6SX
 static const struct display_info_t *g_di_active;
-#endif
 
 void board_video_enable(void)
 {
-#ifndef CONFIG_MX6SX
 	const struct display_info_t *di = g_di_active;
 	if (di && di->enable)
 		di->enable(di, 1);
-#endif
 }
 
 static int init_display(const struct display_info_t *di)
 {
-#ifndef CONFIG_MX6SX
 	int ret;
 
 	if (di->pre_enable)
 		di->pre_enable(di);
 	setup_clock(di);
+#if defined(CONFIG_MX6SX) || defined(CONFIG_MX7D)
+	ret = mxsfb_init(&di->mode, di->pixfmt);
+#else
 	ret = ipuv3_fb_init(&di->mode, (di->fbtype == FB_LCD2) ? 1 : 0,
 			di->pixfmt);
+#endif
 	if (ret) {
 		printf("LCD %s cannot be configured: %d\n", di->mode.name, ret);
 		return -EINVAL;
@@ -1192,7 +1304,6 @@ static int init_display(const struct display_info_t *di)
 	printf("Display: %s:%s (%ux%u)\n", short_names[di->fbtype],
 			di->mode.name, di->mode.xres, di->mode.yres);
 	g_di_active = di;
-#endif
 	return 0;
 }
 
@@ -1241,7 +1352,6 @@ static int do_fbpanel(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	}
 	if (!(prefer & 1))
 		return 0;
-#ifndef CONFIG_MX6SX
 	{
 		const struct display_info_t* di1;
 		di1 = g_di_active;
@@ -1250,6 +1360,7 @@ static int do_fbpanel(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 			g_di_active = NULL;
 		}
 	}
+#if !defined(CONFIG_MX6SX) && !defined(CONFIG_MX7D)
 	ipuv3_fb_shutdown();
 	if (!di)
 		return 0;
@@ -1257,6 +1368,14 @@ static int do_fbpanel(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	if (ret)
 		return ret;
 	ipuv3_fb_init2();
+#else
+	lcdif_power_down();
+	if (!di)
+		return 0;
+	ret = init_display(di);
+	if (ret)
+		return ret;
+	mxsfb_init2();
 #endif
 	return ret;
 }
