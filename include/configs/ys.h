@@ -41,7 +41,6 @@
 	"m4boot_nor=sf probe; sf read ${m4loadaddr} ${m4offset} ${m4size}; " \
 		"dcache flush; bootaux ${m4loadaddr}\0"
 
-#define CONFIG_CMD_FBPANEL
 #define CONFIG_PCIE_IMX_PERST_GPIO	IMX_GPIO_NR(4, 10)
 #define CONFIG_RGMII1
 #define CONFIG_RGMII2
