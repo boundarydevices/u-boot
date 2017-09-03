@@ -15,9 +15,6 @@
 #define CONFIG_ETHPRIME			"usb_ether"
 #define CONFIG_FEC_MAC_FUSE
 
-
-#define CONFIG_SYS_CONSOLE_IS_IN_ENV
-
 /* M4 specific */
 #define SYS_AUXCORE_BOOTDATA_DDR	0x9ff00000
 #define SYS_AUXCORE_BOOTDATA_OCRAM	0x00910000
@@ -44,7 +41,6 @@
 	"m4boot_nor=sf probe; sf read ${m4loadaddr} ${m4offset} ${m4size}; " \
 		"dcache flush; bootaux ${m4loadaddr}\0"
 
-#define CONFIG_CMD_FBPANEL
 #define CONFIG_PCIE_IMX_PERST_GPIO	IMX_GPIO_NR(4, 10)
 #define CONFIG_SYS_AUXCORE_BOOTDATA	0x900000	/* M4 specific */
 #define CONFIG_SYS_FSL_ESDHC_GPIO_WP

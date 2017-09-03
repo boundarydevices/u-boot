@@ -323,13 +323,6 @@ struct fsl_esdhc_cfg board_usdhc_cfg[] = {
 #endif
 
 #ifdef CONFIG_CMD_FBPANEL
-#if 0
-void board_enable_lvds(const struct display_info_t *di, int enable)
-{
-	gpio_direction_output(GP_BACKLIGHT_LVDS, enable);
-	gpio_direction_output(GP_LVDS_ENABLE, enable);
-}
-
 void board_enable_lcd(const struct display_info_t *di, int enable)
 {
 	if (enable)
@@ -338,7 +331,6 @@ void board_enable_lcd(const struct display_info_t *di, int enable)
 		SETUP_IOMUX_PADS(rgb_gpio_pads);
 	gpio_direction_output(GP_BACKLIGHT_RGB, enable);
 }
-#endif
 
 static const struct display_info_t displays[] = {
 	/* tsc2004 */
