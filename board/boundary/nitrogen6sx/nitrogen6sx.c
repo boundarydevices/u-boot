@@ -398,7 +398,6 @@ struct fsl_esdhc_cfg board_usdhc_cfg[] = {
 #endif
 
 #ifdef CONFIG_CMD_FBPANEL
-#if 0
 void board_enable_lvds(const struct display_info_t *di, int enable)
 {
 	gpio_direction_output(GP_BACKLIGHT_LVDS, enable);
@@ -407,15 +406,37 @@ void board_enable_lvds(const struct display_info_t *di, int enable)
 
 void board_enable_lcd(const struct display_info_t *di, int enable)
 {
-	if (enable)
+	unsigned tfp410_i2c_addr = 0x38;
+	unsigned gp = GP_I2C2_TFP410_I2C_SEL;
+	int ret;
+	u8 orig_i2c_bus;
+	u8 val8;
+
+	orig_i2c_bus = i2c_get_bus_num();
+	i2c_set_bus_num(1);
+	if (enable) {
+		//tfp410 low to high of sel is reset, then i2c_mode
+		gpio_set_value(gp, 0);
+		udelay(5);
+		gpio_set_value(gp, 1);
 		SETUP_IOMUX_PADS(rgb_pads);
-	else
+
+		val8 = 0xbd;	/* ON */
+		ret = i2c_write(tfp410_i2c_addr, 0x8, 1, &val8, 1);
+		if (ret) {
+			/* On i2c failure, put back into non-i2c mode */
+			gpio_set_value(gp, 0);
+		}
+	} else {
+		val8 = 0xbc;	/* OFF */
+		i2c_write(tfp410_i2c_addr, 0x8, 1, &val8, 1);
 		SETUP_IOMUX_PADS(rgb_gpio_pads);
+	}
+	i2c_set_bus_num(orig_i2c_bus);
 }
-#endif
 
 static const struct display_info_t displays[] = {
-	/* hdmi/lcd */
+	/* hdmi/lcd via tfp410 */
 	VDF_1280_720M_60(LCD, "1280x720M@60", RGB24, 0, fbp_detect_i2c, 2, 0x50),
 	VDF_1920_1080M_60(LCD, "1920x1080M@60", RGB24, 0, NULL, 2, 0x50),
 	VDF_1024_768M_60(LCD, "1024x768M@60", RGB24, 0, NULL, 2, 0x50),
@@ -477,6 +498,7 @@ static const unsigned short gpios_out_low[] = {
 
 static const unsigned short gpios_out_high[] = {
 	GP_ECSPI1_NOR_CS,
+	GP_I2C2_TFP410_I2C_SEL,
 	GP_CAN1_STANDBY,
 	GP_CAN2_STANDBY,
 };
