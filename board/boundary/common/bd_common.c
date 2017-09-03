@@ -314,9 +314,6 @@ int board_late_init(void)
 	addmac_env("bd_addr");
 #endif
 	print_time_rv4162();
-#if defined(CONFIG_CMD_FBPANEL) && defined(CONFIG_MX6SX)
-	board_video_skip();
-#endif
 
 return 0;
 }
