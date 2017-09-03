@@ -2026,7 +2026,6 @@ static int cfg_video_init(void)
 {
 	unsigned char color8;
 
-	pGD = video_hw_init();
 	if (pGD == NULL)
 		return -1;
 
@@ -2107,6 +2106,9 @@ static int cfg_video_init(void)
 	}
 	eorx = fgx ^ bgx;
 
+	/* Initialize the console */
+	old_col = console_col = 0;
+	old_row = console_row = 0;
 	if (!CONFIG_IS_ENABLED(NO_FB_CLEAR))
 		video_clear();
 
@@ -2115,6 +2117,7 @@ static int cfg_video_init(void)
 		video_console_address = video_fb_address;
 #ifndef CONFIG_VIDEO_SKIP_VERSION
 		video_drawstring(VIDEO_FONT_WIDTH, 0, (uchar *)version_string);
+		old_row = console_row = 1;
 #endif
 	}
 #endif
@@ -2123,10 +2126,6 @@ static int cfg_video_init(void)
 	debug("Video: Drawing the logo ...\n");
 	video_console_address = video_logo();
 #endif
-
-	/* Initialize the console */
-	console_col = 0;
-	console_row = 0;
 
 	if (cfb_do_flush_cache)
 		flush_cache(VIDEO_FB_ADRS, VIDEO_SIZE);
@@ -2155,7 +2154,7 @@ int drv_video_init(void)
 		return 0;
 
 	/* Init video chip - returns with framebuffer cleared */
-	if (cfg_video_init() == -1)
+	if (!drv_video_init2(video_hw_init()))
 		return 0;
 
 	if (board_cfb_skip())
@@ -2196,6 +2195,14 @@ int drv_video_init(void)
 		return 0;
 
 	/* Return success */
+	return 1;
+}
+
+int drv_video_init2(struct graphic_device *fb)
+{
+	pGD = fb;
+	if (cfg_video_init() == -1)
+		return 0;
 	return 1;
 }
 
