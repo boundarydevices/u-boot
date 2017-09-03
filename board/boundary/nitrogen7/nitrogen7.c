@@ -11,6 +11,7 @@
 #include <asm/gpio.h>
 #include <asm/imx-common/iomux-v3.h>
 #include <asm/imx-common/boot_mode.h>
+#include <asm/imx-common/fbpanel.h>
 #include <asm/io.h>
 #include <linux/sizes.h>
 #include <common.h>
@@ -40,7 +41,7 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #define QSPI_PAD_CTRL	(PAD_CTL_SRE_FAST | PAD_CTL_PUS_PU100KOHM | PAD_CTL_DSE_3P3V_49OHM)
 
-#define RGB_PAD_CTRL	PAD_CTL_DSE_120ohm
+#define RGB_PAD_CTRL	PAD_CTL_DSE_3P3V_49OHM
 
 #define SETUP_IOMUX_PADS(x)					\
 	imx_iomux_v3_setup_multiple_pads(x, ARRAY_SIZE(x))
@@ -136,7 +137,9 @@ static const iomux_v3_cfg_t init_pads[] = {
 	IOMUX_PAD_CTRL(SAI1_RX_SYNC__GPIO6_IO16, WEAK_PULLUP),
 
 	/* PWM1 - rgb */
-	IOMUX_PAD_CTRL(GPIO1_IO01__PWM1_OUT, WEAK_PULLUP),
+#define GP_BACKLIGHT_RGB	IMX_GPIO_NR(1, 1)
+	IOMUX_PAD_CTRL(GPIO1_IO01__GPIO1_IO1, WEAK_PULLDN_OUTPUT),
+//	IOMUX_PAD_CTRL(GPIO1_IO01__PWM1_OUT, WEAK_PULLDN_OUTPUT),
 
 	/* PWM2 */
 	IOMUX_PAD_CTRL(GPIO1_IO09__PWM2_OUT, WEAK_PULLUP),
@@ -239,9 +242,9 @@ static const iomux_v3_cfg_t init_pads[] = {
 
 	/* watchdog */
 	IOMUX_PAD_CTRL(GPIO1_IO00__WDOG1_WDOG_B, WEAK_PULLUP_OUTPUT),
+};
 
-	/* LCD */
-#if 0
+static const iomux_v3_cfg_t rgb_pads[] = {
 	IOMUX_PAD_CTRL(LCD_CLK__LCD_CLK, RGB_PAD_CTRL),
 	IOMUX_PAD_CTRL(LCD_ENABLE__LCD_ENABLE, RGB_PAD_CTRL),
 	IOMUX_PAD_CTRL(LCD_HSYNC__LCD_HSYNC, RGB_PAD_CTRL),
@@ -271,7 +274,9 @@ static const iomux_v3_cfg_t init_pads[] = {
 	IOMUX_PAD_CTRL(LCD_DATA21__LCD_DATA21, RGB_PAD_CTRL),
 	IOMUX_PAD_CTRL(LCD_DATA22__LCD_DATA22, RGB_PAD_CTRL),
 	IOMUX_PAD_CTRL(LCD_DATA23__LCD_DATA23, RGB_PAD_CTRL),
-#else
+};
+
+static const iomux_v3_cfg_t rgb_gpio_pads[] = {
 	IOMUX_PAD_CTRL(LCD_CLK__GPIO3_IO0, WEAK_PULLUP),
 	IOMUX_PAD_CTRL(LCD_ENABLE__GPIO3_IO1, WEAK_PULLUP),
 	IOMUX_PAD_CTRL(LCD_HSYNC__GPIO3_IO2, WEAK_PULLUP),
@@ -301,7 +306,6 @@ static const iomux_v3_cfg_t init_pads[] = {
 	IOMUX_PAD_CTRL(LCD_DATA21__GPIO3_IO26, WEAK_PULLUP),
 	IOMUX_PAD_CTRL(LCD_DATA22__GPIO3_IO27, WEAK_PULLUP),
 	IOMUX_PAD_CTRL(LCD_DATA23__GPIO3_IO28, WEAK_PULLUP),
-#endif
 };
 
 #ifdef CONFIG_SYS_I2C_MXC
@@ -327,12 +331,42 @@ struct fsl_esdhc_cfg board_usdhc_cfg[] = {
 };
 #endif
 
+#ifdef CONFIG_CMD_FBPANEL
+void board_enable_lcd(const struct display_info_t *di, int enable)
+{
+	if (enable)
+		SETUP_IOMUX_PADS(rgb_pads);
+	else
+		SETUP_IOMUX_PADS(rgb_gpio_pads);
+	gpio_direction_output(GP_BACKLIGHT_RGB, enable);
+}
+
+static const struct display_info_t displays[] = {
+	/* fusion7 specific touchscreen */
+	VD_FUSION7(LCD, fbp_detect_i2c, 2, 0x10),
+
+	/* tsc2004 */
+	VD_CLAA_WVGA(LCD, fbp_detect_i2c, 2, 0x48),
+	VD_SHARP_WVGA(LCD, NULL, 2, 0x48),
+	VD_DC050WX(LCD, NULL, 2, 0x48),
+	VD_QVGA(LCD, NULL, 2, 0x48),
+	VD_AT035GT_07ET3(LCD, NULL, 2, 0x48),
+
+	VD_LSA40AT9001(LCD, NULL, 0, 0x00),
+};
+#define display_cnt	ARRAY_SIZE(displays)
+#else
+#define displays	NULL
+#define display_cnt	0
+#endif
+
 static const unsigned short gpios_out_low[] = {
 	GP_RGMII_PHY_RESET,
 	GP_I2C2A_EN,
 	GP_MIPI_BACKLIGHT,
 	GP_PCIE_DISABLE,
 	GP_PCIE_RESET,
+	GP_BACKLIGHT_RGB,
 	GP_UART3_RS485_TX,
 	GP_PMIC_SD1_VSEL,
 	GP_BT_REG_ON,
@@ -367,12 +401,14 @@ int board_early_init_f(void)
 	set_gpios(gpios_out_high, ARRAY_SIZE(gpios_out_high), 1);
 	set_gpios(gpios_out_low, ARRAY_SIZE(gpios_out_low), 0);
 	SETUP_IOMUX_PADS(init_pads);
+	SETUP_IOMUX_PADS(rgb_gpio_pads);
 	return 0;
 }
 
 int board_init(void)
 {
-	common_board_init(i2c_pads, I2C_BUS_CNT, 0, NULL, 0, 0);
+	common_board_init(i2c_pads, I2C_BUS_CNT, 0,
+			displays, display_cnt, 0);
 	return 0;
 }
 
