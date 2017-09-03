@@ -423,7 +423,7 @@
 	BOOTENV_SHARED_UBIFS \
 	BOOTENV_SHARED_EFI \
 	BOOTENV_SHARED_VIRTIO \
-	"boot_prefixes=/ /boot/" BOOTENV_EXTRA_BOOT_PREFIXES "\0" \
+	"boot_prefixes=/boot/ /" BOOTENV_EXTRA_BOOT_PREFIXES "\0" \
 	"boot_scripts=boot.scr.uimg boot.scr" BOOTENV_EXTRA_BOOT_SCRIPTS "\0" \
 	"boot_script_dhcp=boot.scr.uimg" BOOTENV_EXTRA_BOOT_SCRIPTS "\0" \
 	BOOTENV_BOOT_TARGETS \
