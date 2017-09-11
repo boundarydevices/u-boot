@@ -165,8 +165,6 @@ static const iomux_v3_cfg_t init_pads[] = {
 	IOMUX_PAD_CTRL(EIM_EB2__GPIO2_IO30, WEAK_PULLUP),
 #define GP_TP85			IMX_GPIO_NR(2, 31)
 	IOMUX_PAD_CTRL(EIM_EB3__GPIO2_IO31, WEAK_PULLUP),
-#define GP_TP_R218		IMX_GPIO_NR(1, 3)
-	IOMUX_PAD_CTRL(GPIO_3__GPIO1_IO03, WEAK_PULLUP),
 
 	/* i2c1_rv4172 rtc */
 #define GPIRQ_RTC_RV4162	IMX_GPIO_NR(7, 12)
@@ -290,6 +288,7 @@ static const iomux_v3_cfg_t sd3_usdhc3_pads[] = {
 	IOMUX_PAD_CTRL(SD3_DAT3__SD3_DATA3, USDHC_PAD_CTRL),
 };
 
+/* This powers down the sd card faster */
 static const iomux_v3_cfg_t sd3_gpio_pads[] = {
 #define GP_USDHC3_CLK	IMX_GPIO_NR(7, 3)
 	IOMUX_PAD_CTRL(SD3_CLK__GPIO7_IO03, WEAK_PULLDN),
@@ -520,7 +519,6 @@ static const unsigned short gpios_in[] = {
 	GP_TP74,
 	GP_TP84,
 	GP_TP85,
-	GP_TP_R218,
 	GP_USDHC3_CD,
 };
 
