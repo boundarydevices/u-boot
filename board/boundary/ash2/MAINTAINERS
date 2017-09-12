@@ -1,0 +1,7 @@
+NITROGEN6_MAX BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/ash2/
+F:	include/configs/ash2.h
+F:	configs/ash2_defconfig
+

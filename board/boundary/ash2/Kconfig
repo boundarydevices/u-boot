@@ -1,0 +1,48 @@
+if TARGET_ASH2
+
+config SYS_CPU
+	default "armv7"
+
+config SYS_BOARD
+	default "ash2"
+
+config SYS_VENDOR
+	default "boundary"
+
+config SYS_SOC
+	default "mx6"
+
+config SYS_CONFIG_NAME
+	default "ash2"
+
+config SWM_DISPLAY_00_A
+	hex "switch mask(low part) for display TX23D200_18L"
+	default 0
+
+config SWM_DISPLAY_00_B
+	hex "switch mask(high part) for display TX23D200_18L"
+	default 0
+
+config SWM_DISPLAY_24_A
+	hex "switch mask(low part) for display AM_1280800P2TZQW"
+	default 0
+
+config SWM_DISPLAY_24_B
+	hex "switch mask(high part) for display AM_1280800P2TZQW"
+	default 0
+
+config SWM_DISPLAY_38_A
+	hex "switch mask(low part) for display ELHC070IK40057"
+	default 0
+
+config SWM_DISPLAY_38_B
+	hex "switch mask(high part) for display ELHC070IK40057"
+	default 0
+
+config BOARD_LATE_SPECIFIC_INIT
+	bool
+	default	y
+
+source "board/boundary/common/Kconfig"
+
+endif
