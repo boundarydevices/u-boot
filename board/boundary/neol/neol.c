@@ -105,8 +105,10 @@ static const iomux_v3_cfg_t init_pads[] = {
 
 	/* Hog pins*/
 	/* will be reg_5v_dlp */
-#define GP_5V_DLP_EN	IMX_GPIO_NR(2, 23)
-	IOMUX_PAD_CTRL(EIM_CS0__GPIO2_IO23, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(EIM_CS0__GPIO2_IO23, WEAK_PULLDN),	/* Unused now */
+#define GP_5V_DLP_EN	IMX_GPIO_NR(3, 7)
+	IOMUX_PAD_CTRL(EIM_DA7__GPIO3_IO07, WEAK_PULLDN),
+
 #define GP_STDBY_MODE	IMX_GPIO_NR(2, 24)
 	IOMUX_PAD_CTRL(EIM_CS1__GPIO2_IO24, WEAK_PULLUP),
 #define GP_DLPC_BOOTED	IMX_GPIO_NR(2, 22)
@@ -150,8 +152,6 @@ static const iomux_v3_cfg_t init_pads[] = {
 	IOMUX_PAD_CTRL(EIM_LBA__GPIO2_IO27, WEAK_PULLUP),
 #define GP_TP114	IMX_GPIO_NR(3, 6)
 	IOMUX_PAD_CTRL(EIM_DA6__GPIO3_IO06, WEAK_PULLUP),
-#define GP_TP115	IMX_GPIO_NR(3, 7)
-	IOMUX_PAD_CTRL(EIM_DA7__GPIO3_IO07, WEAK_PULLUP),
 #define GP_TP116	IMX_GPIO_NR(2, 20)
 	IOMUX_PAD_CTRL(EIM_A18__GPIO2_IO20, WEAK_PULLUP),
 #define GP_TP118        IMX_GPIO_NR(1, 16)
@@ -409,6 +409,7 @@ static const struct display_info_t displays[] = {
 
 static const unsigned short gpios_out_low[] = {
 	GP_BT_RFKILL_RESET, 	/* disable bluetooth */
+	GP_5V_DLP_EN,
 	GP_RGMII_PHY_RESET,
 	GP_BACKLIGHT_RGB,
 	GP_REG_USBOTG,		/* disable USB otg power */
@@ -420,7 +421,6 @@ static const unsigned short gpios_out_low[] = {
 static const unsigned short gpios_out_high[] = {
 	GP_ECSPI1_NOR_CS,	/* SS1 of spi nor */
 	GP_ECSPI2_SS0,
-	GP_5V_DLP_EN,
 	GP_STDBY_MODE,
 	GP_DLPC_BOOTED,
 	GP_INIT_DONE,
@@ -445,7 +445,6 @@ static const unsigned short gpios_in[] = {
 	GP_TP76,
 	GP_TP113,
 	GP_TP114,
-	GP_TP115,
 	GP_TP116,
 	GP_TP118,
 	GP_TP121,
