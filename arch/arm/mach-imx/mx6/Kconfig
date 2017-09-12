@@ -368,6 +368,9 @@ config TARGET_AP
 config TARGET_ASH
 	bool "ash"
 
+config TARGET_ASH2
+	bool "ash2"
+
 config TARGET_NITROGEN6X
 	bool "nitrogen6x"
 	imply USB_HOST_ETHER
@@ -513,6 +516,7 @@ source "board/boundary/a/Kconfig"
 source "board/boundary/acl/Kconfig"
 source "board/boundary/ap/Kconfig"
 source "board/boundary/ash/Kconfig"
+source "board/boundary/ash2/Kconfig"
 source "board/boundary/nitrogen6x/Kconfig"
 source "board/boundary/ys/Kconfig"
 source "board/bticino/mamoj/Kconfig"
