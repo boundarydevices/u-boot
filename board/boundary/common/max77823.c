@@ -130,3 +130,35 @@ void max77823_otg_power(int enable)
 
 	i2c_set_bus_num(orig_i2c_bus);
 }
+
+static void max77823_boost_enable(void)
+{
+	/* Update CHG_CNFG_11 to 0x54(5.1V) */
+	max77823_write_reg(I2C_ADDR_CHARGER,
+		MAX77823_CHG_CNFG_11, 0x54);
+
+	/* charger on, otg off, buck on, boost on */
+	max77823_update_reg(I2C_ADDR_CHARGER, MAX77823_CHG_CNFG_00,
+		CHG_CNFG_00_BOOST_MASK, CHG_CNFG_00_BOOST_MASK);
+}
+
+static void max77823_boost_disable(void)
+{
+	/* chrg on, OTG off, buck on, boost off */
+	max77823_update_reg(I2C_ADDR_CHARGER, MAX77823_CHG_CNFG_00,
+		0, CHG_CNFG_00_BOOST_MASK);
+}
+
+void max77823_boost_power(int enable)
+{
+	u8 orig_i2c_bus;
+
+	orig_i2c_bus = i2c_get_bus_num();
+	i2c_set_bus_num(CONFIG_I2C_BUS_MAX77823);
+	if (enable)
+		max77823_boost_enable();
+	else
+		max77823_boost_disable();
+
+	i2c_set_bus_num(orig_i2c_bus);
+}
