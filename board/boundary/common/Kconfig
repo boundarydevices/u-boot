@@ -5,6 +5,7 @@ config CMD_KBD
 config MAX77823
 	bool
 	default y if TARGET_CID
+	default y if TARGET_CID_TAB
 	default y if TARGET_H4
 	default y if TARGET_LS
 	default y if TARGET_NITROGEN6_SCM
