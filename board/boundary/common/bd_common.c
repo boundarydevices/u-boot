@@ -172,9 +172,13 @@ void common_board_init(const struct i2c_pads_info *p, int i2c_bus_cnt, int otg_i
 	        setup_i2c(p->bus_index, CONFIG_SYS_I2C_SPEED, 0x7f, p);
 		p += I2C_PADS_INFO_ENTRY_SPACING;
 	}
+#ifdef CONFIG_FAN53526
+	fan53526_init();
+#endif
 #ifdef CONFIG_MAX77823
 	max77823_init();
 #endif
+
 #ifdef CONFIG_CMD_SATA
 	if (!gp_hd_detect || gpio_get_value(gp_hd_detect))
 		setup_sata();
