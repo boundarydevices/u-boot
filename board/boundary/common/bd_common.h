@@ -39,4 +39,6 @@ void common_board_init(const struct i2c_pads_info *p, int i2c_bus_cnt, int otg_i
 void max77823_init(void);
 void max77823_otg_power(int enable);
 void max77823_boost_power(int enable);
+
+void fan53526_init(void);
 #endif
