@@ -383,6 +383,9 @@ config TARGET_CAD
 config TARGET_CID
 	bool "cid"
 
+config TARGET_CID_TAB
+	bool "cid_tab"
+
 config TARGET_NITROGEN6X
 	bool "nitrogen6x"
 	imply USB_HOST_ETHER
@@ -533,6 +536,7 @@ source "board/boundary/bt/Kconfig"
 source "board/boundary/bt2/Kconfig"
 source "board/boundary/cad/Kconfig"
 source "board/boundary/cid/Kconfig"
+source "board/boundary/cid_tab/Kconfig"
 source "board/boundary/nitrogen6x/Kconfig"
 source "board/boundary/ys/Kconfig"
 source "board/bticino/mamoj/Kconfig"
