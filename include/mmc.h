@@ -563,6 +563,7 @@ struct mmc_ops {
 	int (*getwp)(struct mmc *mmc);
 	int (*host_power_cycle)(struct mmc *mmc);
 	int (*get_b_max)(struct mmc *mmc, void *dst, lbaint_t blkcnt);
+	int (*execute_tuning)(struct mmc *mmc, uint opcode);
 	int (*card_busy)(struct mmc *mmc);
 };
 #endif

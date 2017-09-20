@@ -205,6 +205,11 @@ int mmc_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd, struct mmc_data *data)
 
 	return ret;
 }
+
+int mmc_execute_tuning(struct mmc *mmc, uint opcode)
+{
+	return mmc->cfg->ops->execute_tuning(mmc, opcode);
+}
 #endif
 
 int mmc_send_status(struct mmc *mmc, unsigned int *status)
@@ -1589,12 +1594,6 @@ static inline int bus_width(uint cap)
 }
 
 #if !CONFIG_IS_ENABLED(DM_MMC)
-#ifdef MMC_SUPPORTS_TUNING
-static int mmc_execute_tuning(struct mmc *mmc, uint opcode)
-{
-	return -ENOTSUPP;
-}
-#endif
 
 static int mmc_set_vdd(struct mmc *mmc, bool enable)
 {
