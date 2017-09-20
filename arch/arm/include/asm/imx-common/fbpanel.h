@@ -71,6 +71,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 #define VD_AUO_B101EW05(_mode, _detect, _bus, _addr)	VDF_AUO_B101EW05(_mode, "auo_b101ew05", RGB666, 0, _detect, _bus, _addr)
 #define VD_HANNSTAR7(_mode, _detect, _bus, _addr)	VDF_HANNSTAR7(_mode, "hannstar7", RGB666, 0, _detect, _bus, _addr)
 #define VD_LG1280_800(_mode, _detect, _bus, _addr)	VDF_HANNSTAR7(_mode, "lg1280x800", RGB666, 0, _detect, _bus, _addr)
+#define VD_M101NWWB(_mode, _detect, _bus, _addr)	VDF_HANNSTAR7(_mode, "M101NWWB", RGB24, 0, _detect, _bus, _addr)
 #define VD_LD101WX1(_mode, _detect, _bus, _addr)	VDF_HANNSTAR7(_mode, "ld101wx1", RGB24, 0, _detect, _bus, _addr)
 #define VD_DT070BTFT(_mode, _detect, _bus, _addr)	VDF_DT070BTFT(_mode, "dt070btft", RGB24, FBF_JEIDA, _detect, _bus, _addr)
 #define VD_WSVGA(_mode, _detect, _bus, _addr)		VDF_WSVGA(_mode, "wsvga", RGB666, 0, _detect, _bus, _addr)
