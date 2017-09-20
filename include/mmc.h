@@ -256,7 +256,6 @@ static inline bool mmc_is_tuning_cmd(uint cmdidx)
 #define EXT_CSD_CARD_TYPE_HS400_1_2V	(1<<7)
 #define EXT_CSD_CARD_TYPE_HS400		(EXT_CSD_CARD_TYPE_HS400_1_8V | \
 					 EXT_CSD_CARD_TYPE_HS400_1_2V)
-#define EXT_CSD_CARD_TYPE_HS400ES	(1<<8)
 
 #define EXT_CSD_BUS_WIDTH_1	0	/* Card is in 1 bit mode */
 #define EXT_CSD_BUS_WIDTH_4	1	/* Card is in 4 bit mode */
@@ -522,6 +521,7 @@ struct mmc_ops {
 	int (*set_vdd)(struct mmc *mmc, bool enable);
 	int (*getcd)(struct mmc *mmc);
 	int (*getwp)(struct mmc *mmc);
+	int (*execute_tuning)(struct mmc *mmc, uint opcode);
 	int (*card_busy)(struct mmc *mmc);
 	void (*hs400_enhanced_strobe)(struct mmc *mmc);
 };

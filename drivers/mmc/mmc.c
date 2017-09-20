@@ -206,6 +206,11 @@ int mmc_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd, struct mmc_data *data)
 
 	return ret;
 }
+
+int mmc_execute_tuning(struct mmc *mmc, uint opcode)
+{
+	return mmc->cfg->ops->execute_tuning(mmc, opcode);
+}
 #endif
 
 int mmc_send_status(struct mmc *mmc, int timeout)
@@ -794,6 +799,12 @@ static int mmc_set_card_speed(struct mmc *mmc, enum bus_mode mode)
 		speed_bits = EXT_CSD_TIMING_HS200;
 		break;
 #endif
+	case MMC_HS_400:
+		speed_bits = EXT_CSD_TIMING_HS400;
+		break;
+	case MMC_HS_400_ES:
+		speed_bits = EXT_CSD_TIMING_HS400;
+		break;
 	case MMC_LEGACY:
 		speed_bits = EXT_CSD_TIMING_LEGACY;
 		break;
@@ -1486,13 +1497,6 @@ static inline int bus_width(uint cap)
 }
 
 #if !CONFIG_IS_ENABLED(DM_MMC)
-#ifdef MMC_SUPPORTS_TUNING
-static int mmc_execute_tuning(struct mmc *mmc, uint opcode)
-{
-	return -ENOTSUPP;
-}
-#endif
-
 static void mmc_send_init_stream(struct mmc *mmc)
 {
 }
@@ -1823,6 +1827,11 @@ static const struct mode_width_tuning mmc_modes_by_pref[] = {
 		.widths = MMC_MODE_8BIT,
 	},
 	{
+		.mode = MMC_HS_400,
+		.widths = MMC_MODE_8BIT,
+		.tuning = MMC_CMD_SEND_TUNING_BLOCK_HS200
+	},
+	{
 		.mode = MMC_HS_200,
 		.widths = MMC_MODE_8BIT | MMC_MODE_4BIT,
 		.tuning = MMC_CMD_SEND_TUNING_BLOCK_HS200
@@ -1906,6 +1915,47 @@ static int mmc_select_hs400es(struct mmc *mmc)
 }
 #endif
 
+#if defined(MMC_SUPPORTS_TUNING) || !CONFIG_IS_ENABLED(DM_MMC)
+static int mmc_select_hs400(struct mmc *mmc)
+{
+	int err;
+
+	/* Set timing to HS200 for tuning */
+	err = mmc_set_card_speed(mmc, MMC_HS_200);
+	if (err)
+		return err;
+
+	/* configure the bus mode (host) */
+	mmc_select_mode(mmc, MMC_HS_200);
+	mmc_set_clock(mmc, mmc->tran_speed, false);
+
+	/* execute tuning if needed */
+	err = mmc_execute_tuning(mmc, MMC_CMD_SEND_TUNING_BLOCK_HS200);
+	if (err) {
+		debug("tuning failed\n");
+		return err;
+	}
+
+	/* Set back to HS */
+	mmc_set_card_speed(mmc, MMC_HS);
+	mmc_set_clock(mmc, mmc_mode2freq(mmc, MMC_HS), false);
+
+	err = mmc_switch(mmc, EXT_CSD_CMD_SET_NORMAL,
+		EXT_CSD_BUS_WIDTH, EXT_CSD_BUS_WIDTH_8 | EXT_CSD_DDR);
+	if (err)
+		return err;
+
+	err = mmc_set_card_speed(mmc, MMC_HS_400);
+	if (err)
+		return err;
+
+	mmc_select_mode(mmc, MMC_HS_400);
+	mmc_set_clock(mmc, mmc->tran_speed, false);
+
+	return 0;
+}
+#endif
+
 static int mmc_select_mode_and_width(struct mmc *mmc, uint card_caps)
 {
 	int err;
@@ -1954,14 +2004,20 @@ static int mmc_select_mode_and_width(struct mmc *mmc, uint card_caps)
 				goto error;
 			mmc_set_bus_width(mmc, bus_width(ecbw->cap));
 
+			if (0) {
+#if defined(MMC_SUPPORTS_TUNING) || !CONFIG_IS_ENABLED(DM_MMC)
+			} else if (mwt->mode == MMC_HS_400) {
+				err = mmc_select_hs400(mmc);
+				if (err)
+					goto error;
+#endif
 #if !CONFIG_IS_ENABLED(DM_MMC)
-			if (mwt->mode == MMC_HS_400_ES) {
+			} else if (mwt->mode == MMC_HS_400_ES) {
 				err = mmc_select_hs400es(mmc);
 				if (err)
 					goto error;
-			} else
 #endif
-			{
+			} else {
 				/* configure the bus speed (card) */
 				err = mmc_set_card_speed(mmc, mwt->mode);
 				if (err)
