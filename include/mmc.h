@@ -608,7 +608,8 @@ void mmc_dump_capabilities(const char *text, uint caps);
 
 static inline bool mmc_is_mode_ddr(enum bus_mode mode)
 {
-	if (mode == MMC_DDR_52)
+	if ((mode == MMC_HS_400) || (mode == MMC_HS_400_ES) ||
+	    (mode == MMC_DDR_52) || (mode == UHS_DDR50))
 		return true;
 #if CONFIG_IS_ENABLED(MMC_UHS_SUPPORT)
 	else if (mode == UHS_DDR50)
