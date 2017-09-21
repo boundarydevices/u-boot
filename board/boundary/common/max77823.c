@@ -14,6 +14,7 @@
 #define MAX77823_CHG_CNFG_02	0xB9
 #define MAX77823_CHG_CNFG_06	0xBD
 #define MAX77823_CHG_CNFG_09	0xC0
+#define MAX77823_CHG_CNFG_10	0xC1
 #define MAX77823_CHG_CNFG_11	0xC2
 #define MAX77823_CHG_CNFG_12	0xC3
 
@@ -32,13 +33,15 @@ void max77823_init(void)
 	orig_i2c_bus = i2c_get_bus_num();
 	i2c_set_bus_num(CONFIG_I2C_BUS_MAX77823);
 #define I2C_ADDR_CHARGER	0x69
-	val8 = 0x7f;	/* 4.0A source */
+	val8 = 0x78;	/* 4.0A source */
 	i2c_write(I2C_ADDR_CHARGER, MAX77823_CHG_CNFG_09, 1, &val8, 1);
+	val8 = 0x26;	/* .76 A source */
+	i2c_write(I2C_ADDR_CHARGER, MAX77823_CHG_CNFG_10, 1, &val8, 1);
 	val8 = 0x0c;	/* Protection allow 0xb9 write */
 	i2c_write(I2C_ADDR_CHARGER, MAX77823_CHG_CNFG_06, 1, &val8, 1);
 	val8 = 0x14;	/* 1A charge */
 	i2c_write(I2C_ADDR_CHARGER, MAX77823_CHG_CNFG_02, 1, &val8, 1);
-	val8 = 0x27;	/* enable charging from otg */
+	val8 = 0x67;	/* enable charging from chgin(otg)/wcin */
 	i2c_write(I2C_ADDR_CHARGER, MAX77823_CHG_CNFG_12, 1, &val8, 1);
 	val8 = 0x5;	/* enable charging mode */
 	i2c_write(I2C_ADDR_CHARGER, MAX77823_CHG_CNFG_00, 1, &val8, 1);
