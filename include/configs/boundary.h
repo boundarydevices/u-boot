@@ -374,7 +374,6 @@
 		BD_STDOUT_VIDEO \
 		"echo ; echo 6x_bootscript not found ; " \
 		"echo ; echo serial console at 115200, 8N1 ; echo ; " \
-		"echo details at http://boundarydevices.com/6q_bootscript ; " \
 		BD_STDOUT_SERIAL \
 		BD_STDIN_USBKBD \
 		"for dtype in ${umsdevs} ; do " \
