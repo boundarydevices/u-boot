@@ -139,9 +139,9 @@ static const iomux_v3_cfg_t init_pads[] = {
 
 	/* Hogs - FAN48623, regulator for WWAN usb modem, always on for now */
 #define GP_3P7_EN		IMX_GPIO_NR(5, 11)
-	IOMUX_PAD_CTRL(DISP0_DAT17__GPIO5_IO11, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(DISP0_DAT17__GPIO5_IO11, WEAK_PULLDN),	/* active high */
 #define GP_3P7_BYPASS_EN	IMX_GPIO_NR(5, 0)
-	IOMUX_PAD_CTRL(EIM_WAIT__GPIO5_IO00, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(EIM_WAIT__GPIO5_IO00, WEAK_PULLUP),	/* low active */
 
 #define GPIRQ_TAMPER	IMX_GPIO_NR(4, 18)
 	IOMUX_PAD_CTRL(DI0_PIN2__GPIO4_IO18, WEAK_PULLUP),
@@ -578,11 +578,11 @@ static const unsigned short gpios_out_high[] = {
 	GP_STAT_LED2,
 	GP_STAT_LED1,
 	GP_STAT_LED3,
-	GP_3P7_EN,
-	GP_3P7_BYPASS_EN,
 	GP_OV5640_POWER_DOWN,
 	GP_OV5640_STROBE,
 	GP_OV5640_MIPI_POWER_DOWN,
+	GP_3P7_EN,
+	GP_3P7_BYPASS_EN,
 };
 
 static const unsigned short gpios_in[] = {
@@ -636,8 +636,8 @@ static const unsigned short gpios_in[] = {
 int board_early_init_f(void)
 {
 	set_gpios_in(gpios_in, ARRAY_SIZE(gpios_in));
-	set_gpios(gpios_out_high, ARRAY_SIZE(gpios_out_high), 1);
 	set_gpios(gpios_out_low, ARRAY_SIZE(gpios_out_low), 0);
+	set_gpios(gpios_out_high, ARRAY_SIZE(gpios_out_high), 1);
 	SETUP_IOMUX_PADS(init_pads);
 	return 0;
 }
