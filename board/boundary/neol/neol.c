@@ -105,7 +105,7 @@ static const iomux_v3_cfg_t init_pads[] = {
 
 	/* Hog pins*/
 	/* will be reg_5v_dlp */
-	IOMUX_PAD_CTRL(EIM_CS0__GPIO2_IO23, WEAK_PULLDN),	/* Unused now */
+	IOMUX_PAD_CTRL(EIM_CS0__GPIO2_IO23, WEAK_PULLUP),	/* Unused now, leave high (enabled) for early boards */
 #define GP_5V_DLP_EN	IMX_GPIO_NR(3, 7)
 	IOMUX_PAD_CTRL(EIM_DA7__GPIO3_IO07, WEAK_PULLDN),
 
