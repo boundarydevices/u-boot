@@ -1,0 +1,7 @@
+AP BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/ap/
+F:	include/configs/ap.h
+F:	configs/ap_q2g_defconfig
+
