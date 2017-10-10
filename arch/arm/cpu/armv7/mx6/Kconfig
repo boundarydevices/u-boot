@@ -298,6 +298,9 @@ config TARGET_A
 config TARGET_ACL
 	bool "acl"
 
+config TARGET_AP
+	bool "ap"
+
 config TARGET_ASH
 	bool "ash"
 
@@ -543,6 +546,7 @@ source "board/barco/platinum/Kconfig"
 source "board/barco/titanium/Kconfig"
 source "board/boundary/a/Kconfig"
 source "board/boundary/acl/Kconfig"
+source "board/boundary/ap/Kconfig"
 source "board/boundary/ash/Kconfig"
 source "board/boundary/ash2/Kconfig"
 source "board/boundary/bt/Kconfig"
