@@ -1,0 +1,60 @@
+gpio set 32
+gpio set 55
+vals="28 2f dc 7c 5f e5 f2 77 77 e1 bf ff 17 ef b0 04  cf 72 20 04 35 ae de cf 3e"
+setexpr addr 0x10080000
+setexpr addr2 0x10090000
+#
+for v in ${vals} ; do
+  mw.b ${addr} $v
+  setexpr addr ${addr} + 1
+done
+setexpr addr 0x10080000
+#
+for bus in 1 2 ; do
+  i2c dev ${bus}
+#
+  mw.b ${addr2} 0 19
+  i2c read 2d 60.1 19 ${addr2}
+#
+  if cmp.b ${addr} ${addr2} 19 ; then
+    echo "bus ${bus} already programmed"
+  else
+    echo "programming bus ${bus}"
+    for v in 8 ba ef ; do
+      if i2c mw 2d 1a.1 ${v} 1 ; then
+#        echo "${bus} unlock ${v}"
+      else
+        echo "error ${bus} unlock ${v}"
+      fi
+    done
+#
+    setexpr reg 0x60
+    for v in ${vals} ; do
+      if i2c mw 2d ${reg}.1 ${v} ; then
+#        echo "${bus} wrote ${reg} ${v}"
+      else
+        echo "error ${bus} writing ${reg} ${v}"
+      fi
+      setexpr reg ${reg} + 1
+    done
+#
+    for v in 2 0 ; do
+      if i2c mw 2d 19.1 ${v} 1 ; then
+#        echo "${bus} program ${v}"
+      else
+        echo "error ${bus} program ${v}"
+      fi
+      sleep 1
+    done
+#
+    i2c read 2d 60.1 19 ${addr2}
+#
+    if cmp.b ${addr} ${addr2} 19 ; then
+      echo "bus ${bus} verified"
+    else
+      echo "error bus ${bus} verify FAILED"
+    fi
+  fi
+done
+#
+exit
