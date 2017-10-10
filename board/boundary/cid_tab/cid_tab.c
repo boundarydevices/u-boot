@@ -646,6 +646,7 @@ void board_poweroff(void)
 {
 	struct snvs_regs *snvs = (struct snvs_regs *)(SNVS_BASE_ADDR);
 
+	max77823_boost_power(0);
 	writel(0x60, &snvs->lpcr);
 	mdelay(500);
 }
