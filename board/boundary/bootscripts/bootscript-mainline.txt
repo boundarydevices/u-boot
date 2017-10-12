@@ -142,6 +142,7 @@ if itest *${a_reset_cause_marker} == 12345678 ; then
 	setexpr.l reset_cause *${a_reset_cause}
 	setenv bootargs $bootargs reset_cause=0x${reset_cause}
 fi
+setenv bootargs ${bootargs} snd.slots=,snd-soc-imx-hdmi
 
 if load ${devtype} ${devnum}:${distro_bootpart} ${a_zImage} ${prefix}zImage ; then
 	bootz ${a_zImage} - ${a_fdt}
