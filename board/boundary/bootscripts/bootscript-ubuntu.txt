@@ -168,6 +168,7 @@ fi
 if itest.s "x" != "x${cma}" ; then
 	setenv bootargs ${bootargs} cma=${cma}
 fi
+setenv bootargs ${bootargs} snd.slots=,snd-soc-imx-hdmi
 
 if itest.s "x" != "x${show_fdt}" ; then
 	fdt print /
