@@ -141,7 +141,7 @@ static void usb_hub_power_on(struct usb_hub_device *hub)
 	 * Do a minimum delay of the larger value of 100ms or pgood_delay
 	 * so that the power can stablize before the devices are queried
 	 */
-	hub->query_delay = get_timer(0) + max(100, (int)pgood_delay);
+	hub->query_delay = max(100, (int)pgood_delay);
 
 	/*
 	 * Record the power-on timeout here. The max. delay (timeout)
@@ -366,7 +366,7 @@ int usb_hub_port_connect_change(struct usb_device *dev, int port)
 	return ret;
 }
 
-static int usb_scan_port(struct usb_device_scan *usb_scan)
+static int usb_scan_port(struct usb_device_scan *usb_scan, unsigned long start)
 {
 	ALLOC_CACHE_ALIGN_BUFFER(struct usb_port_status, portsts, 1);
 	unsigned short portstatus;
@@ -384,21 +384,13 @@ static int usb_scan_port(struct usb_device_scan *usb_scan)
 	 * Don't talk to the device before the query delay is expired.
 	 * This is needed for voltages to stabalize.
 	 */
-	if (get_timer(0) < hub->query_delay)
+	if (get_timer(start) < hub->query_delay)
 		return 0;
 
 	ret = usb_get_port_status(dev, i + 1, portsts);
 	if (ret < 0) {
 		debug("get_port_status failed\n");
-		if (get_timer(0) >= hub->connect_timeout) {
-			debug("devnum=%d port=%d: timeout\n",
-			      dev->devnum, i + 1);
-			/* Remove this device from scanning list */
-			list_del(&usb_scan->list);
-			free(usb_scan);
-			return 0;
-		}
-		return 0;
+		goto check_timeout;
 	}
 
 	portstatus = le16_to_cpu(portsts->wPortStatus);
@@ -406,21 +398,13 @@ static int usb_scan_port(struct usb_device_scan *usb_scan)
 	debug("Port %d Status %X Change %X\n", i + 1, portstatus, portchange);
 
 	/* No connection change happened, wait a bit more. */
-	if (!(portchange & USB_PORT_STAT_C_CONNECTION)) {
-		if (get_timer(0) >= hub->connect_timeout) {
-			debug("devnum=%d port=%d: timeout\n",
-			      dev->devnum, i + 1);
-			/* Remove this device from scanning list */
-			list_del(&usb_scan->list);
-			free(usb_scan);
-			return 0;
-		}
-		return 0;
-	}
+	if (!(portchange & USB_PORT_STAT_C_CONNECTION))
+		goto check_timeout;
+
 
 	/* Test if the connection came up, and if not exit */
 	if (!(portstatus & USB_PORT_STAT_CONNECTION))
-		return 0;
+		goto check_timeout;
 
 	/* A new USB device is ready at this point */
 	debug("devnum=%d port=%d: USB dev found\n", dev->devnum, i + 1);
@@ -489,6 +473,16 @@ static int usb_scan_port(struct usb_device_scan *usb_scan)
 	free(usb_scan);
 
 	return 0;
+check_timeout:
+	if (get_timer(start) >= hub->connect_timeout) {
+		debug("devnum=%d port=%d: timeout\n",
+		      dev->devnum, i + 1);
+		/* Remove this device from scanning list */
+		list_del(&usb_scan->list);
+		free(usb_scan);
+		return 0;
+	}
+	return 0;
 }
 
 static int usb_device_list_scan(void)
@@ -497,6 +491,7 @@ static int usb_device_list_scan(void)
 	struct usb_device_scan *tmp;
 	static int running;
 	int ret = 0;
+	unsigned long start;
 
 	/* Only run this loop once for each controller */
 	if (running)
@@ -504,16 +499,18 @@ static int usb_device_list_scan(void)
 
 	running = 1;
 
+	start = get_timer(0);
 	while (1) {
 		/* We're done, once the list is empty again */
 		if (list_empty(&usb_scan_list))
 			goto out;
 
+		mdelay(1);
 		list_for_each_entry_safe(usb_scan, tmp, &usb_scan_list, list) {
 			int ret;
 
 			/* Scan this port */
-			ret = usb_scan_port(usb_scan);
+			ret = usb_scan_port(usb_scan, start);
 			if (ret)
 				goto out;
 		}
