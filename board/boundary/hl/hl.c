@@ -353,7 +353,8 @@ void board_enable_lcd(const struct display_info_t *di, int enable)
 
 static const struct display_info_t displays[] = {
 	/* ft5x06 */
-	VD_HANNSTAR7(LVDS, fbp_detect_i2c, 2, 0x38),
+	VD_TM070JDHG30(LVDS, fbp_detect_i2c, 2, 0x38),
+	VD_HANNSTAR7(LVDS, NULL, 2, 0x38),
 	VD_AUO_B101EW05(LVDS, NULL, 2, 0x38),
 	VD_LG1280_800(LVDS, NULL, 2, 0x38),
 	VD_DT070BTFT(LVDS, NULL, 2, 0x38),
