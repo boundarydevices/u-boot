@@ -165,7 +165,7 @@ static const iomux_v3_cfg_t init_pads[] = {
 #define GP_TP73			IMX_GPIO_NR(2, 2)
 	IOMUX_PAD_CTRL(NANDF_D2__GPIO2_IO02, WEAK_PULLUP),
 #define GP_TP74			IMX_GPIO_NR(2, 7)
-	IOMUX_PAD_CTRL(NANDF_D7__GPIO2_IO07, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(NANDF_D7__GPIO2_IO07, WEAK_PULLDN),
 #define GP_TP78			IMX_GPIO_NR(6, 9)
 	IOMUX_PAD_CTRL(NANDF_WP_B__GPIO6_IO09, WEAK_PULLUP),
 #define GP_TP85			IMX_GPIO_NR(1, 9)
@@ -660,7 +660,7 @@ int board_init(void)
 
 const struct button_key board_buttons[] = {
 	{"tamper",	GPIRQ_TAMPER,	't', 1},
-	{"tp74",	GP_TP74,	'4', 1},
+	{"tp74",	GP_TP74,	'4', 0},
 	{NULL, 0, 0, 0},
 };
 
