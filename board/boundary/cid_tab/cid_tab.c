@@ -659,6 +659,9 @@ int board_init(void)
 }
 
 const struct button_key board_buttons[] = {
+	{"reset",	GP_GPIOKEY_POWER,	'r', 1},
+	{"vol_dn",	GP_GPIOKEY_VOL_DN,	'-', 1},
+	{"vol_up",	GP_GPIOKEY_VOL_UP,	'+', 1},
 	{"tamper",	GPIRQ_TAMPER,	't', 1},
 	{"tp74",	GP_TP74,	'4', 0},
 	{NULL, 0, 0, 0},

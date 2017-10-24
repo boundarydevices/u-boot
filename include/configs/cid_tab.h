@@ -23,6 +23,9 @@
 
 #include "boundary.h"
 #define CONFIG_EXTRA_ENV_SETTINGS BD_BOUNDARY_ENV_SETTINGS \
+	"magic_keys=1\0" \
+	"key_magic1=r+\0" \
+	"key_cmd1=echo Starting fastboot; fastboot 0\0" \
 	"disable_giga=1\0" \
 
 #endif	       /* __CONFIG_H */
