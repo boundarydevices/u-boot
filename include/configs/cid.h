@@ -19,6 +19,8 @@
 #define BD_I2C_MASK	7
 #define CONFIG_FEC_MAC_FUSE
 
+#define BOOT_TARGET_DEVICES(func) func(MMC, mmc, 1)
+
 #include "boundary.h"
 #define CONFIG_EXTRA_ENV_SETTINGS BD_BOUNDARY_ENV_SETTINGS \
 	"cmd_custom= \0" \
