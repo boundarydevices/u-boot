@@ -1,0 +1,7 @@
+cob2 BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/cob2/
+F:	include/configs/cob2.h
+F:	configs/cob2_defconfig
+

@@ -51,6 +51,10 @@ config TARGET_COB
 	bool "cob"
 	depends on MX6DL || MX6Q || MX6QDL || MX6S
 
+config TARGET_COB2
+	bool "cob2"
+	depends on MX6DL || MX6Q || MX6QDL || MX6S
+
 config TARGET_NITROGEN6X
 	bool "nitrogen6x"
 	depends on MX6DL || MX6Q || MX6QDL || MX6S
@@ -73,4 +77,5 @@ source "board/boundary/cid/Kconfig"
 source "board/boundary/cid_tab/Kconfig"
 source "board/boundary/cnt/Kconfig"
 source "board/boundary/cob/Kconfig"
+source "board/boundary/cob2/Kconfig"
 source "board/boundary/nitrogen6x/Kconfig"
