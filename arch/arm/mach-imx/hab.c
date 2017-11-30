@@ -104,6 +104,15 @@ enum hab_status hab_rvt_report_event(enum hab_status status, u32 index,
 	}
 #endif
 
+#if defined(CONFIG_ARM64)
+	if (current_el() != 3) {
+		struct arm_smccc_res res;
+		arm_smccc_smc(FSL_SIP_HAB, FSL_SIP_HAB_REPORT_EVENT,
+			      index, event, bytes, 0, 0, 0, &res);
+		return res.a0;
+	}
+#endif
+
 	save_gd();
 	ret = hab_rvt_report_event_func(status, index, event, bytes);
 	restore_gd();
@@ -125,6 +134,15 @@ enum hab_status hab_rvt_report_status(enum hab_config *config, enum hab_state *s
 		arm_smccc_smc(FSL_SIP_HAB, FSL_SIP_HAB_REPORT_STATUS, (unsigned long)config,
 			      (unsigned long)state, 0, 0, 0, 0, &res);
 		return (enum hab_status)res.a0;
+	}
+#endif
+
+#if defined(CONFIG_ARM64)
+	if (current_el() != 3) {
+		struct arm_smccc_res res;
+		arm_smccc_smc(FSL_SIP_HAB, FSL_SIP_HAB_REPORT_STATUS,
+			      config, state, 0, 0, 0, 0, &res);
+		return res.a0;
 	}
 #endif
 
@@ -150,6 +168,15 @@ enum hab_status hab_rvt_entry(void)
 	}
 #endif
 
+#if defined(CONFIG_ARM64)
+	if (current_el() != 3) {
+		struct arm_smccc_res res;
+		arm_smccc_smc(FSL_SIP_HAB, FSL_SIP_HAB_ENTRY,
+			      0, 0, 0, 0, 0, 0, &res);
+		return res.a0;
+	}
+#endif
+
 	save_gd();
 	ret = hab_rvt_entry_func();
 	restore_gd();
@@ -172,6 +199,15 @@ enum hab_status hab_rvt_exit(void)
 	}
 #endif
 
+#if defined(CONFIG_ARM64)
+	if (current_el() != 3) {
+		struct arm_smccc_res res;
+		arm_smccc_smc(FSL_SIP_HAB, FSL_SIP_HAB_EXIT,
+			      0, 0, 0, 0, 0, 0, &res);
+		return res.a0;
+	}
+#endif
+
 	save_gd();
 	ret = hab_rvt_exit_func();
 	restore_gd();
@@ -189,6 +225,15 @@ void hab_rvt_failsafe(void)
 		/* call sip */
 		arm_smccc_smc(FSL_SIP_HAB, FSL_SIP_HAB_FAILSAFE, 0, 0, 0, 0, 0, 0, NULL);
 		return;
+	}
+#endif
+
+#if defined(CONFIG_ARM64)
+	if (current_el() != 3) {
+		struct arm_smccc_res res;
+		arm_smccc_smc(FSL_SIP_HAB, FSL_SIP_HAB_FAILSAFE,
+			      0, 0, 0, 0, 0, 0, &res);
+		return res.a0;
 	}
 #endif
 
@@ -214,6 +259,15 @@ enum hab_status hab_rvt_check_target(enum hab_target type, const void *start,
 	}
 #endif
 
+#if defined(CONFIG_ARM64)
+	if (current_el() != 3) {
+		struct arm_smccc_res res;
+		arm_smccc_smc(FSL_SIP_HAB, FSL_SIP_HAB_CHECK_TARGET,
+			      type, start, bytes, 0, 0, 0, &res);
+		return res.a0;
+	}
+#endif
+
 	save_gd();
 	ret = hab_rvt_check_target_func(type, start, bytes);
 	restore_gd();
@@ -235,6 +289,15 @@ void *hab_rvt_authenticate_image(uint8_t cid, ptrdiff_t ivt_offset,
 		arm_smccc_smc(FSL_SIP_HAB, FSL_SIP_HAB_AUTHENTICATE, (unsigned long)ivt_offset,
 			      (unsigned long)start, (unsigned long)bytes, 0, 0, 0, &res);
 		return (void *)res.a0;
+	}
+#endif
+
+#if defined(CONFIG_ARM64)
+	if (current_el() != 3) {
+		struct arm_smccc_res res;
+		arm_smccc_smc(FSL_SIP_HAB, FSL_SIP_HAB_AUTHENTICATE,
+			      ivt_offset, start, bytes, 0, 0, 0, &res);
+		return res.a0;
 	}
 #endif
 
