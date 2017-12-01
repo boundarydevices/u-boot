@@ -376,6 +376,13 @@ static const struct i2c_pads_info i2c_pads[] = {
 };
 #define I2C_BUS_CNT	3
 
+int power_init_board(void)
+{
+	mdelay(3);
+	SETUP_IOMUX_PADS(sd3_usdhc3_pads);
+	return 0;
+}
+
 #ifdef CONFIG_USB_EHCI_MX6
 int board_ehci_hcd_init(int port)
 {
@@ -530,8 +537,6 @@ int board_early_init_f(void)
 	SETUP_IOMUX_PADS(sd3_gpio_pads);
 	SETUP_IOMUX_PADS(init_pads);
 	SETUP_IOMUX_PADS(rgb_gpio_pads);
-	mdelay(3);
-	SETUP_IOMUX_PADS(sd3_usdhc3_pads);
 	return 0;
 }
 
