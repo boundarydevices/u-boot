@@ -420,7 +420,8 @@ void board_enable_lvds(const struct display_info_t *di, int enable)
 {
 	gpio_set_value(GP_8BIT_LVDS,
 			(di->pixfmt == IPU_PIX_FMT_RGB666) ? 1 : 0);
-	gpio_set_value(GP_BACKLIGHT_LVDS, enable ^ 1);
+	gpio_set_value(GP_BACKLIGHT_LVDS, enable ^
+			((di->pixfmt == IPU_PIX_FMT_RGB666) ? 1 : 0));
 	gpio_set_value(GP_BACKLIGHT_LVDS_EN, enable);
 }
 
