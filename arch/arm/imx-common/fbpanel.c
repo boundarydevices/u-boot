@@ -185,6 +185,8 @@ static const char rgb666[] = "RGB666";
 static const char yuyv16[] = "YUYV16";
 
 static char lvds_enabled;
+static const char brightness_levels_low_active[] = "<10 9 8 7 6 5 4 3 2 1 0>";
+static const char brightness_levels_high_active[] = "<0 1 2 3 4 5 6 7 8 9 10>";
 
 static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf, int size)
 {
@@ -296,6 +298,15 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 	if (di && di->pwm_period) {
 		sz = snprintf(buf, size, "fdt get value pwm %s phandle; fdt set %s pwms <${pwm} 0x%x 0x%x>;",
 				pwm_names[fb], backlight_names[fb], 0, di->pwm_period);
+		buf += sz;
+		size -= sz;
+	}
+	if (di && (di->fbflags & FBF_BKLIT_DTB)) {
+		sz = snprintf(buf, size, "fdt set %s brightness-levels %s;",
+			backlight_names[fb],
+			(di->fbflags & FBF_BKLIT_LOW_ACTIVE) ?
+				brightness_levels_low_active :
+				brightness_levels_high_active);
 		buf += sz;
 		size -= sz;
 	}
@@ -963,6 +974,16 @@ static const struct display_info_t * parse_mode(
 		p++;
 		c = *p;
 	}
+	if (c == 'D') {
+		di->fbflags |= FBF_BKLIT_DTB;
+		p++;
+		c = *p;
+	}
+	if (c == 'b') {
+		di->fbflags |= FBF_BKLIT_LOW_ACTIVE;
+		p++;
+		c = *p;
+	}
 	if (c == 'e') {
 		di->pre_enable = board_pre_enable;
 		p++;
@@ -1126,6 +1147,14 @@ static void str_mode(char *p, int size, const struct display_info_t *di, unsigne
 	}
 	if (di->fbflags & FBF_SPI) {
 		*p++ = 'S';
+		size--;
+	}
+	if (di->fbflags & FBF_BKLIT_DTB) {
+		*p++ = 'D';
+		size--;
+	}
+	if (di->fbflags & FBF_BKLIT_LOW_ACTIVE) {
+		*p++ = 'b';
 		size--;
 	}
 	if (di->pre_enable) {
