@@ -369,14 +369,16 @@ void board_enable_lvds(const struct display_info_t *di, int enable)
 	gpio_set_value(GP_8BIT_LVDS,
 			(di->pixfmt == IPU_PIX_FMT_RGB666) ? 1 : 0);
 	gpio_set_value(GP_BACKLIGHT_LVDS, enable ^
-			((di->pixfmt == IPU_PIX_FMT_RGB666) ? 1 : 0));
+			((di->fbflags & FBF_BKLIT_LOW_ACTIVE) ? 1 : 0));
 	gpio_set_value(GP_BACKLIGHT_LVDS_EN, enable);
 }
 
 static const struct display_info_t displays[] = {
 	/* lvds */
-	VD_WVGA_TX23D200_18(LVDS, NULL, 0, 0x00),
-	VD_WVGA_TX23D200_24(LVDS, NULL, 0, 0x00),
+	VD_WVGA_TX23D200_18L(LVDS, NULL, 0, 0x00),
+	VD_WVGA_TX23D200_18H(LVDS, NULL, 0, 0x00),
+	VD_WVGA_TX23D200_24L(LVDS, NULL, 0, 0x00),
+	VD_WVGA_TX23D200_24H(LVDS, NULL, 0, 0x00),
 
 	/* hdmi */
 	VD_1280_720M_60(HDMI, fbp_detect_i2c, 1, 0x50),
