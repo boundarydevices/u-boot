@@ -1371,3 +1371,22 @@ enum env_location env_get_location(enum env_operation op, int prio)
 }
 
 #endif
+
+#ifdef CONFIG_USB_XHCI_IMX8M
+#define FSL_SIP_GPC                    0xC2000000
+#define FSL_SIP_CONFIG_GPC_PM_DOMAIN   0x03
+int imx8m_usb_power(int usb_id, bool on)
+{
+	unsigned long ret;
+
+	if (usb_id > 1)
+		return -EINVAL;
+
+	ret = call_imx_sip(FSL_SIP_GPC,
+			FSL_SIP_CONFIG_GPC_PM_DOMAIN, 2 + usb_id, on, 0);
+	if (ret)
+		return -EPERM;
+
+	return 0;
+}
+#endif
