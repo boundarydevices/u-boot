@@ -13,6 +13,7 @@
 #include <linux/errno.h>
 #include <linux/compat.h>
 #include <linux/usb/dwc3.h>
+#include <asm/arch/sys_proto.h>
 #include <usb/xhci.h>
 
 /* Declare global data pointer */
