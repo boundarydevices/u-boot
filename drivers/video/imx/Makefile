@@ -4,10 +4,6 @@
 # Wolfgang Denk, DENX Software Engineering, wd@denx.de.
 
 obj-y += mxc_ipuv3_fb.o ipu_common.o ipu_disp.o
-ifdef CONFIG_VIDEO_IMX_HDP_LOAD
 
 UBOOTINCLUDE += -I$(srctree)/drivers/video/imx/hdp
-obj-y += hdpload.o
-obj-y += hdp/
-
-endif
+obj-$(CONFIG_VIDEO_IMX_HDP_LOAD) += hdpload.o hdp/
