@@ -629,6 +629,9 @@ static int esdhc_init(struct mmc *mmc)
 	struct fsl_esdhc_priv *priv = mmc->priv;
 	struct fsl_esdhc *regs = priv->c.esdhc_regs;
 	int timeout = 1000;
+#if defined(CONFIG_FSL_USDHC)
+	unsigned vendorspec = VENDORSPEC_INIT;
+#endif
 
 	/* Reset the entire host controller */
 	esdhc_setbits32(&regs->sysctl, SYSCTL_RSTA);
@@ -645,7 +648,9 @@ static int esdhc_init(struct mmc *mmc)
 	esdhc_write32(&regs->clktunectrlstatus, 0x0);
 
 	/* Put VEND_SPEC to default value */
-	esdhc_write32(&regs->vendorspec, VENDORSPEC_INIT);
+	if (priv->c.flags & CFG_FORCE_1P8V)
+		vendorspec |= ESDHC_VENDORSPEC_VSELECT;
+	esdhc_write32(&regs->vendorspec, vendorspec);
 
 	/* Disable DLL_CTRL delay line */
 	esdhc_write32(&regs->dllctrl, 0x0);
@@ -741,6 +746,8 @@ static int fsl_esdhc_init(struct fsl_esdhc_priv *priv)
 
 	/* First reset the eSDHC controller */
 	esdhc_reset(regs);
+	if (priv->c.flags & CFG_FORCE_1P8V)
+		esdhc_setbits32(&regs->vendorspec, ESDHC_VENDORSPEC_VSELECT);
 
 #ifndef CONFIG_FSL_USDHC
 	esdhc_setbits32(&regs->sysctl, SYSCTL_PEREN | SYSCTL_HCKEN

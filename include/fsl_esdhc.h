@@ -184,6 +184,8 @@ struct fsl_esdhc_cfg {
 	u8	wp_enable;
 	u16	gp_cd;
 	u16	gp_reset;
+#define CFG_FORCE_1P8V	BIT(0)
+	u16	flags;
 };
 
 /* Select the correct accessors depending on endianess */
