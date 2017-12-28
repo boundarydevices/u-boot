@@ -154,7 +154,6 @@ struct fsl_esdhc_priv {
 #endif
 	struct udevice *dev;
 	int broken_cd;
-	int vs18_enable;
 	u32 flags;
 	u32 caps;
 	u32 tuning_step;
@@ -768,7 +767,7 @@ static int esdhc_set_voltage(struct mmc *mmc)
 	priv->signal_voltage = mmc->signal_voltage;
 	switch (mmc->signal_voltage) {
 	case MMC_SIGNAL_VOLTAGE_330:
-		if (priv->vs18_enable)
+		if (priv->c.vs18_enable)
 			return -ENOTSUPP;
 		if (CONFIG_IS_ENABLED(DM_REGULATOR) &&
 		    !IS_ERR_OR_NULL(priv->vqmmc_dev)) {
@@ -1012,7 +1011,7 @@ static int esdhc_init_common(struct fsl_esdhc_priv *priv, struct mmc *mmc)
 		esdhc_write32(&regs->clktunectrlstatus, 0x0);
 
 		/* Put VEND_SPEC to default value */
-		if (priv->vs18_enable)
+		if (priv->c.vs18_enable)
 			esdhc_write32(&regs->vendorspec, VENDORSPEC_INIT |
 				      ESDHC_VENDORSPEC_VSELECT);
 		else
@@ -1160,7 +1159,7 @@ static int fsl_esdhc_init(struct fsl_esdhc_priv *priv,
 		esdhc_write32(&regs->clktunectrlstatus, 0);
 	}
 
-	if (priv->vs18_enable)
+	if (priv->c.vs18_enable)
 		esdhc_setbits32(&regs->vendorspec, ESDHC_VENDORSPEC_VSELECT);
 
 	esdhc_write32(&regs->irqstaten, SDHCI_IRQ_EN_BITS);
@@ -1412,7 +1411,7 @@ static int fsl_esdhc_of_to_plat(struct udevice *dev)
 			     GPIOD_IS_OUT_ACTIVE);
 #endif
 
-	priv->vs18_enable = 0;
+	priv->c.vs18_enable = 0;
 
 	if (!CONFIG_IS_ENABLED(DM_REGULATOR))
 		return 0;
@@ -1433,7 +1432,7 @@ static int fsl_esdhc_of_to_plat(struct udevice *dev)
 		}
 
 		if (regulator_get_value(vqmmc_dev) == 1800000)
-			priv->vs18_enable = 1;
+			priv->c.vs18_enable = 1;
 	}
 	return 0;
 }
