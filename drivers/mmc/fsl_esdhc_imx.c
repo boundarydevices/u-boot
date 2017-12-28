@@ -153,7 +153,6 @@ struct fsl_esdhc_priv {
 	struct udevice *dev;
 	int non_removable;
 	int broken_cd;
-	int vs18_enable;
 	u32 flags;
 	u32 caps;
 	u32 tuning_step;
@@ -809,7 +808,7 @@ static int esdhc_set_voltage(struct mmc *mmc)
 	priv->signal_voltage = mmc->signal_voltage;
 	switch (mmc->signal_voltage) {
 	case MMC_SIGNAL_VOLTAGE_330:
-		if (priv->vs18_enable)
+		if (priv->c.vs18_enable)
 			return -ENOTSUPP;
 #if CONFIG_IS_ENABLED(DM_REGULATOR)
 		if (!IS_ERR_OR_NULL(priv->vqmmc_dev)) {
@@ -1003,6 +1002,9 @@ static int esdhc_init_common(struct fsl_esdhc_priv *priv, struct mmc *mmc)
 {
 	struct fsl_esdhc *regs = priv->c.esdhc_regs;
 	ulong start;
+#if defined(CONFIG_FSL_USDHC)
+	unsigned vendorspec = VENDORSPEC_INIT;
+#endif
 
 	/* Reset the entire host controller */
 	esdhc_setbits32(&regs->sysctl, SYSCTL_RSTA);
@@ -1022,11 +1024,9 @@ static int esdhc_init_common(struct fsl_esdhc_priv *priv, struct mmc *mmc)
 	esdhc_write32(&regs->clktunectrlstatus, 0x0);
 
 	/* Put VEND_SPEC to default value */
-	if (priv->vs18_enable)
-		esdhc_write32(&regs->vendorspec, (VENDORSPEC_INIT |
-			      ESDHC_VENDORSPEC_VSELECT));
-	else
-		esdhc_write32(&regs->vendorspec, VENDORSPEC_INIT);
+	if (priv->c.vs18_enable)
+		vendorspec |= ESDHC_VENDORSPEC_VSELECT;
+	esdhc_write32(&regs->vendorspec, vendorspec);
 
 	/* Disable DLL_CTRL delay line */
 	esdhc_write32(&regs->dllctrl, 0x0);
@@ -1182,7 +1182,7 @@ static int fsl_esdhc_init(struct fsl_esdhc_priv *priv,
 			VENDORSPEC_HCKEN | VENDORSPEC_IPGEN | VENDORSPEC_CKEN);
 #endif
 
-	if (priv->vs18_enable)
+	if (priv->c.vs18_enable)
 		esdhc_setbits32(&regs->vendorspec, ESDHC_VENDORSPEC_VSELECT);
 
 	writel(SDHCI_IRQ_EN_BITS, &regs->irqstaten);
@@ -1457,7 +1457,7 @@ static int fsl_esdhc_ofdata_to_platdata(struct udevice *dev)
 	gpio_request_by_name(dev, "reset-gpios", 0, &priv->reset_gpio,
 			     GPIOD_IS_OUT_ACTIVE);
 
-	priv->vs18_enable = 0;
+	priv->c.vs18_enable = 0;
 
 #if CONFIG_IS_ENABLED(DM_REGULATOR)
 	/*
@@ -1476,7 +1476,7 @@ static int fsl_esdhc_ofdata_to_platdata(struct udevice *dev)
 		}
 
 		if (regulator_get_value(vqmmc_dev) == 1800000)
-			priv->vs18_enable = 1;
+			priv->c.vs18_enable = 1;
 	}
 #endif
 #endif
