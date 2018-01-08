@@ -339,13 +339,19 @@ void board_enable_lcd(const struct display_info_t *di, int enable)
 }
 
 static const struct display_info_t displays[] = {
+#ifdef CONFIG_DEFAULT_HITACHI_HVGA
+	/* ft5x06 */
+	VD_HITACHI_HVGA(LCD, NULL, 2, 0x38),
+#endif
 	/* hdmi */
 	VD_1280_720M_60(HDMI, fbp_detect_i2c, 1, 0x50),
 	VD_1920_1080M_60(HDMI, NULL, 1, 0x50),
 	VD_1024_768M_60(HDMI, NULL, 1, 0x50),
 
 	/* ft5x06 */
+#ifndef CONFIG_DEFAULT_HITACHI_HVGA
 	VD_HITACHI_HVGA(LCD, fbp_detect_i2c, 2, 0x38),
+#endif
 	VD_HANNSTAR7(LVDS, NULL, 2, 0x38),
 	VD_AUO_B101EW05(LVDS, NULL, 2, 0x38),
 	VD_LG1280_800(LVDS, NULL, 2, 0x38),
