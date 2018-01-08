@@ -30,3 +30,6 @@ config I2C_BUS_FAN53526
 config SPLASH_SCREEN_PREPARE
 	bool "Prepare splash screen for display"
 	default y if SPLASH_SCREEN
+
+config DEFAULT_HITACHI_HVGA
+	bool "hvga display as default"
