@@ -275,6 +275,22 @@ static void addmac_env(const char* env_var)
 }
 #endif
 
+#if defined(CONFIG_CMD_FASTBOOT) || defined(CONFIG_CMD_DFU)
+static void addserial_env(const char* env_var)
+{
+	unsigned char mac_address[8];
+	char serialbuf[20];
+
+	if (!getenv(env_var)) {
+		imx_get_mac_from_fuse(0, mac_address);
+		snprintf(serialbuf, sizeof(serialbuf), "%02x%02x%02x%02x%02x%02x",
+			 mac_address[0], mac_address[1], mac_address[2],
+			 mac_address[3], mac_address[4], mac_address[5]);
+		setenv(env_var, serialbuf);
+	}
+}
+#endif
+
 #ifndef CONFIG_SYS_BOARD
 /* CANNOT be in BSS section, will clobber relocation table */
 const char *board_type = (void*)1;
@@ -316,6 +332,9 @@ int board_late_init(void)
 #endif
 #ifdef CONFIG_ENV_BD_ADDR
 	addmac_env("bd_addr");
+#endif
+#if defined(CONFIG_CMD_FASTBOOT) || defined(CONFIG_CMD_DFU)
+	addserial_env("serial#");
 #endif
 	print_time_rv4162();
 
