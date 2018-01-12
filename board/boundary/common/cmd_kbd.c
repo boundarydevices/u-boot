@@ -4,8 +4,59 @@
  * SPDX-License-Identifier:	GPL-2.0+
  */
 #include <common.h>
+#include <asm/arch/imx-regs.h>
 #include <asm/gpio.h>
+#include <asm/io.h>
 #include "bd_common.h"
+#ifdef CONFIG_TAMPER
+void tamper_enable(struct snvs_regs *snvs)
+{
+	writel(0x41736166, &snvs->lppgdr);	/* power glitch magic value */
+	writel(0x00800000, &snvs->lptgfcr);	/* Tamper Glitch Filter 1 En */
+	writel(0x200, &snvs->lptdcr);		/* External Tampering 1 En */
+	writel(0x20, &snvs->hpsvsr);		/* w1c, VIO5 */
+	writel(0x40030208, &snvs->lpsr);	/* w1c */
+	writel(0x20, &snvs->hpsvcr);		/* gpio1[0] will stop working */
+	writel(0x20, &snvs->lpsvcr);		/* Security Violation 5 En */
+}
+
+void tamper_clear(struct snvs_regs *snvs)
+{
+	writel(0x41736166, &snvs->lppgdr);	/* power glitch magic value */
+	writel(0, &snvs->lptgfcr);		/* disable Tamper Glitch Filter */
+	writel(0, &snvs->lptdcr);		/* disable External Tampering */
+	writel(0x20, &snvs->hpsvsr);		/* w1c, VIO5 */
+	writel(0, &snvs->hpsvcr);		/* makes gpio1[0] work again */
+	writel(0, &snvs->lpsvcr);		/* disable Security Vio */
+	writel(0x40030208, &snvs->lpsr);	/* w1c */
+}
+
+static void tamper_assert(struct snvs_regs *snvs)
+{
+	tamper_enable(snvs);
+	udelay(100);
+	tamper_clear(snvs);
+}
+
+void check_tamper(void)
+{
+	struct snvs_regs *snvs = (struct snvs_regs *)SNVS_BASE_ADDR;
+	const struct button_key *bb = board_buttons;
+	unsigned short gp;
+
+	while (1) {
+		if (!bb->name)
+			break;
+		if (bb->tamper) {
+			gp = bb->gpnum;
+			if (gpio_get_value(gp) ^ bb->active_low)
+				tamper_assert(snvs);
+		}
+		bb++;
+	}
+	tamper_clear(snvs);
+}
+#endif
 
 /*
  * generate a null-terminated string containing the buttons pressed
@@ -13,14 +64,45 @@
  */
 static int read_keys(char *buf)
 {
+#ifdef CONFIG_TAMPER
+	struct snvs_regs *snvs = (struct snvs_regs *)SNVS_BASE_ADDR;
+#endif
 	int numpressed = 0;
 	const struct button_key *bb = board_buttons;
+	unsigned short gp;
 
 	while (1) {
 		if (!bb->name)
 			break;
-		if (gpio_get_value(bb->gpnum) ^ bb->active_low)
-			buf[numpressed++] = bb->ident;
+		gp = bb->gpnum;
+#ifdef CONFIG_TAMPER
+		if (gp == TAMPER_CHECK) {
+			/* Tamper status */
+			unsigned lpsr;
+
+			/*
+			 * We cannot leave tamper enabled all the time because
+			 * it screws up gpio_0
+			 */
+			tamper_enable(snvs);
+			udelay(100);
+			lpsr = readl(&snvs->lpsr);
+
+			if (lpsr & BIT(9)) {
+				buf[numpressed++] = bb->ident;
+			}
+			tamper_clear(snvs);
+		} else
+#endif
+		{
+			if (gpio_get_value(gp) ^ bb->active_low) {
+				buf[numpressed++] = bb->ident;
+#ifdef CONFIG_TAMPER
+				if (bb->tamper)
+					tamper_assert(snvs);
+#endif
+			}
+		}
 		bb++;
 	}
 	buf[numpressed] = '\0';

@@ -14,7 +14,9 @@ struct button_key {
 	unsigned short	gpnum;
 	char		ident;
 	char		active_low;
+	char		tamper;
 };
+#define TAMPER_CHECK	0xffff
 
 struct boot_mode;
 extern const struct boot_mode board_boot_modes[];
@@ -33,6 +35,9 @@ struct i2c_pads_info;
 void common_board_init(const struct i2c_pads_info *p, int i2c_bus_cnt, int otg_id,
 		const struct display_info_t *displays, int display_cnt,
 		int gp_hd_detect);
+void tamper_enable(struct snvs_regs *snvs);
+void tamper_clear(struct snvs_regs *snvs);
+void check_tamper(void);
 
 #define MAX_BUTTONS	32
 
