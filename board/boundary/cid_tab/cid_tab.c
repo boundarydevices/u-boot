@@ -144,9 +144,9 @@ static const iomux_v3_cfg_t init_pads[] = {
 	IOMUX_PAD_CTRL(EIM_WAIT__GPIO5_IO00, WEAK_PULLUP),	/* low active */
 
 #define GPIRQ_TAMPER	IMX_GPIO_NR(4, 18)
-	IOMUX_PAD_CTRL(DI0_PIN2__GPIO4_IO18, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(DI0_PIN2__GPIO4_IO18, WEAK_PULLDN),
 #define GPIRQ_TAMPER2	IMX_GPIO_NR(5, 12)
-	IOMUX_PAD_CTRL(DISP0_DAT18__GPIO5_IO12, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(DISP0_DAT18__GPIO5_IO12, WEAK_PULLDN),
 
 	/* TODO Wireless control pins */
 #define GP_BT_CLK_REQ		IMX_GPIO_NR(6, 8)
@@ -662,8 +662,8 @@ const struct button_key board_buttons[] = {
 	{"reset",	GP_GPIOKEY_POWER,	'r', 1},
 	{"vol_dn",	GP_GPIOKEY_VOL_DN,	'-', 1},
 	{"vol_up",	GP_GPIOKEY_VOL_UP,	'+', 1},
-	{"tamper",	GPIRQ_TAMPER,	't', 1},
-	{"tp74",	GP_TP74,	'4', 0},
+	{"tamper",	TAMPER_CHECK,		't', 1},
+	{"tp74",	GP_TP74,		'4', 0},
 	{NULL, 0, 0, 0},
 };
 
