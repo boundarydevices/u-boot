@@ -493,34 +493,42 @@ struct src {
 #define SRC_M4C_NON_SCLR_RST_MASK	BIT(4)
 
 struct snvs_regs {
-	u32 hplr;	/* 0x00 */
-	u32 hpcomr;	/* 0x04 */
-	u32 hpcr;	/* 0x08 */
-	u32 spare1;	/* 0x0c */
-	u32 spare2;	/* 0x10 */
-	u32 hpsr;	/* 0x14 */
-	u32 spare3;	/* 0x18 */
-	u32 spare4;	/* 0x1c */
-	u32 spare5;	/* 0x20 */
-	u32 hprtcmr;	/* 0x24 */
-	u32 hprtclr;	/* 0x28 */
-	u32 hptamr;	/* 0x2c */
-	u32 hptalr;	/* 0x30 */
-	u32 lplr;	/* 0x34 */
-	u32 lpcr;	/* 0x38 */
-	u32 spare6;	/* 0x3c */
-	u32 spare7;	/* 0x40 */
-	u32 spare8;	/* 0x44 */
-	u32 spare9;	/* 0x48 */
-	u32 lpsr;	/* 0x4c */
-	u32 spare10;	/* 0x50 */
-	u32 spare11;	/* 0x54 */
-	u32 spare12;	/* 0x58 */
-	u32 lpsmcmr;	/* 0x5c */
-	u32 lpsmclr;	/* 0x60 */
-	u32 spare13;	/* 0x64 */
-	u32 lpgpr;	/* 0x68 */
-	u8 spare_block[0xbf8 - 0x6c];	/* 0x6c */
+	u32 hplr;	/* 0x00, lock register */
+	u32 hpcomr;	/* 0x04, command reg */
+	u32 hpcr;	/* 0x08, control reg */
+	u32 hpsicr;	/* 0x0c, security interrupt control */
+	u32 hpsvcr;	/* 0x10, security violation control */
+	u32 hpsr;	/* 0x14, status reg */
+	u32 hpsvsr;	/* 0x18, security violation status */
+	u32 hphacivr;	/* 0x1c, high assurance counter IV */
+	u32 hphacr;	/* 0x20, high assurance counter */
+	u32 hprtcmr;	/* 0x24, real time counter MSB */
+	u32 hprtclr;	/* 0x28, real time counter LSB */
+	u32 hptamr;	/* 0x2c, time alarm MSB */
+	u32 hptalr;	/* 0x30, time alarm LSB */
+	u32 lplr;	/* 0x34, lock register */
+	u32 lpcr;	/* 0x38, control reg */
+	u32 lpmkcr;	/* 0x3c, master key control */
+	u32 lpsvcr;	/* 0x40, security violation control */
+	u32 lptgfcr;	/* 0x44, tamper glitch filters config */
+	u32 lptdcr;	/* 0x48, tamper detectors config */
+	u32 lpsr;	/* 0x4c, status reg */
+	u32 lpsrtcmr;	/* 0x50, secure real time counter MSB */
+	u32 lpsrtclr;	/* 0x54, secure real time counter LSB */
+	u32 lptar;	/* 0x58, time alarm reg */
+	u32 lpsmcmr;	/* 0x5c, secure monotonic counter MSB */
+	u32 lpsmclr;	/* 0x60, secure monotonic counter LSB */
+	u32 lppgdr;	/* 0x64, power glitch detector */
+	u32 lpgpr;	/* 0x68, general purpose reg */
+	u32 lpzmkr0;	/* 0x6c, zeroizable master key */
+	u32 lpzmkr1;	/* 0x70, zeroizable master key */
+	u32 lpzmkr2;	/* 0x74, zeroizable master key */
+	u32 lpzmkr3;	/* 0x78, zeroizable master key */
+	u32 lpzmkr4;	/* 0x7c, zeroizable master key */
+	u32 lpzmkr5;	/* 0x80, zeroizable master key */
+	u32 lpzmkr6;	/* 0x84, zeroizable master key */
+	u32 lpzmkr7;	/* 0x88, zeroizable master key */
+	u8 spare_block[0xbf8 - 0x8c];	/* 0x8c */
 	u32 hpvidr1;	/* 0xbf8 */
 	u32 hpvidr2;	/* 0xbfc */
 };
