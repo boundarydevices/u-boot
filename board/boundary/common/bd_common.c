@@ -178,6 +178,9 @@ void common_board_init(const struct i2c_pads_info *p, int i2c_bus_cnt, int otg_i
 #ifdef CONFIG_MAX77823
 	max77823_init();
 #endif
+#ifdef CONFIG_TAMPER
+	check_tamper();
+#endif
 
 #ifdef CONFIG_CMD_SATA
 	if (!gp_hd_detect || gpio_get_value(gp_hd_detect))

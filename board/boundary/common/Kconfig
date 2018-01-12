@@ -33,3 +33,6 @@ config SPLASH_SCREEN_PREPARE
 
 config DEFAULT_HITACHI_HVGA
 	bool "hvga display as default"
+
+config TAMPER
+	bool "Enable tamper detection gpio"
