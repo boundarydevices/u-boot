@@ -136,6 +136,14 @@ static const iomux_v3_cfg_t init_pads[] = {
 	IOMUX_PAD_CTRL(NANDF_D3__GPIO2_IO03, WEAK_PULLUP),
 	/* main power on/ use pmic_on_req instead */
 	IOMUX_PAD_CTRL(GPIO_8__GPIO1_IO08, WEAK_PULLUP),
+
+	/* New rev,  not shorted with TAMPER */
+#define GPIRQ_TAMPER		IMX_GPIO_NR(6, 17)
+	IOMUX_PAD_CTRL(SD3_DAT7__GPIO6_IO17, WEAK_PULLUP),
+	/* Old rev, shorted with TAMPER */
+#define GPIRQ_TAMPER_OLD	IMX_GPIO_NR(4, 18)
+	IOMUX_PAD_CTRL(DI0_PIN2__GPIO4_IO18, WEAK_PULLDN),
+
 	/* TP68 */
 	IOMUX_PAD_CTRL(NANDF_D0__GPIO2_IO00, WEAK_PULLUP),
 	/* TP71 */
@@ -144,7 +152,7 @@ static const iomux_v3_cfg_t init_pads[] = {
 	IOMUX_PAD_CTRL(ENET_RXD0__GPIO1_IO27, WEAK_PULLUP),
 	/* TP74 */
 #define GP_TP74			IMX_GPIO_NR(2, 7)
-	IOMUX_PAD_CTRL(NANDF_D7__GPIO2_IO07, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(NANDF_D7__GPIO2_IO07, WEAK_PULLDN),
 	/* TP84 */
 	IOMUX_PAD_CTRL(KEY_ROW2__GPIO4_IO11, WEAK_PULLUP),
 	/* TP85 */
@@ -243,8 +251,6 @@ static const iomux_v3_cfg_t init_pads[] = {
 	/* I2C2 - RTC */
 #define GPIRQ_RTC	IMX_GPIO_NR(1, 4)
 	IOMUX_PAD_CTRL(GPIO_4__GPIO1_IO04, WEAK_PULLUP),
-#define GPIRQ_TAMPER	IMX_GPIO_NR(4, 18)
-	IOMUX_PAD_CTRL(DI0_PIN2__GPIO4_IO18, WEAK_PULLUP),
 
 	/* I2C3 - Touch */
 #define GPIRQ_TOUCH	IMX_GPIO_NR(4, 15)
@@ -295,10 +301,6 @@ static const iomux_v3_cfg_t init_pads[] = {
 	/* Rev 1 only, not on rev 0 */
 #define GP_NFC_PWR_EN		IMX_GPIO_NR(4, 21)
 	IOMUX_PAD_CTRL(DISP0_DAT0__GPIO4_IO21, WEAK_PULLDN),
-
-	/* UART1 */
-	IOMUX_PAD_CTRL(SD3_DAT7__UART1_TX_DATA, UART_PAD_CTRL),
-	IOMUX_PAD_CTRL(SD3_DAT6__UART1_RX_DATA, UART_PAD_CTRL),
 
 	/* UART2 */
 #ifndef CONFIG_SILENT_UART
@@ -462,6 +464,7 @@ static const unsigned short gpios_in[] = {
 	GPIRQ_MPU9250_INT,
 	GPIRQ_RTC,
 	GPIRQ_TAMPER,
+	GPIRQ_TAMPER_OLD,
 	GPIRQ_TOUCH,
 	GPIRQ_WIFI,
 	GP_TP74,
@@ -492,7 +495,12 @@ int board_init(void)
 }
 
 const struct button_key board_buttons[] = {
-	{"tp74",	GP_TP74,	't', 1},
+#ifdef CONFIG_REV_OLD
+	{"tamper",	TAMPER_CHECK,	't', 1, 1},
+#else
+	{"tamper",	GPIRQ_TAMPER,	't', 1, 1},
+#endif
+	{"tp74",	GP_TP74,	'4', 0},
 	{NULL, 0, 0, 0},
 };
 
