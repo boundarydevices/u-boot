@@ -6,4 +6,4 @@
 obj-y += mxc_ipuv3_fb.o ipu_common.o ipu_disp.o
 
 UBOOTINCLUDE += -I$(srctree)/drivers/video/imx/hdp
-obj-$(CONFIG_VIDEO_IMX_HDP_LOAD) += hdpload.o hdp/
+obj-$(CONFIG_VIDEO_IMX_HDP_LOAD) += hdp_load.o hdp/
