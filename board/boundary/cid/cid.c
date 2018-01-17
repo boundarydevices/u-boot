@@ -303,7 +303,7 @@ static const iomux_v3_cfg_t init_pads[] = {
 	IOMUX_PAD_CTRL(NANDF_CS2__GPIO6_IO15, WEAK_PULLDN),
 
 	/* Rev 1 only, not on rev 0 */
-#define GP_NFC_PWR_EN		IMX_GPIO_NR(4, 21)
+#define GP_USB_NFC_PWR_EN	IMX_GPIO_NR(4, 21)
 	IOMUX_PAD_CTRL(DISP0_DAT0__GPIO4_IO21, WEAK_PULLDN),
 
 	/* UART2 */
@@ -385,8 +385,10 @@ static const struct i2c_pads_info i2c_pads[] = {
 int board_ehci_hcd_init(int port)
 {
 	if (port) {
+		gpio_set_value(GP_USB_NFC_PWR_EN, 1);
+
 		/* Reset USB hub */
-		gpio_direction_output(GP_USBH1_HUB_RESET, 0);
+		gpio_set_value(GP_USBH1_HUB_RESET, 0);
 		mdelay(2);
 		gpio_set_value(GP_USBH1_HUB_RESET, 1);
 	}
@@ -447,7 +449,7 @@ static const unsigned short gpios_out_low[] = {
 	GP_REG_USBOTG,
 	GP_REG_WLAN_EN,
 	GP_USBH1_HUB_RESET,
-	GP_NFC_PWR_EN,
+	GP_USB_NFC_PWR_EN,
 	GP_REG_2P8V_EN,
 	GP_VIBRATOR_EN,
 	GP_TORCH_EN,
