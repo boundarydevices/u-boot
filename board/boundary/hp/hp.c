@@ -524,6 +524,38 @@ const struct button_key board_buttons[] = {
 	{NULL, 0, 0, 0},
 };
 
+/* HP wants wifi MAC to be board MAC+1 */
+void board_late_specific_init(void)
+{
+#ifdef CONFIG_WLMAC_PLUSONE
+#ifdef CONFIG_FEC_MXC
+#define ADDMAC_OFFSET	0x800000
+#else
+#define ADDMAC_OFFSET	0
+#endif
+	unsigned char mac_address[8];
+	char macbuf[20];
+
+	if (!getenv("wlmac")) {
+		imx_get_mac_from_fuse(ADDMAC_OFFSET, mac_address);
+		if (is_valid_ethaddr(mac_address)) {
+			if(mac_address[5]==255){
+				mac_address[5]=0;
+				if(mac_address[4]==255){
+					mac_address[4]=0;
+					mac_address[3]++;
+				}else
+					mac_address[4]++;
+			}else
+				mac_address[5]++;
+			snprintf(macbuf, sizeof(macbuf), "%pM", mac_address);
+			setenv("wlmac", macbuf);
+		}
+	}
+#endif
+	return;
+}
+
 #ifdef CONFIG_CMD_BMODE
 const struct boot_mode board_boot_modes[] = {
 	/* 4 bit bus width */
