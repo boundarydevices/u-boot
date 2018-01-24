@@ -57,12 +57,20 @@
 #define SYS_AUXCORE_BOOTDATA_QSPI	0x601e0000
 #define SYS_AUXCORE_BOOTDATA_TCM	0x007F8000
 #define EXTRA_ENV_M4 \
+	"loadm4image=load ${devtype} ${devnum}:1 ${loadaddr} ${m4image}\0" \
+	"m4boot=run m4boot_nor\0" \
+	"m4boot_ext=load ${devtype} ${devnum}:1 ${m4loadaddr} ${m4image}; " \
+		"dcache flush; bootaux ${m4loadaddr}\0" \
+	"m4boot_nor=sf probe; sf read ${m4loadaddr} ${m4offset} ${m4size}; " \
+		"dcache flush; bootaux ${m4loadaddr}\0" \
+	"m4boot_qspi=bootaux "__stringify(SYS_AUXCORE_BOOTDATA_QSPI)"\0" \
 	"m4image=m4_fw.bin\0" \
+	"m4loadaddr="__stringify(SYS_AUXCORE_BOOTDATA_TCM)"\0" \
+	"m4loaddevs=mmc\0" \
 	"m4offset=0x1e0000\0" \
 	"m4size=0x8000\0" \
-	"loadm4image=load ${dtype} ${disk}:1 ${loadaddr} ${m4image}\0" \
-	"m4update=for dtype in ${bootdevs}; do " \
-		"for disk in 0 1 ; do ${dtype} dev ${disk} ;" \
+	"m4update=for devtype in ${m4loaddevs}; do " \
+		"for devnum in 0 1 ; do ${devtype} dev ${devnum} ;" \
 			"if run loadm4image; then " \
 				"sf probe; " \
 				"sf erase ${m4offset} ${m4size}; " \
@@ -70,14 +78,7 @@
 				"exit; " \
 			"fi; " \
 		"done; " \
-		"done\0" \
-	"m4loadaddr="__stringify(CONFIG_SYS_AUXCORE_BOOTDATA_TCM)"\0" \
-	"m4boot=run m4boot_nor\0" \
-	"m4boot_ext=load ${dtype} ${disk}:1 ${m4loadaddr} ${m4image}; " \
-		"dcache flush; bootaux ${m4loadaddr}\0" \
-	"m4boot_nor=sf probe; sf read ${m4loadaddr} ${m4offset} ${m4size}; " \
-		"dcache flush; bootaux ${m4loadaddr}\0" \
-	"m4boot_qspi=bootaux "__stringify(CONFIG_SYS_AUXCORE_BOOTDATA_QSPI)"\0"
+		"done\0"
 
 #include "boundary.h"
 #define CONFIG_EXTRA_ENV_SETTINGS BD_BOUNDARY_ENV_SETTINGS \
