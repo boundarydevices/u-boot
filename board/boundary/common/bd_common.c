@@ -17,6 +17,7 @@
 #include <asm/imx-common/sata.h>
 #include <i2c.h>
 #include <linux/fb.h>
+#include <version.h>
 #include "bd_common.h"
 
 DECLARE_GLOBAL_DATA_PTR;
@@ -312,8 +313,12 @@ int checkboard(void)
 	return 0;
 }
 
+static const char str_uboot_release[] = "uboot_release";
+static const char cur_uboot_release[] = PLAIN_VERSION;
+
 int board_late_init(void)
 {
+	char *uboot_release;
 	int cpurev = get_cpu_rev();
 
 #ifdef CONFIG_BOARD_LATE_SPECIFIC_INIT
@@ -341,5 +346,15 @@ int board_late_init(void)
 #endif
 	print_time_rv4162();
 
+	uboot_release = getenv(str_uboot_release);
+	if (!uboot_release || strcmp(cur_uboot_release, uboot_release)) {
+		setenv(str_uboot_release, cur_uboot_release);
+		if (uboot_release) {
+			/*
+			 * if already saved in environment, correct value
+			 */
+			saveenv();
+		}
+	}
 return 0;
 }
