@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2010-2011 Freescale Semiconductor, Inc.
+ * Copyright (C) 2017 Boundary Devices, Inc.
  *
- * Configuration settings for the Boundary Devices nitrogen6_vm
+ * Configuration settings for the Boundary Devices nitrogen51_vm
  * board.
  *
  * SPDX-License-Identifier:	GPL-2.0+
@@ -11,7 +11,6 @@
 #define __CONFIG_H
 
 /***********************************/
-#define CONFIG_MXC_GPT_HCLK
 
 #define CONFIG_SYS_BOOTM_LEN	0x1000000
 
