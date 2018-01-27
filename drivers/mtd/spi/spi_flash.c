@@ -33,15 +33,12 @@ static void spi_flash_addr(u32 addr, u8 *cmd)
 static int read_sr(struct spi_flash *flash, u8 *rs)
 {
 	int ret;
-	u8 cmd;
 
-	cmd = CMD_READ_STATUS;
-	ret = spi_flash_read_common(flash, &cmd, 1, rs, 1);
+	ret = spi_flash_read_common(flash, &flash->status_cmd, 1, rs, 1);
 	if (ret < 0) {
 		debug("SF: fail to read status register\n");
 		return ret;
 	}
-
 	return 0;
 }
 
@@ -195,8 +192,7 @@ static int spi_flash_sr_ready(struct spi_flash *flash)
 	ret = read_sr(flash, &sr);
 	if (ret < 0)
 		return ret;
-
-	return !(sr & STATUS_WIP);
+	return (sr & flash->status_ready_mask) == flash->status_ready_level;
 }
 
 static int spi_flash_fsr_ready(struct spi_flash *flash)
@@ -399,6 +395,50 @@ int spi_flash_cmd_write_ops(struct spi_flash *flash, u32 offset,
 
 	return ret;
 }
+
+#ifdef CONFIG_SPI_FLASH_ATMEL
+int spi_flash_cmd_write_ops_atmel(struct spi_flash *flash, u32 offset,
+		size_t len, const void *buf)
+{
+	unsigned long byte_addr, page_size;
+	size_t actual;
+	u8 cmd[4];
+	int ret = -1;
+
+	page_size = flash->page_size;
+
+	byte_addr = offset % page_size;
+	if (byte_addr)
+		return -EINVAL;
+
+	for (actual = 0; actual < len; actual += page_size) {
+		cmd[0] = CMD_BUFFER1_WRITE;
+		cmd[1] = 0;
+		cmd[2] = 0;
+		cmd[3] = 0;
+		ret = spi_flash_write_common(flash, cmd, sizeof(cmd),
+					buf + actual, page_size);
+		if (ret < 0) {
+			debug("SF: write failed\n");
+			break;
+		}
+
+		cmd[0] = CMD_BUFFER1_PROGRAM;
+		spi_flash_addr(offset, cmd);
+
+		ret = spi_flash_write_common(flash, cmd, sizeof(cmd),
+					buf + actual, page_size);
+		if (ret < 0) {
+			debug("SF: write failed\n");
+			break;
+		}
+
+		offset += page_size;
+	}
+
+	return ret;
+}
+#endif
 
 int spi_flash_read_common(struct spi_flash *flash, const u8 *cmd,
 		size_t cmd_len, void *data, size_t data_len)
@@ -947,11 +987,6 @@ int spi_flash_scan(struct spi_flash *flash)
 	if (IS_ERR_OR_NULL(info))
 		return -ENOENT;
 
-	/* Flash powers up read-only, so clear BP# bits */
-	if (JEDEC_MFR(info) == SPI_FLASH_CFI_MFR_ATMEL ||
-	    JEDEC_MFR(info) == SPI_FLASH_CFI_MFR_MACRONIX ||
-	    JEDEC_MFR(info) == SPI_FLASH_CFI_MFR_SST)
-		write_sr(flash, 0);
 
 	flash->name = info->name;
 	flash->memory_map = spi->memory_map;
@@ -967,6 +1002,19 @@ int spi_flash_scan(struct spi_flash *flash)
 			flash->write = sst_write_bp;
 		else
 			flash->write = sst_write_wp;
+	}
+#endif
+
+	flash->status_cmd = CMD_READ_STATUS;
+	flash->status_ready_mask = STATUS_WIP;
+	flash->status_ready_level = 0;
+
+#ifdef CONFIG_SPI_FLASH_ATMEL
+	if (info->flags & ATMEL_REGS) {
+		flash->write = spi_flash_cmd_write_ops_atmel;
+		flash->status_cmd = CMD_READ_STATUS2;
+		flash->status_ready_mask = STATUS2_READY;
+		flash->status_ready_level = STATUS2_READY;
 	}
 #endif
 	flash->erase = spi_flash_cmd_erase_ops;
@@ -1010,6 +1058,9 @@ int spi_flash_scan(struct spi_flash *flash)
 	if (info->flags & SECT_4K) {
 		flash->erase_cmd = CMD_ERASE_4K;
 		flash->erase_size = 4096 << flash->shift;
+	} else if (info->flags & SECT_2K) {
+		flash->erase_cmd = CMD_ERASE_2K;
+		flash->erase_size = 2048 << flash->shift;
 	} else
 #endif
 	{
@@ -1035,6 +1086,12 @@ int spi_flash_scan(struct spi_flash *flash)
 	else
 		/* Go for default supported write cmd */
 		flash->write_cmd = CMD_PAGE_PROGRAM;
+
+	/* Flash powers up read-only, so clear BP# bits */
+	if (JEDEC_MFR(info) == SPI_FLASH_CFI_MFR_ATMEL ||
+	    JEDEC_MFR(info) == SPI_FLASH_CFI_MFR_MACRONIX ||
+	    JEDEC_MFR(info) == SPI_FLASH_CFI_MFR_SST)
+		write_sr(flash, 0);
 
 	/* Set the quad enable bit - only for quad commands */
 	if ((flash->read_cmd == CMD_READ_QUAD_OUTPUT_FAST) ||

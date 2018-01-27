@@ -39,6 +39,7 @@ enum spi_nor_option_flags {
 #define SPI_FLASH_CFI_MFR_ATMEL		0x1f
 
 /* Erase commands */
+#define CMD_ERASE_2K			0x50
 #define CMD_ERASE_4K			0x20
 #define CMD_ERASE_CHIP			0xc7
 #define CMD_ERASE_64K			0xd8
@@ -46,6 +47,10 @@ enum spi_nor_option_flags {
 /* Write commands */
 #define CMD_WRITE_STATUS		0x01
 #define CMD_PAGE_PROGRAM		0x02
+/* 0x84 followed by 3byte offset into buffer */
+#define CMD_BUFFER1_WRITE		0x84
+/* 0x88 followed by 2 byte page #, and 1 dummy byte */
+#define CMD_BUFFER1_PROGRAM		0x88
 #define CMD_WRITE_DISABLE		0x04
 #define CMD_WRITE_ENABLE		0x06
 #define CMD_QUAD_PAGE_PROGRAM		0x32
@@ -60,6 +65,7 @@ enum spi_nor_option_flags {
 #define CMD_READ_ID			0x9f
 #define CMD_READ_STATUS			0x05
 #define CMD_READ_STATUS1		0x35
+#define CMD_READ_STATUS2		0xd7
 #define CMD_READ_CONFIG			0x35
 #define CMD_FLAG_STATUS			0x70
 
@@ -76,6 +82,7 @@ enum spi_nor_option_flags {
 #define STATUS_QEB_WINSPAN		BIT(1)
 #define STATUS_QEB_MXIC			BIT(6)
 #define STATUS_PEC			BIT(7)
+#define STATUS2_READY			BIT(7)
 #define SR_BP0				BIT(2)  /* Block protect 0 */
 #define SR_BP1				BIT(3)  /* Block protect 1 */
 #define SR_BP2				BIT(4)  /* Block protect 2 */
@@ -131,6 +138,8 @@ struct spi_flash_info {
 #define RD_DUAL			BIT(5)	/* use Dual Read */
 #define RD_QUADIO		BIT(6)	/* use Quad IO Read */
 #define RD_DUALIO		BIT(7)	/* use Dual IO Read */
+#define ATMEL_REGS		BIT(8)
+#define SECT_2K			BIT(9)	/* CMD_ERASE_2K works */
 #define RD_FULL			(RD_QUAD | RD_DUAL | RD_QUADIO | RD_DUALIO)
 };
 
