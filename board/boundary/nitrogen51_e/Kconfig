@@ -1,0 +1,24 @@
+if TARGET_NITROGEN51_E
+
+config SYS_CPU
+	default "armv7"
+
+config SYS_BOARD
+	default "nitrogen51_e"
+
+config SYS_VENDOR
+	default "boundary"
+
+config SYS_SOC
+	default "mx5"
+
+config SYS_CONFIG_NAME
+	default "nitrogen51_e"
+
+config BOARD_LATE_SPECIFIC_INIT
+	bool
+	default	y
+
+source "board/boundary/common/Kconfig"
+
+endif
