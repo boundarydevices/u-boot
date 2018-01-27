@@ -55,7 +55,11 @@ fi
 if load ${devtype} ${devnum}:${distro_bootpart} ${a_script} uEnv.txt ; then
     env import -t ${a_script} ${filesize}
 fi
-setenv bootargs ${bootargs} console=${console},115200 vmalloc=400M consoleblank=0 rootwait fixrtc cpu=${imx_cpu} board=${board}
+
+if itest.s x${console} != x ; then
+	setenv bootargs ${bootargs} console=${console},115200
+fi
+setenv bootargs ${bootargs} vmalloc=400M consoleblank=0 rootwait fixrtc cpu=${imx_cpu} board=${board}
 
 if load ${devtype} ${devnum}:${distro_bootpart} ${a_fdt} ${prefix}${fdt_file} ; then
 	fdt addr ${a_fdt}
