@@ -46,7 +46,7 @@ const struct spi_flash_info spi_flash_ids[] = {
 #ifdef CONFIG_SPI_FLASH_ATMEL		/* ATMEL */
 	{"at45db011d",	   INFO(0x1f2200, 0x0, 64 * 1024,     4, SECT_4K) },
 	{"at45db021d",	   INFO(0x1f2300, 0x0, 64 * 1024,     8, SECT_4K) },
-	{"at45db041d",	   INFO(0x1f2400, 0x0, 64 * 1024,     8, SECT_4K) },
+	{"at45db041d",	   INFO(0x1f2400, 0x0, 64 * 1024,     8, SECT_2K | ATMEL_REGS) },
 	{"at45db081d",	   INFO(0x1f2500, 0x0, 64 * 1024,    16, SECT_4K) },
 	{"at45db161d",	   INFO(0x1f2600, 0x0, 64 * 1024,    32, SECT_4K) },
 	{"at45db321d",	   INFO(0x1f2700, 0x0, 64 * 1024,    64, SECT_4K) },

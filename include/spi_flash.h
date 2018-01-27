@@ -83,6 +83,11 @@ struct spi_flash {
 	u8 write_cmd;
 	u8 dummy_byte;
 
+	u8 status_cmd;
+	u8 status_ready_mask;
+	u8 status_ready_level;
+	u8 spare1;
+
 	void *memory_map;
 
 	int (*flash_lock)(struct spi_flash *flash, u32 ofs, size_t len);
