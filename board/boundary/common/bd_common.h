@@ -35,6 +35,7 @@ struct i2c_pads_info;
 void common_board_init(const struct i2c_pads_info *p, int i2c_bus_cnt, int otg_id,
 		const struct display_info_t *displays, int display_cnt,
 		int gp_hd_detect);
+struct snvs_regs;
 void tamper_enable(struct snvs_regs *snvs);
 void tamper_clear(struct snvs_regs *snvs);
 void check_tamper(void);
