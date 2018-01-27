@@ -1,0 +1,128 @@
+offset=0x400
+erase_size=0xC0000
+
+a_uImage1=0x92000400
+a_uImage2=0x92400400
+a_script=0x92000000
+
+blew=0
+for addr in 0x83f98c24 0x83f98c28 0x83f98c2c 0x83f98c30 0x83f98c34 0x83f98c38 ; do
+  if itest.l *${addr} != 0 ; then
+    blew=1;
+  fi
+done
+
+setenv stdout serial,vga
+
+if itest.s "${ethaddr}_" != "_" ; then
+  if itest.l ${blew} != 0 ; then
+    echo already blew fuse;
+    iim read fecmac
+  else
+    echo blowing mac fuses ${ethaddr}
+    iim blow fecmac ${ethaddr}
+  fi
+fi
+
+if sf probe 1 27000000 || sf probe 1 27000000 ; then
+  echo "probed SPI ROM" ;
+else
+  echo "Error initializing EEPROM"
+  exit
+fi
+
+small=1
+if sf read ${a_uImage2} 0x80400 0x400 ; then
+  if sf read ${a_uImage1} 0x400 0x400 ; then
+    if cmp.b ${a_uImage1} ${a_uImage2} 0x400 ; then
+    else
+      small=0;
+    fi
+  fi
+fi
+if itest.l ${small} != 0 ; then
+  rev="rev0_"
+  erase_size=0x7e000
+  echo "small spi-nor chip, erase size changed to 0x7e000"
+fi
+
+if itest.l *0x83fd9008 < 0 ; then
+  size_str="512m"
+else
+  size_str="256m"
+fi
+
+if itest.s "${uboot_defconfig}_" == "_" ; then
+  uboot_defconfig="nitrogen51_e_${rev}${size_str}"
+fi
+
+echo "check U-Boot with u-boot.${uboot_defconfig}" ;
+
+mw.b ${a_uImage1} 0xff ${erase_size}
+
+if fatload mmc 0 ${a_uImage1} u-boot.${uboot_defconfig} ; then
+else
+  echo "File u-boot.${uboot_defconfig} not found on SD card" ;
+  exit
+fi
+echo "read $filesize bytes from SD card" ;
+if sf read ${a_uImage2} ${offset} ${filesize} ; then
+else
+  echo "Error reading boot loader from EEPROM" ;
+  exit
+fi
+
+if cmp.b ${a_uImage1} ${a_uImage2} ${filesize} ; then
+  echo "------- U-Boot versions match" ;
+  echo "------- upgrade not needed" ;
+  if itest.s "${next}_" != "_" ; then
+    if fatload mmc 0 ${a_script} ${next} ; then
+      source ${a_script}
+    else
+      echo "${next} not found on SD card"
+    fi
+  fi
+  exit
+fi
+
+echo "Need U-Boot upgrade" ;
+echo "Program in 5 seconds" ;
+for n in 5 4 3 2 1 ; do
+  echo $n ;
+  sleep 1 ;
+done
+echo "erasing" ;
+sf erase 0 ${erase_size} ;
+
+# two steps to prevent bricking
+echo "programming" ;
+a1=0x92000800
+o1=0x800
+s1=${filesize}
+sf write ${a1} ${o1} ${s1} ;
+sf write ${a_uImage1} $offset 0x400 ;
+
+
+echo "verifying" ;
+if sf read ${a_uImage2} $offset $filesize ; then
+else
+  echo "Error re-reading EEPROM" ;
+  exit
+fi
+if cmp.b ${a_uImage1} ${a_uImage2} $filesize ; then
+else
+  echo "Read verification error" ;
+  exit
+fi
+
+if itest.s "${next}_" != "_" ; then
+  if fatload mmc 0 ${a_script} ${next} ; then
+    source ${a_script}
+  else
+    echo "${next} not found on mmc 0"
+  fi
+fi
+
+while echo "---- U-Boot upgraded. reset" ; do
+  sleep 120
+done

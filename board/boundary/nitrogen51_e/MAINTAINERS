@@ -1,0 +1,7 @@
+NITROGEN6_E BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/nitrogen51_e/
+F:	include/configs/nitrogen51_e.h
+F:	configs/nitrogen51_e_256m_defconfig
+F:	configs/nitrogen51_e_512m_defconfig
