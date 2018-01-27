@@ -57,6 +57,12 @@
 #define SPINOR_OP_PP_1_8_8	0xc2    /* Octal page program */
 #define SPINOR_OP_BE_4K		0x20	/* Erase 4KiB block */
 #define SPINOR_OP_BE_4K_PMC	0xd7	/* Erase 4KiB block on PMC chips */
+#define SPINOR_OP_BE_2K		0x50	/* Erase 2KiB block */
+/* 0x84 followed by 3byte offset into buffer */
+#define SPINOR_OP_BUFFER1_WRITE		0x84
+/* 0x88 followed by 2 byte page #, and 1 dummy byte */
+#define SPINOR_OP_BUFFER1_PROGRAM 0x88
+#define SPINOR_OP_READ_STATUS2	0xd7
 #define SPINOR_OP_BE_32K	0x52	/* Erase 32KiB block */
 #define SPINOR_OP_CHIP_ERASE	0xc7	/* Erase whole flash chip */
 #define SPINOR_OP_SE		0xd8	/* Sector erase (usually 64KiB) */
@@ -139,6 +145,7 @@
 #define SR_P_ERR		BIT(6)
 
 #define SR_QUAD_EN_MX		BIT(6)	/* Macronix Quad I/O */
+#define SR_STATUS2_READY	BIT(7)	/* Atmel */
 
 /* Enhanced Volatile Configuration Register bits */
 #define EVCR_QUAD_EN_MICRON	BIT(7)	/* Micron Quad I/O */
@@ -316,6 +323,9 @@ struct spi_nor {
 	u8			read_opcode;
 	u8			read_dummy;
 	u8			program_opcode;
+	u8			status_opcode;
+	u8			status_ready_mask;
+	u8			status_ready_level;
 #ifdef CONFIG_SPI_FLASH_BAR
 	u8			bank_read_cmd;
 	u8			bank_write_cmd;

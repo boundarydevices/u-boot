@@ -142,6 +142,46 @@ static ssize_t spi_nor_write_data(struct spi_nor *nor, loff_t to, size_t len,
 	return op.data.nbytes;
 }
 
+static ssize_t spi_nor_write_data_atmel(struct spi_nor *nor, loff_t to,
+					size_t len, const u_char *buf)
+{
+	struct spi_mem_op op =
+			SPI_MEM_OP(SPI_MEM_OP_CMD(SPINOR_OP_BUFFER1_WRITE, 1),
+				   SPI_MEM_OP_ADDR(3, 0, 1),
+				   SPI_MEM_OP_NO_DUMMY,
+				   SPI_MEM_OP_DATA_OUT(len, buf, 1));
+	struct spi_mem_op op2 =
+			SPI_MEM_OP(SPI_MEM_OP_CMD(SPINOR_OP_BUFFER1_PROGRAM, 1),
+				SPI_MEM_OP_ADDR(nor->addr_width, to, 1),
+				SPI_MEM_OP_NO_DUMMY,
+				SPI_MEM_OP_NO_DATA);
+	int ret;
+
+	/* get transfer protocols. */
+	op.cmd.buswidth = spi_nor_get_protocol_inst_nbits(nor->write_proto);
+	op.addr.buswidth = spi_nor_get_protocol_addr_nbits(nor->write_proto);
+	op.data.buswidth = spi_nor_get_protocol_data_nbits(nor->write_proto);
+
+	ret = spi_mem_adjust_op_size(nor->spi, &op);
+	if (ret)
+		return ret;
+	if (len > nor->page_size)
+		len = nor->page_size;
+	if (len > op.data.nbytes)
+		len = op.data.nbytes;
+	op.data.nbytes = len;
+
+	ret = spi_mem_exec_op(nor->spi, &op);
+	if (ret)
+		return ret;
+
+	ret = spi_mem_exec_op(nor->spi, &op2);
+	if (ret)
+		return ret;
+
+	return len;
+}
+
 /*
  * Read the status register, returning its value in the location
  * Return the status register value.
@@ -152,7 +192,7 @@ static int read_sr(struct spi_nor *nor)
 	int ret;
 	u8 val;
 
-	ret = nor->read_reg(nor, SPINOR_OP_RDSR, &val, 1);
+	ret = nor->read_reg(nor, nor->status_opcode, &val, 1);
 	if (ret < 0) {
 		pr_debug("error %d reading SR\n", (int)ret);
 		return ret;
@@ -377,7 +417,7 @@ static int spi_nor_sr_ready(struct spi_nor *nor)
 		return -EIO;
 	}
 
-	return !(sr & SR_WIP);
+	return (sr & nor->status_ready_mask) == nor->status_ready_level;
 }
 
 static int spi_nor_fsr_ready(struct spi_nor *nor)
@@ -2365,6 +2405,9 @@ static int spi_nor_select_erase(struct spi_nor *nor,
 	} else if (info->flags & SECT_4K_PMC) {
 		nor->erase_opcode = SPINOR_OP_BE_4K_PMC;
 		mtd->erasesize = 4096;
+	} else if (info->flags & SECT_2K) {
+		nor->erase_opcode = SPINOR_OP_BE_2K;
+		mtd->erasesize = 2048;
 	} else
 #endif
 	{
@@ -2499,6 +2542,16 @@ int spi_nor_scan(struct spi_nor *nor)
 	nor->write = spi_nor_write_data;
 	nor->read_reg = spi_nor_read_reg;
 	nor->write_reg = spi_nor_write_reg;
+	nor->status_opcode = SPINOR_OP_RDSR;
+	nor->status_ready_mask = SR_WIP;
+	nor->status_ready_level = 0;
+
+	if (spi->mode & ATMEL_REGS) {
+		nor->write = spi_nor_write_data_atmel;
+		nor->status_opcode = SPINOR_OP_READ_STATUS2;
+		nor->status_ready_mask = SR_STATUS2_READY;
+		nor->status_ready_level = SR_STATUS2_READY;
+	}
 
 	if (spi->mode & SPI_RX_OCTAL) {
 		hwcaps.mask |= SNOR_HWCAPS_READ_1_1_8;

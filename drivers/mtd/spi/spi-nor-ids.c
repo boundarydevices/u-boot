@@ -70,7 +70,7 @@ const struct flash_info spi_nor_ids[] = {
 
 	{ INFO("at45db011d",	0x1f2200, 0, 64 * 1024,   4, SECT_4K) },
 	{ INFO("at45db021d",	0x1f2300, 0, 64 * 1024,   8, SECT_4K) },
-	{ INFO("at45db041d",	0x1f2400, 0, 64 * 1024,   8, SECT_4K) },
+	{ INFO("at45db041d",	0x1f2400, 0, 64 * 1024,   8, SECT_2K | ATMEL_REGS) },
 	{ INFO("at45db081d",	0x1f2500, 0, 64 * 1024,  16, SECT_4K) },
 	{ INFO("at45db161d",	0x1f2600, 0, 64 * 1024,  32, SECT_4K) },
 	{ INFO("at45db321d",	0x1f2700, 0, 64 * 1024,  64, SECT_4K) },
