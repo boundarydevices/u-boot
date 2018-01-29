@@ -104,9 +104,19 @@ static const iomux_v3_cfg_t init_pads[] = {
 	IOMUX_PAD_CTRL(EIM_A25__HDMI_TX_CEC_LINE, CEC_PAD_CTRL),
 
 	/* Hog pins*/
-	/* will be reg_5v_dlp */
-	IOMUX_PAD_CTRL(EIM_CS0__GPIO2_IO23, WEAK_PULLUP),	/* Unused now, leave high (enabled) for early boards */
-#define GP_5V_DLP_EN	IMX_GPIO_NR(3, 7)
+	/*
+	 * reg_5v_dlp
+	 *
+	 * Rev 0 boards should default to DLP enabled, because
+	 * the ROM enables it, and u-boot disabling it causes
+	 * problems.
+	 *
+	 * Rev 1 boards should default to DLP disabled, because
+	 * Linux should be in charge of when to enable
+	 */
+#define GP_5V_DLP_EN_REV0	IMX_GPIO_NR(2, 3)
+	IOMUX_PAD_CTRL(EIM_CS0__GPIO2_IO23, WEAK_PULLUP),
+#define GP_5V_DLP_EN_REV1	IMX_GPIO_NR(3, 7)
 	IOMUX_PAD_CTRL(EIM_DA7__GPIO3_IO07, WEAK_PULLDN),
 
 #define GP_STDBY_MODE	IMX_GPIO_NR(2, 24)
@@ -409,7 +419,7 @@ static const struct display_info_t displays[] = {
 
 static const unsigned short gpios_out_low[] = {
 	GP_BT_RFKILL_RESET, 	/* disable bluetooth */
-	GP_5V_DLP_EN,
+	GP_5V_DLP_EN_REV1,
 	GP_RGMII_PHY_RESET,
 	GP_BACKLIGHT_RGB,
 	GP_REG_USBOTG,		/* disable USB otg power */
@@ -421,6 +431,7 @@ static const unsigned short gpios_out_low[] = {
 static const unsigned short gpios_out_high[] = {
 	GP_ECSPI1_NOR_CS,	/* SS1 of spi nor */
 	GP_ECSPI2_SS0,
+	GP_5V_DLP_EN_REV0,
 	GP_STDBY_MODE,
 	GP_DLPC_BOOTED,
 	GP_INIT_DONE,
