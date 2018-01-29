@@ -248,6 +248,10 @@
 #endif
 #endif
 
+#ifndef BD_CONSOLE_STR
+#define BD_CONSOLE_STR	"console=" BD_CONSOLE "\0"
+#endif
+
 #if defined(CONFIG_VIDEO) && !defined(BD_NOVIDEO_CONSOLE)
 #define BD_STDOUT_SERIAL	"setenv stdout serial;"
 #define BD_STDOUT_VIDEO		"setenv stdout serial,vga; "
@@ -377,7 +381,7 @@
 		"sf erase " __stringify(CONFIG_ENV_OFFSET) " 0x2000 && " \
 		"echo restored environment to factory default ; fi\0" \
 	LOG_CMA_STR \
-	"console=" BD_CONSOLE "\0" \
+	BD_CONSOLE_STR \
 	"dfu_alt_info=u-boot raw 0x0 0xc0000\0" \
 	"fdt_addr=" BD_RAM_FDT "\0" \
 	"fdt_high=0xffffffff\0" \
