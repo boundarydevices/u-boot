@@ -34,7 +34,7 @@ fi
 
 if itest.s x7D == "x${imx_cpu}"; then
 	echo "check qspi parameter block" ;
-	if ${fs}load ${devtype} ${devnum}:1 ${a_qspi1} qspi-${sfname}.${uboot_defconfig} ; then
+	if ${fs}load ${devtype} ${devnum}:${distro_bootpart} ${a_qspi1} qspi-${sfname}.${uboot_defconfig} ; then
 	else
 		echo "parameter file qspi-${sfname}.${uboot_defconfig} not found on SD card"
 		exit
@@ -63,7 +63,7 @@ fi
 
 echo "check U-Boot" ;
 
-if ${fs}load ${devtype} ${devnum}:1 ${a_uImage1} u-boot.$uboot_defconfig ; then
+if ${fs}load ${devtype} ${devnum}:${distro_bootpart} ${a_uImage1} u-boot.$uboot_defconfig ; then
 else
 	echo "File u-boot.$uboot_defconfig not found on SD card" ;
 	exit
@@ -80,7 +80,7 @@ if cmp.b ${a_uImage1} ${a_uImage2} $filesize ; then
 	if itest.s "${qspi_match}" == "1" ; then
 		echo "------- upgrade not needed" ;
 		if itest.s "x" != "x${next}" ; then
-			if ${fs}load ${devtype} ${devnum}:1 ${a_script} ${next} ; then
+			if ${fs}load ${devtype} ${devnum}:${distro_bootpart} ${a_script} ${next} ; then
 				source ${a_script}
 			else
 				echo "${next} not found on SD card"
@@ -142,10 +142,10 @@ if itest.s x7D == "x${imx_cpu}"; then
 fi
 
 if itest.s "x" != "x${next}" ; then
-	if ${fs}load ${devtype} ${devnum}:1 ${a_script} ${next} ; then
+	if ${fs}load ${devtype} ${devnum}:${distro_bootpart} ${a_script} ${next} ; then
 		source ${a_script}
 	else
-		echo "${next} not found on ${devtype} ${devnum}"
+		echo "${next} not found on ${devtype} ${devnum}:${distro_bootpart}"
 	fi
 fi
 
