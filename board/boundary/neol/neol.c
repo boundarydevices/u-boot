@@ -114,7 +114,7 @@ static const iomux_v3_cfg_t init_pads[] = {
 	 * Rev 1 boards should default to DLP disabled, because
 	 * Linux should be in charge of when to enable
 	 */
-#define GP_5V_DLP_EN_REV0	IMX_GPIO_NR(2, 3)
+#define GP_5V_DLP_EN_REV0	IMX_GPIO_NR(2, 23)
 	IOMUX_PAD_CTRL(EIM_CS0__GPIO2_IO23, WEAK_PULLUP),
 #define GP_5V_DLP_EN_REV1	IMX_GPIO_NR(3, 7)
 	IOMUX_PAD_CTRL(EIM_DA7__GPIO3_IO07, WEAK_PULLDN),
