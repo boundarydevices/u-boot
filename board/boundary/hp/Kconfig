@@ -19,13 +19,6 @@ config ENV_WLMAC
 	bool
 	default	y
 
-config BOARD_LATE_SPECIFIC_INIT
-	bool
-	default	y
-
-config WLMAC_PLUSONE
-	bool "Have wlmac be mac+1"
-
 source "board/boundary/common/Kconfig"
 
 endif
