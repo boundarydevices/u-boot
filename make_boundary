@@ -1,7 +1,7 @@
 savedir=../u-boot-images
 mkdir -p $savedir
 rm $savedir/*
-boards=`grep DEFCONFIG configs/*| sed 's.configs/..' | sed 's/_defconfig.*$//'` ;
+boards=$(cd configs && grep -l DEFCONFIG * | sed 's/_defconfig.*$//');
 cpus=`grep -c '^processor' /proc/cpuinfo` ;
 jobs=`expr $cpus + 2` ;
 numboards=0;
@@ -16,8 +16,8 @@ for board in $boards ; do
 		echo -e "\n\n\n!!!!!!!! build failure for $board !!!!!!!!!!!!\n\n";
 		read line;
 	else
-        cp -fv u-boot.imx $savedir/u-boot.${board};
-        ls -l $savedir/u-boot.${board};
+	        cp -fv u-boot.imx $savedir/u-boot.${board};
+	        ls -l $savedir/u-boot.${board};
 		numsuccess=`expr $numsuccess + 1`;
 	fi
 	defcfg=$(sed -n -e's/.\{1,\}DEFCONFIG=\\"\(.\{1,\}\)\\""/\1/p' configs/${board}_defconfig)
