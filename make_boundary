@@ -11,6 +11,11 @@ for board in $boards ; do
     if [ $board != "mx6qsabrelite" ] ; then
 	make distclean ; make ${board}_defconfig
 	make all -j $jobs
+	defcfg=$(sed -n -e's/.\{1,\}DEFCONFIG=\\"\(.\{1,\}\)\\""/\1/p' configs/${board}_defconfig)
+	if [ "$defcfg" != "$board" ] ; then
+		echo -e "\n\n\n!!!!!!!! $board does not match $defcfg !!!!!!!!!!!!\n\n";
+		read line;
+	fi
 	if [ $? -ne 0 ]; then
 		numfailures=`expr $numfailures + 1`;
 		echo -e "\n\n\n!!!!!!!! build failure for $board !!!!!!!!!!!!\n\n";
