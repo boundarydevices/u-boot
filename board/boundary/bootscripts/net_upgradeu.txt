@@ -40,6 +40,10 @@ else
 	exit
 fi
 
+if itest.s "x${sfname}" == "xat45db041d" ; then
+	erase_size=0x7e000
+fi
+
 if itest.s x7D == "x${imx_cpu}"; then
 	echo "check qspi parameter block" ;
 	if tftp ${a_qspi1} qspi-${sfname}.${uboot_defconfig} ; then
