@@ -425,8 +425,9 @@ static int mxcfb_map_video_memory(struct fb_info *fbi)
 	debug("allocated fb @ paddr=0x%08X, size=%d.\n",
 		(uint32_t) fbi->fix.smem_start, fbi->fix.smem_len);
 
-
+#if defined(CONFIG_LCD) || defined(CONFIG_VIDEO)
 	gd->fb_base = fbi->fix.smem_start;
+#endif
 
 	/* Clear the screen */
 	memset((char *)fbi->screen_base, 0, fbi->fix.smem_len);
