@@ -188,6 +188,28 @@ static char lvds_enabled;
 static const char brightness_levels_low_active[] = "<10 9 8 7 6 5 4 3 2 1 0>";
 static const char brightness_levels_high_active[] = "<0 1 2 3 4 5 6 7 8 9 10>";
 
+static u32 period_to_freq(u32 freq)
+{
+	u64 lval = 1000000000000ULL;
+
+	if (freq < (233 * 16))
+		freq = (233 * 16);	/* ensure result * 16 fits in u32 */
+	do_div(lval, freq);
+	return (u32)lval;
+}
+
+static u32 freq_to_period(u32 val)
+{
+	u64 lval = 1000000000000ULL;
+
+	if (val < (233 * 16)) {
+		val = 233 * 16;
+		printf("invalid pixel clock frequency\n");
+	}
+	do_div(lval, val);
+	return (u32)lval;
+}
+
 static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf, int size)
 {
 	const char *mode_str = NULL;
@@ -323,10 +345,7 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		u32 val;
 
 		if (i == 0) {
-			u64 lval = 1000000000000ULL;
-
-			do_div(lval, mode->pixclock);
-			val = (u32)lval;
+			val = period_to_freq(mode->pixclock);
 		} else {
 			val = *p;
 		}
@@ -478,7 +497,6 @@ int get_pll3_clock(void);
 void setup_clock(struct display_info_t const *di)
 {
 	struct mxc_ccm_reg *ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
-	u64 lval = 1000000000000ULL;
 	u32 desired_freq, freq;
 	u32 pll3_freq = get_pll3_clock();
 	u32 n, m;
@@ -491,8 +509,7 @@ void setup_clock(struct display_info_t const *di)
 	if (!(di->mode.sync & FB_SYNC_EXT))
 		return;
 
-	do_div(lval, di->mode.pixclock);
-	desired_freq = ((u32)lval) * 16;
+	desired_freq = period_to_freq(di->mode.pixclock) * 16;
 
 	for (i = 8; i > 0 ; i--) {
 		n = pll3_freq / i;
@@ -541,7 +558,6 @@ void setup_clock(struct display_info_t const *di)
 	int post_div = 2;	/* 0: /4, 1: /2, 2: /1 */
 	int misc2_div = 0;	/* 0: /1, 1: /2, 3: /4 */
 	int lvds = ((di->fbtype == FB_LVDS) | (di->fbtype == FB_LVDS2)) ? 1 : 0;
-	u64 lval = 1000000000000ULL;
 	int timeout = 1000;
 	int multiplier;
 	int gcd;
@@ -581,8 +597,7 @@ void setup_clock(struct display_info_t const *di)
 	writel(pll_video, &ccm->analog_pll_video);
 #endif
 
-	do_div(lval, di->mode.pixclock);
-	desired_freq = (u32)lval;
+	desired_freq = period_to_freq(di->mode.pixclock);
 	debug("desired_freq=%d\n", desired_freq);
 #if !defined(CONFIG_MX6SX) && !defined(CONFIG_MX7D)
 	out_freq = desired_freq;
@@ -1037,12 +1052,8 @@ static const struct display_info_t * parse_mode(
 			printf("expecting integer:%s\n", p);
 			return NULL;
 		}
-		if (i == 0) {
-			u64 lval = 1000000000000ULL;
-
-			do_div(lval, val);
-			val = (u32)lval;
-		}
+		if (i == 0)
+			val = freq_to_period(val);
 		*dest = val;
 		p = endp;
 		if (*p == ',')
@@ -1183,10 +1194,7 @@ static void str_mode(char *p, int size, const struct display_info_t *di, unsigne
 		u32 val;
 
 		if (i == 0) {
-			u64 lval = 1000000000000ULL;
-
-			do_div(lval, di->mode.pixclock);
-			val = (u32)lval;
+			val = period_to_freq(di->mode.pixclock);
 		} else {
 			val = *src;
 			if (size > 1) {
@@ -1220,10 +1228,7 @@ static void print_mode(const struct display_info_t *di, int *len)
 		u32 val;
 
 		if (i == 0) {
-			u64 lval = 1000000000000ULL;
-
-			do_div(lval, mode->pixclock);
-			val = (u32)lval;
+			val = period_to_freq(mode->pixclock);
 		} else {
 			val = *p;
 		}
