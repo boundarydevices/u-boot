@@ -449,6 +449,7 @@
 /* Environment organization */
 #define CONFIG_ENV_SIZE			(8 * 1024)
 
+#ifndef CONFIG_ENV_IS_NOWHERE
 #ifndef CONFIG_ENV_IS_IN_MMC
 #define CONFIG_ENV_IS_IN_SPI_FLASH
 #endif
@@ -463,6 +464,7 @@
 #define CONFIG_ENV_SPI_CS		CONFIG_SF_DEFAULT_CS
 #define CONFIG_ENV_SPI_MODE		CONFIG_SF_DEFAULT_MODE
 #define CONFIG_ENV_SPI_MAX_HZ		CONFIG_SF_DEFAULT_SPEED
+#endif
 #endif
 
 /*
