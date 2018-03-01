@@ -346,6 +346,7 @@ int board_late_init(void)
 #endif
 	print_time_rv4162();
 
+#if !defined(CONFIG_ENV_IS_NOWHERE)
 	uboot_release = getenv(str_uboot_release);
 	if (!uboot_release || strcmp(cur_uboot_release, uboot_release)) {
 		setenv(str_uboot_release, cur_uboot_release);
@@ -356,5 +357,6 @@ int board_late_init(void)
 			saveenv();
 		}
 	}
-return 0;
+#endif
+	return 0;
 }
