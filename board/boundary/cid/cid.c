@@ -92,6 +92,9 @@ static const iomux_v3_cfg_t init_pads[] = {
 
 #define GP_GPIOKEY_POWER	IMX_GPIO_NR(3, 1)
 	IOMUX_PAD_CTRL(EIM_DA1__GPIO3_IO01, WEAK_PULLUP),
+	/* Rev 3 */
+#define GP_GPIOKEY_RESET	IMX_GPIO_NR(6, 18)
+	IOMUX_PAD_CTRL(SD3_DAT6__GPIO6_IO18, WEAK_PULLUP),
 	/* Rev 1, not on Rev 0*/
 	/* Goes low when USB_OTG_VBUS goes high */
 #define GP_GPIOKEY_VBUS_STATUS	IMX_GPIO_NR(3, 3)
@@ -471,6 +474,7 @@ static const unsigned short gpios_out_high[] = {
 
 static const unsigned short gpios_in[] = {
 	GP_GPIOKEY_POWER,
+	GP_GPIOKEY_RESET,
 	GP_GPIOKEY_VBUS_STATUS,
 	GP_GPS_INT,
 	GP_SIM_DETECT,
@@ -516,12 +520,13 @@ int board_init(void)
 }
 
 const struct button_key board_buttons[] = {
+	{"power",	GP_GPIOKEY_POWER, 'p', 1},
+	{"reset",	GP_GPIOKEY_RESET, 'r', 1},
 #ifdef CONFIG_REV_OLD
 	{"tamper",	TAMPER_CHECK,	't', 1, 1},
 #else
 	{"tamper",	GPIRQ_TAMPER,	't', 1, 1},
 #endif
-	{"tp74",	GP_TP74,	'4', 0},
 	{NULL, 0, 0, 0},
 };
 
