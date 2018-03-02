@@ -463,19 +463,14 @@ int ipu_probe(void)
 {
 	unsigned long ipu_base;
 #if defined CONFIG_MX51
-	u32 temp;
-
+	/* Errata ENGcm08316 */
 	u32 *reg_hsc_mcd = (u32 *)MIPI_HSC_BASE_ADDR;
+	u32 *reg_hsc_mccmc = (u32 *)(MIPI_HSC_BASE_ADDR + 0x0d8);
 	u32 *reg_hsc_mxt_conf = (u32 *)(MIPI_HSC_BASE_ADDR + 0x800);
 
-	 __raw_writel(0xF00, reg_hsc_mcd);
-
-	/* CSI mode reserved*/
-	temp = __raw_readl(reg_hsc_mxt_conf);
-	 __raw_writel(temp | 0x0FF, reg_hsc_mxt_conf);
-
-	temp = __raw_readl(reg_hsc_mxt_conf);
-	__raw_writel(temp | 0x10000, reg_hsc_mxt_conf);
+	__raw_writel(0xF00, reg_hsc_mcd);
+	__raw_writel(0x00c, reg_hsc_mccmc);
+	__raw_writel(0xf003008b, reg_hsc_mxt_conf);
 #endif
 
 	ipu_base = IPU_CTRL_BASE_ADDR;
