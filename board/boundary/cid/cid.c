@@ -112,15 +112,35 @@ static const iomux_v3_cfg_t init_pads[] = {
 	IOMUX_PAD_CTRL(DISP0_DAT1__GPIO4_IO22, WEAK_PULLUP),
 #define GP_MODEM_RESET		IMX_GPIO_NR(4, 23)
 	IOMUX_PAD_CTRL(DISP0_DAT2__GPIO4_IO23, WEAK_PULLUP),
-#define GP_STAT_LED1		IMX_GPIO_NR(4, 26)	/* Blue */
-	IOMUX_PAD_CTRL(DISP0_DAT5__GPIO4_IO26, WEAK_PULLDN),
-#define GP_STAT_LED2		IMX_GPIO_NR(4, 25)	/* Green */
-	IOMUX_PAD_CTRL(DISP0_DAT4__GPIO4_IO25, WEAK_PULLDN),
-#define GP_STAT_LED2_CTRL	IMX_GPIO_NR(3, 7)
+
+#ifdef CONFIG_REV_OLD
+	/* Polarity has changed between revs */
+#define LED_ACTIVE_BLUE		0
+#define LED_ACTIVE_GREEN	0
+#define LED_ACTIVE_RED		0
+#define PULL_BLUE		WEAK_PULLUP
+#define PULL_GREEN		WEAK_PULLUP
+#define PULL_RED		WEAK_PULLUP
+#else
+#define LED_ACTIVE_BLUE		1		/* Blue - high active */
+#define LED_ACTIVE_GREEN	0		/* Green - low active */
+#define LED_ACTIVE_RED		1		/* Red - high active */
+#define PULL_BLUE		WEAK_PULLDN
+#define PULL_GREEN		WEAK_PULLUP
+#define PULL_RED		WEAK_PULLDN
+#endif
+
+#define GP_LED_BLUE		IMX_GPIO_NR(4, 26)
+	IOMUX_PAD_CTRL(DISP0_DAT5__GPIO4_IO26, PULL_BLUE),
+	/* Green led on means USB powered, not charging */
+#define GP_LED_GREEN		IMX_GPIO_NR(4, 25)
+	IOMUX_PAD_CTRL(DISP0_DAT4__GPIO4_IO25, PULL_GREEN),
+#define GP_LED_CTRL_GREEN	IMX_GPIO_NR(3, 7)
 	IOMUX_PAD_CTRL(EIM_DA7__GPIO3_IO07, OUTPUT_40OHM),
-#define GP_STAT_LED3		IMX_GPIO_NR(4, 27)	/* Red */
-	IOMUX_PAD_CTRL(DISP0_DAT6__GPIO4_IO27, WEAK_PULLDN),
-#define GP_STAT_LED3_CTRL	IMX_GPIO_NR(2, 30)
+	/* Red led on means USB powered, charging */
+#define GP_LED_RED		IMX_GPIO_NR(4, 27)
+	IOMUX_PAD_CTRL(DISP0_DAT6__GPIO4_IO27, PULL_RED),
+#define GP_LED_CTRL_RED		IMX_GPIO_NR(2, 30)
 	IOMUX_PAD_CTRL(EIM_EB2__GPIO2_IO30, OUTPUT_40OHM),
 #define GP_MODEM_ON_OFF		IMX_GPIO_NR(4, 29)
 	IOMUX_PAD_CTRL(DISP0_DAT8__GPIO4_IO29, WEAK_PULLUP),
@@ -438,12 +458,14 @@ static const unsigned short gpios_out_low[] = {
 	GP_MIPI_DSI_RESET,
 	GP_MODEM_RESET,
 	GP_MODEM_ON_OFF,
-#ifdef CONFIG_REV_OLD
-	/* Polarity has changed between revs */
-	GP_STAT_LED1,
-#else
-	GP_STAT_LED2,
-	GP_STAT_LED3,
+#if LED_ACTIVE_BLUE != 0
+	GP_LED_BLUE,
+#endif
+#if LED_ACTIVE_GREEN != 0
+	GP_LED_GREEN,
+#endif
+#if LED_ACTIVE_RED != 0
+	GP_LED_RED,
 #endif
 	GP_OV5640_MIPI_RESET,
 	GP_PWM1,
@@ -461,14 +483,17 @@ static const unsigned short gpios_out_low[] = {
 static const unsigned short gpios_out_high[] = {
 	GP_ECSPI1_NOR_CS,
 	GP_ECSPI2_CS,
-#ifndef CONFIG_REV_OLD
-	GP_STAT_LED1,
-#else
-	GP_STAT_LED2,
-	GP_STAT_LED3,
+#if LED_ACTIVE_BLUE == 0
+	GP_LED_BLUE,
 #endif
-	GP_STAT_LED2_CTRL,
-	GP_STAT_LED3_CTRL,
+#if LED_ACTIVE_GREEN == 0
+	GP_LED_GREEN,
+#endif
+#if LED_ACTIVE_RED == 0
+	GP_LED_RED,
+#endif
+	GP_LED_CTRL_GREEN,
+	GP_LED_CTRL_RED,
 	GP_OV5640_MIPI_POWER_DOWN,
 };
 
@@ -514,8 +539,17 @@ void board_poweroff(void)
 
 int board_init(void)
 {
+	int i;
 	common_board_init(i2c_pads, I2C_BUS_CNT, IOMUXC_GPR1_OTG_ID_GPIO1,
 			NULL, 0, 0);
+	i = max77823_is_charging();
+	if (i < 0) {
+		gpio_set_value(GP_LED_RED, LED_ACTIVE_RED ^ 1);
+		gpio_set_value(GP_LED_GREEN, LED_ACTIVE_GREEN ^ 1);
+	} else {
+		gpio_set_value(GP_LED_RED, LED_ACTIVE_RED ^ 1 ^ i);
+		gpio_set_value(GP_LED_GREEN, LED_ACTIVE_GREEN ^ i);
+	}
 	return 0;
 }
 
