@@ -26,29 +26,80 @@
 #define CHG_CNFG_00_BOOST_MASK	BIT(3)
 
 #ifdef CONFIG_OTG_CHARGER
+
+#define ANADIG_USB1_CHRG_DETECT_CHK_CONTACT	BIT(18)
+#define ANADIG_USB1_CHRG_DETECT_CHK_CHRG_B	BIT(19)
+#define ANADIG_USB1_CHRG_DETECT_EN_B		BIT(20)
+
+#define ANADIG_USB1_CHRG_DET_STAT_PLUG_CONTACT	BIT(0)
+#define ANADIG_USB1_CHRG_DET_STAT_CHRG_DETECTED	BIT(1)
+
 void set_max_chrgin_current(int i2c_addr)
 {
-	int ret;
 	struct mxc_ccm_reg *mxc_ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
 	u32 val;
-	u8 chgin;
-	u8 buf[2];
+	u8 chgin = 0x3;
+	int i = 0;
+	int ilim_max = 3;
 
 	/* turn on comparator, change threshold to 4.6V*/
 	writel(BIT(20) | 6, &mxc_ccm->usb1_vbus_detect_set);
-	/* reset default */
-	writel(7 << 18, &mxc_ccm->usb1_chrg_detect_clr);
-	ret = i2c_read(i2c_addr, MAX77823_CHG_CNFG_09, 1, buf, 1);
-	if (ret)
-		return;
-	chgin = buf[0];
-	/* Increase chgin until vbus is invalid */
+	writel(1, &mxc_ccm->usb1_vbus_detect_clr);
+
+	/* Enable charger detect, contact detect */
+	writel(ANADIG_USB1_CHRG_DETECT_EN_B, &mxc_ccm->usb1_chrg_detect_clr);
+	writel(ANADIG_USB1_CHRG_DETECT_CHK_CONTACT |
+		ANADIG_USB1_CHRG_DETECT_CHK_CHRG_B,
+		&mxc_ccm->usb1_chrg_detect_set);
+	i2c_write(i2c_addr, MAX77823_CHG_CNFG_09, 1, &chgin, 1);
+
+	/* determine type of cable */
+	/* Check if plug is connected */
 	while (1) {
+		val = readl(&mxc_ccm->usb1_chrg_det_stat);
+		if (val & ANADIG_USB1_CHRG_DET_STAT_PLUG_CONTACT) {
+			break;
+		} else {
+			i++;
+			if (i >= 10) {
+				ilim_max = 0x78;
+				break;
+			}
+			val = readl(&mxc_ccm->usb1_vbus_det_stat);
+			if (!(val & 8)) {
+				chgin = 0x0f;
+				i2c_write(i2c_addr, MAX77823_CHG_CNFG_09, 1, &chgin, 1);
+				return;
+			}
+			udelay(5000);
+		}
+	}
+	writel(ANADIG_USB1_CHRG_DETECT_CHK_CONTACT |
+		ANADIG_USB1_CHRG_DETECT_CHK_CHRG_B,
+		&mxc_ccm->usb1_chrg_detect_clr);
+
+	if (val & ANADIG_USB1_CHRG_DET_STAT_PLUG_CONTACT) {
+		udelay(100000);
+		val = readl(&mxc_ccm->usb1_chrg_det_stat);
+		if (val & ANADIG_USB1_CHRG_DET_STAT_CHRG_DETECTED) {
+			ilim_max = 0x78;	/* Charger */
+		} else {
+			ilim_max = 0xf;		/* Standard downstream port */
+		}
+
+	}
+	/* Disable charger detect */
+	writel(ANADIG_USB1_CHRG_DETECT_EN_B |
+		ANADIG_USB1_CHRG_DETECT_CHK_CHRG_B,
+		&mxc_ccm->usb1_chrg_detect_set);
+
+	/* Increase chgin until vbus is invalid */
+	while (chgin < ilim_max) {
 		val = readl(&mxc_ccm->usb1_vbus_det_stat);
 		if (!(val & 0x0e)) {
-			if (chgin == 3)
+			if (chgin == 0xf)
 				return;
-			chgin = 0x3;	/* 100 mA source */
+			chgin = 0xf;	/* 500 mA source */
 			i2c_write(i2c_addr, MAX77823_CHG_CNFG_09, 1, &chgin, 1);
 			udelay(1000);
 			continue;
@@ -62,7 +113,7 @@ void set_max_chrgin_current(int i2c_addr)
 	while (1) {
 		val = readl(&mxc_ccm->usb1_vbus_det_stat);
 		if (!(val & 0x0e)) {
-			chgin = 0x3;	/* 100 mA source */
+			chgin = 0xf;	/* 500 mA source */
 			i2c_write(i2c_addr, MAX77823_CHG_CNFG_09, 1, &chgin, 1);
 			return;
 		}
@@ -72,9 +123,11 @@ void set_max_chrgin_current(int i2c_addr)
 		i2c_write(i2c_addr, MAX77823_CHG_CNFG_09, 1, &chgin, 1);
 		udelay(100);
 	}
-	chgin--;
-	if (chgin >= 3)
-		i2c_write(i2c_addr, MAX77823_CHG_CNFG_09, 1, &chgin, 1);
+	if (chgin != ilim_max) {
+		chgin--;
+		if (chgin >= 3)
+			i2c_write(i2c_addr, MAX77823_CHG_CNFG_09, 1, &chgin, 1);
+	}
 }
 #endif
 
