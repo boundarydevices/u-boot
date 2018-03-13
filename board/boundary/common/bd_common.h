@@ -45,6 +45,7 @@ void check_tamper(void);
 void max77823_init(void);
 void max77823_otg_power(int enable);
 void max77823_boost_power(int enable);
+int max77823_is_charging(void);
 
 void fan53526_init(void);
 #endif
