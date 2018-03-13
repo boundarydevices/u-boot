@@ -12,6 +12,9 @@
 #include <i2c.h>
 #include "bd_common.h"
 
+#define I2C_ADDR_CHARGER	0x69
+
+#define MAX77823_CHG_DETAILS_01	0xB4
 #define MAX77823_CHG_CNFG_00	0xB7
 #define MAX77823_CHG_CNFG_02	0xB9
 #define MAX77823_CHG_CNFG_06	0xBD
@@ -131,6 +134,38 @@ void set_max_chrgin_current(int i2c_addr)
 }
 #endif
 
+/*
+ * Output:
+ *  0 - done charging,
+ *  1 - charging,
+ *  -1 : can't charge
+ */
+int max77823_is_charging(void)
+{
+	int ret;
+	u8 buf[2];
+	u8 orig_i2c_bus;
+	u8 chg_dtls;
+
+	orig_i2c_bus = i2c_get_bus_num();
+	i2c_set_bus_num(CONFIG_I2C_BUS_MAX77823);
+
+	ret = i2c_read(I2C_ADDR_CHARGER, MAX77823_CHG_DETAILS_01, 1, buf, 2);
+	if (!ret) {
+		chg_dtls = buf[0] & 0xf;
+		if ((chg_dtls >= 1) && (chg_dtls <= 3))
+			ret = 1;
+		else if (chg_dtls == 4)
+			ret = 0;
+		else
+			ret = -1;
+	} else {
+		ret = -1;
+	}
+	i2c_set_bus_num(orig_i2c_bus);
+	return ret;
+}
+
 void max77823_init(void)
 {
 	int ret;
@@ -140,7 +175,6 @@ void max77823_init(void)
 
 	orig_i2c_bus = i2c_get_bus_num();
 	i2c_set_bus_num(CONFIG_I2C_BUS_MAX77823);
-#define I2C_ADDR_CHARGER	0x69
 #ifndef CONFIG_OTG_CHARGER
 	val8 = 0x78;	/* 4.0A source */
 	i2c_write(I2C_ADDR_CHARGER, MAX77823_CHG_CNFG_09, 1, &val8, 1);
