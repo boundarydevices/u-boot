@@ -16,6 +16,7 @@
 
 #define MAX77823_CHG_DETAILS_01	0xB4
 #define MAX77823_CHG_CNFG_00	0xB7
+#define MAX77823_CHG_CNFG_01	0xB8
 #define MAX77823_CHG_CNFG_02	0xB9
 #define MAX77823_CHG_CNFG_06	0xBD
 #define MAX77823_CHG_CNFG_09	0xC0
@@ -185,6 +186,14 @@ void max77823_init(void)
 	i2c_write(I2C_ADDR_CHARGER, MAX77823_CHG_CNFG_06, 1, &val8, 1);
 	val8 = 0x2a;	/* 2.1A charge */
 	i2c_write(I2C_ADDR_CHARGER, MAX77823_CHG_CNFG_02, 1, &val8, 1);
+
+	/*
+	 * fast charge timer disable
+	 * Switching frequency 2 MHz
+	 * restart threshold 100mV below CHG_CV_PRM
+	 */
+	val8 = (0 << 0) | (0x01 << 3) | (0x0 << 4);
+	i2c_write(I2C_ADDR_CHARGER, MAX77823_CHG_CNFG_01, 1, &val8, 1);
 	/*
 	 * enable charging from chgin(otg)/wcin,
 	 * VCHGIN_REG - bits[4:3]
