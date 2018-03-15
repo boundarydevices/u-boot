@@ -543,17 +543,9 @@ void board_poweroff(void)
 
 int board_init(void)
 {
-	int i;
 	common_board_init(i2c_pads, I2C_BUS_CNT, IOMUXC_GPR1_OTG_ID_GPIO1,
 			NULL, 0, 0);
-	i = max77823_is_charging();
-	if (i < 0) {
-		gpio_set_value(GP_LED_RED, LED_ACTIVE_RED ^ 1);
-		gpio_set_value(GP_LED_GREEN, LED_ACTIVE_GREEN ^ 1);
-	} else {
-		gpio_set_value(GP_LED_RED, LED_ACTIVE_RED ^ 1 ^ i);
-		gpio_set_value(GP_LED_GREEN, LED_ACTIVE_GREEN ^ i);
-	}
+	gpio_set_value(GP_LED_BLUE, LED_ACTIVE_BLUE);
 	return 0;
 }
 
