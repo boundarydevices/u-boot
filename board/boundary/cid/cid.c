@@ -123,7 +123,11 @@ static const iomux_v3_cfg_t init_pads[] = {
 #define PULL_RED		WEAK_PULLUP
 #else
 #define LED_ACTIVE_BLUE		1		/* Blue - high active */
-#define LED_ACTIVE_GREEN	0		/* Green - low active */
+#ifdef CONFIG_GREEN_HIGH
+#define LED_ACTIVE_GREEN	1		/* Green - cid, high active */
+#else
+#define LED_ACTIVE_GREEN	0		/* Green - cid2, low active */
+#endif
 #define LED_ACTIVE_RED		1		/* Red - high active */
 #define PULL_BLUE		WEAK_PULLDN
 #define PULL_GREEN		WEAK_PULLUP
