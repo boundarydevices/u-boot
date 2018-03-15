@@ -533,10 +533,26 @@ int board_early_init_f(void)
 	return 0;
 }
 
+void flash_red_led(void)
+{
+	int led_red = LED_ACTIVE_RED;
+	int i;
+
+	gpio_set_value(GP_LED_BLUE, LED_ACTIVE_BLUE ^ 1);
+	mdelay(500);
+
+	for (i = 0; i < 4; i++) {
+		gpio_set_value(GP_LED_RED, led_red);
+		mdelay(500);
+		led_red ^= 1;
+	}
+}
+
 void board_poweroff(void)
 {
 	struct snvs_regs *snvs = (struct snvs_regs *)(SNVS_BASE_ADDR);
 
+	flash_red_led();
 	writel(0x60, &snvs->lpcr);
 	mdelay(500);
 }
