@@ -8,6 +8,7 @@
 #include <bootm.h>
 #include <command.h>
 #include <image.h>
+#include <init.h>
 #include <irq_func.h>
 #include <lmb.h>
 #include <log.h>
@@ -64,6 +65,9 @@ int do_bootz(struct cmd_tbl *cmdtp, int flag, int argc, char *const argv[])
 {
 	int ret;
 
+#ifdef CONFIG_SYS_BOOT_BOARD_POWER_CHECK
+	board_power_check();
+#endif
 	/* Consume 'bootz' */
 	argc--; argv++;
 

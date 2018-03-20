@@ -263,6 +263,8 @@ int board_fix_fdt(void *rw_fdt_blob);
 int board_late_init(void);
 int board_postclk_init(void); /* after clocks/timebase, before env/serial */
 int board_early_init_r(void);
+void board_poweroff(void);
+void board_power_check(void);
 
 /* TODO(sjg@chromium.org): Drop this when DM_PCI migration is completed */
 void pci_init_board(void);
