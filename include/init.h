@@ -299,6 +299,8 @@ int board_fix_fdt(void *rw_fdt_blob);
 int board_late_init(void);
 int board_postclk_init(void); /* after clocks/timebase, before env/serial */
 int board_early_init_r(void);
+void board_poweroff(void);
+void board_power_check(void);
 
 /**
  * arch_initr_trap() - Init traps
