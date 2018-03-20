@@ -61,6 +61,9 @@ int do_bootz(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	int ret;
 
+#ifdef CONFIG_SYS_BOOT_BOARD_POWER_CHECK
+	board_power_check();
+#endif
 	/* Consume 'bootz' */
 	argc--; argv++;
 
