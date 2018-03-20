@@ -548,26 +548,71 @@ void flash_red_led(void)
 	}
 }
 
-void board_poweroff(void)
+static void __board_poweroff(void)
 {
 	struct snvs_regs *snvs = (struct snvs_regs *)(SNVS_BASE_ADDR);
 
-	flash_red_led();
 	writel(0x60, &snvs->lpcr);
 	mdelay(500);
 }
 
+void board_poweroff(void)
+{
+	flash_red_led();
+	__board_poweroff();
+}
+
 void board_power_check(void)
 {
+	gpio_set_value(GP_VIBRATOR_EN, 0);
 	max77834_power_check();
 }
 
+ulong start_time;
+
+void hw_watchdog_reset(void)
+{
+	ulong elapsed;
+	if (start_time) {
+		elapsed = get_timer(start_time);
+		if (elapsed >= CONFIG_SYS_HZ/2) {
+			gpio_set_value(GP_VIBRATOR_EN, 0);
+			start_time = 0;
+		}
+	}
+}
 
 int board_init(void)
 {
+	int i;
+	int inactive = 0;
+	int active = 0;
 	common_board_init(i2c_pads, I2C_BUS_CNT, IOMUXC_GPR1_OTG_ID_GPIO1,
 			NULL, 0, 0);
 	gpio_set_value(GP_LED_BLUE, LED_ACTIVE_BLUE);
+
+	if ((get_imx_reset_cause() & 0xef) == 0x1) {
+		/*
+		 * Power-on reset
+		 * Check that power button is on for 1/2 second more
+		 */
+		for (i = 0; i < 500; i++) {
+			if (gpio_get_value(GP_GPIOKEY_POWER)) {
+				inactive++;
+				if (inactive >= 100) {
+					printf("power button not pressed long enough\n");
+					__board_poweroff();
+				}
+			} else {
+				active++;
+				if (active >= 400)
+					break;
+			}
+			udelay(1000);
+		}
+		gpio_set_value(GP_VIBRATOR_EN, 1);
+		start_time = get_timer(0);
+	}
 	return 0;
 }
 
