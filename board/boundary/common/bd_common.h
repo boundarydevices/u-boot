@@ -46,6 +46,7 @@ void max77823_init(void);
 void max77823_otg_power(int enable);
 void max77823_boost_power(int enable);
 int max77823_is_charging(void);
+void max77834_power_check(void);
 
 void fan53526_init(void);
 #endif

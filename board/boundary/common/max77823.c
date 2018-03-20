@@ -12,8 +12,12 @@
 #include <i2c.h>
 #include "bd_common.h"
 
+#define I2C_ADDR_FUELGAUGE	0x36
+#define MAX77823_REG_VCELL	0x09
+
 #define I2C_ADDR_CHARGER	0x69
 
+#define MAX77823_CHG_DETAILS_00	0xB3
 #define MAX77823_CHG_DETAILS_01	0xB4
 #define MAX77823_CHG_CNFG_00	0xB7
 #define MAX77823_CHG_CNFG_01	0xB8
@@ -38,7 +42,7 @@
 #define ANADIG_USB1_CHRG_DET_STAT_PLUG_CONTACT	BIT(0)
 #define ANADIG_USB1_CHRG_DET_STAT_CHRG_DETECTED	BIT(1)
 
-void set_max_chrgin_current(int i2c_addr)
+static int set_max_chrgin_current(int i2c_addr)
 {
 	struct mxc_ccm_reg *mxc_ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
 	u32 val;
@@ -55,7 +59,9 @@ void set_max_chrgin_current(int i2c_addr)
 	writel(ANADIG_USB1_CHRG_DETECT_CHK_CONTACT |
 		ANADIG_USB1_CHRG_DETECT_CHK_CHRG_B,
 		&mxc_ccm->usb1_chrg_detect_set);
-	i2c_write(i2c_addr, MAX77823_CHG_CNFG_09, 1, &chgin, 1);
+
+	i2c_read(i2c_addr, MAX77823_CHG_CNFG_09, 1, &chgin, 1);
+	chgin &= 0x7f;
 
 	/* determine type of cable */
 	/* Check if plug is connected */
@@ -70,10 +76,11 @@ void set_max_chrgin_current(int i2c_addr)
 				break;
 			}
 			val = readl(&mxc_ccm->usb1_vbus_det_stat);
-			if (!(val & 8)) {
+			if (!(val & 0x0e)) {
+				if (chgin == 0xf)
+					return chgin;
 				chgin = 0x0f;
 				i2c_write(i2c_addr, MAX77823_CHG_CNFG_09, 1, &chgin, 1);
-				return;
 			}
 			udelay(5000);
 		}
@@ -97,12 +104,17 @@ void set_max_chrgin_current(int i2c_addr)
 		ANADIG_USB1_CHRG_DETECT_CHK_CHRG_B,
 		&mxc_ccm->usb1_chrg_detect_set);
 
+	if (chgin > ilim_max) {
+		chgin = ilim_max;
+		i2c_write(i2c_addr, MAX77823_CHG_CNFG_09, 1, &chgin, 1);
+		udelay(5000);
+	}
 	/* Increase chgin until vbus is invalid */
 	while (chgin < ilim_max) {
 		val = readl(&mxc_ccm->usb1_vbus_det_stat);
 		if (!(val & 0x0e)) {
 			if (chgin == 0xf)
-				return;
+				return chgin;
 			chgin = 0xf;	/* 500 mA source */
 			i2c_write(i2c_addr, MAX77823_CHG_CNFG_09, 1, &chgin, 1);
 			udelay(1000);
@@ -119,7 +131,7 @@ void set_max_chrgin_current(int i2c_addr)
 		if (!(val & 0x0e)) {
 			chgin = 0xf;	/* 500 mA source */
 			i2c_write(i2c_addr, MAX77823_CHG_CNFG_09, 1, &chgin, 1);
-			return;
+			return chgin;
 		}
 		if ((val & 8) || (chgin <= 3))
 			break;
@@ -128,12 +140,61 @@ void set_max_chrgin_current(int i2c_addr)
 		udelay(100);
 	}
 	if (chgin != ilim_max) {
-		chgin--;
-		if (chgin >= 3)
+		if (chgin > 3) {
+			chgin--;
 			i2c_write(i2c_addr, MAX77823_CHG_CNFG_09, 1, &chgin, 1);
+		}
 	}
+	return chgin;
 }
 #endif
+
+static void power_check(void)
+{
+	int ret;
+	u8 val8;
+	u8 buf[2];
+
+#ifdef CONFIG_OTG_CHARGER
+	int chgin = set_max_chrgin_current(I2C_ADDR_CHARGER);
+	if (chgin >= 0x5a) {	/* 3.0 amps */
+		val8 = 0x5;	/* enable charging mode */
+		i2c_write(I2C_ADDR_CHARGER, MAX77823_CHG_CNFG_00, 1, &val8, 1);
+		return;
+	}
+#else
+	ret = i2c_read(I2C_ADDR_CHARGER, MAX77823_CHG_DETAILS_00, 1, &val8, 1);
+	if (!ret) {
+		/* check for VBUS is valid */
+		if (((val8 >> 5) & 0x3) == 3) {
+			val8 = 0x5;	/* enable charging mode */
+			i2c_write(I2C_ADDR_CHARGER, MAX77823_CHG_CNFG_00, 1, &val8, 1);
+			return;
+		}
+	}
+#endif
+	/* chgin cannot supply enough, check battery */
+	val8 = 0x4;	/* disable charging mode */
+	i2c_write(I2C_ADDR_CHARGER, MAX77823_CHG_CNFG_00, 1, &val8, 1);
+	udelay(5000);	/* 5 ms to let voltage stabilize */
+
+	ret = i2c_read(I2C_ADDR_FUELGAUGE, MAX77823_REG_VCELL, 1, buf, 2);
+	val8 = 0x5;	/* enable charging mode */
+	i2c_write(I2C_ADDR_CHARGER, MAX77823_CHG_CNFG_00, 1, &val8, 1);
+
+	if (!ret) {
+		u32 v = (buf[1] << 8) | buf[0];
+
+		v = (v >> 3) * 625;
+		printf("battery voltage = %d uV\n", v);
+		if (v < 3000000) {
+			printf("voltage = %d uV too low, powering off\n", v);
+			board_poweroff();
+		}
+	} else {
+		printf("error reading battery voltage\n");
+	}
+}
 
 /*
  * Output:
@@ -169,10 +230,8 @@ int max77823_is_charging(void)
 
 void max77823_init(void)
 {
-	int ret;
 	u8 orig_i2c_bus;
 	u8 val8;
-	u8 buf[2];
 
 	orig_i2c_bus = i2c_get_bus_num();
 	i2c_set_bus_num(CONFIG_I2C_BUS_MAX77823);
@@ -204,31 +263,7 @@ void max77823_init(void)
 	 */
 	val8 = 0x67 | (0 << 3);
 	i2c_write(I2C_ADDR_CHARGER, MAX77823_CHG_CNFG_12, 1, &val8, 1);
-	val8 = 0x5;	/* enable charging mode */
-	i2c_write(I2C_ADDR_CHARGER, MAX77823_CHG_CNFG_00, 1, &val8, 1);
-
-#define I2C_ADDR_FUELGAUGE	0x36
-#define MAX77823_REG_VCELL	0x09
-	ret = i2c_read(I2C_ADDR_FUELGAUGE, MAX77823_REG_VCELL, 1, buf, 2);
-	if (!ret) {
-		u32 v = (buf[1] << 8) | buf[0];
-
-		v = (v >> 3) * 625;
-		printf("battery voltage = %d uV\n", v);
-		if (v < 3000000) {
-			printf("voltage = %d uV too low, powering off\n", v);
-#ifdef CONFIG_OTG_CHARGER
-			val8 = 0x1e;	/* 1.0A source */
-			i2c_write(I2C_ADDR_CHARGER, MAX77823_CHG_CNFG_09, 1, &val8, 1);
-#endif
-			board_poweroff();
-		}
-	} else {
-		printf("error reading battery voltage\n");
-	}
-#ifdef CONFIG_OTG_CHARGER
-	set_max_chrgin_current(I2C_ADDR_CHARGER);
-#endif
+	power_check();
 	i2c_set_bus_num(orig_i2c_bus);
 }
 
@@ -331,5 +366,15 @@ void max77823_boost_power(int enable)
 	else
 		max77823_boost_disable();
 
+	i2c_set_bus_num(orig_i2c_bus);
+}
+
+void max77834_power_check(void)
+{
+	u8 orig_i2c_bus;
+
+	orig_i2c_bus = i2c_get_bus_num();
+	i2c_set_bus_num(CONFIG_I2C_BUS_MAX77823);
+	power_check();
 	i2c_set_bus_num(orig_i2c_bus);
 }
