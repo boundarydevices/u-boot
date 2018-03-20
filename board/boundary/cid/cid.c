@@ -557,6 +557,12 @@ void board_poweroff(void)
 	mdelay(500);
 }
 
+void board_power_check(void)
+{
+	max77834_power_check();
+}
+
+
 int board_init(void)
 {
 	common_board_init(i2c_pads, I2C_BUS_CNT, IOMUXC_GPR1_OTG_ID_GPIO1,
