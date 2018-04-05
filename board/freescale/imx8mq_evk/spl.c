@@ -145,6 +145,29 @@ int board_mmc_init(bd_t *bis)
 }
 
 #ifdef CONFIG_POWER
+#define GP_DDR_VSEL		IMX_GPIO_NR(3, 11)
+#define GP_I2C_MUX_RESET	IMX_GPIO_NR(1, 8)
+
+#define I2C_MUX_ADDR		0x70
+#define I2C_FAN53555_ADDR	0x60
+void ddr_voltage_init(void)
+{
+	u8 val8;
+
+	gpio_set_value(GP_I2C_MUX_RESET, 1);
+	i2c_write(I2C_MUX_ADDR, 2, 1, NULL, 0);
+	printf("Setting ddr voltage\n");
+	/*
+	 * 9e (1e = 30) default .9 V
+	 * 0.6V to 1.23V in 10 MV steps
+	 *
+	 * .6 + .30 = .90
+	 * .6 + .50 = 1.10
+	 */
+	val8 = 0x80 + 50;
+	i2c_write(I2C_FAN53555_ADDR, 0, 1, &val8, 1);
+}
+
 #define I2C_PMIC	0
 int power_init_board(void)
 {
@@ -158,8 +181,11 @@ int power_init_board(void)
 
 	p = pmic_get("PFUZE100");
 	ret = pmic_probe(p);
-	if (ret)
+	if (ret) {
+		/* Nitrogen8M I2C write */
+		ddr_voltage_init();
 		return -ENODEV;
+	}
 
 	pmic_reg_read(p, PFUZE100_DEVICEID, &reg);
 	printf("PMIC:  PFUZE100 ID=0x%02x\n", reg);
