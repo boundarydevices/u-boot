@@ -388,7 +388,8 @@ dtb-$(CONFIG_ARCH_MX7ULP) += imx7ulp-evk.dtb \
 
 dtb-$(CONFIG_ARCH_IMX8M) += fsl-imx8mq-evk.dtb \
 		fsl-imx8mq-ddr3l-arm2.dtb \
-		fsl-imx8mq-ddr4-arm2.dtb
+		fsl-imx8mq-ddr4-arm2.dtb \
+		imx8mq-nitrogen8m.dtb
 
 dtb-$(CONFIG_ARCH_IMX8) += fsl-imx8qm-lpddr4-arm2.dtb \
 		fsl-imx8qm-ddr4-arm2.dtb \
