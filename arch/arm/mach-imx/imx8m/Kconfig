@@ -480,6 +480,12 @@ config TARGET_LIBREM5
 	select SUPPORT_SPL
 	select IMX8M_LPDDR4
 
+config TARGET_NITROGEN8M
+	bool "nitrogen8m"
+	select BINMAN
+	select IMX8MQ
+	select SUPPORT_SPL
+
 endchoice
 
 source "board/advantech/imx8mp_rsb3720a1/Kconfig"
@@ -488,6 +494,7 @@ source "board/beacon/imx8mn/Kconfig"
 source "board/beacon/imx8mp/Kconfig"
 source "board/boundary/imx8mm_nitrogen_smarc/Kconfig"
 source "board/boundary/imx8mm_nitrogen/Kconfig"
+source "board/boundary/nitrogen8m/Kconfig"
 source "board/bsh/imx8mn_smm_s2/Kconfig"
 source "board/cloos/imx8mm_phg/Kconfig"
 source "board/compulab/imx8mm-cl-iot-gate/Kconfig"
