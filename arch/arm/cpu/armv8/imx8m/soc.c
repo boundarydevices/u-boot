@@ -598,3 +598,44 @@ int imx8m_usb_power(int usb_id, bool on)
 	return 0;
 }
 #endif
+
+/*
+ * cfg_val will be used for
+ * Boot_cfg4[7:0]:Boot_cfg3[7:0]:Boot_cfg2[7:0]:Boot_cfg1[7:0]
+ * After reset, if GPR10[28] is 1, ROM will use GPR9[25:0]
+ * instead of SBMR1 to determine the boot device.
+ */
+const struct boot_mode soc_boot_modes[] = {
+	{"normal",	MAKE_CFGVAL(0x00, 0x00, 0x00, 0x00)},
+	/* reserved value should start rom usb */
+	{"usb",		MAKE_CFGVAL(0x00, 0x00, 0x70, 0x00)},
+	/* 4 bit bus width */
+	{"esdhc1",	MAKE_CFGVAL(0x00, 0x00, 0x10, 0x10)},
+	{"esdhc2",	MAKE_CFGVAL(0x00, 0x00, 0x14, 0x10)},
+
+	{"qspi",	MAKE_CFGVAL(0x00, 0x00, 0x40, 0x00)},
+	{"ecspi1:0",	MAKE_CFGVAL(0x00, 0x00, 0x60, 0x00)},
+	{"ecspi1:1",	MAKE_CFGVAL(0x00, 0x00, 0x60, 0x40)},
+	{"ecspi1:2",	MAKE_CFGVAL(0x00, 0x00, 0x60, 0x80)},
+	{"ecspi1:3",	MAKE_CFGVAL(0x00, 0x00, 0x60, 0xc0)},
+	{"ecspi2:0",	MAKE_CFGVAL(0x00, 0x00, 0x62, 0x00)},
+	{"ecspi2:1",	MAKE_CFGVAL(0x00, 0x00, 0x62, 0x40)},
+	{"ecspi2:2",	MAKE_CFGVAL(0x00, 0x00, 0x62, 0x80)},
+	{"ecspi2:3",	MAKE_CFGVAL(0x00, 0x00, 0x62, 0xc0)},
+	{NULL,		0},
+};
+
+#ifdef CONFIG_CMD_BMODE
+void boot_mode_apply(unsigned cfg_val)
+{
+	unsigned reg;
+	struct src *psrc = (struct src *)SRC_BASE_ADDR;
+	writel(cfg_val, &psrc->gpr9);
+	reg = readl(&psrc->gpr10);
+	if (cfg_val)
+		reg |= 1 << 28;
+	else
+		reg &= ~(1 << 28);
+	writel(reg, &psrc->gpr10);
+}
+#endif
