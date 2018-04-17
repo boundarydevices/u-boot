@@ -4,7 +4,19 @@ config MX8M
 	bool
 	select ROM_UNIFIED_SECTIONS
 
+choice
+	prompt	"NXP i.MX8M board select"
+	optional
+
+config TARGET_NITROGEN8M
+	bool "nitrogen8m"
+	select MX8M
+	select SUPPORT_SPL
+
+endchoice
+
 config SYS_SOC
 	default "mx8m"
 
+source "board/boundary/nitrogen8m/Kconfig"
 endif
