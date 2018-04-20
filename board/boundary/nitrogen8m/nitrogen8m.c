@@ -128,7 +128,6 @@ int ft_board_setup(void *blob, bd_t *bd)
 #define GP_PHY_RD2	IMX_GPIO_NR(1, 28)
 #define GP_PHY_RD3	IMX_GPIO_NR(1, 29)
 
-
 #ifndef STRAP_AR8035
 #define STRAP_AR8035	((0x28 | (CONFIG_FEC_MXC_PHYADDR & 3)) | ((0x28 | ((CONFIG_FEC_MXC_PHYADDR + 1) & 3)) << 6))
 #endif
@@ -201,6 +200,7 @@ static void setup_iomux_enet(void)
 
 	setup_enet_ar8035();
 }
+
 static void phy_ar8031_config(struct phy_device *phydev)
 {
 	int val;
@@ -261,7 +261,6 @@ int board_phy_config(struct phy_device *phydev)
 #endif
 
 #ifdef CONFIG_FEC_MXC
-
 static int setup_fec(void)
 {
 	gpio_request(GP_RGMII_PHY_RESET, "fec_rst");
@@ -278,9 +277,7 @@ static int setup_fec(void)
 			BIT(13) | BIT(17), 0);
 	return set_clk_enet(ENET_125MHz);
 }
-
 #endif
-
 
 #ifdef CONFIG_USB_DWC3
 
@@ -335,49 +332,6 @@ static void dwc3_nxp_usb_phy_init(struct dwc3_device *dwc3)
 }
 #endif
 
-#ifdef CONFIG_USB_TCPC
-struct tcpc_port port;
-struct tcpc_port_config port_config = {
-	.i2c_bus = 0,
-	.addr = 0x50,
-	.port_type = TYPEC_PORT_UFP,
-	.max_snk_mv = 20000,
-	.max_snk_ma = 3000,
-	.max_snk_mw = 15000,
-	.op_snk_mv = 9000,
-};
-
-#define USB_TYPEC_SEL IMX_GPIO_NR(3, 15)
-
-static iomux_v3_cfg_t ss_mux_gpio[] = {
-	IMX8MQ_PAD_NAND_RE_B__GPIO3_IO15 | MUX_PAD_CTRL(NO_PAD_CTRL),
-};
-
-void ss_mux_select(enum typec_cc_polarity pol)
-{
-	if (pol == TYPEC_POLARITY_CC1)
-		gpio_direction_output(USB_TYPEC_SEL, 1);
-	else
-		gpio_direction_output(USB_TYPEC_SEL, 0);
-}
-
-static int setup_typec(void)
-{
-	int ret;
-
-	imx_iomux_v3_setup_multiple_pads(ss_mux_gpio, ARRAY_SIZE(ss_mux_gpio));
-	gpio_request(USB_TYPEC_SEL, "typec_sel");
-
-	ret = tcpc_init(&port, port_config, &ss_mux_select);
-	if (ret) {
-		printf("%s: tcpc init failed, err=%d\n",
-		       __func__, ret);
-	}
-
-	return ret;
-}
-#endif
-
 #if defined(CONFIG_USB_DWC3) || defined(CONFIG_USB_XHCI_IMX8M)
 int board_usb_init(int index, enum usb_init_type init)
 {
@@ -385,15 +339,9 @@ int board_usb_init(int index, enum usb_init_type init)
 	imx8m_usb_power(index, true);
 
 	if (index == 0 && init == USB_INIT_DEVICE) {
-#ifdef CONFIG_USB_TCPC
-		ret = tcpc_setup_ufp_mode(&port);
-#endif
 		dwc3_nxp_usb_phy_init(&dwc3_device_data);
 		return dwc3_uboot_init(&dwc3_device_data);
 	} else if (index == 0 && init == USB_INIT_HOST) {
-#ifdef CONFIG_USB_TCPC
-		ret = tcpc_setup_dfp_mode(&port);
-#endif
 		return ret;
 	}
 
@@ -403,20 +351,14 @@ int board_usb_init(int index, enum usb_init_type init)
 int board_usb_cleanup(int index, enum usb_init_type init)
 {
 	int ret = 0;
-	if (index == 0 && init == USB_INIT_DEVICE) {
+	if (index == 0 && init == USB_INIT_DEVICE)
 		dwc3_uboot_exit(index);
-	} else if (index == 0 && init == USB_INIT_HOST) {
-#ifdef CONFIG_USB_TCPC
-		ret = tcpc_disable_src_vbus(&port);
-#endif
-	}
 
 	imx8m_usb_power(index, false);
 
 	return ret;
 }
 #endif
-
 
 int board_init(void)
 {
@@ -426,9 +368,6 @@ int board_init(void)
 	setup_fec();
 #endif
 
-#ifdef CONFIG_USB_TCPC
-	setup_typec();
-#endif
 	return 0;
 }
 
