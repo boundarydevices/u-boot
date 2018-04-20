@@ -448,8 +448,8 @@ const struct boot_mode board_boot_modes[] = {
 int board_late_init(void)
 {
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
-	setenv("board_name", "nitrogen8m");
-	setenv("board_rev", "iMX8MQ");
+	setenv("board", "nitrogen8m");
+	setenv("soc", "imx8mq");
 #endif
 
 #ifdef CONFIG_ENV_IS_IN_MMC
