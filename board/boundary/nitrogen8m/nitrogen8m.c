@@ -345,6 +345,15 @@ int board_usb_init(int index, enum usb_init_type init)
 		return ret;
 	}
 
+	if (index == 1) {
+		/* Release HUB reset */
+#define GP_USB1_HUB_RESET	IMX_GPIO_NR(1, 14)
+		imx_iomux_v3_setup_pad(IMX8MQ_PAD_GPIO1_IO14__GPIO1_IO14 |
+				       MUX_PAD_CTRL(WEAK_PULLUP));
+		gpio_request(GP_USB1_HUB_RESET, "usb1_rst");
+		gpio_direction_output(GP_USB1_HUB_RESET, 1);
+	}
+
 	return 0;
 }
 
