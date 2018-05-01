@@ -385,6 +385,23 @@ int board_mmc_get_env_dev(int devno)
 	return devno;
 }
 
+#if defined(CONFIG_CMD_FASTBOOT) || defined(CONFIG_CMD_DFU)
+extern void imx_get_mac_from_fuse(int dev_id, unsigned char *mac);
+static void addserial_env(const char* env_var)
+{
+	unsigned char mac_address[8];
+	char serialbuf[20];
+
+	if (!getenv(env_var)) {
+		imx_get_mac_from_fuse(0, mac_address);
+		snprintf(serialbuf, sizeof(serialbuf), "%02x%02x%02x%02x%02x%02x",
+			 mac_address[0], mac_address[1], mac_address[2],
+			 mac_address[3], mac_address[4], mac_address[5]);
+		setenv(env_var, serialbuf);
+	}
+}
+#endif
+
 #ifdef CONFIG_CMD_BMODE
 const struct boot_mode board_boot_modes[] = {
         /* 4 bit bus width */
@@ -399,7 +416,9 @@ int board_late_init(void)
 	setenv("board", "nitrogen8m");
 	setenv("soc", "imx8mq");
 #endif
-
+#if defined(CONFIG_CMD_FASTBOOT) || defined(CONFIG_CMD_DFU)
+	addserial_env("serial#");
+#endif
 #ifdef CONFIG_ENV_IS_IN_MMC
 	board_late_mmc_env_init();
 #endif
