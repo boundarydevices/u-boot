@@ -93,7 +93,7 @@ int android_image_get_kernel(const struct andr_img_hdr *hdr, int verify,
 					serialnr.low);
 	strcat(commandline, newbootargs);
 #endif
-
+#ifdef CONFIG_FSL_FASTBOOT
 	/* append soc type into bootargs */
 	char *soc_type = getenv("soc_type");
 	if (soc_type) {
@@ -130,7 +130,7 @@ int android_image_get_kernel(const struct andr_img_hdr *hdr, int verify,
 		metrics.bll_1, metrics.ble_1, metrics.kl, metrics.kd, metrics.avb,
 		metrics.odt, metrics.sw);
 	strcat(commandline, newbootargs);
-
+#endif
 #ifdef CONFIG_AVB_SUPPORT
 	/* secondary cmdline added by avb */
 	char *bootargs_sec = getenv("bootargs_sec");
