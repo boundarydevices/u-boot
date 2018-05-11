@@ -9,6 +9,7 @@
 
 #include <linux/sizes.h>
 #include <asm/arch/imx-regs.h>
+#include <config_distro_defaults.h>
 
 #ifdef CONFIG_SECURE_BOOT
 #define CONFIG_CSF_SIZE			0x2000 /* 8K region */
@@ -75,15 +76,13 @@
 #undef CONFIG_CMD_IMPORTENV
 #undef CONFIG_CMD_IMLS
 
+#define CONFIG_CMD_BMODE
 #undef CONFIG_CMD_CRC32
 #undef CONFIG_BOOTM_NETBSD
 
 /* ENET Config */
 /* ENET1 */
 #if defined(CONFIG_CMD_NET)
-#define CONFIG_CMD_PING
-#define CONFIG_CMD_DHCP
-#define CONFIG_CMD_MII
 #define CONFIG_MII
 #define CONFIG_ETHPRIME                 "FEC"
 
@@ -110,71 +109,7 @@
 	"initrd_addr=0x43800000\0" \
 	"initrd_high=0xffffffff\0" \
 	"bootcmd_mfg=run mfgtool_args;booti ${loadaddr} ${initrd_addr} ${fdt_addr};\0" \
-/* Initial environment variables */
-#define CONFIG_EXTRA_ENV_SETTINGS		\
-	CONFIG_MFG_ENV_SETTINGS \
-	"script=boot.scr\0" \
-	"image=Image\0" \
-	"console=ttymxc0,115200 earlycon=ec_imx6q,0x30860000,115200\0" \
-	"fdt_addr=0x43000000\0"			\
-	"fdt_high=0xffffffffffffffff\0"		\
-	"boot_fdt=try\0" \
-	"fdt_file=fsl-imx8mq-evk.dtb\0" \
-	"initrd_addr=0x43800000\0"		\
-	"initrd_high=0xffffffffffffffff\0" \
-	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
-	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
-	"mmcroot=" CONFIG_MMCROOT " rootwait rw\0" \
-	"mmcautodetect=yes\0" \
-	"mmcargs=setenv bootargs console=${console} root=${mmcroot}\0 " \
-	"loadbootscript=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${script};\0" \
-	"bootscript=echo Running bootscript from mmc ...; " \
-		"source\0" \
-	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
-	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
-	"mmcboot=echo Booting from mmc ...; " \
-		"run mmcargs; " \
-		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
-			"if run loadfdt; then " \
-				"booti ${loadaddr} - ${fdt_addr}; " \
-			"else " \
-				"echo WARN: Cannot load the DT; " \
-			"fi; " \
-		"else " \
-			"echo wait for boot; " \
-		"fi;\0" \
-	"netargs=setenv bootargs console=${console} " \
-		"root=/dev/nfs " \
-		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
-	"netboot=echo Booting from net ...; " \
-		"run netargs;  " \
-		"if test ${ip_dyn} = yes; then " \
-			"setenv get_cmd dhcp; " \
-		"else " \
-			"setenv get_cmd tftp; " \
-		"fi; " \
-		"${get_cmd} ${loadaddr} ${image}; " \
-		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
-			"if ${get_cmd} ${fdt_addr} ${fdt_file}; then " \
-				"booti ${loadaddr} - ${fdt_addr}; " \
-			"else " \
-				"echo WARN: Cannot load the DT; " \
-			"fi; " \
-		"else " \
-			"booti; " \
-		"fi;\0"
 
-#define CONFIG_BOOTCOMMAND \
-	   "mmc dev ${mmcdev}; if mmc rescan; then " \
-		   "if run loadbootscript; then " \
-			   "run bootscript; " \
-		   "else " \
-			   "if run loadimage; then " \
-				   "run mmcboot; " \
-			   "else run netboot; " \
-			   "fi; " \
-		   "fi; " \
-	   "else booti ${loadaddr} - ${fdt_addr}; fi"
 
 /* Link Definitions */
 #define CONFIG_LOADADDR			0x40480000
@@ -194,7 +129,6 @@
 #define CONFIG_ENV_SIZE			0x1000
 #define CONFIG_ENV_IS_IN_MMC
 #define CONFIG_SYS_MMC_ENV_DEV		1   /* USDHC2 */
-#define CONFIG_MMCROOT			"/dev/mmcblk1p2"  /* USDHC2 */
 
 /* Size of malloc() pool */
 #define CONFIG_SYS_MALLOC_LEN		((CONFIG_ENV_SIZE + (2*1024) + (16*1024)) * 1024)
@@ -210,10 +144,7 @@
 #define CONFIG_MXC_UART_BASE		UART1_BASE_ADDR
 
 /* Monitor Command Prompt */
-#undef CONFIG_SYS_PROMPT
-#define CONFIG_SYS_PROMPT		"u-boot=> "
 #define CONFIG_SYS_LONGHELP
-#define CONFIG_SYS_PROMPT_HUSH_PS2     "> "
 #define CONFIG_AUTO_COMPLETE
 #define CONFIG_SYS_CBSIZE              2048
 #define CONFIG_SYS_MAXARGS             64
@@ -231,20 +162,12 @@
 #define CONFIG_SYS_FSL_USDHC_NUM	2
 #define CONFIG_SYS_FSL_ESDHC_ADDR       0
 
-#define CONFIG_DOS_PARTITION
-#define CONFIG_CMD_EXT2
-#define CONFIG_CMD_EXT4
-#define CONFIG_CMD_EXT4_WRITE
-#define CONFIG_CMD_FAT
-
 #define CONFIG_SUPPORT_EMMC_BOOT	/* eMMC specific */
 #define CONFIG_SYS_MMC_IMG_LOAD_PART	1
 
 #define CONFIG_FSL_QSPI    /* enable the QUADSPI driver */
 #ifdef CONFIG_FSL_QSPI
 #define CONFIG_CMD_SF
-#define	CONFIG_SPI_FLASH
-#define	CONFIG_SPI_FLASH_STMICRO
 #define	CONFIG_SPI_FLASH_BAR
 #define	CONFIG_SF_DEFAULT_BUS		0
 #define	CONFIG_SF_DEFAULT_CS		0
@@ -277,7 +200,6 @@
 
 #define CONFIG_CMD_USB
 #define CONFIG_USB_STORAGE
-#define CONFIG_CMD_EXT2
 
 #define CONFIG_USB_DWC3
 #define CONFIG_USB_DWC3_GADGET
@@ -314,4 +236,49 @@
 #if defined(CONFIG_ANDROID_SUPPORT)
 #include "imx8mq_evk_android.h"
 #endif
+#ifndef BD_CONSOLE
+#if CONFIG_MXC_UART_BASE == UART2_BASE_ADDR
+#define BD_CONSOLE	"ttymxc1"
+#elif CONFIG_MXC_UART_BASE == UART1_BASE_ADDR
+#define BD_CONSOLE	"ttymxc0"
+#endif
+#endif
+
+#ifdef CONFIG_CMD_MMC
+#if (CONFIG_SYS_FSL_USDHC_NUM == 1)
+#define DISTRO_BOOT_DEV_MMC(func) func(MMC, mmc, 0)
+#elif (CONFIG_SYS_FSL_USDHC_NUM == 2)
+#define DISTRO_BOOT_DEV_MMC(func) func(MMC, mmc, 0) func(MMC, mmc, 1)
+#else
+#define DISTRO_BOOT_DEV_MMC(func) func(MMC, mmc, 0) func(MMC, mmc, 1) func(MMC, mmc, 2)
+#endif
+#else
+#define DISTRO_BOOT_DEV_MMC(func)
+#endif
+
+#ifdef CONFIG_USB_STORAGE
+#define DISTRO_BOOT_DEV_USB(func) func(USB, usb, 0)
+#else
+#define DISTRO_BOOT_DEV_USB(func)
+#endif
+
+#ifndef BOOT_TARGET_DEVICES
+#define BOOT_TARGET_DEVICES(func) \
+	DISTRO_BOOT_DEV_MMC(func) \
+	DISTRO_BOOT_DEV_USB(func)
+#endif
+
+#include <config_distro_bootcmd.h>
+
+#define CONFIG_EXTRA_ENV_SETTINGS \
+	CONFIG_MFG_ENV_SETTINGS \
+	"console=" BD_CONSOLE "\0" \
+	"scriptaddr=" __stringify(CONFIG_LOADADDR) "\0" \
+	"fdt_file=fsl-imx8mq-evk.dtb\0" \
+	"fdt_high=0xffffffffffffffff\0" \
+	"initrd_high=0xffffffffffffffff\0" \
+	"loadsplash=if sf probe ; then sf read ${splashimage} ${splashflash} ${splashsize} ; fi\0" \
+	"upgradeu=setenv boot_scripts upgrade.scr; boot\0" \
+	BOOTENV
+
 #endif
