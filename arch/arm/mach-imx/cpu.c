@@ -436,6 +436,7 @@ u32 get_cpu_temp_grade(int *minc, int *maxc)
 #if defined(CONFIG_MX7) || defined(CONFIG_IMX8M)
 enum boot_device get_boot_device(void)
 {
+	u32 soc_sbmr = readl(SRC_BASE_ADDR + 0x58);
 	struct bootrom_sw_info **p =
 		(struct bootrom_sw_info **)(ulong)ROM_SW_INFO_ADDR;
 
@@ -468,6 +469,8 @@ enum boot_device get_boot_device(void)
 		break;
 #endif
 	default:
+		if (((soc_sbmr & 0x00007FFF) >> 12) == 0x4)
+			boot_dev = QSPI_BOOT;
 		break;
 	}
 
