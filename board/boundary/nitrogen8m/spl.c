@@ -45,25 +45,17 @@ struct i2c_pads_info i2c_pad_info1 = {
 	},
 };
 
-#define USDHC2_CD_GPIO	IMX_GPIO_NR(2, 12)
-#define USDHC1_PWR_GPIO IMX_GPIO_NR(2, 10)
-#define USDHC2_PWR_GPIO IMX_GPIO_NR(2, 19)
+#define GP_EMMC_RESET	IMX_GPIO_NR(2, 10)
 
 int board_mmc_getcd(struct mmc *mmc)
 {
 	struct fsl_esdhc_cfg *cfg = (struct fsl_esdhc_cfg *)mmc->priv;
-	int ret = 0;
 
 	switch (cfg->esdhc_base) {
 	case USDHC1_BASE_ADDR:
-		ret = 1;
-		break;
-	case USDHC2_BASE_ADDR:
-		ret = !gpio_get_value(USDHC2_CD_GPIO);
-		return ret;
+		return 1;
 	}
-
-	return 1;
+	return 0;
 }
 
 #define USDHC_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_HYS | PAD_CTL_PUE | \
@@ -84,20 +76,8 @@ static iomux_v3_cfg_t const usdhc1_pads[] = {
 	IMX8MQ_PAD_SD1_RESET_B__GPIO2_IO10 | MUX_PAD_CTRL(NO_PAD_CTRL),
 };
 
-static iomux_v3_cfg_t const usdhc2_pads[] = {
-	IMX8MQ_PAD_SD2_CLK__USDHC2_CLK | MUX_PAD_CTRL(USDHC_PAD_CTRL), /* 0xd6 */
-	IMX8MQ_PAD_SD2_CMD__USDHC2_CMD | MUX_PAD_CTRL(USDHC_PAD_CTRL), /* 0xd6 */
-	IMX8MQ_PAD_SD2_DATA0__USDHC2_DATA0 | MUX_PAD_CTRL(USDHC_PAD_CTRL), /* 0xd6 */
-	IMX8MQ_PAD_SD2_DATA1__USDHC2_DATA1 | MUX_PAD_CTRL(USDHC_PAD_CTRL), /* 0xd6 */
-	IMX8MQ_PAD_SD2_DATA2__USDHC2_DATA2 | MUX_PAD_CTRL(USDHC_PAD_CTRL), /* 0x16 */
-	IMX8MQ_PAD_SD2_DATA3__USDHC2_DATA3 | MUX_PAD_CTRL(USDHC_PAD_CTRL), /* 0xd6 */
-	IMX8MQ_PAD_SD2_CD_B__GPIO2_IO12 | MUX_PAD_CTRL(USDHC_GPIO_PAD_CTRL),
-	IMX8MQ_PAD_SD2_RESET_B__GPIO2_IO19 | MUX_PAD_CTRL(USDHC_GPIO_PAD_CTRL),
-};
-
 static struct fsl_esdhc_cfg usdhc_cfg[2] = {
 	{USDHC1_BASE_ADDR, 0, 8},
-	{USDHC2_BASE_ADDR, 0, 4},
 };
 
 int board_mmc_init(bd_t *bis)
@@ -115,19 +95,10 @@ int board_mmc_init(bd_t *bis)
 			usdhc_cfg[0].sdhc_clk = mxc_get_clock(USDHC1_CLK_ROOT);
 			imx_iomux_v3_setup_multiple_pads(
 				usdhc1_pads, ARRAY_SIZE(usdhc1_pads));
-			gpio_request(USDHC1_PWR_GPIO, "usdhc1_reset");
-			gpio_direction_output(USDHC1_PWR_GPIO, 0);
+			gpio_request(GP_EMMC_RESET, "usdhc1_reset");
+			gpio_direction_output(GP_EMMC_RESET, 0);
 			udelay(500);
-			gpio_direction_output(USDHC1_PWR_GPIO, 1);
-			break;
-		case 1:
-			usdhc_cfg[1].sdhc_clk = mxc_get_clock(USDHC2_CLK_ROOT);
-			imx_iomux_v3_setup_multiple_pads(
-				usdhc2_pads, ARRAY_SIZE(usdhc2_pads));
-			gpio_request(USDHC2_PWR_GPIO, "usdhc2_reset");
-			gpio_direction_output(USDHC2_PWR_GPIO, 0);
-			udelay(500);
-			gpio_direction_output(USDHC2_PWR_GPIO, 1);
+			gpio_direction_output(GP_EMMC_RESET, 1);
 			break;
 		default:
 			printf("Warning: you configured more USDHC controllers"
@@ -144,8 +115,11 @@ int board_mmc_init(bd_t *bis)
 }
 
 #ifdef CONFIG_POWER
-#define GP_DDR_VSEL		IMX_GPIO_NR(3, 11)
-#define GP_I2C_MUX_RESET	IMX_GPIO_NR(1, 8)
+#define GP_ARM_DRAM_VSEL		IMX_GPIO_NR(3, 24)
+#define GP_DRAM_1P1_VSEL		IMX_GPIO_NR(2, 11)
+#define GP_SOC_GPU_VPU_VSEL		IMX_GPIO_NR(2, 20)
+
+#define GP_I2C1_PCA9546_RESET		IMX_GPIO_NR(1, 8)
 
 #define I2C_MUX_ADDR		0x70
 #define I2C_FAN53555_ADDR	0x60
@@ -153,33 +127,42 @@ void ddr_voltage_init(void)
 {
 	u8 val8;
 
-	gpio_set_value(GP_I2C_MUX_RESET, 1);
-
-	/* Enable I2C1B */
-	i2c_write(I2C_MUX_ADDR, 2, 1, NULL, 0);
-	printf("Setting ddr voltage\n");
+	gpio_set_value(GP_I2C1_PCA9546_RESET, 1);
+	gpio_set_value(GP_ARM_DRAM_VSEL, 0);
+	gpio_set_value(GP_DRAM_1P1_VSEL, 0);
+	gpio_set_value(GP_SOC_GPU_VPU_VSEL, 0);
+	printf("Setting voltages\n");
 	/*
 	 * 9e (1e = 30) default .9 V
 	 * 0.6V to 1.23V in 10 MV steps
-	 *
-	 * .6 + .30 = .90
+	 */
+
+	/* Enable I2C1A, ARM/DRAM */
+	i2c_write(I2C_MUX_ADDR, 1, 1, NULL, 0);
+	/*
+	 * .6 + .40 = 1.00
+	 */
+	val8 = 0x80 + 40;
+	i2c_write(I2C_FAN53555_ADDR, 0, 1, &val8, 1);
+	i2c_write(I2C_FAN53555_ADDR, 1, 1, &val8, 1);
+
+	/* Enable I2C1B, DRAM 1.1V */
+	i2c_write(I2C_MUX_ADDR, 2, 1, NULL, 0);
+	/*
 	 * .6 + .50 = 1.10
-	 * .6 + .51 = 1.11
 	 */
 	val8 = 0x80 + 50;
 	i2c_write(I2C_FAN53555_ADDR, 0, 1, &val8, 1);
+	i2c_write(I2C_FAN53555_ADDR, 1, 1, &val8, 1);
 
-	/* Enable I2C1A */
-	i2c_write(I2C_MUX_ADDR, 1, 1, NULL, 0);
+	/* Enable I2C1C, soc/gpu/vpu */
+	i2c_write(I2C_MUX_ADDR, 4, 1, NULL, 0);
 	/*
-	 * 9e (1e = 30) default .9 V
-	 * 0.6V to 1.23V in 10 MV steps
-	 *
 	 * .6 + .30 = .90
-	 * .6 + .35 = .95
 	 */
-	val8 = 0x80 + 34;
+	val8 = 0x80 + 30;
 	i2c_write(I2C_FAN53555_ADDR, 0, 1, &val8, 1);
+	i2c_write(I2C_FAN53555_ADDR, 1, 1, &val8, 1);
 
 	/* Disable I2C1A-I2C1D */
 	i2c_write(I2C_MUX_ADDR, 0, 1, NULL, 0);

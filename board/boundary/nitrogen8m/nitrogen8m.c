@@ -39,52 +39,42 @@ DECLARE_GLOBAL_DATA_PTR;
 #define WDOG_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_HYS | PAD_CTL_PUE)
 #define WEAK_PULLUP	(PAD_CTL_DSE6 | PAD_CTL_HYS | PAD_CTL_PUE)
 
-static iomux_v3_cfg_t const wdog_pads[] = {
+static iomux_v3_cfg_t const init_pads[] = {
+#if 0
 	IMX8MQ_PAD_GPIO1_IO02__WDOG1_WDOG_B | MUX_PAD_CTRL(WDOG_PAD_CTRL),
-};
-
-#ifdef CONFIG_FSL_QSPI
-static iomux_v3_cfg_t const qspi_pads[] = {
-	IMX8MQ_PAD_NAND_ALE__QSPI_A_SCLK | MUX_PAD_CTRL(QSPI_PAD_CTRL),
-	IMX8MQ_PAD_NAND_CE0_B__QSPI_A_SS0_B | MUX_PAD_CTRL(QSPI_PAD_CTRL),
-
-	IMX8MQ_PAD_NAND_DATA00__QSPI_A_DATA0 | MUX_PAD_CTRL(QSPI_PAD_CTRL),
-	IMX8MQ_PAD_NAND_DATA01__QSPI_A_DATA1 | MUX_PAD_CTRL(QSPI_PAD_CTRL),
-	IMX8MQ_PAD_NAND_DATA02__QSPI_A_DATA2 | MUX_PAD_CTRL(QSPI_PAD_CTRL),
-	IMX8MQ_PAD_NAND_DATA03__QSPI_A_DATA3 | MUX_PAD_CTRL(QSPI_PAD_CTRL),
-};
-
-int board_qspi_init(void)
-{
-	imx_iomux_v3_setup_multiple_pads(qspi_pads, ARRAY_SIZE(qspi_pads));
-
-	set_clk_qspi();
-
-	return 0;
-}
+#else
+	IMX8MQ_PAD_GPIO1_IO02__GPIO1_IO2 | MUX_PAD_CTRL(WDOG_PAD_CTRL),
 #endif
-
-static iomux_v3_cfg_t const uart_pads[] = {
 	IMX8MQ_PAD_UART1_RXD__UART1_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
 	IMX8MQ_PAD_UART1_TXD__UART1_TX | MUX_PAD_CTRL(UART_PAD_CTRL),
-#define GP_DDR_VSEL		IMX_GPIO_NR(3, 11)
-	IMX8MQ_PAD_NAND_DATA05__GPIO3_IO11 | MUX_PAD_CTRL(WEAK_PULLUP),
-#define GP_I2C_MUX_RESET	IMX_GPIO_NR(1, 8)
-	IMX8MQ_PAD_GPIO1_IO08__GPIO1_IO8 | MUX_PAD_CTRL(WEAK_PULLUP),
+
+#define GP_ARM_DRAM_VSEL		IMX_GPIO_NR(3, 24)
+	IMX8MQ_PAD_SAI5_RXD3__GPIO3_IO24 | MUX_PAD_CTRL(0x16),
+#define GP_DRAM_1P1_VSEL		IMX_GPIO_NR(2, 11)
+	IMX8MQ_PAD_SD1_STROBE__GPIO2_IO11 | MUX_PAD_CTRL(0x16),
+#define GP_SOC_GPU_VPU_VSEL		IMX_GPIO_NR(2, 20)
+	IMX8MQ_PAD_SD2_WP__GPIO2_IO20 | MUX_PAD_CTRL(0x16),
+
+#define GP_I2C1_PCA9546_RESET		IMX_GPIO_NR(1, 8)
+	IMX8MQ_PAD_GPIO1_IO08__GPIO1_IO8 | MUX_PAD_CTRL(0x49),
+
+#define GP_EMMC_RESET			IMX_GPIO_NR(2, 10)
+	IMX8MQ_PAD_SD1_RESET_B__GPIO2_IO10 | MUX_PAD_CTRL(0x41),
 };
 
 int board_early_init_f(void)
 {
 	struct wdog_regs *wdog = (struct wdog_regs *)WDOG1_BASE_ADDR;
 
-	imx_iomux_v3_setup_multiple_pads(wdog_pads, ARRAY_SIZE(wdog_pads));
-
+	imx_iomux_v3_setup_multiple_pads(init_pads, ARRAY_SIZE(init_pads));
 	set_wdog_reset(wdog);
 
-	imx_iomux_v3_setup_multiple_pads(uart_pads, ARRAY_SIZE(uart_pads));
-	gpio_direction_output(GP_DDR_VSEL, 0);
-	gpio_direction_output(GP_I2C_MUX_RESET, 0);
+	gpio_direction_output(GP_ARM_DRAM_VSEL, 0);
+	gpio_direction_output(GP_DRAM_1P1_VSEL, 0);
+	gpio_direction_output(GP_SOC_GPU_VPU_VSEL, 0);
+	gpio_direction_output(GP_EMMC_RESET, 1);
 
+	gpio_direction_output(GP_I2C1_PCA9546_RESET, 0);
 	return 0;
 }
 
@@ -371,8 +361,6 @@ int board_usb_cleanup(int index, enum usb_init_type init)
 
 int board_init(void)
 {
-	board_qspi_init();
-
 #ifdef CONFIG_FEC_MXC
 	setup_fec();
 #endif
@@ -382,7 +370,7 @@ int board_init(void)
 
 int board_mmc_get_env_dev(int devno)
 {
-	return devno;
+	return 0;
 }
 
 #if defined(CONFIG_CMD_FASTBOOT) || defined(CONFIG_CMD_DFU)
@@ -405,7 +393,7 @@ static void addserial_env(const char* env_var)
 #ifdef CONFIG_CMD_BMODE
 const struct boot_mode board_boot_modes[] = {
         /* 4 bit bus width */
-	{"mmc0",	MAKE_CFGVAL(0x00, 0x00, 0x14, 0x10)},
+	{"emmc0",	MAKE_CFGVAL(0x22, 0x20, 0x00, 0x10)},
         {NULL,          0},
 };
 #endif

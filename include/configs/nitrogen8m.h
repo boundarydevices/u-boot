@@ -112,10 +112,11 @@
         (CONFIG_SYS_INIT_RAM_ADDR + CONFIG_SYS_INIT_SP_OFFSET)
 
 #define CONFIG_ENV_OVERWRITE
-#define CONFIG_ENV_OFFSET               (64 * SZ_64K)
 #define CONFIG_ENV_SIZE			0x1000
+#define CONFIG_ENV_OFFSET               (-CONFIG_ENV_SIZE)
 #define CONFIG_ENV_IS_IN_MMC
-#define CONFIG_SYS_MMC_ENV_DEV		1   /* USDHC2 */
+#define CONFIG_SYS_MMC_ENV_DEV		0	/* USDHC1 */
+#define CONFIG_SYS_MMC_ENV_PART         1	/* mmcblk0boot0 */
 
 /* Size of malloc() pool */
 #define CONFIG_SYS_MALLOC_LEN		((CONFIG_ENV_SIZE + (2*1024) + (16*1024)) * 1024)
@@ -146,23 +147,12 @@
 #define CONFIG_FSL_ESDHC
 #define CONFIG_FSL_USDHC
 
-#define CONFIG_SYS_FSL_USDHC_NUM	2
+#define CONFIG_SYS_FSL_USDHC_NUM	1
 #define CONFIG_SYS_FSL_ESDHC_ADDR       0
 
+#define CONFIG_SUPPORT_EMMC_BOOT	/* eMMC specific */
+#define CONFIG_SUPPORT_EMMC_RPMB
 #define CONFIG_SYS_MMC_IMG_LOAD_PART	1
-
-#define CONFIG_FSL_QSPI    /* enable the QUADSPI driver */
-#ifdef CONFIG_FSL_QSPI
-#define CONFIG_CMD_SF
-#define	CONFIG_SPI_FLASH_BAR
-#define	CONFIG_SF_DEFAULT_BUS		0
-#define	CONFIG_SF_DEFAULT_CS		0
-#define	CONFIG_SF_DEFAULT_SPEED		40000000
-#define	CONFIG_SF_DEFAULT_MODE		SPI_MODE_0
-
-#define FSL_QSPI_FLASH_SIZE		(SZ_32M)
-#define FSL_QSPI_FLASH_NUM		1
-#endif
 
 #define CONFIG_MXC_GPIO
 
