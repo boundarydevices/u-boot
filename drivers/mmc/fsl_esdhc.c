@@ -142,6 +142,7 @@ struct fsl_esdhc_priv {
 	struct gpio_desc wp_gpio;
 	struct gpio_desc reset_gpio;
 #endif
+	int sysctrl_inita_needed;
 };
 
 /* Return the XFERTYP flags for a given command and data packet */
@@ -416,6 +417,18 @@ static int esdhc_send_cmd_common(struct fsl_esdhc_priv *priv, struct mmc *mmc,
 	 * resolve timing issues with some cards
 	 */
 	udelay(1000);
+	if (priv->sysctrl_inita_needed) {
+		unsigned long start;
+
+		/* send 80 clocks before 1st command */
+		priv->sysctrl_inita_needed = 0;
+		esdhc_setbits32(&regs->sysctl, SYSCTL_INITA);
+		start = get_timer(0);
+		while (esdhc_read32(&regs->sysctl) & SYSCTL_INITA) {
+			if (get_timer(start) >= 10)
+				break;
+		}
+	}
 
 	/* Set up for a data transfer if we have one */
 	if (data) {
@@ -951,7 +964,7 @@ static int esdhc_init_common(struct fsl_esdhc_priv *priv, struct mmc *mmc)
 
 	/* Reset the entire host controller */
 	esdhc_setbits32(&regs->sysctl, SYSCTL_RSTA);
-
+	priv->sysctrl_inita_needed = 1;
 	/* Wait until the controller is available */
 	start = get_timer(0);
 	while ((esdhc_read32(&regs->sysctl) & SYSCTL_RSTA)) {
@@ -1097,6 +1110,7 @@ static int fsl_esdhc_init(struct fsl_esdhc_priv *priv,
 	regs = priv->c.esdhc_regs;
 
 	/* First reset the eSDHC controller */
+	priv->sysctrl_inita_needed = 1;
 	ret = esdhc_reset(regs);
 	if (ret)
 		return ret;
