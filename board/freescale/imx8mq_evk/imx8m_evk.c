@@ -11,6 +11,7 @@
 #include <asm/io.h>
 #include <miiphy.h>
 #include <netdev.h>
+#include <asm/imx-common/boot_mode.h>
 #include <asm/imx-common/iomux-v3.h>
 #include <asm-generic/gpio.h>
 #include <fsl_esdhc.h>
@@ -41,7 +42,7 @@ DECLARE_GLOBAL_DATA_PTR;
 #define WEAK_PULLUP	(PAD_CTL_DSE6 | PAD_CTL_HYS | PAD_CTL_PUE)
 
 static iomux_v3_cfg_t const wdog_pads[] = {
-	IMX8MQ_PAD_GPIO1_IO02__WDOG1_WDOG_B | MUX_PAD_CTRL(WDOG_PAD_CTRL),
+	IMX8MQ_PAD_GPIO1_IO02__GPIO1_IO2 | MUX_PAD_CTRL(WDOG_PAD_CTRL),
 };
 
 #ifdef CONFIG_FSL_QSPI
@@ -313,6 +314,14 @@ int board_mmc_get_env_dev(int devno)
 	return devno;
 }
 
+#ifdef CONFIG_CMD_BMODE
+const struct boot_mode board_boot_modes[] = {
+	{"emmc0",	MAKE_CFGVAL(0x22, 0x20, 0x00, 0x10)},
+	{"sd1",		MAKE_CFGVAL(0x12, 0x14, 0x00, 0x10)},        /* 4 bit bus width */
+        {NULL,          0},
+};
+#endif
+
 int board_late_init(void)
 {
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
@@ -322,6 +331,9 @@ int board_late_init(void)
 
 #ifdef CONFIG_ENV_IS_IN_MMC
 	board_late_mmc_env_init();
+#endif
+#ifdef CONFIG_CMD_BMODE
+	add_board_boot_modes(board_boot_modes);
 #endif
 
 	return 0;
