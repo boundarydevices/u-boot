@@ -126,7 +126,7 @@ int ft_board_setup(void *blob, bd_t *bd)
 
 static const iomux_v3_cfg_t enet_ar8035_gpio_pads[] = {
 #define GP_RGMII_PHY_RESET	IMX_GPIO_NR(1, 9)
-	IOMUX_PAD_CTRL(GPIO1_IO09__GPIO1_IO9, NO_PAD_CTRL),
+	IOMUX_PAD_CTRL(GPIO1_IO09__GPIO1_IO9, PAD_CTL_DSE6),
 	IOMUX_PAD_CTRL(ENET_RD0__GPIO1_IO26, PULL_GP(STRAP_AR8035, 0)),
 	IOMUX_PAD_CTRL(ENET_RD1__GPIO1_IO27, PULL_GP(STRAP_AR8035, 1)),
 	IOMUX_PAD_CTRL(ENET_RD2__GPIO1_IO28, PULL_GP(STRAP_AR8035, 2)),
@@ -148,10 +148,10 @@ static const iomux_v3_cfg_t enet_ar8035_pads[] = {
 static unsigned char strap_gpios[] = {
 	GP_PHY_RD0,
 	GP_PHY_RD1,
-	GP_PHY_RD2,
-	GP_PHY_RD3,
-	GP_PHY_RX_CTL,
-	GP_PHY_RXC,
+	GP_PHY_RD2,	/* 0 */
+	GP_PHY_RD3,	/* 1 */
+	GP_PHY_RX_CTL,	/* 0 */
+	GP_PHY_RXC,	/* 1  with LED_1000 pulled high, yields mode 0xc (RGMII, PLLOFF,INT) */
 };
 
 static void set_strap_pins(unsigned strap)
@@ -186,7 +186,7 @@ static void setup_iomux_enet(void)
 	gpio_set_value(GP_RGMII_PHY_RESET, 1); /* PHY reset */
 
 	/* strap hold time for AR8035, 5 fails, 6 works, so 12 should be safe */
-	udelay(12);
+	udelay(24);
 
 	setup_enet_ar8035();
 }
