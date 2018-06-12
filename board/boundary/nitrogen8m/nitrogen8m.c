@@ -55,6 +55,9 @@ static iomux_v3_cfg_t const init_pads[] = {
 #define GP_SOC_GPU_VPU_VSEL		IMX_GPIO_NR(2, 20)
 	IMX8MQ_PAD_SD2_WP__GPIO2_IO20 | MUX_PAD_CTRL(0x16),
 
+#define GP_FASTBOOT_KEY			IMX_GPIO_NR(1, 7)
+	IMX8MQ_PAD_GPIO1_IO07__GPIO1_IO7 | MUX_PAD_CTRL(WEAK_PULLUP),
+
 #define GP_I2C1_PCA9546_RESET		IMX_GPIO_NR(1, 8)
 	IMX8MQ_PAD_GPIO1_IO08__GPIO1_IO8 | MUX_PAD_CTRL(0x49),
 
@@ -398,6 +401,13 @@ const struct boot_mode board_boot_modes[] = {
 };
 #endif
 
+static int fastboot_key_pressed(void)
+{
+	gpio_request(GP_FASTBOOT_KEY, "fastboot_key");
+	gpio_direction_input(GP_FASTBOOT_KEY);
+	return !gpio_get_value(GP_FASTBOOT_KEY);
+}
+
 int board_late_init(void)
 {
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
@@ -406,6 +416,10 @@ int board_late_init(void)
 #endif
 #if defined(CONFIG_CMD_FASTBOOT) || defined(CONFIG_CMD_DFU)
 	addserial_env("serial#");
+	if (fastboot_key_pressed()) {
+		printf("Starting fastboot...\n");
+		setenv("preboot", "fastboot 0");
+	}
 #endif
 #ifdef CONFIG_ENV_IS_IN_MMC
 	board_late_mmc_env_init();
@@ -416,15 +430,6 @@ int board_late_init(void)
 
 	return 0;
 }
-
-#ifdef CONFIG_FSL_FASTBOOT
-#ifdef CONFIG_ANDROID_RECOVERY
-int is_recovery_key_pressing(void)
-{
-	return 0; /*TODO*/
-}
-#endif /*CONFIG_ANDROID_RECOVERY*/
-#endif /*CONFIG_FSL_FASTBOOT*/
 
 #if defined(CONFIG_VIDEO_IMXDCSS)
 
