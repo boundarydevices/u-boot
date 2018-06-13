@@ -285,6 +285,9 @@ void board_enable_lvds(const struct display_info_t *di, int enable)
 }
 
 static const struct display_info_t displays[] = {
+	/* IVO Default LVDS Display */
+	VD_M101NWWB(LVDS, fbp_detect_i2c, 2, 0x38),
+
 	/* hdmi */
 	VD_1280_720M_60(HDMI, fbp_detect_i2c, 1, 0x50),
 	VD_1920_1080M_60(HDMI, NULL, 1, 0x50),
