@@ -85,6 +85,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 #define VD_LG9_7(_mode, _detect, _bus, _addr)		VDF_LG9_7(_mode, "lg9.7", RGB666, 0, _detect, _bus, _addr)
 #define VD_1080P60(_mode, _detect, _bus, _addr)		VDF_1080P60(_mode, "1080P60", RGB24, FBF_SPLITMODE, _detect, _bus, _addr)
 #define VD_1080P60_J(_mode, _detect, _bus, _addr)	VDF_1080P60(_mode, "1080P60_J", RGB24, FBF_SPLITMODE | FBF_JEIDA, _detect, _bus, _addr)
+#define VD_DV210FBM(_mode, _detect, _bus, _addr)	VDF_DV210FBM(_mode, "dv210fbm", RGB24, FBF_SPLITMODE, _detect, _bus, _addr)
 #define VD_SHARP_LQ101K1LY04(_mode, _detect, _bus, _addr) VDF_SHARP_LQ101K1LY04(_mode, "sharp-LQ101K1LY04", RGB24, FBF_JEIDA, _detect, _bus, _addr)
 #define VD_WXGA(_mode, _detect, _bus, _addr)		VDF_WXGA(_mode, "wxga", RGB24, 0, _detect, _bus, _addr)
 #define VD_WXGA_J(_mode, _detect, _bus, _addr)		VDF_WXGA(_mode, "wxga_j", RGB24, FBF_JEIDA, _detect, _bus, _addr)
@@ -870,6 +871,26 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 		.lower_margin   = 4,\
 		.hsync_len      = 44,\
 		.vsync_len      = 5,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
+#define VDF_DV210FBM(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	.mode	= {\
+		.name           = _name,\
+		.refresh        = 60,\
+		.xres           = 1920,\
+		.yres           = 1080, /* really 132 */\
+		.pixclock       = 1000000000000ULL/((1920+120+120+40)*(1080+22+22+1)*60),\
+		.left_margin    = 120,\
+		.right_margin   = 120,\
+		.upper_margin   = 22,\
+		.lower_margin   = 22,\
+		.hsync_len      = 44,\
+		.vsync_len      = 1,\
 		.sync           = FB_SYNC_EXT,\
 		.vmode          = FB_VMODE_NONINTERLACED\
 	}\
