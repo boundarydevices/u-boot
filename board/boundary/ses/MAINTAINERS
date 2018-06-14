@@ -1,0 +1,7 @@
+SES BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/ses/
+F:	include/configs/ses.h
+F:	configs/ses_defconfig
+

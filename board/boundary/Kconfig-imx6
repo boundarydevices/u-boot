@@ -180,6 +180,10 @@ config TARGET_S
 	bool "s"
 	depends on MX6DL || MX6Q || MX6QDL || MX6S
 
+config TARGET_SES
+	bool "ses"
+	depends on MX6DL || MX6Q || MX6QDL || MX6S
+
 endchoice
 
 source "board/boundary/a/Kconfig"
@@ -225,3 +229,4 @@ source "board/boundary/per/Kconfig"
 source "board/boundary/rc/Kconfig"
 source "board/boundary/rta/Kconfig"
 source "board/boundary/s/Kconfig"
+source "board/boundary/ses/Kconfig"
