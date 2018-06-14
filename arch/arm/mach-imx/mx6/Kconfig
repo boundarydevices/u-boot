@@ -491,6 +491,9 @@ config TARGET_RC
 config TARGET_S
 	bool "s"
 
+config TARGET_SES
+	bool "ses"
+
 config TARGET_YS
 	bool "ys"
 	select MX6SX
@@ -663,6 +666,7 @@ source "board/boundary/oc/Kconfig"
 source "board/boundary/per/Kconfig"
 source "board/boundary/rc/Kconfig"
 source "board/boundary/s/Kconfig"
+source "board/boundary/ses/Kconfig"
 source "board/boundary/ys/Kconfig"
 source "board/bticino/mamoj/Kconfig"
 source "board/ccv/xpress/Kconfig"
