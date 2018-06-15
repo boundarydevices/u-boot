@@ -66,6 +66,16 @@ static iomux_v3_cfg_t const init_pads[] = {
 
 #define GP_EMMC_RESET			IMX_GPIO_NR(2, 10)
 	IMX8MQ_PAD_SD1_RESET_B__GPIO2_IO10 | MUX_PAD_CTRL(0x41),
+
+#define GP_CSI1_MIPI_PWDN		IMX_GPIO_NR(3, 3)
+	IMX8MQ_PAD_NAND_CE2_B__GPIO3_IO3 | MUX_PAD_CTRL(0x59),
+#define GP_CSI1_MIPI_RESET		IMX_GPIO_NR(3, 17)
+	IMX8MQ_PAD_NAND_WE_B__GPIO3_IO17 | MUX_PAD_CTRL(0x19),
+
+#define GP_CSI2_MIPI_PWDN		IMX_GPIO_NR(3, 2)
+	IMX8MQ_PAD_NAND_CE1_B__GPIO3_IO2 | MUX_PAD_CTRL(0x59),
+#define GP_CSI2_MIPI_RESET		IMX_GPIO_NR(2, 19)
+	IMX8MQ_PAD_SD2_RESET_B__GPIO2_IO19 |MUX_PAD_CTRL(0x19),
 };
 
 int board_early_init_f(void)
@@ -81,6 +91,10 @@ int board_early_init_f(void)
 	gpio_direction_output(GP_EMMC_RESET, 1);
 	gpio_direction_output(GP_I2C1_PCA9546_RESET, 0);
 	gpio_direction_output(GP_I2C4_SN65DSI83_EN, 0);
+	gpio_direction_output(GP_CSI1_MIPI_PWDN, 1);
+	gpio_direction_output(GP_CSI1_MIPI_RESET, 0);
+	gpio_direction_output(GP_CSI2_MIPI_PWDN, 1);
+	gpio_direction_output(GP_CSI2_MIPI_RESET, 0);
 
 	return 0;
 }
