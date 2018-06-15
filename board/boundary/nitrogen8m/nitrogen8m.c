@@ -61,6 +61,9 @@ static iomux_v3_cfg_t const init_pads[] = {
 #define GP_I2C1_PCA9546_RESET		IMX_GPIO_NR(1, 8)
 	IMX8MQ_PAD_GPIO1_IO08__GPIO1_IO8 | MUX_PAD_CTRL(0x49),
 
+#define GP_I2C4_SN65DSI83_EN		IMX_GPIO_NR(3, 15)
+	IMX8MQ_PAD_NAND_RE_B__GPIO3_IO15 | MUX_PAD_CTRL(WEAK_PULLUP),
+
 #define GP_EMMC_RESET			IMX_GPIO_NR(2, 10)
 	IMX8MQ_PAD_SD1_RESET_B__GPIO2_IO10 | MUX_PAD_CTRL(0x41),
 };
@@ -76,8 +79,9 @@ int board_early_init_f(void)
 	gpio_direction_output(GP_DRAM_1P1_VSEL, 0);
 	gpio_direction_output(GP_SOC_GPU_VPU_VSEL, 0);
 	gpio_direction_output(GP_EMMC_RESET, 1);
-
 	gpio_direction_output(GP_I2C1_PCA9546_RESET, 0);
+	gpio_direction_output(GP_I2C4_SN65DSI83_EN, 0);
+
 	return 0;
 }
 
