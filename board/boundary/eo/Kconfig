@@ -1,0 +1,28 @@
+if TARGET_EO
+
+config SYS_CPU
+	default "armv7"
+
+config SYS_BOARD
+	default "eo"
+
+config SYS_VENDOR
+	default "boundary"
+
+config SYS_SOC
+	default "mx6"
+
+config SYS_CONFIG_NAME
+	default "eo"
+
+config ENV_WLMAC
+	bool
+	default	y
+
+config PRINT_TIME_RV4162
+	bool
+	default	y
+
+source "board/boundary/common/Kconfig"
+
+endif

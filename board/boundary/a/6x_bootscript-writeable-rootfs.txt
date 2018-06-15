@@ -1,0 +1,21 @@
+setenv bootargs enable_wait_mode=off
+setenv bootargs $bootargs console=ttymxc1,115200
+
+if test -n "$tempfuse" ; then
+	setenv bootargs $bootargs thermal.fusedata=$tempfuse
+fi
+
+if itest.s "x" != "x$asix"; then
+    setenv bootargs $bootargs asix.ethaddr1=$asix;
+fi
+
+if kbd ; then
+    if itest.s "xF" == "x$keybd" ; then
+        ums 0 mmc 0;
+    fi
+fi
+
+if ${fs}load ${dtype} 0:1 10800000 /uImage ; then
+    setenv bootargs $bootargs rootwait root=/dev/mmcblk0p2 init=/sbin/init
+    bootm 10800000
+fi

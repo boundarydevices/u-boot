@@ -1,0 +1,9 @@
+NITROGEN6_MAX BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/hp/
+F:	include/configs/hp.h
+F:	configs/hp_defconfig
+F:	configs/hp_q1g_defconfig
+F:	configs/hp_s512m_defconfig
+

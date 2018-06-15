@@ -1,0 +1,240 @@
+if ${fs}load ${dtype} ${disk}:1 10800000 uEnv.txt ; then
+    env import -t 10800000 $filesize
+else
+    setenv bootargs enable_wait_mode=off
+fi
+
+setenv nextcon 0;
+
+if itest.s x == x${hdmires} ; then
+	setenv hdmires 1280x720M@60,if=RGB24,bpp=32
+	setenv only_cea 1
+fi
+
+# if hdmidet ; then
+i2c dev 1 ;
+if i2c probe 0x50 ; then
+	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=hdmi,${hdmires}
+	setenv fbmem "fbmem=28M";
+	setexpr nextcon $nextcon + 1
+else
+	echo "------ no HDMI monitor";
+fi
+
+i2c dev 2
+if i2c probe 0x04 ; then
+	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=ldb,LDB-XGA,if=RGB666
+	if test "0" -eq $nextcon; then
+		setenv fbmem "fbmem=10M";
+	else
+		setenv fbmem ${fbmem},10M
+	fi
+	setexpr nextcon $nextcon + 1
+else
+	echo "------ no Freescale display";
+fi
+
+if i2c probe 0x38 ; then
+	if itest.s "xLDB-WXGA" == "x$panel"; then
+		setenv bootargs $bootargs video=mxcfb${nextcon}:dev=ldb,1280x800MR@60,if=RGB666
+		screenres=1280,800
+	else
+		setenv bootargs $bootargs video=mxcfb${nextcon}:dev=ldb,1024x600M@60,if=RGB666
+		screenres=1024,600
+	fi
+	if test "0" -eq $nextcon; then
+		setenv fbmem "fbmem=10M";
+	else
+		setenv fbmem ${fbmem},10M
+	fi
+	setexpr nextcon $nextcon + 1
+	setenv bootargs $bootargs ft5x06_ts.screenres=$screenres
+	if itest.s "x" -ne "x$calibration" ; then
+		setenv bootargs $bootargs ft5x06_ts.calibration=$calibration
+	fi
+else
+	echo "------ no ft5x06 touch controller";
+fi
+
+if i2c probe 0x41 ; then
+        setenv bootargs $bootargs video=mxcfb${nextcon}:dev=ldb,1024x600M@60,if=RGB666
+	if test "0" -eq $nextcon; then
+		setenv fbmem "fbmem=10M";
+	else
+		setenv fbmem ${fbmem},10M
+	fi
+	setexpr nextcon $nextcon + 1
+else
+	echo "------ no ILI210x touch controller";
+fi
+
+if i2c probe 0x48 ; then
+	if itest.s "xqvga" == "x$panel" ; then
+		display="320x240MR@60,if=RGB24";
+	else
+		display="CLAA-WVGA,if=RGB666";
+	fi
+	setenv bootargs $bootargs video=mxcfb${nextcon}:dev=lcd,$display
+	if test "0" -eq $nextcon; then
+		setenv fbmem "fbmem=10M";
+	else
+		setenv fbmem ${fbmem},10M
+	fi
+	setexpr nextcon $nextcon + 1
+else
+	echo "------ no 800x480 display";
+fi
+
+if itest.s "x1080P" == "x$panel" ; then
+	setenv bootargs $bootargs ldb=spl0 video=mxcfb${nextcon}:dev=ldb,1920x1080MR@60,if=RGB24
+	if test "0" -eq $nextcon; then
+		setenv fbmem "fbmem=48M";
+	else
+		setenv fbmem ${fbmem},48M
+	fi
+	setexpr nextcon $nextcon + 1
+fi
+
+while test "4" -ne $nextcon ; do
+	setenv bootargs $bootargs video=mxcfb${nextcon}:off ;
+	setexpr nextcon $nextcon + 1 ;
+done
+
+setenv bootargs $bootargs $fbmem
+setenv bootargs "$bootargs console=ttymxc1,115200 vmalloc=400M consoleblank=0 rootwait fixrtc"
+
+if itest.s "x" != "x$wlmac" ; then
+	setenv bootargs $bootargs wlcore.mac=$wlmac
+fi
+
+if itest.s x$bootpart == x ; then
+	bootpart=1
+fi
+
+setenv bpart "$bootpart"
+
+if   itest.s "$bpart" == a ; then
+	setenv bpart 10
+elif itest.s "$bpart" == b ; then
+	setenv bpart 11
+elif itest.s "$bpart" == c ; then
+	setenv bpart 12
+elif itest.s "$bpart" == d ; then
+	setenv bpart 13
+fi
+
+if test "sata" = "${dtype}" ; then
+	setenv bootargs "$bootargs root=/dev/sda$bpart" ;
+else
+	if test "usb" = "${dtype}" ; then
+		setenv bootargs "$bootargs root=/dev/sda$bpart" ;
+	elif itest 0 -eq ${disk}; then
+		setenv bootargs "$bootargs root=/dev/disk/by-path/platform-2198000.usdhc-part1" ;
+	else
+		setenv bootargs "$bootargs root=/dev/disk/by-path/platform-219c000.usdhc-part1" ;
+	fi
+fi
+
+
+
+if itest.s x == "x$dtbname" ; then
+        dtbname="imx6";
+        if itest.s x6SOLO == "x$cpu" ; then
+        	dtbname=${dtbname}dl-;
+        elif itest.s x6DL == "x$cpu" ; then
+        	dtbname=${dtbname}dl-;
+        else
+        	dtbname=${dtbname}q-;
+        fi
+        
+        if itest.s x == "x$board" ; then
+        	board=sabrelite
+        fi
+        
+        dtbname=${dtbname}${board}.dtb;
+fi
+
+if itest.s x == x${bootdir} ; then
+	bootdir=/boot
+fi
+
+if itest.s x == x${only_cea} ; then
+	if itest.s x == x$allow_noncea ; then
+		setenv only_cea 1
+		echo "only CEA modes allowed on HDMI port";
+	else
+		setenv only_cea 0
+		echo "non-CEA modes allowed on HDMI port, audio may be affected";
+	fi
+fi
+
+setenv bootargs $bootargs mxc_hdmi.only_cea=${only_cea}
+
+if itest.s "x" != "x${disable_giga}" ; then
+	setenv bootargs $bootargs fec.disable_giga=1
+fi
+
+if itest.s "x" != "x$gpumem" ; then
+	setenv bootargs $bootargs galcore.contiguousSize=$gpumem
+fi
+
+if itest.s "no" != "$dosplash" ; then
+	setenv bootargs $bootargs splash quiet plymouth.ignore-serial-consoles
+fi
+
+if itest.s "x" != "x$overlayfs" ; then
+	setenv bootargs $bootargs overlayfs=${overlayfs}
+	if itest.s "x" != "x${ofs-size}" ; then
+		setenv bootargs $bootargs ofs-size=${ofs-size}
+	fi
+fi
+
+if kbd ; then
+        if itest.s "xv" == "x$keybd" ; then
+                ${fs}load ${dtype} ${disk}:${bootpart} 0x10800000 ${bootdir}/uImage-recovery &&
+                ${fs}load ${dtype} ${disk}:${bootpart} 0x12800000 ${bootdir}/uramdisk-recovery.img &&
+                bootm 10800000 12800000;
+                echo "--- error launching recovery!"
+                exit;
+        fi
+fi
+
+setenv fdt_high 0xffffffff
+setenv initrd_high 0xffffffff
+
+setenv initrd_addr 0x12a00000
+setenv fdt_addr    0x13000000
+
+echo "----------- trying to load /initrd.img";
+if ${fs}load ${dtype} ${disk}:${bootpart} ${initrd_addr} /initrd.img ; then
+	haverd=1;
+	setenv initrd_size ${filesize}
+else
+	haverd=
+fi
+
+echo "----------- trying to load ${bootdir}/$dtbname";
+if ${fs}load ${dtype} ${disk}:${bootpart} ${fdt_addr} ${bootdir}/$dtbname ; then
+	havedtb=1;
+else
+	havedtb=
+fi
+
+if itest.s x$haverd == x ; then
+	if ${fs}load ${dtype} ${disk}:${bootpart} 0x10800000 /vmlinuz ; then
+		if itest.s x$havedtb == x ; then
+			bootz 0x10800000 ;
+		else
+			bootz 0x10800000 - ${fdt_addr}
+		fi
+	fi
+else
+	if ${fs}load ${dtype} ${disk}:${bootpart} 0x10800000 /vmlinuz ; then
+		if itest.s x$havedtb == x ; then
+			bootz 0x10800000 ${initrd_addr}:${initrd_size} ;
+		else
+			bootz 0x10800000 ${initrd_addr}:${initrd_size} ${fdt_addr} ;
+		fi
+	fi
+fi
+echo "Error loading kernel image"

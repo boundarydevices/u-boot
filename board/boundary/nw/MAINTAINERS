@@ -1,0 +1,8 @@
+NW BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/nw/
+F:	include/configs/nw.h
+F:	configs/nw_defconfig
+F:	configs/nw2_defconfig
+

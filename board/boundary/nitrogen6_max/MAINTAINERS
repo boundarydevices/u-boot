@@ -1,0 +1,7 @@
+NITROGEN6_MAX BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/nitrogen6_max/
+F:	include/configs/nitrogen6_max.h
+F:	configs/nitrogen6_max_defconfig
+
