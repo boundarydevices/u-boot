@@ -9,6 +9,9 @@
 
 #include "mx6_common.h"
 
+/* Size of malloc() pool */
+#define CONFIG_SYS_MALLOC_LEN		(40 * 1024 * 1024)
+
 #define CONFIG_PHY_ATHEROS
 #define CONFIG_SYS_FSL_USDHC_NUM	2
 #define CONFIG_USB_MAX_CONTROLLER_COUNT 2
