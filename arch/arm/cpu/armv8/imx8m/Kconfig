@@ -27,11 +27,6 @@ config TARGET_NITROGEN8M
 	select IMX8M
 	select SUPPORT_SPL
 
-config TARGET_NITROGEN8M_REV0
-	bool "nitrogen8m_rev0"
-	select IMX8M
-	select SUPPORT_SPL
-
 endchoice
 
 config SYS_SOC
@@ -40,6 +35,5 @@ config SYS_SOC
 source "board/freescale/imx8mq_evk/Kconfig"
 source "board/freescale/imx8mq_arm2/Kconfig"
 source "board/boundary/nitrogen8m/Kconfig"
-source "board/boundary/nitrogen8m_rev0/Kconfig"
 
 endif
