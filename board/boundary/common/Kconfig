@@ -41,3 +41,8 @@ config DEFAULT_HITACHI_HVGA
 
 config TAMPER
 	bool "Enable tamper detection gpio"
+
+config CMD_OTG_CABLE
+	bool "Enable otg cable detection"
+	depends on ARCH_MX6
+	default y

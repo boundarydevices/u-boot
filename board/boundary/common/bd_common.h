@@ -49,4 +49,5 @@ int max77823_is_charging(void);
 void max77834_power_check(void);
 
 void fan53526_init(void);
+int otg_power_detect(void);
 #endif
