@@ -386,6 +386,26 @@ int board_ehci_power(int port, int on)
 
 #endif
 
+#ifdef CONFIG_SYS_BOOT_BOARD_POWER_CHECK
+void board_power_check()
+{
+	int i = 0;
+
+	while (1) {
+		if (!otg_power_detect())
+			break;
+		if (!i) {
+			gpio_set_value(GP_REG_USBOTG, 0);
+		} else {
+			printf("Please disconnect otg cable\n");
+
+		}
+		i++;
+		mdelay(1000);
+	}
+}
+#endif
+
 #ifdef CONFIG_FSL_ESDHC
 struct fsl_esdhc_cfg board_usdhc_cfg[] = {
 	{.esdhc_base = USDHC1_BASE_ADDR, .bus_width = 4,

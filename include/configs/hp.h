@@ -16,6 +16,8 @@
 #define CONFIG_PHY_ATHEROS
 #define CONFIG_SYS_FSL_USDHC_NUM	2
 #define CONFIG_USB_MAX_CONTROLLER_COUNT 2
+#define CONFIG_SYS_BOOT_BOARD_POWER_CHECK
+
 #define BD_I2C_MASK	7
 
 #include "boundary.h"
