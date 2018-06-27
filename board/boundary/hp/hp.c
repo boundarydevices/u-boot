@@ -370,6 +370,16 @@ int board_ehci_power(int port, int on)
 {
 	if (port)
 		return 0;
+	if (!on) {
+		gpio_set_value(GP_REG_USBOTG, on);
+		return 0;
+	}
+	if (otg_power_detect()) {
+		gpio_set_value(GP_REG_USBOTG, 0);
+		mdelay(100);
+		if (otg_power_detect())
+			return 0;
+	}
 	gpio_set_value(GP_REG_USBOTG, on);
 	return 0;
 }
