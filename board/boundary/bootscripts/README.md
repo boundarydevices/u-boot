@@ -13,7 +13,11 @@ This folder contains all the boot scripts for booting / upgrading any OS:
 
 Those `.txt` files need to be transformed into U-Boot scripts (`.scr`) using `mkimage`.
 
-Here is an example for generating a `boot.scr` for Yocto OS:
+Here is an example for generating a `boot.scr` for 32-bit platforms (i.MX5/6/7) running Yocto OS:
 ```
 mkimage -A arm -O linux -T script -C none -a 0 -e 0 -n "bootscript" -d bootscript-yocto.txt boot.scr
+```
+Here is an example for generating a `boot.scr` for 64-bit platforms (i.MX8) running Yocto OS:
+```
+mkimage -A arm64 -O linux -T script -C none -a 0 -e 0 -n "bootscript" -d bootscript-yocto.txt boot.scr
 ```
