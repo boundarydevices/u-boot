@@ -44,8 +44,10 @@ else
 fi
 
 # Compute block count for filesize and offset
-setexpr cntfile ${filesize} / ${block_size}
 setexpr cntoffset ${offset} / ${block_size}
+setexpr cntfile ${filesize} / ${block_size}
+# Add 1 in case the $filesize is not a multiple of $block_size
+setexpr cntfile ${cntfile} + 1
 
 # Select media partition (if different from main partition)
 mmc dev ${env_dev} ${env_part}
