@@ -250,8 +250,26 @@
 	"env_dev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
 	"env_part=" __stringify(CONFIG_SYS_MMC_ENV_PART) "\0" \
 	"scriptaddr=" __stringify(CONFIG_LOADADDR) "\0" \
+	"fdt_addr=0x43000000\0" \
 	"fdt_high=0xffffffffffffffff\0" \
 	"initrd_high=0xffffffffffffffff\0" \
+	"netargs=setenv bootargs console=${console},115200 root=/dev/nfs rw " \
+		"ip=dhcp nfsroot=${tftpserverip}:${nfsroot},v3,tcp\0" \
+	"netboot=run netargs; " \
+		"if test -z \"${fdt_file}\" -a -n \"${soc}\"; then " \
+			"setenv fdt_file ${soc}-${board}${boardver}.dtb; " \
+		"fi; " \
+		"if test ${ip_dyn} = yes; then " \
+			"setenv get_cmd dhcp; " \
+		"else " \
+			"setenv get_cmd tftp; " \
+		"fi; " \
+		"${get_cmd} ${loadaddr} ${tftpserverip}:Image; " \
+		"if ${get_cmd} ${fdt_addr} ${tftpserverip}:${fdt_file}; then " \
+			"booti ${loadaddr} - ${fdt_addr}; " \
+		"else " \
+			"echo WARN: Cannot load the DT; " \
+		"fi;\0" \
 	"upgradeu=setenv boot_scripts upgrade.scr; boot;" \
 		"echo Upgrade failed!; setenv boot_scripts boot.scr\0" \
 	BOOTENV
