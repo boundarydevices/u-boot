@@ -247,10 +247,11 @@
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	"console=" BD_CONSOLE "\0" \
+	"env_dev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
+	"env_part=" __stringify(CONFIG_SYS_MMC_ENV_PART) "\0" \
 	"scriptaddr=" __stringify(CONFIG_LOADADDR) "\0" \
 	"fdt_high=0xffffffffffffffff\0" \
 	"initrd_high=0xffffffffffffffff\0" \
-	"loadsplash=if sf probe ; then sf read ${splashimage} ${splashflash} ${splashsize} ; fi\0" \
 	"upgradeu=setenv boot_scripts upgrade.scr; boot\0" \
 	BOOTENV
 
