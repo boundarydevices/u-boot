@@ -252,7 +252,8 @@
 	"scriptaddr=" __stringify(CONFIG_LOADADDR) "\0" \
 	"fdt_high=0xffffffffffffffff\0" \
 	"initrd_high=0xffffffffffffffff\0" \
-	"upgradeu=setenv boot_scripts upgrade.scr; boot\0" \
+	"upgradeu=setenv boot_scripts upgrade.scr; boot;" \
+		"echo Upgrade failed!; setenv boot_scripts boot.scr\0" \
 	BOOTENV
 
 #endif
