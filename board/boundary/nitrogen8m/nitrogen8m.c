@@ -431,6 +431,9 @@ int board_late_init(void)
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	setenv("board", "nitrogen8m");
 	setenv("soc", "imx8mq");
+	setenv("cpu", get_imx_type((get_cpu_rev() & 0xFF000) >> 12));
+	setenv("imx_cpu", get_imx_type((get_cpu_rev() & 0xFF000) >> 12));
+	setenv("uboot_defconfig", CONFIG_DEFCONFIG);
 #endif
 #if defined(CONFIG_CMD_FASTBOOT) || defined(CONFIG_CMD_DFU)
 	addserial_env("serial#");
