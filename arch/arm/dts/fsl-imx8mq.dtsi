@@ -29,6 +29,10 @@
 
 	aliases {
 		ethernet0 = &fec1;
+		serial0 = &uart1;
+		serial1 = &uart2;
+		serial2 = &uart3;
+		serial3 = &uart4;
 		mmc0 = &usdhc1;
 		mmc1 = &usdhc2;
 		gpio0 = &gpio1;
@@ -278,6 +282,57 @@
 		interrupt-parent = <&gic>;
 	};
 
+	uart1: serial@30860000 {
+		compatible = "fsl,imx8mq-uart", "fsl,imx6ul-uart",
+			     "fsl,imx6q-uart", "fsl,imx21-uart";
+		reg = <0x0 0x30860000 0x0 0x10000>;
+		interrupts = <GIC_SPI 26 IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&clk IMX8MQ_CLK_UART1_ROOT>,
+			<&clk IMX8MQ_CLK_UART1_ROOT>;
+		clock-names = "ipg", "per";
+		interrupt-parent = <&gpc>;
+		status = "disabled";
+	};
+
+	uart3: serial@30880000 {
+		compatible = "fsl,imx8mq-uart", "fsl,imx6ul-uart",
+			     "fsl,imx6q-uart", "fsl,imx21-uart";
+		reg = <0x0 0x30880000 0x0 0x10000>;
+		interrupts = <GIC_SPI 28 IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&clk IMX8MQ_CLK_UART3_ROOT>,
+			<&clk IMX8MQ_CLK_UART3_ROOT>;
+		clock-names = "ipg", "per";
+		dmas = <&sdma1 26 4 0>, <&sdma1 27 4 0>;
+		dma-names = "rx", "tx";
+		status = "disabled";
+	};
+
+	uart2: serial@30890000 {
+		compatible = "fsl,imx8mq-uart", "fsl,imx6ul-uart",
+			     "fsl,imx6q-uart", "fsl,imx21-uart";
+		reg = <0x0 0x30890000 0x0 0x10000>;
+		interrupts = <GIC_SPI 27 IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&clk IMX8MQ_CLK_UART2_ROOT>,
+			<&clk IMX8MQ_CLK_UART2_ROOT>;
+		clock-names = "ipg", "per";
+		dmas = <&sdma1 24 4 0>, <&sdma1 25 4 0>;
+		dma-names = "rx", "tx";
+		status = "disabled";
+	};
+
+	uart4: serial@30a60000 {
+		compatible = "fsl,imx8mq-uart", "fsl,imx6ul-uart",
+			     "fsl,imx6q-uart", "fsl,imx21-uart";
+		reg = <0x0 0x30a60000 0x0 0x10000>;
+		interrupts = <GIC_SPI 29 IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&clk IMX8MQ_CLK_UART4_ROOT>,
+			<&clk IMX8MQ_CLK_UART4_ROOT>;
+		clock-names = "ipg", "per";
+		dmas = <&sdma1 28 4 0>, <&sdma1 29 4 0>;
+		dma-names = "rx", "tx";
+		status = "disabled";
+	};
+
 	usdhc1: usdhc@30b40000 {
 		compatible = "fsl,imx8mq-usdhc", "fsl,imx7d-usdhc";
 		reg = <0x0 0x30b40000 0x0 0x10000>;
@@ -306,6 +361,30 @@
 		fsl,tuning-step= <2>;
 		bus-width = <4>;
 		status = "disabled";
+	};
+
+	sdma1: sdma@30bd0000 {
+		compatible = "fsl,imx8mq-sdma", "fsl,imx7d-sdma";
+		reg = <0x0 0x30bd0000 0x0 0x10000>;
+		interrupts = <GIC_SPI 2 IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&clk IMX8MQ_CLK_SDMA1_ROOT>,
+			<&clk IMX8MQ_CLK_SDMA1_ROOT>;
+		clock-names = "ipg", "ahb";
+		#dma-cells = <3>;
+		fsl,sdma-ram-script-name = "imx/sdma/sdma-imx7d.bin";
+		status = "okay";
+	};
+
+	sdma2: sdma@302c0000 {
+		compatible = "fsl,imx8mq-sdma", "fsl,imx7d-sdma";
+		reg = <0x0 0x302c0000 0x0 0x10000>;
+		interrupts = <GIC_SPI 103 IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&clk IMX8MQ_CLK_SDMA2_ROOT>,
+			<&clk IMX8MQ_CLK_SDMA2_ROOT>;
+		clock-names = "ipg", "ahb";
+		#dma-cells = <3>;
+		fsl,sdma-ram-script-name = "imx/sdma/sdma-imx7d.bin";
+		status = "okay";
 	};
 
 	fec1: ethernet@30be0000 {
