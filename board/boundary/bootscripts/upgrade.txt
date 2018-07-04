@@ -67,6 +67,11 @@ for n in 5 4 3 2 1 ; do
 done
 mmc write ${a_uImage1} ${cntoffset} ${cntfile}
 
+# Make sure to boot from the proper partition
+if itest ${env_part} != 0 ; then
+	mmc partconf ${env_dev} 1 ${env_part} 0
+fi
+
 # Switch back to main eMMC partition (to avoid confusion)
 mmc dev ${env_dev}
 
