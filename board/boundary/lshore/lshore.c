@@ -101,6 +101,17 @@ static const iomux_v3_cfg_t init_pads[] = {
 #define GP_LED_YELLOW	IMX_GPIO_NR(3, 5)
         IOMUX_PAD_CTRL(EIM_DA5__GPIO3_IO05, WEAK_PULLDN),
 
+#define GP_SW1	IMX_GPIO_NR(3, 9)
+	IOMUX_PAD_CTRL(EIM_DA9__GPIO3_IO09, WEAK_PULLUP),
+#define GP_SW2	IMX_GPIO_NR(3, 10)
+	IOMUX_PAD_CTRL(EIM_DA10__GPIO3_IO10, WEAK_PULLUP),
+#define GP_SW3	IMX_GPIO_NR(3, 11)
+	IOMUX_PAD_CTRL(EIM_DA11__GPIO3_IO11, WEAK_PULLUP),
+#define GP_SW4	IMX_GPIO_NR(3, 12)
+	IOMUX_PAD_CTRL(EIM_DA12__GPIO3_IO12, WEAK_PULLUP),
+#define GP_SW5	IMX_GPIO_NR(3, 13)
+	IOMUX_PAD_CTRL(EIM_DA13__GPIO3_IO13, WEAK_PULLUP),
+
 #define GP_TP71			IMX_GPIO_NR(1, 30)
 	IOMUX_PAD_CTRL(ENET_TXD0__GPIO1_IO30, WEAK_PULLUP),
 
@@ -345,6 +356,11 @@ static const unsigned short gpios_in[] = {
 	GPIRQ_USB320_INTR,
 	GPIRQ_WL1271_WL,
 	GP_USDHC3_CD,
+	GP_SW1,
+	GP_SW2,
+	GP_SW3,
+	GP_SW4,
+	GP_SW5,
 	GP_TP71,
 };
 
@@ -378,3 +394,52 @@ const struct boot_mode board_boot_modes[] = {
 	{NULL,		0},
 };
 #endif
+
+unsigned short switches[] = {
+	GP_SW1,
+	GP_SW2,
+	GP_SW3,
+	GP_SW4,
+	GP_SW5,
+};
+
+static int get_board_rev(void)
+{
+	int i, v;
+	int value = 0;
+
+	for (i = 0; i < ARRAY_SIZE(switches); i++) {
+		v = gpio_get_value(switches[i]);
+		value |= (v ? 1 : 0) << i;
+	}
+	return value;
+}
+
+#ifndef CONFIG_SYS_BOARD
+
+static char board_name[] = "lshore\0\0\0\0\0";
+const char *board_get_board_type(void)
+{
+	int value = get_board_rev();
+
+	if (value != 31)
+		snprintf(board_name, sizeof(board_name), "lshore-r%d", value);
+	return board_name;
+}
+#endif
+
+static int do_board_rev(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+	char buf[32];
+
+	snprintf(buf, sizeof(buf), "%d", get_board_rev());
+	setenv("board_rev", buf);
+	printf("%s\n", buf);
+	return 0;
+}
+
+U_BOOT_CMD(
+	board_rev, 1, 1, do_board_rev,
+	"Determine board revision #",
+	"Prints revision."
+);

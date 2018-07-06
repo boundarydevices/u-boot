@@ -28,6 +28,8 @@
 #define BD_I2C_MASK	7
 #define BD_MMC_UMS_DISKS "0"
 
+#undef CONFIG_SYS_BOARD
+
 #include "boundary.h"
 #define CONFIG_EXTRA_ENV_SETTINGS BD_BOUNDARY_ENV_SETTINGS \
 
