@@ -169,6 +169,7 @@ struct fsl_esdhc_priv {
 #if CONFIG_IS_ENABLED(DM_GPIO)
 	struct gpio_desc cd_gpio;
 	struct gpio_desc wp_gpio;
+	struct gpio_desc reset_gpio;
 #endif
 	dma_addr_t dma_addr;
 };
@@ -1400,6 +1401,8 @@ static int fsl_esdhc_of_to_plat(struct udevice *dev)
 			     GPIOD_IS_IN);
 	gpio_request_by_name(dev, "wp-gpios", 0, &priv->wp_gpio,
 			     GPIOD_IS_IN);
+	gpio_request_by_name(dev, "reset-gpios", 0, &priv->reset_gpio,
+			     GPIOD_IS_OUT_ACTIVE);
 #endif
 
 	priv->vs18_enable = 0;
@@ -1511,6 +1514,12 @@ static int fsl_esdhc_probe(struct udevice *dev)
 	}
 #endif
 
+#ifdef CONFIG_DM_GPIO
+	if (dm_gpio_is_valid(&priv->reset_gpio)) {
+		udelay(500);
+		dm_gpio_set_value(&priv->reset_gpio, 0);	/* release reset */
+	}
+#endif
 	ret = fsl_esdhc_init(priv, plat);
 	if (ret) {
 		dev_err(dev, "fsl_esdhc_init failure\n");
