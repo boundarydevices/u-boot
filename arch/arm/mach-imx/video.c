@@ -4,6 +4,9 @@
 #include <env.h>
 #include <linux/errno.h>
 #include <asm/mach-imx/video.h>
+#ifdef CONFIG_VIDEO_IMXDCSS
+#include <asm/arch/video_common.h>
+#endif
 
 #ifdef CONFIG_IMX_HDMI
 #include <asm/arch/mxc_hdmi.h>
@@ -44,8 +47,13 @@ int board_video_skip(void)
 	}
 
 	if (i < display_count) {
+#if defined(CONFIG_VIDEO_IPUV3)
 		ret = ipuv3_fb_init(&displays[i].mode, displays[i].di ? 1 : 0,
 				    displays[i].pixfmt);
+#elif defined(CONFIG_VIDEO_IMXDCSS)
+		ret = imx8m_fb_init(&displays[i].mode, displays[i].bus,
+					displays[i].pixfmt);
+#endif
 		if (!ret) {
 			if (displays[i].enable)
 				displays[i].enable(displays + i);
