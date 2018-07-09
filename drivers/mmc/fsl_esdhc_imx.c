@@ -170,6 +170,7 @@ struct fsl_esdhc_priv {
 #if CONFIG_IS_ENABLED(DM_GPIO)
 	struct gpio_desc cd_gpio;
 	struct gpio_desc wp_gpio;
+	struct gpio_desc reset_gpio;
 #endif
 };
 
@@ -1451,6 +1452,8 @@ static int fsl_esdhc_ofdata_to_platdata(struct udevice *dev)
 				   GPIOD_IS_IN);
 #endif
 	}
+	gpio_request_by_name(dev, "reset-gpios", 0, &priv->reset_gpio,
+			     GPIOD_IS_OUT_ACTIVE);
 
 	priv->vs18_enable = 0;
 
@@ -1576,6 +1579,12 @@ static int fsl_esdhc_probe(struct udevice *dev)
 	}
 #endif
 
+#ifdef CONFIG_DM_GPIO
+	if (dm_gpio_is_valid(&priv->reset_gpio)) {
+		udelay(500);
+		dm_gpio_set_value(&priv->reset_gpio, 0);	/* release reset */
+	}
+#endif
 	ret = fsl_esdhc_init(priv, plat);
 	if (ret) {
 		dev_err(dev, "fsl_esdhc_init failure\n");
