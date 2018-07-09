@@ -346,7 +346,7 @@
        };
 
 	usb3_0: usb@38100000 {
-		compatible = "fsl, imx8mq-dwc3";
+		compatible = "fsl,imx8mq-dwc3";
 		#address-cells = <2>;
 		#size-cells = <2>;
 		ranges;
@@ -357,6 +357,7 @@
 		assigned-clock-parents = <&clk IMX8MQ_SYS2_PLL_500M>,
 					<&clk IMX8MQ_SYS1_PLL_100M>;
 		assigned-clock-rates = <500000000>, <100000000>;
+		reg = <0x0 0x38100000 0x0 0x10000>;
 		status = "disabled";
 
 		usb_dwc3_0: dwc3 {
@@ -386,7 +387,7 @@
        };
 
 	usb3_1: usb@38200000 {
-		compatible = "fsl, imx8mq-dwc3";
+		compatible = "fsl,imx8mq-dwc3";
 		#address-cells = <2>;
 		#size-cells = <2>;
 		ranges;
@@ -397,6 +398,7 @@
 		assigned-clock-parents = <&clk IMX8MQ_SYS2_PLL_500M>,
 					<&clk IMX8MQ_SYS1_PLL_100M>;
 		assigned-clock-rates = <500000000>, <100000000>;
+		reg = <0x0 0x38200000 0x0 0x10000>;
 		status = "disabled";
 
 		usb_dwc3_1: dwc3 {
