@@ -240,6 +240,10 @@ void *devm_kmalloc(struct udevice *dev, size_t size, gfp_t gfp)
 {
 	void *data;
 
+	if (!dev) {
+		debug("%s: dev=%p\n", __func__, dev);
+		return kmalloc(size, gfp);
+	}
 	data = _devres_alloc(devm_kmalloc_release, size, gfp);
 	if (unlikely(!data))
 		return NULL;
