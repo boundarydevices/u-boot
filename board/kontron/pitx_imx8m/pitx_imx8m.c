@@ -116,7 +116,8 @@ int board_init(void)
 #endif
 
 #if defined(CONFIG_USB_DWC3) || defined(CONFIG_USB_XHCI_DWC3)
-	init_usb_clk();
+	init_usb_clk(0);
+	init_usb_clk(1);
 #endif
 
 	return 0;
