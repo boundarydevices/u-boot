@@ -47,7 +47,6 @@ struct imx8m_usbctrl_data {
 	u32 usb_id;
 	unsigned long ctr_addr;
 };
-static struct imx8m_xhci imx8m_xhci;
 static struct imx8m_usbctrl_data ctr_data[] = {
 	{0, USB1_BASE_ADDR},
 	{1, USB2_BASE_ADDR},
@@ -110,30 +109,22 @@ static int imx8m_xhci_core_init(struct imx8m_xhci *imx8m_xhci)
 	return ret;
 }
 
-int xhci_hcd_init(int index, struct xhci_hccr **hccr, struct xhci_hcor **hcor)
+int imx8m_usb_common_init(void *base, struct xhci_hccr **hccr, struct xhci_hcor **hcor)
 {
-	struct imx8m_xhci *ctx = &imx8m_xhci;
-	int ret = 0;
+	int ret;
+	struct imx8m_xhci ctx;
 
-	ctx->hcd = (struct xhci_hccr *)(ctr_data[index].ctr_addr);
-	ctx->dwc3_reg = (struct dwc3 *)((char *)(ctx->hcd) + DWC3_REG_OFFSET);
-	ctx->usbmix_reg = (struct imx8m_usbmix *)((char *)(ctx->hcd) +
-							USBMIX_PHY_OFFSET);
+	ctx.hcd = (struct xhci_hccr *)base;
+	ctx.dwc3_reg = (struct dwc3 *)(base + DWC3_REG_OFFSET);
+	ctx.usbmix_reg = (struct imx8m_usbmix *)(base + USBMIX_PHY_OFFSET);
 
-	ret = board_usb_init(ctr_data[index].usb_id, USB_INIT_HOST);
-	if (ret != 0) {
-		imx8m_usb_power(ctr_data[index].usb_id, false);
-		puts("Failed to initialize board for imx8m USB\n");
-		return ret;
-	}
-
-	ret = imx8m_xhci_core_init(ctx);
+	ret = imx8m_xhci_core_init(&ctx);
 	if (ret < 0) {
 		puts("Failed to initialize imx8m xhci\n");
 		return ret;
 	}
 
-	*hccr = (struct xhci_hccr *)ctx->hcd;
+	*hccr = (struct xhci_hccr *)ctx.hcd;
 	*hcor = (struct xhci_hcor *)((uintptr_t) *hccr
 				+ HC_LENGTH(xhci_readl(&(*hccr)->cr_capbase)));
 
@@ -142,6 +133,19 @@ int xhci_hcd_init(int index, struct xhci_hccr **hccr, struct xhci_hcor **hcor)
 	      (uintptr_t)HC_LENGTH(xhci_readl(&(*hccr)->cr_capbase)));
 
 	return ret;
+}
+
+int xhci_hcd_init(int index, struct xhci_hccr **hccr, struct xhci_hcor **hcor)
+{
+	int ret = 0;
+
+	ret = board_usb_init(ctr_data[index].usb_id, USB_INIT_HOST);
+	if (ret != 0) {
+		imx8m_usb_power(ctr_data[index].usb_id, false);
+		puts("Failed to initialize board for imx8m USB\n");
+		return ret;
+	}
+	return imx8m_usb_common_init((void*)ctr_data[index].ctr_addr, hccr, hcor);
 }
 
 void xhci_hcd_stop(int index)
