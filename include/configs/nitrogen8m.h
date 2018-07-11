@@ -236,6 +236,7 @@
 		"else " \
 			"echo WARN: Cannot load the DT; " \
 		"fi;\0" \
+	"uboot_defconfig=" CONFIG_DEFCONFIG "\0" \
 	"upgradeu=setenv boot_scripts upgrade.scr; boot;" \
 		"echo Upgrade failed!; setenv boot_scripts boot.scr\0" \
 	BOOTENV
