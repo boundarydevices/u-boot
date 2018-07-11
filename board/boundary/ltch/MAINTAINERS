@@ -1,0 +1,7 @@
+LTCH BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/ltch/
+F:	include/configs/ltch.h
+F:	configs/ltch_q2g_defconfig
+
