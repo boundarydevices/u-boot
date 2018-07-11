@@ -1,6 +1,8 @@
 setenv bootargs ''
 
 setenv initrd_high 0xffffffff
+kernelimage=zImage
+bootcommand=bootz
 a_base=0x10000000
 if itest.s x51 == "x${imx_cpu}" ; then
 	a_base=0x90000000
@@ -8,6 +10,10 @@ elif itest.s x53 == "x${imx_cpu}"; then
 	a_base=0x70000000
 elif itest.s x6SX == "x${imx_cpu}" || itest.s x7D == "x${imx_cpu}"; then
 	a_base=0x80000000
+elif itest.s x8MQ == "x${imx_cpu}"; then
+	a_base=0x40000000
+	kernelimage=Image
+	bootcommand=booti
 fi
 
 setexpr a_script  ${a_base} + 0x00800000
@@ -34,10 +40,12 @@ if itest.s "x" == "x${fdt_file}" ; then
 		fdt_file=imx6sx-${board}.dtb;
 	elif itest.s x7D == "x${imx_cpu}" ; then
 		fdt_file=imx7d-${board}.dtb;
+	elif itest.s x8MQ == "x${imx_cpu}" ; then
+		fdt_file=imx8mq-${board}.dtb;
 	elif itest.s x51 == "x${imx_cpu}" ; then
-		fdt_file=imx51-${board}${m4}.dtb;
+		fdt_file=imx51-${board}.dtb;
 	elif itest.s x53 == "x${imx_cpu}" ; then
-		fdt_file=imx53-${board}${m4}.dtb;
+		fdt_file=imx53-${board}.dtb;
 	else
 		fdt_file=imx6q-${board}.dtb;
 	fi
@@ -100,6 +108,11 @@ if itest.s "xoff" == "x$fb_lcd" ; then
 	setenv bootargs $bootargs video=VGA-1:d
 fi
 
+## MIPI DSI ##
+if itest.s "xoff" == "x$fb_mipi" ; then
+	setenv bootargs $bootargs video=DSI-1:d
+fi
+
 if itest.s x${rfspart} == x ; then
 	rfspart=2
 fi
@@ -144,7 +157,7 @@ if itest *${a_reset_cause_marker} == 12345678 ; then
 fi
 setenv bootargs ${bootargs} snd.slots=,snd-soc-imx-hdmi
 
-if load ${devtype} ${devnum}:${distro_bootpart} ${a_zImage} ${prefix}zImage ; then
-	bootz ${a_zImage} - ${a_fdt}
+if load ${devtype} ${devnum}:${distro_bootpart} ${a_${kernelimage}} ${prefix}${kernelimage} ; then
+	${bootcommand} ${a_zImage} - ${a_fdt}
 fi
 echo "Error loading kernel image"
