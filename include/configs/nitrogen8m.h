@@ -252,6 +252,7 @@
 	"scriptaddr=" __stringify(CONFIG_LOADADDR) "\0" \
 	"fdt_addr=0x43000000\0" \
 	"fdt_high=0xffffffffffffffff\0" \
+	"imx_cpu=8MQ\0" \
 	"initrd_high=0xffffffffffffffff\0" \
 	"netargs=setenv bootargs console=${console},115200 root=/dev/nfs rw " \
 		"ip=dhcp nfsroot=${tftpserverip}:${nfsroot},v3,tcp\0" \
