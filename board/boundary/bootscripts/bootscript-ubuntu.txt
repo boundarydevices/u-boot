@@ -13,7 +13,7 @@ elif itest.s x6SX == "x${imx_cpu}" || itest.s x7D == "x${imx_cpu}"; then
 	a_base=0x80000000
 elif itest.s x8MQ == "x${imx_cpu}"; then
 	a_base=0x40000000
-	kernelimage=vmlinux
+	kernelimage=Image
 	bootcommand=booti
 fi
 if itest.s "x1" == "x$m4enabled" ; then
@@ -67,7 +67,10 @@ fi
 if itest.s x${console} != x ; then
 	setenv bootargs ${bootargs} console=${console},115200
 fi
-setenv bootargs ${bootargs} vmalloc=400M consoleblank=0 rootwait fixrtc cpu=${imx_cpu} board=${board}
+if itest.s x${consoleblank} == x ; then
+	consoleblank=0
+fi
+setenv bootargs ${bootargs} vmalloc=400M consoleblank=${consoleblank} rootwait fixrtc cpu=${imx_cpu} board=${board}
 
 if load ${devtype} ${devnum}:${distro_bootpart} ${a_fdt} ${prefix}${fdt_file} ; then
 	fdt addr ${a_fdt}
@@ -110,7 +113,9 @@ setexpr b1 ${distro_bootpart} / 0x0a;
 setexpr bpart ${b1} * 0x10
 setexpr bpart ${bpart} + ${b0};
 
-if test "sata" = "${devtype}" ; then
+if itest.s "x" != "x${root_dev_part}" ; then
+	setenv bootargs "${bootargs} root=${root_dev_part}" ;
+elif test "sata" = "${devtype}" ; then
 	setenv bootargs "${bootargs} root=/dev/sda${bpart}" ;
 elif test "usb" = "${devtype}" ; then
 	setenv bootargs "${bootargs} root=/dev/sda${bpart}" ;
@@ -154,11 +159,8 @@ if itest *${a_reset_cause_marker} == 12345678 ; then
 	setenv bootargs $bootargs reset_cause=0x${reset_cause}
 fi
 
-if itest.s "x" != "x${overlayfs}" ; then
-	setenv bootargs ${bootargs} overlayfs=${overlayfs}
-	if itest.s "x" != "x${ofs-size}" ; then
-		setenv bootargs ${bootargs} ofs-size=${ofs-size}
-	fi
+if itest.s "x" != "x${overlayroot}" ; then
+	setenv bootargs ${bootargs} overlayroot=${overlayroot}
 fi
 
 if itest.s "x" != "x${cma}" ; then
@@ -175,7 +177,7 @@ if itest.s "x" != "x${show_env}" ; then
 fi
 
 echo "----------- trying to load /initrd.img";
-if load ${devtype} ${devnum}:${distro_bootpart} ${a_initrd} /initrd.img ; then
+if load ${devtype} ${devnum}:${distro_bootpart} ${a_initrd} ${prefix}initrd.img ; then
 	haverd=1;
 	setenv initrd_size ${filesize}
 else
@@ -183,12 +185,12 @@ else
 fi
 
 if itest.s x${haverd} == x ; then
-	if load ${devtype} ${devnum}:${distro_bootpart} ${a_zImage} /${kernelimage} ; then
+	if load ${devtype} ${devnum}:${distro_bootpart} ${a_zImage} ${prefix}${kernelimage} ; then
 		setenv bootargs ${bootargs} rw
 		${bootcommand} ${a_zImage} - ${a_fdt}
 	fi
 else
-	if load ${devtype} ${devnum}:${distro_bootpart} ${a_zImage} /${kernelimage} ; then
+	if load ${devtype} ${devnum}:${distro_bootpart} ${a_zImage} ${prefix}${kernelimage} ; then
 		${bootcommand} ${a_zImage} ${a_initrd}:${initrd_size} ${a_fdt} ;
 	fi
 fi
