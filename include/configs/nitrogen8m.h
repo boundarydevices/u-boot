@@ -218,7 +218,6 @@
 	"scriptaddr=" __stringify(CONFIG_LOADADDR) "\0" \
 	"fdt_addr=0x43000000\0" \
 	"fdt_high=0xffffffffffffffff\0" \
-	"imx_cpu=8MQ\0" \
 	"initrd_high=0xffffffffffffffff\0" \
 	"netargs=setenv bootargs console=${console},115200 root=/dev/nfs rw " \
 		"ip=dhcp nfsroot=${tftpserverip}:${nfsroot},v3,tcp\0" \
@@ -237,7 +236,6 @@
 		"else " \
 			"echo WARN: Cannot load the DT; " \
 		"fi;\0" \
-	"uboot_defconfig=" CONFIG_DEFCONFIG "\0" \
 	"upgradeu=setenv boot_scripts upgrade.scr; boot;" \
 		"echo Upgrade failed!; setenv boot_scripts boot.scr\0" \
 	BOOTENV

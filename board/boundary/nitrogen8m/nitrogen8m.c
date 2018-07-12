@@ -432,7 +432,7 @@ static int fastboot_key_pressed(void)
 void board_late_mmc_env_init(void);
 void init_usb_clk(int usbno);
 
-int board_late_init(void)
+void board_set_default_env(void)
 {
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	env_set("board", "nitrogen8m");
@@ -441,6 +441,11 @@ int board_late_init(void)
 	env_set("imx_cpu", get_imx_type((get_cpu_rev() & 0xFF000) >> 12));
 	env_set("uboot_defconfig", CONFIG_DEFCONFIG);
 #endif
+}
+
+int board_late_init(void)
+{
+	board_set_default_env();
 #if defined(CONFIG_USB_FUNCTION_FASTBOOT) || defined(CONFIG_CMD_DFU)
 	addserial_env("serial#");
 	if (fastboot_key_pressed()) {
