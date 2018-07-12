@@ -58,6 +58,10 @@ char *env_get_default(const char *name)
 	return ret_val;
 }
 
+void __weak board_set_default_env(void)
+{
+}
+
 void set_default_env(const char *s)
 {
 	int flags = 0;
@@ -87,6 +91,7 @@ void set_default_env(const char *s)
 
 	gd->flags |= GD_FLG_ENV_READY;
 	gd->flags |= GD_FLG_ENV_DEFAULT;
+	board_set_default_env();
 }
 
 
