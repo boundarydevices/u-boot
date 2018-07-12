@@ -63,6 +63,10 @@ char *env_get_default(const char *name)
 	return ret_val;
 }
 
+void __weak board_env_set_default(void)
+{
+}
+
 void env_set_default(const char *s, int flags)
 {
 	if (sizeof(default_environment) > ENV_SIZE) {
@@ -90,6 +94,7 @@ void env_set_default(const char *s, int flags)
 
 	gd->flags |= GD_FLG_ENV_READY;
 	gd->flags |= GD_FLG_ENV_DEFAULT;
+	board_env_set_default();
 }
 
 
