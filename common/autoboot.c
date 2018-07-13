@@ -22,6 +22,8 @@
 #include <linux/delay.h>
 #include <u-boot/sha256.h>
 #include <bootcount.h>
+#include <asm/arch/sys_proto.h>
+#include <env.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -331,6 +333,10 @@ const char *bootdelay_process(void)
 
 	s = env_get("bootdelay");
 	bootdelay = s ? (int)simple_strtol(s, NULL, 10) : CONFIG_BOOTDELAY;
+	if (is_usb_boot()) {
+		bootdelay = 1;
+		env_set_default("!Started from usb", 0);
+	}
 
 	if (IS_ENABLED(CONFIG_OF_CONTROL))
 		bootdelay = fdtdec_get_config_int(gd->fdt_blob, "bootdelay",
