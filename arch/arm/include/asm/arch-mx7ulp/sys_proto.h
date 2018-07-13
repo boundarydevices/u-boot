@@ -9,4 +9,5 @@
 #include <asm/mach-imx/sys_proto.h>
 
 enum boot_device get_boot_device(void);
+bool is_usb_boot(void);
 #endif
