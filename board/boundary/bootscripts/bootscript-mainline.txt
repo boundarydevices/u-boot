@@ -157,7 +157,7 @@ if itest *${a_reset_cause_marker} == 12345678 ; then
 fi
 setenv bootargs ${bootargs} snd.slots=,snd-soc-imx-hdmi
 
-if load ${devtype} ${devnum}:${distro_bootpart} ${a_${kernelimage}} ${prefix}${kernelimage} ; then
+if load ${devtype} ${devnum}:${distro_bootpart} ${a_zImage} ${prefix}${kernelimage} ; then
 	${bootcommand} ${a_zImage} - ${a_fdt}
 fi
 echo "Error loading kernel image"
