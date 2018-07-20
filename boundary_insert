@@ -11,17 +11,24 @@ skipped=0;
 for board in ${boards} ; do
 	update_cnt=0;
 	already_there=0;
+	target="";
+	defconfigs="";
+	hfile="";
 	if [ -e board/boundary/${board}/Kconfig ] ; then
-		target=`grep TARGET_ board/boundary/${board}/Kconfig | sed 's.if ..'`;
+		target=`grep '^if TARGET_' board/boundary/${board}/Kconfig | sed 's.if ..'`;
+		echo board=${board} target=${target};
+		hfile=`grep -A1 SYS_CONFIG_NAME board/boundary/${board}/Kconfig | grep default | sed 's.default "..' | sed 's."..' | sed 's/[ \x09]*//'`;
 		defconfigs=`git grep -w CONFIG_${target} configs/ | sed 's.configs/..'| sed 's/_defconfig:.*$//'`;
-	else
-		defconfigs="";
 	fi
 	board_cfgs=":"
 	for defconfig in ${defconfigs} ; do
 		cfgs=""
 		for insert_config in ${insert_configs} ; do
-			cnt=`sed -n "/${insert_config}=/=" configs/${defconfig}_defconfig`
+			if [[ ${insert_config} == *=* ]] ; then
+				cnt=`sed -n "/${insert_config}/=" configs/${defconfig}_defconfig`
+			else
+				cnt=`sed -n "/${insert_config}=/=" configs/${defconfig}_defconfig`
+			fi
 			if [ "${cnt}" != "" ] ; then
 				already_there=`expr $already_there + 1`;
 			else
@@ -32,7 +39,11 @@ for board in ${boards} ; do
 		if [ "${cfgs}" != "" ] ; then
 			make ${defconfig}_defconfig;
 			for insert_config in ${cfgs} ; do
-				echo "${insert_config}=y" >>.config;
+				if [[ ${insert_config} == *=* ]] ; then
+					echo "${insert_config}" >>.config;
+				else
+					echo "${insert_config}=y" >>.config;
+				fi
 			done
 			make savedefconfig;
 			diff -q defconfig configs/${defconfig}_defconfig;
@@ -42,7 +53,7 @@ for board in ${boards} ; do
 				if [ $? -eq 1 ] ; then
 					cp defconfig configs/${defconfig}_defconfig;
 					echo updated ${defconfig}_defconfig;
-					git update-index configs/${defconfig}_defconfig;
+#					git update-index configs/${defconfig}_defconfig;
 					update_cnt=`expr $update_cnt + 1`;
 					for insert_config in ${cfgs} ; do
 						if [ `expr "${board_cfgs}" : "[A-Z0-9_:]*:${insert_config}:"` -eq 0 ] ; then
@@ -64,13 +75,15 @@ for board in ${boards} ; do
 		echo "${board}: ${update_cnt} defconfigs updated, ${already_there} already there";
 		numsuccess=`expr $numsuccess + 1`;
 		if [ ${board_cfgs} != ":" ] ; then
-			git c -m"${board}: add ${board_cfgs//::/ } to defconfigs";
+#			git c -m"${board}: add ${board_cfgs//::/ } to defconfigs";
+			echo updating ${board} ${board_cfgs//::/ }
 		else
-			git c -m"${board}: reorder defconfigs";
+#			git c -m"${board}: reorder defconfigs";
+			echo reorder ${board} ${board_cfgs//::/ }
 		fi
 	else
 		skipped=`expr $skipped + 1`;
 	fi
 	numboards=`expr $numboards + 1`;
 done
-echo "\n\ninsert for ${numboards} boards. ${numsuccess} succeeded and ${numfailures} failed, ${skipped} skipped";
+echo -e "\n\ninsert for ${numboards} boards. ${numsuccess} succeeded and ${numfailures} failed, ${skipped} skipped";
