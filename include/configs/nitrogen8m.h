@@ -74,18 +74,15 @@
 /* ENET1 */
 #if defined(CONFIG_CMD_NET)
 #define CONFIG_MII
-#define CONFIG_ETHPRIME                 "FEC"
+#define CONFIG_ETHPRIME			"FEC"
 
-#define CONFIG_FEC_MXC
-#define CONFIG_FEC_XCV_TYPE             RGMII
-#define CONFIG_FEC_MXC_PHYADDR          4
+#define CONFIG_FEC_XCV_TYPE		RGMII
+#define CONFIG_FEC_MXC_PHYADDR		4
 #define FEC_QUIRK_ENET_MAC
 
 #define CONFIG_PHY_GIGE
 #define IMX_FEC_BASE			0x30BE0000
 
-#define CONFIG_PHYLIB
-#define CONFIG_PHY_ATHEROS
 #endif
 
 /* Link Definitions */
@@ -128,7 +125,6 @@
 
 #define CONFIG_IMX_BOOTAUX
 
-#define CONFIG_FSL_ESDHC
 #define CONFIG_FSL_USDHC
 
 #define CONFIG_SYS_FSL_USDHC_NUM	1

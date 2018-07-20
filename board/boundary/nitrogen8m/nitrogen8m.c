@@ -143,8 +143,6 @@ int ft_board_setup(void *blob, bd_t *bd)
 #define STRAP_AR8035	((0x28 | (CONFIG_FEC_MXC_PHYADDR & 3)) | ((0x28 | ((CONFIG_FEC_MXC_PHYADDR + 1) & 3)) << 6))
 #endif
 
-#define IOMUX_PAD_CTRL(name, ctrl)        NEW_PAD_CTRL(IMX8MQ_PAD_##name, ctrl)
-
 static const iomux_v3_cfg_t enet_ar8035_gpio_pads[] = {
 #define GP_RGMII_PHY_RESET	IMX_GPIO_NR(1, 9)
 	IOMUX_PAD_CTRL(GPIO1_IO09__GPIO1_IO9, PAD_CTL_DSE6),

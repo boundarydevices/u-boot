@@ -75,8 +75,9 @@ static iomux_v3_cfg_t const usdhc1_pads[] = {
 	IMX8MQ_PAD_SD1_RESET_B__GPIO2_IO10 | MUX_PAD_CTRL(NO_PAD_CTRL),
 };
 
-static struct fsl_esdhc_cfg usdhc_cfg[2] = {
-	{USDHC1_BASE_ADDR, 0, 8},
+static struct fsl_esdhc_cfg usdhc_cfg[] = {
+	{.esdhc_base = USDHC1_BASE_ADDR, .bus_width = 8,
+			.gp_reset = GP_EMMC_RESET},
 };
 
 int board_mmc_init(bd_t *bis)
