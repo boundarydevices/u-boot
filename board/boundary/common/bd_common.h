@@ -5,7 +5,7 @@
  */
 #ifndef __BD_COMMON_H_
 #define __BD_COMMON_H_     1
-#include <asm/imx-common/boot_mode.h>
+#include <asm/mach-imx/boot_mode.h>
 #include <mmc.h>
 #include <fsl_esdhc.h>
 

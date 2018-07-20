@@ -114,7 +114,7 @@ static int do_kbd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	char envvalue[MAX_BUTTONS];
 	int numpressed = read_keys(envvalue);
 
-	setenv("keybd", envvalue);
+	env_set("keybd", envvalue);
 	return numpressed == 0;
 }
 
@@ -135,7 +135,7 @@ void board_preboot_keys(void)
 
 	numpressed = read_keys(keypress);
 	if (numpressed) {
-		char *kbd_magic_keys = getenv("magic_keys");
+		char *kbd_magic_keys = env_get("magic_keys");
 		char *suffix;
 		/*
 		 * loop over all magic keys
@@ -144,7 +144,7 @@ void board_preboot_keys(void)
 			char *keys;
 			char magic[sizeof(kbd_magic_prefix) + 1];
 			sprintf(magic, "%s%c", kbd_magic_prefix, *suffix);
-			keys = getenv(magic);
+			keys = env_get(magic);
 			if (keys) {
 				if (!strcmp(keys, keypress))
 					break;
@@ -154,9 +154,9 @@ void board_preboot_keys(void)
 			char cmd_name[sizeof(kbd_command_prefix) + 1];
 			char *cmd;
 			sprintf(cmd_name, "%s%c", kbd_command_prefix, *suffix);
-			cmd = getenv(cmd_name);
+			cmd = env_get(cmd_name);
 			if (cmd) {
-				setenv("preboot", cmd);
+				env_set("preboot", cmd);
 				return;
 			}
 		}

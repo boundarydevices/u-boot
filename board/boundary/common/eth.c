@@ -21,8 +21,9 @@
 #endif
 #include <asm/gpio.h>
 #include <asm/io.h>
-#include <asm/imx-common/iomux-v3.h>
-#include <asm/imx-common/spi.h>
+#include <asm/mach-imx/iomux-v3.h>
+#include <asm/mach-imx/spi.h>
+#include <environment.h>
 #include <linux/errno.h>
 #include <malloc.h>
 #include <micrel.h>
@@ -42,7 +43,7 @@
 #define ATHEROS_MASK(a) 0
 #endif
 
-#ifdef CONFIG_PHY_MICREL_KSZ9021
+#ifdef CONFIG_PHY_MICREL
 #define KSZ9021_MASK(a) (0xf << ((a) & 4))
 #else
 #define KSZ9021_MASK(a) 0
@@ -81,7 +82,7 @@
 #include "eth-mx6.c"
 #endif
 
-#if defined(CONFIG_PHY_ATHEROS) || defined(CONFIG_PHY_MICREL_KSZ9021)
+#if defined(CONFIG_PHY_ATHEROS) || defined(CONFIG_PHY_MICREL)
 static unsigned char strap_gpios[] = {
 	GP_PHY_RD0,
 	GP_PHY_RD1,
@@ -143,7 +144,7 @@ static void init_fec_clocks(void)
 		(IOMUXC_GPR_GPR1_GPR_ENET1_TX_CLK_SEL_MASK |
 		 IOMUXC_GPR_GPR1_GPR_ENET1_CLK_DIR_MASK), 0);
 
-	set_clk_enet(ENET_125MHz);
+	set_clk_enet(ENET_125MHZ);
 #endif
 	udelay(100);	/* Wait 100 us before using mii interface */
 }
@@ -220,13 +221,13 @@ static void setup_enet_ar8035(void)
 {
 	SETUP_IOMUX_PADS(enet_ar8035_pads);
 }
-#ifndef CONFIG_PHY_MICREL_KSZ9021
+#ifndef CONFIG_PHY_MICREL
 #define setup_gpio_eth(kz) setup_gpio_ar8035()
 #define setup_enet_eth(kz) setup_enet_ar8035()
 #endif
 #endif
 
-#ifdef CONFIG_PHY_MICREL_KSZ9021
+#ifdef CONFIG_PHY_MICREL
 static void setup_gpio_ksz9021(void)
 {
 	set_strap_pins(STRAP_KSZ9021);
@@ -246,7 +247,7 @@ static void setup_enet_ksz9021(void)
 #endif
 #endif
 
-#if defined(CONFIG_PHY_ATHEROS) || defined(CONFIG_PHY_MICREL_KSZ9021)
+#if defined(CONFIG_PHY_ATHEROS) || defined(CONFIG_PHY_MICREL)
 static void setup_iomux_enet(int kz)
 {
 #ifdef GP_KS8995_RESET
@@ -332,7 +333,7 @@ static void phy_ar8035_config(struct phy_device *phydev)
 #define PHY_ID_AR8031	0x004dd074
 #define PHY_ID_AR8035	0x004dd072
 
-#ifndef CONFIG_PHY_MICREL_KSZ9021
+#ifndef CONFIG_PHY_MICREL
 int board_phy_config(struct phy_device *phydev)
 {
 	if (((phydev->drv->uid ^ PHY_ID_AR8031) & 0xffffffef) == 0)
@@ -346,7 +347,7 @@ int board_phy_config(struct phy_device *phydev)
 #endif
 #endif
 
-#ifdef CONFIG_PHY_MICREL_KSZ9021
+#ifdef CONFIG_PHY_MICREL
 #define PHY_ID_KSZ9021	0x221610
 
 int board_phy_config(struct phy_device *phydev)
@@ -448,7 +449,7 @@ free_slave:
 
 int board_eth_init(bd_t *bis)
 {
-#if defined(CONFIG_PHY_ATHEROS) || defined(CONFIG_PHY_MICREL_KSZ9021)
+#if defined(CONFIG_PHY_ATHEROS) || defined(CONFIG_PHY_MICREL)
 	setup_iomux_enet(0);
 #endif
 #ifdef GP_KS8995_RESET
@@ -470,18 +471,18 @@ int board_eth_init(bd_t *bis)
 	/* For otg ethernet*/
 #ifndef CONFIG_FEC_MXC
 	/* ethaddr should be set from fuses */
-	if (!getenv(USB_ETH)) {
+	if (!env_get(USB_ETH)) {
 		unsigned char mac[8];
 
 		imx_get_mac_from_fuse(0, mac);
 		if (is_valid_ethaddr(mac))
-			eth_setenv_enetaddr(USB_ETH, mac);
+			eth_env_set_enetaddr(USB_ETH, mac);
 		else
-			setenv(USB_ETH, getenv("usbnet_devaddr"));
+			env_set(USB_ETH, env_get("usbnet_devaddr"));
 	}
 #else
-	if (!getenv(USB_ETH))
-		setenv(USB_ETH, getenv("usbnet_devaddr"));
+	if (!env_get(USB_ETH))
+		env_set(USB_ETH, env_get("usbnet_devaddr"));
 #endif
 	usb_eth_initialize(bis);
 #endif

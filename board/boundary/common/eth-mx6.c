@@ -38,7 +38,7 @@ static const iomux_v3_cfg_t enet_ar8035_pads[] = {
 
 #define STRAP_KSZ9021	(0x1f | ((CONFIG_FEC_MXC_PHYADDR & 4) ? 0x20 : 0))
 
-#ifdef CONFIG_PHY_MICREL_KSZ9021
+#ifdef CONFIG_PHY_MICREL
 static const iomux_v3_cfg_t enet_ksz9021_gpio_pads[] = {
 	IOMUX_PAD_CTRL(RGMII_RD0__GPIO6_IO25, PULL_GP(STRAP_KSZ9021, 0)),
 	IOMUX_PAD_CTRL(RGMII_RD1__GPIO6_IO27, PULL_GP(STRAP_KSZ9021, 1)),

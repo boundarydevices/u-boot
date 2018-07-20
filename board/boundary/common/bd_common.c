@@ -12,9 +12,10 @@
 #endif
 #include <asm/arch/sys_proto.h>
 #include <asm/gpio.h>
-#include <asm/imx-common/fbpanel.h>
-#include <asm/imx-common/mxc_i2c.h>
-#include <asm/imx-common/sata.h>
+#include <asm/mach-imx/fbpanel.h>
+#include <asm/mach-imx/mxc_i2c.h>
+#include <asm/mach-imx/sata.h>
+#include <environment.h>
 #include <i2c.h>
 #include <linux/fb.h>
 #include <version.h>
@@ -128,11 +129,11 @@ int splash_screen_prepare(void)
 {
 	char *env_loadsplash;
 
-	if (!getenv("splashimage") || !getenv("splashsize")) {
+	if (!env_get("splashimage") || !env_get("splashsize")) {
 		return -1;
 	}
 
-	env_loadsplash = getenv("loadsplash");
+	env_loadsplash = env_get("loadsplash");
 	if (env_loadsplash == NULL) {
 		printf("Environment variable loadsplash not found!\n");
 		return -1;
@@ -150,7 +151,7 @@ int splash_screen_prepare(void)
 #ifdef CONFIG_CMD_FBPANEL
 int board_cfb_skip(void)
 {
-	return NULL != getenv("novideo");
+	return NULL != env_get("novideo");
 }
 #endif
 
@@ -205,7 +206,7 @@ int misc_init_r(void)
 	 * Not really needed as script checks for magic value in memory,
 	 * but shouldn't hurt.
 	 */
-	setenv_hex("reset_cause", get_imx_reset_cause());
+	env_set_hex("reset_cause", get_imx_reset_cause());
 
 #ifdef CONFIG_MX7D
 	set_wdog_reset((struct wdog_regs *)WDOG1_BASE_ADDR);
@@ -269,11 +270,11 @@ static void addmac_env(const char* env_var)
 	unsigned char mac_address[8];
 	char macbuf[20];
 
-	if (!getenv(env_var)) {
+	if (!env_get(env_var)) {
 		imx_get_mac_from_fuse(ADDMAC_OFFSET, mac_address);
 		if (is_valid_ethaddr(mac_address)) {
 			snprintf(macbuf, sizeof(macbuf), "%pM", mac_address);
-			setenv(env_var, macbuf);
+			env_set(env_var, macbuf);
 		}
 	}
 }
@@ -285,12 +286,12 @@ static void addserial_env(const char* env_var)
 	unsigned char mac_address[8];
 	char serialbuf[20];
 
-	if (!getenv(env_var)) {
+	if (!env_get(env_var)) {
 		imx_get_mac_from_fuse(0, mac_address);
 		snprintf(serialbuf, sizeof(serialbuf), "%02x%02x%02x%02x%02x%02x",
 			 mac_address[0], mac_address[1], mac_address[2],
 			 mac_address[3], mac_address[4], mac_address[5]);
-		setenv(env_var, serialbuf);
+		env_set(env_var, serialbuf);
 	}
 }
 #endif
@@ -324,17 +325,17 @@ int board_late_init(void)
 #ifdef CONFIG_BOARD_LATE_SPECIFIC_INIT
 	board_late_specific_init();
 #endif
-	setenv("cpu", get_imx_type((cpurev & 0xFF000) >> 12));
-	setenv("imx_cpu", get_imx_type((cpurev & 0xFF000) >> 12));
+	env_set("cpu", get_imx_type((cpurev & 0xFF000) >> 12));
+	env_set("imx_cpu", get_imx_type((cpurev & 0xFF000) >> 12));
 #ifndef CONFIG_SYS_BOARD
 	/*
 	 * These lines are specific to nitrogen6x, as
 	 * everyone else has board in their default environment.
 	 */
-	if (!getenv("board"))
-		setenv("board", board_type);
+	if (!env_get("board"))
+		env_set("board", board_type);
 #endif
-	setenv("uboot_defconfig", CONFIG_DEFCONFIG);
+	env_set("uboot_defconfig", CONFIG_DEFCONFIG);
 #ifdef CONFIG_ENV_WLMAC
 	addmac_env("wlmac");
 #endif
@@ -347,14 +348,14 @@ int board_late_init(void)
 	print_time_rv4162();
 
 #if !defined(CONFIG_ENV_IS_NOWHERE)
-	uboot_release = getenv(str_uboot_release);
+	uboot_release = env_get(str_uboot_release);
 	if (!uboot_release || strcmp(cur_uboot_release, uboot_release)) {
-		setenv(str_uboot_release, cur_uboot_release);
+		env_set(str_uboot_release, cur_uboot_release);
 		if (uboot_release) {
 			/*
 			 * if already saved in environment, correct value
 			 */
-			saveenv();
+			env_save();
 		}
 	}
 #endif
