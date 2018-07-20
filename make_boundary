@@ -9,6 +9,15 @@ numsuccess=0;
 numfailures=0;
 for board in $boards ; do
     if [ $board != "mx6qsabrelite" ] ; then
+	cnt=`sed -n "/CONFIG_ARCH_MX8M=/=" configs/${board}_defconfig`
+	if [ "${cnt}" != "" ] ; then
+		ARCH=arm64
+		CROSS_COMPILE=aarch64-linux-gnu-
+	else
+		ARCH=arm
+		CROSS_COMPILE=arm-linux-gnueabihf-
+	fi
+
 	make distclean ; make ${board}_defconfig
 	make all -j $jobs
 	if [ $? -ne 0 ]; then
@@ -16,8 +25,16 @@ for board in $boards ; do
 		echo -e "\n\n\n!!!!!!!! build failure for $board !!!!!!!!!!!!\n\n";
 		read line;
 	else
-	        cp -fv u-boot.imx $savedir/u-boot.${board};
-	        ls -l $savedir/u-boot.${board};
+		if [ "${ARCH}" == "arm64" ] ; then
+		        cp -fv spl/u-boot-spl.bin $savedir/u-boot-spl.bin.${board};
+		        cp -fv u-boot-nodtb.bin $savedir/u-boot-nodtb.bin.${board};
+		        cp -fv u-boot.bin $savedir/u-boot.bin.${board};
+		        cp -fv arch/arm/dts/imx8mq-${board}.dtb $savedir/
+		        ls -l $savedir/u-boot.bin.${board};
+		else
+		        cp -fv u-boot.imx $savedir/u-boot.${board};
+		        ls -l $savedir/u-boot.${board};
+		fi
 		numsuccess=`expr $numsuccess + 1`;
 	fi
 	defcfg=$(sed -n -e's/.\{1,\}DEFCONFIG=\\"\(.\{1,\}\)\\""/\1/p' configs/${board}_defconfig)
@@ -28,5 +45,5 @@ for board in $boards ; do
 	numboards=`expr $numboards + 1`;
     fi
 done
-make distclean ;
+make distclean;
 echo -e "\n\n\nbuilt for ${numboards} boards. ${numsuccess} succeeded and ${numfailures} failed";
