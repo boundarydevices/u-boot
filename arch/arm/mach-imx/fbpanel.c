@@ -11,7 +11,7 @@
 #endif
 #include <asm/arch/sys_proto.h>
 #include <asm/gpio.h>
-#include <asm/imx-common/fbpanel.h>
+#include <asm/mach-imx/fbpanel.h>
 #include <asm/io.h>
 #include <div64.h>
 #include <i2c.h>
@@ -219,13 +219,13 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 	const struct fb_videomode *mode;
 	const char * fmt;
 
-	if (getenv("cmd_frozen") && getenv(cmd_fbnames[fb]))
+	if (env_get("cmd_frozen") && env_get(cmd_fbnames[fb]))
 		return;		/* don't override if already set */
 
 	if (fb == FB_LVDS)
 		lvds_enabled = 0;
 	if (!di) {
-		const char *name = getenv(fbnames[fb]);
+		const char *name = env_get(fbnames[fb]);
 		if (name) {
 			if (name[0] == '*')
 				name++;
@@ -243,7 +243,7 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 			if ((fb == FB_LVDS) || (fb == FB_LVDS2)) {
 				sz = snprintf(buf, size, ";fdt set ldb/lvds-channel@%d status disabled", fb - FB_LVDS);
 			}
-			setenv(cmd_fbnames[fb], buf_start);
+			env_set(cmd_fbnames[fb], buf_start);
 			return;
 		}
 	} else {
@@ -335,7 +335,7 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 
 	if (mode_str) {
 		snprintf(buf, size, "fdt set %s mode_str %s;", fbnames[fb], mode_str);
-		setenv(cmd_fbnames[fb], buf_start);
+		env_set(cmd_fbnames[fb], buf_start);
 		return;
 	}
 
@@ -353,7 +353,7 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		buf += sz;
 		size -= sz;
 	}
-	setenv(cmd_fbnames[fb], buf_start);
+	env_set(cmd_fbnames[fb], buf_start);
 }
 
 static const struct display_info_t *find_panel(const struct display_info_t *di, int cnt, unsigned fb, const char *name)
@@ -1074,7 +1074,7 @@ static const struct display_info_t *find_disp(const struct display_info_t *di,
 		int cnt, unsigned fb, unsigned *prefer)
 {
 	int i;
-	const char *name = getenv(fbnames[fb]);
+	const char *name = env_get(fbnames[fb]);
 
 	if (name) {
 		di = parse_mode(di, cnt, name, fb, prefer);
@@ -1107,7 +1107,7 @@ static const struct display_info_t *find_first_disp(
 			continue;
 		if (skip_mask & (1 << di->fbtype))
 			continue;
-		if (getenv(fbnames[di->fbtype])) {
+		if (env_get(fbnames[di->fbtype])) {
 			skip_mask |= (1 << di->fbtype);
 			continue;
 		}
@@ -1379,7 +1379,7 @@ static int do_fbpanel(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	buf = malloc(4096);
 	if (buf) {
 		str_mode(buf, 256, di, prefer & 1);
-		setenv(fbnames[fb], buf);
+		env_set(fbnames[fb], buf);
 
 		setup_cmd_fb(fb, di, buf, 4096);
 		free(buf);
