@@ -526,11 +526,6 @@ enum boot_device get_boot_device(void)
 }
 #endif
 
-bool is_usb_boot(void)
-{
-	return get_boot_device() == USB_BOOT;
-}
-
 #ifdef CONFIG_OF_SYSTEM_SETUP
 bool check_fdt_new_path(void *blob)
 {

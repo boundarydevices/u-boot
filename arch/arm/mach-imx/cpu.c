@@ -479,6 +479,47 @@ enum boot_device get_boot_device(void)
 
 	return boot_dev;
 }
+
+bool is_usb_boot(void)
+{
+	return get_boot_device() == USB_BOOT;
+}
+#elif defined(CONFIG_MX6)
+bool is_usb_boot(void)
+{
+	unsigned int bmode = readl(&src_base->sbmr2);
+	u32 reg;
+
+	/*
+	 * Check for BMODE if serial downloader is enabled
+	 * BOOT_MODE - see IMX6DQRM Table 8-1
+	 */
+	if (((bmode >> 24) & 0x03) == 0x01) /* Serial Downloader */
+		return true;
+
+	/*
+	 * The above method does not detect that the boot ROM used
+	 * serial downloader in case the boot ROM decided to use the
+	 * serial downloader as a fall back (primary boot source failed).
+	 *
+	 * Infer that the boot ROM used the USB serial downloader by
+	 * checking whether the USB PHY is currently active... This
+	 * assumes that SPL did not (yet) initialize the USB PHY...
+	 */
+	if (is_usbotg_phy_active())
+		return true;
+
+	reg = (imx6_src_get_boot_mode() & IMX6_BMODE_MASK) >> IMX6_BMODE_SHIFT;
+
+	if (reg == IMX6_BMODE_RESERVED)
+                return true;
+	return false;
+}
+#else
+bool is_usb_boot(void)
+{
+	return false;
+}
 #endif
 
 #ifdef CONFIG_NXP_BOARD_REVISION
