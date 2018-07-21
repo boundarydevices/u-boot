@@ -167,11 +167,6 @@ int arch_cpu_init(void)
 	return 0;
 }
 
-bool is_usb_boot(void)
-{
-	return get_boot_device() == USB_BOOT;
-}
-
 #ifdef CONFIG_OF_SYSTEM_SETUP
 int ft_system_setup(void *blob, bd_t *bd)
 {
