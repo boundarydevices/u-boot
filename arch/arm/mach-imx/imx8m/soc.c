@@ -671,11 +671,6 @@ int spl_mmc_emmc_boot_partition(struct mmc *mmc)
 }
 #endif
 
-bool is_usb_boot(void)
-{
-	return get_boot_device() == USB_BOOT;
-}
-
 #ifdef CONFIG_OF_SYSTEM_SETUP
 bool check_fdt_new_path(void *blob)
 {

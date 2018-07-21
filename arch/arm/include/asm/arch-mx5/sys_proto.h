@@ -8,4 +8,5 @@
 
 #include <asm/mach-imx/sys_proto.h>
 
+bool is_usb_boot(void);
 #endif /* __SYS_PROTO_IMX5_ */
