@@ -338,7 +338,8 @@ void board_enable_lcd(const struct display_info_t *di, int enable)
 {
 	if (enable) {
 		SETUP_IOMUX_PADS(rgb666_pads);
-		if (di->pixfmt == IPU_PIX_FMT_RGB24)
+		if ((di->pixfmt == IPU_PIX_FMT_RGB24) ||
+		    (di->pixfmt == IPU_PIX_FMT_BGR24))
 			SETUP_IOMUX_PADS(rgb24_pads);
 #ifdef CONFIG_MXC_SPI_DISPLAY
 		if (di->fbflags & FBF_SPI)
@@ -396,6 +397,7 @@ static const struct display_info_t displays[] = {
 	VD_SHARP_WVGA(LCD, NULL, 2, 0x48),
 	VD_DC050WX(LCD, NULL, 2, 0x48),
 	VD_QVGA(LCD, NULL, 2, 0x48),
+	VD_DT035BTFT(LCD, NULL, 2, 0x48),
 	VD_AT035GT_07ET3(LCD, NULL, 2, 0x48),
 
 	VD_LSA40AT9001(LCD, NULL, 0, 0x00),
