@@ -179,6 +179,7 @@ static unsigned get_fb_available_mask(const struct display_info_t *di, int cnt)
 
 	return mask;
 }
+static const char bgr24[] = "BGR24";
 static const char rgb24[] = "RGB24";
 static const char rgb565[] = "RGB565";
 static const char rgb666[] = "RGB666";
@@ -215,6 +216,7 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 	const char *mode_str = NULL;
 	int i;
 	int sz;
+	int interface_width;
 	const char *buf_start = buf;
 	const struct fb_videomode *mode;
 	const char * fmt;
@@ -262,19 +264,25 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		size -= sz;
 	}
 
-	if (di->pixfmt == IPU_PIX_FMT_RGB24)
+	interface_width = 18;
+	if (di->pixfmt == IPU_PIX_FMT_RGB24) {
 		fmt = rgb24;
-	else if (di->pixfmt == IPU_PIX_FMT_YUYV)
+		interface_width = 24;
+	} else if (di->pixfmt == IPU_PIX_FMT_BGR24) {
+		fmt = bgr24;
+		interface_width = 24;
+	} else if (di->pixfmt == IPU_PIX_FMT_YUYV) {
 		fmt = yuyv16;
-	else if (di->pixfmt == IPU_PIX_FMT_RGB565)
+	} else if (di->pixfmt == IPU_PIX_FMT_RGB565) {
 		fmt = rgb565;
-	else
+	} else {
 		fmt = rgb666;
+	}
 
 	if (di && (fb >= FB_LCD)) {
 #if defined(CONFIG_MX6SX) || defined(CONFIG_MX7D)
 		sz = snprintf(buf, size, "fdt set %s bus-width <%u>;", short_names[fb],
-				(di->pixfmt == IPU_PIX_FMT_RGB24) ? 24 : 18);
+				interface_width);
 
 #else
 		sz = snprintf(buf, size, "fdt set %s interface_pix_fmt %s;",
@@ -300,7 +308,7 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 
 		sz = snprintf(buf, size, "fdt set %s fsl,data-width <%u>;",
 				ch_names[fb],
-				(di->pixfmt == IPU_PIX_FMT_RGB24) ? 24 : 18);
+				interface_width);
 		buf += sz;
 		size -= sz;
 
@@ -814,7 +822,8 @@ void fbp_enable_fb(struct display_info_t const *di, int enable)
 			 IOMUXC_GPR2_LVDS_CH1_MODE_MASK |
 			 IOMUXC_GPR2_SPLIT_MODE_EN_MASK);
 		tmp = 0;
-		if (di->pixfmt == IPU_PIX_FMT_RGB24)
+		if ((di->pixfmt == IPU_PIX_FMT_RGB24) ||
+				(di->pixfmt == IPU_PIX_FMT_BGR24))
 			tmp |= IOMUXC_GPR2_DATA_WIDTH_CH0_24BIT;
 		if (di->fbflags & FBF_JEIDA)
 			tmp |= IOMUXC_GPR2_BIT_MAPPING_CH0_JEIDA;
@@ -845,7 +854,8 @@ void fbp_enable_fb(struct display_info_t const *di, int enable)
 			 IOMUXC_GPR2_LVDS_CH0_MODE_MASK |
 			 IOMUXC_GPR2_LVDS_CH1_MODE_MASK |
 			 IOMUXC_GPR2_SPLIT_MODE_EN_MASK);
-		if (di->pixfmt == IPU_PIX_FMT_RGB24)
+		if ((di->pixfmt == IPU_PIX_FMT_RGB24) ||
+				(di->pixfmt == IPU_PIX_FMT_BGR24))
 			reg |= IOMUXC_GPR2_DATA_WIDTH_CH1_24BIT;
 		if (di->fbflags & FBF_JEIDA)
 			reg |= IOMUXC_GPR2_BIT_MAPPING_CH1_JEIDA;
@@ -924,6 +934,7 @@ static const struct display_info_t * parse_mode(
 	int i;
 	struct display_info_t *di;
 	char *mode_str = g_mode_str[fb];
+	int pix_fmt = IPU_PIX_FMT_RGB24;
 
 	if (*p == '*') {
 		p++;
@@ -971,6 +982,11 @@ static const struct display_info_t * parse_mode(
 		p++;
 		c = *p;
 	}
+	if (c == 'b') {
+		pix_fmt = IPU_PIX_FMT_BGR24;
+		p++;
+		c = *p;
+	}
 	value = simple_strtoul(p, &endp, 10);
 	if (endp <= p) {
 		printf("expecting 18|24\n");
@@ -981,7 +997,7 @@ static const struct display_info_t * parse_mode(
 		return NULL;
 	}
 	p = endp;
-	di->pixfmt = (value == 24) ? IPU_PIX_FMT_RGB24 : IPU_PIX_FMT_RGB666;
+	di->pixfmt = (value == 24) ? pix_fmt : IPU_PIX_FMT_RGB666;
 	c = *p;
 
 	if (c == 'S') {
@@ -1120,6 +1136,7 @@ static void str_mode(char *p, int size, const struct display_info_t *di, unsigne
 {
 	int count;
 	int i;
+	int interface_width = 18;
 
 	if (prefer) {
 		*p++ = '*';
@@ -1151,7 +1168,14 @@ static void str_mode(char *p, int size, const struct display_info_t *di, unsigne
 		*p++ = 's';
 		size--;
 	}
-	count = snprintf(p, size, "%d", (di->pixfmt == IPU_PIX_FMT_RGB24) ? 24 : 18);
+	if ((di->pixfmt == IPU_PIX_FMT_RGB24) ||
+			(di->pixfmt == IPU_PIX_FMT_BGR24))
+		interface_width = 24;
+	if (di->pixfmt == IPU_PIX_FMT_BGR24) {
+		*p++ = 'b';
+		size--;
+	}
+	count = snprintf(p, size, "%d", interface_width);
 	if (size > count) {
 		p += count;
 		size -= count;

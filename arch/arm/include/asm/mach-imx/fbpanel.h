@@ -66,6 +66,7 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 #define VD_INNOLUX_WVGA_M(_mode, _detect, _bus, _addr)	VDF_INNOLUX_WVGA(_mode, "INNOLUX-WVGA", RGB666, FBF_MODESTR, _detect, _bus, _addr)
 #define VD_OKAYA_480_272(_mode, _detect, _bus, _addr)	VDF_OKAYA_480_272(_mode, "okaya_480x272", RGB24, FBF_MODESTR, _detect, _bus, _addr)
 #define VD_QVGA(_mode, _detect, _bus, _addr)		VDF_QVGA(_mode, "qvga", RGB24, FBF_MODESTR, _detect, _bus, _addr)
+#define VD_DT035BTFT(_mode, _detect, _bus, _addr)	VDF_DT035BTFT(_mode, "DT035BTFT", BGR24, FBF_MODESTR, _detect, _bus, _addr)
 #define VD_AT035GT_07ET3(_mode, _detect, _bus, _addr)	VDF_AT035GT_07ET3(_mode, "AT035GT-07ET3", RGB24, FBF_MODESTR, _detect, _bus, _addr)
 #define VD_AMP1024_600(_mode, _detect, _bus, _addr)	VDF_AMP1024_600(_mode, "amp1024x600", RGB666, 0, _detect, _bus, _addr)
 #define VD_ND1024_600(_mode, _detect, _bus, _addr)	VDF_ND1024_600(_mode, "ND-070PCAP-1024x600", RGB24, 0, _detect, _bus, _addr)
@@ -562,6 +563,26 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 }
 
 /* tsc2004 */
+#define VDF_DT035BTFT(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	.mode	= {\
+		.name           = _name,\
+		.refresh        = 60,\
+		.xres           = 320,\
+		.yres           = 240,\
+		.pixclock       = 1000000000000ULL/((320+40+18+30)*(240+10+9+3)*60),\
+		.left_margin    = 40,\
+		.right_margin   = 18,\
+		.upper_margin   = 10,\
+		.lower_margin   = 9,\
+		.hsync_len      = 30,\
+		.vsync_len      = 3,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
 #define VDF_AT035GT_07ET3(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
 {\
 	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
