@@ -6,14 +6,19 @@
 #include <errno.h>
 #include <asm/arch/clock.h>
 #include <asm/arch/crm_regs.h>
-#if !defined(CONFIG_MX51) && !defined(CONFIG_MX53) && !defined(CONFIG_MX7D)
+#if !defined(CONFIG_MX51) && !defined(CONFIG_MX53) && !defined(CONFIG_MX7D) && !defined(CONFIG_MX8M)
 #include <asm/arch/mxc_hdmi.h>
 #endif
 #include <asm/arch/sys_proto.h>
+#if defined(CONFIG_MX8M)
+#include <asm/arch/video_common.h>
+#endif
 #include <asm/gpio.h>
 #include <asm/mach-imx/fbpanel.h>
 #include <asm/io.h>
 #include <div64.h>
+#include <dm/uclass.h>
+#include <dt-bindings/gpio/gpio.h>
 #include <i2c.h>
 #include <malloc.h>
 #include <video_fb.h>
@@ -63,7 +68,9 @@ static const char *const fbnames[] = {
 [FB_LCD] = "fb_lcd",
 [FB_LCD2] = "fb_lcd2",
 [FB_LVDS] = "fb_lvds",
-[FB_LVDS2] = "fb_lvds2"
+[FB_LVDS2] = "fb_lvds2",
+[FB_MIPI] = "fb_mipi",
+[FB_MIPI_BRIDGE] = "mipi_dsi_bridge",
 };
 
 static const char *const timings_names[] = {
@@ -71,7 +78,8 @@ static const char *const timings_names[] = {
 [FB_LCD] = "t_lcd",
 [FB_LCD2] = "t_lcd2",
 [FB_LVDS] = "t_lvds",
-[FB_LVDS2] = "t_lvds2"
+[FB_LVDS2] = "t_lvds2",
+[FB_MIPI] = "t_mipi",
 };
 
 static const char *const ch_names[] = {
@@ -79,7 +87,8 @@ static const char *const ch_names[] = {
 [FB_LCD] = "",
 [FB_LCD2] = "",
 [FB_LVDS] = "ldb/lvds-channel@0",
-[FB_LVDS2] = "ldb/lvds-channel@1"
+[FB_LVDS2] = "ldb/lvds-channel@1",
+[FB_MIPI] = "",
 };
 
 static const char *const cmd_fbnames[] = {
@@ -87,7 +96,8 @@ static const char *const cmd_fbnames[] = {
 [FB_LCD] = "cmd_lcd",
 [FB_LCD2] = "cmd_lcd2",
 [FB_LVDS] = "cmd_lvds",
-[FB_LVDS2] = "cmd_lvds2"
+[FB_LVDS2] = "cmd_lvds2",
+[FB_MIPI] = "cmd_mipi",
 };
 
 static const char *const backlight_names[] = {
@@ -95,7 +105,8 @@ static const char *const backlight_names[] = {
 [FB_LCD] = "backlight_lcd",
 [FB_LCD2] = "backlight_lcd2",
 [FB_LVDS] = "backlight_lvds",
-[FB_LVDS2] = "backlight_lvds2"
+[FB_LVDS2] = "backlight_lvds2",
+[FB_MIPI] = "backlight_mipi",
 };
 
 static const char *const pwm_names[] = {
@@ -103,7 +114,8 @@ static const char *const pwm_names[] = {
 [FB_LCD] = "pwm_lcd",
 [FB_LCD2] = "pwm_lcd2",
 [FB_LVDS] = "pwm_lvds",
-[FB_LVDS2] = "pwm_lvds2"
+[FB_LVDS2] = "pwm_lvds2",
+[FB_MIPI] = "pwm_mipi",
 };
 
 static const char *const short_names[] = {
@@ -111,7 +123,8 @@ static const char *const short_names[] = {
 [FB_LCD] = "lcd",
 [FB_LCD2] = "lcd2",
 [FB_LVDS] = "lvds",
-[FB_LVDS2] = "lvds2"
+[FB_LVDS2] = "lvds2",
+[FB_MIPI] = "mipi",
 };
 
 static const char *const timings_properties[] = {
@@ -158,6 +171,10 @@ static void __board_enable_lvds2(const struct display_info_t *di, int enable)
 {
 }
 
+static void __board_enable_mipi(const struct display_info_t *di, int enable)
+{
+}
+
 void board_pre_enable(const struct display_info_t *di)
 	__attribute__((weak, alias("__board_pre_enable")));
 void board_enable_hdmi(const struct display_info_t *di, int enable)
@@ -168,6 +185,8 @@ void board_enable_lvds(const struct display_info_t *di, int enable)
 	__attribute__((weak, alias("__board_enable_lvds")));
 void board_enable_lvds2(const struct display_info_t *di, int enable)
 	__attribute__((weak, alias("__board_enable_lvds2")));
+void board_enable_mipi(const struct display_info_t *di, int enable)
+	__attribute__((weak, alias("__board_enable_mipi")));
 
 static unsigned get_fb_available_mask(const struct display_info_t *di, int cnt)
 {
@@ -220,6 +239,7 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 	const char *buf_start = buf;
 	const struct fb_videomode *mode;
 	const char * fmt;
+	unsigned fb1 = (fb == FB_MIPI) ? FB_MIPI_BRIDGE : fb;
 
 	if (env_get("cmd_frozen") && env_get(cmd_fbnames[fb]))
 		return;		/* don't override if already set */
@@ -237,14 +257,21 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 			}
 		}
 		if (!mode_str) {
-			sz = snprintf(buf, size, "fdt set %s status disabled", fbnames[fb]);
+			sz = snprintf(buf, size, "fdt set %s status disabled", fbnames[fb1]);
 			buf += sz;
 			size -= sz;
-			if (fb == FB_LCD)
+			if (fb == FB_LCD) {
 				sz = snprintf(buf, size, ";fdt set lcd status disabled");
-			if ((fb == FB_LVDS) || (fb == FB_LVDS2)) {
+			} else if ((fb == FB_LVDS) || (fb == FB_LVDS2)) {
 				sz = snprintf(buf, size, ";fdt set ldb/lvds-channel@%d status disabled", fb - FB_LVDS);
 			}
+#if defined(CONFIG_VIDEO_IMXDCSS)
+			else if (fb == FB_HDMI) {
+				sz = snprintf(buf, size,
+					";fdt set dcss status disabled"
+					";fdt set sound_hdmi status disabled");
+			}
+#endif
 			env_set(cmd_fbnames[fb], buf_start);
 			return;
 		}
@@ -255,7 +282,7 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 
 	if (fb == FB_LVDS)
 		lvds_enabled = 1;
-	sz = snprintf(buf, size, "fdt set %s status okay;", fbnames[fb]);
+	sz = snprintf(buf, size, "fdt set %s status okay;", fbnames[fb1]);
 	buf += sz;
 	size -= sz;
 	if ((fb == FB_LVDS2) && !lvds_enabled) {
@@ -279,11 +306,10 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		fmt = rgb666;
 	}
 
-	if (di && (fb >= FB_LCD)) {
+	if (di && (fb >= FB_LCD) && (fb != FB_MIPI)) {
 #if defined(CONFIG_MX6SX) || defined(CONFIG_MX7D)
 		sz = snprintf(buf, size, "fdt set %s bus-width <%u>;", short_names[fb],
 				interface_width);
-
 #else
 		sz = snprintf(buf, size, "fdt set %s interface_pix_fmt %s;",
 				fbnames[fb], fmt);
@@ -323,6 +349,72 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 			buf += sz;
 			size -= sz;
 		}
+	}
+
+	if (di && (di->fbflags & FBF_PINCTRL)) {
+		sz = snprintf(buf, size,
+			"fdt get value pin pinctrl_%s phandle;"
+			"fdt set %s pinctrl-0 <${pin}>;"
+			"fdt set %s pinctrl-names default;",
+			di->mode.name, fbnames[fb1], fbnames[fb1]);
+		buf += sz;
+		size -= sz;
+	}
+
+	i = di->enable_gp;
+	if (di && i) {
+		sz = snprintf(buf, size,
+			"fdt get value gp gpio%u phandle;"
+			"fdt set %s enable-gpios <${gp} %u %u>;",
+			(i >> 5) + 1, fbnames[fb], i & 0x1f,
+			(di->fbflags & FBF_ENABLE_GPIOS_ACTIVE_LOW) ?
+				GPIO_ACTIVE_LOW : GPIO_ACTIVE_HIGH);
+		buf += sz;
+		size -= sz;
+	}
+
+	if (di && (fb == FB_MIPI)) {
+		sz = snprintf(buf, size, "fdt %s %s mode-skip-eot;",
+			(di->fbflags & FBF_MODE_SKIP_EOT) ? "set" : "rm",
+			fbnames[fb]);
+		buf += sz;
+		size -= sz;
+
+		sz = snprintf(buf, size, "fdt %s %s mode-video;",
+			(di->fbflags & FBF_MODE_VIDEO) ? "set" : "rm",
+			fbnames[fb]);
+		buf += sz;
+		size -= sz;
+
+		sz = snprintf(buf, size, "fdt %s %s mode-video-burst;",
+			(di->fbflags & FBF_MODE_VIDEO_BURST) ? "set" : "rm",
+			fbnames[fb]);
+		buf += sz;
+		size -= sz;
+
+		if (di->fbflags & FBF_MIPI_CMDS) {
+			sz = snprintf(buf, size,
+				"fdt get value cmds mipi_cmds_%s phandle;"
+				"fdt set %s mipi_cmds <${cmds}>;",
+				di->mode.name, fbnames[fb]);
+			buf += sz;
+			size -= sz;
+		}
+
+		sz = snprintf(buf, size, "fdt set %s dsi-lanes <%u>;",
+			fbnames[fb], (di->fbflags >> FBF_DSI_LANE_SHIFT) & 7);
+		buf += sz;
+		size -= sz;
+
+		sz = snprintf(buf, size,
+				"fdt set backlight_mipi status okay;"
+				"fdt set lcdif status okay;"
+				"fdt set mipi_dsi status okay;"
+				"fdt set mipi_dsi_phy status okay;"
+				"fdt set mipi_to_lvds status %s;",
+				(di->addr == 0x2c) ? "okay" : "disabled");
+		buf += sz;
+		size -= sz;
 	}
 
 	if (di && di->pwm_period) {
@@ -381,19 +473,30 @@ static struct display_info_t g_di_temp[FB_COUNT];
 int fbp_detect_i2c(struct display_info_t const *di)
 {
 	int ret;
-	int gp = di->bus >> 8;
+#ifdef CONFIG_DM_I2C
+	struct udevice *dev, *chip;
+#endif
 
-	if (gp)
-		gpio_set_value(gp, 1);
-	ret = i2c_set_bus_num(di->bus & 0xff);
+	if (di->bus_gp)
+		gpio_set_value(di->bus_gp, 1);
+#ifdef CONFIG_DM_I2C
+	ret = uclass_get_device(UCLASS_I2C, di->bus_num, &dev);
+	if (ret)
+		return 0;
+
+	ret = dm_i2c_probe(dev, di->addr, 0x0, &chip);
+#else
+	ret = i2c_set_bus_num(di->bus_num);
 	if (ret == 0)
 		ret = i2c_probe(di->addr);
-	if (gp)
-		gpio_set_value(gp, 0);
+#endif
+	if (di->bus_gp)
+		gpio_set_value(di->bus_gp, 0);
 	return (ret == 0);
 }
 
-int calc_gcd(int a, int b)
+#if !defined(CONFIG_MX8M) && !defined(CONFIG_MX51) && !defined(CONFIG_MX53)
+static int calc_gcd(int a, int b)
 {
 	int n;
 
@@ -408,9 +511,10 @@ int calc_gcd(int a, int b)
 	}
 	return a;
 }
+#endif
 
 #ifdef CONFIG_MX6SX
-void reparent_lvds(int fbtype, int new_parent)
+static void reparent_lvds(int fbtype, int new_parent)
 {
 	struct mxc_ccm_reg *ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
 	int ldb_sel_shift = 9;
@@ -423,8 +527,8 @@ void reparent_lvds(int fbtype, int new_parent)
 	readl(&ccm->cs2cdr);	/* wait for write */
 }
 
-#elif !defined(CONFIG_MX51) && !defined(CONFIG_MX53) && !defined(CONFIG_MX7D)
-void reparent_lvds(int fbtype, int new_parent)
+#elif !defined(CONFIG_MX51) && !defined(CONFIG_MX53) && !defined(CONFIG_MX7D) && !defined(CONFIG_MX8M)
+static void reparent_lvds(int fbtype, int new_parent)
 {
 	struct mxc_ccm_reg *ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
 	int ldb_sel_shift = (fbtype == FB_LVDS2) ? 12 : 9;
@@ -502,7 +606,7 @@ void reparent_lvds(int fbtype, int new_parent)
 #if defined(CONFIG_MX51) || defined(CONFIG_MX53)
 int get_pll3_clock(void);
 
-void setup_clock(struct display_info_t const *di)
+static void setup_clock(struct display_info_t const *di)
 {
 	struct mxc_ccm_reg *ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
 	u32 desired_freq, freq;
@@ -547,8 +651,8 @@ void setup_clock(struct display_info_t const *di)
 #endif
 }
 
-#else
-void setup_clock(struct display_info_t const *di)
+#elif !defined(CONFIG_MX8M)
+static void setup_clock(struct display_info_t const *di)
 {
 #if defined(CONFIG_MX7D)
 	struct mxc_ccm_anatop_reg *ccm_anatop = (struct mxc_ccm_anatop_reg *)
@@ -784,11 +888,15 @@ void setup_clock(struct display_info_t const *di)
 			 : 0));
 #endif
 }
+#else
+static void setup_clock(struct display_info_t const *di)
+{
+}
 #endif
 
 void fbp_enable_fb(struct display_info_t const *di, int enable)
 {
-#if !defined(CONFIG_MX51) && !defined(CONFIG_MX53) && !defined(CONFIG_MX7D)
+#if !defined(CONFIG_MX51) && !defined(CONFIG_MX53) && !defined(CONFIG_MX7D) && !defined(CONFIG_MX8M)
 	struct mxc_ccm_reg *mxc_ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
 	struct iomuxc *iomux = (struct iomuxc *)IOMUXC_BASE_ADDR;
 	u32 reg, cscmr2;
@@ -805,7 +913,7 @@ void fbp_enable_fb(struct display_info_t const *di, int enable)
 	case FB_LCD:
 		board_enable_lcd(di, enable);
 		break;
-#if !defined(CONFIG_MX51) && !defined(CONFIG_MX53) && !defined(CONFIG_MX7D)
+#if !defined(CONFIG_MX51) && !defined(CONFIG_MX53) && !defined(CONFIG_MX7D) && !defined(CONFIG_MX8M)
 	case FB_LVDS:
 #ifdef CONFIG_MX6SX
 #define GPR_LDB	6
@@ -845,7 +953,7 @@ void fbp_enable_fb(struct display_info_t const *di, int enable)
 		writel(reg, &iomux->gpr[GPR_LDB]);
 		board_enable_lvds(di, enable);
 		break;
-#ifndef CONFIG_MX6SX
+#if !defined(CONFIG_MX6SX)
 	case FB_LVDS2:
 		reg = readl(&iomux->gpr[2]);
 		cscmr2 = readl(&mxc_ccm->cscmr2);
@@ -870,13 +978,16 @@ void fbp_enable_fb(struct display_info_t const *di, int enable)
 		break;
 #endif
 #endif
+	case FB_MIPI:
+		board_enable_mipi(di, enable);
+		break;
 	}
 }
 
 static void imx_prepare_display(void)
 {
 #if !defined(CONFIG_MX51) && !defined(CONFIG_MX53) && \
-		!defined(CONFIG_MX7D)
+		!defined(CONFIG_MX7D) && !defined(CONFIG_MX8M)
 	struct mxc_ccm_reg *mxc_ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
 	int reg;
 #if !defined(CONFIG_MX6SX)
@@ -924,6 +1035,80 @@ static void imx_prepare_display(void)
 #endif
 }
 
+struct flags_check {
+	char	c;
+	int	flag;
+};
+
+static struct flags_check fc1[] = {
+	{ 'm', FBF_MODESTR},
+	{ 'j', FBF_JEIDA},
+	{ 's', FBF_SPLITMODE},
+	{ 0, 0},
+};
+
+static struct flags_check fc2[] = {
+	{ 'S', FBF_SPI},
+	{ 'D', FBF_BKLIT_DTB},
+	{ 'b', FBF_BKLIT_LOW_ACTIVE},
+	{ 'P', FBF_PINCTRL},
+	{ 'l', FBF_ENABLE_GPIOS_ACTIVE_LOW},
+	{ 's', FBF_MODE_SKIP_EOT},
+	{ 'v', FBF_MODE_VIDEO},
+	{ 'B', FBF_MODE_VIDEO_BURST},
+	{ 'c', FBF_MIPI_CMDS},
+	{ '4', FBF_DSI_LANES_4},
+	{ '3', FBF_DSI_LANES_3},
+	{ '2', FBF_DSI_LANES_2},
+	{ '1', FBF_DSI_LANES_1},
+	{ 0, 0},
+};
+
+static void check_flags(struct display_info_t *di, const char **pp, struct flags_check *fc_base)
+{
+	const char *p = *pp;
+	char c = *p;
+
+	while (1) {
+		struct flags_check *fc = fc_base;
+
+		while (1) {
+			if (!fc->c) {
+				*pp = p;
+				return;
+			}
+			if (c == fc->c) {
+				di->fbflags |= fc->flag;
+				p++;
+				c = *p;
+				break;
+			}
+			fc++;
+		}
+	}
+}
+
+static int code_flags(char *p, int size, int flags, struct flags_check *fc_base)
+{
+	struct flags_check *fc = fc_base;
+	int cnt = 0;
+
+	while (flags) {
+		if (!fc->c)
+			break;
+		if ((fc->flag & flags) == fc->flag) {
+			if (size) {
+				*p++ = fc->c;
+				size--;
+				cnt++;
+			}
+			flags &= ~fc->flag;
+		}
+		fc++;
+	}
+	return cnt;
+}
+
 static const struct display_info_t * parse_mode(
 		const struct display_info_t *gdi, int cnt, const char *p,
 		unsigned fb, unsigned *prefer)
@@ -967,21 +1152,9 @@ static const struct display_info_t * parse_mode(
 	di->mode.name = mode_str;
 	di->enable = fbp_enable_fb;
 
-	if (c == 'm') {
-		di->fbflags |= FBF_MODESTR;
-		p++;
-		c = *p;
-	}
-	if (c == 'j') {
-		di->fbflags |= FBF_JEIDA;
-		p++;
-		c = *p;
-	}
-	if (c == 's') {
-		di->fbflags |= FBF_SPLITMODE;
-		p++;
-		c = *p;
-	}
+	check_flags(di, &p, fc1);
+	c = *p;
+
 	if (c == 'b') {
 		pix_fmt = IPU_PIX_FMT_BGR24;
 		p++;
@@ -998,21 +1171,19 @@ static const struct display_info_t * parse_mode(
 	}
 	p = endp;
 	di->pixfmt = (value == 24) ? pix_fmt : IPU_PIX_FMT_RGB666;
+
+	check_flags(di, &p, fc2);
 	c = *p;
 
-	if (c == 'S') {
-		di->fbflags |= FBF_SPI;
+	if (c == 'G') {
 		p++;
-		c = *p;
-	}
-	if (c == 'D') {
-		di->fbflags |= FBF_BKLIT_DTB;
-		p++;
-		c = *p;
-	}
-	if (c == 'b') {
-		di->fbflags |= FBF_BKLIT_LOW_ACTIVE;
-		p++;
+		value = simple_strtoul(p, &endp, 10);
+		if (endp <= p) {
+			printf("expecting gpio number\n");
+			return NULL;
+		}
+		p = endp;
+		di->enable_gp = value;
 		c = *p;
 	}
 	if (c == 'e') {
@@ -1028,7 +1199,7 @@ static const struct display_info_t * parse_mode(
 			return NULL;
 		}
 		p = endp;
-		di->bus = value;
+		di->bus_num = value;
 		c = *p;
 		if (c == ',') {
 			p++;
@@ -1040,6 +1211,17 @@ static const struct display_info_t * parse_mode(
 			p = endp;
 			di->addr = value;
 			c = *p;
+			if (c == ',') {
+				p++;
+				value = simple_strtoul(p, &endp, 10);
+				if (endp <= p) {
+					printf("expecting bus gp\n");
+					return NULL;
+				}
+				p = endp;
+				di->bus_gp = value;
+				c = *p;
+			}
 		}
 	}
 	if (c == 'p') {
@@ -1156,18 +1338,10 @@ static void str_mode(char *p, int size, const struct display_info_t *di, unsigne
 		p += count;
 		size -= count;
 	}
-	if (di->fbflags & FBF_MODESTR) {
-		*p++ = 'm';
-		size--;
-	}
-	if (di->fbflags & FBF_JEIDA) {
-		*p++ = 'j';
-		size--;
-	}
-	if (di->fbflags & FBF_SPLITMODE) {
-		*p++ = 's';
-		size--;
-	}
+	count = code_flags(p, size, di->fbflags, fc1);
+	p += count;
+	size -= count;
+
 	if ((di->pixfmt == IPU_PIX_FMT_RGB24) ||
 			(di->pixfmt == IPU_PIX_FMT_BGR24))
 		interface_width = 24;
@@ -1180,27 +1354,33 @@ static void str_mode(char *p, int size, const struct display_info_t *di, unsigne
 		p += count;
 		size -= count;
 	}
-	if (di->fbflags & FBF_SPI) {
-		*p++ = 'S';
-		size--;
-	}
-	if (di->fbflags & FBF_BKLIT_DTB) {
-		*p++ = 'D';
-		size--;
-	}
-	if (di->fbflags & FBF_BKLIT_LOW_ACTIVE) {
-		*p++ = 'b';
-		size--;
+	count = code_flags(p, size, di->fbflags, fc2);
+	p += count;
+	size -= count;
+
+	if (di->enable_gp) {
+		count = snprintf(p, size, "G%u", di->enable_gp);
+		if (size > count) {
+			p += count;
+			size -= count;
+		}
 	}
 	if (di->pre_enable) {
 		*p++ = 'e';
 		size--;
 	}
-	if (di->bus || di->addr) {
-		count = snprintf(p, size, "x%x,%x", di->bus, di->addr);
+	if (di->bus_num || di->addr || di->bus_gp) {
+		count = snprintf(p, size, "x%x,%x", di->bus_num, di->addr);
 		if (size > count) {
 			p += count;
 			size -= count;
+		}
+		if (di->bus_gp) {
+			count = snprintf(p, size, ",%u", di->bus_gp);
+			if (size > count) {
+				p += count;
+				size -= count;
+			}
 		}
 	}
 	if (di->pwm_period) {
@@ -1281,52 +1461,57 @@ static void print_modes(const struct display_info_t *di, int cnt, unsigned mask)
 	}
 }
 
-static const struct display_info_t *select_display(
-		const struct display_info_t *gdi, int cnt)
+void setup_env_cmds(const struct display_info_t *gdi, int cnt,
+		const struct display_info_t **displays)
 {
-	const struct display_info_t *disp[FB_COUNT];
+	char *buf = malloc(4096);
+	if (buf) {
+		unsigned mask = get_fb_available_mask(gdi, cnt);
+		unsigned fb;
+
+		for (fb = 0; fb < FB_COUNT; fb++) {
+			if (mask & (1 << fb))
+				setup_cmd_fb(fb, displays[fb], buf, 4096);
+		}
+		free(buf);
+	}
+}
+
+static const struct display_info_t *select_display(
+		const struct display_info_t *gdi, int cnt,
+		const struct display_info_t **displays)
+{
 	const struct display_info_t *di = NULL;
 	unsigned prefer_mask = 0;
 	unsigned fb;
-	char *buf = malloc(4096);
 
-	for (fb = 0; fb < ARRAY_SIZE(disp); fb++) {
+	for (fb = 0; fb < FB_COUNT; fb++) {
 		unsigned prefer = 0;
 
-		disp[fb] = find_disp(gdi, cnt, fb, &prefer);
+		displays[fb] = find_disp(gdi, cnt, fb, &prefer);
 		if (prefer & 1)
 			prefer_mask |= (1 << fb);
 	}
 	fb = ffs(prefer_mask) - 1;
-	if (fb < ARRAY_SIZE(disp)) {
-		di = disp[fb];
+	if (fb < FB_COUNT) {
+		di = displays[fb];
 	} else {
 		/* default to the 1st one in the list*/
-		for (fb = 0; fb < ARRAY_SIZE(disp); fb++) {
+		for (fb = 0; fb < FB_COUNT; fb++) {
 			if (!di) {
-				di = disp[fb];
+				di = displays[fb];
 			} else {
-				if (disp[fb] && ((unsigned)disp[fb]
-						< (unsigned)di))
-					di = disp[fb];
+				if (displays[fb] && (displays[fb] < di))
+					di = displays[fb];
 			}
 		}
 		if (!di) {
 			di = find_first_disp(gdi, cnt);
 			if (di)
-				disp[di->fbtype] = di;
+				displays[di->fbtype] = di;
 		}
 	}
-
-	if (buf) {
-		unsigned mask = get_fb_available_mask(gdi, cnt);
-
-		for (fb = 0; fb < ARRAY_SIZE(disp); fb++) {
-			if (mask & (1 << fb))
-				setup_cmd_fb(fb, disp[fb], buf, 4096);
-		}
-		free(buf);
-	}
+	setup_env_cmds(gdi, cnt, displays);
 	return di;
 }
 
@@ -1351,6 +1536,10 @@ static int init_display(const struct display_info_t *di)
 	setup_clock(di);
 #if defined(CONFIG_MX6SX) || defined(CONFIG_MX7D)
 	ret = mxsfb_init(&di->mode, di->pixfmt);
+#elif defined(CONFIG_VIDEO_IMXDCSS)
+	ret = 0;
+	if (di->fbtype == FB_HDMI)
+		imx8m_fb_init(&di->mode, 0, di->pixfmt);
 #else
 	ret = ipuv3_fb_init(&di->mode, (di->fbtype == FB_LCD2) ? 1 : 0,
 			di->pixfmt);
@@ -1378,7 +1567,7 @@ static int do_fbpanel(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	int cnt = g_display_cnt;
 
 	if (argc < 2) {
-		print_modes(di, cnt, 0xf);
+		print_modes(di, cnt, (1 << FB_COUNT) - 1);
                 return 0;
 	}
 	fbname = argv[1];
@@ -1418,7 +1607,14 @@ static int do_fbpanel(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 			g_di_active = NULL;
 		}
 	}
-#if !defined(CONFIG_MX6SX) && !defined(CONFIG_MX7D)
+#if defined(CONFIG_VIDEO_IMXDCSS)
+       imx8m_fb_disable();
+	if (!di)
+		return 0;
+	ret = init_display(di);
+	if (ret)
+		return ret;
+#elif !defined(CONFIG_MX6SX) && !defined(CONFIG_MX7D)
 	ipuv3_fb_shutdown();
 	if (!di)
 		return 0;
@@ -1444,13 +1640,19 @@ U_BOOT_CMD(fbpanel, 3, 0, do_fbpanel,
            "\n"
            "fbpanel  - show all panels");
 
+static const struct display_info_t *g_disp[FB_COUNT];
+
 int board_video_skip(void)
 {
-	const struct display_info_t *di = select_display(g_displays, g_display_cnt);
+	const struct display_info_t *di = select_display(g_displays, g_display_cnt, g_disp);
+	int ret;
 
 	if (!di)
 		return -EINVAL;
-	return init_display(di);
+	ret = init_display(di);
+	if (di->fbtype == FB_MIPI)
+		ret = -EINVAL;
+	return ret;
 }
 
 void fbp_setup_display(const struct display_info_t *displays, int cnt)
@@ -1458,4 +1660,9 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt)
 	g_displays = displays;
 	g_display_cnt = cnt;
 	imx_prepare_display();
+}
+
+void fbp_setup_env_cmds(void)
+{
+	setup_env_cmds(g_displays, g_display_cnt, g_disp);
 }

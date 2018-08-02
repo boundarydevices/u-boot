@@ -9,7 +9,15 @@
 #include <ipu_pixfmt.h>
 
 struct display_info_t {
-	int	bus;	/* (bus >> 8) is gpio to enable bus if <>0 */
+	union {
+		int	bus;	/* (bus >> 8) is gpio to enable bus if <>0 */
+		struct {
+			unsigned char bus_num;
+			unsigned char bus_gp;
+			unsigned char enable_gp;
+			unsigned char spare;
+		};
+	};
 	int	addr;
 	int	pixfmt;
 	int	(*detect)(struct display_info_t const *dev);
@@ -21,15 +29,32 @@ struct display_info_t {
 #define FB_LCD2		2
 #define FB_LVDS		3
 #define FB_LVDS2	4
-#define FB_COUNT	5
+#define FB_MIPI		5
+#define FB_MIPI_BRIDGE	6	/* Not included in FB_COUNT */
+#define FB_COUNT	6
 	int	fbtype;
 
 #define FBF_MODESTR	1
 #define FBF_JEIDA	2
 #define FBF_SPLITMODE	4
 #define FBF_SPI		8
-#define FBF_BKLIT_LOW_ACTIVE	0x10
-#define FBF_BKLIT_DTB		0x20
+#define FBF_BKLIT_LOW_ACTIVE	0x010
+#define FBF_BKLIT_DTB		0x020
+#define FBF_PINCTRL		0x040
+#define FBF_ENABLE_GPIOS_ACTIVE_LOW 0x080
+#define FBF_MODE_SKIP_EOT	0x100
+#define FBF_MODE_VIDEO		0x200
+#define FBF_MODE_VIDEO_BURST	0x400
+#define FBF_MIPI_CMDS		0x800
+#define FBF_DSI_LANE_SHIFT	16
+#define FBF_DSI_LANES_1		(0x1 << FBF_DSI_LANE_SHIFT)
+#define FBF_DSI_LANES_2		(0x2 << FBF_DSI_LANE_SHIFT)
+#define FBF_DSI_LANES_3		(0x3 << FBF_DSI_LANE_SHIFT)
+#define FBF_DSI_LANES_4		(0x4 << FBF_DSI_LANE_SHIFT)
+
+#define FBF_LTK080A60A004T	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_PINCTRL)
+#define FBF_M101NWWB		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4)
+
 	int	fbflags;
 	struct	fb_videomode mode;
 };
@@ -43,6 +68,7 @@ void board_enable_lvds2(const struct display_info_t *di, int enable);
 void fbp_enable_fb(struct display_info_t const *di, int enable);
 int fbp_detect_i2c(struct display_info_t const *di);
 void fbp_setup_display(const struct display_info_t *displays, int cnt);
+void fbp_setup_env_cmds(void);
 
 #define VD_1280_720M_60(_mode, _detect, _bus, _addr)	VDF_1280_720M_60(_mode, "1280x720M@60", RGB24, FBF_MODESTR, _detect, _bus, _addr)
 #define VD_1920_1080M_60(_mode, _detect, _bus, _addr)	VDF_1920_1080M_60(_mode, "1920x1080M@60", RGB24, FBF_MODESTR, _detect, _bus, _addr)
@@ -90,6 +116,8 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 #define VD_SHARP_LQ101K1LY04(_mode, _detect, _bus, _addr) VDF_SHARP_LQ101K1LY04(_mode, "sharp-LQ101K1LY04", RGB24, FBF_JEIDA, _detect, _bus, _addr)
 #define VD_WXGA(_mode, _detect, _bus, _addr)		VDF_WXGA(_mode, "wxga", RGB24, 0, _detect, _bus, _addr)
 #define VD_WXGA_J(_mode, _detect, _bus, _addr)		VDF_WXGA(_mode, "wxga_j", RGB24, FBF_JEIDA, _detect, _bus, _addr)
+#define VD_LTK080A60A004T(_mode, _detect, _bus, _addr)	VDF_LTK080A60A004T(_mode, "ltk080a60a004t", RGB24, FBF_LTK080A60A004T, _detect, _bus, _addr)
+#define VD_MIPI_M101NWWB(_mode, _detect, _bus, _addr)	VDF_MIPI_M101NWWB(_mode, "m101nwwb", RGB24, FBF_M101NWWB, _detect, _bus, _addr)
 #define VD_LD070WSVGA(_mode, _detect, _bus, _addr)	VDF_LD070WSVGA(_mode, "ld070wsvga", RGB24, 0, _detect, _bus, _addr)
 #define VD_SVGA(_mode, _detect, _bus, _addr)		VDF_SVGA(_mode, "svga", RGB666, FBF_MODESTR, _detect, _bus, _addr)
 #define VD_WVGA_TX23D200_24(_mode, _detect, _bus, _addr) VDF_WVGA_TX23D200(_mode, "tx23d200_24", RGB24, 0, _detect, _bus, _addr)
@@ -952,6 +980,46 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 		.lower_margin   = 80,\
 		.hsync_len      = 10,\
 		.vsync_len      = 10,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
+#define VDF_LTK080A60A004T(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	.mode	= {\
+		.name           = _name,\
+		.refresh        = 60,\
+		.xres           = 1200,\
+		.yres           = 1920,\
+		.pixclock       = 1000000000000ULL/120000000, /*((1200+60+42+1)*(1920+25+35+1)*60), */\
+		.left_margin    = 60,\
+		.right_margin   = 42,\
+		.upper_margin   = 25,\
+		.lower_margin   = 35,\
+		.hsync_len      = 1,\
+		.vsync_len      = 1,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
+#define VDF_MIPI_M101NWWB(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	.mode	= {\
+		.name           = _name,\
+		.refresh        = 60,\
+		.xres           = 1280,\
+		.yres           = 800,\
+		.pixclock       = 1000000000000ULL/((1280+5+123+1)*(800+3+24+1)*60),\
+		.left_margin    = 5,\
+		.right_margin   = 123,\
+		.upper_margin   = 3,\
+		.lower_margin   = 24,\
+		.hsync_len      = 1,\
+		.vsync_len      = 1,\
 		.sync           = FB_SYNC_EXT,\
 		.vmode          = FB_VMODE_NONINTERLACED\
 	}\

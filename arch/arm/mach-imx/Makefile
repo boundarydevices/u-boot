@@ -33,8 +33,10 @@ obj-$(CONFIG_SYS_I2C_MXC) += i2c-mxv7.o
 obj-$(CONFIG_ENV_IS_IN_MMC) += mmc_env.o
 endif
 
-ifeq ($(SOC),$(filter $(SOC),mx5 mx6 mx7))
+ifeq ($(SOC),$(filter $(SOC),mx5 mx6 mx7 mx8m))
+ifeq ($(CONFIG_SPL_BUILD)$(CONFIG_TPL_BUILD),)
 obj-$(CONFIG_CMD_FBPANEL) += fbpanel.o
+endif
 endif
 
 ifeq ($(SOC),$(filter $(SOC),mx6 mx7))
