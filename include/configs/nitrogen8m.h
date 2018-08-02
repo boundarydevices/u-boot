@@ -170,7 +170,6 @@
 #define CONFIG_BMP_16BPP
 #define CONFIG_VIDEO_LOGO
 #define CONFIG_VIDEO_BMP_LOGO
-#define CONFIG_IMX_VIDEO_SKIP
 #endif
 
 #ifndef BD_CONSOLE
@@ -206,6 +205,7 @@
 #endif
 
 #include <config_distro_bootcmd.h>
+#define CONFIG_CMD_FBPANEL
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	"console=" BD_CONSOLE "\0" \

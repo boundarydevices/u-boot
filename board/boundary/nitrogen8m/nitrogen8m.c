@@ -12,6 +12,7 @@
 #include <miiphy.h>
 #include <netdev.h>
 #include <asm/mach-imx/boot_mode.h>
+#include <asm/mach-imx/fbpanel.h>
 #include <asm/mach-imx/iomux-v3.h>
 #include <asm-generic/gpio.h>
 #include <fsl_esdhc.h>
@@ -43,10 +44,19 @@ static iomux_v3_cfg_t const init_pads[] = {
 #if 0
 	IMX8MQ_PAD_GPIO1_IO02__WDOG1_WDOG_B | MUX_PAD_CTRL(WDOG_PAD_CTRL),
 #else
+#define GP_WATCHDOG			IMX_GPIO_NR(1, 2)
 	IMX8MQ_PAD_GPIO1_IO02__GPIO1_IO2 | MUX_PAD_CTRL(WDOG_PAD_CTRL),
 #endif
 	IMX8MQ_PAD_UART1_RXD__UART1_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
 	IMX8MQ_PAD_UART1_TXD__UART1_TX | MUX_PAD_CTRL(UART_PAD_CTRL),
+/* This enables 5V power on LTK080A60A004T mipi display */
+#define GP_LTK08_MIPI_EN		IMX_GPIO_NR(1, 1)
+	IMX8MQ_PAD_GPIO1_IO01__GPIO1_IO1 | MUX_PAD_CTRL(0x16),
+
+#define GPIRQ_GT911 			IMX_GPIO_NR(3, 12)
+	IMX8MQ_PAD_NAND_DATA06__GPIO3_IO12 | MUX_PAD_CTRL(0xd6),
+#define GP_GT911_RESET			IMX_GPIO_NR(3, 13)
+	IMX8MQ_PAD_NAND_DATA07__GPIO3_IO13 | MUX_PAD_CTRL(0x49),
 
 #define GP_ARM_DRAM_VSEL		IMX_GPIO_NR(3, 24)
 	IMX8MQ_PAD_SAI5_RXD3__GPIO3_IO24 | MUX_PAD_CTRL(0x16),
@@ -381,10 +391,66 @@ int board_usb_cleanup(int index, enum usb_init_type init)
 }
 #endif
 
+#ifdef CONFIG_CMD_FBPANEL
+
+int board_detect_hdmi(struct display_info_t const *di)
+{
+	return 1;
+}
+
+int board_detect_gt911(struct display_info_t const *di)
+{
+	int ret;
+	struct udevice *dev, *chip;
+
+	if (di->bus_gp)
+		gpio_direction_output(di->bus_gp, 1);
+	gpio_set_value(GP_GT911_RESET, 0);
+	mdelay(20);
+	gpio_direction_output(GPIRQ_GT911, di->addr == 0x14 ? 1 : 0);
+	udelay(100);
+	gpio_set_value(GP_GT911_RESET, 1);
+	mdelay(6);
+	gpio_set_value(GPIRQ_GT911, 0);
+	mdelay(50);
+	gpio_direction_input(GPIRQ_GT911);
+	ret = uclass_get_device(UCLASS_I2C, di->bus_num, &dev);
+	if (ret)
+		return 0;
+
+	ret = dm_i2c_probe(dev, di->addr, 0x0, &chip);
+	if (ret && di->bus_gp)
+		gpio_direction_input(di->bus_gp);
+	return (ret == 0);
+}
+
+static const struct display_info_t displays[] = {
+	/* hdmi */
+	VD_1920_1080M_60(HDMI, board_detect_hdmi, 0, 0x50),
+	VD_1280_720M_60(HDMI, NULL, 0, 0x50),
+	VD_MIPI_M101NWWB(MIPI, fbp_detect_i2c, 3 | (GP_I2C4_SN65DSI83_EN << 8), 0x2c),
+	VD_LTK080A60A004T(MIPI, board_detect_gt911, 3 | (GP_LTK08_MIPI_EN << 8), 0x5d),	/* Goodix touchscreen */
+};
+#define display_cnt	ARRAY_SIZE(displays)
+#else
+#define displays	NULL
+#define display_cnt	0
+#endif
+
 int board_init(void)
 {
-#ifdef CONFIG_FEC_MXC
+	gpio_request(GP_I2C4_SN65DSI83_EN, "sn65dsi83_enable");
+	gpio_request(GP_GT911_RESET, "gt911_reset");
+	gpio_request(GPIRQ_GT911, "gt911_irq");
+	gpio_request(GP_LTK08_MIPI_EN, "lkt08_mipi_en");
+	gpio_request(GP_WATCHDOG, "watchdog");
+	gpio_direction_output(GP_GT911_RESET, 0);
+	gpio_direction_output(GP_WATCHDOG, 1);
+	#ifdef CONFIG_FEC_MXC
 	setup_fec();
+#endif
+#ifdef CONFIG_CMD_FBPANEL
+	fbp_setup_display(displays, display_cnt);
 #endif
 
 	return 0;
@@ -430,20 +496,27 @@ static int fastboot_key_pressed(void)
 void board_late_mmc_env_init(void);
 void init_usb_clk(int usbno);
 
-void board_set_default_env(void)
+static void set_env_vars(void)
 {
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	env_set("board", "nitrogen8m");
 	env_set("soc", "imx8mq");
-	env_set("cpu", get_imx_type((get_cpu_rev() & 0xFF000) >> 12));
 	env_set("imx_cpu", get_imx_type((get_cpu_rev() & 0xFF000) >> 12));
 	env_set("uboot_defconfig", CONFIG_DEFCONFIG);
 #endif
 }
 
+void board_set_default_env(void)
+{
+	set_env_vars();
+#ifdef CONFIG_CMD_FBPANEL
+	fbp_setup_env_cmds();
+#endif
+}
+
 int board_late_init(void)
 {
-	board_set_default_env();
+	set_env_vars();
 #if defined(CONFIG_USB_FUNCTION_FASTBOOT) || defined(CONFIG_CMD_DFU)
 	addserial_env("serial#");
 	if (fastboot_key_pressed()) {
@@ -461,49 +534,3 @@ int board_late_init(void)
 	init_usb_clk(1);
 	return 0;
 }
-
-#if defined(CONFIG_VIDEO_IMXDCSS)
-
-struct display_info_t const displays[] = {{
-	.bus	= 0, /* Unused */
-	.addr	= 0, /* Unused */
-	.pixfmt	= GDF_32BIT_X888RGB,
-	.detect	= NULL,
-	.enable	= NULL,
-#ifndef CONFIG_VIDEO_IMXDCSS_1080P
-	.mode	= {
-		.name           = "HDMI", /* 720P60 */
-		.refresh        = 60,
-		.xres           = 1280,
-		.yres           = 720,
-		.pixclock       = 13468, /* 74250  kHz */
-		.left_margin    = 110,
-		.right_margin   = 220,
-		.upper_margin   = 5,
-		.lower_margin   = 20,
-		.hsync_len      = 40,
-		.vsync_len      = 5,
-		.sync           = FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
-		.vmode          = FB_VMODE_NONINTERLACED
-	}
-#else
-	.mode	= {
-		.name           = "HDMI", /* 1080P60 */
-		.refresh        = 60,
-		.xres           = 1920,
-		.yres           = 1080,
-		.pixclock       = 6734, /* 148500 kHz */
-		.left_margin    = 148,
-		.right_margin   = 88,
-		.upper_margin   = 36,
-		.lower_margin   = 4,
-		.hsync_len      = 44,
-		.vsync_len      = 5,
-		.sync           = FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
-		.vmode          = FB_VMODE_NONINTERLACED
-	}
-#endif
-} };
-size_t display_count = ARRAY_SIZE(displays);
-
-#endif /* CONFIG_VIDEO_IMXDCSS */
