@@ -30,15 +30,10 @@
 #include <dm.h>
 #include <usb.h>
 #include <dwc3-uboot.h>
+#include "../common/padctrl.h"
+#include "../common/bd_common.h"
 
 DECLARE_GLOBAL_DATA_PTR;
-
-#define QSPI_PAD_CTRL	(PAD_CTL_DSE2 | PAD_CTL_HYS)
-
-#define UART_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_FSEL1)
-
-#define WDOG_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_HYS | PAD_CTL_PUE)
-#define WEAK_PULLUP	(PAD_CTL_DSE6 | PAD_CTL_HYS | PAD_CTL_PUE)
 
 static iomux_v3_cfg_t const init_pads[] = {
 #if 0
@@ -86,6 +81,21 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IMX8MQ_PAD_NAND_CE1_B__GPIO3_IO2 | MUX_PAD_CTRL(0x61),
 #define GP_CSI2_MIPI_RESET		IMX_GPIO_NR(2, 19)
 	IMX8MQ_PAD_SD2_RESET_B__GPIO2_IO19 |MUX_PAD_CTRL(0x61),
+#ifdef CONFIG_FEC_MXC
+	/* PHY - AR8035 */
+	IOMUX_PAD_CTRL(ENET_MDIO__ENET_MDIO, PAD_CTRL_ENET_MDIO),
+	IOMUX_PAD_CTRL(ENET_MDC__ENET_MDC, PAD_CTRL_ENET_MDC),
+	IOMUX_PAD_CTRL(ENET_TX_CTL__ENET_RGMII_TX_CTL, PAD_CTRL_ENET_TX),
+	IOMUX_PAD_CTRL(ENET_TD0__ENET_RGMII_TD0, PAD_CTRL_ENET_TX),
+	IOMUX_PAD_CTRL(ENET_TD1__ENET_RGMII_TD1, PAD_CTRL_ENET_TX),
+	IOMUX_PAD_CTRL(ENET_TD2__ENET_RGMII_TD2, PAD_CTRL_ENET_TX),
+	IOMUX_PAD_CTRL(ENET_TD3__ENET_RGMII_TD3, PAD_CTRL_ENET_TX),
+	IOMUX_PAD_CTRL(ENET_TXC__ENET_RGMII_TXC, PAD_CTRL_ENET_TX),
+#endif
+#define GP_RGMII_PHY_RESET	IMX_GPIO_NR(1, 9)
+	IOMUX_PAD_CTRL(GPIO1_IO09__GPIO1_IO9, WEAK_PULLUP),
+#define GPIRQ_ENET_PHY		IMX_GPIO_NR(1, 2)
+	IOMUX_PAD_CTRL(GPIO1_IO11__GPIO1_IO11, WEAK_PULLUP),
 };
 
 int board_early_init_f(void)
@@ -135,171 +145,6 @@ int ft_board_setup(void *blob, bd_t *bd)
 }
 #endif
 
-#ifdef CONFIG_PHY_ATHEROS
-#define WEAK_PULLDN_OUTPUT	0x91
-#define WEAK_PULLUP_OUTPUT	0xd1
-
-#define PULL_GP(a, bit)		(((a >> bit) & 1) ? WEAK_PULLUP_OUTPUT : WEAK_PULLDN_OUTPUT)
-#define PULL_ENET(a, bit)	0x91
-
-#define GP_PHY_RX_CTL	IMX_GPIO_NR(1, 24)
-#define GP_PHY_RXC	IMX_GPIO_NR(1, 25)
-#define GP_PHY_RD0	IMX_GPIO_NR(1, 26)
-#define GP_PHY_RD1	IMX_GPIO_NR(1, 27)
-#define GP_PHY_RD2	IMX_GPIO_NR(1, 28)
-#define GP_PHY_RD3	IMX_GPIO_NR(1, 29)
-
-#ifndef STRAP_AR8035
-#define STRAP_AR8035	((0x28 | (CONFIG_FEC_MXC_PHYADDR & 3)) | ((0x28 | ((CONFIG_FEC_MXC_PHYADDR + 1) & 3)) << 6))
-#endif
-
-static const iomux_v3_cfg_t enet_ar8035_gpio_pads[] = {
-#define GP_RGMII_PHY_RESET	IMX_GPIO_NR(1, 9)
-	IOMUX_PAD_CTRL(GPIO1_IO09__GPIO1_IO9, PAD_CTL_DSE6),
-	IOMUX_PAD_CTRL(ENET_RD0__GPIO1_IO26, PULL_GP(STRAP_AR8035, 0)),
-	IOMUX_PAD_CTRL(ENET_RD1__GPIO1_IO27, PULL_GP(STRAP_AR8035, 1)),
-	IOMUX_PAD_CTRL(ENET_RD2__GPIO1_IO28, PULL_GP(STRAP_AR8035, 2)),
-	IOMUX_PAD_CTRL(ENET_RD3__GPIO1_IO29, PULL_GP(STRAP_AR8035, 3)),
-	IOMUX_PAD_CTRL(ENET_RX_CTL__GPIO1_IO24, PULL_GP(STRAP_AR8035, 4)),
-	/* 1.8V(1)/1.5V select(0) */
-	IOMUX_PAD_CTRL(ENET_RXC__GPIO1_IO25, PULL_GP(STRAP_AR8035, 5)),
-};
-
-static const iomux_v3_cfg_t enet_ar8035_pads[] = {
-	IOMUX_PAD_CTRL(ENET_RD0__ENET_RGMII_RD0, PULL_ENET(STRAP_AR8035, 0)),
-	IOMUX_PAD_CTRL(ENET_RD1__ENET_RGMII_RD1, PULL_ENET(STRAP_AR8035, 1)),
-	IOMUX_PAD_CTRL(ENET_RD2__ENET_RGMII_RD2, PULL_ENET(STRAP_AR8035, 2)),
-	IOMUX_PAD_CTRL(ENET_RD3__ENET_RGMII_RD3, PULL_ENET(STRAP_AR8035, 3)),
-	IOMUX_PAD_CTRL(ENET_RX_CTL__ENET_RGMII_RX_CTL, PULL_ENET(STRAP_AR8035, 4)),
-	IOMUX_PAD_CTRL(ENET_RXC__ENET_RGMII_RXC, PULL_ENET(STRAP_AR8035, 5)),
-};
-
-static unsigned char strap_gpios[] = {
-	GP_PHY_RD0,
-	GP_PHY_RD1,
-	GP_PHY_RD2,	/* 0 */
-	GP_PHY_RD3,	/* 1 */
-	GP_PHY_RX_CTL,	/* 0 */
-	GP_PHY_RXC,	/* 1  with LED_1000 pulled high, yields mode 0xc (RGMII, PLLOFF,INT) */
-};
-
-static void set_strap_pins(unsigned strap)
-{
-	int i = 0;
-
-	for (i = 0; i < ARRAY_SIZE(strap_gpios); i++) {
-		gpio_direction_output(strap_gpios[i], strap & 1);
-		strap >>= 1;
-	}
-}
-
-static void setup_gpio_ar8035(void)
-{
-	set_strap_pins(STRAP_AR8035);
-	SETUP_IOMUX_PADS(enet_ar8035_gpio_pads);
-}
-
-static void setup_enet_ar8035(void)
-{
-	SETUP_IOMUX_PADS(enet_ar8035_pads);
-}
-
-static void setup_iomux_enet(void)
-{
-	gpio_direction_output(GP_RGMII_PHY_RESET, 0); /* PHY rst */
-	setup_gpio_ar8035();
-
-	/* Need delay 10ms according to KSZ9021 spec */
-	/* 1 ms minimum reset pulse for ar8035 */
-	udelay(1000 * 10);
-	gpio_set_value(GP_RGMII_PHY_RESET, 1); /* PHY reset */
-
-	/* strap hold time for AR8035, 5 fails, 6 works, so 12 should be safe */
-	udelay(24);
-
-	setup_enet_ar8035();
-}
-
-static void phy_ar8031_config(struct phy_device *phydev)
-{
-	int val;
-
-	/* Select 125MHz clk from local PLL on CLK_25M */
-	phy_write(phydev, MDIO_DEVAD_NONE, 0xd, 0x0007);
-	phy_write(phydev, MDIO_DEVAD_NONE, 0xe, 0x8016);
-	phy_write(phydev, MDIO_DEVAD_NONE, 0xd, 0x4007);
-	val = phy_read(phydev, MDIO_DEVAD_NONE, 0xe);
-	val &= ~0x1c;
-	phy_write(phydev, MDIO_DEVAD_NONE, 0xe, (val|0x0018));
-
-#if 0 //done in ar8031_config
-	/* introduce tx clock delay */
-	phy_write(phydev, MDIO_DEVAD_NONE, 0x1d, 0x05);
-	val = phy_read(phydev, MDIO_DEVAD_NONE, 0x1e);
-	phy_write(phydev, MDIO_DEVAD_NONE, 0x1e, (val|0x0100));
-#endif
-}
-
-static void phy_ar8035_config(struct phy_device *phydev)
-{
-	int val;
-
-	/*
-	 * Ar803x phy SmartEEE feature cause link status generates glitch,
-	 * which cause ethernet link down/up issue, so disable SmartEEE
-	 */
-	phy_write(phydev, MDIO_DEVAD_NONE, 0xd, 0x3);
-	phy_write(phydev, MDIO_DEVAD_NONE, 0xe, 0x805d);
-	phy_write(phydev, MDIO_DEVAD_NONE, 0xd, 0x4003);
-	val = phy_read(phydev, MDIO_DEVAD_NONE, 0xe);
-	phy_write(phydev, MDIO_DEVAD_NONE, 0xe, val & ~(1 << 8));
-
-#if 0 //done in ar8035_config
-	/* rgmii tx clock delay enable */
-	phy_write(phydev, MDIO_DEVAD_NONE, 0x1d, 0x05);
-	val = phy_read(phydev, MDIO_DEVAD_NONE, 0x1e);
-	phy_write(phydev, MDIO_DEVAD_NONE, 0x1e, (val|0x0100));
-
-	phydev->supported = phydev->drv->features;
-#endif
-}
-
-#define PHY_ID_AR8031	0x004dd074
-#define PHY_ID_AR8035	0x004dd072
-
-int board_phy_config(struct phy_device *phydev)
-{
-	if (((phydev->drv->uid ^ PHY_ID_AR8031) & 0xffffffef) == 0)
-		phy_ar8031_config(phydev);
-	else if (((phydev->drv->uid ^ PHY_ID_AR8035) & 0xffffffef) == 0)
-		phy_ar8035_config(phydev);
-	if (phydev->drv->config)
-		phydev->drv->config(phydev);
-	return 0;
-}
-#endif
-
-#ifdef CONFIG_FEC_MXC
-
-#define IOMUXC_GPR1		(IOMUXC_GPR_BASE_ADDR + 0x04)
-
-static int setup_fec(void)
-{
-	gpio_request(GP_RGMII_PHY_RESET, "fec_rst");
-	gpio_request(GP_PHY_RD0, "fec_rd0");
-	gpio_request(GP_PHY_RD1, "fec_rd1");
-	gpio_request(GP_PHY_RD2, "fec_rd2");
-	gpio_request(GP_PHY_RD3, "fec_rd3");
-	gpio_request(GP_PHY_RX_CTL, "fec_rx_ctl");
-	gpio_request(GP_PHY_RXC, "fec_rxc");
-	setup_iomux_enet();
-
-	/* Use 125M anatop REF_CLK1 for ENET1, not from external */
-	clrsetbits_le32(IOMUXC_GPR1,
-			BIT(13) | BIT(17), 0);
-	return set_clk_enet(ENET_125MHZ);
-}
-#endif
 
 #if defined(CONFIG_USB_DWC3) || defined(CONFIG_USB_XHCI_IMX8M)
 
@@ -446,8 +291,8 @@ int board_init(void)
 	gpio_request(GP_WATCHDOG, "watchdog");
 	gpio_direction_output(GP_GT911_RESET, 0);
 	gpio_direction_output(GP_WATCHDOG, 1);
-	#ifdef CONFIG_FEC_MXC
-	setup_fec();
+#ifdef CONFIG_DM_ETH
+	board_eth_init(gd->bd);
 #endif
 #ifdef CONFIG_CMD_FBPANEL
 	fbp_setup_display(displays, display_cnt);
@@ -512,6 +357,7 @@ void board_set_default_env(void)
 #ifdef CONFIG_CMD_FBPANEL
 	fbp_setup_env_cmds();
 #endif
+	board_eth_addresses();
 }
 
 int board_late_init(void)

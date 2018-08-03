@@ -79,6 +79,7 @@
 #define CONFIG_FEC_XCV_TYPE		RGMII
 #define CONFIG_FEC_MXC_PHYADDR		4
 #define FEC_QUIRK_ENET_MAC
+#define GP_RGMII_PHY_RESET		IMX_GPIO_NR(1, 9)
 
 #define CONFIG_PHY_GIGE
 #define IMX_FEC_BASE			0x30BE0000
@@ -207,6 +208,12 @@
 #include <config_distro_bootcmd.h>
 #define CONFIG_CMD_FBPANEL
 
+#define BD_RAM_BASE	0x80000000
+#define BD_RAM_SCRIPT	"40008000"
+#define BD_RAM_KERNEL	"40800000"
+#define BD_RAM_RAMDISK	"42800000"
+#define BD_RAM_FDT	"43000000"
+
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	"console=" BD_CONSOLE "\0" \
 	"env_dev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
@@ -232,8 +239,16 @@
 		"else " \
 			"echo WARN: Cannot load the DT; " \
 		"fi;\0" \
+	"net_upgradeu=dhcp " BD_RAM_SCRIPT " net_upgradeu.scr && source " BD_RAM_SCRIPT "\0" \
+	"otg_upgradeu=run usbnetwork; tftp " BD_RAM_SCRIPT " net_upgradeu.scr && source " BD_RAM_SCRIPT "\0" \
 	"upgradeu=setenv boot_scripts upgrade.scr; boot;" \
 		"echo Upgrade failed!; setenv boot_scripts boot.scr\0" \
+	"usbnet_devaddr=00:19:b8:00:00:02\0" \
+	"usbnet_hostaddr=00:19:b8:00:00:01\0" \
+	"usbnetwork=setenv ethact usb_ether; " \
+		"setenv ipaddr 10.0.0.2; " \
+		"setenv netmask 255.255.255.0; " \
+		"setenv serverip 10.0.0.1;\0" \
 	BOOTENV
 
 #endif
