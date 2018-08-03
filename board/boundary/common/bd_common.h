@@ -25,6 +25,7 @@ extern struct fsl_esdhc_cfg board_usdhc_cfg[];
 extern const char *board_type;
 void board_preboot_keys(void);
 void board_late_specific_init(void);
+void board_eth_addresses(void);
 const char *board_get_board_type(void);
 void set_gpios_in(const unsigned short *p, int cnt);
 void set_gpios(const unsigned short *p, int cnt, int val);

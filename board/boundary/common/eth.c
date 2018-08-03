@@ -9,13 +9,15 @@
 #include <asm/arch/imx-regs.h>
 #if defined(CONFIG_MX51)
 #include <asm/arch/iomux-mx51.h>
-#elif defined(CONFIG_MX7D)
+#elif defined(CONFIG_MX7D) || defined(CONFIG_MX8M)
 #else
 #include <asm/arch/iomux.h>
 #endif
 #include <asm/arch/sys_proto.h>
 #if defined(CONFIG_MX7D)
 #include <asm/arch/mx7-pins.h>
+#elif defined(CONFIG_MX8M)
+#include <asm/arch/mx8mq_pins.h>
 #elif !defined(CONFIG_MX51)
 #include <asm/arch/mx6-pins.h>
 #endif
@@ -78,6 +80,8 @@
 #include "eth-mx7d.c"
 #elif defined(CONFIG_MX51)
 #include "eth-mx51.c"
+#elif defined(CONFIG_MX8M)
+#include "eth-mx8m.c"
 #else
 #include "eth-mx6.c"
 #endif
@@ -146,6 +150,15 @@ static void init_fec_clocks(void)
 
 	set_clk_enet(ENET_125MHZ);
 #endif
+#ifdef CONFIG_MX8M
+	struct iomuxc_gpr_base_regs *const iomuxc_gpr_regs
+		= (struct iomuxc_gpr_base_regs *) IOMUXC_GPR_BASE_ADDR;
+
+	/* Use 125M anatop REF_CLK1 for ENET1, not from external */
+	clrsetbits_le32(&iomuxc_gpr_regs->gpr[1],
+			BIT(13) | BIT(17), 0);
+	set_clk_enet(ENET_125MHZ);
+#endif
 	udelay(100);	/* Wait 100 us before using mii interface */
 }
 
@@ -155,6 +168,7 @@ static void init_fec_clocks(void)
 #define FEC_INDEX	-1	/* just plain FEC */
 #endif
 
+#ifndef CONFIG_DM_ETH
 static void init_fec(bd_t *bis, unsigned phy_mask)
 {
 #ifdef CONFIG_MX6SX
@@ -208,6 +222,7 @@ error:
 	mdio_free(bus);
 #endif
 }
+#endif
 #endif
 
 #ifdef CONFIG_PHY_ATHEROS
@@ -275,7 +290,7 @@ static void setup_iomux_enet(int kz)
 	udelay(40);
 #else
 	/* strap hold time for AR8035, 5 fails, 6 works, so 12 should be safe */
-	udelay(12);
+	udelay(24);
 #endif
 #ifdef GP_KS8995_RESET
 	gpio_direction_output(GP_KS8995_RESET, 1);
@@ -447,20 +462,9 @@ free_slave:
 }
 #endif
 
-int board_eth_init(bd_t *bis)
+void board_eth_addresses(void)
 {
-#if defined(CONFIG_PHY_ATHEROS) || defined(CONFIG_PHY_MICREL)
-	setup_iomux_enet(0);
-#endif
-#ifdef GP_KS8995_RESET
-	ks8995_reset();
-#endif
-#ifdef CONFIG_FEC_MXC
-	init_fec_clocks();
-	init_fec(bis, ETH_PHY_MASK);
-#endif
-
-#ifdef CONFIG_CI_UDC
+#if defined(CONFIG_USB_ETHER)
 #if defined(CONFIG_FEC_MXC) && defined(CONFIG_RGMII1) && defined(CONFIG_RGMII2)
 #define USB_ETH "eth2addr"
 #elif defined(CONFIG_FEC_MXC)
@@ -484,7 +488,44 @@ int board_eth_init(bd_t *bis)
 	if (!env_get(USB_ETH))
 		env_set(USB_ETH, env_get("usbnet_devaddr"));
 #endif
+#endif
+}
+
+int board_eth_init(bd_t *bis)
+{
+#if defined(CONFIG_PHY_ATHEROS) || defined(CONFIG_PHY_MICREL)
+	gpio_request(GP_RGMII_PHY_RESET, "fec_rst");
+	gpio_request(GP_PHY_RD0, "fec_rd0");
+	gpio_request(GP_PHY_RD1, "fec_rd1");
+	gpio_request(GP_PHY_RD2, "fec_rd2");
+	gpio_request(GP_PHY_RD3, "fec_rd3");
+	gpio_request(GP_PHY_RX_CTL, "fec_rx_ctl");
+	gpio_request(GP_PHY_RXC, "fec_rxc");
+	setup_iomux_enet(0);
+#endif
+#ifdef GP_KS8995_RESET
+	ks8995_reset();
+#endif
+#ifdef CONFIG_FEC_MXC
+	init_fec_clocks();
+#ifndef CONFIG_DM_ETH
+	init_fec(bis, ETH_PHY_MASK);
+#endif
+#endif
+
+	board_eth_addresses();
+#if defined(CONFIG_USB_ETHER)
+#if defined(CONFIG_DM_ETH)
+	{
+		int ret = usb_ether_init();
+
+		if (ret) {
+			printf("usb_ether_init failed(%d)\n", ret);
+		}
+	}
+#else
 	usb_eth_initialize(bis);
+#endif
 #endif
 	return 0;
 }
