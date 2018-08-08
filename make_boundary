@@ -11,11 +11,11 @@ for board in $boards ; do
     if [ $board != "mx6qsabrelite" ] ; then
 	cnt=`sed -n "/CONFIG_ARCH_MX8M=/=" configs/${board}_defconfig`
 	if [ "${cnt}" != "" ] ; then
-		ARCH=arm64
-		CROSS_COMPILE=aarch64-linux-gnu-
+		export ARCH=arm64
+		export CROSS_COMPILE=aarch64-linux-gnu-
 	else
-		ARCH=arm
-		CROSS_COMPILE=arm-linux-gnueabihf-
+		export ARCH=arm
+		export CROSS_COMPILE=arm-linux-gnueabihf-
 	fi
 
 	make distclean ; make ${board}_defconfig
