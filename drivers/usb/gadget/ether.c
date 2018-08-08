@@ -93,7 +93,7 @@ static const char driver_desc[] = DRIVER_DESC;
 			|USB_CDC_PACKET_TYPE_PROMISCUOUS \
 			|USB_CDC_PACKET_TYPE_DIRECTED)
 
-#define USB_CONNECT_TIMEOUT (3 * CONFIG_SYS_HZ)
+#define USB_CONNECT_TIMEOUT (5 * CONFIG_SYS_HZ)
 
 /*-------------------------------------------------------------------------*/
 
