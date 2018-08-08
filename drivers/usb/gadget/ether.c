@@ -2437,6 +2437,9 @@ static int _usb_eth_init(struct ether_priv *priv)
 	rx_submit(dev, dev->rx_req, 0);
 	return 0;
 fail:
+#ifndef CONFIG_DM_USB_ETH
+	board_usb_cleanup(0, USB_INIT_DEVICE);
+#endif
 	return -1;
 }
 
