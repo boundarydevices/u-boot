@@ -30,6 +30,7 @@
 #include <dm.h>
 #include <usb.h>
 #include <dwc3-uboot.h>
+#include <linux/usb/dwc3.h>
 #include "../common/padctrl.h"
 #include "../common/bd_common.h"
 
@@ -177,25 +178,32 @@ int usb_gadget_handle_interrupts(void)
 
 static void dwc3_nxp_usb_phy_init(struct dwc3_device *dwc3)
 {
-	u32 RegData;
+	struct dwc3 *dwc3_reg = (struct dwc3 *)(dwc3->base + DWC3_REG_OFFSET);
+	u32 val;
 
-	RegData = readl(dwc3->base + USB_PHY_CTRL1);
-	RegData &= ~(USB_PHY_CTRL1_VDATSRCENB0 | USB_PHY_CTRL1_VDATDETENB0 |
+	val = readl(dwc3->base + USB_PHY_CTRL1);
+	val &= ~(USB_PHY_CTRL1_VDATSRCENB0 | USB_PHY_CTRL1_VDATDETENB0 |
 			USB_PHY_CTRL1_COMMONONN);
-	RegData |= USB_PHY_CTRL1_RESET | USB_PHY_CTRL1_ATERESET;
-	writel(RegData, dwc3->base + USB_PHY_CTRL1);
+	val |= USB_PHY_CTRL1_RESET | USB_PHY_CTRL1_ATERESET;
+	writel(val, dwc3->base + USB_PHY_CTRL1);
 
-	RegData = readl(dwc3->base + USB_PHY_CTRL0);
-	RegData |= USB_PHY_CTRL0_REF_SSP_EN;
-	writel(RegData, dwc3->base + USB_PHY_CTRL0);
+	val = readl(dwc3->base + USB_PHY_CTRL0);
+	val |= USB_PHY_CTRL0_REF_SSP_EN;
+	writel(val, dwc3->base + USB_PHY_CTRL0);
 
-	RegData = readl(dwc3->base + USB_PHY_CTRL2);
-	RegData |= USB_PHY_CTRL2_TXENABLEN0;
-	writel(RegData, dwc3->base + USB_PHY_CTRL2);
+	val = readl(dwc3->base + USB_PHY_CTRL2);
+	val |= USB_PHY_CTRL2_TXENABLEN0;
+	writel(val, dwc3->base + USB_PHY_CTRL2);
 
-	RegData = readl(dwc3->base + USB_PHY_CTRL1);
-	RegData &= ~(USB_PHY_CTRL1_RESET | USB_PHY_CTRL1_ATERESET);
-	writel(RegData, dwc3->base + USB_PHY_CTRL1);
+	val = readl(dwc3->base + USB_PHY_CTRL1);
+	val &= ~(USB_PHY_CTRL1_RESET | USB_PHY_CTRL1_ATERESET);
+	writel(val, dwc3->base + USB_PHY_CTRL1);
+
+	val = readl(&dwc3_reg->g_ctl);
+	val &= ~(DWC3_GCTL_PWRDNSCALE_MASK);
+	val |= DWC3_GCTL_PWRDNSCALE(2);
+
+	writel(val, &dwc3_reg->g_ctl);
 }
 #endif
 
