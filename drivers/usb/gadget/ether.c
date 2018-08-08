@@ -2410,6 +2410,7 @@ static int _usb_eth_init(struct ether_priv *priv)
 	return 0;
 fail:
 	_usb_eth_halt(priv);
+	board_usb_cleanup(0, USB_INIT_DEVICE);
 	return -1;
 }
 
