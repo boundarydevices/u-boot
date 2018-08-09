@@ -217,14 +217,32 @@ static char lvds_enabled;
 static const char brightness_levels_low_active[] = "<10 9 8 7 6 5 4 3 2 1 0>";
 static const char brightness_levels_high_active[] = "<0 1 2 3 4 5 6 7 8 9 10>";
 
-static u32 period_to_freq(u32 freq)
+static u32 period_to_freq(u32 period)
 {
-	u64 lval = 1000000000000ULL;
+	u64 lval1 = 1000000000000ULL;
+	u64 lval2 = 1000000000000ULL;
+	u32 l1, l2, l3;
+	u32 mod = 10;
 
-	if (freq < (233 * 16))
-		freq = (233 * 16);	/* ensure result * 16 fits in u32 */
-	do_div(lval, freq);
-	return (u32)lval;
+	if (period < (233 * 16))
+		period = (233 * 16);	/* ensure result * 16 fits in u32 */
+	do_div(lval1, period);
+	period++;
+	do_div(lval2, period);
+	l1 = (u32)lval1;
+	l2 = (u32)lval2;
+	/*
+	 * Round down to a value of the largest multiple of 10
+	 * while still larger than frequency of period + 1
+	 */
+	while (1) {
+		l3 = l1 - (l1 % mod);
+		if (l3 <= l2)
+			break;
+		mod *= 10;
+		l1 = l3;
+	}
+	return l1;
 }
 
 static u32 freq_to_period(u32 val)
