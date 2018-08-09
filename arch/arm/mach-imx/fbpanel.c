@@ -73,6 +73,15 @@ static const char *const fbnames[] = {
 [FB_MIPI_BRIDGE] = "mipi_dsi_bridge",
 };
 
+static const char *const fbnames_name[] = {
+[FB_HDMI] = "fb_hdmi_name",
+[FB_LCD] = "fb_lcd_name",
+[FB_LCD2] = "fb_lcd2_name",
+[FB_LVDS] = "fb_lvds_name",
+[FB_LVDS2] = "fb_lvds2_name",
+[FB_MIPI] = "fb_mipi_name",
+};
+
 static const char *const timings_names[] = {
 [FB_HDMI] = "t_hdmi",
 [FB_LCD] = "t_lcd",
@@ -273,6 +282,7 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 			}
 #endif
 			env_set(cmd_fbnames[fb], buf_start);
+			env_set(fbnames_name[fb], "");
 			return;
 		}
 	} else {
@@ -435,8 +445,7 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 
 	if (mode_str) {
 		snprintf(buf, size, "fdt set %s mode_str %s;", fbnames[fb], mode_str);
-		env_set(cmd_fbnames[fb], buf_start);
-		return;
+		goto set_variables;
 	}
 
 	mode = &di->mode;
@@ -453,7 +462,9 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		buf += sz;
 		size -= sz;
 	}
+set_variables:
 	env_set(cmd_fbnames[fb], buf_start);
+	env_set(fbnames_name[fb], di->mode.name);
 }
 
 static const struct display_info_t *find_panel(const struct display_info_t *di, int cnt, unsigned fb, const char *name)
