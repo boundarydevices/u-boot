@@ -248,7 +248,7 @@ int board_usb_cleanup(int index, enum usb_init_type init)
 
 int board_detect_hdmi(struct display_info_t const *di)
 {
-	return 1;
+	return hdmi_hpd_status() ? 1 : 0;
 }
 
 int board_detect_gt911(struct display_info_t const *di)
