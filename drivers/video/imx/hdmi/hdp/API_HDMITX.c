@@ -44,6 +44,7 @@
  ******************************************************************************
  */
 
+#include <asm/arch/sys_proto.h>
 #include "API_HDMITX.h"
 #include "util.h"
 #include "opcodes.h"
@@ -484,3 +485,12 @@ CDN_API_STATUS CDN_API_HDMITX_GetHpdStatus_blocking(uint8_t *hpd_sts)
 	internal_block_function(CDN_API_HDMITX_GetHpdStatus(hpd_sts));
 }
 
+int hdmi_hpd_status(void)
+{
+	uint8_t hpd_sts = 0;
+
+	if (is_usb_boot())
+		return 0;
+	CDN_API_HDMITX_GetHpdStatus_blocking(&hpd_sts);
+	return hpd_sts;
+}
