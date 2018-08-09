@@ -16,4 +16,6 @@ int imx8m_usb_power(int usb_id, bool on);
 extern unsigned long rom_pointer[];
 enum boot_device get_boot_device(void);
 bool is_usb_boot(void);
+int hdmi_hpd_status(void);
+
 #endif
