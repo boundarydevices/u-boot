@@ -763,9 +763,9 @@ static void esdhc_reset_tuning(struct mmc *mmc)
 
 static void esdhc_set_strobe_dll(struct mmc *mmc)
 {
-	struct fsl_esdhc_priv *priv = mmc->priv;
+	struct fsl_esdhc_priv *priv = dev_get_priv(mmc->dev);
 	struct fsl_esdhc *regs = priv->c.esdhc_regs;
-	u32 v;
+	u32 val;
 
 	if (priv->clock > ESDHC_STROBE_DLL_CLK_FREQ) {
 		writel(ESDHC_STROBE_DLL_CTRL_RESET, &regs->strobe_dllctrl);
@@ -774,16 +774,17 @@ static void esdhc_set_strobe_dll(struct mmc *mmc)
 		 * enable strobe dll ctrl and adjust the delay target
 		 * for the uSDHC loopback read clock
 		 */
-		v = ESDHC_STROBE_DLL_CTRL_ENABLE |
-			(priv->strobe_dll_delay_target << ESDHC_STROBE_DLL_CTRL_SLV_DLY_TARGET_SHIFT);
-		writel(v, &regs->strobe_dllctrl);
+		val = ESDHC_STROBE_DLL_CTRL_ENABLE |
+			(priv->strobe_dll_delay_target <<
+			 ESDHC_STROBE_DLL_CTRL_SLV_DLY_TARGET_SHIFT);
+		writel(val, &regs->strobe_dllctrl);
 		/* wait 1us to make sure strobe dll status register stable */
-		udelay(1);
-		v = readl(&regs->strobe_dllstat);
-		if (!(v & ESDHC_STROBE_DLL_STS_REF_LOCK))
-			printf("warning! HS400 strobe DLL status REF not lock!\n");
-		if (!(v & ESDHC_STROBE_DLL_STS_SLV_LOCK))
-			printf("warning! HS400 strobe DLL status SLV not lock!\n");
+		mdelay(1);
+		val = readl(&regs->strobe_dllstat);
+		if (!(val & ESDHC_STROBE_DLL_STS_REF_LOCK))
+			pr_warn("HS400 strobe DLL status REF not lock!\n");
+		if (!(val & ESDHC_STROBE_DLL_STS_SLV_LOCK))
+			pr_warn("HS400 strobe DLL status SLV not lock!\n");
 	}
 }
 
@@ -800,6 +801,7 @@ static int esdhc_set_timing(struct mmc *mmc)
 	case MMC_LEGACY:
 	case SD_LEGACY:
 		esdhc_reset_tuning(mmc);
+		writel(mixctrl, &regs->mixctrl);
 		break;
 	case MMC_HS_400:
 	case MMC_HS_400_ES:
@@ -1572,8 +1574,8 @@ static int fsl_esdhc_probe(struct udevice *dev)
 #endif
 
 	if (fdt_get_property(fdt, node, "no-1-8-v", NULL))
-		priv->caps &= ~(UHS_CAPS | MMC_MODE_HS400 | MMC_MODE_HS400_ES |
-				MMC_MODE_HS200);
+		priv->caps &= ~(UHS_CAPS | MMC_MODE_HS200 | MMC_MODE_HS400 |
+				MMC_MODE_HS400_ES);
 
 	/*
 	 * TODO:
