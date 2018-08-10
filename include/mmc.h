@@ -251,9 +251,8 @@ static inline bool mmc_is_tuning_cmd(uint cmdidx)
 						/* SDR mode @1.2V I/O */
 #define EXT_CSD_CARD_TYPE_HS200		(EXT_CSD_CARD_TYPE_HS200_1_8V | \
 					 EXT_CSD_CARD_TYPE_HS200_1_2V)
-
-#define EXT_CSD_CARD_TYPE_HS400_1_8V	(1<<6)
-#define EXT_CSD_CARD_TYPE_HS400_1_2V	(1<<7)
+#define EXT_CSD_CARD_TYPE_HS400_1_8V	BIT(6)
+#define EXT_CSD_CARD_TYPE_HS400_1_2V	BIT(7)
 #define EXT_CSD_CARD_TYPE_HS400		(EXT_CSD_CARD_TYPE_HS400_1_8V | \
 					 EXT_CSD_CARD_TYPE_HS400_1_2V)
 
@@ -569,9 +568,13 @@ void mmc_dump_capabilities(const char *text, uint caps);
 
 static inline bool mmc_is_mode_ddr(enum bus_mode mode)
 {
-	if ((mode == MMC_HS_400) || (mode == MMC_HS_400_ES) ||
+	if ((mode == MMC_HS_400_ES) ||
 	    (mode == MMC_DDR_52) || (mode == UHS_DDR50))
 		return true;
+#if CONFIG_IS_ENABLED(MMC_HS400_SUPPORT)
+	else if (mode == MMC_HS_400)
+		return true;
+#endif
 	else
 		return false;
 }
