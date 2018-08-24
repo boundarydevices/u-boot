@@ -390,7 +390,7 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 	}
 
 	i = di->enable_gp;
-	if (di && i) {
+	if (di && (di->fbflags & FBF_ENABLE_GPIOS_DTB)) {
 		sz = snprintf(buf, size,
 			"fdt get value gp gpio%u phandle;"
 			"fdt set %s enable-gpios <${gp} %u %u>;",
@@ -440,7 +440,7 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 				"fdt set mipi_dsi status okay;"
 				"fdt set mipi_dsi_phy status okay;"
 				"fdt set mipi_to_lvds status %s;",
-				(di->addr == 0x2c) ? "okay" : "disabled");
+				(di->addr_num == 0x2c) ? "okay" : "disabled");
 		buf += sz;
 		size -= sz;
 	}
@@ -513,11 +513,11 @@ int fbp_detect_i2c(struct display_info_t const *di)
 	if (ret)
 		return 0;
 
-	ret = dm_i2c_probe(dev, di->addr, 0x0, &chip);
+	ret = dm_i2c_probe(dev, di->addr_num, 0x0, &chip);
 #else
 	ret = i2c_set_bus_num(di->bus_num);
 	if (ret == 0)
-		ret = i2c_probe(di->addr);
+		ret = i2c_probe(di->addr_num);
 #endif
 	if (di->bus_gp)
 		gpio_set_value(di->bus_gp, 0);
@@ -931,6 +931,9 @@ void fbp_enable_fb(struct display_info_t const *di, int enable)
 	u32 reg, cscmr2;
 	u32 tmp;
 #endif
+	if (di->enable_gp && !enable)
+		gpio_direction_output(di->enable_gp, enable ^
+			((di->fbflags & FBF_ENABLE_GPIOS_ACTIVE_LOW) ? 1 : 0));
 	switch (di->fbtype) {
 #ifdef CONFIG_IMX_HDMI
 	case FB_HDMI:
@@ -1011,6 +1014,9 @@ void fbp_enable_fb(struct display_info_t const *di, int enable)
 		board_enable_mipi(di, enable);
 		break;
 	}
+	if (di->enable_gp && enable)
+		gpio_direction_output(di->enable_gp, enable ^
+			((di->fbflags & FBF_ENABLE_GPIOS_ACTIVE_LOW) ? 1 : 0));
 }
 
 static void imx_prepare_display(void)
@@ -1082,6 +1088,7 @@ static struct flags_check fc2[] = {
 	{ 'b', FBF_BKLIT_LOW_ACTIVE},
 	{ 'P', FBF_PINCTRL},
 	{ 'l', FBF_ENABLE_GPIOS_ACTIVE_LOW},
+	{ 'd', FBF_ENABLE_GPIOS_DTB},
 	{ 's', FBF_MODE_SKIP_EOT},
 	{ 'v', FBF_MODE_VIDEO},
 	{ 'B', FBF_MODE_VIDEO_BURST},
@@ -1398,8 +1405,8 @@ static void str_mode(char *p, int size, const struct display_info_t *di, unsigne
 		*p++ = 'e';
 		size--;
 	}
-	if (di->bus_num || di->addr || di->bus_gp) {
-		count = snprintf(p, size, "x%x,%x", di->bus_num, di->addr);
+	if (di->bus_num || di->addr_num || di->bus_gp) {
+		count = snprintf(p, size, "x%x,%x", di->bus_num, di->addr_num);
 		if (size > count) {
 			p += count;
 			size -= count;

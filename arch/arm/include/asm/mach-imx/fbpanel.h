@@ -8,6 +8,12 @@
 #include <linux/fb.h>
 #include <ipu_pixfmt.h>
 
+#define fbp_bus_gp(bus_num, bus_gp, enable_gp, spare) ((bus_num) | \
+		((bus_gp) << 8) | ((enable_gp) << 16) | ((spare) << 24))
+
+#define fbp_addr_gp(addr_num, spare1, spare2, spare3) ((addr_num) | \
+		((spare1) << 8) | ((spare2) << 16) | ((spare3) << 24))
+
 struct display_info_t {
 	union {
 		int	bus;	/* (bus >> 8) is gpio to enable bus if <>0 */
@@ -18,7 +24,15 @@ struct display_info_t {
 			unsigned char spare;
 		};
 	};
-	int	addr;
+	union {
+		int	addr;
+		struct {
+			unsigned char addr_num;
+			unsigned char spare1;
+			unsigned char spare2;
+			unsigned char spare3;
+		};
+	};
 	int	pixfmt;
 	int	(*detect)(struct display_info_t const *dev);
 	void	(*enable)(struct display_info_t const *dev, int enable);
@@ -42,18 +56,19 @@ struct display_info_t {
 #define FBF_BKLIT_DTB		0x020
 #define FBF_PINCTRL		0x040
 #define FBF_ENABLE_GPIOS_ACTIVE_LOW 0x080
-#define FBF_MODE_SKIP_EOT	0x100
-#define FBF_MODE_VIDEO		0x200
-#define FBF_MODE_VIDEO_BURST	0x400
-#define FBF_MIPI_CMDS		0x800
+#define FBF_ENABLE_GPIOS_DTB	0x100
+#define FBF_MODE_SKIP_EOT	0x200
+#define FBF_MODE_VIDEO		0x400
+#define FBF_MODE_VIDEO_BURST	0x800
+#define FBF_MIPI_CMDS		0x1000
 #define FBF_DSI_LANE_SHIFT	16
 #define FBF_DSI_LANES_1		(0x1 << FBF_DSI_LANE_SHIFT)
 #define FBF_DSI_LANES_2		(0x2 << FBF_DSI_LANE_SHIFT)
 #define FBF_DSI_LANES_3		(0x3 << FBF_DSI_LANE_SHIFT)
 #define FBF_DSI_LANES_4		(0x4 << FBF_DSI_LANE_SHIFT)
 
-#define FBF_LTK080A60A004T	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_PINCTRL)
-#define FBF_M101NWWB		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4)
+#define FBF_LTK080A60A004T	(FBF_ENABLE_GPIOS_DTB | FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_PINCTRL)
+#define FBF_M101NWWB		(FBF_ENABLE_GPIOS_DTB | FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4)
 
 	int	fbflags;
 	struct	fb_videomode mode;
