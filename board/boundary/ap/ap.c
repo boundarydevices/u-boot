@@ -434,7 +434,7 @@ void write_i2c_table(unsigned char *p, int size)
 
 void enable_backlight(const struct display_info_t *di, int enable, int gp_lp8860)
 {
-	if (di->addr == 0x0c) {
+	if (di->addr_num == 0x0c) {
 		/* enable lp8860 backlight */
 		int ret = i2c_set_bus_num(di->bus & 0xff);
 
@@ -479,7 +479,7 @@ int fbp_detect_serializer(struct display_info_t const *di)
 	if (ret == 0) {
 		int gp_lp8860 = (di->fbtype == FB_LVDS2) ? GP_LVDS2_LP8860_RESET :
 				GP_LVDS_LP8860_RESET;
-		ret = i2c_probe(di->addr);
+		ret = i2c_probe(di->addr_num);
 		if (!ret) {
 			gpio_direction_output(gp_lp8860, 0);
 			write_i2c_table(setup_serializer_remote,
