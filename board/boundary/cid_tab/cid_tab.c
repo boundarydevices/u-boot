@@ -74,7 +74,7 @@ static const iomux_v3_cfg_t init_pads[] = {
 	IOMUX_PAD_CTRL(DISP0_DAT23__AUD4_RXD, AUD_PAD_CTRL),
 
 	/* backlight lvds */
-#define GP_BACKLIGHT_LVDS_EN	IMX_GPIO_NR(1, 2)
+#define GP_LVDS_BKL_EN		IMX_GPIO_NR(1, 2)
 	IOMUX_PAD_CTRL(GPIO_2__GPIO1_IO02, WEAK_PULLDN),
 #define GP_BACKLIGHT_LVDS_PWM1	IMX_GPIO_NR(1, 21)
 	IOMUX_PAD_CTRL(SD1_DAT3__GPIO1_IO21, WEAK_PULLDN),
@@ -485,7 +485,6 @@ void board_enable_lvds(const struct display_info_t *di, int enable)
 	if (enable) {
 		mdelay(200);
 		gpio_set_value(GP_BACKLIGHT_LVDS_PWM1, enable);
-		gpio_set_value(GP_BACKLIGHT_LVDS_EN, enable);
 		mdelay(10);
 		/* enable backlight PWM 3 */
 		SETUP_IOMUX_PADS(lvds_led_pwm_pads);
@@ -499,36 +498,35 @@ void board_enable_lvds(const struct display_info_t *di, int enable)
 		gpio_set_value(GP_LVDS_LED_EN, enable);
 		SETUP_IOMUX_PADS(lvds_led_pwm_gpio_pads);
 		mdelay(10);
-		gpio_set_value(GP_BACKLIGHT_LVDS_EN, enable);
 		gpio_set_value(GP_BACKLIGHT_LVDS_PWM1, enable);
 	}
 }
 
 static const struct display_info_t displays[] = {
 	/* EDID at 0x50 */
-	VD_M101NWWB(LVDS, fbp_detect_i2c, 0, 0x50),
+	VD_M101NWWB(LVDS, fbp_detect_i2c, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x50),
 	/* ft5x06 */
-	VD_HANNSTAR7(LVDS, fbp_detect_i2c, 2, 0x38),
-	VD_AUO_B101EW05(LVDS, NULL, 2, 0x38),
-	VD_LG1280_800(LVDS, NULL, 2, 0x38),
-	VD_DT070BTFT(LVDS, NULL, 2, 0x38),
-	VD_WSVGA(LVDS, NULL, 2, 0x38),
-	VD_TM070JDHG30(LVDS, NULL, 2, 0x38),
-	VD_ND1024_600(LVDS, fbp_detect_i2c, 2, 0x38),
+	VD_HANNSTAR7(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_AUO_B101EW05(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_LG1280_800(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_DT070BTFT(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_WSVGA(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_TM070JDHG30(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_ND1024_600(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
 
 	/* ili210x */
-	VD_AMP1024_600(LVDS, fbp_detect_i2c, 2, 0x41),
+	VD_AMP1024_600(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x41),
 
 	/* egalax_ts */
-	VD_HANNSTAR(LVDS, fbp_detect_i2c, 2, 0x04),
+	VD_HANNSTAR(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x04),
 	VD_LG9_7(LVDS, NULL, 2, 0x04),
 
-	VD_SHARP_LQ101K1LY04(LVDS, NULL, 0, 0x00),
-	VD_WXGA(LVDS, NULL, 0, 0x00),
+	VD_SHARP_LQ101K1LY04(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
+	VD_WXGA(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
 	VD_LD070WSVGA(LVDS, NULL, 0, 0x00),
-	VD_WVGA(LVDS, NULL, 0, 0x00),
+	VD_WVGA(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
 	VD_AA065VE11(LVDS, NULL, 0, 0x00),
-	VD_VGA(LVDS, NULL, 0, 0x00),
+	VD_VGA(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
 };
 #define display_cnt	ARRAY_SIZE(displays)
 #else
@@ -538,7 +536,7 @@ static const struct display_info_t displays[] = {
 
 
 static const unsigned short gpios_out_low[] = {
-	GP_BACKLIGHT_LVDS_EN,
+	GP_LVDS_BKL_EN,
 	GP_BACKLIGHT_LVDS_PWM1,
 	GP_LVDS_LED_EN,
 	GP_LVDS_BIST,
