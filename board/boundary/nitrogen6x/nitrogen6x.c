@@ -142,6 +142,8 @@ static const iomux_v3_cfg_t init_pads[] = {
 	/* PWM4 - Backlight on LVDS connector: J6 */
 #define GP_BACKLIGHT_LVDS	IMX_GPIO_NR(1, 18)
 	IOMUX_PAD_CTRL(SD1_CMD__GPIO1_IO18, WEAK_PULLDN),
+#define GP_LVDS_BKL_EN		IMX_GPIO_NR(2, 0)
+	IOMUX_PAD_CTRL(NANDF_D0__GPIO2_IO00, WEAK_PULLDN),
 
 	/* reg_usbotg_vbus */
 #define GP_REG_USBOTG		IMX_GPIO_NR(3, 22)
@@ -368,29 +370,30 @@ static const struct display_info_t displays[] = {
 	VD_720_480M_60(HDMI, NULL, 1, 0x50),
 
 	/* ft5x06 */
-	VD_HANNSTAR7(LVDS, fbp_detect_i2c, 2, 0x38),
-	VD_AUO_B101EW05(LVDS, NULL, 2, 0x38),
-	VD_LG1280_800(LVDS, NULL, 2, 0x38),
-	VD_DT070BTFT(LVDS, NULL, 2, 0x38),
-	VD_WSVGA(LVDS, NULL, 2, 0x38),
-	VD_TM070JDHG30(LVDS, NULL, 2, 0x38),
+	VD_HANNSTAR7(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_AUO_B101EW05(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_LG1280_800(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_M101NWWB(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_DT070BTFT(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_WSVGA(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_TM070JDHG30(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
 
 	/* ili210x */
-	VD_AMP1024_600(LVDS, fbp_detect_i2c, 2, 0x41),
+	VD_AMP1024_600(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x41),
 
 	/* egalax_ts */
-	VD_HANNSTAR(LVDS, fbp_detect_i2c, 2, 0x04),
-	VD_LG9_7(LVDS, NULL, 2, 0x04),
+	VD_HANNSTAR(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x04),
+	VD_LG9_7(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x04),
 
 	/* fusion7 specific touchscreen */
 	VD_FUSION7(LCD, fbp_detect_i2c, 2, 0x10),
 
-	VD_SHARP_LQ101K1LY04(LVDS, NULL, 0, 0x00),
-	VD_WXGA_J(LVDS, NULL, 0, 0x00),
-	VD_WXGA(LVDS, NULL, 0, 0x00),
-	VD_WVGA(LVDS, NULL, 0, 0x00),
-	VD_AA065VE11(LVDS, NULL, 0, 0x00),
-	VD_VGA(LVDS, NULL, 0, 0x00),
+	VD_SHARP_LQ101K1LY04(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
+	VD_WXGA_J(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
+	VD_WXGA(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
+	VD_WVGA(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
+	VD_AA065VE11(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
+	VD_VGA(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
 
 	/* tsc2004 */
 	VD_CLAA_WVGA(LCD, fbp_detect_i2c, 2, 0x48),
@@ -444,6 +447,7 @@ static const unsigned short gpios_in[] = {
 	GPIRQ_ENET_PHY,
 	GPIRQ_RTC_ISL1208,
 	GPIRQ_TC3587,
+	GP_LVDS_BKL_EN,
 	GPIRQ_WL1271_WL,
 	GP_USDHC3_CD,
 	GP_USDHC4_CD,
