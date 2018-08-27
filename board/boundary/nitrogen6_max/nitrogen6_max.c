@@ -143,8 +143,10 @@ static const iomux_v3_cfg_t init_pads[] = {
 #define GP_I2C2MUX_B		IMX_GPIO_NR(4, 15)
 	IOMUX_PAD_CTRL(KEY_ROW4__GPIO4_IO15, WEAK_PULLDN),
 
+#define GP_LVDS_BKL_EN		IMX_GPIO_NR(2, 0)
 #define GP_LVDS_LP8860_EN	IMX_GPIO_NR(2, 0)
 	IOMUX_PAD_CTRL(NANDF_D0__GPIO2_IO00, WEAK_PULLDN),
+#define GP_LVDS2_BKL_EN		IMX_GPIO_NR(2, 23)
 #define GP_LVDS2_LP8860_EN	IMX_GPIO_NR(2, 23)
 	IOMUX_PAD_CTRL(EIM_CS0__GPIO2_IO23, WEAK_PULLDN),
 
@@ -425,7 +427,7 @@ void write_i2c_table(unsigned char *p, int size)
 
 void enable_backlight(const struct display_info_t *di, int enable, int gp_backlight, int gp_lp8860)
 {
-	if (di->addr == 0x0c) {
+	if (di->addr_num == 0x0c) {
 		/* enable lp8860 backlight */
 		int gp = di->bus >> 8;
 		int ret = i2c_set_bus_num(di->bus & 0xff);
@@ -484,7 +486,7 @@ int fbp_detect_serializer(struct display_info_t const *di)
 	if (ret == 0) {
 		int gp_lp8860 = (di->fbtype == FB_LVDS2) ? GP_LVDS2_LP8860_EN :
 				GP_LVDS_LP8860_EN;
-		ret = i2c_probe(di->addr);
+		ret = i2c_probe(di->addr_num);
 		if (!ret) {
 			gpio_direction_output(gp_lp8860, 0);
 			write_i2c_table(setup_serializer_data,
@@ -503,42 +505,44 @@ static const struct display_info_t displays[] = {
 	VD_1024_768M_60(HDMI, NULL, 1, 0x50),
 
 	/* ft5x06 */
-	VD_HANNSTAR7(LVDS, fbp_detect_i2c, 2, 0x38),
-	VD_HANNSTAR7(LVDS2, NULL, 2, 0x38),
-	VD_AUO_B101EW05(LVDS, NULL, 2, 0x38),
-	VD_AUO_B101EW05(LVDS2, NULL, 2, 0x38),
-	VD_LG1280_800(LVDS, NULL, 2, 0x38),
-	VD_LG1280_800(LVDS2, NULL, 2, 0x38),
-	VD_DT070BTFT(LVDS, NULL, 2, 0x38),
-	VD_WSVGA(LVDS, NULL, 2, 0x38),
-	VD_TM070JDHG30(LVDS, NULL, 2, 0x38),
-	VD_ND1024_600(LVDS, fbp_detect_i2c, 2, 0x38),
+	VD_HANNSTAR7(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_HANNSTAR7(LVDS2, NULL, fbp_bus_gp(2, 0, GP_LVDS2_BKL_EN, 0), 0x38),
+	VD_AUO_B101EW05(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_AUO_B101EW05(LVDS2, NULL, fbp_bus_gp(2, 0, GP_LVDS2_BKL_EN, 0), 0x38),
+	VD_LG1280_800(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_LG1280_800(LVDS2, NULL, fbp_bus_gp(2, 0, GP_LVDS2_BKL_EN, 0), 0x38),
+	VD_M101NWWB(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_M101NWWB(LVDS2, NULL, fbp_bus_gp(2, 0, GP_LVDS2_BKL_EN, 0), 0x38),
+	VD_DT070BTFT(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_WSVGA(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_TM070JDHG30(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_ND1024_600(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
 
 	/* ili210x */
-	VD_AMP1024_600(LVDS, fbp_detect_i2c, 2, 0x41),
+	VD_AMP1024_600(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x41),
 
 	/* egalax_ts */
-	VD_HANNSTAR(LVDS, fbp_detect_i2c, 2, 0x04),
-	VD_HANNSTAR(LVDS2, NULL, 2, 0x04),
-	VD_LG9_7(LVDS, NULL, 2, 0x04),
+	VD_HANNSTAR(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x04),
+	VD_HANNSTAR(LVDS2, NULL, fbp_bus_gp(2, 0, GP_LVDS2_BKL_EN, 0), 0x04),
+	VD_LG9_7(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x04),
 
 	/* fusion7 specific touchscreen */
 	VD_FUSION7(LCD, fbp_detect_i2c, 2, 0x10),
 
-	VD_SHARP_LQ101K1LY04(LVDS, NULL, 0, 0x00),
+	VD_SHARP_LQ101K1LY04(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
 	VD_WXGA(LVDS, NULL, 0, 0x00),
-	VD_LD070WSVGA(LVDS, NULL, 0, 0x00),
+	VD_LD070WSVGA(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
 	VD_WVGA(LVDS, NULL, 0, 0x00),
-	VD_AA065VE11(LVDS, NULL, 0, 0x00),
-	VD_VGA(LVDS, NULL, 0, 0x00),
+	VD_AA065VE11(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
+	VD_VGA(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
 
 	/* 0x0c is a serializer */
-	VD_TFC_A9700LTWV35TC_C1(LVDS, fbp_detect_serializer, 2, 0x0c),
-	VD_TFC_A9700LTWV35TC_C1(LVDS2, fbp_detect_serializer, (GP_I2C2MUX_A << 8) | 1, 0x0c),
+	VD_TFC_A9700LTWV35TC_C1(LVDS, fbp_detect_serializer, fbp_bus_gp(2, 0, 0, 0), 0x0c),
+	VD_TFC_A9700LTWV35TC_C1(LVDS2, fbp_detect_serializer, fbp_bus_gp(1, GP_I2C2MUX_A, 0, 0), 0x0c),
 
 	/* uses both lvds connectors */
-	VD_1080P60(LVDS, NULL, 0, 0x00),
-	VD_1080P60_J(LVDS, NULL, 0, 0x00),
+	VD_1080P60(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
+	VD_1080P60_J(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
 
 	/* tsc2004 */
 	VD_CLAA_WVGA(LCD, fbp_detect_i2c, 2, 0x48),
