@@ -401,10 +401,10 @@ void board_enable_hdmi(const struct display_info_t *di, int enable)
 
 static const struct display_info_t displays[] = {
 	/* hdmi */
-	VD_800_600MR_60(HDMI, fbp_detect_i2c, (GP_HDMI_I2C_EN << 8) | 1, 0x50),
-	VD_1280_720M_60(HDMI, NULL, (GP_HDMI_I2C_EN << 8) | 1, 0x50),
-	VD_1920_1080M_60(HDMI, NULL, (GP_HDMI_I2C_EN << 8) | 1, 0x50),
-	VD_1024_768M_60(HDMI, NULL, (GP_HDMI_I2C_EN << 8) | 1, 0x50),
+	VD_800_600MR_60(HDMI, fbp_detect_i2c, fbp_bus_gp(1, GP_HDMI_I2C_EN, 0, 0), 0x50),
+	VD_1280_720M_60(HDMI, NULL, fbp_bus_gp(1, GP_HDMI_I2C_EN, 0, 0), 0x50),
+	VD_1920_1080M_60(HDMI, NULL, fbp_bus_gp(1, GP_HDMI_I2C_EN, 0, 0), 0x50),
+	VD_1024_768M_60(HDMI, NULL, fbp_bus_gp(1, GP_HDMI_I2C_EN, 0, 0), 0x50),
 
 	VD_LSA40AT9001(LCD, NULL, 2, 0x00),
 };
