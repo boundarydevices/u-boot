@@ -167,8 +167,8 @@ static const iomux_v3_cfg_t init_pads[] = {
 	IOMUX_PAD_CTRL(QSPI1B_DATA1__GPIO4_IO_25, WEAK_PULLUP),
 
 	/* LVDS */
-#define GP_LVDS_ENABLE	IMX_GPIO_NR(4, 21)
-	IOMUX_PAD_CTRL(QSPI1A_SCLK__GPIO4_IO_21, WEAK_PULLUP),
+#define GP_LVDS_BKL_EN	IMX_GPIO_NR(4, 21)
+	IOMUX_PAD_CTRL(QSPI1A_SCLK__GPIO4_IO_21, WEAK_PULLDN),
 
 	/* PCIe */
 #define GP_PCIE_WAKE	IMX_GPIO_NR(4, 9)
@@ -401,7 +401,6 @@ struct fsl_esdhc_cfg board_usdhc_cfg[] = {
 void board_enable_lvds(const struct display_info_t *di, int enable)
 {
 	gpio_direction_output(GP_BACKLIGHT_LVDS, enable);
-	gpio_direction_output(GP_LVDS_ENABLE, enable);
 }
 
 void board_enable_lcd(const struct display_info_t *di, int enable)
@@ -442,28 +441,29 @@ static const struct display_info_t displays[] = {
 	VDF_1024_768M_60(LCD, "1024x768M@60", RGB24, 0, NULL, 2, 0x50),
 
 	/* ft5x06 */
-	VD_HANNSTAR7(LVDS, fbp_detect_i2c, 2, 0x38),
-	VD_AUO_B101EW05(LVDS, NULL, 2, 0x38),
-	VD_LG1280_800(LVDS, NULL, 2, 0x38),
-	VD_DT070BTFT(LVDS, NULL, 2, 0x38),
-	VD_WSVGA(LVDS, NULL, 2, 0x38),
+	VD_HANNSTAR7(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_AUO_B101EW05(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_LG1280_800(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_M101NWWB(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_DT070BTFT(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_WSVGA(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
 
 	/* ili210x */
-	VD_AMP1024_600(LVDS, fbp_detect_i2c, 2, 0x41),
+	VD_AMP1024_600(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x41),
 
 	/* egalax_ts */
-	VD_HANNSTAR(LVDS, fbp_detect_i2c, 2, 0x04),
-	VD_LG9_7(LVDS, NULL, 2, 0x04),
+	VD_HANNSTAR(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x04),
+	VD_LG9_7(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x04),
 
 	/* fusion7 specific touchscreen */
 	VDF_FUSION7(LCD, "fusion7", RGB666, 0, fbp_detect_i2c, 2, 0x10),
 
-	VD_SHARP_LQ101K1LY04(LVDS, NULL, 0, 0x00),
-	VD_WXGA_J(LVDS, NULL, 0, 0x00),
-	VD_WXGA(LVDS, NULL, 0, 0x00),
-	VD_WVGA(LVDS, NULL, 0, 0x00),
-	VD_AA065VE11(LVDS, NULL, 0, 0x00),
-	VD_VGA(LVDS, NULL, 0, 0x00),
+	VD_SHARP_LQ101K1LY04(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
+	VD_WXGA_J(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
+	VD_WXGA(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
+	VD_WVGA(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
+	VD_AA065VE11(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
+	VD_VGA(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
 
 	/* tsc2004 */
 	VDF_CLAA_WVGA(LCD, "CLAA-WVGA", RGB666, 0, fbp_detect_i2c, 2, 0x48),
@@ -491,7 +491,7 @@ static const unsigned short gpios_out_low[] = {
 	GP_BACKLIGHT_LVDS,
 	GP_USB_HUB_RESET,
 	GP_USB_OTG1_PWR,
-	GP_LVDS_ENABLE,
+	GP_LVDS_BKL_EN,
 	GP_PCIE_RESET,
 	GP_SGTL5000_MUTE,
 };
