@@ -150,8 +150,8 @@ static const iomux_v3_cfg_t init_pads[] = {
 #define GP_J46_PIN3_I		IMX_GPIO_NR(1, 8)		/* inverted */
 	IOMUX_PAD_CTRL(GPIO_8__GPIO1_IO08, WEAK_PULLUP_OUTPUT),
 
-#define GP_LVDS_J6_PIN19	IMX_GPIO_NR(7, 12)
-	IOMUX_PAD_CTRL(GPIO_17__GPIO7_IO12, WEAK_PULLUP),
+#define GP_LVDS_BKL_EN		IMX_GPIO_NR(7, 12)
+	IOMUX_PAD_CTRL(GPIO_17__GPIO7_IO12, WEAK_PULLDN),
 
 	/* WiFi/BT pads */
 	IOMUX_PAD_CTRL(NANDF_WP_B__GPIO6_IO09, WEAK_PULLDN),
@@ -362,18 +362,19 @@ static const struct display_info_t displays[] = {
 	VD_1024_768M_60(HDMI, NULL, 1, 0x50),
 
 	/* ft5x06 */
-	VD_HANNSTAR7(LVDS, fbp_detect_i2c, 2, 0x38),
-	VD_AUO_B101EW05(LVDS, NULL, 2, 0x38),
-	VD_LG1280_800(LVDS, NULL, 2, 0x38),
-	VD_DT070BTFT(LVDS, NULL, 2, 0x38),
-	VD_WSVGA(LVDS, NULL, 2, 0x38),
+	VD_HANNSTAR7(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_AUO_B101EW05(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_LG1280_800(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_M101NWWB(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_DT070BTFT(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_WSVGA(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
 
-	VD_HANNSTAR(LVDS, fbp_detect_i2c, 2, 0x04),
-	VD_LG9_7(LVDS, NULL, 2, 0x04),
-	VD_SHARP_LQ101K1LY04(LVDS, NULL, 0, 0x00),
+	VD_HANNSTAR(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x04),
+	VD_LG9_7(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x04),
+	VD_SHARP_LQ101K1LY04(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
 
-	VD_WXGA_J(LVDS, NULL, 0, 0x00),
-	VD_WVGA_J(LVDS, NULL, 0, 0x00),
+	VD_WXGA_J(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
+	VD_WVGA_J(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
 };
 #define display_cnt	ARRAY_SIZE(displays)
 #else
@@ -414,7 +415,7 @@ static const unsigned short gpios_in[] = {
 	GP_BACKLIGHT_LVDS_EN,
 	GPIRQ_WL1271_WL,
 	GP_USDHC3_CD,
-	GP_LVDS_J6_PIN19,
+	GP_LVDS_BKL_EN,
 	GP_TP71,
 };
 
