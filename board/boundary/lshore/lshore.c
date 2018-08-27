@@ -124,8 +124,8 @@ static const iomux_v3_cfg_t init_pads[] = {
 	IOMUX_PAD_CTRL(SD1_CMD__GPIO1_IO18, WEAK_PULLUP),
 
 	/* DISP0_CONTRAST */
-#define GP_BACKLIGHT_LVDS_EN	IMX_GPIO_NR(7, 12)
-	IOMUX_PAD_CTRL(GPIO_17__GPIO7_IO12, WEAK_PULLUP),
+#define GP_LVDS_BKL_EN	IMX_GPIO_NR(7, 12)
+	IOMUX_PAD_CTRL(GPIO_17__GPIO7_IO12, WEAK_PULLDN),
 
 	/* UART1 */
 	IOMUX_PAD_CTRL(SD3_DAT6__UART1_RX_DATA, UART_PAD_CTRL),
@@ -298,7 +298,6 @@ int board_spi_cs_gpio(unsigned bus, unsigned cs)
 void board_enable_lvds(const struct display_info_t *di, int enable)
 {
 	gpio_direction_output(GP_BACKLIGHT_LVDS, enable);
-	gpio_direction_output(GP_BACKLIGHT_LVDS_EN, enable);
 }
 
 void board_enable_lcd(const struct display_info_t *di, int enable)
@@ -315,16 +314,17 @@ static const struct display_info_t displays[] = {
 	VD_ASIT500MA6F5D(LCD, NULL, 2, 0x38),
 
 	/* LVDS */
-	VD_HANNSTAR7(LVDS, NULL, 2, 0x38),
-	VD_AUO_B101EW05(LVDS, NULL, 2, 0x38),
-	VD_LG1280_800(LVDS, NULL, 2, 0x38),
-	VD_DT070BTFT(LVDS, NULL, 2, 0x38),
-	VD_WSVGA(LVDS, NULL, 2, 0x38),
-	VD_HANNSTAR(LVDS, NULL, 2, 0x04),
-	VD_LG9_7(LVDS, NULL, 2, 0x04),
-	VD_SHARP_LQ101K1LY04(LVDS, NULL, 0, 0x00),
-	VD_WXGA_J(LVDS, NULL, 0, 0x00),
-	VD_WVGA_J(LVDS, NULL, 0, 0x00),
+	VD_HANNSTAR7(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_AUO_B101EW05(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_LG1280_800(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_M101NWWB(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_DT070BTFT(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_WSVGA(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_HANNSTAR(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x04),
+	VD_LG9_7(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x04),
+	VD_SHARP_LQ101K1LY04(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
+	VD_WXGA_J(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
+	VD_WVGA_J(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
 };
 #define display_cnt	ARRAY_SIZE(displays)
 #else
@@ -350,7 +350,7 @@ static const unsigned short gpios_out_high[] = {
 static const unsigned short gpios_in[] = {
 	GP_BACKLIGHT_RGB,
 	GP_BACKLIGHT_LVDS,
-	GP_BACKLIGHT_LVDS_EN,
+	GP_LVDS_BKL_EN,
 	GPIRQ_ACC_INT1,
 	GPIRQ_ACC_INT2,
 	GPIRQ_USB320_INTR,
