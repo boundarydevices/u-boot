@@ -222,7 +222,7 @@ static const iomux_v3_cfg_t init_pads[] = {
 	/* 0 is 8 bit */
 #define GP_8BIT_LVDS		IMX_GPIO_NR(4, 15)
 	IOMUX_PAD_CTRL(KEY_ROW4__GPIO4_IO15, WEAK_PULLDN_OUTPUT),
-#define GP_BACKLIGHT_LVDS_EN	IMX_GPIO_NR(7, 13)
+#define GP_LVDS_BKL_EN		IMX_GPIO_NR(7, 13)
 	IOMUX_PAD_CTRL(GPIO_18__GPIO7_IO13, WEAK_PULLDN),
 
 	/* reg_usbotg_vbus */
@@ -422,7 +422,6 @@ void board_enable_lvds(const struct display_info_t *di, int enable)
 			(di->pixfmt == IPU_PIX_FMT_RGB666) ? 1 : 0);
 	gpio_set_value(GP_BACKLIGHT_LVDS, enable ^
 			((di->fbflags & FBF_BKLIT_LOW_ACTIVE) ? 1 : 0));
-	gpio_set_value(GP_BACKLIGHT_LVDS_EN, enable);
 }
 
 void board_enable_lcd(const struct display_info_t *di, int enable)
@@ -436,10 +435,10 @@ void board_enable_lcd(const struct display_info_t *di, int enable)
 
 static const struct display_info_t displays[] = {
 	/* lvds */
-	VD_WVGA_TX23D200_18L(LVDS, NULL, 0, 0x00),
-	VD_WVGA_TX23D200_18H(LVDS, NULL, 0, 0x00),
-	VD_WVGA_TX23D200_24L(LVDS, NULL, 0, 0x00),
-	VD_WVGA_TX23D200_24H(LVDS, NULL, 0, 0x00),
+	VD_WVGA_TX23D200_18L(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
+	VD_WVGA_TX23D200_18H(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
+	VD_WVGA_TX23D200_24L(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
+	VD_WVGA_TX23D200_24H(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
 
 	/* hdmi */
 	VD_1280_720M_60(HDMI, fbp_detect_i2c, 1, 0x50),
@@ -485,7 +484,7 @@ static const unsigned short gpios_out_low[] = {
 	GP_PCIE_RESET,
 	GP_BACKLIGHT_RGB,
 	GP_8BIT_LVDS,
-	GP_BACKLIGHT_LVDS_EN,
+	GP_LVDS_BKL_EN,
 	GP_REG_USBOTG,		/* disable USB otg power */
 	GP_EMMC_RESET,		/* hold in reset */
 	GP_UART1_RX_EN,
