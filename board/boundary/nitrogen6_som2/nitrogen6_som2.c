@@ -198,14 +198,14 @@ static const iomux_v3_cfg_t init_pads[] = {
 #define GPIRQ_I2C3_TSC2004	IMX_GPIO_NR(4, 20)
 	IOMUX_PAD_CTRL(DI0_PIN4__GPIO4_IO20, WEAK_PULLUP),
 
-	/* LVDS0 - J6 */
-#define GP_LVDS0_EN1		IMX_GPIO_NR(3, 6)
+	/* LVDS - J6 */
+#define GP_LVDS_BKL_EN		IMX_GPIO_NR(3, 6)
 	IOMUX_PAD_CTRL(EIM_DA6__GPIO3_IO06, WEAK_PULLDN),
 
-	/* LVDS1 - J29 */
-#define GP_LVDS1_EN1		IMX_GPIO_NR(2, 30)
+	/* LVDS2 - J29 */
+#define GP_LVDS2_BKL_EN		IMX_GPIO_NR(2, 30)
 	IOMUX_PAD_CTRL(EIM_EB2__GPIO2_IO30, WEAK_PULLDN),
-#define GP_LVDS1_EN2		IMX_GPIO_NR(2, 31)
+#define GP_LVDS2_J29_PIN20	IMX_GPIO_NR(2, 31)
 	IOMUX_PAD_CTRL(EIM_EB3__GPIO2_IO31, WEAK_PULLDN),
 
 	/* PCIe */
@@ -222,7 +222,7 @@ static const iomux_v3_cfg_t init_pads[] = {
 	IOMUX_PAD_CTRL(SD1_DAT1__GPIO1_IO17, WEAK_PULLDN),
 
 	/* PWM4 - Backlight on LVDS connector: J6 */
-#define GP_BACKLIGHT_LVDS0	IMX_GPIO_NR(1, 18)
+#define GP_BACKLIGHT_LVDS	IMX_GPIO_NR(1, 18)
 	IOMUX_PAD_CTRL(SD1_CMD__GPIO1_IO18, WEAK_PULLDN),
 
 	/* reg_usbotg_vbus */
@@ -413,14 +413,12 @@ int board_spi_cs_gpio(unsigned bus, unsigned cs)
 #ifdef CONFIG_CMD_FBPANEL
 void board_enable_lvds(const struct display_info_t *di, int enable)
 {
-	gpio_direction_output(GP_BACKLIGHT_LVDS0, enable);
-	gpio_direction_output(GP_LVDS0_EN1, enable);
+	gpio_direction_output(GP_BACKLIGHT_LVDS, enable);
 }
 
 void board_enable_lvds2(const struct display_info_t *di, int enable)
 {
-	gpio_direction_output(GP_LVDS1_EN1, enable);
-	gpio_direction_output(GP_LVDS1_EN2, enable);
+	gpio_direction_output(GP_LVDS2_J29_PIN20, enable);
 }
 
 void board_enable_lcd(const struct display_info_t *di, int enable)
@@ -448,28 +446,29 @@ static const struct display_info_t displays[] = {
 	VD_720_480M_60(HDMI, NULL, 1, 0x50),
 
 	/* ft5x06 */
-	VD_HANNSTAR7(LVDS, fbp_detect_i2c, 2, 0x38),
-	VD_AUO_B101EW05(LVDS, NULL, 2, 0x38),
-	VD_LG1280_800(LVDS, NULL, 2, 0x38),
-	VD_DT070BTFT(LVDS, NULL, 2, 0x38),
-	VD_WSVGA(LVDS, NULL, 2, 0x38),
+	VD_HANNSTAR7(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_AUO_B101EW05(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_LG1280_800(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_M101NWWB(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_DT070BTFT(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_WSVGA(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
 
 	/* ili210x */
-	VD_AMP1024_600(LVDS, fbp_detect_i2c, 2, 0x41),
+	VD_AMP1024_600(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x41),
 
 	/* egalax_ts */
-	VD_HANNSTAR(LVDS, fbp_detect_i2c, 2, 0x04),
-	VD_LG9_7(LVDS, NULL, 2, 0x04),
+	VD_HANNSTAR(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x04),
+	VD_LG9_7(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x04),
 
 	/* fusion7 specific touchscreen */
 	VD_FUSION7(LCD, fbp_detect_i2c, 2, 0x10),
 
-	VD_SHARP_LQ101K1LY04(LVDS, NULL, 0, 0x00),
-	VD_WXGA_J(LVDS, NULL, 0, 0x00),
-	VD_WXGA(LVDS, NULL, 0, 0x00),
-	VD_WVGA(LVDS, NULL, 0, 0x00),
-	VD_AA065VE11(LVDS, NULL, 0, 0x00),
-	VD_VGA(LVDS, NULL, 0, 0x00),
+	VD_SHARP_LQ101K1LY04(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x00),
+	VD_WXGA_J(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
+	VD_WXGA(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
+	VD_WVGA(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
+	VD_AA065VE11(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
+	VD_VGA(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
 
 	/* tsc2004 */
 	VD_CLAA_WVGA(LCD, fbp_detect_i2c, 2, 0x48),
@@ -481,10 +480,11 @@ static const struct display_info_t displays[] = {
 	VD_LSA40AT9001(LCD, NULL, 0, 0x00),
 
 	/* uses both lvds connectors */
-	VD_1080P60(LVDS, NULL, 0, 0x00),
+	VD_1080P60(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
 
-	VD_HANNSTAR7(LVDS2, NULL, 2, 0x38),
-	VD_AUO_B101EW05(LVDS2, NULL, 2, 0x38),
+	VD_HANNSTAR7(LVDS2, NULL, fbp_bus_gp(2, 0, GP_LVDS2_BKL_EN, 0), 0x38),
+	VD_AUO_B101EW05(LVDS2, NULL, fbp_bus_gp(2, 0, GP_LVDS2_BKL_EN, 0), 0x38),
+	VD_M101NWWB(LVDS2, NULL, fbp_bus_gp(2, 0, GP_LVDS2_BKL_EN, 0), 0x38),
 };
 #define display_cnt	ARRAY_SIZE(displays)
 #else
@@ -497,12 +497,12 @@ static const unsigned short gpios_out_low[] = {
 	GP_RGMII_PHY_RESET,
 	GP_SGTL5000_HP_MUTE,
 	GP_OV5642_RESET,
-	GP_LVDS0_EN1,
-	GP_LVDS1_EN1,
-	GP_LVDS1_EN2,
+	GP_LVDS_BKL_EN,
+	GP_LVDS2_BKL_EN,
+	GP_LVDS2_J29_PIN20,
 	GP_PCIE_RESET,
 	GP_BACKLIGHT_RGB,
-	GP_BACKLIGHT_LVDS0,
+	GP_BACKLIGHT_LVDS,
 	GP_REG_USBOTG,
 	GP_REG_WLAN_EN,
 	GP_USB_HUB_RESET,
