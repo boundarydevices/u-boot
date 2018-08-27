@@ -37,12 +37,7 @@
 DECLARE_GLOBAL_DATA_PTR;
 
 static iomux_v3_cfg_t const init_pads[] = {
-#if 0
 	IMX8MQ_PAD_GPIO1_IO02__WDOG1_WDOG_B | MUX_PAD_CTRL(WDOG_PAD_CTRL),
-#else
-#define GP_WATCHDOG			IMX_GPIO_NR(1, 2)
-	IMX8MQ_PAD_GPIO1_IO02__GPIO1_IO2 | MUX_PAD_CTRL(WDOG_PAD_CTRL),
-#endif
 	IMX8MQ_PAD_UART1_RXD__UART1_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
 	IMX8MQ_PAD_UART1_TXD__UART1_TX | MUX_PAD_CTRL(UART_PAD_CTRL),
 /* This enables 5V power on LTK080A60A004T mipi display */
@@ -296,9 +291,7 @@ int board_init(void)
 	gpio_request(GP_GT911_RESET, "gt911_reset");
 	gpio_request(GPIRQ_GT911, "gt911_irq");
 	gpio_request(GP_LTK08_MIPI_EN, "lkt08_mipi_en");
-	gpio_request(GP_WATCHDOG, "watchdog");
 	gpio_direction_output(GP_GT911_RESET, 0);
-	gpio_direction_output(GP_WATCHDOG, 1);
 #ifdef CONFIG_DM_ETH
 	board_eth_init(gd->bd);
 #endif
