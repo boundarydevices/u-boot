@@ -255,7 +255,7 @@ int board_detect_gt911(struct display_info_t const *di)
 		gpio_direction_output(di->bus_gp, 1);
 	gpio_set_value(GP_GT911_RESET, 0);
 	mdelay(20);
-	gpio_direction_output(GPIRQ_GT911, di->addr == 0x14 ? 1 : 0);
+	gpio_direction_output(GPIRQ_GT911, di->addr_num == 0x14 ? 1 : 0);
 	udelay(100);
 	gpio_set_value(GP_GT911_RESET, 1);
 	mdelay(6);
@@ -266,7 +266,7 @@ int board_detect_gt911(struct display_info_t const *di)
 	if (ret)
 		return 0;
 
-	ret = dm_i2c_probe(dev, di->addr, 0x0, &chip);
+	ret = dm_i2c_probe(dev, di->addr_num, 0x0, &chip);
 	if (ret && di->bus_gp)
 		gpio_direction_input(di->bus_gp);
 	return (ret == 0);
@@ -276,8 +276,8 @@ static const struct display_info_t displays[] = {
 	/* hdmi */
 	VD_1920_1080M_60(HDMI, board_detect_hdmi, 0, 0x50),
 	VD_1280_720M_60(HDMI, NULL, 0, 0x50),
-	VD_MIPI_M101NWWB(MIPI, fbp_detect_i2c, 3 | (GP_I2C4_SN65DSI83_EN << 8), 0x2c),
-	VD_LTK080A60A004T(MIPI, board_detect_gt911, 3 | (GP_LTK08_MIPI_EN << 8), 0x5d),	/* Goodix touchscreen */
+	VD_MIPI_M101NWWB(MIPI, fbp_detect_i2c, fbp_bus_gp(3, GP_I2C4_SN65DSI83_EN, 0, 0), 0x2c),
+	VD_LTK080A60A004T(MIPI, board_detect_gt911, fbp_bus_gp(3, GP_LTK08_MIPI_EN, 0, 0), 0x5d),	/* Goodix touchscreen */
 };
 #define display_cnt	ARRAY_SIZE(displays)
 #else
