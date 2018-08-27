@@ -150,8 +150,8 @@ static const iomux_v3_cfg_t init_pads[] = {
 #define GPIRQ_RV4162		IMX_GPIO_NR(2, 26)
 	IOMUX_PAD_CTRL(EIM_RW__GPIO2_IO26, WEAK_PULLUP),
 
-#define GP_LVDS_J6_PIN19	IMX_GPIO_NR(7, 12)
-	IOMUX_PAD_CTRL(GPIO_17__GPIO7_IO12, WEAK_PULLUP),
+#define GP_LVDS_BKL_EN		IMX_GPIO_NR(7, 12)
+	IOMUX_PAD_CTRL(GPIO_17__GPIO7_IO12, WEAK_PULLDN),
 
 	/* LEDS */
 #define GP_J8_POWER_ON		IMX_GPIO_NR(3, 29)
@@ -353,12 +353,13 @@ void board_enable_lcd(const struct display_info_t *di, int enable)
 
 static const struct display_info_t displays[] = {
 	/* ft5x06 */
-	VD_TM070JDHG30(LVDS, fbp_detect_i2c, 2, 0x38),
-	VD_HANNSTAR7(LVDS, NULL, 2, 0x38),
-	VD_AUO_B101EW05(LVDS, NULL, 2, 0x38),
-	VD_LG1280_800(LVDS, NULL, 2, 0x38),
-	VD_DT070BTFT(LVDS, NULL, 2, 0x38),
-	VD_WSVGA(LVDS, NULL, 2, 0x38),
+	VD_TM070JDHG30(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_HANNSTAR7(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_AUO_B101EW05(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_LG1280_800(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_M101NWWB(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_DT070BTFT(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_WSVGA(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
 	VD_ASIT500MA6F5D(LCD, NULL, 2, 0x38),
 
 	VD_OKAYA_480_272(LCD, fbp_detect_i2c, 2, 0x48),
@@ -366,12 +367,12 @@ static const struct display_info_t displays[] = {
 	VD_CLAA_WVGA(LCD, NULL, 2, 0x48),
 
 
-	VD_HANNSTAR(LVDS, fbp_detect_i2c, 2, 0x04),
-	VD_LG9_7(LVDS, NULL, 2, 0x04),
-	VD_SHARP_LQ101K1LY04(LVDS, NULL, 0, 0x00),
+	VD_HANNSTAR(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x04),
+	VD_LG9_7(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x04),
+	VD_SHARP_LQ101K1LY04(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
 
-	VD_WXGA_J(LVDS, NULL, 0, 0x00),
-	VD_WVGA_J(LVDS, NULL, 0, 0x00),
+	VD_WXGA_J(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
+	VD_WVGA_J(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
 };
 #define display_cnt	ARRAY_SIZE(displays)
 #else
@@ -421,7 +422,7 @@ static const unsigned short gpios_in[] = {
 	GP_TP_SD3_WP,
 	GP_USDHC3_CD,
 	GPIRQ_WL1271_WL,
-	GP_LVDS_J6_PIN19,
+	GP_LVDS_BKL_EN,
 };
 
 int board_early_init_f(void)
