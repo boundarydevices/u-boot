@@ -323,9 +323,9 @@ static const struct display_info_t displays[] = {
 	VD_AUO_B101EW05(LVDS, fbp_detect_i2c, 2, 0x50),
 	VD_WXGA_J(LVDS, NULL, 0, 0),
 	/* hdmi */
-	VD_1280_720M_60(HDMI, fbp_detect_i2c, (GP_I2C3_EDID << 8 ) | 2, 0x3a),
-	VD_1920_1080M_60(HDMI, NULL, (GP_I2C3_EDID << 8 ) | 2, 0x3a),
-	VD_1024_768M_60(HDMI, NULL, (GP_I2C3_EDID << 8 ) | 2, 0x3a),
+	VD_1280_720M_60(HDMI, fbp_detect_i2c, fbp_bus_gp(2, GP_I2C3_EDID, 0, 0), 0x3a),
+	VD_1920_1080M_60(HDMI, NULL, fbp_bus_gp(2, GP_I2C3_EDID, 0, 0), 0x3a),
+	VD_1024_768M_60(HDMI, NULL, fbp_bus_gp(2, GP_I2C3_EDID, 0, 0), 0x3a),
 };
 #define display_cnt	ARRAY_SIZE(displays)
 #else
