@@ -1,6 +1,6 @@
 savedir=../u-boot-images
 mkdir -p $savedir
-rm $savedir/*
+rm -fr $savedir/*
 boards=$(cd configs && grep -l DEFCONFIG * | sed 's/_defconfig.*$//');
 cpus=`grep -c '^processor' /proc/cpuinfo` ;
 jobs=`expr $cpus + 2` ;
@@ -31,7 +31,7 @@ for board in $boards ; do
 			cp -v iMX8M/flash.bin ${savedir}/u-boot.${board} ;
 			cd - ;
 		        ls -l ${savedir}/u-boot.${board};
-			mkdir ${savedir}/${board}
+			mkdir -p ${savedir}/${board}
 		        cp -fv arch/arm/dts/imx8mq-${board}.dtb ${savedir}/${board}/
 		        cp -fv spl/u-boot-spl.bin ${savedir}/${board}/;
 		        cp -fv u-boot.bin ${savedir}/${board}/;
