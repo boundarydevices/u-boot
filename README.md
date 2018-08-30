@@ -12,12 +12,13 @@ This repository is used to track U-Boot for our i.MX6 based boards:
 * [Nitrogen6 VM][nitrogen6-vm]
 * [Nitrogen6 SoloX][nitrogen6-sx]
 * [Nitrogen7][nitrogen7]
+* [Nitrogen8M][nitrogen8m]
 
 It is based on the main-line upstream at [http://git.denx.de][denx].
 
 Latest stable branch is:
 
-* [boundary-v2017.07](https://github.com/boundarydevices/u-boot-imx6/tree/boundary-v2017.07): Based on v2017.07.
+* [boundary-v2018.07](https://github.com/boundarydevices/u-boot-imx6/tree/boundary-v2018.07): Based on v2018.07.
 
 [Other branches](http://github.com/boundarydevices/u-boot-imx6/branches) are used for work in progress, sharing experimental code and to
 preserve the history for customers who base their efforts on ours.
@@ -33,4 +34,5 @@ preserve the history for customers who base their efforts on ours.
 [nitrogen6-vm]:http://boundarydevices.com/product/nitrogen6_vm_imx6 "Nitrogen6_VM product page"
 [nitrogen6-sx]:http://boundarydevices.com/product/nit6_solox-imx6 "Nit6_SoloX product page"
 [nitrogen7]:https://boundarydevices.com/product/nitrogen7 "Nitrogen7 product page"
+[nitrogen8m]:https://boundarydevices.com/product/nitrogen8m "Nitrogen8M product page"
 
