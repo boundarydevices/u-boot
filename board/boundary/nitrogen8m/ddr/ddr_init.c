@@ -93,7 +93,15 @@ void lpddr4_800MHz_cfg_umctl2(void)
 	/* addrmap_row_b11, addrmap_row_b10_b2, addrmap_row_b1, addrmap_row_b0 */
 	reg32_write(DDRC_ADDRMAP5(0), 0x07070707);
 	/* addrmap_row_b15, addrmap_row_b14, addrmap_row_b13, addrmap_row_b12 */
+#if CONFIG_DDR_MB == 2048
 	reg32_write(DDRC_ADDRMAP6(0), 0x0f080707);
+#elif CONFIG_DDR_MB == 3072
+	reg32_write(DDRC_ADDRMAP6(0), 0x48080707);
+#elif CONFIG_DDR_MB == 4096
+	reg32_write(DDRC_ADDRMAP6(0), 0x08080707);
+#elif
+#error unsupported memory size
+#endif
 	reg32_write(DDRC_ADDRMAP7(0), 0x00000f0f);
 
 	/* 667mts frequency setting */
