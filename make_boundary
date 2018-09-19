@@ -26,13 +26,14 @@ for board in $boards ; do
 		read line;
 	else
 		if [ "${ARCH}" == "arm64" ] ; then
+			source configs/${board}_defconfig ;
 			cd ../imx-mkimage ;
-			UBOOT_PATH=${WORKSPACE} UBOOT_DTB=imx8mq-${board}.dtb ./make_boundary.sh ;
+			UBOOT_PATH=${WORKSPACE} UBOOT_DTB=${CONFIG_DEFAULT_DEVICE_TREE}.dtb ./make_boundary.sh ;
 			cp -v iMX8M/flash.bin ${savedir}/u-boot.${board} ;
 			cd - ;
 		        ls -l ${savedir}/u-boot.${board};
 			mkdir -p ${savedir}/${board}
-		        cp -fv arch/arm/dts/imx8mq-${board}.dtb ${savedir}/${board}/
+		        cp -fv arch/arm/dts/${CONFIG_DEFAULT_DEVICE_TREE}.dtb ${savedir}/${board}/
 		        cp -fv spl/u-boot-spl.bin ${savedir}/${board}/;
 		        cp -fv u-boot.bin ${savedir}/${board}/;
 		        cp -fv u-boot-nodtb.bin ${savedir}/${board}/;
