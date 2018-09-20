@@ -111,6 +111,8 @@ void fbp_setup_env_cmds(void);
 #define VD_AT035GT_07ET3(_mode, _detect, _bus, _addr)	VDF_AT035GT_07ET3(_mode, "AT035GT-07ET3", RGB24, FBF_MODESTR, _detect, _bus, _addr)
 #define VD_AMP1024_600(_mode, _detect, _bus, _addr)	VDF_AMP1024_600(_mode, "amp1024x600", RGB666, 0, _detect, _bus, _addr)
 #define VD_ND1024_600(_mode, _detect, _bus, _addr)	VDF_ND1024_600(_mode, "ND-070PCAP-1024x600", RGB24, 0, _detect, _bus, _addr)
+
+#define VD_AM_1280800P2TZQW(_mode, _detect, _bus, _addr) VDF_AM_1280800P2TZQW(_mode, "AM-1280800P2TZQW", RGB24, FBF_BKLIT_DTB, _detect, _bus, _addr)
 #define VD_TM070JDHG30(_mode, _detect, _bus, _addr)	VDF_TM070JDHG30(_mode, "tm070jdhg30", RGB24, 0, _detect, _bus, _addr)
 #define VD_AUO_B101EW05(_mode, _detect, _bus, _addr)	VDF_AUO_B101EW05(_mode, "auo_b101ew05", RGB666, 0, _detect, _bus, _addr)
 #define VD_HANNSTAR7(_mode, _detect, _bus, _addr)	VDF_HANNSTAR7(_mode, "hannstar7", RGB666, 0, _detect, _bus, _addr)
@@ -683,6 +685,27 @@ void fbp_setup_env_cmds(void);
 		.lower_margin   = 8,\
 		.hsync_len      = 80,\
 		.vsync_len      = 8,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
+#define VDF_AM_1280800P2TZQW(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	.pwm_period = 100000, \
+	.mode	= {\
+		.name           = _name,\
+		.refresh        = 60,\
+		.xres           = 1280,\
+		.yres           = 800,\
+		.pixclock       = 1000000000000ULL/((1280+5+64+1)*(800+2+40+1)*60),\
+		.left_margin    = 5,\
+		.right_margin   = 64,\
+		.upper_margin   = 2,\
+		.lower_margin   = 40,\
+		.hsync_len      = 1,\
+		.vsync_len      = 1,\
 		.sync           = FB_SYNC_EXT,\
 		.vmode          = FB_VMODE_NONINTERLACED\
 	}\
