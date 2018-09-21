@@ -213,7 +213,7 @@ static const iomux_v3_cfg_t init_pads[] = {
 	 * 0 is bright, 1 is dim
 	 */
 #define GP_BACKLIGHT_LVDS	IMX_GPIO_NR(1, 18)
-	IOMUX_PAD_CTRL(SD1_CMD__GPIO1_IO18, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(SD1_CMD__GPIO1_IO18, PAD_CTRL_PWM),
 	/* 0 is 8 bit */
 #define GP_8BIT_LVDS		IMX_GPIO_NR(4, 15)
 	IOMUX_PAD_CTRL(KEY_ROW4__GPIO4_IO15, WEAK_PULLDN_OUTPUT),
@@ -366,8 +366,13 @@ int board_spi_cs_gpio(unsigned bus, unsigned cs)
 #ifdef CONFIG_CMD_FBPANEL
 void board_enable_lvds(const struct display_info_t *di, int enable)
 {
-	gpio_set_value(GP_8BIT_LVDS,
+	if (di->addr_num == 0x24) {
+		/* This is a backlight enable for this panel */
+		gpio_set_value(GP_8BIT_LVDS, enable);
+	} else {
+		gpio_set_value(GP_8BIT_LVDS,
 			(di->pixfmt == IPU_PIX_FMT_RGB666) ? 1 : 0);
+	}
 	gpio_set_value(GP_BACKLIGHT_LVDS, enable ^
 			((di->fbflags & FBF_BKLIT_LOW_ACTIVE) ? 1 : 0));
 }
@@ -378,6 +383,7 @@ static const struct display_info_t displays[] = {
 	VD_WVGA_TX23D200_18H(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
 	VD_WVGA_TX23D200_24L(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
 	VD_WVGA_TX23D200_24H(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
+	VD_AM_1280800P2TZQW(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x24),
 
 	/* hdmi */
 	VD_1280_720M_60(HDMI, fbp_detect_i2c, 1, 0x50),
