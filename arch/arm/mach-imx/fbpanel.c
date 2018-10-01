@@ -482,7 +482,7 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 	}
 set_variables:
 	env_set(cmd_fbnames[fb], buf_start);
-	env_set(fbnames_name[fb], di->mode.name);
+	env_set(fbnames_name[fb], di ? di->mode.name : mode_str);
 }
 
 static const struct display_info_t *find_panel(const struct display_info_t *di, int cnt, unsigned fb, const char *name)
