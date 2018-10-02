@@ -250,4 +250,11 @@
 		"setenv serverip 10.0.0.1;\0" \
 	BOOTENV
 
+/*
+ * PCI express
+ */
+#ifdef CONFIG_CMD_PCI
+#define CONFIG_PCI_SCAN_SHOW
+#define CONFIG_PCIE_IMX
+#endif
 #endif
