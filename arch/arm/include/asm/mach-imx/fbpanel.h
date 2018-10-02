@@ -69,6 +69,7 @@ struct display_info_t {
 
 #define FBF_LTK080A60A004T	(FBF_ENABLE_GPIOS_DTB | FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_PINCTRL)
 #define FBF_M101NWWB		(FBF_ENABLE_GPIOS_DTB | FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4)
+#define FBF_OSD050T		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_2)
 
 	int	fbflags;
 	struct	fb_videomode mode;
@@ -149,6 +150,8 @@ void fbp_setup_env_cmds(void);
 #define VD_VGA(_mode, _detect, _bus, _addr)		VDF_VGA(_mode, "vga", RGB24, 0, _detect, _bus, _addr)
 #define VD_LSA40AT9001(_mode, _detect, _bus, _addr)	VDF_LSA40AT9001(_mode, "LSA40AT9001", RGB24, FBF_MODESTR, _detect, _bus, _addr)
 #define VD_AUO_G050(_mode, _detect, _bus, _addr)	VDF_AUO_G050(_mode, "AUO_G050", RGB24, FBF_MODESTR | FBF_SPI, _detect, _bus, _addr)
+#define VD_OSD050T3236(_mode, _detect, _bus, _addr)	VDF_OSD050T3236(_mode, "osd050t3236", RGB24, FBF_OSD050T, _detect, _bus, _addr)
+#define VD_OSD050T3872(_mode, _detect, _bus, _addr)	VDF_OSD050T3872(_mode, "osd050t3872", RGB24, FBF_OSD050T, _detect, _bus, _addr)
 #define VD_A030JN01_UPS051(_mode, _detect, _bus, _addr)	VDF_A030JN01_UPS051(_mode, "A030JN01_UPS051", UPS051, FBF_MODESTR | FBF_SPI, _detect, _bus, _addr)
 #define VD_A030JN01_YUV720(_mode, _detect, _bus, _addr) VDF_A030JN01_YUV720(_mode, "A030JN01_YUV720", YUYV, FBF_MODESTR | FBF_SPI, _detect, _bus, _addr)
 #define VD_KD024FM(_mode, _detect, _bus, _addr)		VDF_KD024FM(_mode, "KD024FM", RGB666, FBF_MODESTR, _detect, _bus, _addr)
@@ -1246,6 +1249,46 @@ void fbp_setup_env_cmds(void);
 		.upper_margin   = 27,\
 		.lower_margin   = 18,\
 		.hsync_len      = 20,\
+		.vsync_len      = 1,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
+#define VDF_OSD050T3236(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	.mode	= {\
+		.name           = _name,\
+		.refresh        = 52,\
+		.xres           = 720,\
+		.yres           = 1280,\
+		.pixclock       = 1000000000000ULL/((720+31+16+1)*(1280+15+8+1)*52),\
+		.left_margin    = 31,\
+		.right_margin   = 16,\
+		.upper_margin   = 15,\
+		.lower_margin   = 8,\
+		.hsync_len      = 1,\
+		.vsync_len      = 1,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
+#define VDF_OSD050T3872(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	.mode	= {\
+		.name           = _name,\
+		.refresh        = 52,\
+		.xres           = 720,\
+		.yres           = 1280,\
+		.pixclock       = 1000000000000ULL/((720+31+16+1)*(1280+15+8+1)*52),\
+		.left_margin    = 31,\
+		.right_margin   = 16,\
+		.upper_margin   = 15,\
+		.lower_margin   = 8,\
+		.hsync_len      = 1,\
 		.vsync_len      = 1,\
 		.sync           = FB_SYNC_EXT,\
 		.vmode          = FB_VMODE_NONINTERLACED\
