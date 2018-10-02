@@ -266,7 +266,11 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 	const char *buf_start = buf;
 	const struct fb_videomode *mode;
 	const char * fmt;
+#if defined(CONFIG_MX8M)
 	unsigned fb1 = (fb == FB_MIPI) ? FB_MIPI_BRIDGE : fb;
+#else
+	unsigned fb1 = fb;
+#endif
 
 	if (env_get("cmd_frozen") && env_get(cmd_fbnames[fb]))
 		return;		/* don't override if already set */
@@ -402,47 +406,51 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 	}
 
 	if (di && (fb == FB_MIPI)) {
-		sz = snprintf(buf, size, "fdt %s %s mode-skip-eot;",
-			(di->fbflags & FBF_MODE_SKIP_EOT) ? "set" : "rm",
-			fbnames[fb]);
+		sz = snprintf(buf, size, "fdt %s mipi mode-skip-eot;",
+			(di->fbflags & FBF_MODE_SKIP_EOT) ? "set" : "rm");
 		buf += sz;
 		size -= sz;
 
-		sz = snprintf(buf, size, "fdt %s %s mode-video;",
-			(di->fbflags & FBF_MODE_VIDEO) ? "set" : "rm",
-			fbnames[fb]);
+		sz = snprintf(buf, size, "fdt %s mipi mode-video;",
+			(di->fbflags & FBF_MODE_VIDEO) ? "set" : "rm");
 		buf += sz;
 		size -= sz;
 
-		sz = snprintf(buf, size, "fdt %s %s mode-video-burst;",
-			(di->fbflags & FBF_MODE_VIDEO_BURST) ? "set" : "rm",
-			fbnames[fb]);
+		sz = snprintf(buf, size, "fdt %s mipi mode-video-burst;",
+			(di->fbflags & FBF_MODE_VIDEO_BURST) ? "set" : "rm");
 		buf += sz;
 		size -= sz;
 
 		if (di->fbflags & FBF_MIPI_CMDS) {
 			sz = snprintf(buf, size,
 				"fdt get value cmds mipi_cmds_%s phandle;"
-				"fdt set %s mipi_cmds <${cmds}>;",
-				di->mode.name, fbnames[fb]);
+				"fdt set mipi mipi-cmds <${cmds}>;",
+				di->mode.name);
 			buf += sz;
 			size -= sz;
 		}
 
-		sz = snprintf(buf, size, "fdt set %s dsi-lanes <%u>;",
-			fbnames[fb], (di->fbflags >> FBF_DSI_LANE_SHIFT) & 7);
+		sz = snprintf(buf, size, "fdt set mipi dsi-lanes <%u>;",
+			(di->fbflags >> FBF_DSI_LANE_SHIFT) & 7);
 		buf += sz;
 		size -= sz;
 
 		sz = snprintf(buf, size,
 				"fdt set backlight_mipi status okay;"
-				"fdt set lcdif status okay;"
 				"fdt set mipi_dsi status okay;"
+#if defined(CONFIG_MX8M)
+				"fdt set lcdif status okay;"
 				"fdt set mipi_dsi_phy status okay;"
-				"fdt set mipi_to_lvds status %s;",
-				(di->addr_num == 0x2c) ? "okay" : "disabled");
+#endif
+				);
 		buf += sz;
 		size -= sz;
+		if (di->addr_num == 0x2c) {
+			sz = snprintf(buf, size,
+				"fdt set mipi_to_lvds status okay;");
+			buf += sz;
+			size -= sz;
+		}
 	}
 
 	if (di && di->pwm_period) {
@@ -1577,7 +1585,9 @@ static int init_display(const struct display_info_t *di)
 	if (di->fbtype == FB_HDMI)
 		imx8m_fb_init(&di->mode, 0, di->pixfmt);
 #else
-	ret = ipuv3_fb_init(&di->mode, (di->fbtype == FB_LCD2) ? 1 : 0,
+	ret = 0;
+	if (di->fbtype != FB_MIPI)
+		ret = ipuv3_fb_init(&di->mode, (di->fbtype == FB_LCD2) ? 1 : 0,
 			di->pixfmt);
 #endif
 	if (ret) {
