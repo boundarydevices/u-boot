@@ -323,6 +323,8 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		size -= sz;
 	}
 
+	if (!di)
+		goto set_variables;
 	interface_width = 18;
 	if (di->pixfmt == IPU_PIX_FMT_RGB24) {
 		fmt = rgb24;
@@ -338,7 +340,7 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		fmt = rgb666;
 	}
 
-	if (di && (fb >= FB_LCD) && (fb != FB_MIPI)) {
+	if ((fb >= FB_LCD) && (fb != FB_MIPI)) {
 #if defined(CONFIG_MX6SX) || defined(CONFIG_MX7D)
 		sz = snprintf(buf, size, "fdt set %s bus-width <%u>;", short_names[fb],
 				interface_width);
@@ -350,7 +352,7 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		size -= sz;
 	}
 
-	if (di && ((fb == FB_LCD) || (fb == FB_LCD2))) {
+	if ((fb == FB_LCD) || (fb == FB_LCD2)) {
 		sz = snprintf(buf, size, "fdt set %s default_ifmt %s;",
 				short_names[fb], fmt);
 		buf += sz;
@@ -362,7 +364,7 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		size -= sz;
 	}
 
-	if (di && ((fb == FB_LVDS) || (fb == FB_LVDS2))) {
+	if ((fb == FB_LVDS) || (fb == FB_LVDS2)) {
 
 		sz = snprintf(buf, size, "fdt set %s fsl,data-width <%u>;",
 				ch_names[fb],
@@ -383,7 +385,7 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		}
 	}
 
-	if (di && (di->fbflags & FBF_PINCTRL)) {
+	if (di->fbflags & FBF_PINCTRL) {
 		sz = snprintf(buf, size,
 			"fdt get value pin pinctrl_%s phandle;"
 			"fdt set %s pinctrl-0 <${pin}>;"
@@ -393,8 +395,8 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		size -= sz;
 	}
 
-	i = di->enable_gp;
-	if (di && (di->fbflags & FBF_ENABLE_GPIOS_DTB)) {
+	if (di->fbflags & FBF_ENABLE_GPIOS_DTB) {
+		i = di->enable_gp;
 		sz = snprintf(buf, size,
 			"fdt get value gp gpio%u phandle;"
 			"fdt set %s enable-gpios <${gp} %u %u>;",
@@ -405,7 +407,7 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		size -= sz;
 	}
 
-	if (di && (fb == FB_MIPI)) {
+	if (fb == FB_MIPI) {
 		sz = snprintf(buf, size, "fdt %s mipi mode-skip-eot;",
 			(di->fbflags & FBF_MODE_SKIP_EOT) ? "set" : "rm");
 		buf += sz;
@@ -453,13 +455,13 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		}
 	}
 
-	if (di && di->pwm_period) {
+	if (di->pwm_period) {
 		sz = snprintf(buf, size, "fdt get value pwm %s phandle; fdt set %s pwms <${pwm} 0x%x 0x%x>;",
 				pwm_names[fb], backlight_names[fb], 0, di->pwm_period);
 		buf += sz;
 		size -= sz;
 	}
-	if (di && (di->fbflags & FBF_BKLIT_DTB)) {
+	if (di->fbflags & FBF_BKLIT_DTB) {
 		sz = snprintf(buf, size, "fdt set %s brightness-levels %s;",
 			backlight_names[fb],
 			(di->fbflags & FBF_BKLIT_LOW_ACTIVE) ?
@@ -469,10 +471,8 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		size -= sz;
 	}
 
-	if (mode_str) {
-		snprintf(buf, size, "fdt set %s mode_str %s;", fbnames[fb], mode_str);
+	if (mode_str)
 		goto set_variables;
-	}
 
 	mode = &di->mode;
 	for (i = 0; i < ARRAY_SIZE(timings_properties); i++) {
@@ -489,6 +489,8 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		size -= sz;
 	}
 set_variables:
+	if (mode_str)
+		snprintf(buf, size, "fdt set %s mode_str %s;", fbnames[fb], mode_str);
 	env_set(cmd_fbnames[fb], buf_start);
 	env_set(fbnames_name[fb], di ? di->mode.name : mode_str);
 }
