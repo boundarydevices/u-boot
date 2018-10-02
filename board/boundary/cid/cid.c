@@ -582,13 +582,25 @@ void hw_watchdog_reset(void)
 	}
 }
 
+#ifdef CONFIG_CMD_FBPANEL
+
+static const struct display_info_t displays[] = {
+	VD_OSD050T3236(MIPI, NULL, fbp_bus_gp(1, 0, 0, 0), 0x4a),
+	VD_OSD050T3872(MIPI, NULL, fbp_bus_gp(1, 0, 0, 0), 0x4a),
+};
+#define display_cnt	ARRAY_SIZE(displays)
+#else
+#define displays	NULL
+#define display_cnt	0
+#endif
+
 int board_init(void)
 {
 	int i;
 	int inactive = 0;
 	int active = 0;
 	common_board_init(i2c_pads, I2C_BUS_CNT, IOMUXC_GPR1_OTG_ID_GPIO1,
-			NULL, 0, 0);
+			displays, display_cnt, 0);
 	gpio_set_value(GP_LED_BLUE, LED_ACTIVE_BLUE);
 
 	if ((get_imx_reset_cause() & 0xef) == 0x1) {
