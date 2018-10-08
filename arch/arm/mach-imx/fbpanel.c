@@ -539,6 +539,8 @@ static int calc_gcd(int a, int b)
 {
 	int n;
 
+	if (!a)
+		return b;
 	while (b) {
 		if (a > b) {
 			n = a;
