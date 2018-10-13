@@ -325,6 +325,9 @@ static const iomux_v3_cfg_t init_pads[] = {
 #define GP_PWM2			IMX_GPIO_NR(1, 19)
 	IOMUX_PAD_CTRL(SD1_DAT2__GPIO1_IO19, WEAK_PULLUP),
 
+#define GP_USBH1_PWR_EN		IMX_GPIO_NR(4, 17)
+	IOMUX_PAD_CTRL(DI0_PIN15__GPIO4_IO17, WEAK_PULLDN),
+
 	/* reg_wlan_en */
 #define GP_REG_WLAN_EN		IMX_GPIO_NR(6, 15)
 	IOMUX_PAD_CTRL(NANDF_CS2__GPIO6_IO15, WEAK_PULLDN),
@@ -412,6 +415,7 @@ static const struct i2c_pads_info i2c_pads[] = {
 int board_ehci_hcd_init(int port)
 {
 	if (port) {
+		gpio_set_value(GP_USBH1_PWR_EN, 1);
 		gpio_set_value(GP_USB_NFC_PWR_EN, 1);
 
 		/* Reset USB hub */
@@ -476,6 +480,7 @@ static const unsigned short gpios_out_low[] = {
 	GP_MIPI_BACKLIGHT_EN,
 	GP_PWM2,
 	GP_REG_USBOTG,
+	GP_USBH1_PWR_EN,
 	GP_REG_WLAN_EN,
 	GP_USBH1_HUB_RESET,
 	GP_USB_NFC_PWR_EN,
@@ -552,6 +557,8 @@ static void __board_poweroff(void)
 {
 	struct snvs_regs *snvs = (struct snvs_regs *)(SNVS_BASE_ADDR);
 
+	gpio_set_value(GP_USBH1_PWR_EN, 0);
+	max77823_boost_power(0);
 	writel(0x60, &snvs->lpcr);
 	mdelay(500);
 }
@@ -613,6 +620,7 @@ int board_init(void)
 		gpio_set_value(GP_VIBRATOR_EN, 1);
 		start_time = get_timer(0);
 	}
+	max77823_boost_power(1);
 	return 0;
 }
 
