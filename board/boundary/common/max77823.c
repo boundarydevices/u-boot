@@ -310,11 +310,11 @@ static void max77823_otg_enable(void)
 
 static void max77823_otg_disable(void)
 {
-	/* chrg on, OTG off, boost on/off, (buck on) */
+	/* chrg on, OTG off, boost unchanged, (buck on) */
 	max77823_update_reg(I2C_ADDR_CHARGER, MAX77823_CHG_CNFG_00,
 		CHG_CNFG_00_CHG_MASK | CHG_CNFG_00_BUCK_MASK,
 		CHG_CNFG_00_CHG_MASK | CHG_CNFG_00_BUCK_MASK |
-			CHG_CNFG_00_OTG_MASK | CHG_CNFG_00_BOOST_MASK);
+			CHG_CNFG_00_OTG_MASK);
 
 	mdelay(50);
 
