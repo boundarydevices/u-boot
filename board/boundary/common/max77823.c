@@ -33,6 +33,17 @@
 #define CHG_CNFG_00_BUCK_MASK	BIT(2)
 #define CHG_CNFG_00_BOOST_MASK	BIT(3)
 
+static int max77823_read_reg(int i2c_addr, int reg)
+{
+	unsigned char buf[4];
+	int ret;
+
+	ret = i2c_read(i2c_addr, reg, 1, buf, 1);
+	if (!ret)
+		ret = buf[0];
+	return ret;
+}
+
 #ifdef CONFIG_OTG_CHARGER
 
 #define ANADIG_USB1_CHRG_DETECT_CHK_CONTACT	BIT(18)
@@ -154,11 +165,14 @@ static void power_check(void)
 	int ret;
 	u8 val8;
 	u8 buf[2];
+	u8 boost = max77823_read_reg(I2C_ADDR_CHARGER, MAX77823_CHG_CNFG_00) &
+			CHG_CNFG_00_BOOST_MASK;
+
 
 #ifdef CONFIG_OTG_CHARGER
 	int chgin = set_max_chrgin_current(I2C_ADDR_CHARGER);
 	if (chgin >= 0x5a) {	/* 3.0 amps */
-		val8 = 0x5;	/* enable charging mode */
+		val8 = 0x5 | boost;	/* enable charging mode */
 		i2c_write(I2C_ADDR_CHARGER, MAX77823_CHG_CNFG_00, 1, &val8, 1);
 		return;
 	}
@@ -167,19 +181,19 @@ static void power_check(void)
 	if (!ret) {
 		/* check for VBUS is valid */
 		if (((val8 >> 5) & 0x3) == 3) {
-			val8 = 0x5;	/* enable charging mode */
+			val8 = 0x5 | boost;	/* enable charging mode */
 			i2c_write(I2C_ADDR_CHARGER, MAX77823_CHG_CNFG_00, 1, &val8, 1);
 			return;
 		}
 	}
 #endif
 	/* chgin cannot supply enough, check battery */
-	val8 = 0x4;	/* disable charging mode */
+	val8 = 0x4 | boost;	/* disable charging mode */
 	i2c_write(I2C_ADDR_CHARGER, MAX77823_CHG_CNFG_00, 1, &val8, 1);
 	udelay(5000);	/* 5 ms to let voltage stabilize */
 
 	ret = i2c_read(I2C_ADDR_FUELGAUGE, MAX77823_REG_VCELL, 1, buf, 2);
-	val8 = 0x5;	/* enable charging mode */
+	val8 = 0x5 | boost;	/* enable charging mode */
 	i2c_write(I2C_ADDR_CHARGER, MAX77823_CHG_CNFG_00, 1, &val8, 1);
 
 	if (!ret) {
