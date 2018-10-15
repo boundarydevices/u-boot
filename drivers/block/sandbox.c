@@ -141,7 +141,7 @@ int host_dev_bind(int devnum, char *filename)
 	host_dev->fd = fd;
 	host_dev->filename = fname;
 
-	return blk_prepare_device(dev);
+	return 0;
 err_file:
 	os_close(fd);
 err:

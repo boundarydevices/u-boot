@@ -171,8 +171,6 @@ static int efi_bl_bind(efi_handle_t handle, void *interface)
 	priv->handle = handle;
 	priv->io = interface;
 
-	ret = blk_prepare_device(bdev);
-
 	/* Create handles for the partions of the block device */
 	disks = efi_bl_bind_partitions(handle, bdev);
 	EFI_PRINT("Found %d partitions\n", disks);
