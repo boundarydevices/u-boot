@@ -112,6 +112,7 @@
         "lock=10001000\0"\
         "active_slot=_a\0"\
         "boot_part=boot\0"\
+        "reboot_mode_android=""normal""\0"\
         "fs_type=""rootfstype=ramfs""\0"\
         "initargs="\
             "init=/init console=ttyS0,115200 no_console_suspend earlyprintk=aml-uart,0xc81004c0 ramoops.pstore_en=1 ramoops.record_size=0x8000 ramoops.console_size=0x4000 "\
@@ -123,21 +124,37 @@
             "else fi;"\
             "\0"\
     "storeargs="\
-            "setenv bootargs ${initargs} ${fs_type} androidboot.selinux=${EnableSelinux} logo=${display_layer},loaded,${fb_addr},${outputmode} vout=${outputmode},enable hdmimode=${hdmimode} cvbsmode=${cvbsmode} hdmitx=${cecconfig} cvbsdrv=${cvbs_drv} androidboot.firstboot=${firstboot} jtag=${jtag}; "\
+            "setenv bootargs ${initargs} ${fs_type} reboot_mode_android=${reboot_mode_android} androidboot.selinux=${EnableSelinux} logo=${display_layer},loaded,${fb_addr},${outputmode} vout=${outputmode},enable hdmimode=${hdmimode} cvbsmode=${cvbsmode} hdmitx=${cecconfig} cvbsdrv=${cvbs_drv} androidboot.firstboot=${firstboot} jtag=${jtag}; "\
 	"setenv bootargs ${bootargs} androidboot.hardware=amlogic;"\
             "run cmdline_keys;"\
             "\0"\
         "switch_bootmode="\
             "get_rebootmode;"\
             "if test ${reboot_mode} = factory_reset; then "\
+                    "setenv reboot_mode_android ""normal"";"\
+                    "run storeargs;"\
                     "run recovery_from_flash;"\
             "else if test ${reboot_mode} = update; then "\
+                    "setenv reboot_mode_android ""normal"";"\
+                    "run storeargs;"\
                     "run update;"\
+            "else if test ${reboot_mode} = quiescent; then "\
+                    "setenv reboot_mode_android ""quiescent"";"\
+                    "run storeargs;"\
+                    "setenv bootargs ${bootargs} androidboot.quiescent=1;"\
+            "else if test ${reboot_mode} = recovery_quiescent; then "\
+                    "setenv reboot_mode_android ""quiescent"";"\
+                    "run storeargs;"\
+                    "setenv bootargs ${bootargs} androidboot.quiescent=1;"\
+                    "run recovery_from_flash;"\
             "else if test ${reboot_mode} = cold_boot; then "\
-                "run try_auto_burn; "\
+                    "setenv reboot_mode_android ""normal"";"\
+                    "run storeargs;"\
             "else if test ${reboot_mode} = fastboot; then "\
+                "setenv reboot_mode_android ""normal"";"\
+                "run storeargs;"\
                 "fastboot;"\
-            "fi;fi;fi;fi;"\
+            "fi;fi;fi;fi;fi;fi;"\
             "\0" \
         "storeboot="\
             "get_system_as_root_mode;"\
@@ -208,7 +225,23 @@
             "if imgread kernel ${recovery_part} ${loadaddr} ${recovery_offset}; then wipeisb; bootm ${loadaddr}; fi;"\
             "\0"\
         "init_display="\
-            "osd open;osd clear;imgread pic logo bootup $loadaddr;bmp display $bootup_offset;bmp scale"\
+            "get_rebootmode;"\
+            "echo reboot_mode:::: ${reboot_mode};"\
+            "if test ${reboot_mode} = quiescent; then "\
+                    "setenv reboot_mode_android ""quiescent"";"\
+                    "run storeargs;"\
+                    "setenv bootargs ${bootargs} androidboot.quiescent=1;"\
+                    "osd open;osd clear;"\
+            "else if test ${reboot_mode} = recovery_quiescent; then "\
+                    "setenv reboot_mode_android ""quiescent"";"\
+                    "run storeargs;"\
+                    "setenv bootargs ${bootargs} androidboot.quiescent=1;"\
+                    "osd open;osd clear;"\
+            "else "\
+                "setenv reboot_mode_android ""normal"";"\
+                "run storeargs;"\
+                "osd open;osd clear;imgread pic logo bootup $loadaddr;bmp display $bootup_offset;bmp scale; "\
+            "fi;fi;"\
             "\0"\
         "cmdline_keys="\
             "if keyman init 0x1234; then "\

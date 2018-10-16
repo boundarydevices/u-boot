@@ -123,6 +123,7 @@
         "cvbs_drv=0\0"\
         "osd_reverse=0\0"\
         "video_reverse=0\0"\
+        "reboot_mode_android=""normal""\0"\
         "initargs="\
             "init=/init console=ttyS0,115200 no_console_suspend earlycon=aml_uart,0xff803000 ramoops.pstore_en=1 ramoops.record_size=0x8000 ramoops.console_size=0x4000 "\
             "\0"\
@@ -133,7 +134,7 @@
             "else fi;"\
             "\0"\
         "storeargs="\
-            "setenv bootargs ${initargs} logo=${display_layer},loaded,${fb_addr} vout=${outputmode},enable panel_type=${panel_type} osd_reverse=${osd_reverse} video_reverse=${video_reverse} androidboot.selinux=${EnableSelinux} androidboot.firstboot=${firstboot} jtag=${jtag}; "\
+            "setenv bootargs ${initargs} reboot_mode_android=${reboot_mode_android} logo=${display_layer},loaded,${fb_addr} vout=${outputmode},enable panel_type=${panel_type} osd_reverse=${osd_reverse} video_reverse=${video_reverse} androidboot.selinux=${EnableSelinux} androidboot.firstboot=${firstboot} jtag=${jtag}; "\
 	"setenv bootargs ${bootargs} androidboot.hardware=amlogic;"\
             "run cmdline_keys;"\
             "get_system_as_root_mode;"\
@@ -153,14 +154,30 @@
         "switch_bootmode="\
             "get_rebootmode;"\
             "if test ${reboot_mode} = factory_reset; then "\
+                    "setenv reboot_mode_android ""normal"";"\
+                    "run storeargs;"\
                     "run recovery_from_flash;"\
             "else if test ${reboot_mode} = update; then "\
+                    "setenv reboot_mode_android ""normal"";"\
+                    "run storeargs;"\
                     "run update;"\
+            "else if test ${reboot_mode} = quiescent; then "\
+                    "setenv reboot_mode_android ""quiescent"";"\
+                    "run storeargs;"\
+                    "setenv bootargs ${bootargs} androidboot.quiescent=1;"\
+            "else if test ${reboot_mode} = recovery_quiescent; then "\
+                    "setenv reboot_mode_android ""quiescent"";"\
+                    "run storeargs;"\
+                    "setenv bootargs ${bootargs} androidboot.quiescent=1;"\
+                    "run recovery_from_flash;"\
             "else if test ${reboot_mode} = cold_boot; then "\
-                /*"run try_auto_burn; "*/\
+                    "setenv reboot_mode_android ""normal"";"\
+                    "run storeargs;"\
             "else if test ${reboot_mode} = fastboot; then "\
+                "setenv reboot_mode_android ""normal"";"\
+                "run storeargs;"\
                 "fastboot;"\
-            "fi;fi;fi;fi;"\
+            "fi;fi;fi;fi;fi;fi;"\
             "\0" \
         "storeboot="\
             "if imgread kernel ${boot_part} ${loadaddr}; then bootm ${loadaddr}; fi;"\
@@ -219,7 +236,23 @@
             "if imgread kernel ${recovery_part} ${loadaddr} ${recovery_offset}; then wipeisb; bootm ${loadaddr}; fi"\
             "\0"\
         "init_display="\
-            "osd open;osd clear;imgread pic logo bootup $loadaddr;bmp display $bootup_offset;bmp scale;vout output ${outputmode}"\
+            "get_rebootmode;"\
+            "echo reboot_mode:::: ${reboot_mode};"\
+            "if test ${reboot_mode} = quiescent; then "\
+                    "setenv reboot_mode_android ""quiescent"";"\
+                    "run storeargs;"\
+                    "setenv bootargs ${bootargs} androidboot.quiescent=1;"\
+                    "osd open;osd clear;"\
+            "else if test ${reboot_mode} = recovery_quiescent; then "\
+                    "setenv reboot_mode_android ""quiescent"";"\
+                    "run storeargs;"\
+                    "setenv bootargs ${bootargs} androidboot.quiescent=1;"\
+                    "osd open;osd clear;"\
+            "else "\
+                "setenv reboot_mode_android ""normal"";"\
+                "run storeargs;"\
+                "osd open;osd clear;imgread pic logo bootup $loadaddr;bmp display $bootup_offset;bmp scale;vout output ${outputmode};"\
+            "fi;fi;"\
             "\0"\
         "cmdline_keys="\
             "if keyman init 0x1234; then "\
