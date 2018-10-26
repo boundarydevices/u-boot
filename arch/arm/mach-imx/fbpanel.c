@@ -423,6 +423,16 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		buf += sz;
 		size -= sz;
 
+		if (di->fbflags & FBF_MODE_VIDEO_MBC) {
+			sz = snprintf(buf, size, "fdt set mipi mode-video-mbc;");
+			buf += sz;
+			size -= sz;
+		}
+		if (di->fbflags & FBF_MODE_VIDEO_SYNC_PULSE) {
+			sz = snprintf(buf, size, "fdt set mipi mode-video-sync-pulse;");
+			buf += sz;
+			size -= sz;
+		}
 		if (di->fbflags & FBF_MIPI_CMDS) {
 			sz = snprintf(buf, size,
 				"fdt get value cmds mipi_cmds_%s phandle;"
@@ -458,6 +468,17 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 	if (di->pwm_period) {
 		sz = snprintf(buf, size, "fdt get value pwm %s phandle; fdt set %s pwms <${pwm} 0x%x 0x%x>;",
 				pwm_names[fb], backlight_names[fb], 0, di->pwm_period);
+		buf += sz;
+		size -= sz;
+	}
+	if ((di->fbflags & FBF_BKLIT_EN_DTB) && di->backlight_en_gp) {
+		i = di->backlight_en_gp;
+		sz = snprintf(buf, size,
+			"fdt get value gp gpio%u phandle;"
+			"fdt set %s enable-gpios <${gp} %u %u>;",
+			(i >> 5) + 1, backlight_names[fb], i & 0x1f,
+			(di->fbflags & FBF_BKLIT_EN_LOW_ACTIVE) ?
+				GPIO_ACTIVE_LOW : GPIO_ACTIVE_HIGH);
 		buf += sz;
 		size -= sz;
 	}
@@ -516,8 +537,11 @@ int fbp_detect_i2c(struct display_info_t const *di)
 	struct udevice *dev, *chip;
 #endif
 
-	if (di->bus_gp)
+	if (di->bus_gp) {
 		gpio_set_value(di->bus_gp, 1);
+		if (di->bus_gp_delay_ms)
+			mdelay(di->bus_gp_delay_ms);
+	}
 #ifdef CONFIG_DM_I2C
 	ret = uclass_get_device(UCLASS_I2C, di->bus_num, &dev);
 	if (ret)
@@ -1104,12 +1128,29 @@ static struct flags_check fc2[] = {
 	{ 's', FBF_MODE_SKIP_EOT},
 	{ 'v', FBF_MODE_VIDEO},
 	{ 'B', FBF_MODE_VIDEO_BURST},
+	{ 'M', FBF_MODE_VIDEO_MBC},
+	{ 'U', FBF_MODE_VIDEO_SYNC_PULSE},
 	{ 'c', FBF_MIPI_CMDS},
+	{ 'L', FBF_BKLIT_EN_LOW_ACTIVE},
+	{ 'E', FBF_BKLIT_EN_DTB},
 	{ '4', FBF_DSI_LANES_4},
 	{ '3', FBF_DSI_LANES_3},
 	{ '2', FBF_DSI_LANES_2},
 	{ '1', FBF_DSI_LANES_1},
 	{ 0, 0},
+};
+
+struct di_parse {
+	u8 offset;
+	u8 base;
+};
+
+static const struct di_parse di_parsing[] = {
+	{ offsetof(struct display_info_t, bus_num), 16 },
+	{ offsetof(struct display_info_t, addr_num), 16 },
+	{ offsetof(struct display_info_t, bus_gp), 10 },
+	{ offsetof(struct display_info_t, bus_gp_delay_ms), 10 },
+	{ offsetof(struct display_info_t, backlight_en_gp), 10 },
 };
 
 static void check_flags(struct display_info_t *di, const char **pp, struct flags_check *fc_base)
@@ -1241,36 +1282,26 @@ static const struct display_info_t * parse_mode(
 	}
 	if (c == 'x') {
 		p++;
-		value = simple_strtoul(p, &endp, 16);
-		if (endp <= p) {
-			printf("expecting bus\n");
-			return NULL;
-		}
-		p = endp;
-		di->bus_num = value;
-		c = *p;
-		if (c == ',') {
-			p++;
-			value = simple_strtoul(p, &endp, 16);
+		for (i = 0; i < ARRAY_SIZE(di_parsing); i++) {
+			unsigned char *dest = (unsigned char *)((char *)di + di_parsing[i].offset);
+			u32 val;
+
+			if (*p == ' ')
+				p++;
+			val = simple_strtoul(p, &endp, di_parsing[i].base);
 			if (endp <= p) {
-				printf("expecting bus addr\n");
+				printf("expecting integer:%s\n", p);
 				return NULL;
 			}
+			if (val >= 0x256)
+				printf("truncating:%x to %x\n", val, (u8)val);
+			*dest = (u8)val;
 			p = endp;
-			di->addr = value;
-			c = *p;
-			if (c == ',') {
-				p++;
-				value = simple_strtoul(p, &endp, 10);
-				if (endp <= p) {
-					printf("expecting bus gp\n");
-					return NULL;
-				}
-				p = endp;
-				di->bus_gp = value;
-				c = *p;
-			}
+			if (*p != ',')
+				break;
+			p++;
 		}
+		c = *p;
 	}
 	if (c == 'p') {
 		p++;
@@ -1365,8 +1396,9 @@ static const struct display_info_t *find_first_disp(
 static void str_mode(char *p, int size, const struct display_info_t *di, unsigned prefer)
 {
 	int count;
-	int i;
+	int i, last;
 	int interface_width = 18;
+	u8 separator = 'x';
 
 	if (prefer) {
 		*p++ = '*';
@@ -1417,18 +1449,23 @@ static void str_mode(char *p, int size, const struct display_info_t *di, unsigne
 		*p++ = 'e';
 		size--;
 	}
-	if (di->bus_num || di->addr_num || di->bus_gp) {
-		count = snprintf(p, size, "x%x,%x", di->bus_num, di->addr_num);
+	for (last = ARRAY_SIZE(di_parsing) - 1; last >= 0 ; last--) {
+		unsigned char *src = (unsigned char *)((char *)di + di_parsing[last].offset);
+		unsigned char val = *src;
+
+		if (val)
+			break;
+	}
+	for (i = 0; i <= last; i++) {
+		unsigned char *src = (unsigned char *)((char *)di + di_parsing[i].offset);
+		unsigned char val = *src;
+
+		count = snprintf(p, size, (di_parsing[i].base == 16) ? "%c%x" :
+				"%c%u", separator, val);
+		separator = ',';
 		if (size > count) {
 			p += count;
 			size -= count;
-		}
-		if (di->bus_gp) {
-			count = snprintf(p, size, ",%u", di->bus_gp);
-			if (size > count) {
-				p += count;
-				size -= count;
-			}
 		}
 	}
 	if (di->pwm_period) {
