@@ -40,6 +40,7 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IMX8MQ_PAD_GPIO1_IO02__WDOG1_WDOG_B | MUX_PAD_CTRL(WDOG_PAD_CTRL),
 	IMX8MQ_PAD_UART1_RXD__UART1_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
 	IMX8MQ_PAD_UART1_TXD__UART1_TX | MUX_PAD_CTRL(UART_PAD_CTRL),
+#define GP_LCM_JM430_BKL_EN		IMX_GPIO_NR(1, 1)
 /* This enables 5V power on LTK080A60A004T mipi display */
 #define GP_LTK08_MIPI_EN		IMX_GPIO_NR(1, 1)
 	IMX8MQ_PAD_GPIO1_IO01__GPIO1_IO1 | MUX_PAD_CTRL(0x16),
@@ -47,6 +48,7 @@ static iomux_v3_cfg_t const init_pads[] = {
 #define GPIRQ_GT911 			IMX_GPIO_NR(3, 12)
 	IMX8MQ_PAD_NAND_DATA06__GPIO3_IO12 | MUX_PAD_CTRL(0xd6),
 #define GP_GT911_RESET			IMX_GPIO_NR(3, 13)
+#define GP_ST1633_RESET			IMX_GPIO_NR(3, 13)
 	IMX8MQ_PAD_NAND_DATA07__GPIO3_IO13 | MUX_PAD_CTRL(0x49),
 
 #define GP_ARM_DRAM_VSEL		IMX_GPIO_NR(3, 24)
@@ -62,8 +64,10 @@ static iomux_v3_cfg_t const init_pads[] = {
 #define GP_I2C1_PCA9546_RESET		IMX_GPIO_NR(1, 8)
 	IMX8MQ_PAD_GPIO1_IO08__GPIO1_IO8 | MUX_PAD_CTRL(0x49),
 
+#define GP_TC358762_EN			IMX_GPIO_NR(3, 15)
 #define GP_I2C4_SN65DSI83_EN		IMX_GPIO_NR(3, 15)
-	IMX8MQ_PAD_NAND_RE_B__GPIO3_IO15 | MUX_PAD_CTRL(WEAK_PULLUP),
+	IMX8MQ_PAD_NAND_RE_B__GPIO3_IO15 | MUX_PAD_CTRL(0x6),
+
 
 #define GP_EMMC_RESET			IMX_GPIO_NR(2, 10)
 	IMX8MQ_PAD_SD1_RESET_B__GPIO2_IO10 | MUX_PAD_CTRL(0x41),
@@ -289,7 +293,8 @@ static const struct display_info_t displays[] = {
 	VD_1920_1080M_60(HDMI, board_detect_hdmi, 0, 0x50),
 	VD_1280_720M_60(HDMI, NULL, 0, 0x50),
 	VD_MIPI_M101NWWB(MIPI, fbp_detect_i2c, fbp_bus_gp(3, GP_I2C4_SN65DSI83_EN, 0, 0), 0x2c),
-	VD_LTK080A60A004T(MIPI, board_detect_gt911, fbp_bus_gp(3, GP_LTK08_MIPI_EN, 0, 0), 0x5d),	/* Goodix touchscreen */
+	VD_LTK080A60A004T(MIPI, board_detect_gt911, fbp_bus_gp(3, GP_LTK08_MIPI_EN, GP_LTK08_MIPI_EN, 0), 0x5d),	/* Goodix touchscreen */
+	VD_LCM_JM430(MIPI, fbp_detect_i2c, fbp_bus_gp(3, GP_ST1633_RESET, GP_TC358762_EN, 30), fbp_addr_gp(0x55, GP_LCM_JM430_BKL_EN, 0, 0)),		/* Sitronix touch */
 };
 #define display_cnt	ARRAY_SIZE(displays)
 #else
