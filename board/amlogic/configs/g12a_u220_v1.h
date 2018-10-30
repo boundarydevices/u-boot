@@ -112,7 +112,7 @@
         "cvbs_drv=0\0"\
         "osd_reverse=0\0"\
         "video_reverse=0\0"\
-        "active_slot=_a\0"\
+        "active_slot=normal\0"\
         "boot_part=boot\0"\
         "reboot_mode_android=""normal""\0"\
         "fs_type=""rootfstype=ramfs""\0"\
@@ -166,6 +166,19 @@
                     "setenv fs_type ""ro rootwait skip_initramfs"";"\
                     "run storeargs;"\
             "fi;"\
+            "get_valid_slot;"\
+            "get_avb_mode;"\
+            "echo active_slot: ${active_slot};"\
+            "if test ${active_slot} != normal; then "\
+                    "setenv bootargs ${bootargs} androidboot.slot_suffix=${active_slot};"\
+            "fi;"\
+            "if test ${avb2} = 0; then "\
+                "if test ${active_slot} = _a; then "\
+                    "setenv bootargs ${bootargs} root=/dev/mmcblk0p23;"\
+                "else if test ${active_slot} = _b; then "\
+                    "setenv bootargs ${bootargs} root=/dev/mmcblk0p24;"\
+                "fi;fi;"\
+            "fi;"\
             "if imgread kernel ${boot_part} ${loadaddr}; then bootm ${loadaddr}; fi;"\
             "run update;"\
             "\0"\
@@ -218,8 +231,15 @@
                 "bootm ${loadaddr};fi;"\
             "\0"\
         "recovery_from_flash="\
-            "setenv bootargs ${bootargs} aml_dt=${aml_dt} recovery_part={recovery_part} recovery_offset={recovery_offset};"\
-            "if imgread kernel ${recovery_part} ${loadaddr} ${recovery_offset}; then wipeisb; bootm ${loadaddr}; fi"\
+            "get_valid_slot;"\
+            "echo active_slot: ${active_slot};"\
+            "if test ${active_slot} = normal; then "\
+                "setenv bootargs ${bootargs} aml_dt=${aml_dt} recovery_part={recovery_part} recovery_offset={recovery_offset};"\
+                "if imgread kernel ${recovery_part} ${loadaddr} ${recovery_offset}; then wipeisb; bootm ${loadaddr}; fi;"\
+            "else "\
+                "setenv bootargs ${bootargs} aml_dt=${aml_dt} recovery_part=${boot_part} recovery_offset=${recovery_offset};"\
+                "if imgread kernel ${boot_part} ${loadaddr}; then bootm ${loadaddr}; fi;"\
+            "fi;"\
             "\0"\
         "init_display="\
             "get_rebootmode;"\
