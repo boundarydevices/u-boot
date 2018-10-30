@@ -400,7 +400,7 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		sz = snprintf(buf, size,
 			"fdt get value gp gpio%u phandle;"
 			"fdt set %s enable-gpios <${gp} %u %u>;",
-			(i >> 5) + 1, fbnames[fb], i & 0x1f,
+			(i >> 5), fbnames[fb], i & 0x1f,
 			(di->fbflags & FBF_ENABLE_GPIOS_ACTIVE_LOW) ?
 				GPIO_ACTIVE_LOW : GPIO_ACTIVE_HIGH);
 		buf += sz;
@@ -476,7 +476,7 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		sz = snprintf(buf, size,
 			"fdt get value gp gpio%u phandle;"
 			"fdt set %s enable-gpios <${gp} %u %u>;",
-			(i >> 5) + 1, backlight_names[fb], i & 0x1f,
+			(i >> 5), backlight_names[fb], i & 0x1f,
 			(di->fbflags & FBF_BKLIT_EN_LOW_ACTIVE) ?
 				GPIO_ACTIVE_LOW : GPIO_ACTIVE_HIGH);
 		buf += sz;
