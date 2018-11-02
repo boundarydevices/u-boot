@@ -4,13 +4,21 @@ config IMX8M
 	bool
 	select ROM_UNIFIED_SECTIONS
 
+config IMX8MQ
+	bool
+	select IMX8M
+
+config IMX8MM
+	bool
+	select IMX8M
+
 choice
 	prompt	"NXP i.MX8M board select"
 	optional
 
 config TARGET_NITROGEN8M
 	bool "nitrogen8m"
-	select IMX8M
+	select IMX8MQ
 	select SUPPORT_SPL
 
 endchoice
