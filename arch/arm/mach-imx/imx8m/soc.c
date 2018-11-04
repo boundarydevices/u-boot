@@ -135,20 +135,33 @@ u32 get_cpu_rev(void)
 	struct anamix_pll *ana_pll = (struct anamix_pll *)ANATOP_BASE_ADDR;
 	u32 reg = readl(&ana_pll->digprog);
 	u32 type = (reg >> 16) & 0xff;
+	u32 major_low = (reg >> 8) & 0xff;
 	u32 rom_version;
 
 	reg &= 0xff;
 
+	/* iMX8MM */
+	if (major_low == 0x41)
+		return ((type + 1) << 12) | reg;
+	/* iMX8MQ */
 	if (reg == CHIP_REV_1_0) {
 		/*
 		 * For B0 chip, the DIGPROG is not updated, still TO1.0.
-		 * we have to check ROM version further
+		 * we have to check ROM version or OCOTP_READ_FUSE_DATA
 		 */
-		rom_version = readl((void __iomem *)ROM_VERSION_A0);
-		if (rom_version != CHIP_REV_1_0) {
-			rom_version = readl((void __iomem *)ROM_VERSION_B0);
-			if (rom_version >= CHIP_REV_2_0)
-				reg = CHIP_REV_2_0;
+		if (readl((void __iomem *)(OCOTP_BASE_ADDR + 0x40))
+				== 0xff0055aa) {
+			/* 0xff0055aa is magic number for B1 */
+			reg = 0x21;
+		} else {
+#define ROM_VERSION_A0		0x800
+#define ROM_VERSION_B0		0x83C
+			rom_version = readl((void __iomem *)ROM_VERSION_A0);
+			if (rom_version != CHIP_REV_1_0) {
+				rom_version = readl((void __iomem *)ROM_VERSION_B0);
+				if (rom_version >= CHIP_REV_2_0)
+					reg = CHIP_REV_2_0;
+			}
 		}
 	}
 
