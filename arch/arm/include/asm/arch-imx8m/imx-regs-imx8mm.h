@@ -234,39 +234,37 @@ struct fuse_bank1_regs {
 	u32 rsvd3[3];
 };
 
+struct ana_grp {
+	u32 gnrl_ctl;
+	u32 fdiv_ctl0;
+	u32 fdiv_ctl1;
+	u32 sscg_ctl;
+	u32 mnit_ctl;
+};
+
+struct ana_grp2 {
+	u32 gnrl_ctl;
+	u32 div_ctl;
+	u32 locked_ctl;
+	u32 mnit_ctl;
+};
+
 struct anamix_pll {
-	u32 audio_pll1_cfg0;
-	u32 audio_pll1_cfg1;
-	u32 audio_pll2_cfg0;
-	u32 audio_pll2_cfg1;
-	u32 video_pll_cfg0;
-	u32 video_pll_cfg1;
-	u32 gpu_pll_cfg0;
-	u32 gpu_pll_cfg1;
-	u32 vpu_pll_cfg0;
-	u32 vpu_pll_cfg1;
-	u32 arm_pll_cfg0;
-	u32 arm_pll_cfg1;
-	u32 sys_pll1_cfg0;
-	u32 sys_pll1_cfg1;
-	u32 sys_pll1_cfg2;
-	u32 sys_pll2_cfg0;
-	u32 sys_pll2_cfg1;
-	u32 sys_pll2_cfg2;
-	u32 sys_pll3_cfg0;
-	u32 sys_pll3_cfg1;
-	u32 sys_pll3_cfg2;
-	u32 video_pll2_cfg0;
-	u32 video_pll2_cfg1;
-	u32 video_pll2_cfg2;
-	u32 dram_pll_cfg0;
-	u32 dram_pll_cfg1;
-	u32 dram_pll_cfg2;
-	u32 digprog;
-	u32 osc_misc_cfg;
-	u32 pllout_monitor_cfg;
-	u32 frac_pllout_div_cfg;
-	u32 sscg_pllout_div_cfg;
+	struct ana_grp audio_pll1;
+	struct ana_grp audio_pll2;
+	struct ana_grp video_pll1;
+	u32 reserved1[5];
+	struct ana_grp dram_pll;
+	struct ana_grp2 gpu_pll;
+	struct ana_grp2 vpu_pll;
+	struct ana_grp2 arm_pll;
+	struct ana_grp2 sys_pll1;
+	u32 reserved2[6*4];
+	struct ana_grp2 sys_pll2;
+	struct ana_grp2 sys_pll3;
+	u32 anamix_misc_ctl;	/* 0x124 */
+	u32 reserved3[438];	/* 0x128 */
+	u32 digprog;		/* 0x800 */
 };
 
 struct fuse_bank9_regs {

@@ -630,9 +630,9 @@ struct ccm_reg {
 #define ENET_PHY_REF_CLK_ROOT_FROM_PLL_ENET_MAIN_25M_CLK	0x01000000
 
 enum enet_freq {
-	ENET_25MHz = 0,
-	ENET_50MHz,
-	ENET_125MHz,
+	ENET_25MHZ = 0,
+	ENET_50MHZ,
+	ENET_125MHZ,
 };
 void dram_pll_init(enum dram_pll_out_val pll_val);
 void dram_enable_bypass(enum dram_bypassclk_val clk_val);

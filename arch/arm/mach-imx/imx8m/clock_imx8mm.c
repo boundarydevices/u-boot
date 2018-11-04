@@ -745,13 +745,13 @@ int set_clk_enet(enum enet_freq type)
 	clock_enable(CCGR_SIM_ENET, 0);
 
 	switch (type) {
-	case ENET_125MHz:
+	case ENET_125MHZ:
 		enet1_ref = ENET1_REF_CLK_ROOT_FROM_PLL_ENET_MAIN_125M_CLK;
 		break;
-	case ENET_50MHz:
+	case ENET_50MHZ:
 		enet1_ref = ENET1_REF_CLK_ROOT_FROM_PLL_ENET_MAIN_50M_CLK;
 		break;
-	case ENET_25MHz:
+	case ENET_25MHZ:
 		enet1_ref = ENET1_REF_CLK_ROOT_FROM_PLL_ENET_MAIN_25M_CLK;
 		break;
 	default:
