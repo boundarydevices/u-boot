@@ -331,6 +331,8 @@ int fracpll_configure(enum pll_clocks clock, u32 freq)
 	u32 tmp, div_val;
 	struct ana_grp* pll;
 	struct imx_int_pll_rate_table *rate;
+	u32 val;
+	int ret;
 
 	for (i = 0; i < ARRAY_SIZE(imx8mm_fracpll_tbl); i++) {
 		if (freq == imx8mm_fracpll_tbl[i].rate)
@@ -357,7 +359,7 @@ int fracpll_configure(enum pll_clocks clock, u32 freq)
 		pll = &ana_pll->video_pll1;
 		break;
 	default:
-		return 0;
+		return -EINVAL;
 	}
 	/* Bypass clock and set lock to pll output lock */
 	tmp = readl(&pll->gnrl_ctl);
@@ -380,14 +382,15 @@ int fracpll_configure(enum pll_clocks clock, u32 freq)
 	writel(tmp, &pll->gnrl_ctl);
 
 	/* Wait Lock*/
-	while (!(readl(&pll->gnrl_ctl) & LOCK_STATUS))
-		;
+	ret = readl_poll_timeout(&pll->gnrl_ctl, val, val & LOCK_STATUS, 100);
+	if (ret)
+		printf("%s timeout\n", __func__);
 
 	/* Bypass */
 	tmp &= ~BYPASS_MASK;
 	writel(tmp, &pll->gnrl_ctl);
 
-	return 0;
+	return ret;
 }
 
 void dram_pll_init(enum dram_pll_out_val pll_val)
@@ -452,6 +455,8 @@ int intpll_configure(enum pll_clocks clock, enum intpll_out_freq freq)
 {
 	struct ana_grp2 *pll;
 	u32 div_ctl_val, pll_clke_masks;
+	u32 val;
+	int ret;
 
 	switch (clock) {
 	case ANATOP_SYSTEM_PLL1:
@@ -531,13 +536,15 @@ int intpll_configure(enum pll_clocks clock, enum intpll_out_freq freq)
 	/* Disable reset */
 	setbits_le32(&pll->gnrl_ctl, INTPLL_RST_MASK);
 	/* Wait Lock */
-	while (!(readl(&pll->gnrl_ctl) & INTPLL_LOCK_MASK))
-		;
+	ret = readl_poll_timeout(&pll->gnrl_ctl, val, val & INTPLL_LOCK_MASK, 100);
+	if (ret)
+		printf("%s timeout\n", __func__);
+
 	/* Clear bypass */
 	clrbits_le32(&pll->gnrl_ctl, INTPLL_BYPASS_MASK);
 	setbits_le32(&pll->gnrl_ctl, pll_clke_masks);
 
-	return 0;
+	return ret;
 }
 
 void enable_display_clk(unsigned char enable)
@@ -570,36 +577,35 @@ int clock_init(void)
 	uint32_t val_cfg0;
 
 	/* Configure ARM at 1GHz */
-	clock_set_target_val(ARM_A53_CLK_ROOT, CLK_ROOT_ON | \
+	clock_set_target_val(ARM_A53_CLK_ROOT, CLK_ROOT_ON |
 			     CLK_ROOT_SOURCE_SEL(0));
 
 	intpll_configure(ANATOP_ARM_PLL, INTPLL_OUT_1200M);
 
-	clock_set_target_val(ARM_A53_CLK_ROOT, CLK_ROOT_ON | \
-			     CLK_ROOT_SOURCE_SEL(1) | \
+	clock_set_target_val(ARM_A53_CLK_ROOT, CLK_ROOT_ON |
+			     CLK_ROOT_SOURCE_SEL(1) |
 			     CLK_ROOT_POST_DIV(CLK_ROOT_POST_DIV1));
-
 	/*
 	 * According to ANAMIX SPEC
 	 * sys pll1 fixed at 800MHz
 	 * sys pll2 fixed at 1GHz
 	 * Here we only enable the outputs.
 	 */
-	val_cfg0 = readl(SYS_PLL1_GNRL_CTL);
+	val_cfg0 = readl(&ana_pll->sys_pll1.gnrl_ctl);
 	val_cfg0 |= INTPLL_CLKE_MASK | INTPLL_DIV2_CLKE_MASK |
 		INTPLL_DIV3_CLKE_MASK | INTPLL_DIV4_CLKE_MASK |
 		INTPLL_DIV5_CLKE_MASK | INTPLL_DIV6_CLKE_MASK |
 		INTPLL_DIV8_CLKE_MASK | INTPLL_DIV10_CLKE_MASK |
 		INTPLL_DIV20_CLKE_MASK;
-	writel(val_cfg0, SYS_PLL1_GNRL_CTL);
+	writel(val_cfg0, &ana_pll->sys_pll1.gnrl_ctl);
 
-	val_cfg0 = readl(SYS_PLL2_GNRL_CTL);
+	val_cfg0 = readl(&ana_pll->sys_pll2.gnrl_ctl);
 	val_cfg0 |= INTPLL_CLKE_MASK | INTPLL_DIV2_CLKE_MASK |
 		INTPLL_DIV3_CLKE_MASK | INTPLL_DIV4_CLKE_MASK |
 		INTPLL_DIV5_CLKE_MASK | INTPLL_DIV6_CLKE_MASK |
 		INTPLL_DIV8_CLKE_MASK | INTPLL_DIV10_CLKE_MASK |
 		INTPLL_DIV20_CLKE_MASK;
-	writel(val_cfg0, SYS_PLL2_GNRL_CTL);
+	writel(val_cfg0, &ana_pll->sys_pll2.gnrl_ctl);
 
 	intpll_configure(ANATOP_SYSTEM_PLL3, INTPLL_OUT_750M);
 	clock_set_target_val(NOC_CLK_ROOT, CLK_ROOT_ON | CLK_ROOT_SOURCE_SEL(2));
