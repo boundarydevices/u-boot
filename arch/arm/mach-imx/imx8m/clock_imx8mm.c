@@ -64,6 +64,8 @@ static int fracpll_configure(enum pll_clocks clock, u32 freq)
 	u32 tmp, div_val;
 	struct ana_grp* pll;
 	struct imx_int_pll_rate_table *rate;
+	u32 val;
+	int ret;
 
 	for (i = 0; i < ARRAY_SIZE(imx8mm_fracpll_tbl); i++) {
 		if (freq == imx8mm_fracpll_tbl[i].rate)
@@ -89,7 +91,7 @@ static int fracpll_configure(enum pll_clocks clock, u32 freq)
 		pll = &ana_pll->video_pll1;
 		break;
 	default:
-		return 0;
+		return -EINVAL;
 	}
 	/* Bypass clock and set lock to pll output lock */
 	tmp = readl(&pll->gnrl_ctl);
@@ -112,14 +114,15 @@ static int fracpll_configure(enum pll_clocks clock, u32 freq)
 	writel(tmp, &pll->gnrl_ctl);
 
 	/* Wait Lock*/
-	while (!(readl(&pll->gnrl_ctl) & LOCK_STATUS))
-		;
+	ret = readl_poll_timeout(&pll->gnrl_ctl, val, val & LOCK_STATUS, 100);
+	if (ret)
+		printf("%s timeout\n", __func__);
 
 	/* Bypass */
 	tmp &= ~BYPASS_MASK;
 	writel(tmp, &pll->gnrl_ctl);
 
-	return 0;
+	return ret;
 }
 
 void dram_pll_init(ulong pll_val)
@@ -177,6 +180,8 @@ int intpll_configure(enum pll_clocks clock, ulong freq)
 {
 	struct ana_grp2 *ag;
 	u32 pll_div_ctl_val, pll_clke_masks;
+	u32 val;
+	int ret;
 
 	switch (clock) {
 	case ANATOP_SYSTEM_PLL1:
@@ -261,13 +266,15 @@ int intpll_configure(enum pll_clocks clock, ulong freq)
 	/* Disable reset */
 	setbits_le32(&ag->gnrl_ctl, INTPLL_RST_MASK);
 	/* Wait Lock */
-	while (!(readl(&ag->gnrl_ctl) & INTPLL_LOCK_MASK))
-		;
+	ret = readl_poll_timeout(&ag->gnrl_ctl, val, val & INTPLL_LOCK_MASK, 100);
+	if (ret)
+		printf("%s timeout\n", __func__);
+
 	/* Clear bypass */
 	clrbits_le32(&ag->gnrl_ctl, INTPLL_BYPASS_MASK);
 	setbits_le32(&ag->gnrl_ctl, pll_clke_masks);
 
-	return 0;
+	return ret;
 }
 
 void init_uart_clk(u32 index)
