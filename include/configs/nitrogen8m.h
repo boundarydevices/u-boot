@@ -245,6 +245,10 @@
 
 #include <config_distro_bootcmd.h>
 
+/* M4 specific */
+#define SYS_AUXCORE_BOOTDATA_DDR	0x80000000
+#define SYS_AUXCORE_BOOTDATA_TCM	0x007E0000
+
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	"console=" BD_CONSOLE "\0" \
 	"env_dev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
@@ -254,6 +258,10 @@
 	"fdt_high=0xffffffffffffffff\0" \
 	"imx_cpu=8MQ\0" \
 	"initrd_high=0xffffffffffffffff\0" \
+	"m4boot=load ${devtype} ${devnum}:1 ${m4loadaddr} ${m4image}; " \
+		"dcache flush; bootaux ${m4loadaddr}\0" \
+	"m4image=m4_fw.bin\0" \
+	"m4loadaddr="__stringify(SYS_AUXCORE_BOOTDATA_TCM)"\0" \
 	"netargs=setenv bootargs console=${console},115200 root=/dev/nfs rw " \
 		"ip=dhcp nfsroot=${tftpserverip}:${nfsroot},v3,tcp\0" \
 	"netboot=run netargs; " \
