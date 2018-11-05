@@ -99,7 +99,7 @@ void lpddr4_800MHz_cfg_umctl2(void)
 	reg32_write(DDRC_ADDRMAP6(0), 0x48080707);
 #elif CONFIG_DDR_MB == 4096
 	reg32_write(DDRC_ADDRMAP6(0), 0x08080707);
-#elif
+#else
 #error unsupported memory size
 #endif
 	reg32_write(DDRC_ADDRMAP7(0), 0x00000f0f);
