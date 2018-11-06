@@ -173,9 +173,9 @@ static void imx8m_set_clocks(int apb_clk, int b_clk, int hdmi_core_clk,
 	if (hdmi_core_clk == 200) {
 		/* hdmi_core_clk: ip_clk_root(69) sel 1st input source and
 		   pre_div to 0 */
-		reg32_write(&ccm_reg->bus_root[69].target_root_clr,
+		reg32_write(&ccm_reg->ip_root[69].target_root_clr,
 			    (0x7 << 24) | (0x7 << 16));
-		reg32_write(&ccm_reg->bus_root[69].target_root_set, (0x1 << 24));
+		reg32_write(&ccm_reg->ip_root[69].target_root_set, (0x1 << 24));
 		g_hdmi_core_clock = 200000000;
 	} else {
 		debug("hdmi_core_clk does not match a supported frequency");
@@ -187,39 +187,39 @@ static void imx8m_set_clocks(int apb_clk, int b_clk, int hdmi_core_clk,
 	if (p_clk == 27) {
 		/* p_clk: ip_clk_root(9) sel 1st input source and
 		   pre_div to 1; post_div to 5, output 100M */
-		reg32_write(&ccm_reg->bus_root[9].target_root_clr,
+		reg32_write(&ccm_reg->ip_root[9].target_root_clr,
 			    (0x7 << 24) | (0x7 << 16));
-		reg32_write(&ccm_reg->bus_root[9].target_root_set,
+		reg32_write(&ccm_reg->ip_root[9].target_root_set,
 			    (0x1 << 24) | (29 << 16));
 	} else if (p_clk == 100) {
 		/* p_clk: ip_clk_root(9) sel 1st input source and
 		   pre_div to 1; post_div to 5, output 100M */
-		reg32_write(&ccm_reg->bus_root[9].target_root_clr,
+		reg32_write(&ccm_reg->ip_root[9].target_root_clr,
 			    (0x7 << 24) | (0x7 << 16));
-		reg32_write(&ccm_reg->bus_root[9].target_root_set,
+		reg32_write(&ccm_reg->ip_root[9].target_root_set,
 			    (0x1 << 24) | (0x5 << 16));
 	} else if (p_clk == 120) {
 		/* p_clk: ip_clk_root(9) sel 1st input source and
 		   pre_div to 1; post_div to 4, output 120M */
-		reg32_write(&ccm_reg->bus_root[9].target_root_clr,
+		reg32_write(&ccm_reg->ip_root[9].target_root_clr,
 			    (0x7 << 24) | (0x7 << 16));
-		reg32_write(&ccm_reg->bus_root[9].target_root_set,
+		reg32_write(&ccm_reg->ip_root[9].target_root_set,
 			    (0x1 << 24) | (0x4 << 16));
 	} else if (p_clk == 200) {
 		/* I added this to speed up the pixel clock and
 		   get frames out faster. may need to adjust this.
 		 */
-		reg32_write(&ccm_reg->bus_root[9].target_root_clr,
+		reg32_write(&ccm_reg->ip_root[9].target_root_clr,
 			    (0x7 << 24) | (0x7 << 16));
-		reg32_write(&ccm_reg->bus_root[9].target_root_set,
+		reg32_write(&ccm_reg->ip_root[9].target_root_set,
 			    (0x4 << 24) | (0x3 << 16)); /*for emu use 800 / 4 */
 	} else if (p_clk == 400) {
 		/* I added this to speed up the pixel clock and
 		   get frames out faster. may need to adjust this.
 		 */
-		reg32_write(&ccm_reg->bus_root[9].target_root_clr,
+		reg32_write(&ccm_reg->ip_root[9].target_root_clr,
 			    (0x7 << 24) | (0x7 << 16));
-		reg32_write(&ccm_reg->bus_root[9].target_root_set,
+		reg32_write(&ccm_reg->ip_root[9].target_root_set,
 			    (0x4 << 24) | (0x1 << 16)); /*for emu use 800 / 2 */
 	} else if (p_clk == 40) {	/* Do not reprogram, will get 40MHz */
 	} else {
