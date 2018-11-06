@@ -76,13 +76,13 @@ void dwc_ddrphy_phyinit_userCustom_E_setDfiClk(int pstate)
 	struct ccm_reg *ccm_reg = (struct ccm_reg *)CCM_BASE_ADDR;
 
 	if (pstate == 0x1) {
-		reg32_writep(&ccm_reg->bus_root[1].target_root_clr, (0x7<<24)|(0x7<<16));
-		reg32_writep(&ccm_reg->bus_root[1].target_root_set, (0x4<<24)|(0x4<<16)); /* to source 4 --800MHz/5 */
+		reg32_writep(&ccm_reg->ip_root[1].target_root_clr, (0x7<<24)|(0x7<<16));
+		reg32_writep(&ccm_reg->ip_root[1].target_root_set, (0x4<<24)|(0x4<<16)); /* to source 4 --800MHz/5 */
 		ddr_pll_config_freq(167);
 	} else {
 		ddr_pll_config_freq(800);
-		reg32_writep(&ccm_reg->bus_root[1].target_root_clr, (0x7<<24)|(0x7<<16));
-		reg32_writep(&ccm_reg->bus_root[1].target_root_set, (0x4<<24)|(0x3<<16)); /* to source 4 --800MHz/4 */
+		reg32_writep(&ccm_reg->ip_root[1].target_root_clr, (0x7<<24)|(0x7<<16));
+		reg32_writep(&ccm_reg->ip_root[1].target_root_set, (0x4<<24)|(0x3<<16)); /* to source 4 --800MHz/4 */
 	}
 }
 
