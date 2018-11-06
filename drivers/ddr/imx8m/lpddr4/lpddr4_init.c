@@ -26,19 +26,21 @@ void lpddr4_cfg_umctl2(struct dram_cfg_param *ddrc_cfg, int num)
 void ddr_init(struct dram_timing_info *dram_timing)
 {
 	unsigned int tmp;
+	int imx8mq = is_imx8mq();
 
 	printf("DDRINFO: start lpddr4 ddr init\n");
 	/* step 1: reset */
-	if (is_imx8mq()) {
+	if (imx8mq) {
 		reg32_write(SRC_DDRC_RCR_ADDR + 0x04, 0x8F00000F);
 		reg32_write(SRC_DDRC_RCR_ADDR, 0x8F00000F);
+		mdelay(100);
 		reg32_write(SRC_DDRC_RCR_ADDR + 0x04, 0x8F000000);
 	} else {
 		reg32_write(SRC_DDRC_RCR_ADDR, 0x8F00001F);
 		reg32_write(SRC_DDRC_RCR_ADDR, 0x8F00000F);
+		mdelay(100);
 	}
 
-	mdelay(100);
 
 	debug("DDRINFO: reset done\n");
 	/* change the clock source of dram_apb_clk_root: source 4 800MHz /4 = 200MHz */
@@ -50,7 +52,7 @@ void ddr_init(struct dram_timing_info *dram_timing)
 	reg32setbit(0x303A00F8, 5); /* PU_PGC_SW_PUP_REQ */
 
 	debug("DDRINFO: cfg clk\n");
-	dram_pll_init(MHZ(750));
+	dram_pll_init(MHZ(imx8mq ? 800 : 750));
 
 	/*
 	 * release [0]ddr1_preset_n, [1]ddr1_core_reset_n,
