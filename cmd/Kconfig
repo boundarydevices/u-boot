@@ -2421,4 +2421,11 @@ config MMC_SPEED_MODE_SET
 	  and is indicated using the index from enum bus_mode in
 	  include/mmc.h. A speed mode can be set only if it has already
 	  been enabled in the device tree.
+
+config CMD_KHADAS_KBI
+	bool "Khadas Bootloader Instructions"
+	depends on TARGET_EVB_RK3399
+	help
+	  Khadas Bootloader Instructions
+
 endmenu
