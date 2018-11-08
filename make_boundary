@@ -27,9 +27,22 @@ for board in $boards ; do
 	else
 		if [ "${ARCH}" == "arm64" ] ; then
 			source configs/${board}_defconfig ;
+			DDR_MB=${CONFIG_SYS_EXTRA_OPTIONS/*DDR_MB=/}
+			DDR_MB=${DDR_MB/,*}
+			if [ ${DDR_MB} == 2048 ] ; then
+				sz=2g
+			elif [ ${DDR_MB} == 3072 ] ; then
+				sz=3g
+			elif [ ${DDR_MB} == 4096 ] ; then
+				sz=4g
+			else
+				sz=2g
+				numfailures=`expr $numfailures + 1`;
+				echo -e "\n\n\n!!!!!!!! build failure for $board !!!!!!!!!!!!\n\n";
+			fi
 			cd ../imx-mkimage ;
-			UBOOT_PATH=${WORKSPACE} UBOOT_DTB=${CONFIG_DEFAULT_DEVICE_TREE}.dtb ./make_boundary.sh ;
-			cp -v iMX8M/flash.bin ${savedir}/u-boot.${board} ;
+			UBOOT_PATH=${WORKSPACE} UBOOT_DTB=${CONFIG_DEFAULT_DEVICE_TREE}.dtb ./make_boundary.sh ${sz};
+			cp -v iMX8M/u-boot-lpddr4-${sz}.hdmibin ${savedir}/u-boot.${board} ;
 			cd - ;
 		        ls -l ${savedir}/u-boot.${board};
 			mkdir -p ${savedir}/${board}
