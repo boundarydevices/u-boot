@@ -35,6 +35,9 @@
 #define VAL_DDRC_FREQ1_DRAMTMG14	0x00000020
 #define VAL_DDRC_FREQ2_RFSHTMG		0x00030005
 #define VAL_DDRC_FREQ2_DRAMTMG14	0x00000005
+	/* Address map is from MSB 28: cs, r14, r13-r0, b2-b0, c9-c0 */
+#define VAL_DDRC_ADDRMAP0		0x00000016
+#define VAL_DDRC_ADDRMAP6		0x0f070707
 #elif CONFIG_DDR_MB == 3072
 #define VAL_DDRC_RFSHTMG		0x006100E0
 #define VAL_DDRC_DRAMTMG14		0x000000E6
@@ -42,6 +45,9 @@
 #define VAL_DDRC_FREQ1_DRAMTMG14	0x00000031
 #define VAL_DDRC_FREQ2_RFSHTMG		0x00030007
 #define VAL_DDRC_FREQ2_DRAMTMG14	0x00000008
+	/* Address map is from MSB 29: r15, r14, cs, r13-r0, b2-b0, c9-c0 */
+#define VAL_DDRC_ADDRMAP0		0x00000015
+#define VAL_DDRC_ADDRMAP6		0x48080707
 #elif CONFIG_DDR_MB == 4096
 #define VAL_DDRC_RFSHTMG		0x006100E0
 #define VAL_DDRC_DRAMTMG14		0x000000E6
@@ -49,9 +55,14 @@
 #define VAL_DDRC_FREQ1_DRAMTMG14	0x00000031
 #define VAL_DDRC_FREQ2_RFSHTMG		0x00030007
 #define VAL_DDRC_FREQ2_DRAMTMG14	0x00000008
+	/* Address map is from MSB 29: cs, r15, r14, r13-r0, b2-b0, c9-c0 */
+#define VAL_DDRC_ADDRMAP0		0x00000017
+#define VAL_DDRC_ADDRMAP6		0x07070707
 #else
 #error unsupported memory size
 #endif
+
+
 
 volatile unsigned int tmp, tmp_t, i;
 void lpddr4_800MHz_cfg_umctl2(void)
@@ -63,17 +74,19 @@ void lpddr4_800MHz_cfg_umctl2(void)
 	reg32_write(DDRC_PWRCTL(0), 0x00000001);
 	reg32_write(DDRC_MSTR(0), 0xa3080020);
 	reg32_write(DDRC_MSTR2(0), 0x00000000);
+	reg32_write(DDRC_DERATEEN(0), 0x00000203);
+	reg32_write(DDRC_DERATEINT(0), 0x0186A000);
 	reg32_write(DDRC_RFSHTMG(0), VAL_DDRC_RFSHTMG);
-	reg32_write(DDRC_INIT0(0), 0xC003061B);
-	reg32_write(DDRC_INIT1(0), 0x009D0000);
+	reg32_write(DDRC_INIT0(0), 0xC003061C);
+	reg32_write(DDRC_INIT1(0), 0x009E0000);
 	reg32_write(DDRC_INIT3(0), 0x00D4002D);
 #ifdef WR_POST_EXT_3200  // recommened to define
 	reg32_write(DDRC_INIT4(0), 0x00330008);
 #else
 	reg32_write(DDRC_INIT4(0), 0x00310008);
 #endif
-	reg32_write(DDRC_INIT6(0), 0x0066004a);
-	reg32_write(DDRC_INIT7(0), 0x0006004a);
+	reg32_write(DDRC_INIT6(0), 0x0066004A);
+	reg32_write(DDRC_INIT7(0), 0x0016004A);
 
 	reg32_write(DDRC_DRAMTMG0(0), 0x1A201B22);
 	reg32_write(DDRC_DRAMTMG1(0), 0x00060633);
@@ -103,12 +116,11 @@ void lpddr4_800MHz_cfg_umctl2(void)
 	reg32_write(DDRC_DFIPHYMSTR(0), 0x00000001);
 
 	/* need be refined by ddrphy trained value */
-	reg32_write(DDRC_RANKCTL(0), 0x00000c99);
-	reg32_write(DDRC_DRAMTMG2(0), 0x070E171a);
+	reg32_write(DDRC_RANKCTL(0), 0x639);
+	reg32_write(DDRC_DRAMTMG2(0), 0x070e1214);
 
 	/* address mapping */
-	/* Address map is from MSB 29: r15, r14, cs, r13-r0, b2-b0, c9-c0 */
-	reg32_write(DDRC_ADDRMAP0(0), 0x00000015);
+	reg32_write(DDRC_ADDRMAP0(0), VAL_DDRC_ADDRMAP0);
 	reg32_write(DDRC_ADDRMAP3(0), 0x00000000);
 	/* addrmap_col_b10 and addrmap_col_b11 set to de-activated (5-bit width) */
 	reg32_write(DDRC_ADDRMAP4(0), 0x00001F1F);
@@ -118,73 +130,87 @@ void lpddr4_800MHz_cfg_umctl2(void)
 	/* addrmap_row_b11, addrmap_row_b10_b2, addrmap_row_b1, addrmap_row_b0 */
 	reg32_write(DDRC_ADDRMAP5(0), 0x07070707);
 	/* addrmap_row_b15, addrmap_row_b14, addrmap_row_b13, addrmap_row_b12 */
-#if CONFIG_DDR_MB == 2048
-	reg32_write(DDRC_ADDRMAP6(0), 0x0f080707);
-#elif CONFIG_DDR_MB == 3072
-	reg32_write(DDRC_ADDRMAP6(0), 0x48080707);
-#elif CONFIG_DDR_MB == 4096
-	reg32_write(DDRC_ADDRMAP6(0), 0x08080707);
-#else
-#error unsupported memory size
-#endif
+	reg32_write(DDRC_ADDRMAP6(0), VAL_DDRC_ADDRMAP6);
 	reg32_write(DDRC_ADDRMAP7(0), 0x00000f0f);
 
 	/* 667mts frequency setting */
-	reg32_write(DDRC_FREQ1_DERATEEN(0), 0x0000000);
-	reg32_write(DDRC_FREQ1_DERATEINT(0), 0x0800000);
-	reg32_write(DDRC_FREQ1_RFSHCTL0(0), 0x0210000);
+	reg32_write(DDRC_FREQ1_DERATEEN(0), 0x0000001);
+	reg32_write(DDRC_FREQ1_DERATEINT(0), 0x00518B00);
+	reg32_write(DDRC_FREQ1_RFSHCTL0(0), 0x0020D040);
 	reg32_write(DDRC_FREQ1_RFSHTMG(0), VAL_DDRC_FREQ1_RFSHTMG);
-	reg32_write(DDRC_FREQ1_INIT3(0), 0x0140009);
+	reg32_write(DDRC_FREQ1_INIT3(0), 0x00940009);
 	reg32_write(DDRC_FREQ1_INIT4(0), 0x00310008);
-	reg32_write(DDRC_FREQ1_INIT6(0), 0x0066004a);
-	reg32_write(DDRC_FREQ1_INIT7(0), 0x0006004a);
-	reg32_write(DDRC_FREQ1_DRAMTMG0(0), 0xB070A07);
-	reg32_write(DDRC_FREQ1_DRAMTMG1(0), 0x003040A);
-	reg32_write(DDRC_FREQ1_DRAMTMG2(0), 0x305080C);
-	reg32_write(DDRC_FREQ1_DRAMTMG3(0), 0x0505000);
-	reg32_write(DDRC_FREQ1_DRAMTMG4(0), 0x3040203);
-	reg32_write(DDRC_FREQ1_DRAMTMG5(0), 0x2030303);
-	reg32_write(DDRC_FREQ1_DRAMTMG6(0), 0x2020004);
-	reg32_write(DDRC_FREQ1_DRAMTMG7(0), 0x0000302);
-	reg32_write(DDRC_FREQ1_DRAMTMG12(0), 0x0020310);
-	reg32_write(DDRC_FREQ1_DRAMTMG13(0), 0xA100002);
+	reg32_write(DDRC_FREQ1_INIT6(0), 0x0066004A);
+	reg32_write(DDRC_FREQ1_INIT7(0), 0x0016004A);
+	reg32_write(DDRC_FREQ1_DRAMTMG0(0), 0x0B070508);
+	reg32_write(DDRC_FREQ1_DRAMTMG1(0), 0x0003040B);
+	reg32_write(DDRC_FREQ1_DRAMTMG2(0), 0x0305090C);
+	reg32_write(DDRC_FREQ1_DRAMTMG3(0), 0x00505000);
+	reg32_write(DDRC_FREQ1_DRAMTMG4(0), 0x04040204);
+	reg32_write(DDRC_FREQ1_DRAMTMG5(0), 0x02030303);
+	reg32_write(DDRC_FREQ1_DRAMTMG6(0), 0x01010004);
+	reg32_write(DDRC_FREQ1_DRAMTMG7(0), 0x00000301);
+	reg32_write(DDRC_FREQ1_DRAMTMG12(0), 0x00020300);
+	reg32_write(DDRC_FREQ1_DRAMTMG13(0), 0x0A100002);
 	reg32_write(DDRC_FREQ1_DRAMTMG14(0), VAL_DDRC_FREQ1_DRAMTMG14);
-	reg32_write(DDRC_FREQ1_DRAMTMG17(0), 0x0220011);
-	reg32_write(DDRC_FREQ1_ZQCTL0(0), 0x0A70005);
-	reg32_write(DDRC_FREQ1_DFITMG0(0), 0x3858202);
-	reg32_write(DDRC_FREQ1_DFITMG1(0), 0x0000404);
-	reg32_write(DDRC_FREQ1_DFITMG2(0), 0x0000502);
+	reg32_write(DDRC_FREQ1_DRAMTMG17(0), 0x00220011);
+	reg32_write(DDRC_FREQ1_ZQCTL0(0), 0xC0A70006);
+	reg32_write(DDRC_FREQ1_DFITMG0(0), 0x03858202);
+	reg32_write(DDRC_FREQ1_DFITMG1(0), 0x00080303);
+	reg32_write(DDRC_FREQ1_DFITMG2(0), 0x00000502);
+
+	/* 100mts frequency setting */
+	reg32_write(DDRC_FREQ2_DERATEEN(0), 0x0000001);
+	reg32_write(DDRC_FREQ2_DERATEINT(0), 0x000C3500);
+	reg32_write(DDRC_FREQ2_RFSHCTL0(0), 0x0020D040);
+	reg32_write(DDRC_FREQ2_RFSHTMG(0), VAL_DDRC_FREQ2_RFSHTMG);
+	reg32_write(DDRC_FREQ2_INIT3(0), 0x00D4002D);
+	reg32_write(DDRC_FREQ2_INIT4(0), 0x00310008);
+	reg32_write(DDRC_FREQ2_INIT6(0), 0x0066004A);
+	reg32_write(DDRC_FREQ2_INIT7(0), 0x0016004A);
+	reg32_write(DDRC_FREQ2_DRAMTMG0(0), 0x0A010102);
+	reg32_write(DDRC_FREQ2_DRAMTMG1(0), 0x00030404);
+	reg32_write(DDRC_FREQ2_DRAMTMG2(0), 0x0203060B);
+	reg32_write(DDRC_FREQ2_DRAMTMG3(0), 0x00505000);
+	reg32_write(DDRC_FREQ2_DRAMTMG4(0), 0x02040202);
+	reg32_write(DDRC_FREQ2_DRAMTMG5(0), 0x02030202);
+	reg32_write(DDRC_FREQ2_DRAMTMG6(0), 0x01010004);
+	reg32_write(DDRC_FREQ2_DRAMTMG7(0), 0x00000301);
+	reg32_write(DDRC_FREQ2_DRAMTMG12(0), 0x00020300);
+	reg32_write(DDRC_FREQ2_DRAMTMG13(0), 0x0A100002);
+	reg32_write(DDRC_FREQ2_DRAMTMG14(0), VAL_DDRC_FREQ2_DRAMTMG14);
+	reg32_write(DDRC_FREQ2_DRAMTMG17(0), 0x00050003);
+	reg32_write(DDRC_FREQ2_ZQCTL0(0), 0xC0190004);
+	reg32_write(DDRC_FREQ2_DFITMG0(0), 0x03818200);
+	reg32_write(DDRC_FREQ2_DFITMG1(0), 0x00080303);
+	reg32_write(DDRC_FREQ2_DFITMG2(0), 0x00000100);
 
 	/* performance setting */
-	dwc_ddrphy_apb_wr(DDRC_ODTCFG(0), 0x0b060908);
-	dwc_ddrphy_apb_wr(DDRC_ODTMAP(0), 0x00000000);
-	dwc_ddrphy_apb_wr(DDRC_SCHED(0), 0x29511505);
-	dwc_ddrphy_apb_wr(DDRC_SCHED1(0), 0x0000002c);
-	dwc_ddrphy_apb_wr(DDRC_PERFHPR1(0), 0x5900575b);
+	reg32_write(DDRC_ODTCFG(0), 0x0b060908);
+	reg32_write(DDRC_ODTMAP(0), 0x00000000);
+	reg32_write(DDRC_SCHED(0), 0x29001505);
+	reg32_write(DDRC_SCHED1(0), 0x0000002c);
+	reg32_write(DDRC_PERFHPR1(0), 0x5900575b);
 	/* 150T starve and 0x90 max tran len */
-	dwc_ddrphy_apb_wr(DDRC_PERFLPR1(0), 0x90000096);
+	reg32_write(DDRC_PERFLPR1(0), 0x90000096);
 	/* 300T starve and 0x10 max tran len */
-	dwc_ddrphy_apb_wr(DDRC_PERFWR1(0), 0x1000012c);
+	reg32_write(DDRC_PERFWR1(0), 0x1000012c);
 
-	dwc_ddrphy_apb_wr(DDRC_DBG0(0), 0x00000016);
-	dwc_ddrphy_apb_wr(DDRC_DBG1(0), 0x00000000);
-	dwc_ddrphy_apb_wr(DDRC_DBGCMD(0), 0x00000000);
-	dwc_ddrphy_apb_wr(DDRC_SWCTL(0), 0x00000001);
-	dwc_ddrphy_apb_wr(DDRC_POISONCFG(0), 0x00000011);
-	dwc_ddrphy_apb_wr(DDRC_PCCFG(0), 0x00000111);
-	dwc_ddrphy_apb_wr(DDRC_PCFGR_0(0), 0x000010f3);
-	dwc_ddrphy_apb_wr(DDRC_PCFGW_0(0), 0x000072ff);
-	dwc_ddrphy_apb_wr(DDRC_PCTRL_0(0), 0x00000001);
+	reg32_write(DDRC_DBG0(0), 0x00000016);
+	reg32_write(DDRC_DBG1(0), 0x00000000);
+	reg32_write(DDRC_DBGCMD(0), 0x00000000);
+	reg32_write(DDRC_SWCTL(0), 0x00000001);
+	reg32_write(DDRC_POISONCFG(0), 0x00000011);
+	reg32_write(DDRC_PCCFG(0), 0x00000111);
+	reg32_write(DDRC_PCFGR_0(0), 0x000010f3);
+	reg32_write(DDRC_PCFGW_0(0), 0x000072ff);
+	reg32_write(DDRC_PCTRL_0(0), 0x00000001);
 	/* disable Read Qos*/
-	dwc_ddrphy_apb_wr(DDRC_PCFGQOS0_0(0), 0x00000e00);
-	dwc_ddrphy_apb_wr(DDRC_PCFGQOS1_0(0), 0x0062ffff);
+	reg32_write(DDRC_PCFGQOS0_0(0), 0x00000e00);
+	reg32_write(DDRC_PCFGQOS1_0(0), 0x0062ffff);
 	/* disable Write Qos*/
-	dwc_ddrphy_apb_wr(DDRC_PCFGWQOS0_0(0), 0x00000e00);
-	dwc_ddrphy_apb_wr(DDRC_PCFGWQOS1_0(0), 0x0000ffff);
-	dwc_ddrphy_apb_wr(DDRC_FREQ1_DERATEEN(0), 0x00000202);
-	dwc_ddrphy_apb_wr(DDRC_FREQ1_DERATEINT(0), 0xec78f4b5);
-	dwc_ddrphy_apb_wr(DDRC_FREQ1_RFSHCTL0(0), 0x00618040);
-	dwc_ddrphy_apb_wr(DDRC_FREQ1_RFSHTMG(0), 0x00610090);
+	reg32_write(DDRC_PCFGWQOS0_0(0), 0x00000e00);
+	reg32_write(DDRC_PCFGWQOS1_0(0), 0x0000ffff);
 }
 
 void ddr_init(void)
