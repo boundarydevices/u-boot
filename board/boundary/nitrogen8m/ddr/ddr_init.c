@@ -27,6 +27,11 @@
 #define SILICON_TRAIN
 #define DDR_BOOT_P1	/* default DDR boot frequency point */
 #define WR_POST_EXT_3200
+#ifdef WR_POST_EXT_3200  // recommend to define
+#define VAL_INIT4	0x00330008
+#else
+#define VAL_INIT4	0x00310008
+#endif
 
 #if CONFIG_DDR_MB == 2048
 #define VAL_DDRC_RFSHTMG		0x00610090
@@ -62,8 +67,6 @@
 #error unsupported memory size
 #endif
 
-
-
 volatile unsigned int tmp, tmp_t, i;
 void lpddr4_800MHz_cfg_umctl2(void)
 {
@@ -80,11 +83,7 @@ void lpddr4_800MHz_cfg_umctl2(void)
 	reg32_write(DDRC_INIT0(0), 0xC003061C);
 	reg32_write(DDRC_INIT1(0), 0x009E0000);
 	reg32_write(DDRC_INIT3(0), 0x00D4002D);
-#ifdef WR_POST_EXT_3200  // recommened to define
-	reg32_write(DDRC_INIT4(0), 0x00330008);
-#else
-	reg32_write(DDRC_INIT4(0), 0x00310008);
-#endif
+	reg32_write(DDRC_INIT4(0), VAL_INIT4);
 	reg32_write(DDRC_INIT6(0), 0x0066004A);
 	reg32_write(DDRC_INIT7(0), 0x0016004A);
 
@@ -139,7 +138,7 @@ void lpddr4_800MHz_cfg_umctl2(void)
 	reg32_write(DDRC_FREQ1_RFSHCTL0(0), 0x0020D040);
 	reg32_write(DDRC_FREQ1_RFSHTMG(0), VAL_DDRC_FREQ1_RFSHTMG);
 	reg32_write(DDRC_FREQ1_INIT3(0), 0x00940009);
-	reg32_write(DDRC_FREQ1_INIT4(0), 0x00310008);
+	reg32_write(DDRC_FREQ1_INIT4(0), VAL_INIT4);
 	reg32_write(DDRC_FREQ1_INIT6(0), 0x0066004A);
 	reg32_write(DDRC_FREQ1_INIT7(0), 0x0016004A);
 	reg32_write(DDRC_FREQ1_DRAMTMG0(0), 0x0B070508);
@@ -165,7 +164,7 @@ void lpddr4_800MHz_cfg_umctl2(void)
 	reg32_write(DDRC_FREQ2_RFSHCTL0(0), 0x0020D040);
 	reg32_write(DDRC_FREQ2_RFSHTMG(0), VAL_DDRC_FREQ2_RFSHTMG);
 	reg32_write(DDRC_FREQ2_INIT3(0), 0x00840000);
-	reg32_write(DDRC_FREQ2_INIT4(0), 0x00310008);
+	reg32_write(DDRC_FREQ2_INIT4(0), VAL_INIT4);
 	reg32_write(DDRC_FREQ2_INIT6(0), 0x0066004A);
 	reg32_write(DDRC_FREQ2_INIT7(0), 0x0016004A);
 	reg32_write(DDRC_FREQ2_DRAMTMG0(0), 0x0A010102);
