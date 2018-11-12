@@ -73,6 +73,7 @@ struct display_info_t {
 #define FBF_DSI_LANES_4		(0x4 << FBF_DSI_LANE_SHIFT)
 
 #define FBF_LCM_JM430		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_SYNC_PULSE | FBF_MIPI_CMDS | FBF_DSI_LANES_1 | FBF_BKLIT_EN_DTB | FBF_ENABLE_GPIOS_DTB)
+#define FBF_LTK0680YTMDB	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_SYNC_PULSE | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_PINCTRL | FBF_ENABLE_GPIOS_DTB)
 #define FBF_LTK080A60A004T	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_PINCTRL | FBF_ENABLE_GPIOS_DTB)
 #define FBF_M101NWWB		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4)
 #define FBF_OSD050T		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_2)
@@ -142,6 +143,7 @@ void fbp_setup_env_cmds(void);
 #define VD_WXGA(_mode, _detect, _bus, _addr)		VDF_WXGA(_mode, "wxga", RGB24, 0, _detect, _bus, _addr)
 #define VD_WXGA_J(_mode, _detect, _bus, _addr)		VDF_WXGA(_mode, "wxga_j", RGB24, FBF_JEIDA, _detect, _bus, _addr)
 #define VD_LTK080A60A004T(_mode, _detect, _bus, _addr)	VDF_LTK080A60A004T(_mode, "ltk080a60a004t", RGB24, FBF_LTK080A60A004T, _detect, _bus, _addr)
+#define VD_LTK0680YTMDB(_mode, _detect, _bus, _addr)	VDF_LTK0680YTMDB(_mode, "ltk0680ytmdb", RGB24, FBF_LTK0680YTMDB, _detect, _bus, _addr)
 #define VD_MIPI_M101NWWB(_mode, _detect, _bus, _addr)	VDF_MIPI_M101NWWB(_mode, "m101nwwb", RGB24, FBF_M101NWWB, _detect, _bus, _addr)
 #define VD_LD070WSVGA(_mode, _detect, _bus, _addr)	VDF_LD070WSVGA(_mode, "ld070wsvga", RGB24, 0, _detect, _bus, _addr)
 #define VD_SVGA(_mode, _detect, _bus, _addr)		VDF_SVGA(_mode, "svga", RGB666, FBF_MODESTR, _detect, _bus, _addr)
@@ -1048,6 +1050,27 @@ void fbp_setup_env_cmds(void);
 		.lower_margin   = 80,\
 		.hsync_len      = 10,\
 		.vsync_len      = 10,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
+
+#define VDF_LTK0680YTMDB(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	.mode	= {\
+		.name           = _name,\
+		.refresh        = 60,\
+		.xres           = 480,\
+		.yres           = 1280,\
+		.pixclock       = 1000000000000ULL/((480+160+160+24)*(1280+10+12+2)*60), \
+		.left_margin    = 160,\
+		.right_margin   = 160,\
+		.upper_margin   = 10,\
+		.lower_margin   = 12,\
+		.hsync_len      = 24,\
+		.vsync_len      = 2,\
 		.sync           = FB_SYNC_EXT,\
 		.vmode          = FB_VMODE_NONINTERLACED\
 	}\
