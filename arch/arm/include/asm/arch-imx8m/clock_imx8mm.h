@@ -122,6 +122,7 @@ enum clk_root_index {
 	SAI7_CLK_ROOT			= 134,
 	CLK_ROOT_MAX,
 };
+
 #else
 enum clk_root_index {
 	ARM_A53_CLK_ROOT		= 0,
@@ -356,6 +357,7 @@ enum clk_ccgr_index {
 	CCGR_PLL = 97,
 	CCGR_TEMP_SENSOR = 98,
 	CCGR_VPUMIX_BUS = 99,
+	CCGR_SAI7 = 101,
 	CCGR_GPU2D = 102,
 	CCGR_MAX
 };
