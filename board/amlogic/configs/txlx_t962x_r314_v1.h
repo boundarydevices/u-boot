@@ -52,6 +52,7 @@
   */
 #define CONFIG_BOOTLOADER_CONTROL_BLOCK
 
+#define CONFIG_CMD_BOOTCTOL_AVB
 
 /* Serial config */
 #define CONFIG_CONS_INDEX 2
@@ -124,8 +125,9 @@
         "logic_addr=0x0\0" \
         "cec_ac_wakeup=0\0" \
         "reboot_mode_android=""normal""\0"\
+        "fs_type=""rootfstype=ramfs""\0"\
         "initargs="\
-            "rootfstype=ramfs init=/init console=ttyS0,115200 no_console_suspend earlyprintk=aml-uart,0xff803000 ramoops.pstore_en=1 ramoops.record_size=0x8000 ramoops.console_size=0x4000 "\
+            "init=/init console=ttyS0,115200 no_console_suspend earlyprintk=aml-uart,0xff803000 ramoops.pstore_en=1 ramoops.record_size=0x8000 ramoops.console_size=0x4000 "\
             "\0"\
         "upgrade_check="\
             "echo upgrade_step=${upgrade_step}; "\
@@ -134,7 +136,7 @@
             "else fi;"\
             "\0"\
         "storeargs="\
-            "setenv bootargs ${initargs} reboot_mode_android=${reboot_mode_android} logo=${display_layer},loaded,${fb_addr} vout=${outputmode},enable panel_type=${panel_type} osd_reverse=${osd_reverse} video_reverse=${video_reverse} androidboot.selinux=${EnableSelinux} androidboot.firstboot=${firstboot} jtag=${jtag} ui_mode=${ui_mode}; "\
+            "setenv bootargs ${initargs} ${fs_type} reboot_mode_android=${reboot_mode_android} logo=${display_layer},loaded,${fb_addr} vout=${outputmode},enable panel_type=${panel_type} osd_reverse=${osd_reverse} video_reverse=${video_reverse} androidboot.selinux=${EnableSelinux} androidboot.firstboot=${firstboot} jtag=${jtag} ui_mode=${ui_mode}; "\
             "setenv bootargs ${bootargs} page_trace=${page_trace};" \
 		"setenv bootargs ${bootargs} androidboot.hardware=amlogic;"\
             "run cmdline_keys;"\
@@ -178,6 +180,12 @@
             "fi;fi;fi;fi;fi;fi;"\
             "\0" \
         "storeboot="\
+            "get_system_as_root_mode;"\
+            "echo system_mode: ${system_mode};"\
+            "if test ${system_mode} = 1; then "\
+                    "setenv fs_type ""ro rootwait skip_initramfs"";"\
+                    "run storeargs;"\
+            "fi;"\
             "if imgread kernel ${boot_part} ${loadaddr}; then bootm ${loadaddr}; fi;"\
             "run update;"\
             "\0"\
@@ -300,6 +308,7 @@
             "run upgrade_check;"\
             "run init_display;"\
             "run storeargs;"\
+            "bcb uboot-command;"\
             "run switch_bootmode;"
 #define CONFIG_BOOTCOMMAND "run storeboot"
 
@@ -395,6 +404,7 @@
 #define CONFIG_AML_LCD_TV 1
 #define CONFIG_AML_LCD_TABLET 1
 #define CONFIG_AML_LCD_EXTERN 1
+#define CONFIG_AML_LCD_EXTERN_I2C_ANX6862_7911 1
 
 #define CONFIG_AML_LOCAL_DIMMING
 #define CONFIG_AML_LOCAL_DIMMING_GLOBAL
