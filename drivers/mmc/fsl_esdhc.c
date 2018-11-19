@@ -430,6 +430,7 @@ static int esdhc_send_cmd_common(struct fsl_esdhc_priv *priv, struct mmc *mmc,
 	uint	irqstat;
 	u32	flags = IRQSTAT_CC | IRQSTAT_CTOE;
 	struct fsl_esdhc *regs = priv->c.esdhc_regs;
+	unsigned long start;
 
 #ifdef CONFIG_SYS_FSL_ERRATUM_ESDHC111
 	if (cmd->cmdidx == MMC_CMD_STOP_TRANSMISSION)
@@ -499,8 +500,13 @@ static int esdhc_send_cmd_common(struct fsl_esdhc_priv *priv, struct mmc *mmc,
 		flags = IRQSTAT_BRR;
 
 	/* Wait for the command to complete */
-	while (!(esdhc_read32(&regs->irqstat) & flags))
-		;
+	start = get_timer(0);
+	while (!(esdhc_read32(&regs->irqstat) & flags)) {
+		if (get_timer(start) > 1000) {
+			err = -ETIMEDOUT;
+			goto out;
+		}
+	}
 
 	irqstat = esdhc_read32(&regs->irqstat);
 
