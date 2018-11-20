@@ -9,7 +9,7 @@
 #ifndef __ASM_ARCH_IMX8MM_PINS_H__
 #define __ASM_ARCH_IMX8MM_PINS_H__
 
-#include <asm/imx-common/iomux-v3.h>
+#include <asm/mach-imx/iomux-v3.h>
 
 enum {
          IMX8MM_PAD_GPIO1_IO00_GPIO1_IO0                               =  IOMUX_PAD(0x0290, 0x0028, 0, 0x0000, 0, 0),
