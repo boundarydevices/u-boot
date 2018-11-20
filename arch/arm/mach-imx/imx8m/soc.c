@@ -41,7 +41,7 @@ struct imx_sec_config_fuse_t const imx_sec_config_fuse = {
 int timer_init(void)
 {
 #ifdef CONFIG_SPL_BUILD
-	struct sctr_regs *sctr = (struct sctr_regs *)SYSCNT_CTRL_BASE_ADDR;
+	struct sctr_regs *sctr = (struct sctr_regs *)SCTR_BASE_ADDR;
 	unsigned long freq = readl(&sctr->cntfid0);
 
 	/* Update with accurate clock frequency */
