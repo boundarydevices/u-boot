@@ -11,6 +11,7 @@
 #include <asm/arch/ddr.h>
 #include <asm/arch/ddr_memory_map.h>
 #include <asm/arch/imx8m_ddr.h>
+#include <asm/arch/ddr.h>
 #include <asm/arch/lpddr4_define.h>
 #include <asm/sections.h>
 

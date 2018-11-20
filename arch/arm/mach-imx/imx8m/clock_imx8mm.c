@@ -538,8 +538,10 @@ void enable_display_clk(unsigned char enable)
 
 		clock_set_target_val(MIPI_DSI_CORE_CLK_ROOT, CLK_ROOT_ON | CLK_ROOT_SOURCE_SEL(1));
 
+#ifdef CONFIG_IMX8MM
 		/* 27Mhz MIPI DPHY PLL ref from video PLL */
 		clock_set_target_val(MIPI_DSI_PHY_REF_CLK_ROOT, CLK_ROOT_ON | CLK_ROOT_SOURCE_SEL(7) |CLK_ROOT_POST_DIV(CLK_ROOT_POST_DIV22));
+#endif
 
 		clock_enable(CCGR_DISPMIX, true);
 	} else {

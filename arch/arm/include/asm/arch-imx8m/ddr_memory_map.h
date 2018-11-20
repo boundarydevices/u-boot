@@ -1,7 +1,6 @@
 #define DDRC_DDR_SS_GPR0         0x3d000000
 
 #define DDRC_IPS_BASE_ADDR(X) (0x3d400000 + ((X) * 0x2000000))
-#define DDRC_IPS_BASE_ADDR_0	0x3f400000
 
 #define DDRC_MSTR_0             0x3d400000
 #define DDRC_STAT_0             0x3d400004
@@ -352,20 +351,20 @@
 #define DDRC_PSTAT(X)            (DDRC_IPS_BASE_ADDR(X) + 0x3fc)
 #define DDRC_PCCFG(X)            (DDRC_IPS_BASE_ADDR(X) + 0x400)
 #define DDRC_PCFGR_0(X)          (DDRC_IPS_BASE_ADDR(X) + 0x404)
-#define DDRC_PCFGR_1(X)          (DDRC_IPS_BASE_ADDR(X) + 1*0xb0+0x404)
-#define DDRC_PCFGR_2(X)          (DDRC_IPS_BASE_ADDR(X) + 2*0xb0+0x404)
-#define DDRC_PCFGR_3(X)          (DDRC_IPS_BASE_ADDR(X) + 3*0xb0+0x404)
+#define DDRC_PCFGR_1(X)          (DDRC_IPS_BASE_ADDR(X) + 1 * 0xb0 + 0x404)
+#define DDRC_PCFGR_2(X)          (DDRC_IPS_BASE_ADDR(X) + 2 * 0xb0 + 0x404)
+#define DDRC_PCFGR_3(X)          (DDRC_IPS_BASE_ADDR(X) + 3 * 0xb0 + 0x404)
 #define DDRC_PCFGW_0(X)          (DDRC_IPS_BASE_ADDR(X) + 0x408)
-#define DDRC_PCFGW_1(X)          (DDRC_IPS_BASE_ADDR(X) + 1*0xb0+0x408)
-#define DDRC_PCFGW_2(X)          (DDRC_IPS_BASE_ADDR(X) + 2*0xb0+0x408)
-#define DDRC_PCFGW_3(X)          (DDRC_IPS_BASE_ADDR(X) + 3*0xb0+0x408)
+#define DDRC_PCFGW_1(X)          (DDRC_IPS_BASE_ADDR(X) + 1 * 0xb0 + 0x408)
+#define DDRC_PCFGW_2(X)          (DDRC_IPS_BASE_ADDR(X) + 2 * 0xb0 + 0x408)
+#define DDRC_PCFGW_3(X)          (DDRC_IPS_BASE_ADDR(X) + 3 * 0xb0 + 0x408)
 #define DDRC_PCFGC_0(X)          (DDRC_IPS_BASE_ADDR(X) + 0x40c)
 #define DDRC_PCFGIDMASKCH(X)     (DDRC_IPS_BASE_ADDR(X) + 0x410)
 #define DDRC_PCFGIDVALUECH(X)    (DDRC_IPS_BASE_ADDR(X) + 0x414)
 #define DDRC_PCTRL_0(X)          (DDRC_IPS_BASE_ADDR(X) + 0x490)
-#define DDRC_PCTRL_1(X)          (DDRC_IPS_BASE_ADDR(X) + 0x490 + 1*0xb0)
-#define DDRC_PCTRL_2(X)          (DDRC_IPS_BASE_ADDR(X) + 0x490 + 2*0xb0)
-#define DDRC_PCTRL_3(X)          (DDRC_IPS_BASE_ADDR(X) + 0x490 + 3*0xb0)
+#define DDRC_PCTRL_1(X)          (DDRC_IPS_BASE_ADDR(X) + 0x490 + 1 * 0xb0)
+#define DDRC_PCTRL_2(X)          (DDRC_IPS_BASE_ADDR(X) + 0x490 + 2 * 0xb0)
+#define DDRC_PCTRL_3(X)          (DDRC_IPS_BASE_ADDR(X) + 0x490 + 3 * 0xb0)
 #define DDRC_PCFGQOS0_0(X)       (DDRC_IPS_BASE_ADDR(X) + 0x494)
 #define DDRC_PCFGQOS1_0(X)       (DDRC_IPS_BASE_ADDR(X) + 0x498)
 #define DDRC_PCFGWQOS0_0(X)      (DDRC_IPS_BASE_ADDR(X) + 0x49c)
@@ -502,9 +501,9 @@
 #define DDRPHY_MEM(X) (0x3c000000 + (X * 0x2000000) + 0x50000)
 
 
-#define DDRPHY_CalBusy(X)                    (IP2APB_DDRPHY_IPS_BASE_ADDR(X) + 4*0x020097)
+#define DDRPHY_CalBusy(X)                    (IP2APB_DDRPHY_IPS_BASE_ADDR(X) + 4 * 0x020097)
 
-#define DRC_PERF_MON_BASE_ADDR(X)            (0x3d800000 + (X * 0x2000000))
+#define DRC_PERF_MON_BASE_ADDR(X)            (0x3d800000 + ((X) * 0x2000000))
 #define DRC_PERF_MON_CNT0_CTL(X)             (DRC_PERF_MON_BASE_ADDR(X) + 0x0)
 #define DRC_PERF_MON_CNT1_CTL(X)             (DRC_PERF_MON_BASE_ADDR(X) + 0x4)
 #define DRC_PERF_MON_CNT2_CTL(X)             (DRC_PERF_MON_BASE_ADDR(X) + 0x8)

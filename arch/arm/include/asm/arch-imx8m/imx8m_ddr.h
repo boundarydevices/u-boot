@@ -12,39 +12,6 @@
 #include <asm/types.h>
 #include <asm/arch/ddr_memory_map.h>
 
-struct dram_cfg_param {
-	unsigned int reg;
-	unsigned int val;
-};
-
-struct dram_fsp_msg {
-	unsigned int drate;
-	enum fw_type fw_type;
-	struct dram_cfg_param *fsp_cfg;
-	unsigned int fsp_cfg_num;
-};
-
-struct dram_timing_info {
-	/* umctl2 config */
-	struct dram_cfg_param *ddrc_cfg;
-	unsigned int ddrc_cfg_num;
-	/* ddrphy config */
-	struct dram_cfg_param *ddrphy_cfg;
-	unsigned int ddrphy_cfg_num;
-	/* ddr fsp train info */
-	struct dram_fsp_msg *fsp_msg;
-	unsigned int fsp_msg_num;
-	/* ddr phy trained CSR */
-	struct dram_cfg_param *ddrphy_trained_csr;
-	unsigned int ddrphy_trained_csr_num;
-	/* ddr phy PIE */
-	struct dram_cfg_param *ddrphy_pie;
-	unsigned int ddrphy_pie_num;
-	/* initialized drate table */
-	unsigned int fsp_table[4];
-};
-
-extern struct dram_timing_info dram_timing;
 extern struct dram_timing_info lpddr4_timing;
 extern struct dram_cfg_param ddrphy_trained_csr[];
 extern uint32_t ddrphy_trained_csr_num;
@@ -61,22 +28,8 @@ void wait_ddrphy_training_complete(void);
 void ddrphy_init_set_dfi_clk(unsigned int drate);
 void ddrphy_init_read_msg_block(enum fw_type type);
 
-static inline void reg32_write(unsigned long addr, u32 val)
-{
-	writel(val, addr);
-}
 
-static inline u32 reg32_read(unsigned long addr)
-{
-	return readl(addr);
-}
-
-static inline void reg32setbit(unsigned long addr, u32 bit)
-{
-	setbits_le32(addr, (1 << bit));
-}
-
-#define dwc_ddrphy_apb_wr(addr, data)	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4*(addr), data)
-#define dwc_ddrphy_apb_rd(addr)		reg32_read(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4*(addr))
+#define dwc_ddrphy_apb_wr(addr, data)	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * (addr), data)
+#define dwc_ddrphy_apb_rd(addr)		reg32_read(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * (addr))
 
 #endif /* __IMX8M_DDR_H__ */
