@@ -2634,7 +2634,8 @@ void osd_init_hw(void)
 		data32 = osd_reg_read(VPP_OFIFO_SIZE);
 		osd_logi("VPP_OFIFO_SIZE:0x%x\n", data32);
 		if (osd_hw.osd_ver == OSD_HIGH_ONE) {
-			data32 = 0xfff << 20;
+			data32 &= ~((0xfff << 20) | 0x3fff);
+			data32 |= (0xfff << 20);
 			data32 |= (0xfff + 1);
 			osd_reg_write(VPP_OFIFO_SIZE, data32);
 		}
