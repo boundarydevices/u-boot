@@ -764,10 +764,13 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
 	imx8mm-hl8mm.dtb \
 	imx8mm-moo.dtb \
 	imx8mm-nitrogen8_lite.dtb \
+	imx8mm-nitrogen8mm.dtb \
+	imx8mm-nitrogen8mm_rev2.dtb \
 	imx8mm-evk.dtb \
 	imx8mm-verdin.dtb \
 	imx8mn-ddr4-evk.dtb \
 	imx8mn-nitrogen8_nano.dtb \
+	imx8mn-nitrogen8mn.dtb \
 	imx8mq-bio.dtb \
 	imx8mq-evk.dtb \
 	imx8mq-nitrogen8m.dtb \

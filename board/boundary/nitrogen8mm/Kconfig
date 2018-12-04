@@ -1,0 +1,23 @@
+if TARGET_NITROGEN8MM || TARGET_NITROGEN8MN
+
+config BOARD_REV2
+	bool "board rev2"
+
+config BOARD_TYPE
+	string
+	depends on BOARD_REV2 || IMX8MN
+	default "nitrogen8mm_rev2" if BOARD_REV2 && IMX8MM
+	default "nitrogen8mn" if IMX8MN
+
+config SYS_BOARD
+	default "nitrogen8mm"
+
+config SYS_VENDOR
+	default "boundary"
+
+config SYS_CONFIG_NAME
+	default "nitrogen8mm"
+
+source "board/boundary/common/Kconfig"
+
+endif

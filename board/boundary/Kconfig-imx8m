@@ -40,6 +40,16 @@ config TARGET_NITROGEN8M_SOM
 	select IMX8MQ
 	select SUPPORT_SPL
 
+config TARGET_NITROGEN8MM
+	bool "nitrogen8mm"
+	select IMX8MM
+	select SUPPORT_SPL
+
+config TARGET_NITROGEN8MN
+	bool "nitrogen8mn"
+	select IMX8MN
+	select SUPPORT_SPL
+
 endchoice
 
 source "board/boundary/bio/Kconfig"
@@ -50,3 +60,4 @@ source "board/boundary/nitrogen8_lite/Kconfig"
 source "board/boundary/nitrogen8_nano/Kconfig"
 source "board/boundary/nitrogen8m/Kconfig"
 source "board/boundary/nitrogen8m_som/Kconfig"
+source "board/boundary/nitrogen8mm/Kconfig"
