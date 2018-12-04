@@ -1,0 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2019 NXP
+ */
+#include "imx8mm-nitrogen8mm_rev2-u-boot.dtsi"

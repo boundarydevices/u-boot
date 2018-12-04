@@ -941,9 +941,13 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
 	imx8mm-kea.dtb \
 	imx8mm-moo.dtb \
 	imx8mm-nitrogen8_lite.dtb \
+	imx8mm-nitrogen8mm.dtb \
+	imx8mm-nitrogen8mm_rev2.dtb \
+	imx8mm-nitrogen8mm_svt.dtb \
 
 dtb-$(CONFIG_ARCH_IMX8M) += \
 	imx8mn-nitrogen8_nano.dtb \
+	imx8mn-nitrogen8mn.dtb \
 
 dtb-$(CONFIG_ARCH_IMX8M) += \
 	imx8mp-crs.dtb \
