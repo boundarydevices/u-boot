@@ -9,8 +9,10 @@
 #include "padctrl-mx7d.h"
 #elif defined(CONFIG_MX51)
 #include "padctrl-mx51.h"
-#elif defined(CONFIG_IMX8M)
-#include "padctrl-imx8m.h"
+#elif defined(CONFIG_IMX8MM)
+#include "padctrl-imx8mm.h"
+#elif defined(CONFIG_IMX8MQ)
+#include "padctrl-imx8mq.h"
 #else
 #include "padctrl-mx6.h"
 #endif

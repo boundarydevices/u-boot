@@ -16,7 +16,9 @@
 #include <asm/arch/sys_proto.h>
 #if defined(CONFIG_MX7D)
 #include <asm/arch/mx7-pins.h>
-#elif defined(CONFIG_IMX8M)
+#elif defined(CONFIG_IMX8MM)
+#include <asm/arch/imx8mm_pins.h>
+#elif defined(CONFIG_IMX8MQ)
 #include <asm/arch/imx8mq_pins.h>
 #elif !defined(CONFIG_MX51)
 #include <asm/arch/mx6-pins.h>
@@ -80,8 +82,10 @@
 #include "eth-mx7d.c"
 #elif defined(CONFIG_MX51)
 #include "eth-mx51.c"
-#elif defined(CONFIG_IMX8M)
-#include "eth-imx8m.c"
+#elif defined(CONFIG_IMX8MM)
+#include "eth-imx8mm.c"
+#elif defined(CONFIG_IMX8MQ)
+#include "eth-imx8mq.c"
 #else
 #include "eth-mx6.c"
 #endif
