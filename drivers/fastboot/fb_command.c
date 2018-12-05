@@ -86,6 +86,7 @@ static const struct {
 		.dispatch = oem_format,
 	},
 #endif
+#ifdef CONFIG_SUPPORT_EMMC_BOOT
 	/* Add command to lock/unlock emmc bootloader block access */
 	[FASTBOOT_COMMAND_LOCK_CRITICAL] =  {
 		.command = "flashing lock_critical",
@@ -95,6 +96,7 @@ static const struct {
 		.command = "flashing unlock_critical",
 		.dispatch = fastboot_unlock_critical
 	},
+#endif
 };
 
 /**
