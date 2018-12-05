@@ -364,6 +364,26 @@ int board_spi_cs_gpio(unsigned bus, unsigned cs)
 #endif
 
 #ifdef CONFIG_CMD_FBPANEL
+static int sw_vals = -1;
+
+static ulong swm00[] = { CONFIG_SWM_DISPLAY_00_A, CONFIG_SWM_DISPLAY_00_B };
+static ulong swm24[] = { CONFIG_SWM_DISPLAY_24_A, CONFIG_SWM_DISPLAY_24_B };
+
+int board_detect_lvds(const struct display_info_t *di)
+{
+	unsigned sw = sw_vals & 0x3f;
+	unsigned swl = sw >> 5;
+	ulong swm = 1 << (sw & 0x1f);
+	ulong mask;
+	char buf[16];
+
+	snprintf(buf, sizeof(buf), "swm%02x_%c", di->addr_num, 'a' + swl);
+
+	mask = env_get_hex(buf, (di->addr_num == 0x24) ?
+			swm24[swl] :  swm00[swl]);
+	return (swm & mask) ? 1 : 0;
+}
+
 void board_enable_lvds(const struct display_info_t *di, int enable)
 {
 	if (di->addr_num == 0x24) {
@@ -379,11 +399,11 @@ void board_enable_lvds(const struct display_info_t *di, int enable)
 
 static const struct display_info_t displays[] = {
 	/* lvds */
-	VD_WVGA_TX23D200_18L(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
+	VD_WVGA_TX23D200_18L(LVDS, board_detect_lvds, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
 	VD_WVGA_TX23D200_18H(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
 	VD_WVGA_TX23D200_24L(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
 	VD_WVGA_TX23D200_24H(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
-	VD_AM_1280800P2TZQW(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x24),
+	VD_AM_1280800P2TZQW(LVDS, board_detect_lvds, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x24),
 
 	/* hdmi */
 	VD_1280_720M_60(HDMI, fbp_detect_i2c, 1, 0x50),
@@ -496,13 +516,6 @@ void board_poweroff(void)
 	mdelay(500);
 }
 
-int board_init(void)
-{
-	common_board_init(i2c_pads, I2C_BUS_CNT, IOMUXC_GPR1_OTG_ID_GPIO1,
-			displays, display_cnt, 0);
-	return 0;
-}
-
 const struct button_key board_buttons[] = {
 	{"sw1",		GP_GPIOKEY_SW1,		'1', 1},
 	{"sw2",		GP_GPIOKEY_SW2,		'2', 1},
@@ -516,6 +529,36 @@ const struct button_key board_buttons[] = {
 	{"door",	GP_GPIOKEY_DOOR_CLOSED, 'D', 1},
 	{NULL, 0, 0, 0},
 };
+
+static int read_keys_int(int cnt)
+{
+	int i = 0;
+	const struct button_key *bb = board_buttons;
+	unsigned short gp;
+	int mask = 0;
+
+	while (i < cnt) {
+		if (!bb->name)
+			break;
+		gp = bb->gpnum;
+		if (gpio_get_value(gp) ^ bb->active_low) {
+			mask |= 1 << i;
+		}
+		i++;
+		bb++;
+	}
+	return mask;
+}
+
+int board_init(void)
+{
+	unsigned sw = read_keys_int(6);
+
+	sw_vals = sw;
+	common_board_init(i2c_pads, I2C_BUS_CNT, IOMUXC_GPR1_OTG_ID_GPIO1,
+			displays, display_cnt, 0);
+	return 0;
+}
 
 #ifdef CONFIG_CMD_BMODE
 const struct boot_mode board_boot_modes[] = {
