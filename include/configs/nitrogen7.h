@@ -41,6 +41,7 @@
 
 #define CONFIG_SUPPORT_EMMC_BOOT	/* eMMC specific */
 #define CONFIG_SYS_MMC_IMG_LOAD_PART	1
+#define CONFIG_SYS_MMC_ENV_PART         1	/* mmcblk0boot0 */
 
 #define CONFIG_FEC_MXC_PHYADDR		4
 #define CONFIG_SYS_FSL_USDHC_NUM	2
