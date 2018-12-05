@@ -200,8 +200,8 @@
 
 #ifndef BOOT_TARGET_DEVICES
 #define BOOT_TARGET_DEVICES(func) \
-	DISTRO_BOOT_DEV_MMC(func) \
-	DISTRO_BOOT_DEV_USB(func)
+	DISTRO_BOOT_DEV_USB(func) \
+	DISTRO_BOOT_DEV_MMC(func)
 #endif
 
 #include <config_distro_bootcmd.h>
