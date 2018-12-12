@@ -167,6 +167,11 @@ u32 spl_boot_device(void)
 	case SD2_BOOT:
 	case MMC2_BOOT:
 		return BOOT_DEVICE_MMC2;
+#if defined(CONFIG_IMX8MM)
+	case SD3_BOOT:
+	case MMC3_BOOT:
+		return BOOT_DEVICE_MMC3;
+#endif
 #endif
 	case NAND_BOOT:
 		return BOOT_DEVICE_NAND;
