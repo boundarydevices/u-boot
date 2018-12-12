@@ -11,7 +11,7 @@ elif itest.s x53 == "x${imx_cpu}"; then
 	a_base=0x70000000
 elif itest.s x6SX == "x${imx_cpu}" || itest.s x7D == "x${imx_cpu}"; then
 	a_base=0x80000000
-elif itest.s x8MQ == "x${imx_cpu}"; then
+elif itest.s x8MQ == "x${imx_cpu}" || itest.s x8MM == "x${imx_cpu}"; then
 	a_base=0x40000000
 	kernelimage=Image
 	bootcommand=booti
@@ -47,6 +47,8 @@ if itest.s "x" == "x${fdt_file}" ; then
 		fdt_file=imx7d-${board}${m4}.dtb;
 	elif itest.s x8MQ == "x${imx_cpu}" ; then
 		fdt_file=imx8mq-${board}${m4}.dtb;
+	elif itest.s x8MM == "x${imx_cpu}" ; then
+		fdt_file=imx8mm-${board}${m4}.dtb;
 	elif itest.s x51 == "x${imx_cpu}" ; then
 		fdt_file=imx51-${board}${m4}.dtb;
 	elif itest.s x53 == "x${imx_cpu}" ; then

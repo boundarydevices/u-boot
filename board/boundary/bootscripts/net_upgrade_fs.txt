@@ -12,6 +12,8 @@ elif itest.s x53 == "x${imx_cpu}"; then
 	a_base=0x70200000
 elif itest.s x6SX == "x${imx_cpu}" || itest.s x7D == "x${imx_cpu}"; then
 	a_base=0x80200000
+elif itest.s x8MQ == "x${imx_cpu}" || itest.s x8MM == "x${imx_cpu}"; then
+	a_base=0x40200000
 fi
 
 if itest.s x != "x${upgrade_file}" ; then

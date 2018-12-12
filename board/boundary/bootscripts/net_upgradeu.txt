@@ -23,7 +23,7 @@ elif itest.s x53 == "x${imx_cpu}"; then
 	a_base=0x70100000
 elif itest.s x6SX == "x${imx_cpu}" || itest.s x7D == "x${imx_cpu}"; then
 	a_base=0x80100000
-elif itest.s x8MQ == "x${imx_cpu}"; then
+elif itest.s x8MQ == "x${imx_cpu}" || itest.s x8MM == "x${imx_cpu}"; then
 	a_base=0x42000000
 	offset=0x8400
 fi

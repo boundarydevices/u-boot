@@ -7,6 +7,8 @@ setenv a_script
 a_script=0x1000c000
 if itest.s x6SX == "x${imx_cpu}" || itest.s x7D == "x${imx_cpu}"; then
 	a_script=0x8000c000
+elif itest.s x8MQ == "x${imx_cpu}" || itest.s x8MM == "x${imx_cpu}"; then
+	a_script=0x4000c000
 fi
 # uncomment below to force upgrade to eMMC,
 # regardless of where script was sourced.
