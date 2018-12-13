@@ -245,9 +245,11 @@ int do_bootm(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		avb_slot_verify_data_free(out_data);
 	}
 
+#ifndef CONFIG_AML_SIGNED_UBOOT
 #ifdef CONFIG_AML_RSVD_ADDR
 	defendkey_process();
 #endif
+#endif//#ifndef CONFIG_AML_SIGNED_UBOOT
 
 	if (is_secure_boot_enabled())
 	{
