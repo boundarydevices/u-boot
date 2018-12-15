@@ -100,7 +100,6 @@ static int do_bootm_subcommand(cmd_tbl_t *cmdtp, int flag, int argc,
 /* bootm - boot application image from image in memory */
 /*******************************************************************/
 
-#ifndef CONFIG_AML_SIGNED_UBOOT
 #ifdef CONFIG_AML_RSVD_ADDR
 static void defendkey_process(void)
 {
@@ -128,7 +127,6 @@ static void defendkey_process(void)
 	}
 }
 #endif
-#endif//#ifndef CONFIG_AML_SIGNED_UBOOT
 
 int do_bootm(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
@@ -244,11 +242,9 @@ int do_bootm(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		avb_slot_verify_data_free(out_data);
 	}
 
-#ifndef CONFIG_AML_SIGNED_UBOOT
 #ifdef CONFIG_AML_RSVD_ADDR
 	defendkey_process();
 #endif
-#endif//#ifndef CONFIG_AML_SIGNED_UBOOT
 
 	if (IS_FEAT_BOOT_VERIFY())
 	{
