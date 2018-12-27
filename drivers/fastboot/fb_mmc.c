@@ -42,6 +42,7 @@ static int part_get_info_by_name_or_alias(struct blk_desc *dev_desc,
 	 *  See eMMCC spec for partition configuration registers (CSD
 	 *  Byte 179)
 	 */
+#if 0	/* Causes a regression when programming sd cards */
 	struct mmc *mmc = find_mmc_device(CONFIG_FASTBOOT_FLASH_MMC_DEV);
 
 	if (mmc && (EXT_CSD_EXTRACT_PARTITION_ACCESS(mmc->part_config))) {
@@ -49,6 +50,7 @@ static int part_get_info_by_name_or_alias(struct blk_desc *dev_desc,
 		printf("accessing boot partition, skipping partition table\n");
 		return  -1;
 	}
+#endif
 
 	ret = part_get_info_by_name(dev_desc, name, info);
 	if (ret < 0) {
