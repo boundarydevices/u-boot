@@ -1347,7 +1347,7 @@ source "arch/arm/mach-imx/mx7/Kconfig"
 
 source "arch/arm/mach-imx/mx7ulp/Kconfig"
 
-source "arch/arm/mach-imx/mx8m/Kconfig"
+source "arch/arm/mach-imx/imx8m/Kconfig"
 
 source "arch/arm/mach-imx/mxs/Kconfig"
 

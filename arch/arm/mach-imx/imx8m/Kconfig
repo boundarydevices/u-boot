@@ -16,7 +16,7 @@ config TARGET_NITROGEN8M
 endchoice
 
 config SYS_SOC
-	default "mx8m"
+	default "imx8m"
 
 source "board/boundary/nitrogen8m/Kconfig"
 endif

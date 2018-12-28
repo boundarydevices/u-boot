@@ -5,11 +5,11 @@
 #
 # (C) Copyright 2011 Freescale Semiconductor, Inc.
 
-ifeq ($(SOC),$(filter $(SOC),mx25 mx35 mx5 mx6 mx7 mx8m vf610))
+ifeq ($(SOC),$(filter $(SOC),mx25 mx35 mx5 mx6 mx7 imx8m vf610))
 obj-y	= iomux-v3.o
 endif
 
-ifeq ($(SOC),$(filter $(SOC),mx8m))
+ifeq ($(SOC),$(filter $(SOC),imx8m))
 ifneq ($(CONFIG_SPL_BUILD),y)
 obj-$(CONFIG_IMX_BOOTAUX) += imx_bootaux.o
 endif
@@ -25,7 +25,7 @@ obj-y	+= cpu.o speed.o
 obj-$(CONFIG_GPT_TIMER) += timer.o
 obj-$(CONFIG_SYS_I2C_MXC) += i2c-mxv7.o
 endif
-ifeq ($(SOC),$(filter $(SOC),mx7 mx6 mxs mx8m))
+ifeq ($(SOC),$(filter $(SOC),mx7 mx6 mxs imx8m))
 obj-y	+= misc.o
 obj-$(CONFIG_SPL_BUILD)	+= spl.o
 endif
@@ -35,7 +35,7 @@ obj-$(CONFIG_SYS_I2C_MXC) += i2c-mxv7.o
 obj-$(CONFIG_ENV_IS_IN_MMC) += mmc_env.o
 endif
 
-ifeq ($(SOC),$(filter $(SOC),mx5 mx6 mx7 mx8m))
+ifeq ($(SOC),$(filter $(SOC),mx5 mx6 mx7 imx8m))
 ifeq ($(CONFIG_SPL_BUILD)$(CONFIG_TPL_BUILD),)
 obj-$(CONFIG_CMD_FBPANEL) += fbpanel.o
 endif
@@ -150,4 +150,4 @@ obj-$(CONFIG_MX5) += mx5/
 obj-$(CONFIG_MX6) += mx6/
 obj-$(CONFIG_MX7) += mx7/
 obj-$(CONFIG_ARCH_MX7ULP) += mx7ulp/
-obj-$(CONFIG_IMX8M) += mx8m/
+obj-$(CONFIG_IMX8M) += imx8m/
