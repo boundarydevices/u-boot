@@ -10,7 +10,7 @@
 #include <errno.h>
 #include <asm/io.h>
 #include <asm/mach-imx/iomux-v3.h>
-#include <asm/arch/mx8mq_pins.h>
+#include <asm/arch/imx8mq_pins.h>
 #include <asm/arch/sys_proto.h>
 #include <power/pmic.h>
 #include <power/pfuze100_pmic.h>

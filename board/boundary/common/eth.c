@@ -17,7 +17,7 @@
 #if defined(CONFIG_MX7D)
 #include <asm/arch/mx7-pins.h>
 #elif defined(CONFIG_IMX8M)
-#include <asm/arch/mx8mq_pins.h>
+#include <asm/arch/imx8mq_pins.h>
 #elif !defined(CONFIG_MX51)
 #include <asm/arch/mx6-pins.h>
 #endif

@@ -17,7 +17,7 @@
 #include <asm-generic/gpio.h>
 #include <fsl_esdhc.h>
 #include <mmc.h>
-#include <asm/arch/mx8mq_pins.h>
+#include <asm/arch/imx8mq_pins.h>
 #include <asm/arch/sys_proto.h>
 #include <asm/mach-imx/gpio.h>
 #include <asm/mach-imx/mxc_i2c.h>
