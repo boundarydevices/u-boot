@@ -9,7 +9,7 @@ numsuccess=0;
 numfailures=0;
 for board in $boards ; do
     if [ $board != "mx6qsabrelite" ] ; then
-	cnt=`sed -n "/CONFIG_ARCH_MX8M=/=" configs/${board}_defconfig`
+	cnt=`sed -n "/CONFIG_ARCH_IMX8M=/=" configs/${board}_defconfig`
 	if [ "${cnt}" != "" ] ; then
 		export ARCH=arm64
 		export CROSS_COMPILE=aarch64-linux-gnu-

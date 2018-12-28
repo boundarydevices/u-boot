@@ -1,6 +1,6 @@
 config FEC_MAC_FUSE
 	bool "FEC mac fuse reading"
-	depends on MX5 || MX6 || MX7 || MX8M
+	depends on MX5 || MX6 || MX7 || IMX8M
 	default y if FEC_MXC
 
 config HAS_CAAM

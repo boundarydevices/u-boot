@@ -168,7 +168,7 @@ config FEC_MXC_MDIO_BASE
 
 config FEC_MXC
 	bool "FEC Ethernet controller"
-	depends on MX5 || MX6 || MX7 || MX8M
+	depends on MX5 || MX6 || MX7 || IMX8M
 	help
 	  This driver supports the 10/100 Fast Ethernet controller for
 	  NXP i.MX processors.

@@ -86,7 +86,7 @@ typedef u64 iomux_v3_cfg_t;
 #define IOMUX_CONFIG_LPSR       0x20
 #define MUX_MODE_LPSR           ((iomux_v3_cfg_t)IOMUX_CONFIG_LPSR << \
 				MUX_MODE_SHIFT)
-#ifdef CONFIG_MX8M
+#ifdef CONFIG_IMX8M
 #define PAD_CTL_DSE0		(0x0 << 0)
 #define PAD_CTL_DSE1		(0x1 << 0)
 #define PAD_CTL_DSE2		(0x2 << 0)
@@ -296,7 +296,7 @@ if (is_mx6dq() || is_mx6dqp()) {				\
 #define IOMUX_PAD_CTRL(name, ctrl)	NEW_PAD_CTRL(MX51_PAD_##name, ctrl)
 #elif defined(CONFIG_MX53)
 #define IOMUX_PAD_CTRL(name, ctrl)	NEW_PAD_CTRL(MX53_PAD_##name, ctrl)
-#elif defined(CONFIG_MX8M)
+#elif defined(CONFIG_IMX8M)
 #define IOMUX_PAD_CTRL(name, ctrl)	NEW_PAD_CTRL(IMX8MQ_PAD_##name, ctrl)
 #else
 #define IOMUX_PAD_CTRL(name, ctrl)	NEW_PAD_CTRL(MX6_PAD_##name, ctrl)

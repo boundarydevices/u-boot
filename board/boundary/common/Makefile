@@ -1,7 +1,7 @@
 # SPDX-License-Identifier:	GPL-2.0+
 #
 obj-y  := eth.o
-ifneq ($(CONFIG_ARCH_MX8M),y)
+ifneq ($(CONFIG_ARCH_IMX8M),y)
 obj-y  += bd_common.o
 obj-$(CONFIG_CMD_KBD)  += cmd_kbd.o
 endif

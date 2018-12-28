@@ -1,6 +1,6 @@
-if ARCH_MX8M
+if ARCH_IMX8M
 
-config MX8M
+config IMX8M
 	bool
 	select ROM_UNIFIED_SECTIONS
 
@@ -10,7 +10,7 @@ choice
 
 config TARGET_NITROGEN8M
 	bool "nitrogen8m"
-	select MX8M
+	select IMX8M
 	select SUPPORT_SPL
 
 endchoice

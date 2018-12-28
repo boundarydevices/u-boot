@@ -645,7 +645,7 @@ config ARCH_MESON
 	  targeted at media players and tablet computers. We currently
 	  support the S905 (GXBaby) 64-bit SoC.
 
-config ARCH_MX8M
+config ARCH_IMX8M
 	bool "NXP i.MX8M platform"
 	select ARM64
 	select DM

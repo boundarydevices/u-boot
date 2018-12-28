@@ -9,14 +9,14 @@
 #include <asm/arch/imx-regs.h>
 #if defined(CONFIG_MX51)
 #include <asm/arch/iomux-mx51.h>
-#elif defined(CONFIG_MX7D) || defined(CONFIG_MX8M)
+#elif defined(CONFIG_MX7D) || defined(CONFIG_IMX8M)
 #else
 #include <asm/arch/iomux.h>
 #endif
 #include <asm/arch/sys_proto.h>
 #if defined(CONFIG_MX7D)
 #include <asm/arch/mx7-pins.h>
-#elif defined(CONFIG_MX8M)
+#elif defined(CONFIG_IMX8M)
 #include <asm/arch/mx8mq_pins.h>
 #elif !defined(CONFIG_MX51)
 #include <asm/arch/mx6-pins.h>
@@ -80,7 +80,7 @@
 #include "eth-mx7d.c"
 #elif defined(CONFIG_MX51)
 #include "eth-mx51.c"
-#elif defined(CONFIG_MX8M)
+#elif defined(CONFIG_IMX8M)
 #include "eth-mx8m.c"
 #else
 #include "eth-mx6.c"
@@ -150,7 +150,7 @@ static void init_fec_clocks(void)
 
 	set_clk_enet(ENET_125MHZ);
 #endif
-#ifdef CONFIG_MX8M
+#ifdef CONFIG_IMX8M
 	struct iomuxc_gpr_base_regs *const iomuxc_gpr_regs
 		= (struct iomuxc_gpr_base_regs *) IOMUXC_GPR_BASE_ADDR;
 

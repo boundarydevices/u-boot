@@ -25,12 +25,12 @@
 #include "mhl_hdtx_top.h"
 
 
-#ifdef CONFIG_MX8QM
+#ifdef CONFIG_IMX8QM
 #include "API_AFE_mcu1_dp.h"
 #include "API_AFE_ss28fdsoi_kiran_hdmitx.h"
 #endif
 
-#ifdef CONFIG_MX8M
+#ifdef CONFIG_IMX8M
 #include "API_AFE_t28hpc_hdmitx.h"
 #endif
 
@@ -99,7 +99,7 @@ static int imx8_hdmi_init(int vic,
 			  bool pixel_clk_from_phy)
 {
 	int ret;
-#ifdef CONFIG_MX8QM
+#ifdef CONFIG_IMX8QM
 	sc_ipc_t ipcHndl = gd->arch.ipc_channel_handle;
 	void __iomem *hdmi_csr_base = (void __iomem *)0x56261000;
 #endif
@@ -147,7 +147,7 @@ static int imx8_hdmi_init(int vic,
 	/*================================================================== */
 	/* Parameterization done */
 	/*================================================================== */
-#ifdef CONFIG_MX8QM
+#ifdef CONFIG_IMX8QM
 	/* set the pixel link mode and pixel type */
 	SC_MISC_SET_CONTROL(ipcHndl, SC_R_HDMI, SC_C_PHY_RESET, 0);
 #if 1
@@ -187,11 +187,11 @@ static int imx8_hdmi_init(int vic,
 
 	/*phy_reset(1); */
 
-#ifdef CONFIG_MX8QM
+#ifdef CONFIG_IMX8QM
 	SC_MISC_SET_CONTROL(ipcHndl, SC_R_HDMI, SC_C_PHY_RESET, 1);
 #endif
 	hdmi_tx_t28hpc_power_config_seq(4);
-#ifdef CONFIG_MX8QM
+#ifdef CONFIG_IMX8QM
 	/* Set the lane swapping */
 	ret = cdn_api_general_write_register_blocking
 		(ADDR_SOURCD_PHY + (LANES_CONFIG << 2),
@@ -223,7 +223,7 @@ static int imx8_hdmi_init(int vic,
 	ret =  CDN_API_HDMITX_SetVic_blocking(vic_mode, bps, format);
 	debug("CDN_API_HDMITX_SetVic_blocking ret = %d\n", ret);
 
-#ifdef CONFIG_MX8QM
+#ifdef CONFIG_IMX8QM
 	{
 		GENERAL_Read_Register_response regresp;
 		/* adjust the vsync/hsync polarity */

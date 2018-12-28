@@ -6,11 +6,11 @@
 #include <errno.h>
 #include <asm/arch/clock.h>
 #include <asm/arch/crm_regs.h>
-#if !defined(CONFIG_MX51) && !defined(CONFIG_MX53) && !defined(CONFIG_MX7D) && !defined(CONFIG_MX8M)
+#if !defined(CONFIG_MX51) && !defined(CONFIG_MX53) && !defined(CONFIG_MX7D) && !defined(CONFIG_IMX8M)
 #include <asm/arch/mxc_hdmi.h>
 #endif
 #include <asm/arch/sys_proto.h>
-#if defined(CONFIG_MX8M)
+#if defined(CONFIG_IMX8M)
 #include <asm/arch/video_common.h>
 #endif
 #include <asm/gpio.h>
@@ -266,7 +266,7 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 	const char *buf_start = buf;
 	const struct fb_videomode *mode;
 	const char * fmt;
-#if defined(CONFIG_MX8M)
+#if defined(CONFIG_IMX8M)
 	unsigned fb1 = (fb == FB_MIPI) ? FB_MIPI_BRIDGE : fb;
 #else
 	unsigned fb1 = fb;
@@ -450,7 +450,7 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		sz = snprintf(buf, size,
 				"fdt set backlight_mipi status okay;"
 				"fdt set mipi_dsi status okay;"
-#if defined(CONFIG_MX8M)
+#if defined(CONFIG_IMX8M)
 				"fdt set lcdif status okay;"
 				"fdt set mipi_dsi_phy status okay;"
 #endif
@@ -558,7 +558,7 @@ int fbp_detect_i2c(struct display_info_t const *di)
 	return (ret == 0);
 }
 
-#if !defined(CONFIG_MX8M) && !defined(CONFIG_MX51) && !defined(CONFIG_MX53)
+#if !defined(CONFIG_IMX8M) && !defined(CONFIG_MX51) && !defined(CONFIG_MX53)
 static int calc_gcd(int a, int b)
 {
 	int n;
@@ -592,7 +592,7 @@ static void reparent_lvds(int fbtype, int new_parent)
 	readl(&ccm->cs2cdr);	/* wait for write */
 }
 
-#elif !defined(CONFIG_MX51) && !defined(CONFIG_MX53) && !defined(CONFIG_MX7D) && !defined(CONFIG_MX8M)
+#elif !defined(CONFIG_MX51) && !defined(CONFIG_MX53) && !defined(CONFIG_MX7D) && !defined(CONFIG_IMX8M)
 static void reparent_lvds(int fbtype, int new_parent)
 {
 	struct mxc_ccm_reg *ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
@@ -716,7 +716,7 @@ static void setup_clock(struct display_info_t const *di)
 #endif
 }
 
-#elif !defined(CONFIG_MX8M)
+#elif !defined(CONFIG_IMX8M)
 static void setup_clock(struct display_info_t const *di)
 {
 #if defined(CONFIG_MX7D)
@@ -961,7 +961,7 @@ static void setup_clock(struct display_info_t const *di)
 
 void fbp_enable_fb(struct display_info_t const *di, int enable)
 {
-#if !defined(CONFIG_MX51) && !defined(CONFIG_MX53) && !defined(CONFIG_MX7D) && !defined(CONFIG_MX8M)
+#if !defined(CONFIG_MX51) && !defined(CONFIG_MX53) && !defined(CONFIG_MX7D) && !defined(CONFIG_IMX8M)
 	struct mxc_ccm_reg *mxc_ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
 	struct iomuxc *iomux = (struct iomuxc *)IOMUXC_BASE_ADDR;
 	u32 reg, cscmr2;
@@ -981,7 +981,7 @@ void fbp_enable_fb(struct display_info_t const *di, int enable)
 	case FB_LCD:
 		board_enable_lcd(di, enable);
 		break;
-#if !defined(CONFIG_MX51) && !defined(CONFIG_MX53) && !defined(CONFIG_MX7D) && !defined(CONFIG_MX8M)
+#if !defined(CONFIG_MX51) && !defined(CONFIG_MX53) && !defined(CONFIG_MX7D) && !defined(CONFIG_IMX8M)
 	case FB_LVDS:
 #ifdef CONFIG_MX6SX
 #define GPR_LDB	6
@@ -1058,7 +1058,7 @@ void fbp_enable_fb(struct display_info_t const *di, int enable)
 static void imx_prepare_display(void)
 {
 #if !defined(CONFIG_MX51) && !defined(CONFIG_MX53) && \
-		!defined(CONFIG_MX7D) && !defined(CONFIG_MX8M)
+		!defined(CONFIG_MX7D) && !defined(CONFIG_IMX8M)
 	struct mxc_ccm_reg *mxc_ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
 	int reg;
 #if !defined(CONFIG_MX6SX)
