@@ -10,7 +10,7 @@
 #elif defined(CONFIG_MX51)
 #include "padctrl-mx51.h"
 #elif defined(CONFIG_IMX8M)
-#include "padctrl-mx8m.h"
+#include "padctrl-imx8m.h"
 #else
 #include "padctrl-mx6.h"
 #endif

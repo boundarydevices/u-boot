@@ -81,7 +81,7 @@
 #elif defined(CONFIG_MX51)
 #include "eth-mx51.c"
 #elif defined(CONFIG_IMX8M)
-#include "eth-mx8m.c"
+#include "eth-imx8m.c"
 #else
 #include "eth-mx6.c"
 #endif
