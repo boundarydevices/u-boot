@@ -83,6 +83,8 @@
 				(chl_set == CONFIG_DDR0_16BIT))
 #define DDR_USE_2_RANK(chl_set)	((chl_set == CONFIG_DDR0_RANK01))
 
+#define DMC_TEST_SLT_ENABLE_DDR_AUTO_FAST_BOOT 1<<5
+#define DMC_TEST_SLT_ENABLE_DDR_AUTO_WINDOW_TEST 1<<4
 /* DMC_DDR_CTRL defines */
 #define DDR_DDR4_ENABLE						(1<<22)
 #define DDR_RANK1_ENABLE					(1<<21)
@@ -213,6 +215,11 @@
 #endif
 #define DDR_FULL_TEST						(CONFIG_DDR_FULL_TEST<<10)
 
+/* non-sec region scramble function */
+#ifndef CONFIG_DDR_NONSEC_SCRAMBLE
+#define CONFIG_DDR_NONSEC_SCRAMBLE			0
+#endif
+#define DDR_NONSEC_SCRAMBLE					(CONFIG_DDR_NONSEC_SCRAMBLE<<11)
 
 #if(CONFIG_DDR_FUNC_LPDDR3_CA==1)
 #if (CONFIG_LPDDR3_CA_TRAINING_CA0==CONFIG_LPDDR3_CA_TRAINING_USE_LANE0)
@@ -264,6 +271,7 @@
 											DDR_FUNC_LPDDR3_CA				| \
 											DDR_FUNC_PRINT_WINDOW			| \
 											DDR_FULL_TEST					| \
+											DDR_NONSEC_SCRAMBLE				| \
 											DDR_FUNC_LPDDR3_CA_TRAINING_CA0_BIT0| \
 											DDR_FUNC_LPDDR3_CA_TRAINING_CA0_BIT1| \
 											DDR_FUNC_LPDDR3_CA_TRAINING_CA1_BIT0| \
