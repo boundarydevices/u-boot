@@ -5,6 +5,8 @@
  * Peng Fan <peng.fan at nxp.com>
  */
 
+#ifndef _ASM_ARCH_IMX8M_CLOCK_H
+#define _ASM_ARCH_IMX8M_CLOCK_H
 #include <linux/bitops.h>
 
 #ifdef CONFIG_IMX8MQ
@@ -17,19 +19,6 @@
 #endif
 
 #define MHZ(X)	((X) * 1000000UL)
-
-/* Mainly for compatible to imx common code. */
-enum mxc_clock {
-	MXC_ARM_CLK = 0,
-	MXC_IPG_CLK,
-	MXC_CSPI_CLK,
-	MXC_ESDHC_CLK,
-	MXC_ESDHC2_CLK,
-	MXC_ESDHC3_CLK,
-	MXC_I2C_CLK,
-	MXC_UART_CLK,
-	MXC_QSPI_CLK,
-};
 
 enum clk_slice_type {
 	CORE_CLOCK_SLICE,
@@ -276,3 +265,4 @@ void enable_ocotp_clk(unsigned char enable);
 int enable_i2c_clk(unsigned char enable, unsigned int i2c_num);
 int set_clk_eqos(enum enet_freq type);
 int set_clk_enet(enum enet_freq type);
+#endif

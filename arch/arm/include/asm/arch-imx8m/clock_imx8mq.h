@@ -5,8 +5,8 @@
  * Peng Fan <peng.fan@nxp.com>
  */
 
-#ifndef _ASM_ARCH_IMX8M_CLOCK_H
-#define _ASM_ARCH_IMX8M_CLOCK_H
+#ifndef _ASM_ARCH_IMX8M_CLOCK_IMX8MQ_H
+#define _ASM_ARCH_IMX8M_CLOCK_IMX8MQ_H
 
 #ifndef __ASSEMBLY__
 #include <linux/bitops.h>
@@ -26,6 +26,7 @@ enum pll_clocks {
 };
 
 enum clk_root_index {
+	MXC_ARM_CLK			= 0,
 	ARM_A53_CLK_ROOT		= 0,
 	ARM_M4_CLK_ROOT			= 1,
 	VPU_A53_CLK_ROOT		= 2,
@@ -45,6 +46,7 @@ enum clk_root_index {
 	NOC_APB_CLK_ROOT		= 27,
 	AHB_CLK_ROOT			= 32,
 	IPG_CLK_ROOT			= 33,
+	MXC_IPG_CLK			= 33,
 	AUDIO_AHB_CLK_ROOT		= 34,
 	MIPI_DSI_ESC_RX_CLK_ROOT	= 36,
 	DRAM_SEL_CFG			= 48,
@@ -73,12 +75,16 @@ enum clk_root_index {
 	ENET_PHY_REF_CLK_ROOT		= 85,
 	NAND_CLK_ROOT			= 86,
 	QSPI_CLK_ROOT			= 87,
+	MXC_ESDHC_CLK			= 88,
 	USDHC1_CLK_ROOT			= 88,
+	MXC_ESDHC2_CLK			= 89,
 	USDHC2_CLK_ROOT			= 89,
 	I2C1_CLK_ROOT			= 90,
+	MXC_I2C_CLK			= 90,
 	I2C2_CLK_ROOT			= 91,
 	I2C3_CLK_ROOT			= 92,
 	I2C4_CLK_ROOT			= 93,
+	MXC_UART_CLK			= 94,
 	UART1_CLK_ROOT			= 94,
 	UART2_CLK_ROOT			= 95,
 	UART3_CLK_ROOT			= 96,
@@ -86,6 +92,7 @@ enum clk_root_index {
 	USB_CORE_REF_CLK_ROOT		= 98,
 	USB_PHY_REF_CLK_ROOT		= 99,
 	GIC_CLK_ROOT			= 100,
+	MXC_CSPI_CLK			= 101,
 	ECSPI1_CLK_ROOT			= 101,
 	ECSPI2_CLK_ROOT			= 102,
 	PWM1_CLK_ROOT			= 103,
