@@ -8,6 +8,8 @@
 #ifndef _ASM_ARCH_IMX8M_CLOCK_H
 #define _ASM_ARCH_IMX8M_CLOCK_H
 
+#define MHZ(X)	((X) * 1000000UL)
+
 #ifdef CONFIG_IMX8MQ
 #include <asm/arch/clock_imx8mq.h>
 #else
