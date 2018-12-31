@@ -101,27 +101,11 @@ void wait_ddrphy_training_complete(void)
 
 void ddrphy_init_set_dfi_clk(unsigned int drate)
 {
-	switch (drate) {
-	case 3000:
-		dram_pll_init(DRAM_PLL_OUT_750M);
+	if (drate >= 1600) {
+		dram_pll_init(MHZ(drate/4));
 		dram_disable_bypass();
-		break;
-	case 2400:
-		dram_pll_init(DRAM_PLL_OUT_600M);
-		dram_disable_bypass();
-		break;
-	case 1600:
-		dram_pll_init(DRAM_PLL_OUT_400M);
-		dram_disable_bypass();
-		break;
-	case 400:
-		dram_enable_bypass(DRAM_BYPASSCLK_400M);
-		break;
-	case 100:
-		dram_enable_bypass(DRAM_BYPASSCLK_100M);
-		break;
-	default:
-		return;
+	} if (drate <= 400) {
+		dram_enable_bypass(MHZ(drate));
 	}
 }
 

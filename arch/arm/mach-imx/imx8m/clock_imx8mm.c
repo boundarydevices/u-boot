@@ -299,7 +299,7 @@ struct imx_int_pll_rate_table {
 	}
 
 struct dram_bypass_clk_setting {
-	enum dram_bypassclk_val clk;
+	ulong clk;
 	int alt_root_sel;
 	enum root_pre_div alt_pre_div;
 	int apb_root_sel;
@@ -320,9 +320,9 @@ static struct imx_int_pll_rate_table imx8mm_fracpll_tbl[] = {
 };
 
 static struct dram_bypass_clk_setting imx8mm_dram_bypass_tbl[] = {
-	DRAM_BYPASS_ROOT_CONFIG(DRAM_BYPASSCLK_100M, 2, CLK_ROOT_PRE_DIV1, 2, CLK_ROOT_PRE_DIV2),
-	DRAM_BYPASS_ROOT_CONFIG(DRAM_BYPASSCLK_250M, 3, CLK_ROOT_PRE_DIV2, 2, CLK_ROOT_PRE_DIV2),
-	DRAM_BYPASS_ROOT_CONFIG(DRAM_BYPASSCLK_400M, 1, CLK_ROOT_PRE_DIV2, 3, CLK_ROOT_PRE_DIV2),
+	DRAM_BYPASS_ROOT_CONFIG(MHZ(100), 2, CLK_ROOT_PRE_DIV1, 2, CLK_ROOT_PRE_DIV2),
+	DRAM_BYPASS_ROOT_CONFIG(MHZ(250), 3, CLK_ROOT_PRE_DIV2, 2, CLK_ROOT_PRE_DIV2),
+	DRAM_BYPASS_ROOT_CONFIG(MHZ(400), 1, CLK_ROOT_PRE_DIV2, 3, CLK_ROOT_PRE_DIV2),
 };
 
 int fracpll_configure(enum pll_clocks clock, u32 freq)
@@ -393,37 +393,12 @@ int fracpll_configure(enum pll_clocks clock, u32 freq)
 	return ret;
 }
 
-void dram_pll_init(enum dram_pll_out_val pll_val)
+void dram_pll_init(ulong pll_val)
 {
-	u32 freq;
-
-	switch (pll_val) {
-	case DRAM_PLL_OUT_100M:
-		freq = 100000000UL;
-		break;
-	case DRAM_PLL_OUT_667M:
-		freq = 667000000UL;
-		break;
-	case DRAM_PLL_OUT_400M:
-		freq = 400000000UL;
-		break;
-	case DRAM_PLL_OUT_600M:
-		freq = 600000000UL;
-		break;
-	case DRAM_PLL_OUT_750M:
-		freq = 750000000UL;
-		break;
-	case DRAM_PLL_OUT_800M:
-		freq = 800000000UL;
-		break;
-	default:
-		return;
-	}
-
-	fracpll_configure(ANATOP_DRAM_PLL, freq);
+	fracpll_configure(ANATOP_DRAM_PLL, pll_val);
 }
 
-void dram_enable_bypass(enum dram_bypassclk_val clk_val)
+void dram_enable_bypass(ulong clk_val)
 {
 	int i;
 	struct dram_bypass_clk_setting *config;
@@ -434,7 +409,7 @@ void dram_enable_bypass(enum dram_bypassclk_val clk_val)
 	}
 
 	if (i == ARRAY_SIZE(imx8mm_dram_bypass_tbl)) {
-		printf("No matched freq table %u\n", clk_val);
+		printf("No matched freq table %lu\n", clk_val);
 		return;
 	}
 
