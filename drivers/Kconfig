@@ -24,7 +24,7 @@ source "drivers/demo/Kconfig"
 
 source "drivers/ddr/fsl/Kconfig"
 
-source "drivers/ddr/imx8m/Kconfig"
+source "drivers/ddr/imx/Kconfig"
 
 source "drivers/dfu/Kconfig"
 
