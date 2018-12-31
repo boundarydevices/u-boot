@@ -1,7 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0+
 /*
 * Copyright 2018 NXP
 *
-* SPDX-License-Identifier: GPL-2.0+
 */
 
 #include <common.h>
@@ -28,23 +28,26 @@ void ddr_init(struct dram_timing_info *dram_timing)
 	unsigned int tmp;
 	int imx8mq = is_imx8mq();
 
-	printf("DDRINFO: start lpddr4 ddr init\n");
+	debug("DDRINFO: start lpddr4 ddr init\n");
 	/* step 1: reset */
 	if (imx8mq) {
 		reg32_write(SRC_DDRC_RCR_ADDR + 0x04, 0x8F00000F);
 		reg32_write(SRC_DDRC_RCR_ADDR, 0x8F00000F);
-		mdelay(100);
 		reg32_write(SRC_DDRC_RCR_ADDR + 0x04, 0x8F000000);
 	} else {
 		reg32_write(SRC_DDRC_RCR_ADDR, 0x8F00001F);
 		reg32_write(SRC_DDRC_RCR_ADDR, 0x8F00000F);
-		mdelay(100);
 	}
 
+	mdelay(100);
 
 	debug("DDRINFO: reset done\n");
-	/* change the clock source of dram_apb_clk_root: source 4 800MHz /4 = 200MHz */
-	clock_set_target_val(DRAM_APB_CLK_ROOT, CLK_ROOT_ON | CLK_ROOT_SOURCE_SEL(4) |
+	/*
+	 * change the clock source of dram_apb_clk_root:
+	 * source 4 800MHz /4 = 200MHz
+	 */
+	clock_set_target_val(DRAM_APB_CLK_ROOT, CLK_ROOT_ON |
+			     CLK_ROOT_SOURCE_SEL(4) |
 			     CLK_ROOT_PRE_DIV(CLK_ROOT_PRE_DIV4));
 
 	/* disable iso */
@@ -92,20 +95,19 @@ void ddr_init(struct dram_timing_info *dram_timing)
 
 	/* step6 */
 	tmp = reg32_read(DDRC_MSTR2(0));
-	if (tmp == 0x2) {
+	if (tmp == 0x2)
 		reg32_write(DDRC_DFIMISC(0), 0x00000210);
-	} else if (tmp == 0x1) {
+	else if (tmp == 0x1)
 		reg32_write(DDRC_DFIMISC(0), 0x00000110);
-	} else {
+	else
 		reg32_write(DDRC_DFIMISC(0), 0x00000010);
-	}
 
 	/* step7 [0]--1: disable quasi-dynamic programming */
 	reg32_write(DDRC_SWCTL(0), 0x00000001);
 
 	/* step8 Configure LPDDR4 PHY's registers */
 	debug("DDRINFO:ddrphy config start\n");
-	lpddr4_cfg_phy(dram_timing);
+	ddr_cfg_phy(dram_timing);
 	debug("DDRINFO: ddrphy config done\n");
 
 	/*
@@ -116,20 +118,19 @@ void ddr_init(struct dram_timing_info *dram_timing)
 		tmp = reg32_read(DDRPHY_CalBusy(0));
 	} while ((tmp & 0x1));
 
-	printf("DDRINFO:ddrphy calibration done\n");
+	debug("DDRINFO:ddrphy calibration done\n");
 
 	/* step15 [0]--0: to enable quasi-dynamic programming */
 	reg32_write(DDRC_SWCTL(0), 0x00000000);
 
 	/* step16 */
 	tmp = reg32_read(DDRC_MSTR2(0));
-	if (tmp == 0x2) {
+	if (tmp == 0x2)
 		reg32_write(DDRC_DFIMISC(0), 0x00000230);
-	} else if (tmp == 0x1) {
+	else if (tmp == 0x1)
 		reg32_write(DDRC_DFIMISC(0), 0x00000130);
-	} else {
+	else
 		reg32_write(DDRC_DFIMISC(0), 0x00000030);
-	}
 
 	/* step17 [0]--1: disable quasi-dynamic programming */
 	reg32_write(DDRC_SWCTL(0), 0x00000001);
@@ -181,7 +182,7 @@ void ddr_init(struct dram_timing_info *dram_timing)
 
 	/* enable port 0 */
 	reg32_write(DDRC_PCTRL_0(0), 0x00000001);
-	printf("DDRINFO: ddrmix config done\n");
+	debug("DDRINFO: ddrmix config done\n");
 
 	/* save the dram timing config into memory */
 	dram_config_save(dram_timing, CONFIG_SAVED_DRAM_TIMING_BASE);

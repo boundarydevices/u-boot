@@ -1,14 +1,14 @@
+// SPDX-License-Identifier: GPL-2.0+
 /*
  * Copyright 2018 NXP
- *
- * SPDX-License-Identifier: GPL-2.0+
  */
+
 #include <common.h>
 #include <linux/kernel.h>
 #include <asm/arch/imx8m_ddr.h>
 #include <asm/arch/lpddr4_define.h>
 
-void lpddr4_cfg_phy(struct dram_timing_info *dram_timing)
+void ddr_cfg_phy(struct dram_timing_info *dram_timing)
 {
 	struct dram_cfg_param *dram_cfg;
 	struct dram_fsp_msg *fsp_msg;
@@ -28,12 +28,12 @@ void lpddr4_cfg_phy(struct dram_timing_info *dram_timing)
 	/* load the frequency setpoint message block config */
 	fsp_msg = dram_timing->fsp_msg;
 	for (i = 0; i < dram_timing->fsp_msg_num; i++) {
-		printf("DRAM PHY training for %dMTS\n", fsp_msg->drate);
+		debug("DRAM PHY training for %dMTS\n", fsp_msg->drate);
 		/* set dram PHY input clocks to desired frequency */
 		ddrphy_init_set_dfi_clk(fsp_msg->drate);
 
 		/* load the dram training firmware image */
-		dwc_ddrphy_apb_wr(0xd0000,0x0);
+		dwc_ddrphy_apb_wr(0xd0000, 0x0);
 		ddr_load_train_firmware(fsp_msg->fw_type);
 
 		/* load the frequency set point message block parameter */

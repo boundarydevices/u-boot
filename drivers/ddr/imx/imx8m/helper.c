@@ -1,7 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0+
 /*
  * Copyright 2018 NXP
- *
- * SPDX-License-Identifier:	GPL-2.0+
  */
 
 #include <common.h>
@@ -18,7 +17,7 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #define IMEM_LEN 32768 /* byte */
 #define DMEM_LEN 16384 /* byte */
-#define IMEM_2D_OFFSET 	49152
+#define IMEM_2D_OFFSET	49152
 
 #define IMEM_OFFSET_ADDR 0x00050000
 #define DMEM_OFFSET_ADDR 0x00054000
@@ -58,7 +57,7 @@ void ddr_load_train_firmware(enum fw_type type)
 		i += 4;
 	}
 
-	printf("check ddr4_pmu_train_imem code\n");
+	debug("check ddr4_pmu_train_imem code\n");
 	pr_from32 = imem_start;
 	pr_to32 = DDR_TRAIN_CODE_BASE_ADDR + 4 * IMEM_OFFSET_ADDR;
 	for (i = 0x0; i < IMEM_LEN; ) {
@@ -66,21 +65,20 @@ void ddr_load_train_firmware(enum fw_type type)
 		pr_to32 += 4;
 		tmp32 += ((readw(pr_to32) & 0x0000ffff) << 16);
 
-		if(tmp32 != readl(pr_from32)){
-			printf("%lx %lx\n", pr_from32, pr_to32);
+		if (tmp32 != readl(pr_from32)) {
+			debug("%lx %lx\n", pr_from32, pr_to32);
 			error++;
 		}
 		pr_from32 += 4;
 		pr_to32 += 4;
 		i += 4;
 	}
-	if (error) {
-		printf("check ddr4_pmu_train_imem code fail=%d\n",error);
-	} else {
-		printf("check ddr4_pmu_train_imem code pass\n");
-	}
+	if (error)
+		printf("check ddr4_pmu_train_imem code fail=%d\n", error);
+	else
+		debug("check ddr4_pmu_train_imem code pass\n");
 
-	printf("check ddr4_pmu_train_dmem code\n");
+	debug("check ddr4_pmu_train_dmem code\n");
 	pr_from32 = dmem_start;
 	pr_to32 = DDR_TRAIN_CODE_BASE_ADDR + 4 * DMEM_OFFSET_ADDR;
 	for (i = 0x0; i < DMEM_LEN;) {
@@ -88,7 +86,7 @@ void ddr_load_train_firmware(enum fw_type type)
 		pr_to32 += 4;
 		tmp32 += ((readw(pr_to32) & 0x0000ffff) << 16);
 		if (tmp32 != readl(pr_from32)) {
-			printf("%lx %lx\n", pr_from32, pr_to32);
+			debug("%lx %lx\n", pr_from32, pr_to32);
 			error++;
 		}
 		pr_from32 += 4;
@@ -96,14 +94,14 @@ void ddr_load_train_firmware(enum fw_type type)
 		i += 4;
 	}
 
-	if (error) {
-		printf("check ddr4_pmu_train_dmem code fail=%d",error);
-	} else {
-		printf("check ddr4_pmu_train_dmem code pass\n");
-	}
+	if (error)
+		printf("check ddr4_pmu_train_dmem code fail=%d", error);
+	else
+		debug("check ddr4_pmu_train_dmem code pass\n");
 }
 
-void ddrphy_trained_csr_save(struct dram_cfg_param *ddrphy_csr, unsigned int num)
+void ddrphy_trained_csr_save(struct dram_cfg_param *ddrphy_csr,
+			     unsigned int num)
 {
 	int i = 0;
 
@@ -131,7 +129,8 @@ void dram_config_save(struct dram_timing_info *timing_info,
 	saved_timing->ddrphy_trained_csr_num = timing_info->ddrphy_trained_csr_num;
 	saved_timing->ddrphy_pie_num = timing_info->ddrphy_pie_num;
 
-	cfg = (struct dram_cfg_param *)(saved_timing_base + sizeof(*timing_info));
+	cfg = (struct dram_cfg_param *)(saved_timing_base +
+					sizeof(*timing_info));
 
 	/* save ddrc config */
 	saved_timing->ddrc_cfg = cfg;
