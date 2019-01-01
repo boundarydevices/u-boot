@@ -13,7 +13,7 @@
 #define LPDDR4_CS	0x3	/* 2 ranks */
 #define DDR_BOOT_P1	/* default DDR boot frequency point */
 
-struct dram_cfg_param lpddr4_ddrc_cfg[] = {
+static struct dram_cfg_param lpddr4_ddrc_cfg[] = {
 	/* Start to config, default 3200mbps */
 	{ DDRC_DBG1(0),	0x00000001 },
 	{ DDRC_PWRCTL(0), 0x00000001 },
@@ -141,7 +141,7 @@ struct dram_cfg_param lpddr4_ddrc_cfg[] = {
 };
 
 /* PHY Initialize Configuration */
-struct dram_cfg_param lpddr4_ddrphy_cfg[] = {
+static struct dram_cfg_param lpddr4_ddrphy_cfg[] = {
 	{ 0x20110, 0x02 }, /* MapCAB0toDFI */
 	{ 0x20111, 0x03 }, /* MapCAB1toDFI */
 	{ 0x20112, 0x04 }, /* MapCAB2toDFI */
@@ -331,7 +331,7 @@ struct dram_cfg_param lpddr4_ddrphy_cfg[] = {
 };
 
 /* P0 message block paremeter for training firmware */
-struct dram_cfg_param lpddr4_fsp0_cfg[] = {
+static struct dram_cfg_param lpddr4_fsp0_cfg[] = {
 	{ 0xd0000, 0x0 },
 	{ 0x54000, 0x0 },
 	{ 0x54001, 0x0 },
@@ -407,7 +407,7 @@ struct dram_cfg_param lpddr4_fsp0_cfg[] = {
 };
 
 /* P1 message block paremeter for training firmware */
-struct dram_cfg_param lpddr4_fsp1_cfg[] = {
+static struct dram_cfg_param lpddr4_fsp1_cfg[] = {
 	{ 0xd0000, 0x0 },
 	{ 0x54000, 0x0 },
 	{ 0x54001, 0x0 },
@@ -482,7 +482,7 @@ struct dram_cfg_param lpddr4_fsp1_cfg[] = {
 };
 
 /* P1 message block paremeter for training firmware */
-struct dram_cfg_param lpddr4_fsp2_cfg[] = {
+static struct dram_cfg_param lpddr4_fsp2_cfg[] = {
 	{ 0xd0000, 0x0 },
 	{ 0x54000, 0x0 },
 	{ 0x54001, 0x0 },
@@ -557,7 +557,7 @@ struct dram_cfg_param lpddr4_fsp2_cfg[] = {
 };
 
 /* P0 2D message block paremeter for training firmware */
-struct dram_cfg_param lpddr4_fsp0_2d_cfg[] = {
+static struct dram_cfg_param lpddr4_fsp0_2d_cfg[] = {
 	{ 0xd0000, 0x0 },
 	{ 0x54000, 0x0 },
 	{ 0x54001, 0x0 },
@@ -633,7 +633,7 @@ struct dram_cfg_param lpddr4_fsp0_2d_cfg[] = {
 };
 
 /* DRAM PHY init engine image */
-struct dram_cfg_param lpddr4_phy_pie[] = {
+static struct dram_cfg_param lpddr4_phy_pie[] = {
 	{ 0xd0000, 0x0 },
 	{ 0x90000, 0x10 },
 	{ 0x90001, 0x400 },
@@ -1224,7 +1224,7 @@ struct dram_cfg_param lpddr4_phy_pie[] = {
 	{ 0xd0000, 0x1 },
 };
 
-struct dram_fsp_msg lpddr4_dram_fsp_msg[] = {
+static struct dram_fsp_msg lpddr4_dram_fsp_msg[] = {
 	{
 		/* P0 3200mts 1D */
 		.drate = 3200,
