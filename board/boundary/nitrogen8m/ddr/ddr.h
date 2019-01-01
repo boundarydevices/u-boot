@@ -5,7 +5,6 @@
  */
 
 void ddr_init1(void);
-void ddr_load_train_code(enum fw_type type);
 void lpddr4_800M_cfg_phy(void);
 
 static inline void reg32_writep(u32 *addr, u32 val)

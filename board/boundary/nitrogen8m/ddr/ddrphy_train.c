@@ -275,7 +275,7 @@ void lpddr4_800M_cfg_phy(void)
 
 	/* Load the 1D IMEM image */
 	dwc_ddrphy_apb_wr0(4 * 0xd0000, 0x0);
-	ddr_load_train_code(FW_1D_IMAGE);
+	ddr_load_train_firmware(FW_1D_IMAGE);
 	dwc_ddrphy_apb_wr0(4 * 0xd0000, 0x1);
 
 	/* Set the PHY input clocks for pstate 0 */
@@ -370,7 +370,7 @@ void lpddr4_800M_cfg_phy(void)
 
 	/* Load the 2D IMEM image */
 	dwc_ddrphy_apb_wr0(4 * 0xd0000, 0x0);
-	ddr_load_train_code(FW_2D_IMAGE);
+	ddr_load_train_firmware(FW_2D_IMAGE);
 	dwc_ddrphy_apb_wr0(4 * 0xd0000, 0x1);
 
 	/* 3200 mts 2D training */
@@ -463,7 +463,7 @@ void lpddr4_800M_cfg_phy(void)
 	dwc_ddrphy_phyinit_userCustom_E_setDfiClk (1);
 
 	dwc_ddrphy_apb_wr0(4 * 0xd0000, 0x0);
-	ddr_load_train_code(FW_1D_IMAGE);
+	ddr_load_train_firmware(FW_1D_IMAGE);
 	dwc_ddrphy_apb_wr0(4 * 0xd0000, 0x1);
 
 	printf("pstate=1: set dfi clk done done\n");
