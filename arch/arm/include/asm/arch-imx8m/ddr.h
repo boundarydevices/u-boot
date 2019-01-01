@@ -11,6 +11,12 @@
 #define IP2APB_DDRPHY_IPS_BASE_ADDR(X)	(0x3c000000 + (X * 0x2000000))
 #define DDRPHY_MEM(X)			(0x3c000000 + (X * 0x2000000) + 0x50000)
 
+/* user data type */
+enum fw_type {
+	FW_1D_IMAGE,
+	FW_2D_IMAGE,
+};
+
 struct ddrc_freq {
 	u32 res0[8];
 	u32 derateen;

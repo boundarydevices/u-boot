@@ -12,12 +12,6 @@
 #include <asm/types.h>
 #include <asm/arch/ddr_memory_map.h>
 
-/* user data type */
-enum fw_type {
-	FW_1D_IMAGE,
-	FW_2D_IMAGE,
-};
-
 struct dram_cfg_param {
 	unsigned int reg;
 	unsigned int val;

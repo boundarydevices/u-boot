@@ -4,6 +4,7 @@
  */
 
 #include <linux/kernel.h>
+#include <asm/arch/ddr.h>
 #include <asm/arch/imx8m_ddr.h>
 
 /* ddr phy trained csr */
