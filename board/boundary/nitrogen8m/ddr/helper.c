@@ -9,9 +9,9 @@
 #include <asm/io.h>
 #include <errno.h>
 #include <asm/io.h>
+#include <asm/arch/ddr.h>
 #include <asm/sections.h>
 #include "ddr_memory_map.h"
-
 #include "ddr.h"
 
 DECLARE_GLOBAL_DATA_PTR;

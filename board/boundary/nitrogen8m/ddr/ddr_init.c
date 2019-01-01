@@ -8,6 +8,8 @@
 #include <errno.h>
 #include <asm/io.h>
 #include <asm/arch/clock.h>
+#include <asm/arch/ddr.h>
+#include <asm/arch/imx8m_ddr.h>
 #include "ddr.h"
 #include "ddr_memory_map.h"
 
@@ -212,7 +214,7 @@ void lpddr4_800MHz_cfg_umctl2(void)
 	reg32_write(DDRC_PCFGWQOS1_0(0), 0x0000ffff);
 }
 
-void ddr_init(void)
+void ddr_init1(void)
 {
 	struct ccm_reg *ccm_reg = (struct ccm_reg *)CCM_BASE_ADDR;
 

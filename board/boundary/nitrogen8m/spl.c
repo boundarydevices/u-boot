@@ -19,22 +19,22 @@
 #include <asm/mach-imx/mxc_i2c.h>
 #include <fsl_esdhc.h>
 #include <mmc.h>
+#include <asm/arch/ddr.h>
 #ifdef CONFIG_IMX8M_LPDDR4
 #include <asm/arch/imx8m_ddr.h>
-#else
+#endif
 #include "ddr/ddr.h"
 #include "ddr/ddr_memory_map.h"
-#endif
 
 DECLARE_GLOBAL_DATA_PTR;
 
 void spl_dram_init(void)
 {
 	/* ddr init */
-#ifdef CONFIG_IMX8M_LPDDR4
+#if 0 //def CONFIG_IMX8M_LPDDR4
 	ddr_init(&lpddr4_timing);
 #else
-	ddr_init();
+	ddr_init1();
 #endif
 }
 

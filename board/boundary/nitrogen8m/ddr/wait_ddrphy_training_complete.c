@@ -77,7 +77,7 @@ static inline void decode_streaming_message(void)
 	ddr_printf("\n");
 }
 
-void wait_ddrphy_training_complete(void)
+void wait_ddrphy_training_complete1(void)
 {
 	unsigned int mail;
 	while (1) {
