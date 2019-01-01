@@ -9,22 +9,24 @@
 #include <asm/arch/imx8m_ddr.h>
 #include <asm/arch/lpddr4_define.h>
 
-void ddr_cfg_phy(struct dram_timing_info *dram_timing)
+static void dwc_ddrphy_apb_wr_list(struct dram_cfg_param *dram_cfg, int cnt)
 {
-	struct dram_cfg_param *dram_cfg;
-	struct dram_fsp_msg *fsp_msg;
-	unsigned int num;
-	int i = 0;
-	int j = 0;
+	int i;
 
-	/* initialize PHY configuration */
-	dram_cfg = dram_timing->ddrphy_cfg;
-	num  = dram_timing->ddrphy_cfg_num;
-	for (i = 0; i < num; i++) {
-		/* config phy reg */
+	for (i = 0; i < cnt; i++) {
 		dwc_ddrphy_apb_wr(dram_cfg->reg, dram_cfg->val);
 		dram_cfg++;
 	}
+}
+
+void ddr_cfg_phy(struct dram_timing_info *dram_timing)
+{
+	struct dram_fsp_msg *fsp_msg;
+	int i = 0;
+
+	/* initialize PHY configuration */
+	dwc_ddrphy_apb_wr_list(dram_timing->ddrphy_cfg,
+			dram_timing->ddrphy_cfg_num);
 
 	/* load the frequency setpoint message block config */
 	fsp_msg = dram_timing->fsp_msg;
@@ -38,12 +40,7 @@ void ddr_cfg_phy(struct dram_timing_info *dram_timing)
 		ddr_load_train_firmware(fsp_msg->fw_type);
 
 		/* load the frequency set point message block parameter */
-		dram_cfg = fsp_msg->fsp_cfg;
-		num = fsp_msg->fsp_cfg_num;
-		for (j = 0; j < num; j++) {
-			dwc_ddrphy_apb_wr(dram_cfg->reg, dram_cfg->val);
-			dram_cfg++;
-		}
+		dwc_ddrphy_apb_wr_list(fsp_msg->fsp_cfg, fsp_msg->fsp_cfg_num);
 
 		/*
 		 * -------------------- excute the firmware --------------------
@@ -75,12 +72,8 @@ void ddr_cfg_phy(struct dram_timing_info *dram_timing)
 	}
 
 	/* Load PHY Init Engine Image */
-	dram_cfg = dram_timing->ddrphy_pie;
-	num = dram_timing->ddrphy_pie_num;
-	for (i = 0; i < num; i++) {
-		dwc_ddrphy_apb_wr(dram_cfg->reg, dram_cfg->val);
-		dram_cfg++;
-	}
+	dwc_ddrphy_apb_wr_list(dram_timing->ddrphy_pie,
+			dram_timing->ddrphy_pie_num);
 
 	/* save the ddr PHY trained CSR in memory for low power use */
 	ddrphy_trained_csr_save(ddrphy_trained_csr, ddrphy_trained_csr_num);
