@@ -19,7 +19,6 @@
 #define ddr_printf(args...)
 #endif
 
-#include "wait_ddrphy_training_complete.c"
 #ifndef SRC_DDRC_RCR_ADDR
 #define SRC_DDRC_RCR_ADDR SRC_IPS_BASE_ADDR +0x1000
 #endif

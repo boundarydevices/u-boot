@@ -13,7 +13,7 @@
 #include "ddr.h"
 #include "lpddr4_dvfs.h"
 
-extern void wait_ddrphy_training_complete1(void);
+extern void wait_ddrphy_training_complete(void);
 
 void sscgpll_bypass_enable(unsigned int reg_addr)
 {
@@ -362,7 +362,7 @@ void lpddr4_800M_cfg_phy(void)
 	dwc_ddrphy_apb_wr0(4 * 0xd0099, 0x0);
 
 	/* wait for train complete */
-	wait_ddrphy_training_complete1();
+	wait_ddrphy_training_complete();
 
 	dwc_ddrphy_apb_wr0(4 * 0xd0099, 0x1);
 	dwc_ddrphy_apb_wr0(4 * 0xd0000, 0x0);
@@ -453,7 +453,7 @@ void lpddr4_800M_cfg_phy(void)
 	dwc_ddrphy_apb_wr0(4 * 0xd0099, 0x0);
 
 	/* wait for train complete */
-	wait_ddrphy_training_complete1();
+	wait_ddrphy_training_complete();
 
 	dwc_ddrphy_apb_wr0(4 * 0xd0099, 0x1);
 	dwc_ddrphy_apb_wr0(4 * 0xd0000, 0x0);
@@ -542,7 +542,7 @@ void lpddr4_800M_cfg_phy(void)
 	dwc_ddrphy_apb_wr0(4 * 0xd0099, 0x0);
 
 	/* wait for train complete */
-	wait_ddrphy_training_complete1();
+	wait_ddrphy_training_complete();
 
 	dwc_ddrphy_apb_wr0(4 * 0xd0099, 0x1);
 	dwc_ddrphy_apb_wr0(4 * 0xd0000, 0x0);
