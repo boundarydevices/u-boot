@@ -1,3 +1,187 @@
+#define WR_POST_EXT_3200
+#ifdef WR_POST_EXT_3200  // recommend to define
+#define VAL_INIT4	0x00330008
+#else
+#define VAL_INIT4	0x00310008
+#endif
+
+#if CONFIG_DDR_MB == 2048
+#define VAL_DDRC_RFSHTMG		0x00610090
+#define VAL_DDRC_DRAMTMG14		0x00000096
+#define VAL_DDRC_FREQ1_RFSHTMG		0x0014001F
+#define VAL_DDRC_FREQ1_DRAMTMG14	0x00000020
+#define VAL_DDRC_FREQ2_RFSHTMG		0x00030005
+#define VAL_DDRC_FREQ2_DRAMTMG14	0x00000005
+	/* Address map is from MSB 28: cs, r14, r13-r0, b2-b0, c9-c0 */
+#define VAL_DDRC_ADDRMAP0		0x00000016
+#define VAL_DDRC_ADDRMAP6		0x0f070707
+#elif CONFIG_DDR_MB == 3072
+#define VAL_DDRC_RFSHTMG		0x006100E0
+#define VAL_DDRC_DRAMTMG14		0x000000E6
+#define VAL_DDRC_FREQ1_RFSHTMG		0x0014002F
+#define VAL_DDRC_FREQ1_DRAMTMG14	0x00000031
+#define VAL_DDRC_FREQ2_RFSHTMG		0x00030007
+#define VAL_DDRC_FREQ2_DRAMTMG14	0x00000008
+	/* Address map is from MSB 29: r15, r14, cs, r13-r0, b2-b0, c9-c0 */
+#define VAL_DDRC_ADDRMAP0		0x00000015
+#define VAL_DDRC_ADDRMAP6		0x48080707
+#elif CONFIG_DDR_MB == 4096
+#define VAL_DDRC_RFSHTMG		0x006100E0
+#define VAL_DDRC_DRAMTMG14		0x000000E6
+#define VAL_DDRC_FREQ1_RFSHTMG		0x0014002F
+#define VAL_DDRC_FREQ1_DRAMTMG14	0x00000031
+#define VAL_DDRC_FREQ2_RFSHTMG		0x00030007
+#define VAL_DDRC_FREQ2_DRAMTMG14	0x00000008
+	/* Address map is from MSB 29: cs, r15, r14, r13-r0, b2-b0, c9-c0 */
+#define VAL_DDRC_ADDRMAP0		0x00000017
+#define VAL_DDRC_ADDRMAP6		0x07070707
+#else
+#error unsupported memory size
+#endif
+
+static struct dram_cfg_param lpddr4_ddrc_cfg[] = {
+	/* Start to config, default 3200mbps */
+	/* dis_dq=1, indicates no reads or writes are issued to SDRAM */
+	{ DDRC_DBG1(0), 0x00000001 },
+	/* selfref_en=1, SDRAM enter self-refresh state */
+	{ DDRC_PWRCTL(0), 0x00000001 },
+	{ DDRC_MSTR(0), 0xa3080020 },
+	{ DDRC_MSTR2(0), 0x00000000 },
+	{ DDRC_DERATEEN(0), 0x00000203 },
+	{ DDRC_DERATEINT(0), 0x0186A000 },
+	{ DDRC_RFSHTMG(0), VAL_DDRC_RFSHTMG },
+	{ DDRC_INIT0(0), 0xC003061C },
+	{ DDRC_INIT1(0), 0x009E0000 },
+	{ DDRC_INIT3(0), 0x00D4002D },
+	{ DDRC_INIT4(0), VAL_INIT4 },
+	{ DDRC_INIT6(0), 0x0066004A },
+	{ DDRC_INIT7(0), 0x0016004A },
+
+	{ DDRC_DRAMTMG0(0), 0x1A201B22 },
+	{ DDRC_DRAMTMG1(0), 0x00060633 },
+	{ DDRC_DRAMTMG3(0), 0x00C0C000 },
+	{ DDRC_DRAMTMG4(0), 0x0F04080F },
+	{ DDRC_DRAMTMG5(0), 0x02040C0C },
+	{ DDRC_DRAMTMG6(0), 0x01010007 },
+	{ DDRC_DRAMTMG7(0), 0x00000401 },
+	{ DDRC_DRAMTMG12(0), 0x00020600 },
+	{ DDRC_DRAMTMG13(0), 0x0C100002 },
+	{ DDRC_DRAMTMG14(0), VAL_DDRC_DRAMTMG14 },
+	{ DDRC_DRAMTMG17(0), 0x00A00050 },
+
+	{ DDRC_ZQCTL0(0), 0xC3200018 },
+	{ DDRC_ZQCTL1(0), 0x028061A8 },
+	{ DDRC_ZQCTL2(0), 0x00000000 },
+
+	{ DDRC_DFITMG0(0), 0x0497820A },
+	{ DDRC_DFITMG1(0), 0x00080303 },
+	{ DDRC_DFIUPD0(0), 0xE0400018 },
+	{ DDRC_DFIUPD1(0), 0x00DF00E4 },
+	{ DDRC_DFIUPD2(0), 0x80000000 },
+	{ DDRC_DFIMISC(0), 0x00000011 },
+	{ DDRC_DFITMG2(0), 0x0000170A },
+
+	{ DDRC_DBICTL(0), 0x00000001 },
+	{ DDRC_DFIPHYMSTR(0), 0x00000001 },
+
+	/* need be refined by ddrphy trained value */
+	{ DDRC_RANKCTL(0), 0x639 },
+	{ DDRC_DRAMTMG2(0), 0x070e1214 },
+
+	/* address mapping */
+	{ DDRC_ADDRMAP0(0), VAL_DDRC_ADDRMAP0 },
+	{ DDRC_ADDRMAP3(0), 0x00000000 },
+	/* addrmap_col_b10 and addrmap_col_b11 set to de-activated (5-bit width) */
+	{ DDRC_ADDRMAP4(0), 0x00001F1F },
+	/* bank interleave */
+	/* addrmap_bank_b2, addrmap_bank_b1, addrmap_bank_b0 */
+	{ DDRC_ADDRMAP1(0), 0x00080808 },
+	/* addrmap_row_b11, addrmap_row_b10_b2, addrmap_row_b1, addrmap_row_b0 */
+	{ DDRC_ADDRMAP5(0), 0x07070707 },
+	/* addrmap_row_b15, addrmap_row_b14, addrmap_row_b13, addrmap_row_b12 */
+	{ DDRC_ADDRMAP6(0), VAL_DDRC_ADDRMAP6 },
+	{ DDRC_ADDRMAP7(0), 0x00000f0f },
+
+	/* 667mts frequency setting */
+	{ DDRC_FREQ1_DERATEEN(0), 0x0000001 },
+	{ DDRC_FREQ1_DERATEINT(0), 0x00518B00 },
+	{ DDRC_FREQ1_RFSHCTL0(0), 0x0020D040 },
+	{ DDRC_FREQ1_RFSHTMG(0), VAL_DDRC_FREQ1_RFSHTMG },
+	{ DDRC_FREQ1_INIT3(0), 0x00940009 },
+	{ DDRC_FREQ1_INIT4(0), VAL_INIT4 },
+	{ DDRC_FREQ1_INIT6(0), 0x0066004A },
+	{ DDRC_FREQ1_INIT7(0), 0x0016004A },
+	{ DDRC_FREQ1_DRAMTMG0(0), 0x0B070508 },
+	{ DDRC_FREQ1_DRAMTMG1(0), 0x0003040B },
+	{ DDRC_FREQ1_DRAMTMG2(0), 0x0305090C },
+	{ DDRC_FREQ1_DRAMTMG3(0), 0x00505000 },
+	{ DDRC_FREQ1_DRAMTMG4(0), 0x04040204 },
+	{ DDRC_FREQ1_DRAMTMG5(0), 0x02030303 },
+	{ DDRC_FREQ1_DRAMTMG6(0), 0x01010004 },
+	{ DDRC_FREQ1_DRAMTMG7(0), 0x00000301 },
+	{ DDRC_FREQ1_DRAMTMG12(0), 0x00020300 },
+	{ DDRC_FREQ1_DRAMTMG13(0), 0x0A100002 },
+	{ DDRC_FREQ1_DRAMTMG14(0), VAL_DDRC_FREQ1_DRAMTMG14 },
+	{ DDRC_FREQ1_DRAMTMG17(0), 0x00220011 },
+	{ DDRC_FREQ1_ZQCTL0(0), 0xC0A70006 },
+	{ DDRC_FREQ1_DFITMG0(0), 0x03858202 },
+	{ DDRC_FREQ1_DFITMG1(0), 0x00080303 },
+	{ DDRC_FREQ1_DFITMG2(0), 0x00000502 },
+
+	/* 100mts frequency setting */
+	{ DDRC_FREQ2_DERATEEN(0), 0x0000001 },
+	{ DDRC_FREQ2_DERATEINT(0), 0x000C3500 },
+	{ DDRC_FREQ2_RFSHCTL0(0), 0x0020D040 },
+	{ DDRC_FREQ2_RFSHTMG(0), VAL_DDRC_FREQ2_RFSHTMG },
+	{ DDRC_FREQ2_INIT3(0), 0x00840000 },
+	{ DDRC_FREQ2_INIT4(0), VAL_INIT4 },
+	{ DDRC_FREQ2_INIT6(0), 0x0066004A },
+	{ DDRC_FREQ2_INIT7(0), 0x0016004A },
+	{ DDRC_FREQ2_DRAMTMG0(0), 0x0A010102 },
+	{ DDRC_FREQ2_DRAMTMG1(0), 0x00030404 },
+	{ DDRC_FREQ2_DRAMTMG2(0), 0x0203060B },
+	{ DDRC_FREQ2_DRAMTMG3(0), 0x00505000 },
+	{ DDRC_FREQ2_DRAMTMG4(0), 0x02040202 },
+	{ DDRC_FREQ2_DRAMTMG5(0), 0x02030202 },
+	{ DDRC_FREQ2_DRAMTMG6(0), 0x01010004 },
+	{ DDRC_FREQ2_DRAMTMG7(0), 0x00000301 },
+	{ DDRC_FREQ2_DRAMTMG12(0), 0x00020300 },
+	{ DDRC_FREQ2_DRAMTMG13(0), 0x0A100002 },
+	{ DDRC_FREQ2_DRAMTMG14(0), VAL_DDRC_FREQ2_DRAMTMG14 },
+	{ DDRC_FREQ2_DRAMTMG17(0), 0x00050003 },
+	{ DDRC_FREQ2_ZQCTL0(0), 0xC0190004 },
+	{ DDRC_FREQ2_DFITMG0(0), 0x03818200 },
+	{ DDRC_FREQ2_DFITMG1(0), 0x00080303 },
+	{ DDRC_FREQ2_DFITMG2(0), 0x00000100 },
+
+	/* performance setting */
+	{ DDRC_ODTCFG(0), 0x0b060908 },
+	{ DDRC_ODTMAP(0), 0x00000000 },
+	{ DDRC_SCHED(0), 0x29001505 },
+	{ DDRC_SCHED1(0), 0x0000002c },
+	{ DDRC_PERFHPR1(0), 0x5900575b },
+	/* 150T starve and 0x90 max tran len */
+	{ DDRC_PERFLPR1(0), 0x90000096 },
+	/* 300T starve and 0x10 max tran len */
+	{ DDRC_PERFWR1(0), 0x1000012c },
+
+	{ DDRC_DBG0(0), 0x00000016 },
+	{ DDRC_DBG1(0), 0x00000000 },
+	{ DDRC_DBGCMD(0), 0x00000000 },
+	{ DDRC_SWCTL(0), 0x00000001 },
+	{ DDRC_POISONCFG(0), 0x00000011 },
+	{ DDRC_PCCFG(0), 0x00000111 },
+	{ DDRC_PCFGR_0(0), 0x000010f3 },
+	{ DDRC_PCFGW_0(0), 0x000072ff },
+	{ DDRC_PCTRL_0(0), 0x00000001 },
+	/* disable Read Qos*/
+	{ DDRC_PCFGQOS0_0(0), 0x00000e00 },
+	{ DDRC_PCFGQOS1_0(0), 0x0062ffff },
+	/* disable Write Qos*/
+	{ DDRC_PCFGWQOS0_0(0), 0x00000e00 },
+	{ DDRC_PCFGWQOS1_0(0), 0x0000ffff },
+};
+
 /* PHY Initialize Configuration */
 static struct dram_cfg_param lpddr4_ddrphy_cfg[] = {
 	{ 0x20110, 0x02 }, /* MapCAB0toDFI */
@@ -1005,4 +1189,48 @@ static struct dram_cfg_param lpddr4_phy_pie[] = {
 	{ 0x20088, 0x19 },
 	{ 0xc0080, 0x2 },
 	{ 0xd0000, 0x1 },
+};
+
+static struct dram_fsp_msg lpddr4_dram_fsp_msg[] = {
+	{
+		/* P0 3200mts 1D */
+		.drate = 3200,
+		.fw_type = FW_1D_IMAGE,
+		.fsp_cfg = lpddr4_fsp0_cfg,
+		.fsp_cfg_num = ARRAY_SIZE(lpddr4_fsp0_cfg),
+	},
+#if 0
+	{
+		/* P0 3200mts 2D */
+		.drate = 3200,
+		.fw_type = FW_2D_IMAGE,
+		.fsp_cfg = lpddr4_fsp0_2d_cfg,
+		.fsp_cfg_num = ARRAY_SIZE(lpddr4_fsp0_2d_cfg),
+	},
+#endif
+	{
+		/* P1 400mts 1D */
+		.drate = 400,
+		.fw_type = FW_1D_IMAGE,
+		.fsp_cfg = lpddr4_fsp1_cfg,
+		.fsp_cfg_num = ARRAY_SIZE(lpddr4_fsp1_cfg),
+	},
+	{
+		/* P1 100mts 1D */
+		.drate = 100,
+		.fw_type = FW_1D_IMAGE,
+		.fsp_cfg = lpddr4_fsp2_cfg,
+		.fsp_cfg_num = ARRAY_SIZE(lpddr4_fsp2_cfg),
+	},
+};
+
+struct dram_timing_info lpddr4_timing_ = {
+	.ddrc_cfg = lpddr4_ddrc_cfg,
+	.ddrc_cfg_num = ARRAY_SIZE(lpddr4_ddrc_cfg),
+	.ddrphy_cfg = lpddr4_ddrphy_cfg,
+	.ddrphy_cfg_num = ARRAY_SIZE(lpddr4_ddrphy_cfg),
+	.fsp_msg = lpddr4_dram_fsp_msg,
+	.fsp_msg_num = ARRAY_SIZE(lpddr4_dram_fsp_msg),
+	.ddrphy_pie = lpddr4_phy_pie,
+	.ddrphy_pie_num = ARRAY_SIZE(lpddr4_phy_pie),
 };
