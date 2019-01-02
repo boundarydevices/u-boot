@@ -450,13 +450,12 @@ void dram_disable_bypass(void)
 
 int intpll_configure(enum pll_clocks clock, enum intpll_out_freq freq)
 {
-	void __iomem *pll_gnrl_ctl, __iomem *pll_div_ctl;
+	struct ana_grp2 *pll;
 	u32 div_ctl_val, pll_clke_masks;
 
 	switch (clock) {
 	case ANATOP_SYSTEM_PLL1:
-		pll_gnrl_ctl = (void __iomem *)SYS_PLL1_GNRL_CTL;
-		pll_div_ctl = (void __iomem *)SYS_PLL1_DIV_CTL;
+		pll = &ana_pll->sys_pll1;
 		pll_clke_masks = INTPLL_DIV20_CLKE_MASK |
 			INTPLL_DIV10_CLKE_MASK | INTPLL_DIV8_CLKE_MASK |
 			INTPLL_DIV6_CLKE_MASK | INTPLL_DIV5_CLKE_MASK |
@@ -464,8 +463,7 @@ int intpll_configure(enum pll_clocks clock, enum intpll_out_freq freq)
 			INTPLL_DIV2_CLKE_MASK | INTPLL_CLKE_MASK;
 		break;
 	case ANATOP_SYSTEM_PLL2:
-		pll_gnrl_ctl = (void __iomem *)SYS_PLL2_GNRL_CTL;
-		pll_div_ctl = (void __iomem *)SYS_PLL2_DIV_CTL;
+		pll = &ana_pll->sys_pll2;
 		pll_clke_masks = INTPLL_DIV20_CLKE_MASK |
 			INTPLL_DIV10_CLKE_MASK | INTPLL_DIV8_CLKE_MASK |
 			INTPLL_DIV6_CLKE_MASK | INTPLL_DIV5_CLKE_MASK |
@@ -473,28 +471,24 @@ int intpll_configure(enum pll_clocks clock, enum intpll_out_freq freq)
 			INTPLL_DIV2_CLKE_MASK | INTPLL_CLKE_MASK;
 		break;
 	case ANATOP_SYSTEM_PLL3:
-		pll_gnrl_ctl = (void __iomem *)SYS_PLL3_GNRL_CTL;
-		pll_div_ctl = (void __iomem *)SYS_PLL3_DIV_CTL;
+		pll = &ana_pll->sys_pll3;
 		pll_clke_masks = INTPLL_CLKE_MASK;
 		break;
 	case ANATOP_ARM_PLL:
-		pll_gnrl_ctl = (void __iomem *)ARM_PLL_GNRL_CTL;
-		pll_div_ctl = (void __iomem *)ARM_PLL_DIV_CTL;
+		pll = &ana_pll->arm_pll;
 		pll_clke_masks = INTPLL_CLKE_MASK;
 		break;
 	case ANATOP_GPU_PLL:
-		pll_gnrl_ctl = (void __iomem *)GPU_PLL_GNRL_CTL;
-		pll_div_ctl = (void __iomem *)GPU_PLL_DIV_CTL;
+		pll = &ana_pll->gpu_pll;
 		pll_clke_masks = INTPLL_CLKE_MASK;
 		break;
 	case ANATOP_VPU_PLL:
-		pll_gnrl_ctl = (void __iomem *)VPU_PLL_GNRL_CTL;
-		pll_div_ctl = (void __iomem *)VPU_PLL_DIV_CTL;
+		pll = &ana_pll->vpu_pll;
 		pll_clke_masks = INTPLL_CLKE_MASK;
 		break;
 	default:
 		return -EINVAL;
-	};
+	}
 
 	switch (freq) {
 	case INTPLL_OUT_750M:
@@ -524,24 +518,24 @@ int intpll_configure(enum pll_clocks clock, enum intpll_out_freq freq)
 		break;
 	default:
 		return -EINVAL;
-	};
+	}
 	/* Bypass clock and set lock to pll output lock */
-	setbits_le32(pll_gnrl_ctl, INTPLL_BYPASS_MASK | INTPLL_LOCK_SEL_MASK);
+	setbits_le32(&pll->gnrl_ctl, INTPLL_BYPASS_MASK | INTPLL_LOCK_SEL_MASK);
 	/* Enable reset */
-	clrbits_le32(pll_gnrl_ctl, INTPLL_RST_MASK);
+	clrbits_le32(&pll->gnrl_ctl, INTPLL_RST_MASK);
 	/* Configure */
-	writel(div_ctl_val, pll_div_ctl);
+	writel(div_ctl_val, &pll->div_ctl);
 
 	__udelay(100);
 
 	/* Disable reset */
-	setbits_le32(pll_gnrl_ctl, INTPLL_RST_MASK);
+	setbits_le32(&pll->gnrl_ctl, INTPLL_RST_MASK);
 	/* Wait Lock */
-	while (!(readl(pll_gnrl_ctl) & INTPLL_LOCK_MASK))
+	while (!(readl(&pll->gnrl_ctl) & INTPLL_LOCK_MASK))
 		;
 	/* Clear bypass */
-	clrbits_le32(pll_gnrl_ctl, INTPLL_BYPASS_MASK);
-	setbits_le32(pll_gnrl_ctl, pll_clke_masks);
+	clrbits_le32(&pll->gnrl_ctl, INTPLL_BYPASS_MASK);
+	setbits_le32(&pll->gnrl_ctl, pll_clke_masks);
 
 	return 0;
 }
