@@ -576,7 +576,7 @@ void enable_display_clk(unsigned char enable)
 	}
 }
 
-int clock_init()
+int clock_init(void)
 {
 	uint32_t val_cfg0;
 
@@ -697,7 +697,7 @@ int clock_init()
 
 	enable_display_clk(1);
 	return 0;
-};
+}
 #endif
 
 void mxs_set_lcdclk(uint32_t base_addr, uint32_t freq)
