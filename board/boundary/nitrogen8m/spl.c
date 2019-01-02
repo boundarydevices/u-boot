@@ -23,14 +23,13 @@
 #ifdef CONFIG_IMX8M_LPDDR4
 #include <asm/arch/imx8m_ddr.h>
 #endif
-#include "ddr/ddr.h"
 
 DECLARE_GLOBAL_DATA_PTR;
 
 void spl_dram_init(void)
 {
 	/* ddr init */
-	ddr_init(&lpddr4_timing_);
+	ddr_init(&lpddr4_timing);
 }
 
 #define I2C_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_HYS | PAD_CTL_PUE)
