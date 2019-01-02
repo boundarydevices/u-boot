@@ -40,8 +40,8 @@ void ddr_init1(struct dram_timing_info *dram_timing)
 	reg32_write(SRC_DDRC_RCR_ADDR + 0x04, 0x8F000000);
 
 	/* change the clock source of dram_apb_clk_root */
-	reg32_writep(&ccm_reg->ip_root[1].target_root_clr, (0x7<<24)|(0x7<<16));
-	reg32_writep(&ccm_reg->ip_root[1].target_root_set, (0x4<<24)|(0x3<<16));
+	writel((0x7<<24)|(0x7<<16), &ccm_reg->ip_root[1].target_root_clr);
+	writel((0x4<<24)|(0x3<<16), &ccm_reg->ip_root[1].target_root_set); /* to source 4 --800MHz/4 */
 
 	/* disable iso */
 	reg32_write(0x303A00EC, 0x0000ffff); /* PGC_CPU_MAPPING */
@@ -85,7 +85,7 @@ void ddr_init1(struct dram_timing_info *dram_timing)
 	reg32_write(DDRC_DFIMISC(0), 0x00000010);
 #endif
 	/* LPDDR4 PHY config and training */
-	lpddr4_800M_cfg_phy(dram_timing);
+	ddr_cfg_phy(dram_timing);
 
 	reg32_write(DDRC_RFSHCTL3(0), 0x00000000);
 
