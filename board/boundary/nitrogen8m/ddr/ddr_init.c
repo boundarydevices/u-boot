@@ -11,7 +11,6 @@
 #include <asm/arch/ddr.h>
 #include <asm/arch/imx8m_ddr.h>
 #include "ddr.h"
-#include "ddr_memory_map.h"
 
 #ifdef CONFIG_ENABLE_DDR_TRAINING_DEBUG
 #define ddr_printf(args...) printf(args)

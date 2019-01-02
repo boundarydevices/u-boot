@@ -24,7 +24,6 @@
 #include <asm/arch/imx8m_ddr.h>
 #endif
 #include "ddr/ddr.h"
-#include "ddr/ddr_memory_map.h"
 
 DECLARE_GLOBAL_DATA_PTR;
 
