@@ -8,10 +8,6 @@ obj-y += nitrogen8m.o mmc.o
 
 ifdef CONFIG_SPL_BUILD
 obj-y += spl.o
-ifdef CONFIG_IMX8M_LPDDR4
 obj-y += lpddr4_timing.o
-obj-y += ddr/ddr_init.o ddr/ddrphy_train.o
-else
-obj-y += ddr/ddr_init.o ddr/ddrphy_train.o
-endif
+obj-y += ddr/ddr_init.o ddr/ddrphy_train.o ddr/lpddr4_timing.o
 endif

@@ -1,3 +1,18 @@
+/*
+ * Copyright 2018 NXP
+ *
+ * SPDX-License-Identifier: GPL-2.0+
+ */
+#include <config.h>
+#include <linux/kernel.h>
+#include <asm/arch/ddr.h>
+#include <asm/arch/ddr_memory_map.h>
+#include <asm/arch/lpddr4_define.h>
+#include <asm/arch/imx8m_ddr.h>
+
+#define LPDDR4_CS	0x3	/* 2 ranks */
+#define DDR_BOOT_P1	/* default DDR boot frequency point */
+
 #define WR_POST_EXT_3200
 #ifdef WR_POST_EXT_3200  // recommend to define
 #define VAL_INIT4	0x00330008
@@ -367,7 +382,7 @@ static struct dram_cfg_param lpddr4_ddrphy_cfg[] = {
 	{ 0x22002d, 0x0 },
 };
 
-/* P0 message block paremeter for training firmware */
+/* P0 message block parameter for training firmware */
 static struct dram_cfg_param lpddr4_fsp0_cfg[] = {
 	{ 0xd0000, 0x0 },
 	{ 0x54000, 0x0 },
@@ -443,8 +458,7 @@ static struct dram_cfg_param lpddr4_fsp0_cfg[] = {
 	{ 0xd0000, 0x1 },
 };
 
-/* P1 message block paremeter for training firmware */
-static struct dram_cfg_param lpddr4_fsp1_cfg[] = {
+static struct dram_cfg_param lpddr4_fsp0_2d_cfg[] = {
 	{ 0xd0000, 0x0 },
 	{ 0x54000, 0x0 },
 	{ 0x54001, 0x0 },
@@ -519,8 +533,8 @@ static struct dram_cfg_param lpddr4_fsp1_cfg[] = {
 	{ 0xd0000, 0x1 },
 };
 
-/* P1 message block paremeter for training firmware */
-static struct dram_cfg_param lpddr4_fsp2_cfg[] = {
+/* P1 message block parameter for training firmware */
+static struct dram_cfg_param lpddr4_fsp1_cfg[] = {
 	{ 0xd0000, 0x0 },
 	{ 0x54000, 0x0 },
 	{ 0x54001, 0x0 },
@@ -1199,7 +1213,6 @@ static struct dram_fsp_msg lpddr4_dram_fsp_msg[] = {
 		.fsp_cfg = lpddr4_fsp0_cfg,
 		.fsp_cfg_num = ARRAY_SIZE(lpddr4_fsp0_cfg),
 	},
-#if 0
 	{
 		/* P0 3200mts 2D */
 		.drate = 3200,
@@ -1207,7 +1220,6 @@ static struct dram_fsp_msg lpddr4_dram_fsp_msg[] = {
 		.fsp_cfg = lpddr4_fsp0_2d_cfg,
 		.fsp_cfg_num = ARRAY_SIZE(lpddr4_fsp0_2d_cfg),
 	},
-#endif
 	{
 		/* P1 400mts 1D */
 		.drate = 400,
@@ -1215,6 +1227,7 @@ static struct dram_fsp_msg lpddr4_dram_fsp_msg[] = {
 		.fsp_cfg = lpddr4_fsp1_cfg,
 		.fsp_cfg_num = ARRAY_SIZE(lpddr4_fsp1_cfg),
 	},
+#if 0
 	{
 		/* P1 100mts 1D */
 		.drate = 100,
@@ -1222,6 +1235,7 @@ static struct dram_fsp_msg lpddr4_dram_fsp_msg[] = {
 		.fsp_cfg = lpddr4_fsp2_cfg,
 		.fsp_cfg_num = ARRAY_SIZE(lpddr4_fsp2_cfg),
 	},
+#endif
 };
 
 struct dram_timing_info lpddr4_timing_ = {

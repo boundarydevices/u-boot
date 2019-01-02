@@ -13,8 +13,6 @@
 #include "ddr.h"
 #include "lpddr4_dvfs.h"
 
-#define LPDDR4_CS	0x3	/* 2 ranks */
-
 extern void wait_ddrphy_training_complete(void);
 
 void sscgpll_bypass_enable(unsigned int reg_addr)
@@ -100,13 +98,16 @@ static void dwc_ddrphy_apb_wr_list(struct dram_cfg_param *dram_cfg, int cnt)
 	}
 }
 
-#include "lpddr4_timing.h"
-
-void lpddr4_800M_cfg_phy(void)
+void lpddr4_800M_cfg_phy(struct dram_timing_info *dram_timing)
 {
-	printf("start to config phy: p0=3200mts, p1=667mts with 1D2D training\n");
-	dwc_ddrphy_apb_wr_list(lpddr4_ddrphy_cfg, ARRAY_SIZE(lpddr4_ddrphy_cfg));
+	struct dram_fsp_msg *fsp_msg;
 
+	printf("start to config phy: p0=3200mts, p1=667mts with 1D2D training\n");
+	dwc_ddrphy_apb_wr_list(dram_timing->ddrphy_cfg,
+			dram_timing->ddrphy_cfg_num);
+
+	/* load the frequency setpoint message block config */
+	fsp_msg = dram_timing->fsp_msg;
 	/* Load the 1D IMEM image */
 	dwc_ddrphy_apb_wr(0xd0000, 0x0);
 	ddr_load_train_firmware(FW_1D_IMAGE);
@@ -118,7 +119,8 @@ void lpddr4_800M_cfg_phy(void)
 	dwc_ddrphy_apb_wr(0xd0000, 0x0);
 	printf("config to do 3200 1d training.\n");
 
-	dwc_ddrphy_apb_wr_list(lpddr4_fsp0_cfg, ARRAY_SIZE(lpddr4_fsp0_cfg));
+	/* lpddr4_fsp0_cfg */
+	dwc_ddrphy_apb_wr_list(fsp_msg->fsp_cfg, fsp_msg->fsp_cfg_num);
 	dwc_ddrphy_apb_wr(0xd0000, 0x1);
 	dwc_ddrphy_apb_wr(0xd0099, 0x9);
 	dwc_ddrphy_apb_wr(0xd0099, 0x1);
@@ -138,7 +140,9 @@ void lpddr4_800M_cfg_phy(void)
 
 	/* 3200 mts 2D training */
 	printf("config to do 3200 2d training.\n");
-	dwc_ddrphy_apb_wr_list(lpddr4_fsp1_cfg, ARRAY_SIZE(lpddr4_fsp1_cfg));
+	fsp_msg++;
+	/* lpddr4_fsp0_2d_cfg */
+	dwc_ddrphy_apb_wr_list(fsp_msg->fsp_cfg, fsp_msg->fsp_cfg_num);
 	dwc_ddrphy_apb_wr(0xd0000, 0x1);
 	dwc_ddrphy_apb_wr(0xd0099, 0x9);
 	dwc_ddrphy_apb_wr(0xd0099, 0x1);
@@ -159,7 +163,9 @@ void lpddr4_800M_cfg_phy(void)
 	dwc_ddrphy_apb_wr(0xd0000, 0x1);
 
 	printf("pstate=1: set dfi clk done done\n");
-	dwc_ddrphy_apb_wr_list(lpddr4_fsp2_cfg, ARRAY_SIZE(lpddr4_fsp2_cfg));
+	fsp_msg++;
+	/* lpddr4_fsp1_cfg */
+	dwc_ddrphy_apb_wr_list(fsp_msg->fsp_cfg, fsp_msg->fsp_cfg_num);
 	dwc_ddrphy_apb_wr(0xd0000, 0x1);
 	dwc_ddrphy_apb_wr(0xd0099, 0x9);
 	dwc_ddrphy_apb_wr(0xd0099, 0x1);
@@ -174,5 +180,5 @@ void lpddr4_800M_cfg_phy(void)
 
 	/* (I) Load PHY Init Engine Image */
 	printf("Load 201711 PIE\n");
-	dwc_ddrphy_apb_wr_list(lpddr4_phy_pie, ARRAY_SIZE(lpddr4_phy_pie));
+	dwc_ddrphy_apb_wr_list(dram_timing->ddrphy_pie, dram_timing->ddrphy_pie_num);
 }

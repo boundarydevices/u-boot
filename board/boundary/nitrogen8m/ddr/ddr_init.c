@@ -85,7 +85,7 @@ void ddr_init1(struct dram_timing_info *dram_timing)
 	reg32_write(DDRC_DFIMISC(0), 0x00000010);
 #endif
 	/* LPDDR4 PHY config and training */
-	lpddr4_800M_cfg_phy();
+	lpddr4_800M_cfg_phy(dram_timing);
 
 	reg32_write(DDRC_RFSHCTL3(0), 0x00000000);
 
