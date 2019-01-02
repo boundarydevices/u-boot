@@ -45,22 +45,22 @@ int enable_i2c_clk(unsigned char enable, unsigned i2c_num)
 
 static u32 decode_intpll(enum clk_root_src intpll)
 {
-	u32 pll_gnrl_ctl, pll_div_ctl, pll_clke_mask;
+	u32 gnrl_ctl, div_ctl, pll_clke_mask;
 	u32 main_div, pre_div, post_div, div;
 	u64 freq;
 
 	switch (intpll) {
 	case ARM_PLL_CLK:
-		pll_gnrl_ctl = readl((void __iomem *)ARM_PLL_GNRL_CTL);
-		pll_div_ctl = readl((void __iomem *)ARM_PLL_DIV_CTL);
+		gnrl_ctl = readl((void __iomem *)ARM_PLL_GNRL_CTL);
+		div_ctl = readl((void __iomem *)ARM_PLL_DIV_CTL);
 		break;
 	case GPU_PLL_CLK:
-		pll_gnrl_ctl = readl((void __iomem *)GPU_PLL_GNRL_CTL);
-		pll_div_ctl = readl((void __iomem *)GPU_PLL_DIV_CTL);
+		gnrl_ctl = readl((void __iomem *)GPU_PLL_GNRL_CTL);
+		div_ctl = readl((void __iomem *)GPU_PLL_DIV_CTL);
 		break;
 	case VPU_PLL_CLK:
-		pll_gnrl_ctl = readl((void __iomem *)VPU_PLL_GNRL_CTL);
-		pll_div_ctl = readl((void __iomem *)VPU_PLL_DIV_CTL);
+		gnrl_ctl = readl((void __iomem *)VPU_PLL_GNRL_CTL);
+		div_ctl = readl((void __iomem *)VPU_PLL_DIV_CTL);
 		break;
 	case SYSTEM_PLL1_800M_CLK:
 	case SYSTEM_PLL1_400M_CLK:
@@ -71,8 +71,8 @@ static u32 decode_intpll(enum clk_root_src intpll)
 	case SYSTEM_PLL1_100M_CLK:
 	case SYSTEM_PLL1_80M_CLK:
 	case SYSTEM_PLL1_40M_CLK:
-		pll_gnrl_ctl = readl((void __iomem *)SYS_PLL1_GNRL_CTL);
-		pll_div_ctl = readl((void __iomem *)SYS_PLL1_DIV_CTL);
+		gnrl_ctl = readl((void __iomem *)SYS_PLL1_GNRL_CTL);
+		div_ctl = readl((void __iomem *)SYS_PLL1_DIV_CTL);
 		break;
 	case SYSTEM_PLL2_1000M_CLK:
 	case SYSTEM_PLL2_500M_CLK:
@@ -83,32 +83,32 @@ static u32 decode_intpll(enum clk_root_src intpll)
 	case SYSTEM_PLL2_125M_CLK:
 	case SYSTEM_PLL2_100M_CLK:
 	case SYSTEM_PLL2_50M_CLK:
-		pll_gnrl_ctl = readl((void __iomem *)SYS_PLL2_GNRL_CTL);
-		pll_div_ctl = readl((void __iomem *)SYS_PLL2_DIV_CTL);
+		gnrl_ctl = readl((void __iomem *)SYS_PLL2_GNRL_CTL);
+		div_ctl = readl((void __iomem *)SYS_PLL2_DIV_CTL);
 		break;
 	case SYSTEM_PLL3_CLK:
-		pll_gnrl_ctl = readl((void __iomem *)SYS_PLL3_GNRL_CTL);
-		pll_div_ctl = readl((void __iomem *)SYS_PLL3_DIV_CTL);
+		gnrl_ctl = readl((void __iomem *)SYS_PLL3_GNRL_CTL);
+		div_ctl = readl((void __iomem *)SYS_PLL3_DIV_CTL);
 		break;
 	default:
 		return -EINVAL;
 	}
 
 	/* Only support SYS_XTAL 24M, PAD_CLK not take into consideration */
-	if ((pll_gnrl_ctl & INTPLL_REF_CLK_SEL_MASK) != 0)
+	if ((gnrl_ctl & INTPLL_REF_CLK_SEL_MASK) != 0)
 		return 0;
 
-	if ((pll_gnrl_ctl & INTPLL_RST_MASK) == 0)
+	if ((gnrl_ctl & INTPLL_RST_MASK) == 0)
 		return 0;
 
 	/*
 	 * When BYPASS is equal to 1, PLL enters the bypass mode
 	 * regardless of the values of RESETB
 	 */
-	if (pll_gnrl_ctl & INTPLL_BYPASS_MASK)
+	if (gnrl_ctl & INTPLL_BYPASS_MASK)
 		return 24000000u;
 
-	if (!(pll_gnrl_ctl & INTPLL_LOCK_MASK)) {
+	if (!(gnrl_ctl & INTPLL_LOCK_MASK)) {
 		puts("pll not locked\n");
 		return 0;
 	}
@@ -175,14 +175,14 @@ static u32 decode_intpll(enum clk_root_src intpll)
 		return -EINVAL;
 	}
 
-	if ((pll_gnrl_ctl & pll_clke_mask) == 0)
+	if ((gnrl_ctl & pll_clke_mask) == 0)
 		return 0;
 
-	main_div = (pll_div_ctl & INTPLL_MAIN_DIV_MASK) >>
+	main_div = (div_ctl & INTPLL_MAIN_DIV_MASK) >>
 		INTPLL_MAIN_DIV_SHIFT;
-	pre_div = (pll_div_ctl & INTPLL_PRE_DIV_MASK) >>
+	pre_div = (div_ctl & INTPLL_PRE_DIV_MASK) >>
 		INTPLL_PRE_DIV_SHIFT;
-	post_div = (pll_div_ctl & INTPLL_POST_DIV_MASK) >>
+	post_div = (div_ctl & INTPLL_POST_DIV_MASK) >>
 		INTPLL_POST_DIV_SHIFT;
 
 	/* FFVCO = (m * FFIN) / p, FFOUT = (m * FFIN) / (p * 2^s) */
@@ -192,29 +192,29 @@ static u32 decode_intpll(enum clk_root_src intpll)
 
 static u32 decode_fracpll(enum clk_root_src frac_pll)
 {
-	u32 pll_gnrl_ctl, pll_fdiv_ctl0, pll_fdiv_ctl1;
+	u32 gnrl_ctl, fdiv_ctl0, fdiv_ctl1;
 	u32 main_div, pre_div, post_div, k;
 
 	switch (frac_pll) {
 	case DRAM_PLL1_CLK:
-		pll_gnrl_ctl = readl((void __iomem *)DRAM_PLL_GNRL_CTL);
-		pll_fdiv_ctl0 = readl((void __iomem *)DRAM_PLL_FDIV_CTL0);
-		pll_fdiv_ctl1 = readl((void __iomem *)DRAM_PLL_FDIV_CTL1);
+		gnrl_ctl = readl((void __iomem *)DRAM_PLL_GNRL_CTL);
+		fdiv_ctl0 = readl((void __iomem *)DRAM_PLL_FDIV_CTL0);
+		fdiv_ctl1 = readl((void __iomem *)DRAM_PLL_FDIV_CTL1);
 		break;
 	case AUDIO_PLL1_CLK:
-		pll_gnrl_ctl = readl((void __iomem *)AUDIO_PLL1_GNRL_CTL);
-		pll_fdiv_ctl0 = readl((void __iomem *)AUDIO_PLL1_FDIV_CTL0);
-		pll_fdiv_ctl1 = readl((void __iomem *)AUDIO_PLL1_FDIV_CTL1);
+		gnrl_ctl = readl((void __iomem *)AUDIO_PLL1_GNRL_CTL);
+		fdiv_ctl0 = readl((void __iomem *)AUDIO_PLL1_FDIV_CTL0);
+		fdiv_ctl1 = readl((void __iomem *)AUDIO_PLL1_FDIV_CTL1);
 		break;
 	case AUDIO_PLL2_CLK:
-		pll_gnrl_ctl = readl((void __iomem *)AUDIO_PLL2_GNRL_CTL);
-		pll_fdiv_ctl0 = readl((void __iomem *)AUDIO_PLL2_FDIV_CTL0);
-		pll_fdiv_ctl1 = readl((void __iomem *)AUDIO_PLL2_FDIV_CTL1);
+		gnrl_ctl = readl((void __iomem *)AUDIO_PLL2_GNRL_CTL);
+		fdiv_ctl0 = readl((void __iomem *)AUDIO_PLL2_FDIV_CTL0);
+		fdiv_ctl1 = readl((void __iomem *)AUDIO_PLL2_FDIV_CTL1);
 		break;
 	case VIDEO_PLL_CLK:
-		pll_gnrl_ctl = readl((void __iomem *)VIDEO_PLL1_GNRL_CTL);
-		pll_fdiv_ctl0 = readl((void __iomem *)VIDEO_PLL1_FDIV_CTL0);
-		pll_fdiv_ctl1 = readl((void __iomem *)VIDEO_PLL1_FDIV_CTL1);
+		gnrl_ctl = readl((void __iomem *)VIDEO_PLL1_GNRL_CTL);
+		fdiv_ctl0 = readl((void __iomem *)VIDEO_PLL1_FDIV_CTL0);
+		fdiv_ctl1 = readl((void __iomem *)VIDEO_PLL1_FDIV_CTL1);
 		break;
 	default:
 		printf("Not supported\n");
@@ -222,34 +222,34 @@ static u32 decode_fracpll(enum clk_root_src frac_pll)
 	}
 
 	/* Only support SYS_XTAL 24M, PAD_CLK not take into consideration */
-	if ((pll_gnrl_ctl & INTPLL_REF_CLK_SEL_MASK) != 0)
+	if ((gnrl_ctl & INTPLL_REF_CLK_SEL_MASK) != 0)
 		return 0;
 
-	if ((pll_gnrl_ctl & INTPLL_RST_MASK) == 0)
+	if ((gnrl_ctl & INTPLL_RST_MASK) == 0)
 		return 0;
 	/*
 	 * When BYPASS is equal to 1, PLL enters the bypass mode
 	 * regardless of the values of RESETB
 	 */
-	if (pll_gnrl_ctl & INTPLL_BYPASS_MASK)
+	if (gnrl_ctl & INTPLL_BYPASS_MASK)
 		return 24000000u;
 
-	if (!(pll_gnrl_ctl & INTPLL_LOCK_MASK)) {
+	if (!(gnrl_ctl & INTPLL_LOCK_MASK)) {
 		puts("pll not locked\n");
 		return 0;
 	}
 
-	if (!(pll_gnrl_ctl & INTPLL_CLKE_MASK))
+	if (!(gnrl_ctl & INTPLL_CLKE_MASK))
 		return 0;
 
-	main_div = (pll_fdiv_ctl0 & INTPLL_MAIN_DIV_MASK) >>
+	main_div = (fdiv_ctl0 & INTPLL_MAIN_DIV_MASK) >>
 		INTPLL_MAIN_DIV_SHIFT;
-	pre_div = (pll_fdiv_ctl0 & INTPLL_PRE_DIV_MASK) >>
+	pre_div = (fdiv_ctl0 & INTPLL_PRE_DIV_MASK) >>
 		INTPLL_PRE_DIV_SHIFT;
-	post_div = (pll_fdiv_ctl0 & INTPLL_POST_DIV_MASK) >>
+	post_div = (fdiv_ctl0 & INTPLL_POST_DIV_MASK) >>
 		INTPLL_POST_DIV_SHIFT;
 
-	k = pll_fdiv_ctl1 & GENMASK(15, 0);
+	k = fdiv_ctl1 & GENMASK(15, 0);
 
 	/* FFOUT = ((m + k / 65536) * FFIN) / (p * 2^s), 1 ≤ p ≤ 63, 64 ≤ m ≤ 1023, 0 ≤ s ≤ 6 */
 	return lldiv((main_div * 65536 + k) * 24000000ULL, 65536 * pre_div * (1 << post_div));
@@ -456,7 +456,7 @@ void dram_disable_bypass(void)
 int intpll_configure(enum pll_clocks clock, enum intpll_out_freq freq)
 {
 	void __iomem *pll_gnrl_ctl, __iomem *pll_div_ctl;
-	u32 pll_div_ctl_val, pll_clke_masks;
+	u32 div_ctl_val, pll_clke_masks;
 
 	switch (clock) {
 	case ANATOP_SYSTEM_PLL1:
@@ -504,27 +504,27 @@ int intpll_configure(enum pll_clocks clock, enum intpll_out_freq freq)
 	switch (freq) {
 	case INTPLL_OUT_750M:
 		/* 24 * 0xfa / 2 / 2 ^ 2 */
-		pll_div_ctl_val = INTPLL_MAIN_DIV_VAL(0xfa) |
+		div_ctl_val = INTPLL_MAIN_DIV_VAL(0xfa) |
 			INTPLL_PRE_DIV_VAL(2) | INTPLL_POST_DIV_VAL(2);
 		break;
 	case INTPLL_OUT_800M:
 		/* 24 * 0x190 / 3 / 2 ^ 2 */
-		pll_div_ctl_val = INTPLL_MAIN_DIV_VAL(0x190) |
+		div_ctl_val = INTPLL_MAIN_DIV_VAL(0x190) |
 			INTPLL_PRE_DIV_VAL(3) | INTPLL_POST_DIV_VAL(2);
 		break;
 	case INTPLL_OUT_1000M:
 		/* 24 * 0xfa / 3 / 2 ^ 1 */
-		pll_div_ctl_val = INTPLL_MAIN_DIV_VAL(0xfa) |
+		div_ctl_val = INTPLL_MAIN_DIV_VAL(0xfa) |
 			INTPLL_PRE_DIV_VAL(3) | INTPLL_POST_DIV_VAL(1);
 		break;
 	case INTPLL_OUT_1200M:
 		/* 24 * 0xc8 / 2 / 2 ^ 1 */
-		pll_div_ctl_val = INTPLL_MAIN_DIV_VAL(0xc8) |
+		div_ctl_val = INTPLL_MAIN_DIV_VAL(0xc8) |
 			INTPLL_PRE_DIV_VAL(2) | INTPLL_POST_DIV_VAL(1);
 		break;
 	case INTPLL_OUT_2000M:
 		/* 24 * 0xfa / 3 / 2 ^ 0 */
-		pll_div_ctl_val = INTPLL_MAIN_DIV_VAL(0xfa) |
+		div_ctl_val = INTPLL_MAIN_DIV_VAL(0xfa) |
 			INTPLL_PRE_DIV_VAL(3) | INTPLL_POST_DIV_VAL(0);
 		break;
 	default:
@@ -535,7 +535,7 @@ int intpll_configure(enum pll_clocks clock, enum intpll_out_freq freq)
 	/* Enable reset */
 	clrbits_le32(pll_gnrl_ctl, INTPLL_RST_MASK);
 	/* Configure */
-	writel(pll_div_ctl_val, pll_div_ctl);
+	writel(div_ctl_val, pll_div_ctl);
 
 	__udelay(100);
 
