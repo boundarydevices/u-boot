@@ -330,7 +330,7 @@ static struct dram_bypass_clk_setting imx8mm_dram_bypass_tbl[] = {
 	DRAM_BYPASS_ROOT_CONFIG(DRAM_BYPASSCLK_400M, 1, CLK_ROOT_PRE_DIV2, 3, CLK_ROOT_PRE_DIV2),
 };
 
-int fracpll_configure(enum pll_clocks pll, u32 freq)
+int fracpll_configure(enum pll_clocks clock, u32 freq)
 {
 	int i;
 	u32 tmp, div_val;
@@ -349,7 +349,7 @@ int fracpll_configure(enum pll_clocks pll, u32 freq)
 
 	rate = &imx8mm_fracpll_tbl[i];
 
-	switch (pll) {
+	switch (clock) {
 	case ANATOP_DRAM_PLL:
 		#define SRC_DDR1_ENABLE_MASK (0x8F000000UL)
 		setbits_le32(GPC_BASE_ADDR + 0xEC, 1 << 7);
@@ -453,12 +453,12 @@ void dram_disable_bypass(void)
 	clock_set_target_val(DRAM_APB_CLK_ROOT, CLK_ROOT_ON | CLK_ROOT_SOURCE_SEL(4) | CLK_ROOT_PRE_DIV(CLK_ROOT_PRE_DIV5));
 }
 
-int intpll_configure(enum pll_clocks pll, enum intpll_out_freq freq)
+int intpll_configure(enum pll_clocks clock, enum intpll_out_freq freq)
 {
 	void __iomem *pll_gnrl_ctl, __iomem *pll_div_ctl;
 	u32 pll_div_ctl_val, pll_clke_masks;
 
-	switch (pll) {
+	switch (clock) {
 	case ANATOP_SYSTEM_PLL1:
 		pll_gnrl_ctl = (void __iomem *)SYS_PLL1_GNRL_CTL;
 		pll_div_ctl = (void __iomem *)SYS_PLL1_DIV_CTL;
