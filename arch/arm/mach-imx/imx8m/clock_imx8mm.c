@@ -14,10 +14,18 @@
 #include <errno.h>
 #include <linux/bitops.h>
 #include <linux/delay.h>
+#include <linux/iopoll.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
 static struct anamix_pll *ana_pll = (struct anamix_pll *)ANATOP_BASE_ADDR;
+
+#ifdef CONFIG_IMX_HAB
+void hab_caam_clock_enable(unsigned char enable)
+{
+	/* The CAAM clock is always on for iMX8M */
+}
+#endif
 
 static u32 get_root_clk(enum clk_root_index clock_id);
 void enable_ocotp_clk(unsigned char enable)
@@ -451,6 +459,36 @@ int clock_init(void)
 
 	return 0;
 };
+
+#define VIDEO_PLL_RATE 594000000U
+
+void mxs_set_lcdclk(uint32_t base_addr, uint32_t freq)
+{
+	uint32_t div, pre, post;
+
+	div = VIDEO_PLL_RATE / 1000;
+	div = (div + freq - 1) / freq;
+
+	if (div < 1)
+		div = 1;
+
+	for (pre = 1; pre <= 8; pre++) {
+		for (post = 1; post <= 64; post++) {
+			if (pre * post == div) {
+				goto find;
+			}
+		}
+	}
+
+	printf("Fail to set rate to %dkhz", freq);
+	return;
+
+find:
+	/* Select to video PLL */
+	pr_debug("mxs_set_lcdclk, pre = %d, post = %d\n", pre, post);
+	clock_set_target_val(LCDIF_PIXEL_CLK_ROOT, CLK_ROOT_ON | CLK_ROOT_SOURCE_SEL(1) | CLK_ROOT_PRE_DIV(pre - 1) | CLK_ROOT_POST_DIV(post - 1));
+
+}
 
 u32 imx_get_uartclk(void)
 {
