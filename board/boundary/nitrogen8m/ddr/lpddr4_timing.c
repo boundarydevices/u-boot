@@ -195,6 +195,13 @@ static struct dram_cfg_param lpddr4_ddrc_cfg[] = {
 	/* disable Write Qos*/
 	{ DDRC_PCFGWQOS0_0(0), 0x00000e00 },
 	{ DDRC_PCFGWQOS1_0(0), 0x0000ffff },
+
+	/* boot start point */
+#ifdef DDR_BOOT_P2
+	{ DDRC_MSTR2(0), 0x2 },
+#elif defined(DDR_BOOT_P1)
+	{ DDRC_MSTR2(0), 0x1 },
+#endif
 };
 
 /* PHY Initialize Configuration */

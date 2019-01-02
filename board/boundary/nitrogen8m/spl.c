@@ -30,11 +30,7 @@ DECLARE_GLOBAL_DATA_PTR;
 void spl_dram_init(void)
 {
 	/* ddr init */
-#if 0 //def CONFIG_IMX8M_LPDDR4
-	ddr_init(&lpddr4_timing);
-#else
-	ddr_init1(&lpddr4_timing_);
-#endif
+	ddr_init(&lpddr4_timing_);
 }
 
 #define I2C_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_HYS | PAD_CTL_PUE)
