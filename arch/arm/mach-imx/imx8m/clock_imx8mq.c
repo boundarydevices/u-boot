@@ -611,6 +611,9 @@ unsigned dram_cfg2[] = {
 		/* 25/44*48*22/12= 100/2 (DDR) */
 		/* 0x015dea96: 0000 000 101011 101111 010101 001011 0 */
 MHZ(100), SSCG_PLL_REF_DIVR2_VAL(43) | SSCG_PLL_FEEDBACK_DIV_F1_VAL(47) | SSCG_PLL_FEEDBACK_DIV_F2_VAL(21) | SSCG_PLL_OUTPUT_DIV_VAL(11),
+		/* 25/30*45*8/3= 200/2 (DDR) */
+		/* 0x00f5a406: 0000 000 011110 101101 001000 000011 0 */
+MHZ(200), SSCG_PLL_REF_DIVR2_VAL(30) | SSCG_PLL_FEEDBACK_DIV_F1_VAL(45) | SSCG_PLL_FEEDBACK_DIV_F2_VAL(8) | SSCG_PLL_OUTPUT_DIV_VAL(3),
 		/* 25/30*40*12/3= 266.6/2 */
 MHZ(266), SSCG_PLL_REF_DIVR2_VAL(29) | SSCG_PLL_FEEDBACK_DIV_F1_VAL(39) | SSCG_PLL_FEEDBACK_DIV_F2_VAL(11) | SSCG_PLL_OUTPUT_DIV_VAL(2),
 		/* 25/30*36*20/3= 400/2 (DDR) */
@@ -665,17 +668,18 @@ void dram_pll_init(ulong pll_val)
 	writel(SRC_DDR1_ENABLE_MASK, &src->ddr2_rcr);
 
 	/* Bypass */
-	setbits_le32(pll_control_reg, bypass1);
 	setbits_le32(pll_control_reg, bypass2);
+	setbits_le32(pll_control_reg, bypass1);
 
 	val = readl(pll_cfg_reg2);
-	val &= ~(SSCG_PLL_OUTPUT_DIV_VAL_MASK | SSCG_PLL_FEEDBACK_DIV_F2_MASK);
+	val &= ~(SSCG_PLL_REF_DIVR2_MASK | SSCG_PLL_FEEDBACK_DIV_F1_MASK |
+		 SSCG_PLL_FEEDBACK_DIV_F2_MASK | SSCG_PLL_OUTPUT_DIV_VAL_MASK);
 	val |= cfg2;
 	writel(val, pll_cfg_reg2);
 
 	/* Clear power down bit */
 	clrbits_le32(pll_control_reg, pwdn_mask);
-	/* Eanble ARM_PLL/SYS_PLL  */
+	/* Enable ARM_PLL/SYS_PLL  */
 	setbits_le32(pll_control_reg, pll_clke);
 
 	/* Clear bypass */
