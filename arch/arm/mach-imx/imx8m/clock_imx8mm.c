@@ -1,8 +1,8 @@
-/* Copyright 2018 NXP
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2018 NXP
  *
  * Peng Fan <peng.fan@nxp.com>
- *
- * SPDX-License-Identifier:     GPL-2.0+
  */
 
 #include <common.h>
@@ -12,8 +12,11 @@
 #include <asm/io.h>
 #include <div64.h>
 #include <errno.h>
+#include <linux/iopoll.h>
 
 DECLARE_GLOBAL_DATA_PTR;
+
+static struct anamix_pll *ana_pll = (struct anamix_pll *)ANATOP_BASE_ADDR;
 
 #ifdef CONFIG_SECURE_BOOT
 void hab_caam_clock_enable(unsigned char enable)
@@ -40,7 +43,7 @@ int enable_i2c_clk(unsigned char enable, unsigned i2c_num)
 	return 0;
 }
 
-u32 decode_intpll(enum clk_root_src intpll)
+static u32 decode_intpll(enum clk_root_src intpll)
 {
 	u32 pll_gnrl_ctl, pll_div_ctl, pll_clke_mask;
 	u32 main_div, pre_div, post_div, div;
@@ -187,7 +190,7 @@ u32 decode_intpll(enum clk_root_src intpll)
 	return lldiv(freq, pre_div * (1 << post_div) * div);
 }
 
-u32 decode_fracpll(enum clk_root_src frac_pll)
+static u32 decode_fracpll(enum clk_root_src frac_pll)
 {
 	u32 pll_gnrl_ctl, pll_fdiv_ctl0, pll_fdiv_ctl1;
 	u32 main_div, pre_div, post_div, k;
@@ -291,16 +294,6 @@ struct imx_int_pll_rate_table {
 	int kdiv;
 };
 
-static struct imx_int_pll_rate_table imx8mm_fracpll_tbl[] = {
-	PLL_1443X_RATE(800000000U, 300, 9, 0, 0),
-	PLL_1443X_RATE(750000000U, 250, 8, 0, 0),
-	PLL_1443X_RATE(650000000U, 325, 3, 2, 0),
-	PLL_1443X_RATE(600000000U, 300, 3, 2, 0),
-	PLL_1443X_RATE(594000000U, 99, 1, 2, 0),
-	PLL_1443X_RATE(400000000U, 300, 9, 1, 0),
-	PLL_1443X_RATE(100000000U, 300, 9, 3, 0),
-};
-
 #define DRAM_BYPASS_ROOT_CONFIG(_rate, _m, _p, _s, _k)			\
 	{							\
 		.clk	=	(_rate),			\
@@ -316,6 +309,19 @@ struct dram_bypass_clk_setting {
 	enum root_pre_div alt_pre_div;
 	int apb_root_sel;
 	enum root_pre_div apb_pre_div;
+};
+
+#define VIDEO_PLL_RATE 594000000U
+
+#ifdef CONFIG_SPL_BUILD
+static struct imx_int_pll_rate_table imx8mm_fracpll_tbl[] = {
+	PLL_1443X_RATE(800000000U, 300, 9, 0, 0),
+	PLL_1443X_RATE(750000000U, 250, 8, 0, 0),
+	PLL_1443X_RATE(650000000U, 325, 3, 2, 0),
+	PLL_1443X_RATE(600000000U, 300, 3, 2, 0),
+	PLL_1443X_RATE(594000000U, 99, 1, 2, 0),
+	PLL_1443X_RATE(400000000U, 300, 9, 1, 0),
+	PLL_1443X_RATE(100000000U, 300, 9, 3, 0),
 };
 
 static struct dram_bypass_clk_setting imx8mm_dram_bypass_tbl[] = {
@@ -545,36 +551,6 @@ int intpll_configure(enum pll_clocks pll, enum intpll_out_freq freq)
 	return 0;
 }
 
-#define VIDEO_PLL_RATE 594000000U
-
-void mxs_set_lcdclk(uint32_t base_addr, uint32_t freq)
-{
-	uint32_t div, pre, post;
-
-	div = VIDEO_PLL_RATE / 1000;
-	div = (div + freq - 1) / freq;
-
-	if (div < 1)
-		div = 1;
-
-	for (pre = 1; pre <= 8; pre++) {
-		for (post = 1; post <= 64; post++) {
-			if (pre * post == div) {
-				goto find;
-			}
-		}
-	}
-
-	printf("Fail to set rate to %dkhz", freq);
-	return;
-
-find:
-	/* Select to video PLL */
-	debug("mxs_set_lcdclk, pre = %d, post = %d\n", pre, post);
-	clock_set_target_val(LCDIF_PIXEL_CLK_ROOT, CLK_ROOT_ON | CLK_ROOT_SOURCE_SEL(1) | CLK_ROOT_PRE_DIV(pre - 1) | CLK_ROOT_POST_DIV(post - 1));
-
-}
-
 void enable_display_clk(unsigned char enable)
 {
 	if (enable) {
@@ -722,6 +698,35 @@ int clock_init()
 	enable_display_clk(1);
 	return 0;
 };
+#endif
+
+void mxs_set_lcdclk(uint32_t base_addr, uint32_t freq)
+{
+	uint32_t div, pre, post;
+
+	div = VIDEO_PLL_RATE / 1000;
+	div = (div + freq - 1) / freq;
+
+	if (div < 1)
+		div = 1;
+
+	for (pre = 1; pre <= 8; pre++) {
+		for (post = 1; post <= 64; post++) {
+			if (pre * post == div) {
+				goto find;
+			}
+		}
+	}
+
+	printf("Fail to set rate to %dkhz", freq);
+	return;
+
+find:
+	/* Select to video PLL */
+	debug("mxs_set_lcdclk, pre = %d, post = %d\n", pre, post);
+	clock_set_target_val(LCDIF_PIXEL_CLK_ROOT, CLK_ROOT_ON | CLK_ROOT_SOURCE_SEL(1) | CLK_ROOT_PRE_DIV(pre - 1) | CLK_ROOT_POST_DIV(post - 1));
+
+}
 
 int set_clk_qspi(void)
 {
