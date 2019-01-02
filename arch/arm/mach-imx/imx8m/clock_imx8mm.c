@@ -45,22 +45,20 @@ int enable_i2c_clk(unsigned char enable, unsigned i2c_num)
 
 static u32 decode_intpll(enum clk_root_src intpll)
 {
+	struct ana_grp2 *pll;
 	u32 gnrl_ctl, div_ctl, pll_clke_mask;
 	u32 main_div, pre_div, post_div, div;
 	u64 freq;
 
 	switch (intpll) {
 	case ARM_PLL_CLK:
-		gnrl_ctl = readl((void __iomem *)ARM_PLL_GNRL_CTL);
-		div_ctl = readl((void __iomem *)ARM_PLL_DIV_CTL);
+		pll = &ana_pll->arm_pll;
 		break;
 	case GPU_PLL_CLK:
-		gnrl_ctl = readl((void __iomem *)GPU_PLL_GNRL_CTL);
-		div_ctl = readl((void __iomem *)GPU_PLL_DIV_CTL);
+		pll = &ana_pll->gpu_pll;
 		break;
 	case VPU_PLL_CLK:
-		gnrl_ctl = readl((void __iomem *)VPU_PLL_GNRL_CTL);
-		div_ctl = readl((void __iomem *)VPU_PLL_DIV_CTL);
+		pll = &ana_pll->vpu_pll;
 		break;
 	case SYSTEM_PLL1_800M_CLK:
 	case SYSTEM_PLL1_400M_CLK:
@@ -71,8 +69,7 @@ static u32 decode_intpll(enum clk_root_src intpll)
 	case SYSTEM_PLL1_100M_CLK:
 	case SYSTEM_PLL1_80M_CLK:
 	case SYSTEM_PLL1_40M_CLK:
-		gnrl_ctl = readl((void __iomem *)SYS_PLL1_GNRL_CTL);
-		div_ctl = readl((void __iomem *)SYS_PLL1_DIV_CTL);
+		pll = &ana_pll->sys_pll1;
 		break;
 	case SYSTEM_PLL2_1000M_CLK:
 	case SYSTEM_PLL2_500M_CLK:
@@ -83,16 +80,17 @@ static u32 decode_intpll(enum clk_root_src intpll)
 	case SYSTEM_PLL2_125M_CLK:
 	case SYSTEM_PLL2_100M_CLK:
 	case SYSTEM_PLL2_50M_CLK:
-		gnrl_ctl = readl((void __iomem *)SYS_PLL2_GNRL_CTL);
-		div_ctl = readl((void __iomem *)SYS_PLL2_DIV_CTL);
+		pll = &ana_pll->sys_pll2;
 		break;
 	case SYSTEM_PLL3_CLK:
-		gnrl_ctl = readl((void __iomem *)SYS_PLL3_GNRL_CTL);
-		div_ctl = readl((void __iomem *)SYS_PLL3_DIV_CTL);
+		pll = &ana_pll->sys_pll3;
 		break;
 	default:
+		printf("int PLL %d not supporte\n", intpll);
 		return -EINVAL;
 	}
+	gnrl_ctl = readl(&pll->gnrl_ctl);
+	div_ctl = readl(&pll->div_ctl);
 
 	/* Only support SYS_XTAL 24M, PAD_CLK not take into consideration */
 	if ((gnrl_ctl & INTPLL_REF_CLK_SEL_MASK) != 0)
@@ -110,7 +108,7 @@ static u32 decode_intpll(enum clk_root_src intpll)
 
 	if (!(gnrl_ctl & INTPLL_LOCK_MASK)) {
 		puts("pll not locked\n");
-		return 0;
+		return -EINVAL;
 	}
 
 	switch (intpll) {
@@ -172,6 +170,7 @@ static u32 decode_intpll(enum clk_root_src intpll)
 		div = 20;
 		break;
 	default:
+		printf("int pll %d not supported\n", intpll);
 		return -EINVAL;
 	}
 
