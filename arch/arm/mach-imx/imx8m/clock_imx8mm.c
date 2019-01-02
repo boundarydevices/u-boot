@@ -329,7 +329,7 @@ int fracpll_configure(enum pll_clocks clock, u32 freq)
 {
 	int i;
 	u32 tmp, div_val;
-	void *pll_base;
+	struct ana_grp* pll;
 	struct imx_int_pll_rate_table *rate;
 
 	for (i = 0; i < ARRAY_SIZE(imx8mm_fracpll_tbl); i++) {
@@ -346,46 +346,46 @@ int fracpll_configure(enum pll_clocks clock, u32 freq)
 
 	switch (clock) {
 	case ANATOP_DRAM_PLL:
-		#define SRC_DDR1_ENABLE_MASK (0x8F000000UL)
+#define SRC_DDR1_ENABLE_MASK	0x8F000000UL
 		setbits_le32(GPC_BASE_ADDR + 0xEC, 1 << 7);
 		setbits_le32(GPC_BASE_ADDR + 0xF8, 1 << 5);
 		writel(SRC_DDR1_ENABLE_MASK, SRC_BASE_ADDR + 0x1004);
 
-		pll_base = (void __iomem *)DRAM_PLL_GNRL_CTL;
+		pll = &ana_pll->dram_pll;
 		break;
 	case ANATOP_VIDEO_PLL:
-		pll_base = (void __iomem *)VIDEO_PLL1_GNRL_CTL;
+		pll = &ana_pll->video_pll1;
 		break;
 	default:
 		return 0;
 	}
 	/* Bypass clock and set lock to pll output lock */
-	tmp = readl(pll_base);
+	tmp = readl(&pll->gnrl_ctl);
 	tmp |= BYPASS_MASK;
-	writel(tmp, pll_base);
+	writel(tmp, &pll->gnrl_ctl);
 
 	/* Enable RST */
 	tmp &= ~RST_MASK;
-	writel(tmp, pll_base);
+	writel(tmp, &pll->gnrl_ctl);
 
 	div_val = (rate->mdiv << MDIV_SHIFT) | (rate->pdiv << PDIV_SHIFT) |
 		(rate->sdiv << SDIV_SHIFT);
-	writel(div_val, pll_base + 4);
-	writel(rate->kdiv << KDIV_SHIFT, pll_base + 8);
+	writel(div_val, &pll->fdiv_ctl0);
+	writel(rate->kdiv << KDIV_SHIFT, &pll->fdiv_ctl1);
 
 	__udelay(100);
 
 	/* Disable RST */
 	tmp |= RST_MASK;
-	writel(tmp, pll_base);
+	writel(tmp, &pll->gnrl_ctl);
 
 	/* Wait Lock*/
-	while (!(readl(pll_base) & LOCK_STATUS))
+	while (!(readl(&pll->gnrl_ctl) & LOCK_STATUS))
 		;
 
 	/* Bypass */
 	tmp &= ~BYPASS_MASK;
-	writel(tmp, pll_base);
+	writel(tmp, &pll->gnrl_ctl);
 
 	return 0;
 }
