@@ -101,6 +101,8 @@ static void dwc_ddrphy_apb_wr_list(struct dram_cfg_param *dram_cfg, int cnt)
 void lpddr4_800M_cfg_phy(struct dram_timing_info *dram_timing)
 {
 	struct dram_fsp_msg *fsp_msg;
+	int i = 0;
+	int drate = 0;
 
 	printf("start to config phy: p0=3200mts, p1=667mts with 1D2D training\n");
 	dwc_ddrphy_apb_wr_list(dram_timing->ddrphy_cfg,
@@ -108,75 +110,49 @@ void lpddr4_800M_cfg_phy(struct dram_timing_info *dram_timing)
 
 	/* load the frequency setpoint message block config */
 	fsp_msg = dram_timing->fsp_msg;
-	/* Load the 1D IMEM image */
-	dwc_ddrphy_apb_wr(0xd0000, 0x0);
-	ddr_load_train_firmware(FW_1D_IMAGE);
-	dwc_ddrphy_apb_wr(0xd0000, 0x1);
+	for (i = 0; i < dram_timing->fsp_msg_num; i++) {
+		/* Set the PHY input clocks for pstate */
+		if (drate != fsp_msg->drate) {
+			drate = fsp_msg->drate;
+			dwc_ddrphy_phyinit_userCustom_E_setDfiClk((fsp_msg->drate >= 1600) ? 0 : 1);
+			dwc_ddrphy_apb_wr(0xd0000, 0x0);
+		}
+		dwc_ddrphy_apb_wr(0xd0000, 0x0);
+		ddr_load_train_firmware(fsp_msg->fw_type);
+		dwc_ddrphy_apb_wr(0xd0000, 0x1);
 
-	/* Set the PHY input clocks for pstate 0 */
-	dwc_ddrphy_phyinit_userCustom_E_setDfiClk (0);
-	/* Load the 1D DMEM image and write the 1D Message Block parameters for the training firmware */
-	dwc_ddrphy_apb_wr(0xd0000, 0x0);
-	printf("config to do 3200 1d training.\n");
+		printf("config to do %u %ud training.\n", fsp_msg->drate,
+				fsp_msg->fw_type == FW_1D_IMAGE ? 1 : 2);
 
-	/* lpddr4_fsp0_cfg */
-	dwc_ddrphy_apb_wr_list(fsp_msg->fsp_cfg, fsp_msg->fsp_cfg_num);
-	dwc_ddrphy_apb_wr(0xd0000, 0x1);
-	dwc_ddrphy_apb_wr(0xd0099, 0x9);
-	dwc_ddrphy_apb_wr(0xd0099, 0x1);
-	dwc_ddrphy_apb_wr(0xd0099, 0x0);
+		/* load the frequency set point message block parameter */
+		dwc_ddrphy_apb_wr_list(fsp_msg->fsp_cfg, fsp_msg->fsp_cfg_num);
 
-	/* wait for train complete */
-	wait_ddrphy_training_complete();
+		/*
+		 * -------------------- excute the firmware --------------------
+		 * Running the firmware is a simply process to taking the
+		 * PMU out of reset and stall, then the firwmare will be run
+		 * 1. reset the PMU;
+		 * 2. begin the excution;
+		 * 3. wait for the training done;
+		 * 4. read the message block result.
+		 * -------------------------------------------------------------
+		 */
+		dwc_ddrphy_apb_wr(0xd0000, 0x1);
+		dwc_ddrphy_apb_wr(0xd0099, 0x9);
+		dwc_ddrphy_apb_wr(0xd0099, 0x1);
+		dwc_ddrphy_apb_wr(0xd0099, 0x0);
 
-	dwc_ddrphy_apb_wr(0xd0099, 0x1);
-	dwc_ddrphy_apb_wr(0xd0000, 0x0);
-	dwc_ddrphy_apb_wr(0xd0000, 0x1);
+		/* Wait for the training firmware to complete */
+		wait_ddrphy_training_complete();
 
-	/* Load the 2D IMEM image */
-	dwc_ddrphy_apb_wr(0xd0000, 0x0);
-	ddr_load_train_firmware(FW_2D_IMAGE);
-	dwc_ddrphy_apb_wr(0xd0000, 0x1);
+		/* Halt the microcontroller. */
+		dwc_ddrphy_apb_wr(0xd0099, 0x1);
 
-	/* 3200 mts 2D training */
-	printf("config to do 3200 2d training.\n");
-	fsp_msg++;
-	/* lpddr4_fsp0_2d_cfg */
-	dwc_ddrphy_apb_wr_list(fsp_msg->fsp_cfg, fsp_msg->fsp_cfg_num);
-	dwc_ddrphy_apb_wr(0xd0000, 0x1);
-	dwc_ddrphy_apb_wr(0xd0099, 0x9);
-	dwc_ddrphy_apb_wr(0xd0099, 0x1);
-	dwc_ddrphy_apb_wr(0xd0099, 0x0);
+		dwc_ddrphy_apb_wr(0xd0000, 0x0);
+		dwc_ddrphy_apb_wr(0xd0000, 0x1);
 
-	/* wait for train complete */
-	wait_ddrphy_training_complete();
-
-	dwc_ddrphy_apb_wr(0xd0099, 0x1);
-	dwc_ddrphy_apb_wr(0xd0000, 0x0);
-	dwc_ddrphy_apb_wr(0xd0000, 0x1);
-
-	/* Step (E) Set the PHY input clocks for pstate 1 */
-	dwc_ddrphy_phyinit_userCustom_E_setDfiClk (1);
-
-	dwc_ddrphy_apb_wr(0xd0000, 0x0);
-	ddr_load_train_firmware(FW_1D_IMAGE);
-	dwc_ddrphy_apb_wr(0xd0000, 0x1);
-
-	printf("pstate=1: set dfi clk done done\n");
-	fsp_msg++;
-	/* lpddr4_fsp1_cfg */
-	dwc_ddrphy_apb_wr_list(fsp_msg->fsp_cfg, fsp_msg->fsp_cfg_num);
-	dwc_ddrphy_apb_wr(0xd0000, 0x1);
-	dwc_ddrphy_apb_wr(0xd0099, 0x9);
-	dwc_ddrphy_apb_wr(0xd0099, 0x1);
-	dwc_ddrphy_apb_wr(0xd0099, 0x0);
-
-	/* wait for train complete */
-	wait_ddrphy_training_complete();
-
-	dwc_ddrphy_apb_wr(0xd0099, 0x1);
-	dwc_ddrphy_apb_wr(0xd0000, 0x0);
-	dwc_ddrphy_apb_wr(0xd0000, 0x1);
+		fsp_msg++;
+	}
 
 	/* (I) Load PHY Init Engine Image */
 	printf("Load 201711 PIE\n");
