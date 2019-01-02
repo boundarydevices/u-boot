@@ -142,13 +142,18 @@ void ddrphy_init_set_dfi_clk(unsigned int drate)
 		dram_disable_bypass();
 		break;
 	case 400:
-		dram_enable_bypass(MHZ(400));
 		break;
 	case 100:
-		dram_enable_bypass(MHZ(100));
 		break;
 	default:
 		return;
+	}
+	if (drate <= 400) {
+#ifdef CONFIG_IMX8MQ
+		dram_pll_init(MHZ(200));
+#else
+		dram_enable_bypass(MHZ(drate));
+#endif
 	}
 }
 
