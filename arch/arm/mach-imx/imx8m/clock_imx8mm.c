@@ -191,34 +191,30 @@ static u32 decode_intpll(enum clk_root_src intpll)
 
 static u32 decode_fracpll(enum clk_root_src frac_pll)
 {
+	struct ana_grp *pll;
 	u32 gnrl_ctl, fdiv_ctl0, fdiv_ctl1;
 	u32 main_div, pre_div, post_div, k;
 
 	switch (frac_pll) {
 	case DRAM_PLL1_CLK:
-		gnrl_ctl = readl((void __iomem *)DRAM_PLL_GNRL_CTL);
-		fdiv_ctl0 = readl((void __iomem *)DRAM_PLL_FDIV_CTL0);
-		fdiv_ctl1 = readl((void __iomem *)DRAM_PLL_FDIV_CTL1);
+		pll = &ana_pll->dram_pll;
 		break;
 	case AUDIO_PLL1_CLK:
-		gnrl_ctl = readl((void __iomem *)AUDIO_PLL1_GNRL_CTL);
-		fdiv_ctl0 = readl((void __iomem *)AUDIO_PLL1_FDIV_CTL0);
-		fdiv_ctl1 = readl((void __iomem *)AUDIO_PLL1_FDIV_CTL1);
+		pll = &ana_pll->audio_pll1;
 		break;
 	case AUDIO_PLL2_CLK:
-		gnrl_ctl = readl((void __iomem *)AUDIO_PLL2_GNRL_CTL);
-		fdiv_ctl0 = readl((void __iomem *)AUDIO_PLL2_FDIV_CTL0);
-		fdiv_ctl1 = readl((void __iomem *)AUDIO_PLL2_FDIV_CTL1);
+		pll = &ana_pll->audio_pll2;
 		break;
 	case VIDEO_PLL_CLK:
-		gnrl_ctl = readl((void __iomem *)VIDEO_PLL1_GNRL_CTL);
-		fdiv_ctl0 = readl((void __iomem *)VIDEO_PLL1_FDIV_CTL0);
-		fdiv_ctl1 = readl((void __iomem *)VIDEO_PLL1_FDIV_CTL1);
+		pll = &ana_pll->video_pll1;
 		break;
 	default:
 		printf("Not supported\n");
 		return 0;
 	}
+	gnrl_ctl = readl(&pll->gnrl_ctl);
+	fdiv_ctl0 = readl(&pll->fdiv_ctl0);
+	fdiv_ctl1 = readl(&pll->fdiv_ctl1);
 
 	/* Only support SYS_XTAL 24M, PAD_CLK not take into consideration */
 	if ((gnrl_ctl & INTPLL_REF_CLK_SEL_MASK) != 0)
