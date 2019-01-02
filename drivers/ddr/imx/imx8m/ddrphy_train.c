@@ -25,6 +25,7 @@ int ddr_cfg_phy(struct dram_timing_info *dram_timing)
 	struct dram_fsp_msg *fsp_msg;
 	int i = 0;
 	int ret;
+	int drate = 0;
 
 	/* initialize PHY configuration */
 	dwc_ddrphy_apb_wr_list(dram_timing->ddrphy_cfg,
@@ -35,11 +36,16 @@ int ddr_cfg_phy(struct dram_timing_info *dram_timing)
 	for (i = 0; i < dram_timing->fsp_msg_num; i++) {
 		debug("DRAM PHY training for %dMTS\n", fsp_msg->drate);
 		/* set dram PHY input clocks to desired frequency */
-		ddrphy_init_set_dfi_clk(fsp_msg->drate);
-
+		if (drate != fsp_msg->drate) {
+			drate = fsp_msg->drate;
+			ddrphy_init_set_dfi_clk(fsp_msg->drate);
+		}
 		/* load the dram training firmware image */
 		dwc_ddrphy_apb_wr(0xd0000, 0x0);
 		ddr_load_train_firmware(fsp_msg->fw_type);
+
+		printf("config to do %u %ud training.\n", fsp_msg->drate,
+				fsp_msg->fw_type == FW_1D_IMAGE ? 1 : 2);
 
 		/* load the frequency set point message block parameter */
 		dwc_ddrphy_apb_wr_list(fsp_msg->fsp_cfg, fsp_msg->fsp_cfg_num);
