@@ -26,6 +26,7 @@ void lpddr4_cfg_umctl2(struct dram_cfg_param *ddrc_cfg, int num)
 
 void ddr_init(struct dram_timing_info *dram_timing)
 {
+	unsigned mstr2;
 	unsigned int tmp;
 	int imx8mq = is_imx8mq();
 
@@ -95,10 +96,10 @@ void ddr_init(struct dram_timing_info *dram_timing)
 	reg32_write(DDRC_SWCTL(0), 0x00000000);
 
 	/* step6 */
-	tmp = reg32_read(DDRC_MSTR2(0));
-	if (tmp == 0x2)
+	mstr2 = reg32_read(DDRC_MSTR2(0));
+	if (mstr2 == 0x2)
 		reg32_write(DDRC_DFIMISC(0), 0x00000210);
-	else if (tmp == 0x1)
+	else if (mstr2 == 0x1)
 		reg32_write(DDRC_DFIMISC(0), 0x00000110);
 	else
 		reg32_write(DDRC_DFIMISC(0), 0x00000010);
@@ -125,10 +126,9 @@ void ddr_init(struct dram_timing_info *dram_timing)
 	reg32_write(DDRC_SWCTL(0), 0x00000000);
 
 	/* step16 */
-	tmp = reg32_read(DDRC_MSTR2(0));
-	if (tmp == 0x2)
+	if (mstr2 == 0x2)
 		reg32_write(DDRC_DFIMISC(0), 0x00000230);
-	else if (tmp == 0x1)
+	else if (mstr2 == 0x1)
 		reg32_write(DDRC_DFIMISC(0), 0x00000130);
 	else
 		reg32_write(DDRC_DFIMISC(0), 0x00000030);
@@ -144,12 +144,11 @@ void ddr_init(struct dram_timing_info *dram_timing)
 	reg32_write(DDRC_SWCTL(0), 0x00000000);
 
 	/* step20~22 */
-	tmp = reg32_read(DDRC_MSTR2(0));
-	if (tmp == 0x2) {
+	if (mstr2 == 0x2) {
 		reg32_write(DDRC_DFIMISC(0), 0x00000210);
 		/* set DFIMISC.dfi_init_complete_en again */
 		reg32_write(DDRC_DFIMISC(0), 0x00000211);
-	} else if (tmp == 0x1) {
+	} else if (mstr2 == 0x1) {
 		reg32_write(DDRC_DFIMISC(0), 0x00000110);
 		/* set DFIMISC.dfi_init_complete_en again */
 		reg32_write(DDRC_DFIMISC(0), 0x00000111);
