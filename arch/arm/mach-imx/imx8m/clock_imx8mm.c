@@ -173,12 +173,12 @@ void dram_disable_bypass(void)
 }
 #endif
 
-int intpll_configure(enum pll_clocks pll, ulong freq)
+int intpll_configure(enum pll_clocks clock, ulong freq)
 {
 	struct ana_grp2 *ag;
 	u32 pll_div_ctl_val, pll_clke_masks;
 
-	switch (pll) {
+	switch (clock) {
 	case ANATOP_SYSTEM_PLL1:
 		ag = &ana_pll->sys_pll1;
 		pll_clke_masks = INTPLL_DIV20_CLKE_MASK |
@@ -213,7 +213,7 @@ int intpll_configure(enum pll_clocks pll, ulong freq)
 		break;
 	default:
 		return -EINVAL;
-	};
+	}
 
 	switch (freq) {
 	case MHZ(600):
@@ -248,7 +248,7 @@ int intpll_configure(enum pll_clocks pll, ulong freq)
 		break;
 	default:
 		return -EINVAL;
-	};
+	}
 	/* Bypass clock and set lock to pll output lock */
 	setbits_le32(&ag->gnrl_ctl, INTPLL_BYPASS_MASK | INTPLL_LOCK_SEL_MASK);
 	/* Enable reset */
