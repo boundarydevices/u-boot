@@ -1767,6 +1767,7 @@ static struct esdhc_soc_data usdhc_imx8qm_data = {
 };
 
 static const struct udevice_id fsl_esdhc_ids[] = {
+	{ .compatible = "fsl,imx53-esdhc", },
 	{ .compatible = "fsl,imx6ul-usdhc", },
 	{ .compatible = "fsl,imx6sx-usdhc", },
 	{ .compatible = "fsl,imx6sl-usdhc", },
