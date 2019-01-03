@@ -18,6 +18,7 @@
 #include <asm/mach-imx/syscounter.h>
 #include <asm/ptrace.h>
 #include <asm/armv8/mmu.h>
+#include <asm/setup.h>
 #include <dm/uclass.h>
 #include <efi_loader.h>
 #include <env.h>
@@ -440,9 +441,11 @@ int arch_cpu_init(void)
 	if (IS_ENABLED(CONFIG_SPL_BUILD))
 		clock_enable(CCGR_SCTR, 1);
 	/*
-	 * Init timer at very early state, because sscg pll setting
-	 * will use it
+	 * Init timer at very early state, because pll setting will use it,
+	 * Rom Turnned off SCTR, enable it before timer_init
 	 */
+
+	clock_enable(CCGR_SCTR, 1);
 	timer_init();
 
 	if (IS_ENABLED(CONFIG_SPL_BUILD)) {
@@ -474,6 +477,11 @@ int arch_cpu_init(void)
 		if (readl(&ocotp->ctrl) & 0x200)
 			writel(0x200, &ocotp->ctrl_clr);
 	}
+
+#if defined(CONFIG_ANDROID_SUPPORT)
+	/* Enable RTC */
+	writel(0x21, 0x30370038);
+#endif
 
 	return 0;
 }
@@ -523,6 +531,19 @@ enum boot_device get_boot_device(void)
 	}
 
 	return boot_dev;
+}
+#endif
+
+#ifdef CONFIG_SERIAL_TAG
+void get_board_serial(struct tag_serialnr *serialnr)
+{
+	struct ocotp_regs *ocotp = (struct ocotp_regs *)OCOTP_BASE_ADDR;
+	struct fuse_bank *bank = &ocotp->bank[0];
+	struct fuse_bank0_regs *fuse =
+		(struct fuse_bank0_regs *)bank->fuse_regs;
+
+	serialnr->low = fuse->uid_low;
+	serialnr->high = fuse->uid_high;
 }
 #endif
 
@@ -776,6 +797,57 @@ static int disable_cpu_nodes(void *blob, u32 disabled_cores)
 	return 0;
 }
 
+static int ft_add_optee_node(void *fdt, struct bd_info *bd)
+{
+	const char *path, *subpath;
+	int offs;
+#ifdef CONFIG_OF_LIBFDT_OVERLAY
+	int ret;
+#endif
+
+	/*
+	 * No TEE space allocated indicating no TEE running, so no
+	 * need to add optee node in dts
+	 */
+	if (!rom_pointer[1])
+		return 0;
+
+	offs = fdt_increase_size(fdt, 512);
+	if (offs) {
+		printf("No Space for dtb\n");
+		return 1;
+	}
+
+	path = "/firmware";
+	offs = fdt_path_offset(fdt, path);
+	if (offs < 0) {
+		path = "/";
+		offs = fdt_path_offset(fdt, path);
+
+		if (offs < 0) {
+			printf("Could not find root node.\n");
+			return 1;
+		}
+
+		subpath = "firmware";
+		offs = fdt_add_subnode(fdt, offs, subpath);
+		if (offs < 0) {
+			printf("Could not create %s node.\n", subpath);
+		}
+	}
+
+	subpath = "optee";
+	offs = fdt_add_subnode(fdt, offs, subpath);
+	if (offs < 0) {
+		printf("Could not create %s node.\n", subpath);
+	}
+
+	fdt_setprop_string(fdt, offs, "compatible", "linaro,optee-tz");
+	fdt_setprop_string(fdt, offs, "method", "smc");
+
+	return 0;
+}
+
 int ft_system_setup(void *blob, struct bd_info *bd)
 {
 #ifdef CONFIG_IMX8MQ
@@ -800,7 +872,6 @@ int ft_system_setup(void *blob, struct bd_info *bd)
 			printf("Found %s node\n", usb_dwc3_path[v]);
 
 usb_modify_speed:
-
 			rc = fdt_setprop(blob, nodeoff, "maximum-speed", speed, strlen(speed) + 1);
 			if (rc) {
 				if (rc == -FDT_ERR_NOSPACE) {
@@ -861,6 +932,7 @@ usb_modify_speed:
 	if (is_imx8md())
 		disable_cpu_nodes(blob, 2);
 
+	return 0;
 #elif defined(CONFIG_IMX8MM)
 	if (is_imx8mml() || is_imx8mmdl() ||  is_imx8mmsl())
 		disable_vpu_nodes(blob);
@@ -896,7 +968,7 @@ usb_modify_speed:
 		disable_cpu_nodes(blob, 2);
 #endif
 
-	return 0;
+	return ft_add_optee_node(blob, bd);
 }
 #endif
 
