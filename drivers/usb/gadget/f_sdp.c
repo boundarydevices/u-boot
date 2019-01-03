@@ -281,6 +281,10 @@ static struct usb_gadget_strings *sdp_generic_strings[] = {
 	NULL,
 };
 
+void __weak board_sdp_cleanup(void)
+{
+}
+
 static inline void *sdp_ptr(u32 val)
 {
 	return (void *)(uintptr_t)val;
@@ -865,6 +869,8 @@ static int sdp_handle_in_ep(struct spl_image_info *spl_image,
 			struct spl_image_info spl_image = {};
 			struct spl_boot_device bootdev = {};
 			spl_parse_image_header(&spl_image, &bootdev, header);
+			board_sdp_cleanup();
+
 			jump_to_image_no_args(&spl_image);
 #else
 			/* In U-Boot, allow jumps to scripts */
