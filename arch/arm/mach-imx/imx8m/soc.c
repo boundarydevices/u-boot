@@ -123,7 +123,11 @@ static struct mm_region imx8m_mem_map[] = {
 		/* DRAM2 */
 		.virt = 0x100000000UL,
 		.phys = 0x100000000UL,
+#ifdef CONFIG_IMX8MQ
 		.size = 0x040000000UL,
+#else
+		.size = 0x140000000UL,
+#endif
 		.attrs = PTE_BLOCK_MEMTYPE(MT_NORMAL) |
 			 PTE_BLOCK_OUTER_SHARE
 	}, {
