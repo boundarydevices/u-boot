@@ -55,6 +55,9 @@ void enable_tzc380(void)
 
 	/* Enable TZASC and lock setting */
 	setbits_le32(&gpr->gpr[10], GPR_TZASC_EN);
+#ifdef CONFIG_IMX8MM
+	setbits_le32(&gpr->gpr[10], GPR_TZASC_SWAP_ID);
+#endif
 	setbits_le32(&gpr->gpr[10], GPR_TZASC_EN_LOCK);
 }
 
@@ -200,10 +203,6 @@ int arch_cpu_init(void)
 #ifdef CONFIG_OF_SYSTEM_SETUP
 int ft_system_setup(void *blob, bd_t *bd)
 {
-	int i = 0;
-	int rc;
-	int nodeoff;
-
 	/* Disable the CPU idle for A0 chip since the HW does not support it */
 	if (is_soc_rev(CHIP_REV_1_0)) {
 		static const char * const nodes_path[] = {
@@ -212,6 +211,10 @@ int ft_system_setup(void *blob, bd_t *bd)
 			"/cpus/cpu@2",
 			"/cpus/cpu@3",
 		};
+
+		int i = 0;
+		int rc;
+		int nodeoff;
 
 		for (i = 0; i < ARRAY_SIZE(nodes_path); i++) {
 			nodeoff = fdt_path_offset(blob, nodes_path[i]);
@@ -278,8 +281,8 @@ int arch_misc_init(void)
 #endif
 
 #ifdef CONFIG_USB_XHCI_IMX8M
-#define FSL_SIP_GPC                    0xC2000000
-#define FSL_SIP_CONFIG_GPC_PM_DOMAIN   0x03
+#define FSL_SIP_GPC			0xC2000000
+#define FSL_SIP_CONFIG_GPC_PM_DOMAIN	0x03
 int imx8m_usb_power(int usb_id, bool on)
 {
 	unsigned long ret;
