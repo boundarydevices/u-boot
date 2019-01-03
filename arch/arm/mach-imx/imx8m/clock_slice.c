@@ -1630,7 +1630,7 @@ static void __iomem *get_clk_root_target(enum clk_slice_type slice_type,
 	switch (slice_type) {
 	case CORE_CLOCK_SLICE:
 		clk_root_target =
-		(void __iomem *)&ccm_reg->core_root[slice_index];
+			(void __iomem *)&ccm_reg->core_root[slice_index];
 		break;
 	case BUS_CLOCK_SLICE:
 		clk_root_target =
@@ -1642,11 +1642,11 @@ static void __iomem *get_clk_root_target(enum clk_slice_type slice_type,
 		break;
 	case AHB_CLOCK_SLICE:
 		clk_root_target =
-			(void __iomem *)&ccm_reg->ahb_ipg_root[slice_index * 2];
+			(void __iomem *)&ccm_reg->ahb_ipg_root[slice_index];
 		break;
 	case IPG_CLOCK_SLICE:
 		clk_root_target =
-			(void __iomem *)&ccm_reg->ahb_ipg_root[slice_index * 2 + 1];
+			(void __iomem *)&ccm_reg->ahb_ipg_root[slice_index + 1];
 		break;
 	case CORE_SEL_CLOCK_SLICE:
 		clk_root_target = (void __iomem *)&ccm_reg->core_sel;
