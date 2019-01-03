@@ -152,6 +152,14 @@ u32 spl_boot_device(void)
 }
 #endif /* CONFIG_MX6 || CONFIG_MX7 || CONFIG_IMX8M */
 
+#ifdef CONFIG_SPL_USB_GADGET_SUPPORT
+#define SDPV_BCD_DEVICE 0x500
+int g_dnl_get_board_bcd_device_number(int gcnum)
+{
+	return SDPV_BCD_DEVICE;
+}
+#endif
+
 #if defined(CONFIG_SPL_MMC_SUPPORT)
 /* called from spl_mmc to see type of boot mode for storage (RAW or FAT) */
 #if defined(CONFIG_IMX8M)
