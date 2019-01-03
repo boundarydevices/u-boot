@@ -20,6 +20,7 @@
 #include <asm/mach-imx/syscounter.h>
 #include <asm/ptrace.h>
 #include <asm/armv8/mmu.h>
+#include <asm/setup.h>
 #include <dm/uclass.h>
 #include <dm/device.h>
 #include <efi_loader.h>
@@ -526,9 +527,11 @@ int arch_cpu_init(void)
 	if (IS_ENABLED(CONFIG_SPL_BUILD))
 		clock_enable(CCGR_SCTR, 1);
 	/*
-	 * Init timer at very early state, because sscg pll setting
-	 * will use it
+	 * Init timer at very early state, because pll setting will use it,
+	 * Rom Turnned off SCTR, enable it before timer_init
 	 */
+
+	clock_enable(CCGR_SCTR, 1);
 	timer_init();
 
 	if (IS_ENABLED(CONFIG_SPL_BUILD)) {
@@ -560,6 +563,11 @@ int arch_cpu_init(void)
 		if (readl(&ocotp->ctrl) & 0x200)
 			writel(0x200, &ocotp->ctrl_clr);
 	}
+
+#if defined(CONFIG_ANDROID_SUPPORT)
+	/* Enable RTC */
+	writel(0x21, 0x30370038);
+#endif
 
 	return 0;
 }
@@ -671,6 +679,19 @@ int spl_mmc_emmc_boot_partition(struct mmc *mmc)
 
 	return part;
 }
+
+#ifdef CONFIG_SERIAL_TAG
+void get_board_serial(struct tag_serialnr *serialnr)
+{
+	struct ocotp_regs *ocotp = (struct ocotp_regs *)OCOTP_BASE_ADDR;
+	struct fuse_bank *bank = &ocotp->bank[0];
+	struct fuse_bank0_regs *fuse =
+		(struct fuse_bank0_regs *)bank->fuse_regs;
+
+	serialnr->low = fuse->uid_low;
+	serialnr->high = fuse->uid_high;
+}
+#endif
 #endif
 
 #ifdef CONFIG_OF_SYSTEM_SETUP
@@ -1063,7 +1084,6 @@ int ft_system_setup(void *blob, struct bd_info *bd)
 			printf("Found %s node\n", usb_dwc3_path[v]);
 
 usb_modify_speed:
-
 			rc = fdt_setprop(blob, nodeoff, "maximum-speed", speed, strlen(speed) + 1);
 			if (rc) {
 				if (rc == -FDT_ERR_NOSPACE) {
@@ -1124,6 +1144,7 @@ usb_modify_speed:
 	if (is_imx8md())
 		disable_cpu_nodes(blob, 2);
 
+	return 0;
 #elif defined(CONFIG_IMX8MM)
 	if (is_imx8mml() || is_imx8mmdl() ||  is_imx8mmsl())
 		disable_vpu_nodes(blob);
@@ -1169,7 +1190,7 @@ usb_modify_speed:
 		disable_cpu_nodes(blob, 2);
 #endif
 
-	return 0;
+	return ft_add_optee_node(blob, bd);
 }
 #endif
 
