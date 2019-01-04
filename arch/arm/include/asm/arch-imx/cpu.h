@@ -31,6 +31,8 @@
 
 #define MXC_SOC_MX6		0x60
 #define MXC_SOC_MX7		0x70
+#define MXC_SOC_IMX8M		0x80
+#define MXC_SOC_IMX8		0x90 /* dummy */
 
 #define MXC_SOC_MX7ULP		0xE0 /* dummy */
 
