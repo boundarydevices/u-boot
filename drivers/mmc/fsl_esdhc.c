@@ -1583,13 +1583,16 @@ static int fsl_esdhc_probe(struct udevice *dev)
 #endif
 	}
 
-	priv->c.wp_enable = 1;
-
-#ifdef CONFIG_DM_GPIO
-	ret = gpio_request_by_name(dev, "wp-gpios", 0, &priv->wp_gpio,
-				   GPIOD_IS_IN);
-	if (ret)
+	if (dev_read_prop(dev, "fsl,wp-controller", NULL)) {
+		priv->c.wp_enable = 1;
+	} else {
 		priv->c.wp_enable = 0;
+#ifdef CONFIG_DM_GPIO
+		gpio_request_by_name(dev, "wp-gpios", 0, &priv->wp_gpio,
+				   GPIOD_IS_IN);
+#endif
+	}
+#ifdef CONFIG_DM_GPIO
 	gpio_request_by_name(dev, "reset-gpios", 0, &priv->reset_gpio,
 			     GPIOD_IS_OUT_ACTIVE);
 #endif
