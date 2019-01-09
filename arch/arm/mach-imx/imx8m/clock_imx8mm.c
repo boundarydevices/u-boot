@@ -326,35 +326,22 @@ void init_wdog_clk(void)
 	clock_enable(CCGR_WDOG3, 1);
 }
 
+static enum clk_ccgr_index ccgr_usdhc[] = {CCGR_USDHC1, CCGR_USDHC2, CCGR_USDHC3,};
+static enum clk_root_index root_usdhc[] = {USDHC1_CLK_ROOT, USDHC2_CLK_ROOT, USDHC3_CLK_ROOT,};
 void init_clk_usdhc(u32 index)
 {
+	if (index > ARRAY_SIZE(ccgr_usdhc)) {
+		printf("Invalid usdhc index\n");
+		return;
+	}
 	/*
 	 * set usdhc clock root
 	 * sys pll1 400M
 	 */
-	switch (index) {
-	case 0:
-		clock_enable(CCGR_USDHC1, 0);
-		clock_set_target_val(USDHC1_CLK_ROOT, CLK_ROOT_ON |
+	clock_enable(ccgr_usdhc[index], 0);
+	clock_set_target_val(root_usdhc[index], CLK_ROOT_ON |
 				     CLK_ROOT_SOURCE_SEL(1));
-		clock_enable(CCGR_USDHC1, 1);
-		return;
-	case 1:
-		clock_enable(CCGR_USDHC2, 0);
-		clock_set_target_val(USDHC2_CLK_ROOT, CLK_ROOT_ON |
-				     CLK_ROOT_SOURCE_SEL(1));
-		clock_enable(CCGR_USDHC2, 1);
-		return;
-	case 2:
-		clock_enable(CCGR_USDHC3, 0);
-		clock_set_target_val(USDHC3_CLK_ROOT, CLK_ROOT_ON |
-				     CLK_ROOT_SOURCE_SEL(1));
-		clock_enable(CCGR_USDHC3, 1);
-		return;
-	default:
-		printf("Invalid usdhc index\n");
-		return;
-	}
+	clock_enable(ccgr_usdhc[index], 1);
 }
 
 void init_clk_ecspi(u32 index)
