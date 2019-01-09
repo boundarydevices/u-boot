@@ -698,6 +698,25 @@ find:
 
 }
 
+static enum clk_ccgr_index ccgr_usdhc[] = {CCGR_USDHC1, CCGR_USDHC2, CCGR_USDHC3,};
+static enum clk_root_index root_usdhc[] = {USDHC1_CLK_ROOT, USDHC2_CLK_ROOT, USDHC3_CLK_ROOT,};
+void init_clk_usdhc(u32 index)
+{
+	if (index > ARRAY_SIZE(ccgr_usdhc)) {
+		printf("Invalid usdhc index\n");
+		return;
+	}
+	/*
+	 * set usdhc clock root
+	 * sys pll1 400M
+	 */
+	clock_enable(ccgr_usdhc[index], 0);
+	clock_set_target_val(root_usdhc[index], CLK_ROOT_ON |
+				     CLK_ROOT_SOURCE_SEL(1) |
+				     CLK_ROOT_POST_DIV(CLK_ROOT_POST_DIV2));
+	clock_enable(ccgr_usdhc[index], 1);
+}
+
 int set_clk_qspi(void)
 {
 	clock_enable(CCGR_QSPI, 0);
