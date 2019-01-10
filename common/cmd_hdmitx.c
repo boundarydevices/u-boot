@@ -272,9 +272,11 @@ static int do_output(cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[])
 				printf("set cs as %d\n", HDMI_COLOR_FORMAT_444);
 			}
 			break;
-		/* For VESA modes, should be RGB format */
-		if (hdmitx_device.vic >= HDMITX_VESA_OFFSET)
-			hdmitx_device.para->cs = HDMI_COLOR_FORMAT_RGB;
+			/* For VESA modes, should be RGB format */
+			if (hdmitx_device.vic >= HDMITX_VESA_OFFSET) {
+				hdmitx_device.para->cs = HDMI_COLOR_FORMAT_RGB;
+				hdmitx_device.para->cd = HDMI_COLOR_DEPTH_24B;
+			}
 		}
 		hdmi_tx_set(&hdmitx_device);
 	}
