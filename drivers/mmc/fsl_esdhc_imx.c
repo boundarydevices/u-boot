@@ -417,6 +417,7 @@ static inline void sd_swap_dma_buff(struct mmc_data *data)
 static int esdhc_send_cmd_common(struct fsl_esdhc_priv *priv, struct mmc *mmc,
 				 struct mmc_cmd *cmd, struct mmc_data *data)
 {
+	unsigned long timeout;
 	int	err = 0;
 	uint	xfertyp;
 	uint	irqstat;
@@ -548,6 +549,7 @@ static int esdhc_send_cmd_common(struct fsl_esdhc_priv *priv, struct mmc *mmc,
 			    cmd->cmdidx == MMC_CMD_SEND_TUNING_BLOCK_HS200)
 				flags = IRQSTAT_BRR;
 
+			timeout = timer_get_us() + (10 * 1000000);
 			do {
 				irqstat = esdhc_read32(&regs->irqstat);
 
@@ -563,6 +565,10 @@ static int esdhc_send_cmd_common(struct fsl_esdhc_priv *priv, struct mmc *mmc,
 
 				if (irqstat & DATA_ERR) {
 					err = -ECOMM;
+					goto out;
+				}
+				if (time_after(timer_get_us(), timeout)) {
+					err = -ETIMEDOUT;
 					goto out;
 				}
 			} while ((irqstat & flags) != flags);
