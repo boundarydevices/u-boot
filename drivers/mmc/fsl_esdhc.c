@@ -708,6 +708,8 @@ static int esdhc_change_pinstate(struct udevice *dev)
 		break;
 	case UHS_SDR104:
 	case MMC_HS_200:
+	case MMC_HS_400:
+	case MMC_HS_400_ES:
 		ret = pinctrl_select_state(dev, "state_200mhz");
 		break;
 	default:
@@ -735,6 +737,32 @@ static void esdhc_reset_tuning(struct mmc *mmc)
 	}
 }
 
+static void esdhc_set_strobe_dll(struct mmc *mmc)
+{
+	struct fsl_esdhc_priv *priv = mmc->priv;
+	struct fsl_esdhc *regs = priv->c.esdhc_regs;
+	u32 v;
+
+	if (priv->clock > ESDHC_STROBE_DLL_CLK_FREQ) {
+		writel(ESDHC_STROBE_DLL_CTRL_RESET, &regs->strobe_dllctrl);
+
+		/*
+		 * enable strobe dll ctrl and adjust the delay target
+		 * for the uSDHC loopback read clock
+		 */
+		v = ESDHC_STROBE_DLL_CTRL_ENABLE |
+			(priv->strobe_dll_delay_target << ESDHC_STROBE_DLL_CTRL_SLV_DLY_TARGET_SHIFT);
+		writel(v, &regs->strobe_dllctrl);
+		/* wait 1us to make sure strobe dll status register stable */
+		udelay(1);
+		v = readl(&regs->strobe_dllstat);
+		if (!(v & ESDHC_STROBE_DLL_STS_REF_LOCK))
+			printf("warning! HS400 strobe DLL status REF not lock!\n");
+		if (!(v & ESDHC_STROBE_DLL_STS_SLV_LOCK))
+			printf("warning! HS400 strobe DLL status SLV not lock!\n");
+	}
+}
+
 static int esdhc_set_timing(struct mmc *mmc)
 {
 	struct fsl_esdhc_priv *priv = dev_get_priv(mmc->dev);
@@ -748,6 +776,12 @@ static int esdhc_set_timing(struct mmc *mmc)
 	case MMC_LEGACY:
 	case SD_LEGACY:
 		esdhc_reset_tuning(mmc);
+		break;
+	case MMC_HS_400:
+	case MMC_HS_400_ES:
+		mixctrl |= MIX_CTRL_DDREN | MIX_CTRL_HS400_EN;
+		writel(mixctrl, &regs->mixctrl);
+		esdhc_set_strobe_dll(mmc);
 		break;
 	case MMC_HS:
 	case MMC_HS_52:
@@ -922,6 +956,7 @@ static int fsl_esdhc_execute_tuning(struct udevice *dev, uint32_t opcode)
 
 	return ret;
 }
+
 #endif
 
 static int esdhc_set_ios_common(struct fsl_esdhc_priv *priv, struct mmc *mmc)
@@ -1122,6 +1157,9 @@ static const struct mmc_ops esdhc_ops = {
 	.init		= esdhc_init,
 	.send_cmd	= esdhc_send_cmd,
 	.set_ios	= esdhc_set_ios,
+#if CONFIG_IS_ENABLED(DM_MMC)
+	.execute_tuning	= esdhc_execute_tuning,
+#endif
 };
 #endif
 
@@ -1499,7 +1537,8 @@ static int fsl_esdhc_probe(struct udevice *dev)
 #endif
 
 	if (fdt_get_property(fdt, node, "no-1-8-v", NULL))
-		priv->caps &= ~(UHS_CAPS | MMC_MODE_HS200);
+		priv->caps &= ~(UHS_CAPS | MMC_MODE_HS400 | MMC_MODE_HS400_ES |
+				MMC_MODE_HS200);
 
 	/*
 	 * TODO:
@@ -1597,7 +1636,7 @@ static struct esdhc_soc_data usdhc_imx8qm_data = {
 	.flags = ESDHC_FLAG_USDHC | ESDHC_FLAG_STD_TUNING
 			| ESDHC_FLAG_HAVE_CAP1 | ESDHC_FLAG_HS200
 			| ESDHC_FLAG_HS400 | ESDHC_FLAG_HS400_ES,
-	.caps = UHS_CAPS |
+	.caps = UHS_CAPS | MMC_MODE_HS400 | MMC_MODE_HS400_ES |
 		MMC_MODE_HS200 | MMC_MODE_DDR_52MHz | MMC_MODE_HS_52MHz |
 		MMC_MODE_HS,
 };
