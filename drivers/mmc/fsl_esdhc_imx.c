@@ -1492,6 +1492,9 @@ static int fsl_esdhc_ofdata_to_platdata(struct udevice *dev)
 		if (regulator_get_value(vqmmc_dev) == 1800000)
 			priv->c.vs18_enable = 1;
 	}
+	ret = device_get_supply_regulator(dev, "vmmc-supply", &priv->vmmc_dev);
+	if (ret)
+		dev_dbg(dev, "no vmmc-supply\n");
 #endif
 #endif
 	return 0;
