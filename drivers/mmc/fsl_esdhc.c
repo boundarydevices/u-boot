@@ -1517,6 +1517,8 @@ static int fsl_esdhc_probe(struct udevice *dev)
 	priv->c.vs18_enable = 0;
 
 #ifdef CONFIG_DM_REGULATOR
+	priv->vqmmc_dev = NULL;
+	priv->vmmc_dev = NULL;
 	/*
 	 * If emmc I/O has a fixed voltage at 1.8V, this must be provided,
 	 * otherwise, emmc will work abnormally.
@@ -1525,6 +1527,7 @@ static int fsl_esdhc_probe(struct udevice *dev)
 	if (ret) {
 		dev_dbg(dev, "no vqmmc-supply\n");
 	} else {
+		priv->vqmmc_dev = vqmmc_dev;
 		ret = regulator_set_enable(vqmmc_dev, true);
 		if (ret) {
 			dev_err(dev, "fail to enable vqmmc-supply\n");
@@ -1534,6 +1537,9 @@ static int fsl_esdhc_probe(struct udevice *dev)
 		if (regulator_get_value(vqmmc_dev) == 1800000)
 			priv->c.vs18_enable = 1;
 	}
+	ret = device_get_supply_regulator(dev, "vmmc-supply", &priv->vmmc_dev);
+	if (ret)
+		dev_dbg(dev, "no vmmc-supply\n");
 #endif
 
 	if (fdt_get_property(fdt, node, "no-1-8-v", NULL))
