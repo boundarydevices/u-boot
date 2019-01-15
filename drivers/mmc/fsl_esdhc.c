@@ -93,6 +93,29 @@ struct fsl_esdhc_priv {
 	struct udevice *dev;
 };
 
+static void esdhc_dump(struct mmc *mmc)
+{
+#ifdef DEBUG
+	struct fsl_esdhc_priv *priv = mmc->priv;
+	struct fsl_esdhc *regs = priv->c.esdhc_regs;
+	ulong addr = (ulong)regs;
+
+	int i = 0;
+
+	for (i = 0; i < 0xd0; i+=4) {
+
+		if (i % 16 == 0) {
+			printf("\n");
+			printf("0x%08x: ", addr + i);
+		}
+
+		printf("0x%08x ", readl(addr + i));
+	}
+
+	printf("\n");
+#endif
+}
+
 /* Return the XFERTYP flags for a given command and data packet */
 static uint esdhc_xfertyp(struct mmc_cmd *cmd, struct mmc_data *data)
 {
@@ -470,6 +493,8 @@ static int esdhc_send_cmd_common(struct fsl_esdhc_priv *priv, struct mmc *mmc,
 out:
 	/* Reset CMD and DATA portions on error */
 	if (err) {
+		esdhc_dump(mmc);
+
 		esdhc_write32(&regs->sysctl, esdhc_read32(&regs->sysctl) |
 			      SYSCTL_RSTC);
 		while (esdhc_read32(&regs->sysctl) & SYSCTL_RSTC)
