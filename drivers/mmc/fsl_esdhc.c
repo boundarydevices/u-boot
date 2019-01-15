@@ -524,6 +524,15 @@ static void set_sysctl(struct fsl_esdhc_priv *priv, struct mmc *mmc, uint clock)
 	u32 value;
 	uint clk;
 
+	/*
+	 * For ddr mode, usdhc need to enable DDR mode first, after select
+	 * this DDR mode, usdhc will automatically divide the usdhc clock
+	 */
+	if (mmc->ddr_mode) {
+		writel(readl(&regs->mixctrl) | MIX_CTRL_DDREN, &regs->mixctrl);
+		sdhc_clk >>= 1;
+	}
+
 	if (clock < mmc->cfg->f_min)
 		clock = mmc->cfg->f_min;
 
