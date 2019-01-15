@@ -1,8 +1,7 @@
 
 /*
- * board/amlogic/configs/g12a_u211_v1.h
  *
- * Copyright (C) 2015 Amlogic, Inc. All rights reserved.
+ * Copyright (C) 2018 Amlogic, Inc. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +18,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
-#ifndef __G12A_U211_V1_H__
-#define __G12A_U211_V1_H__
+#ifndef __G12B_W411_V1_H__
+#define __G12B_W411_V1_H__
 
 #include <asm/arch/cpu.h>
 
@@ -47,6 +46,7 @@
 
 /* config saradc*/
 #define CONFIG_CMD_SARADC 1
+#define CONFIG_SARADC_CH  2
 
 /* Bootloader Control Block function
    That is used for recovery and the bootloader to talk to each other
@@ -109,9 +109,9 @@
         "wipe_cache=successful\0"\
         "EnableSelinux=enforcing\0" \
         "recovery_part=recovery\0"\
-        "lock=10001000\0"\
         "recovery_offset=0\0"\
         "cvbs_drv=0\0"\
+        "lock=10001000\0"\
         "osd_reverse=0\0"\
         "video_reverse=0\0"\
         "active_slot=normal\0"\
@@ -305,7 +305,7 @@
             "run upgrade_check;"\
             "run init_display;"\
             "run storeargs;"\
-            "run upgrade_key;" \
+            "forceupdate;" \
             "bcb uboot-command;"\
             "run switch_bootmode;"
 
@@ -335,6 +335,12 @@
 #define CONFIG_DDR_USE_EXT_VREF			0 //0:disable, 1:enable. ddr use external vref
 #define CONFIG_DDR4_TIMING_TEST			0 //0:disable, 1:enable. ddr4 timing test function
 #define CONFIG_DDR_PLL_BYPASS			0 //0:disable, 1:enable. ddr pll bypass function
+
+#define CHIP_OLD           0
+#define CHIP_TXLX          1
+#define CHIP_A113          2
+#define CHIP_G12           3
+#define CONFIG_CHIP   CHIP_G12// CHIP_OLD//
 
 /* storage: emmc/nand/sd */
 #define		CONFIG_STORE_COMPATIBLE 1
@@ -425,7 +431,7 @@
 
 /* meson SPI */
 #define CONFIG_AML_SPIFC
-//#define CONFIG_AML_SPICC
+#define CONFIG_AML_SPICC
 #if defined CONFIG_AML_SPIFC || defined CONFIG_AML_SPICC
 	#define CONFIG_OF_SPI
 	#define CONFIG_DM_SPI
@@ -481,9 +487,9 @@
 #define CONFIG_AML_CVBS 1
 #endif
 
-// #define CONFIG_AML_LCD    1
-// #define CONFIG_AML_LCD_TABLET 1
-// #define CONFIG_AML_LCD_EXTERN 1
+#define CONFIG_AML_LCD    1
+#define CONFIG_AML_LCD_TABLET 1
+#define CONFIG_AML_LCD_EXTERN 1
 
 
 /* USB
@@ -510,7 +516,7 @@
 #define CONFIG_USB_DEVICE_V2    1
 #define USB_PHY2_PLL_PARAMETER_1	0x09400414
 #define USB_PHY2_PLL_PARAMETER_2	0x927e0000
-#define USB_PHY2_PLL_PARAMETER_3	0xAC5F49E5
+#define USB_PHY2_PLL_PARAMETER_3	0xAC5F69E5
 #define USB_G12x_PHY_PLL_SETTING_1	(0xfe18)
 #define USB_G12x_PHY_PLL_SETTING_2	(0xfff)
 #define USB_G12x_PHY_PLL_SETTING_3	(0x78000)
@@ -525,7 +531,7 @@
 #define CONFIG_USBDOWNLOAD_GADGET 1
 #define CONFIG_SYS_CACHELINE_SIZE 64
 #define CONFIG_FASTBOOT_MAX_DOWN_SIZE	0x8000000
-#define CONFIG_DEVICE_PRODUCT	"u211"
+#define CONFIG_DEVICE_PRODUCT	"g12b_w400"
 
 //UBOOT Facotry usb/sdcard burning config
 #define CONFIG_AML_V2_FACTORY_BURN              1       //support facotry usb burning
@@ -557,14 +563,12 @@
 /* other devices */
 /* I2C DM driver*/
 //#define CONFIG_DM_I2C
-
 #if defined(CONFIG_DM_I2C)
 #define CONFIG_SYS_I2C_MESON		1
 #else
 #define CONFIG_SYS_I2C_AML			1
 #define CONFIG_SYS_I2C_SPEED		400000
 #endif
-
 #define CONFIG_EFUSE 1
 
 /* commands */
@@ -581,6 +585,7 @@
 #define CONFIG_CMD_JTAG	1
 #define CONFIG_CMD_AUTOSCRIPT 1
 #define CONFIG_CMD_MISC 1
+#define CONFIG_CMD_PLLTEST 1
 
 /*file system*/
 #define CONFIG_DOS_PARTITION 1
