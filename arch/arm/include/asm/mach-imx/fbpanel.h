@@ -129,6 +129,7 @@ void fbp_setup_env_cmds(void);
 #define VD_M101NWWB(_mode, _detect, _bus, _addr)	VDF_HANNSTAR7(_mode, "M101NWWB", RGB24, 0, _detect, _bus, _addr)
 #define VD_LD101WX1(_mode, _detect, _bus, _addr)	VDF_HANNSTAR7(_mode, "ld101wx1", RGB24, 0, _detect, _bus, _addr)
 #define VD_DT070BTFT(_mode, _detect, _bus, _addr)	VDF_DT070BTFT(_mode, "dt070btft", RGB24, FBF_JEIDA, _detect, _bus, _addr)
+#define VD_PM9598(_mode, _detect, _bus, _addr)		VDF_PM9598(_mode, "pm9598", RGB24, FBF_JEIDA, _detect, _bus, _addr)
 #define VD_WSVGA(_mode, _detect, _bus, _addr)		VDF_WSVGA(_mode, "wsvga", RGB666, 0, _detect, _bus, _addr)
 #define VD_ASIT500MA6F5D(_mode, _detect, _bus, _addr)	VDF_ASIT500MA6F5D(_mode, "ASIT500MA6F5D", RGB24, FBF_MODESTR, _detect, _bus, _addr)
 #define VD_FUSION7(_mode, _detect, _bus, _addr)		VDF_FUSION7(_mode, "fusion7", RGB666, FBF_MODESTR, _detect, _bus, _addr)
@@ -824,6 +825,26 @@ void fbp_setup_env_cmds(void);
 		.lower_margin   = 4,\
 		.hsync_len      = 60,\
 		.vsync_len      = 10,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
+#define VDF_PM9598(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	.mode	= {\
+		.name           = _name,\
+		.refresh        = 60,\
+		.xres           = 1024,\
+		.yres           = 600,\
+		.pixclock       = 1000000000000ULL/((1024+140+160+20)*(600+20+12+3)*60),\
+		.left_margin    = 140,\
+		.right_margin   = 160,\
+		.upper_margin   = 20,\
+		.lower_margin   = 12,\
+		.hsync_len      = 20,\
+		.vsync_len      = 3,\
 		.sync           = FB_SYNC_EXT,\
 		.vmode          = FB_VMODE_NONINTERLACED\
 	}\
