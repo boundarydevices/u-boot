@@ -116,7 +116,6 @@ int board_mmc_init(bd_t *bis)
 	return 0;
 }
 
-#ifdef CONFIG_POWER
 #define GP_ARM_DRAM_VSEL		IMX_GPIO_NR(3, 24)
 #define GP_DRAM_1P1_VSEL		IMX_GPIO_NR(2, 11)
 #define GP_SOC_GPU_VPU_VSEL		IMX_GPIO_NR(2, 20)
@@ -176,7 +175,6 @@ int power_init_board(void)
 	ddr_voltage_init();
 	return 0;
 }
-#endif
 
 void spl_board_init(void)
 {

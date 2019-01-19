@@ -364,7 +364,8 @@ void init_usb_clk(int usbno);
 static void set_env_vars(void)
 {
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
-	env_set("board", "nitrogen8m");
+	if (!env_get("board"))
+		env_set("board", "nitrogen8m");
 	env_set("soc", "imx8mq");
 	env_set("imx_cpu", get_imx_type((get_cpu_rev() & 0xFF000) >> 12));
 	env_set("uboot_defconfig", CONFIG_DEFCONFIG);
