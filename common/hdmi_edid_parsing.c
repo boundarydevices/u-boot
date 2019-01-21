@@ -20,7 +20,7 @@
 #define EXTENSION_VENDOR_SPECIFIC 0x1
 #define EXTENSION_COLORMETRY_TAG 0x5
 /* DRM stands for "Dynamic Range and Mastering " */
-#define EXTENSION_DRM_TAG	0x6
+#define EXTENSION_DRM_STATIC_TAG	0x6
 /* Video Format Preference Data block */
 #define EXTENSION_VFPDB_TAG	0xd
 #define EXTENSION_Y420_VDB_TAG	0xe
@@ -108,6 +108,214 @@ static void dump_dtd_info(struct dtd *t)
 	PR(h_sync);
 	PR(v_sync_offset);
 	PR(v_sync);
+}
+
+static int Edid_ParsingDRMStaticBlock(struct rx_cap *pRXCap,
+	unsigned char *buf)
+{
+	unsigned char tag = 0, ext_tag = 0, data_end = 0;
+	unsigned int pos = 0;
+
+	tag = (buf[pos] >> 5) & 0x7;
+	data_end = (buf[pos] & 0x1f);
+	memset(pRXCap->hdr_info.rawdata, 0, 7);
+	memcpy(pRXCap->hdr_info.rawdata, buf, data_end + 1);
+	pos++;
+	ext_tag = buf[pos];
+	if ((tag != HDMI_EDID_BLOCK_TYPE_EXTENDED_TAG)
+		|| (ext_tag != EXTENSION_DRM_STATIC_TAG))
+		goto INVALID_DRM_STATIC;
+	pos++;
+	pRXCap->hdr_info.hdr_sup_eotf_sdr = !!(buf[pos] & (0x1 << 0));
+	pRXCap->hdr_info.hdr_sup_eotf_hdr = !!(buf[pos] & (0x1 << 1));
+	pRXCap->hdr_info.hdr_sup_eotf_smpte_st_2084 = !!(buf[pos] & (0x1 << 2));
+	pRXCap->hdr_info.hdr_sup_eotf_hlg = !!(buf[pos] & (0x1 << 3));
+	pos++;
+	pRXCap->hdr_info.hdr_sup_SMD_type1 = !!(buf[pos] & (0x1 << 0));
+	pos++;
+	if (data_end == 3)
+		return 0;
+	if (data_end == 4) {
+		pRXCap->hdr_info.hdr_lum_max = buf[pos];
+		return 0;
+	}
+	if (data_end == 5) {
+		pRXCap->hdr_info.hdr_lum_max = buf[pos];
+		pRXCap->hdr_info.hdr_lum_avg = buf[pos + 1];
+		return 0;
+	}
+	if (data_end == 6) {
+		pRXCap->hdr_info.hdr_lum_max = buf[pos];
+		pRXCap->hdr_info.hdr_lum_avg = buf[pos + 1];
+		pRXCap->hdr_info.hdr_lum_min = buf[pos + 2];
+		return 0;
+	}
+	return 0;
+INVALID_DRM_STATIC:
+	printf("[%s] it's not a valid DRM STATIC BLOCK\n", __func__);
+	return -1;
+}
+
+static void Edid_ParsingVendSpec(struct rx_cap *pRXCap,
+	unsigned char *buf)
+{
+	struct dv_info *dv = &pRXCap->dv_info;
+	struct hdr10_plus_info *hdr10_plus = &pRXCap->hdr10plus_info;
+	unsigned char *dat = buf;
+	unsigned char pos = 0;
+	unsigned int ieeeoui = 0;
+
+	memset(dv, 0, sizeof(struct dv_info));
+	memset(hdr10_plus, 0, sizeof(struct hdr10_plus_info));
+
+	dv->block_flag = CORRECT;
+	dv->length = dat[pos] & 0x1f;
+	hdr10_plus->length = dat[pos] & 0x1f;
+	memcpy(dv->rawdata, dat, dv->length + 1);
+	pos++;
+
+	if (dat[pos] != 1) {
+		printf("hdmitx: edid: parsing fail %s[%d]\n", __func__,
+			__LINE__);
+		return;
+	}
+
+	pos++;
+	ieeeoui = dat[pos++];
+	ieeeoui += dat[pos++] << 8;
+	ieeeoui += dat[pos++] << 16;
+
+	/*HDR10+ use vsvdb*/
+	if (ieeeoui == HDR10_PLUS_IEEE_OUI) {
+		hdr10_plus->ieeeoui = ieeeoui;
+		hdr10_plus->application_version = dat[pos] & 0x3;
+		pos++;
+		return;
+	}
+
+	if (ieeeoui != DV_IEEE_OUI) {
+		dv->block_flag = ERROR_LENGTH;
+		return;
+	}
+	dv->ieeeoui = ieeeoui;
+
+	dv->ver = (dat[pos] >> 5) & 0x7;
+	/* Refer to DV 2.9 Page 27 */
+	if (dv->ver == 0) {
+		if (dv->length == 0x19) {
+			dv->sup_yuv422_12bit = dat[pos] & 0x1;
+			dv->sup_2160p60hz = (dat[pos] >> 1) & 0x1;
+			dv->sup_global_dimming = (dat[pos] >> 2) & 0x1;
+			pos++;
+			dv->Rx =
+				(dat[pos+1] << 4) | (dat[pos] >> 4);
+			dv->Ry =
+				(dat[pos+2] << 4) | (dat[pos] & 0xf);
+			pos += 3;
+			dv->Gx =
+				(dat[pos+1] << 4) | (dat[pos] >> 4);
+			dv->Gy =
+				(dat[pos+2] << 4) | (dat[pos] & 0xf);
+			pos += 3;
+			dv->Bx =
+				(dat[pos+1] << 4) | (dat[pos] >> 4);
+			dv->By =
+				(dat[pos+2] << 4) | (dat[pos] & 0xf);
+			pos += 3;
+			dv->Wx =
+				(dat[pos+1] << 4) | (dat[pos] >> 4);
+			dv->Wy =
+				(dat[pos+2] << 4) | (dat[pos] & 0xf);
+			pos += 3;
+			dv->tminPQ =
+				(dat[pos+1] << 4) | (dat[pos] >> 4);
+			dv->tmaxPQ =
+				(dat[pos+2] << 4) | (dat[pos] & 0xf);
+			pos += 3;
+			dv->dm_major_ver = dat[pos] >> 4;
+			dv->dm_minor_ver = dat[pos] & 0xf;
+			pos++;
+		} else
+			dv->block_flag = ERROR_LENGTH;
+	}
+
+	if (dv->ver == 1) {
+		if (dv->length == 0x0B) {/* Refer to DV 2.9 Page 33 */
+			dv->dm_version = (dat[pos] >> 2) & 0x7;
+			dv->sup_yuv422_12bit = dat[pos] & 0x1;
+			dv->sup_2160p60hz = (dat[pos] >> 1) & 0x1;
+			pos++;
+			dv->sup_global_dimming = dat[pos] & 0x1;
+			dv->tmaxLUM = dat[pos] >> 1;
+			pos++;
+			dv->colorimetry = dat[pos] & 0x1;
+			dv->tminLUM = dat[pos] >> 1;
+			pos++;
+			dv->low_latency = dat[pos] & 0x3;
+			dv->Bx = 0x20 | ((dat[pos] >> 5) & 0x7);
+			dv->By = 0x08 | ((dat[pos] >> 2) & 0x7);
+			pos++;
+			dv->Gx = 0x00 | (dat[pos] >> 1);
+			dv->Ry = 0x40 | ((dat[pos] & 0x1) |
+				((dat[pos + 1] & 0x1) << 1) |
+				((dat[pos + 2] & 0x3) << 2));
+			pos++;
+			dv->Gy = 0x80 | (dat[pos] >> 1);
+			pos++;
+			dv->Rx = 0xA0 | (dat[pos] >> 3);
+			pos++;
+		} else if (dv->length == 0x0E) {
+			dv->dm_version = (dat[pos] >> 2) & 0x7;
+			dv->sup_yuv422_12bit = dat[pos] & 0x1;
+			dv->sup_2160p60hz = (dat[pos] >> 1) & 0x1;
+			pos++;
+			dv->sup_global_dimming = dat[pos] & 0x1;
+			dv->tmaxLUM = dat[pos] >> 1;
+			pos++;
+			dv->colorimetry = dat[pos] & 0x1;
+			dv->tminLUM = dat[pos] >> 1;
+			pos += 2; /* byte8 is reserved as 0 */
+			dv->Rx = dat[pos++];
+			dv->Ry = dat[pos++];
+			dv->Gx = dat[pos++];
+			dv->Gy = dat[pos++];
+			dv->Bx = dat[pos++];
+			dv->By = dat[pos++];
+		} else
+			dv->block_flag = ERROR_LENGTH;
+	}
+	if (dv->ver == 2) {
+		if (dv->length == 0x0B) {
+			dv->sup_2160p60hz = 0x1;/*default*/
+			dv->dm_version = (dat[pos] >> 2) & 0x7;
+			dv->sup_yuv422_12bit = dat[pos] & 0x1;
+			dv->sup_backlight_control = (dat[pos] >> 1) & 0x1;
+			pos++;
+			dv->sup_global_dimming = (dat[pos] >> 2) & 0x1;
+			dv->backlt_min_luma = dat[pos] & 0x3;
+			dv->tminPQ = dat[pos] >> 3;
+			pos++;
+			dv->Interface = dat[pos] & 0x3;
+			dv->tmaxPQ = dat[pos] >> 3;
+			pos++;
+			dv->sup_10b_12b_444 = ((dat[pos] & 0x1) << 1) |
+				(dat[pos + 1] & 0x1);
+			dv->Gx = 0x00 | (dat[pos] >> 1);
+			pos++;
+			dv->Gy = 0x80 | (dat[pos] >> 1);
+			pos++;
+			dv->Rx = 0xA0 | (dat[pos] >> 3);
+			dv->Bx = 0x20 | (dat[pos] & 0x7);
+			pos++;
+			dv->Ry = 0x40  | (dat[pos] >> 3);
+			dv->By = 0x08  | (dat[pos] & 0x7);
+			pos++;
+		} else
+			dv->block_flag = ERROR_LENGTH;
+	}
+
+	if (pos > dv->length)
+		pr_info("hdmitx: edid: maybe invalid dv%d data\n", dv->ver);
 }
 
 static void Edid_DTD_parsing(struct rx_cap *pRXCap, unsigned char *data)
@@ -388,12 +596,16 @@ case_next:
 				ext_tag = BlockBuf[offset+1];
 				switch (ext_tag) {
 				case EXTENSION_VENDOR_SPECIFIC:
+					Edid_ParsingVendSpec(pRXCap,
+						&BlockBuf[offset]);
 					break;
 				case EXTENSION_COLORMETRY_TAG:
 					pRXCap->colorimetry_data =
 						BlockBuf[offset + 2];
 					break;
-				case EXTENSION_DRM_TAG:
+				case EXTENSION_DRM_STATIC_TAG:
+					Edid_ParsingDRMStaticBlock(pRXCap,
+						&BlockBuf[offset]);
 					break;
 				case EXTENSION_VFPDB_TAG:
 /* Just record VFPDB offset address, call Edid_ParsingVFPDB() after DTD

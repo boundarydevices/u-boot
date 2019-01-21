@@ -329,6 +329,11 @@ static int do_get_preferred_mode(cmd_tbl_t * cmdtp, int flag, int argc,
 	struct hdmi_format_para *para;
 	char pref_mode[64];
 	char color_attr[64];
+	char *hdmi_read_edid;
+
+	hdmi_read_edid = getenv("hdmi_read_edid");
+	if (hdmi_read_edid && (hdmi_read_edid[0] == '0'))
+		return 0;
 
 	memset(edid, 0, EDID_BLK_SIZE * EDID_BLK_NO);
 	memset(pref_mode, 0, sizeof(pref_mode));
@@ -346,9 +351,11 @@ static int do_get_preferred_mode(cmd_tbl_t * cmdtp, int flag, int argc,
 	}
 
 	if (hdmi_edid_parsing(hdev->rawedid, &hdev->RXCap) == 0) {
-		dump_full_edid(hdev->rawedid);
+		if (0)
+			dump_full_edid(hdev->rawedid);
 	}
 	para = hdmi_get_fmt_paras(hdev->RXCap.preferred_mode);
+
 	if (para) {
 		sprintf(pref_mode, "setenv hdmimode %s", para->sname);
 		if (hdev->RXCap.pref_colorspace & (1 << 5))
@@ -357,7 +364,7 @@ static int do_get_preferred_mode(cmd_tbl_t * cmdtp, int flag, int argc,
 			sprintf(color_attr, "setenv colorattribute %s", "422,8bit");
 		else
 			sprintf(color_attr, "setenv colorattribute %s", "rgb,8bit");
-	} else { /* set default mode */
+	} else {
 		hdev->RXCap.preferred_mode = HDMI_720x480p60_16x9;
 		para = hdmi_get_fmt_paras(HDMI_720x480p60_16x9);
 		sprintf(pref_mode, "setenv hdmimode %s", para->sname);
@@ -365,10 +372,15 @@ static int do_get_preferred_mode(cmd_tbl_t * cmdtp, int flag, int argc,
 	}
 	printk("edid preferred_mode is %s[%d]\n", para->sname, hdev->RXCap.preferred_mode);
 
-	/* save to ENV */
+/* save to ENV */
+/*
 	run_command(pref_mode, 0);
 	run_command(color_attr, 0);
 	run_command("saveenv", 0);
+*/
+	printk("hdr mode is %d\n", hdev->RXCap.hdr_info.hdr_sup_eotf_smpte_st_2084);
+	printk("dv  mode is ver:%d  len: %x\n", hdev->RXCap.dv_info.ver, hdev->RXCap.dv_info.length);
+	printk("hdr10+ mode is %d\n", hdev->RXCap.hdr10plus_info.application_version);
 
 	return 0;
 }
@@ -404,7 +416,7 @@ static int do_hdmitx(cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[])
 }
 
 U_BOOT_CMD(hdmitx, CONFIG_SYS_MAXARGS, 0, do_hdmitx,
-	   "HDMITX sub-system",
+	   "HDMITX sub-system 20190123",
 	"hdmitx hpd\n"
 	"    Detect hdmi rx plug-in\n"
 	"hdmitx get_preferred_mode\n"

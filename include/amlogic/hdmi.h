@@ -233,6 +233,186 @@ struct dtd {
 	enum hdmi_vic vic;
 };
 
+/* Dolby Version support information from EDID*/
+/* Refer to DV Spec version2.9 page26 to page39*/
+enum block_type {
+	ERROR_NULL = 0,
+	ERROR_LENGTH,
+	ERROR_OUI,
+	CORRECT,
+};
+
+
+
+#define DV_IEEE_OUI             0x00D046
+#define HDR10_PLUS_IEEE_OUI	0x90848B
+
+#define HDMI_PACKET_VEND        1
+#define HDMI_PACKET_DRM		0x86
+
+#define CMD_CONF_OFFSET         (0x14 << 24)
+#define CONF_AVI_BT2020         (CMD_CONF_OFFSET + 0X2000 + 0x00)
+	#define CLR_AVI_BT2020          0x0
+	#define SET_AVI_BT2020          0x1
+/* set value as COLORSPACE_RGB444, YUV422, YUV444, YUV420 */
+#define CONF_AVI_RGBYCC_INDIC   (CMD_CONF_OFFSET + 0X2000 + 0x01)
+#define CONF_AVI_Q01            (CMD_CONF_OFFSET + 0X2000 + 0x02)
+	#define RGB_RANGE_DEFAULT       0
+	#define RGB_RANGE_LIM           1
+	#define RGB_RANGE_FUL           2
+	#define RGB_RANGE_RSVD          3
+#define CONF_AVI_YQ01           (CMD_CONF_OFFSET + 0X2000 + 0x03)
+	#define YCC_RANGE_LIM           0
+	#define YCC_RANGE_FUL           1
+	#define YCC_RANGE_RSVD          2
+
+struct hdr_info {
+	unsigned int hdr_sup_eotf_sdr:1;
+	unsigned int hdr_sup_eotf_hdr:1;
+	unsigned int hdr_sup_eotf_smpte_st_2084:1;
+	unsigned int hdr_sup_eotf_hlg:1;
+	unsigned int hdr_sup_SMD_type1:1;
+	unsigned char hdr_lum_max;
+	unsigned char hdr_lum_avg;
+	unsigned char hdr_lum_min;
+	unsigned char rawdata[7];
+};
+
+struct hdr10_plus_info {
+	uint32_t ieeeoui;
+	uint8_t length;
+	uint8_t application_version;
+};
+
+enum hdmi_hdr_transfer {
+	T_UNKNOWN = 0,
+	T_BT709,
+	T_UNDEF,
+	T_BT601,
+	T_BT470M,
+	T_BT470BG,
+	T_SMPTE170M,
+	T_SMPTE240M,
+	T_LINEAR,
+	T_LOG100,
+	T_LOG316,
+	T_IEC61966_2_4,
+	T_BT1361E,
+	T_IEC61966_2_1,
+	T_BT2020_10,
+	T_BT2020_12,
+	T_SMPTE_ST_2084,
+	T_SMPTE_ST_28,
+	T_HLG,
+};
+
+enum hdmi_hdr_color {
+	C_UNKNOWN = 0,
+	C_BT709,
+	C_UNDEF,
+	C_BT601,
+	C_BT470M,
+	C_BT470BG,
+	C_SMPTE170M,
+	C_SMPTE240M,
+	C_FILM,
+	C_BT2020,
+};
+
+/* master_display_info for display device */
+struct master_display_info_s {
+	u32 present_flag;
+	u32 features;			/* feature bits bt2020/2084 */
+	u32 primaries[3][2];		/* normalized 50000 in G,B,R order */
+	u32 white_point[2]; 	/* normalized 50000 */
+	u32 luminance[2];		/* max/min lumin, normalized 10000 */
+	u32 max_content;		/* Maximum Content Light Level */
+	u32 max_frame_average;	/* Maximum Frame-average Light Level */
+};
+
+struct hdr10plus_para {
+	uint8_t application_version;
+	uint8_t targeted_max_lum;
+	uint8_t average_maxrgb;
+	uint8_t distribution_values[9];
+	uint8_t num_bezier_curve_anchors;
+	uint32_t knee_point_x;
+	uint32_t knee_point_y;
+	uint8_t bezier_curve_anchors[9];
+	uint8_t graphics_overlay_flag;
+	uint8_t no_delay_flag;
+};
+
+struct dv_info {
+	unsigned char rawdata[27];
+	enum block_type block_flag;
+	uint32_t ieeeoui;
+	uint8_t ver; /* 0 or 1 or 2*/
+	uint8_t length;/*ver1: 15 or 12*/
+
+	uint8_t sup_yuv422_12bit:1;
+	/* if as 0, then support RGB tunnel mode */
+	uint8_t sup_2160p60hz:1;
+	/* if as 0, then support 2160p30hz */
+	uint8_t sup_global_dimming:1;
+	uint16_t Rx;
+	uint16_t Ry;
+	uint16_t Gx;
+	uint16_t Gy;
+	uint16_t Bx;
+	uint16_t By;
+	uint16_t Wx;
+	uint16_t Wy;
+	uint16_t tminPQ;
+	uint16_t tmaxPQ;
+	uint8_t dm_major_ver;
+	uint8_t dm_minor_ver;
+	uint8_t dm_version;
+	uint8_t tmaxLUM;
+	uint8_t colorimetry:1;/* ver1*/
+	uint8_t tminLUM;
+	uint8_t low_latency;/* ver1_12 and 2*/
+	uint8_t sup_backlight_control:1;/*only ver2*/
+	uint8_t backlt_min_luma;/*only ver2*/
+	uint8_t Interface;/*only ver2*/
+	uint8_t sup_10b_12b_444;/*only ver2*/
+};
+
+enum eotf_type {
+	EOTF_T_NULL = 0,
+	EOTF_T_DOLBYVISION,
+	EOTF_T_HDR10,
+	EOTF_T_SDR,
+	EOTF_T_LL_MODE,
+	EOTF_T_MAX,
+};
+
+enum mode_type {
+	YUV422_BIT12 = 0,
+	RGB_8BIT,
+	RGB_10_12BIT,
+	YUV444_10_12BIT,
+};
+
+/* Dolby Version VSIF  parameter*/
+struct dv_vsif_para {
+	uint8_t ver; /* 0 or 1 or 2*/
+	uint8_t length;/*ver1: 15 or 12*/
+	union {
+		struct {
+			uint8_t low_latency:1;
+			uint8_t dobly_vision_signal:1;
+			uint8_t backlt_ctrl_MD_present:1;
+			uint8_t auxiliary_MD_present:1;
+			uint8_t eff_tmax_PQ_hi;
+			uint8_t eff_tmax_PQ_low;
+			uint8_t auxiliary_runmode;
+			uint8_t auxiliary_runversion;
+			uint8_t auxiliary_debug0;
+		} ver2;
+	} vers;
+};
+
 #define VIC_MAX_NUM 256
 struct rx_cap {
 	unsigned int native_Mode;
@@ -273,6 +453,9 @@ struct rx_cap {
 	unsigned char flag_vfpdb;
 	unsigned char number_of_dtd;
 	unsigned char pref_colorspace;
+	struct hdr_info hdr_info;
+	struct dv_info dv_info;
+	struct hdr10_plus_info hdr10plus_info;
 	/*blk0 check sum*/
 	unsigned char chksum;
 };
@@ -286,8 +469,8 @@ enum hdmi_color_depth {
 
 enum hdmi_color_format {
 	HDMI_COLOR_FORMAT_RGB,
-	HDMI_COLOR_FORMAT_444,
 	HDMI_COLOR_FORMAT_422,
+	HDMI_COLOR_FORMAT_444,
 	HDMI_COLOR_FORMAT_420,
 };
 
@@ -366,6 +549,8 @@ struct hdmitx_dev {
 	unsigned int frac_rate_policy;
 	unsigned int mode420;
 	unsigned int dc30;
+	enum eotf_type hdmi_current_eotf_type;
+	enum mode_type hdmi_current_tunnel_mode;
 };
 
 struct hdmi_format_para *hdmi_get_fmt_paras(enum hdmi_vic vic);
@@ -376,6 +561,11 @@ int hdmi_outputmode_check(char *mode);
 /* Parsing RAW EDID data from edid to pRXCap */
 unsigned int hdmi_edid_parsing(unsigned char *edid, struct rx_cap *pRXCap);
 struct hdmi_format_para *hdmi_match_dtd_paras(struct dtd *t);
+void hdmitx_set_drm_pkt(struct master_display_info_s *data);
+void hdmitx_set_vsif_pkt(enum eotf_type type, enum mode_type tunnel_mode,
+	struct dv_vsif_para *data);
+void hdmitx_set_hdr10plus_pkt(unsigned int flag,
+	struct hdr10plus_para *data);
 
 /*
  * Must be called at uboot
