@@ -698,7 +698,7 @@ static int esdhc_change_pinstate(struct udevice *dev)
 static void esdhc_reset_tuning(struct mmc *mmc)
 {
 	struct fsl_esdhc_priv *priv = dev_get_priv(mmc->dev);
-	struct fsl_esdhc *regs = priv->esdhc_regs;
+	struct fsl_esdhc *regs = priv->c.esdhc_regs;
 
 	if (priv->flags & ESDHC_FLAG_USDHC) {
 		if (priv->flags & ESDHC_FLAG_STD_TUNING) {
@@ -712,7 +712,7 @@ static void esdhc_reset_tuning(struct mmc *mmc)
 static int esdhc_set_timing(struct mmc *mmc)
 {
 	struct fsl_esdhc_priv *priv = dev_get_priv(mmc->dev);
-	struct fsl_esdhc *regs = priv->esdhc_regs;
+	struct fsl_esdhc *regs = priv->c.esdhc_regs;
 	u32 mixctrl;
 
 	mixctrl = readl(&regs->mixctrl);
@@ -751,7 +751,7 @@ static int esdhc_set_timing(struct mmc *mmc)
 static int esdhc_set_voltage(struct mmc *mmc)
 {
 	struct fsl_esdhc_priv *priv = dev_get_priv(mmc->dev);
-	struct fsl_esdhc *regs = priv->esdhc_regs;
+	struct fsl_esdhc *regs = priv->c.esdhc_regs;
 	int ret;
 
 	priv->signal_voltage = mmc->signal_voltage;
@@ -814,7 +814,7 @@ static int fsl_esdhc_execute_tuning(struct udevice *dev, uint32_t opcode)
 {
 	struct fsl_esdhc_plat *plat = dev_get_platdata(dev);
 	struct fsl_esdhc_priv *priv = dev_get_priv(dev);
-	struct fsl_esdhc *regs = priv->esdhc_regs;
+	struct fsl_esdhc *regs = priv->c.esdhc_regs;
 	struct mmc *mmc = &plat->mmc;
 	u32 irqstaten = readl(&regs->irqstaten);
 	u32 irqsigen = readl(&regs->irqsigen);
