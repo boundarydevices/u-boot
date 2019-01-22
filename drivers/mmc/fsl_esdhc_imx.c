@@ -530,7 +530,6 @@ static int esdhc_send_cmd_common(struct fsl_esdhc_priv *priv, struct mmc *mmc,
 	}
 
 	if (irqstat & IRQSTAT_CTOE) {
-		printf("timeout irqstat=%x\n", irqstat);
 		err = -ETIMEDOUT;
 		goto out;
 	}
