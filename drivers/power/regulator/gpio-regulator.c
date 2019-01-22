@@ -116,9 +116,21 @@ static int gpio_regulator_set_value(struct udevice *dev, int uV)
 	return 0;
 }
 
+static int gpio_regulator_get_enable(struct udevice *dev)
+{
+	return true;
+}
+
+static int gpio_regulator_set_enable(struct udevice *dev, bool enable)
+{
+	return 0;
+}
+
 static const struct dm_regulator_ops gpio_regulator_ops = {
 	.get_value	= gpio_regulator_get_value,
 	.set_value	= gpio_regulator_set_value,
+	.get_enable	= gpio_regulator_get_enable,
+	.set_enable	= gpio_regulator_set_enable,
 };
 
 static const struct udevice_id gpio_regulator_ids[] = {
