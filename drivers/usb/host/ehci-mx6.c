@@ -19,6 +19,7 @@
 #include <asm/io.h>
 #include <asm/arch/imx-regs.h>
 #include <asm/arch/clock.h>
+#include <asm/arch/sys_proto.h>
 #include <asm/mach-imx/iomux-v3.h>
 #include <asm/mach-imx/regs-usbphy.h>
 #include <asm/mach-imx/sys_proto.h>
@@ -523,7 +524,7 @@ static int ehci_usb_probe(struct udevice *dev)
 	struct usb_plat *plat = dev_get_plat(dev);
 	struct usb_ehci *ehci = dev_read_addr_ptr(dev);
 	struct ehci_mx6_priv_data *priv = dev_get_priv(dev);
-	enum usb_init_type type = plat->init_type;
+	enum usb_init_type type;
 	struct ehci_hccr *hccr;
 	struct ehci_hcor *hcor;
 	int ret;
@@ -541,6 +542,12 @@ static int ehci_usb_probe(struct udevice *dev)
 		return ret;
 
 	priv->ehci = ehci;
+#ifdef CONFIG_IMX8MM
+	enable_usboh3_clk(1);
+	imx8m_usb_power(priv->portnr, true);
+#endif
+	priv->init_type = type = plat->init_type;
+
 	priv->phy_type = usb_get_phy_mode(dev_ofnode(dev));
 
 	/* Init usb board level according to the requested init type */
