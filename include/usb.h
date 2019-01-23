@@ -785,6 +785,7 @@ struct dm_usb_ops {
 	 * in a USB transfer. USB class driver needs to be aware of this.
 	 */
 	int (*get_max_xfer_size)(struct udevice *bus, size_t *size);
+	int (*is_host)(struct udevice *bus);
 };
 
 #define usb_get_ops(dev)	((struct dm_usb_ops *)(dev)->driver->ops)

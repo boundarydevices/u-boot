@@ -1664,6 +1664,8 @@ int ehci_deregister(struct udevice *dev)
 	return 0;
 }
 
+int ehci_is_host(struct udevice *dev);
+
 struct dm_usb_ops ehci_usb_ops = {
 	.control = ehci_submit_control_msg,
 	.bulk = ehci_submit_bulk_msg,
@@ -1672,6 +1674,7 @@ struct dm_usb_ops ehci_usb_ops = {
 	.poll_int_queue = ehci_poll_int_queue,
 	.destroy_int_queue = ehci_destroy_int_queue,
 	.get_max_xfer_size  = ehci_get_max_xfer_size,
+	.is_host = ehci_is_host,
 };
 
 #endif

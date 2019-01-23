@@ -679,6 +679,13 @@ static int ehci_usb_ofdata_to_platdata(struct udevice *dev)
 	return ehci_usb_phy_mode(dev);
 }
 
+int ehci_is_host(struct udevice *dev)
+{
+	struct ehci_mx6_priv_data *priv = dev_get_priv(dev);
+
+	return (priv->init_type == USB_INIT_HOST) ? 1 : 0;
+}
+
 static int ehci_usb_probe(struct udevice *dev)
 {
 	struct usb_platdata *plat = dev_get_platdata(dev);
