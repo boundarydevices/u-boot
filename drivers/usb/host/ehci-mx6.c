@@ -519,6 +519,13 @@ static int ehci_mx6_phy_remove(struct ehci_mx6_priv_data *priv)
 }
 #endif
 
+int ehci_is_host(struct udevice *dev)
+{
+	struct ehci_mx6_priv_data *priv = dev_get_priv(dev);
+
+	return (priv->init_type == USB_INIT_HOST) ? 1 : 0;
+}
+
 static int ehci_usb_probe(struct udevice *dev)
 {
 	struct usb_plat *plat = dev_get_plat(dev);
