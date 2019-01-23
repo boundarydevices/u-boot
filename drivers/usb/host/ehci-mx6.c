@@ -16,6 +16,7 @@
 #include <asm/io.h>
 #include <asm/arch/imx-regs.h>
 #include <asm/arch/clock.h>
+#include <asm/arch/sys_proto.h>
 #include <asm/mach-imx/iomux-v3.h>
 #include <asm/mach-imx/sys_proto.h>
 #include <dm.h>
@@ -677,7 +678,7 @@ static int ehci_usb_ofdata_to_platdata(struct udevice *dev)
 			plat->init_type = board_ehci_usb_phy_mode(dev);
 			return 0;
 		}
-		return ehci_usb_phy_mode(dev);
+		plat->init_type = USB_INIT_UNKNOWN;
 	};
 
 	return 0;
@@ -725,7 +726,6 @@ static int ehci_usb_probe(struct udevice *dev)
 	struct usb_platdata *plat = dev_get_platdata(dev);
 	struct usb_ehci *ehci = dev_read_addr_ptr(dev);
 	struct ehci_mx6_priv_data *priv = dev_get_priv(dev);
-	enum usb_init_type type = plat->init_type;
 	struct ehci_hccr *hccr;
 	struct ehci_hcor *hcor;
 	int ret;
@@ -740,7 +740,13 @@ static int ehci_usb_probe(struct udevice *dev)
 
 	priv->ehci = ehci;
 	priv->portnr = dev->seq;
-	priv->init_type = type;
+#ifdef CONFIG_IMX8MM
+	enable_usboh3_clk(1);
+	imx8m_usb_power(priv->portnr, true);
+#endif
+	if (plat->init_type == USB_INIT_UNKNOWN)
+		ehci_usb_phy_mode(dev);
+	priv->init_type = plat->init_type;
 
 	ret = board_usb_init(priv->portnr, priv->init_type);
 	if (ret) {
@@ -761,8 +767,8 @@ static int ehci_usb_probe(struct udevice *dev)
 #if CONFIG_IS_ENABLED(DM_REGULATOR)
 	if (priv->vbus_supply) {
 		ret = regulator_set_enable(priv->vbus_supply,
-					   (type == USB_INIT_DEVICE) ?
-					   false : true);
+				(priv->init_type == USB_INIT_DEVICE) ?
+						false : true);
 		if (ret && ret != -ENOSYS) {
 			printf("Error enabling VBUS supply (ret=%i)\n", ret);
 			return ret;
