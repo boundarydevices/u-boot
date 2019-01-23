@@ -1113,7 +1113,7 @@ long long env_get_offset(long long defautl_offset)
 #endif
 #endif
 
-#ifdef CONFIG_USB_XHCI_IMX8M
+#if defined(CONFIG_USB_XHCI_IMX8M) || defined(CONFIG_USB_EHCI_MX7)
 #define FSL_SIP_GPC                    0xC2000000
 #define FSL_SIP_CONFIG_GPC_PM_DOMAIN   0x03
 int imx8m_usb_power(int usb_id, bool on)
