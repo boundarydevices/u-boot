@@ -803,6 +803,7 @@ struct dm_usb_ops {
 	 * driver to do just that.
 	 */
 	int (*lock_async)(struct udevice *udev, int lock);
+	int (*is_host)(struct udevice *bus);
 };
 
 #define usb_get_ops(dev)	((struct dm_usb_ops *)(dev)->driver->ops)

@@ -171,6 +171,16 @@ int usb_get_max_xfer_size(struct usb_device *udev, size_t *size)
 	return ops->get_max_xfer_size(bus, size);
 }
 
+int usb_is_host(struct udevice *bus)
+{
+	struct dm_usb_ops *ops = usb_get_ops(bus);
+
+	if (!ops->is_host)
+		return -ENOSYS;
+
+	return ops->is_host(bus);
+}
+
 int usb_stop(void)
 {
 	struct udevice *bus;
@@ -248,6 +258,8 @@ static void remove_inactive_children(struct uclass *uc, struct udevice *bus)
 	}
 }
 
+int usb_is_host(struct udevice *dev);
+
 int usb_init(void)
 {
 	int controllers_initialized = 0;
@@ -305,7 +317,8 @@ int usb_init(void)
 	uclass_foreach_dev(bus, uc) {
 		if (!device_active(bus))
 			continue;
-
+		if (!usb_is_host(bus))
+			continue;
 		priv = dev_get_uclass_priv(bus);
 		if (!priv->companion)
 			usb_scan_bus(bus, true);
