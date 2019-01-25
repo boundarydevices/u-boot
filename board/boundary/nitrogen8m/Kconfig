@@ -9,6 +9,6 @@ config SYS_VENDOR
 config SYS_CONFIG_NAME
 	default "nitrogen8m"
 
-source "board/freescale/common/Kconfig"
+source "board/boundary/common/Kconfig"
 
 endif
