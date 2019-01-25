@@ -62,7 +62,10 @@ int board_mmc_getcd(struct mmc *mmc)
 			 PAD_CTL_FSEL2)
 #define USDHC_GPIO_PAD_CTRL (PAD_CTL_PUE | PAD_CTL_DSE1)
 
-static iomux_v3_cfg_t const usdhc1_pads[] = {
+static iomux_v3_cfg_t const init_pads[] = {
+#define GP_I2C1_PCA9546_RESET		IMX_GPIO_NR(1, 8)
+	IMX8MQ_PAD_GPIO1_IO08__GPIO1_IO8 | MUX_PAD_CTRL(0x49),
+
 	IMX8MQ_PAD_SD1_CLK__USDHC1_CLK | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	IMX8MQ_PAD_SD1_CMD__USDHC1_CMD | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	IMX8MQ_PAD_SD1_DATA0__USDHC1_DATA0 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
@@ -95,8 +98,6 @@ int board_mmc_init(bd_t *bis)
 		switch (i) {
 		case 0:
 			usdhc_cfg[0].sdhc_clk = mxc_get_clock(USDHC1_CLK_ROOT);
-			imx_iomux_v3_setup_multiple_pads(
-				usdhc1_pads, ARRAY_SIZE(usdhc1_pads));
 			gpio_request(GP_EMMC_RESET, "usdhc1_reset");
 			gpio_direction_output(GP_EMMC_RESET, 0);
 			udelay(500);
@@ -119,8 +120,6 @@ int board_mmc_init(bd_t *bis)
 #define GP_ARM_DRAM_VSEL		IMX_GPIO_NR(3, 24)
 #define GP_DRAM_1P1_VSEL		IMX_GPIO_NR(2, 11)
 #define GP_SOC_GPU_VPU_VSEL		IMX_GPIO_NR(2, 20)
-
-#define GP_I2C1_PCA9546_RESET		IMX_GPIO_NR(1, 8)
 
 #define I2C_MUX_ADDR		0x70
 #define I2C_FAN53555_ADDR	0x60
@@ -179,6 +178,7 @@ int power_init_board(void)
 void spl_board_init(void)
 {
 	enable_tzc380();
+	imx_iomux_v3_setup_multiple_pads(init_pads, ARRAY_SIZE(init_pads));
 
 	/* Adjust pmic voltage to 1.0V for 800M */
 	setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info1);
