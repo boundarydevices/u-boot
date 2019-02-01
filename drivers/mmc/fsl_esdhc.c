@@ -878,7 +878,7 @@ static int esdhc_set_voltage(struct mmc *mmc)
 	case MMC_SIGNAL_VOLTAGE_330:
 		if (priv->c.vs18_enable)
 			return -EIO;
-#ifdef CONFIG_DM_REGULATOR
+#if CONFIG_IS_ENABLED(DM_REGULATOR)
 		if (!IS_ERR_OR_NULL(priv->vqmmc_dev)) {
 			ret = regulator_set_value(priv->vqmmc_dev, 3300000);
 			if (ret && (ret != -ENOSYS)) {
@@ -897,7 +897,7 @@ static int esdhc_set_voltage(struct mmc *mmc)
 
 		return -EAGAIN;
 	case MMC_SIGNAL_VOLTAGE_180:
-#ifdef CONFIG_DM_REGULATOR
+#if CONFIG_IS_ENABLED(DM_REGULATOR)
 		if (!IS_ERR_OR_NULL(priv->vqmmc_dev)) {
 			ret = regulator_set_value(priv->vqmmc_dev, 1800000);
 			if (ret && (ret != -ENOSYS)) {
@@ -1526,7 +1526,7 @@ static int fsl_esdhc_probe(struct udevice *dev)
 	int node = dev_of_offset(dev);
 	struct esdhc_soc_data *data =
 		(struct esdhc_soc_data *)dev_get_driver_data(dev);
-#ifdef CONFIG_DM_REGULATOR
+#if CONFIG_IS_ENABLED(DM_REGULATOR)
 	struct udevice *vqmmc_dev;
 #endif
 	fdt_addr_t addr;
@@ -1596,7 +1596,7 @@ static int fsl_esdhc_probe(struct udevice *dev)
 
 	priv->c.vs18_enable = 0;
 
-#ifdef CONFIG_DM_REGULATOR
+#if CONFIG_IS_ENABLED(DM_REGULATOR)
 	priv->vqmmc_dev = NULL;
 	priv->vmmc_dev = NULL;
 	/*
