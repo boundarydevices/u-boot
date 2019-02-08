@@ -70,7 +70,11 @@ static const char *const fbnames[] = {
 [FB_LVDS] = "fb_lvds",
 [FB_LVDS2] = "fb_lvds2",
 [FB_MIPI] = "fb_mipi",
+#if defined(CONFIG_IMX8MQ)
 [FB_MIPI_BRIDGE] = "mipi_dsi_bridge",
+#else
+[FB_MIPI_BRIDGE] = "mipi_dsi",
+#endif
 };
 
 static const char *const fbnames_name[] = {
@@ -452,7 +456,9 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 				"fdt set mipi_dsi status okay;"
 #if defined(CONFIG_IMX8M)
 				"fdt set lcdif status okay;"
+#if defined(CONFIG_IMX8MQ)
 				"fdt set mipi_dsi_phy status okay;"
+#endif
 #endif
 				);
 		buf += sz;
