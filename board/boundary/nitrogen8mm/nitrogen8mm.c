@@ -9,20 +9,22 @@
 #include <asm/io.h>
 #include <miiphy.h>
 #include <netdev.h>
-#include <asm/mach-imx/iomux-v3.h>
 #include <asm-generic/gpio.h>
 #include <fsl_esdhc.h>
 #include <mmc.h>
+#include <asm/arch/clock.h>
 #include <asm/arch/imx8mm_pins.h>
 #include <asm/arch/sys_proto.h>
+#include <asm/mach-imx/dma.h>
 #include <asm/mach-imx/fbpanel.h>
 #include <asm/mach-imx/gpio.h>
+#include <asm/mach-imx/iomux-v3.h>
 #include <asm/mach-imx/mxc_i2c.h>
-#include <asm/arch/clock.h>
-#include <spl.h>
-#include <asm/mach-imx/dma.h>
-#include <usb.h>
 #include <asm/mach-imx/video.h>
+#include <dm.h>
+#include <i2c.h>
+#include <spl.h>
+#include <usb.h>
 #include "../common/padctrl.h"
 #include "../common/bd_common.h"
 
@@ -34,7 +36,21 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IMX8MM_PAD_GPIO1_IO02_WDOG1_WDOG_B  | MUX_PAD_CTRL(WDOG_PAD_CTRL),
 	IMX8MM_PAD_UART2_RXD_UART2_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
 	IMX8MM_PAD_UART2_TXD_UART2_TX | MUX_PAD_CTRL(UART_PAD_CTRL),
+
+#define GP_LCM_JM430_BKL_EN		IMX_GPIO_NR(1, 1)
+/* This enables 5V power on LTK080A60A004T mipi display */
+#define GP_LTK08_MIPI_EN		IMX_GPIO_NR(1, 1)
+	IMX8MM_PAD_GPIO1_IO01_GPIO1_IO1 | MUX_PAD_CTRL(0x16),
+
+#define GPIRQ_GT911 			IMX_GPIO_NR(1, 6)
+	IMX8MM_PAD_GPIO1_IO06_GPIO1_IO6 | MUX_PAD_CTRL(0xd6),
+#define GP_GT911_RESET			IMX_GPIO_NR(1, 7)
+#define GP_ST1633_RESET			IMX_GPIO_NR(1, 7)
+	IMX8MM_PAD_GPIO1_IO07_GPIO1_IO7 | MUX_PAD_CTRL(0x49),
+
+#define GP_TC358762_EN		IMX_GPIO_NR(1, 9)
 #define GP_I2C2_SN65DSI83_EN	IMX_GPIO_NR(1, 9)
+#define GP_MIPI_RESET		IMX_GPIO_NR(1, 9)
 	IMX8MM_PAD_GPIO1_IO09_GPIO1_IO9 | MUX_PAD_CTRL(0x26),
 	IMX8MM_PAD_SAI2_RXC_GPIO4_IO22 | MUX_PAD_CTRL(PAD_CTL_DSE1 | PAD_CTL_ODE),
 
@@ -65,6 +81,7 @@ int board_early_init_f(void)
 
 	gpio_direction_output(GP_EMMC_RESET, 1);
 	set_wdog_reset(wdog);
+	gpio_direction_output(GP_I2C2_SN65DSI83_EN, 0);
 	return 0;
 }
 
@@ -94,8 +111,54 @@ int ft_board_setup(void *blob, bd_t *bd)
 }
 #endif
 
+#ifdef CONFIG_CMD_FBPANEL
+
+int board_detect_gt911(struct display_info_t const *di)
+{
+	int ret;
+	struct udevice *dev, *chip;
+
+	if (di->bus_gp)
+		gpio_direction_output(di->bus_gp, 1);
+	gpio_set_value(GP_GT911_RESET, 0);
+	mdelay(20);
+	gpio_direction_output(GPIRQ_GT911, di->addr_num == 0x14 ? 1 : 0);
+	udelay(100);
+	gpio_set_value(GP_GT911_RESET, 1);
+	mdelay(6);
+	gpio_set_value(GPIRQ_GT911, 0);
+	mdelay(50);
+	gpio_direction_input(GPIRQ_GT911);
+	ret = uclass_get_device(UCLASS_I2C, di->bus_num, &dev);
+	if (ret)
+		return 0;
+
+	ret = dm_i2c_probe(dev, di->addr_num, 0x0, &chip);
+	if (ret && di->bus_gp)
+		gpio_direction_input(di->bus_gp);
+	return (ret == 0);
+}
+
+static const struct display_info_t displays[] = {
+	VD_MIPI_M101NWWB_NO_CMDS(MIPI, fbp_detect_i2c, fbp_bus_gp(1, GP_I2C2_SN65DSI83_EN, 0, 0), 0x2c),
+	VD_MIPI_M101NWWB(MIPI, NULL, fbp_bus_gp(1, GP_I2C2_SN65DSI83_EN, 0, 0), 0x2c),
+	VD_LTK080A60A004T(MIPI, board_detect_gt911, fbp_bus_gp(1, GP_LTK08_MIPI_EN, GP_LTK08_MIPI_EN, 0), 0x5d),	/* Goodix touchscreen */
+	VD_LCM_JM430(MIPI, fbp_detect_i2c, fbp_bus_gp(1, GP_ST1633_RESET, GP_TC358762_EN, 30), fbp_addr_gp(0x55, GP_LCM_JM430_BKL_EN, 0, 0)),		/* Sitronix touch */
+	VD_LTK0680YTMDB(MIPI, NULL, fbp_bus_gp(1, GP_MIPI_RESET, GP_MIPI_RESET, 0), 0x0),
+};
+#define display_cnt	ARRAY_SIZE(displays)
+#else
+#define displays	NULL
+#define display_cnt	0
+#endif
+
 int board_init(void)
 {
+	gpio_request(GP_I2C2_SN65DSI83_EN, "sn65dsi83_enable");
+	gpio_request(GP_GT911_RESET, "gt911_reset");
+	gpio_request(GPIRQ_GT911, "gt911_irq");
+	gpio_request(GP_LTK08_MIPI_EN, "lkt08_mipi_en");
+	gpio_direction_output(GP_GT911_RESET, 0);
 #ifdef CONFIG_MXC_SPI
 	setup_spi();
 #endif
@@ -106,6 +169,9 @@ int board_init(void)
 
 #ifdef CONFIG_NAND_MXS
 	setup_gpmi_nand(); /* SPL will call the board_early_init_f */
+#endif
+#ifdef CONFIG_CMD_FBPANEL
+	fbp_setup_display(displays, display_cnt);
 #endif
 	return 0;
 }
@@ -147,6 +213,10 @@ int board_late_init(void)
 #ifdef CONFIG_ENV_IS_IN_MMC
 	env_set_ulong("mmcdev", 0);
 	run_command("mmc dev 0", 0);
+#endif
+	/* No display yet for mini so need to setup cmd_... */
+#ifdef CONFIG_CMD_FBPANEL
+	board_video_skip();
 #endif
 	return 0;
 }
