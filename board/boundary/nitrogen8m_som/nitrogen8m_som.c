@@ -65,7 +65,7 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IMX8MQ_PAD_GPIO1_IO04__GPIO1_IO4 | MUX_PAD_CTRL(0x46),
 
 #define GP_TC358762_EN			IMX_GPIO_NR(3, 15)
-#define GP_I2C4_SN65DSI83_EN		IMX_GPIO_NR(3, 15)
+#define GP_I2C1D_SN65DSI83_EN		IMX_GPIO_NR(3, 15)
 #define GP_MIPI_RESET			IMX_GPIO_NR(3, 15)
 	IMX8MQ_PAD_NAND_RE_B__GPIO3_IO15 | MUX_PAD_CTRL(0x6),
 
@@ -111,7 +111,7 @@ int board_early_init_f(void)
 	gpio_direction_output(GP_SOC_GPU_VPU_VSEL, 0);
 	gpio_direction_output(GP_EMMC_RESET, 1);
 	gpio_direction_output(GP_I2C1_PCA9546_RESET, 0);
-	gpio_direction_output(GP_I2C4_SN65DSI83_EN, 0);
+	gpio_direction_output(GP_I2C1D_SN65DSI83_EN, 0);
 	gpio_direction_output(GP_CSI1_MIPI_PWDN, 1);
 	gpio_direction_output(GP_CSI1_MIPI_RESET, 0);
 	gpio_direction_output(GP_CSI2_MIPI_PWDN, 1);
@@ -293,7 +293,7 @@ static const struct display_info_t displays[] = {
 	/* hdmi */
 	VD_1920_1080M_60(HDMI, board_detect_hdmi, 0, 0x50),
 	VD_1280_720M_60(HDMI, NULL, 0, 0x50),
-	VD_MIPI_M101NWWB(MIPI, fbp_detect_i2c, fbp_bus_gp(0, GP_I2C4_SN65DSI83_EN, 0, 0), 0x2c),
+	VD_MIPI_M101NWWB(MIPI, fbp_detect_i2c, fbp_bus_gp(0, GP_I2C1D_SN65DSI83_EN, 0, 0), 0x2c),
 	VD_LTK080A60A004T(MIPI, board_detect_gt911, fbp_bus_gp(0, GP_LTK08_MIPI_EN, GP_LTK08_MIPI_EN, 0), 0x5d),	/* Goodix touchscreen */
 	VD_LCM_JM430(MIPI, fbp_detect_i2c, fbp_bus_gp(0, GP_ST1633_RESET, GP_TC358762_EN, 30), fbp_addr_gp(0x55, GP_LCM_JM430_BKL_EN, 0, 0)),		/* Sitronix touch */
 	VD_LTK0680YTMDB(MIPI, NULL, fbp_bus_gp(0, GP_MIPI_RESET, GP_MIPI_RESET, 0), 0x0),
@@ -306,7 +306,7 @@ static const struct display_info_t displays[] = {
 
 int board_init(void)
 {
-	gpio_request(GP_I2C4_SN65DSI83_EN, "sn65dsi83_enable");
+	gpio_request(GP_I2C1D_SN65DSI83_EN, "sn65dsi83_enable");
 	gpio_request(GP_GT911_RESET, "gt911_reset");
 	gpio_request(GPIRQ_GT911, "gt911_irq");
 	gpio_request(GP_LTK08_MIPI_EN, "lkt08_mipi_en");
