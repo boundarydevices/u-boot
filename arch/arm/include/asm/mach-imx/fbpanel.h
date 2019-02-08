@@ -76,6 +76,7 @@ struct display_info_t {
 #define FBF_LTK0680YTMDB	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_SYNC_PULSE | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_PINCTRL | FBF_ENABLE_GPIOS_DTB)
 #define FBF_LTK080A60A004T	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_PINCTRL | FBF_ENABLE_GPIOS_DTB)
 #define FBF_M101NWWB		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4)
+#define FBF_M101NWWB_NO_CMDS	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_DSI_LANES_4)
 #define FBF_OSD050T		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_2)
 
 	int	fbflags;
@@ -145,6 +146,7 @@ void fbp_setup_env_cmds(void);
 #define VD_WXGA_J(_mode, _detect, _bus, _addr)		VDF_WXGA(_mode, "wxga_j", RGB24, FBF_JEIDA, _detect, _bus, _addr)
 #define VD_LTK080A60A004T(_mode, _detect, _bus, _addr)	VDF_LTK080A60A004T(_mode, "ltk080a60a004t", RGB24, FBF_LTK080A60A004T, _detect, _bus, _addr)
 #define VD_LTK0680YTMDB(_mode, _detect, _bus, _addr)	VDF_LTK0680YTMDB(_mode, "ltk0680ytmdb", RGB24, FBF_LTK0680YTMDB, _detect, _bus, _addr)
+#define VD_MIPI_M101NWWB_NO_CMDS(_mode, _detect, _bus, _addr)	VDF_MIPI_M101NWWB(_mode, "m101nwwb", RGB24, FBF_M101NWWB_NO_CMDS, _detect, _bus, _addr)
 #define VD_MIPI_M101NWWB(_mode, _detect, _bus, _addr)	VDF_MIPI_M101NWWB(_mode, "m101nwwb", RGB24, FBF_M101NWWB, _detect, _bus, _addr)
 #define VD_LD070WSVGA(_mode, _detect, _bus, _addr)	VDF_LD070WSVGA(_mode, "ld070wsvga", RGB24, 0, _detect, _bus, _addr)
 #define VD_SVGA(_mode, _detect, _bus, _addr)		VDF_SVGA(_mode, "svga", RGB666, FBF_MODESTR, _detect, _bus, _addr)
