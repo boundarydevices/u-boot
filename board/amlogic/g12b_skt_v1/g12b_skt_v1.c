@@ -742,30 +742,25 @@ phys_size_t get_effective_memsize(void)
 int checkhw(char * name)
 {
 	/*
-	 * read board hw id
-	 * set and select the dts according the board hw id.
-	 *
-	 * hwid = 1	p321 v1
-	 * hwid = 2	p321 v2
+	 * use rev id to identify revA/revB
 	 */
-	unsigned int hwid = 1;
+	cpu_id_t cpu_id;
+	cpu_id = get_cpu_id();
 	char loc_name[64] = {0};
 
-	/* read hwid */
-	hwid = (readl(P_AO_SEC_GP_CFG0) >> 8) & 0xFF;
+	printf("cpu_id.chip_rev: %x\n", cpu_id.chip_rev);
 
-	printf("checkhw:  hwid = %d\n", hwid);
-
-
-	switch (hwid) {
-		case 1:
-			strcpy(loc_name, "txl_p321_v1\0");
+	switch (cpu_id.chip_rev) {
+		case 0xA:
+			/* revA */
+			strcpy(loc_name, "g12b_skt_a\0");
 			break;
-		case 2:
-			strcpy(loc_name, "txl_p321_v2\0");
+		case 0xB:
+			/* revB */
+			strcpy(loc_name, "g12b_skt_b\0");
 			break;
 		default:
-			strcpy(loc_name, "txl_p321_v1");
+			strcpy(loc_name, "g12b_skt_unsupport\0");
 			break;
 	}
 	strcpy(name, loc_name);

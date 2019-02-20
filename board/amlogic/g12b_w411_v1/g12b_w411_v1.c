@@ -1,6 +1,6 @@
 
 /*
- * board/amlogic/g12b_w400_v1/g12b_w400_v1.c
+ * board/amlogic/g12b_w411_v1/g12b_w411_v1.c
  *
  * Copyright (C) 2018 Amlogic, Inc. All rights reserved.
  *
@@ -482,7 +482,7 @@ static struct mtd_partition normal_partition_info[] = {
     {
         .name = "system",
         .offset = 0,
-        .size = 280*SZ_1M,
+        .size = 360*SZ_1M,
     },
 	/* last partition get the rest capacity */
     {
@@ -638,6 +638,10 @@ int board_init(void)
 	/* power on GPIOZ_5 : CMD_VDD_EN */
 	clrbits_le32(PREG_PAD_GPIO4_EN_N, (1 << 5));
 	clrbits_le32(PREG_PAD_GPIO4_O, (1 << 5));
+
+	/* TF_POWER GPIOAO_2,pull down (3.3v) */
+	clrbits_le32(AO_GPIO_O_EN_N, (1 << 2));
+	clrbits_le32(AO_GPIO_O, (1 << 2));
 	return 0;
 }
 
@@ -754,14 +758,14 @@ int checkhw(char * name)
 	switch (cpu_id.chip_rev) {
 		case 0xA:
 			/* revA */
-			strcpy(loc_name, "g12b_w400_a\0");
+			strcpy(loc_name, "g12b_w411_a\0");
 			break;
 		case 0xB:
 			/* revB */
-			strcpy(loc_name, "g12b_w400_b\0");
+			strcpy(loc_name, "g12b_w411_b\0");
 			break;
 		default:
-			strcpy(loc_name, "g12b_w400_unsupport\0");
+			strcpy(loc_name, "g12b_w411_unsupport\0");
 			break;
 	}
 	strcpy(name, loc_name);
