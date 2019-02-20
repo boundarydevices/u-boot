@@ -684,6 +684,12 @@ static void qspi_op_write(struct fsl_qspi_priv *priv, u8 *txbuf, u32 len)
 		seqid = SEQID_BRWR;
 	else if (priv->cur_cmd == QSPI_CMD_WREAR)
 		seqid = SEQID_WREAR;
+
+	do {
+		qspi_start_transaction(priv, SEQID_WREN, 0);
+		status_reg = wait_for_idle(priv);
+		/* Try until write is enabled */
+	} while (!(status_reg & FLASH_STATUS_WEL));
 #else
 	if (priv->cur_cmd == QSPI_CMD_SST_AAI_WP) {
 		seqid = priv->aai_mode ? SEQID_SST_AAI_WP_CONT : SEQID_SST_AAI_WP;
@@ -691,7 +697,6 @@ static void qspi_op_write(struct fsl_qspi_priv *priv, u8 *txbuf, u32 len)
 	} else if (priv->cur_cmd == QSPI_CMD_WRITE_STATUS) {
 		seqid = SEQID_WRITE_STATUS;
 	}
-#endif
 
 	if ((seqid != SEQID_SST_AAI_WP_CONT)) {
 		do {
@@ -700,6 +705,7 @@ static void qspi_op_write(struct fsl_qspi_priv *priv, u8 *txbuf, u32 len)
 			/* Try until write is enabled */
 		} while (!(status_reg & FLASH_STATUS_WEL));
 	}
+#endif
 
 	qspi_write32(priv->flags, &regs->mcr,
 		     QSPI_MCR_CLR_RXF_MASK | QSPI_MCR_CLR_TXF_MASK |
