@@ -71,6 +71,9 @@ struct mxc_i2c_bus {
 #define NI2C3	2
 #define NI2C4	3
 
+/* Compiler gives error if gpio number 08 or 09 is used */
+#define not_octal(gp) ((((0x##gp >> 4) & 0xf) * 10) + ((0x##gp & 0xf)))
+
 #define _I2C_PADS_INFO_CPU(cpu, i2cnum, scl_pad, scl_bank, scl_gp,	       \
 		sda_pad, sda_bank, sda_gp, ctrl, join_io) {		       \
     .bus_index = N##i2cnum,						       \
@@ -78,13 +81,13 @@ struct mxc_i2c_bus {
 	.i2c_mode = NEW_PAD_CTRL(cpu##_PAD_##scl_pad##__##i2cnum##_SCL, ctrl), \
 	.gpio_mode = NEW_PAD_CTRL(					       \
 		cpu##_PAD_##scl_pad##__GPIO##scl_bank##join_io##scl_gp, ctrl), \
-	.gp = IMX_GPIO_NR(scl_bank, scl_gp)				       \
+	.gp = IMX_GPIO_NR(scl_bank, not_octal(scl_gp))				       \
     },									       \
     .sda = {								       \
 	.i2c_mode = NEW_PAD_CTRL(cpu##_PAD_##sda_pad##__##i2cnum##_SDA, ctrl), \
 	.gpio_mode = NEW_PAD_CTRL(					       \
 		cpu##_PAD_##sda_pad##__GPIO##sda_bank##join_io##sda_gp, ctrl), \
-	.gp = IMX_GPIO_NR(sda_bank, sda_gp)				       \
+	.gp = IMX_GPIO_NR(sda_bank, not_octal(sda_gp))			       \
     }									       \
 }
 
