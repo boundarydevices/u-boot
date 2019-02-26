@@ -13,7 +13,9 @@
 #endif
 
 #define CONFIG_MISC_INIT_R
+#ifndef CONFIG_BOARD_LATE_INIT
 #define CONFIG_BOARD_LATE_INIT
+#endif
 
 #ifndef CONFIG_SYS_MALLOC_LEN
 /* Size of malloc() pool */
@@ -105,8 +107,10 @@
 #ifndef IMX_FEC_BASE
 #define IMX_FEC_BASE			ENET_BASE_ADDR
 #endif
+#ifndef CONFIG_FEC_XCV_TYPE
 #define CONFIG_FEC_XCV_TYPE		RGMII
-#ifdef CONFIG_FEC_ENET2
+#endif
+#if defined(CONFIG_FEC_ENET1) && defined(CONFIG_FEC_ENET2)
 #define CONFIG_ETHPRIME			"FEC0"
 #else
 #define CONFIG_ETHPRIME			"FEC"
@@ -116,6 +120,7 @@
 #ifdef CONFIG_MX6SX
 #define GP_RGMII_PHY_RESET	IMX_GPIO_NR(2, 7)
 #define GP_RGMII2_PHY_RESET	IMX_GPIO_NR(2, 6)
+#elif defined(CONFIG_MX6ULL)
 #elif defined(CONFIG_MX7D)
 #define GP_RGMII_PHY_RESET	IMX_GPIO_NR(6, 10)
 #elif defined(CONFIG_MX51)
@@ -229,7 +234,7 @@
 #define BD_SPLASH_FLASH	"c2000"
 #endif
 
-#if defined(CONFIG_MX6SX) || defined(CONFIG_MX7D)
+#if defined(CONFIG_MX6SX) || defined(CONFIG_MX7D) || defined(CONFIG_MX6ULL)
 #define BD_RAM_BASE	0x80000000
 #define BD_RAM_SCRIPT	"80008000"
 #define BD_RAM_KERNEL	"80800000"
@@ -257,7 +262,7 @@
 
 #ifndef BD_SKIP_FUSES
 #ifndef BD_FUSE1
-#if defined(CONFIG_MX6SX)
+#if defined(CONFIG_MX6SX) || defined(CONFIG_MX6ULL)
 #define BD_FUSE1		"0 5"
 #define BD_FUSE1_VAL		"08000030"	/* CS0 */
 #define BD_FUSE2		"0 6"
