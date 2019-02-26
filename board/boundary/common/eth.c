@@ -47,13 +47,19 @@
 #define ATHEROS_MASK(a) 0
 #endif
 
-#ifdef CONFIG_PHY_MICREL
+#if defined(CONFIG_PHY_MICREL) && !defined(CONFIG_PHY_MICREL_KSZ8XXX)
 #define KSZ9021_MASK(a) (0xf << ((a) & 4))
 #else
 #define KSZ9021_MASK(a) 0
 #endif
 
-#define ALL_PHY_MASK(a) (ATHEROS_MASK(a) | KSZ9021_MASK(a))
+#ifdef CONFIG_PHY_MICREL_KSZ8XXX
+#define KSZ8XXX_MASK(a) 2
+#else
+#define KSZ8XXX_MASK(a) 0
+#endif
+
+#define ALL_PHY_MASK(a) (ATHEROS_MASK(a) | KSZ9021_MASK(a) | KSZ8XXX_MASK(a))
 #ifdef CONFIG_FEC_ENET2
 #define COMBINED_MASK(a) (ALL_PHY_MASK(a) | (ALL_PHY_MASK(a + 1) << 16))
 #else
@@ -78,6 +84,8 @@
 
 #ifdef CONFIG_MX6SX
 #include "eth-mx6sx.c"
+#elif defined(CONFIG_MX6ULL)
+#include "eth-mx6ull.c"
 #elif defined(CONFIG_MX7D)
 #include "eth-mx7d.c"
 #elif defined(CONFIG_MX51)
@@ -90,23 +98,66 @@
 #include "eth-mx6.c"
 #endif
 
+#if !defined(CONFIG_FEC_ENET1) && !defined(CONFIG_FEC_ENET2) && defined(CONFIG_FEC_MXC)
+#define CONFIG_FEC_ENET1
+#endif
+
+
 #if defined(CONFIG_PHY_ATHEROS) || defined(CONFIG_PHY_MICREL)
 static unsigned char strap_gpios[] = {
+#ifdef CONFIG_FEC_ENET1
 	GP_PHY_RD0,
 	GP_PHY_RD1,
 	GP_PHY_RD2,
 	GP_PHY_RD3,
+#ifdef GP_PHY_RX_CTL
 	GP_PHY_RX_CTL,
+#endif
+#ifdef GP_PHY_RXC
 	GP_PHY_RXC,
-#ifdef CONFIG_MX6SX
+#endif
+#endif
+
+#ifdef CONFIG_FEC_ENET2
 	GP_PHY2_RD0,
 	GP_PHY2_RD1,
 	GP_PHY2_RD2,
 	GP_PHY2_RD3,
+#ifdef GP_PHY2_RX_CTL
 	GP_PHY2_RX_CTL,
+#endif
+#ifdef GP_PHY2_RXC
 	GP_PHY2_RXC,
 #endif
+#ifdef CONFIG_PHY_MICREL_KSZ8XXX
+	GP_PHY2_RX_EN,
+	GP_PHY2_ER,
+	GP_PHY2_CRS,
+	GP_PHY2_COL,
+	GP_PHY2_TD0,
+	GP_PHY2_TD1,
+	GP_PHY2_TD2,
+	GP_PHY2_TD3,
+#endif
+#endif
 };
+
+#ifdef CONFIG_MX6ULL
+static unsigned char strap_input[] = {
+#ifdef CONFIG_FEC_ENET1
+	GP_PHY_RD2,
+	GP_PHY_RD3,
+	GP_PHY_TD2,
+	GP_PHY_TD3,
+#endif
+#ifdef CONFIG_FEC_ENET2
+	GP_PHY2_RD2,
+	GP_PHY2_RD3,
+	GP_PHY2_TD2,
+	GP_PHY2_TD3,
+#endif
+};
+#endif
 
 static void set_strap_pins(unsigned strap)
 {
@@ -117,6 +168,17 @@ static void set_strap_pins(unsigned strap)
 		strap >>= 1;
 	}
 }
+
+#ifdef CONFIG_MX6ULL
+static void set_strap_input(void)
+{
+	int i = 0;
+
+	for (i = 0; i < ARRAY_SIZE(strap_input); i++) {
+		gpio_direction_input(strap_input[i]);
+	}
+}
+#endif
 #endif
 
 #ifdef CONFIG_FEC_MXC
@@ -143,6 +205,22 @@ static void init_fec_clocks(void)
 		}
 	}
 #endif
+#ifdef CONFIG_MX6ULL
+	struct iomuxc *iomuxc_regs = (struct iomuxc *)IOMUXC_BASE_ADDR;
+	int ret;
+
+	/* Use 50MHz anatop loopback REF_CLK2 for ENET2 */
+	clrsetbits_le32(&iomuxc_regs->gpr[1], IOMUX_GPR1_FEC2_MASK,
+			IOMUX_GPR1_FEC2_CLOCK_MUX1_SEL_MASK);
+
+
+	ret = enable_fec_anatop_clock(1, ENET_50MHZ);
+	if (ret) {
+		printf("Failed to enable clock (FEC%d): %d\n", 1, ret);
+		return;
+	}
+	enable_enet_clk(1);
+#endif
 #ifdef CONFIG_MX7D
 	struct iomuxc_gpr_base_regs *const iomuxc_gpr_regs
 		= (struct iomuxc_gpr_base_regs *) IOMUXC_GPR_BASE_ADDR;
@@ -166,18 +244,32 @@ static void init_fec_clocks(void)
 	udelay(100);	/* Wait 100 us before using mii interface */
 }
 
-#if defined(CONFIG_FEC_ENET2)
-#define FEC_INDEX	0	/* FEC0 for imx6sx */
+#if defined(CONFIG_FEC_ENET1) && defined(CONFIG_FEC_ENET2)
+#define FEC_ENET1_ID	0	/* FEC0 for imx6sx */
 #else
-#define FEC_INDEX	-1	/* just plain FEC */
+#define FEC_ENET1_ID	-1	/* just plain FEC */
+#endif
+
+#if defined(CONFIG_FEC_ENET1)
+#define FEC_ENET2_ID	1
+#else
+#define FEC_ENET2_ID	-1	/* just plain FEC */
+#endif
+
+#ifdef CONFIG_MX6ULL
+#define PHY_MODE PHY_INTERFACE_MODE_RMII
+#else
+#define PHY_MODE PHY_INTERFACE_MODE_RGMII
 #endif
 
 #ifndef CONFIG_DM_ETH
 static void init_fec(bd_t *bis, unsigned phy_mask)
 {
-#ifdef CONFIG_MX6SX
+#if defined(CONFIG_MX6SX) || defined(CONFIG_MX6ULL)
 	uint32_t mdio_base = ENET_MDIO_BASE;
+#if defined(CONFIG_FEC_ENET1)
 	uint32_t base = ENET_BASE_ADDR;
+#endif
 #else
 	uint32_t mdio_base = IMX_FEC_BASE;
 	uint32_t base = IMX_FEC_BASE;
@@ -189,14 +281,14 @@ static void init_fec(bd_t *bis, unsigned phy_mask)
 	bus = fec_get_miibus(mdio_base, -1);
 	if (!bus)
 		return;
-#if defined(CONFIG_FEC_ENET1) || !defined(CONFIG_MX6SX)
-	phydev = phy_find_by_mask(bus, phy_mask & 0xffff, PHY_INTERFACE_MODE_RGMII);
+#if defined(CONFIG_FEC_ENET1)
+	phydev = phy_find_by_mask(bus, phy_mask & 0xffff, PHY_MODE);
 	if (!phydev) {
 		printf("%s: phy not found\n", __func__);
 		goto error;
 	}
 	printf("%s at %d\n", phydev->drv->name, phydev->addr);
-	ret  = fec_probe(bis, FEC_INDEX, base, bus, phydev);
+	ret  = fec_probe(bis, FEC_ENET1_ID, base, bus, phydev);
 	if (ret) {
 		printf("FEC MXC: %s:failed\n", __func__);
 		free(phydev);
@@ -204,13 +296,13 @@ static void init_fec(bd_t *bis, unsigned phy_mask)
 	}
 #endif
 #if defined(CONFIG_FEC_ENET2)
-	phydev = phy_find_by_mask(bus, phy_mask >> 16, PHY_INTERFACE_MODE_RGMII);
+	phydev = phy_find_by_mask(bus, phy_mask >> 16, PHY_MODE);
 	if (!phydev) {
 		printf("%s: phy2 not found\n", __func__);
 		goto error;
 	}
 	printf("%s at %d\n", phydev->drv->name, phydev->addr);
-	ret  = fec_probe(bis, 1, ENET2_BASE_ADDR, bus, phydev);
+	ret  = fec_probe(bis, FEC_ENET2_ID, ENET2_BASE_ADDR, bus, phydev);
 	if (ret) {
 		printf("FEC1 MXC: %s:failed\n", __func__);
 		free(phydev);
@@ -247,6 +339,20 @@ static void setup_enet_ar8035(void)
 #endif
 
 #ifdef CONFIG_PHY_MICREL
+#ifdef CONFIG_PHY_MICREL_KSZ8XXX
+static void setup_gpio_ksz8863(void)
+{
+	set_strap_pins(STRAP_KSZ8863);
+	SETUP_IOMUX_PADS(enet_ksz8863_gpio_pads);
+}
+
+static void setup_enet_ksz8863(void)
+{
+	SETUP_IOMUX_PADS(enet_ksz8863_pads);
+}
+#define setup_gpio_micrel setup_gpio_ksz8863
+#define setup_enet_micrel setup_enet_ksz8863
+#else
 static void setup_gpio_ksz9021(void)
 {
 	set_strap_pins(STRAP_KSZ9021);
@@ -257,12 +363,15 @@ static void setup_enet_ksz9021(void)
 {
 	SETUP_IOMUX_PADS(enet_ksz9021_pads);
 }
+#define setup_gpio_micrel setup_gpio_ksz9021
+#define setup_enet_micrel setup_enet_ksz9021
+#endif
 #ifndef CONFIG_PHY_ATHEROS
-#define setup_gpio_eth(kz) setup_gpio_ksz9021()
-#define setup_enet_eth(kz) setup_enet_ksz9021()
+#define setup_gpio_eth(kz) setup_gpio_micrel();
+#define setup_enet_eth(kz) setup_enet_micrel();
 #else
-#define setup_gpio_eth(kz) if (kz) setup_gpio_ksz9021(); else setup_gpio_ar8035();
-#define setup_enet_eth(kz) if (kz) setup_enet_ksz9021(); else setup_enet_ar8035();
+#define setup_gpio_eth(kz) if (kz) setup_gpio_micrel(); else setup_gpio_ar8035();
+#define setup_enet_eth(kz) if (kz) setup_enet_micrel(); else setup_enet_ar8035();
 #endif
 #endif
 
@@ -275,16 +384,23 @@ static void setup_iomux_enet(int kz)
 #ifdef GP_RGMII2_PHY_RESET
 	gpio_direction_output(GP_RGMII2_PHY_RESET, 0); /* PHY rst */
 #endif
+#ifdef GP_RGMII_PHY_RESET
 	gpio_direction_output(GP_RGMII_PHY_RESET, 0); /* PHY rst */
+#endif
 	setup_gpio_eth(kz);
 
+#ifdef CONFIG_FEC_MXC
+	init_fec_clocks();
+#endif
 	/* Need delay 10ms according to KSZ9021 spec */
 	/* 1 ms minimum reset pulse for ar8035 */
 	udelay(1000 * 10);
 #ifdef GP_RGMII2_PHY_RESET
 	gpio_set_value(GP_RGMII2_PHY_RESET, 1); /* PHY reset */
 #endif
+#ifdef GP_RGMII_PHY_RESET
 	gpio_set_value(GP_RGMII_PHY_RESET, 1); /* PHY reset */
+#endif
 #ifdef GP_KS8995_POWER_DOWN
 	gpio_direction_output(GP_KS8995_POWER_DOWN, 1);
 #endif
@@ -301,6 +417,9 @@ static void setup_iomux_enet(int kz)
 #endif
 
 	setup_enet_eth(kz);
+#ifdef CONFIG_MX6ULL
+	set_strap_input();
+#endif
 }
 #endif
 
@@ -382,6 +501,7 @@ int board_phy_config(struct phy_device *phydev)
 #else
 	{
 #endif
+#ifndef CONFIG_PHY_MICREL_KSZ8XXX
 		/* min rx data delay */
 		ksz9021_phy_extended_write(phydev,
 			MII_KSZ9021_EXT_RGMII_RX_DATA_SKEW, 0x0);
@@ -391,6 +511,7 @@ int board_phy_config(struct phy_device *phydev)
 		/* max rx/tx clock delay, min rx/tx control */
 		ksz9021_phy_extended_write(phydev,
 			MII_KSZ9021_EXT_RGMII_CLOCK_SKEW, 0xf0f0);
+#endif
 	}
 	if (phydev->drv->config)
 		phydev->drv->config(phydev);
@@ -469,7 +590,8 @@ free_slave:
 void board_eth_addresses(void)
 {
 #if defined(CONFIG_USB_ETHER)
-#if defined(CONFIG_FEC_MXC) && defined(CONFIG_FEC_ENET1) && defined(CONFIG_FEC_ENET2)
+#if defined(CONFIG_FEC_MXC) && defined(CONFIG_FEC_ENET1) \
+	&& defined(CONFIG_FEC_ENET2)
 #define USB_ETH "eth2addr"
 #elif defined(CONFIG_FEC_MXC)
 #define USB_ETH "eth1addr"
@@ -498,20 +620,51 @@ void board_eth_addresses(void)
 int board_eth_init(bd_t *bis)
 {
 #if defined(CONFIG_PHY_ATHEROS) || defined(CONFIG_PHY_MICREL)
+#ifdef CONFIG_FEC_ENET1
 	gpio_request(GP_RGMII_PHY_RESET, "fec_rst");
 	gpio_request(GP_PHY_RD0, "fec_rd0");
 	gpio_request(GP_PHY_RD1, "fec_rd1");
 	gpio_request(GP_PHY_RD2, "fec_rd2");
 	gpio_request(GP_PHY_RD3, "fec_rd3");
+#ifdef GP_PHY_RX_CTL
 	gpio_request(GP_PHY_RX_CTL, "fec_rx_ctl");
+#endif
+#ifdef GP_PHY_RXC
 	gpio_request(GP_PHY_RXC, "fec_rxc");
+#endif
+#ifdef CONFIG_PHY_MICREL_KSZ8XXX
+	gpio_request(GP_PHY_RX_EN, "fec_rx_en");
+	gpio_request(GP_PHY_ER, "fec_er");
+	gpio_request(GP_PHY_CRS, "fec_crs");
+	gpio_request(GP_PHY_COL, "fec_col");
+#endif
+#endif
+
+#ifdef CONFIG_FEC_ENET2
+	gpio_request(GP_RGMII2_PHY_RESET, "fec2_rst");
+	gpio_request(GP_PHY2_RD0, "fec2_rd0");
+	gpio_request(GP_PHY2_RD1, "fec2_rd1");
+	gpio_request(GP_PHY2_RD2, "fec2_rd2");
+	gpio_request(GP_PHY2_RD3, "fec2_rd3");
+#ifdef GP_PHY2_RX_CTL
+	gpio_request(GP_PHY2_RX_CTL, "fec2_rx_ctl");
+#endif
+#ifdef GP_PHY2_RXC
+	gpio_request(GP_PHY2_RXC, "fec2_rxc");
+#endif
+#ifdef CONFIG_PHY_MICREL_KSZ8XXX
+	gpio_request(GP_PHY2_RX_EN, "fec2_rx_en");
+	gpio_request(GP_PHY2_ER, "fec2_er");
+	gpio_request(GP_PHY2_CRS, "fec2_crs");
+	gpio_request(GP_PHY2_COL, "fec2_col");
+#endif
+#endif
 	setup_iomux_enet(0);
 #endif
 #ifdef GP_KS8995_RESET
 	ks8995_reset();
 #endif
 #ifdef CONFIG_FEC_MXC
-	init_fec_clocks();
 #ifndef CONFIG_DM_ETH
 	init_fec(bis, ETH_PHY_MASK);
 #endif
