@@ -1,0 +1,323 @@
+/*
+ * Copyright (C) 2017 Boundary Devices, Inc.
+ *
+ * SPDX-License-Identifier:	GPL-2.0+
+ */
+
+#include <asm/arch/clock.h>
+#include <asm/arch/crm_regs.h>
+#include <asm/arch/iomux.h>
+#include <asm/arch/imx-regs.h>
+#include <asm/arch/mx6-pins.h>
+#include <asm/arch/sys_proto.h>
+#include <asm/gpio.h>
+#include <asm/mach-imx/boot_mode.h>
+#include <asm/mach-imx/iomux-v3.h>
+#include <asm/mach-imx/mxc_i2c.h>
+#include <asm/io.h>
+#include <common.h>
+#include <fsl_esdhc_imx.h>
+#include <i2c.h>
+#include <linux/sizes.h>
+#include <malloc.h>
+#include <mmc.h>
+#include <usb.h>
+#include <usb/ehci-ci.h>
+#include "../common/bd_common.h"
+#include "../common/padctrl.h"
+#include <debug_uart.h>
+
+DECLARE_GLOBAL_DATA_PTR;
+
+#define I2C_PAD_CTRL    (PAD_CTL_PUS_100K_UP | PAD_CTL_SPEED_MED | \
+	PAD_CTL_DSE_40ohm | PAD_CTL_HYS | PAD_CTL_ODE)
+
+#define SPI_PAD_CTRL (PAD_CTL_HYS | PAD_CTL_SPEED_MED |		\
+	PAD_CTL_DSE_40ohm | PAD_CTL_SRE_FAST)
+
+#define UART_PAD_CTRL  (PAD_CTL_PUS_100K_UP | PAD_CTL_SPEED_MED | \
+	PAD_CTL_DSE_40ohm | PAD_CTL_HYS | PAD_CTL_SRE_FAST)
+
+#define USDHC1_CLK_PAD_CTRL (PAD_CTL_SPEED_LOW | \
+	PAD_CTL_DSE_40ohm | PAD_CTL_HYS | PAD_CTL_SRE_FAST)
+
+#define USDHC1_PAD_CTRL (USDHC1_CLK_PAD_CTRL | PAD_CTL_PUS_47K_UP)
+
+#define USDHC2_CLK_PAD_CTRL (PAD_CTL_SPEED_LOW | \
+	PAD_CTL_DSE_40ohm | PAD_CTL_HYS | PAD_CTL_SRE_FAST)
+
+#define USDHC2_PAD_CTRL (USDHC2_CLK_PAD_CTRL | PAD_CTL_PUS_47K_UP)
+
+static const iomux_v3_cfg_t init_pads[] = {
+	/* can1 */
+	IOMUX_PAD_CTRL(LCD_DATA08__FLEXCAN1_TX, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(LCD_DATA09__FLEXCAN1_RX, WEAK_PULLUP),
+
+	/* ECSPI1 (serial nor eeprom) */
+	IOMUX_PAD_CTRL(CSI_DATA07__ECSPI1_MISO, SPI_PAD_CTRL),
+	IOMUX_PAD_CTRL(CSI_DATA06__ECSPI1_MOSI, SPI_PAD_CTRL),
+	IOMUX_PAD_CTRL(CSI_DATA04__ECSPI1_SCLK, SPI_PAD_CTRL),
+#define GP_ECSPI1_NOR_CS	IMX_GPIO_NR(4, 26)
+	IOMUX_PAD_CTRL(CSI_DATA05__GPIO4_IO26, WEAK_PULLUP_OUTPUT),
+
+	/* ECSPI2 */
+	IOMUX_PAD_CTRL(CSI_DATA03__ECSPI2_MISO, SPI_PAD_CTRL),
+	IOMUX_PAD_CTRL(CSI_DATA02__ECSPI2_MOSI, SPI_PAD_CTRL),
+	IOMUX_PAD_CTRL(CSI_DATA00__ECSPI2_SCLK, SPI_PAD_CTRL),
+#define GP_ECSPI2_CS	IMX_GPIO_NR(4, 22)
+	IOMUX_PAD_CTRL(CSI_DATA01__GPIO4_IO22, WEAK_PULLUP_OUTPUT),
+#define GPIRQ_ECSPI2		IMX_GPIO_NR(3, 23)
+	IOMUX_PAD_CTRL(LCD_DATA18__GPIO3_IO23, WEAK_PULLDN),
+
+	/* enet phy */
+	IOMUX_PAD_CTRL(GPIO1_IO07__ENET2_MDC, PAD_CTRL_ENET_MDC),
+	IOMUX_PAD_CTRL(GPIO1_IO06__ENET2_MDIO, PAD_CTRL_ENET_MDIO),
+
+	/* fec2 */
+	IOMUX_PAD_CTRL(ENET2_TX_CLK__ENET2_REF_CLK2, PAD_CTRL_ENET_TX),
+	IOMUX_PAD_CTRL(ENET2_TX_EN__ENET2_TX_EN, PAD_CTRL_ENET_TX),
+	/* ksz8863 PHY Reset */
+#define GP_FEC2_PHY_RESET	IMX_GPIO_NR(1, 9)
+	IOMUX_PAD_CTRL(GPIO1_IO09__GPIO1_IO09, WEAK_PULLDN_OUTPUT),
+#define GPIRQ_FEC2_PHY	IMX_GPIO_NR(1, 8)
+	IOMUX_PAD_CTRL(GPIO1_IO08__GPIO1_IO08, WEAK_PULLUP),
+
+	/* hogs - GPIO */
+#define GP_OUT1			IMX_GPIO_NR(3, 17)
+	IOMUX_PAD_CTRL(LCD_DATA12__GPIO3_IO17, WEAK_PULLDN_OUTPUT),
+#define GP_OUT2			IMX_GPIO_NR(3, 18)
+	IOMUX_PAD_CTRL(LCD_DATA13__GPIO3_IO18, WEAK_PULLDN_OUTPUT),
+
+#define GP_KEYS_GPI_1		IMX_GPIO_NR(1, 2)
+	IOMUX_PAD_CTRL(GPIO1_IO02__GPIO1_IO02, WEAK_PULLUP),
+#define GP_KEYS_GPI_2		IMX_GPIO_NR(1, 3)
+	IOMUX_PAD_CTRL(GPIO1_IO03__GPIO1_IO03, WEAK_PULLUP),
+#define GP_KEYS_RESET		IMX_GPIO_NR(3, 19)
+	IOMUX_PAD_CTRL(LCD_DATA14__GPIO3_IO19, WEAK_PULLUP),
+
+	/* hogs - Test points */
+#define GP_TP28			IMX_GPIO_NR(3, 15)
+	IOMUX_PAD_CTRL(LCD_DATA10__GPIO3_IO15, WEAK_PULLUP),
+#define GP_SPARE1		IMX_GPIO_NR(3, 16)
+	IOMUX_PAD_CTRL(LCD_DATA11__GPIO3_IO16, WEAK_PULLUP),
+#define GP_SPARE2		IMX_GPIO_NR(4, 20)
+	IOMUX_PAD_CTRL(CSI_HSYNC__GPIO4_IO20, WEAK_PULLUP),
+
+	/* i2c1 */
+#define GP_I2C1_RESET		IMX_GPIO_NR(2, 0)
+	IOMUX_PAD_CTRL(ENET1_RX_DATA0__GPIO2_IO00, WEAK_PULLDN),
+#define GPIRQ_I2C1		IMX_GPIO_NR(3, 5)
+	IOMUX_PAD_CTRL(LCD_DATA00__GPIO3_IO05, WEAK_PULLUP),
+
+	/* i2c1 - rtc RV4162 irq */
+#define GPIRQ_RTC_RV4162	IMX_GPIO_NR(3, 25)
+	IOMUX_PAD_CTRL(LCD_DATA20__GPIO3_IO25, WEAK_PULLUP),
+
+	/* i2c2 */
+#define GPIRQ_I2C2		IMX_GPIO_NR(2, 6)
+	IOMUX_PAD_CTRL(ENET1_TX_CLK__GPIO2_IO06, WEAK_PULLUP),
+
+	/* LEDs high active */
+#define GP_LED_HEART_BEAT	IMX_GPIO_NR(3, 3)
+	IOMUX_PAD_CTRL(LCD_VSYNC__GPIO3_IO03, WEAK_PULLDN_OUTPUT),
+#define GP_LED_ERROR		IMX_GPIO_NR(3, 20)
+	IOMUX_PAD_CTRL(LCD_DATA15__GPIO3_IO20, WEAK_PULLDN_OUTPUT),
+
+	/* pwm5 */
+	IOMUX_PAD_CTRL(NAND_DQS__PWM5_OUT, WEAK_PULLDN_OUTPUT),
+
+	/* Regulators */
+#define GP_REG_5V_EN		IMX_GPIO_NR(2, 3)
+	IOMUX_PAD_CTRL(ENET1_TX_DATA0__GPIO2_IO03, WEAK_PULLDN_OUTPUT),
+#define GPIRQ_REG_5V_OC		IMX_GPIO_NR(3, 27)
+	IOMUX_PAD_CTRL(LCD_DATA22__GPIO3_IO27, WEAK_PULLUP),
+
+#define GP_REG_USB_OTG1_PWR_EN	IMX_GPIO_NR(3, 28)
+	IOMUX_PAD_CTRL(LCD_DATA23__GPIO3_IO28, WEAK_PULLDN_OUTPUT),
+
+	/* uart1 */
+	IOMUX_PAD_CTRL(UART1_TX_DATA__UART1_DCE_TX, UART_PAD_CTRL),
+	IOMUX_PAD_CTRL(UART1_RX_DATA__UART1_DCE_RX, UART_PAD_CTRL),
+	IOMUX_PAD_CTRL(UART1_RTS_B__UART1_DCE_RTS, UART_PAD_CTRL),
+	IOMUX_PAD_CTRL(UART1_CTS_B__UART1_DCE_CTS, UART_PAD_CTRL),
+
+	/* uart2 */
+	IOMUX_PAD_CTRL(UART2_TX_DATA__UART2_DCE_TX, UART_PAD_CTRL),
+	IOMUX_PAD_CTRL(UART2_RX_DATA__UART2_DCE_RX, UART_PAD_CTRL),
+
+	/* uart3 */
+	IOMUX_PAD_CTRL(NAND_READY_B__UART3_DCE_TX, UART_PAD_CTRL),
+	IOMUX_PAD_CTRL(NAND_CE0_B__UART3_DCE_RX, UART_PAD_CTRL),
+
+	/* uart4 */
+	IOMUX_PAD_CTRL(LCD_CLK__UART4_DCE_TX, UART_PAD_CTRL),
+	IOMUX_PAD_CTRL(LCD_ENABLE__UART4_DCE_RX, UART_PAD_CTRL),
+#define GP_UART4_RS485_TXEN	IMX_GPIO_NR(1, 22)
+	IOMUX_PAD_CTRL(UART2_CTS_B__GPIO1_IO22, WEAK_PULLDN_OUTPUT),
+
+	/* uart5 */
+	IOMUX_PAD_CTRL(GPIO1_IO04__UART5_DCE_TX, UART_PAD_CTRL),
+	IOMUX_PAD_CTRL(GPIO1_IO05__UART5_DCE_RX, UART_PAD_CTRL),
+#define GP_UART5_RS485_TXEN	IMX_GPIO_NR(1, 23)
+	IOMUX_PAD_CTRL(UART2_RTS_B__GPIO1_IO23, WEAK_PULLDN_OUTPUT),
+
+	/* USB OTG1 */
+#define GP_USB_OTG1_ID		IMX_GPIO_NR(3, 21)
+	IOMUX_PAD_CTRL(LCD_DATA16__GPIO3_IO21, WEAK_PULLUP),
+#define GPIRQ_USB_OTG1_OC		IMX_GPIO_NR(3, 22)
+	IOMUX_PAD_CTRL(LCD_DATA17__GPIO3_IO22, WEAK_PULLUP),
+
+	/* USB OTG2 */
+
+	/* usdhc1 */
+	IOMUX_PAD_CTRL(SD1_CLK__USDHC1_CLK, USDHC1_CLK_PAD_CTRL),
+	IOMUX_PAD_CTRL(SD1_CMD__USDHC1_CMD, USDHC1_PAD_CTRL),
+	IOMUX_PAD_CTRL(SD1_DATA0__USDHC1_DATA0, USDHC1_PAD_CTRL),
+	IOMUX_PAD_CTRL(SD1_DATA1__USDHC1_DATA1, USDHC1_PAD_CTRL),
+	IOMUX_PAD_CTRL(SD1_DATA2__USDHC1_DATA2, USDHC1_PAD_CTRL),
+	IOMUX_PAD_CTRL(SD1_DATA3__USDHC1_DATA3, USDHC1_PAD_CTRL),
+#define GP_USDHC1_CD	IMX_GPIO_NR(1, 19)
+	IOMUX_PAD_CTRL(UART1_RTS_B__GPIO1_IO19, WEAK_PULLUP),
+
+	/* usdhc2 - eMMC */
+	IOMUX_PAD_CTRL(NAND_RE_B__USDHC2_CLK, USDHC2_CLK_PAD_CTRL),
+	IOMUX_PAD_CTRL(NAND_WE_B__USDHC2_CMD, USDHC2_PAD_CTRL),
+	IOMUX_PAD_CTRL(NAND_DATA00__USDHC2_DATA0, USDHC2_PAD_CTRL),
+	IOMUX_PAD_CTRL(NAND_DATA01__USDHC2_DATA1, USDHC2_PAD_CTRL),
+	IOMUX_PAD_CTRL(NAND_DATA02__USDHC2_DATA2, USDHC2_PAD_CTRL),
+	IOMUX_PAD_CTRL(NAND_DATA03__USDHC2_DATA3, USDHC2_PAD_CTRL),
+	IOMUX_PAD_CTRL(NAND_DATA04__USDHC2_DATA4, USDHC2_PAD_CTRL),
+	IOMUX_PAD_CTRL(NAND_DATA05__USDHC2_DATA5, USDHC2_PAD_CTRL),
+	IOMUX_PAD_CTRL(NAND_DATA06__USDHC2_DATA6, USDHC2_PAD_CTRL),
+	IOMUX_PAD_CTRL(NAND_DATA07__USDHC2_DATA7, USDHC2_PAD_CTRL),
+	IOMUX_PAD_CTRL(NAND_ALE__USDHC2_RESET_B, USDHC2_PAD_CTRL),
+};
+
+static const struct i2c_pads_info i2c_pads[] = {
+	I2C_PADS_INFO_ENTRY(I2C1, CSI_PIXCLK, 4, 18, CSI_MCLK, 4, 17, I2C_PAD_CTRL),
+	I2C_PADS_INFO_ENTRY(I2C2, GPIO1_IO00, 1, 00, GPIO1_IO01, 1, 01, I2C_PAD_CTRL),
+};
+#define I2C_BUS_CNT	2
+
+#ifdef CONFIG_MXC_SPI
+int board_spi_cs_gpio(unsigned bus, unsigned cs)
+{
+	return (bus == 0 && cs == 0) ? GP_ECSPI1_NOR_CS : (cs >> 8) ? (cs >> 8) : -1;
+}
+#endif
+
+#ifdef CONFIG_USB_EHCI_MX6
+#define USB_OTHERREGS_OFFSET	0x800
+#define UCTRL_PWR_POL		(1 << 9)
+
+int board_usb_phy_mode(int port)
+{
+	if (port == 1)
+		return USB_INIT_HOST;
+	return gpio_get_value(GP_USB_OTG1_ID) ? USB_INIT_DEVICE : USB_INIT_HOST;
+}
+
+int board_ehci_hcd_init(int port)
+{
+	u32 *usbnc_usb_ctrl;
+
+	if (port > 1)
+		return -EINVAL;
+	usbnc_usb_ctrl = (u32 *)(USB_BASE_ADDR + USB_OTHERREGS_OFFSET +
+			port * 4);
+	setbits_le32(usbnc_usb_ctrl, UCTRL_PWR_POL);
+
+	return 0;
+}
+
+int board_ehci_power(int port, int on)
+{
+	if (!port)
+		gpio_set_value(GP_REG_USB_OTG1_PWR_EN, on);
+	return 0;
+}
+#endif
+
+#ifdef CONFIG_FSL_ESDHC_IMX
+struct fsl_esdhc_cfg board_usdhc_cfg[] = {
+#if CONFIG_SYS_FSL_USDHC_NUM == 2
+	{.esdhc_base = USDHC1_BASE_ADDR, .bus_width = 4,
+			.gp_cd = GP_USDHC1_CD},
+#endif
+	{.esdhc_base = USDHC2_BASE_ADDR, .bus_width = 8,
+			.vs18_enable = 0},
+};
+#endif
+
+static const unsigned short gpios_out_low[] = {
+	GP_FEC2_PHY_RESET,
+	GP_OUT1,
+	GP_OUT2,
+	GP_I2C1_RESET,
+	GP_LED_HEART_BEAT,
+	GP_LED_ERROR,
+	GP_REG_5V_EN,
+	GP_REG_USB_OTG1_PWR_EN,
+	GP_UART4_RS485_TXEN,
+	GP_UART5_RS485_TXEN,
+};
+
+static const unsigned short gpios_out_high[] = {
+	GP_ECSPI1_NOR_CS,
+	GP_ECSPI2_CS,
+};
+
+static const unsigned short gpios_in[] = {
+	GPIRQ_FEC2_PHY,
+	GP_KEYS_GPI_1,
+	GP_KEYS_GPI_2,
+	GP_KEYS_RESET,
+	GP_TP28,
+	GP_SPARE1,
+	GP_SPARE2,
+	GPIRQ_RTC_RV4162,
+	GPIRQ_I2C1,
+	GPIRQ_I2C2,
+	GPIRQ_REG_5V_OC,
+	GPIRQ_ECSPI2,
+	GP_USB_OTG1_ID,
+	GPIRQ_USB_OTG1_OC,
+	GP_USDHC1_CD,
+};
+
+int board_early_init_f(void)
+{
+	struct mxc_ccm_reg *ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
+	set_gpios_in(gpios_in, ARRAY_SIZE(gpios_in));
+	set_gpios(gpios_out_high, ARRAY_SIZE(gpios_out_high), 1);
+	set_gpios(gpios_out_low, ARRAY_SIZE(gpios_out_low), 0);
+#if 1
+	/* use 24M clock */
+	clrsetbits_le32(&ccm->cscdr1, MXC_CCM_CSCDR1_UART_CLK_PODF_MASK,
+			MXC_CCM_CSCDR1_UART_CLK_SEL);
+#else
+	/* ddr-stress test assumes 80M clock */
+	clrsetbits_le32(&ccm->cscdr1, MXC_CCM_CSCDR1_UART_CLK_PODF_MASK, 0);
+#endif
+	SETUP_IOMUX_PADS(init_pads);
+	return 0;
+}
+
+int board_init(void)
+{
+	common_board_init(i2c_pads, I2C_BUS_CNT, 0, NULL, 0, 0);
+	return 0;
+}
+
+const struct button_key board_buttons[] = {
+	{"tp28",	GP_TP28,	't', 1},
+	{NULL, 0, 0, 0},
+};
+
+#ifdef CONFIG_CMD_BMODE
+const struct boot_mode board_boot_modes[] = {
+	{"mmc0", MAKE_CFGVAL(0x40, 0x28, 0x00, 0x00)},
+	{"mmc1", MAKE_CFGVAL(0x60, 0x58, 0x00, 0x00)},
+	{NULL, 0},
+};
+#endif
