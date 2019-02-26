@@ -5,10 +5,8 @@
  */
 #include <common.h>
 #include <asm/arch/clock.h>
-#ifndef CONFIG_MX7D
-#ifndef CONFIG_MX51
+#if !defined(CONFIG_MX7D) && !defined(CONFIG_MX51) && !defined(CONFIG_MX6ULL)
 #include <asm/arch/iomux.h>
-#endif
 #endif
 #include <asm/arch/sys_proto.h>
 #include <asm/gpio.h>
@@ -95,7 +93,7 @@ int board_mmc_init(bd_t *bis)
 			cfg->sdhc_clk = mxc_get_clock(MXC_ESDHC_CLK);
 		} else if (cfg->esdhc_base == BASE2) {
 			cfg->sdhc_clk = mxc_get_clock(MXC_ESDHC2_CLK);
-#ifndef CONFIG_MX51
+#if !defined(CONFIG_MX51) && !defined(CONFIG_MX6ULL)
 		} else if (cfg->esdhc_base == BASE3) {
 			cfg->sdhc_clk = mxc_get_clock(MXC_ESDHC3_CLK);
 #ifndef CONFIG_MX7D
@@ -317,14 +315,13 @@ int checkboard(void)
 static const char str_uboot_release[] = "uboot_release";
 static const char cur_uboot_release[] = PLAIN_VERSION;
 
-int board_late_init(void)
+
+
+int bdcommon_env_init(void)
 {
 	char *uboot_release;
 	int cpurev = get_cpu_rev();
 
-#ifdef CONFIG_BOARD_LATE_SPECIFIC_INIT
-	board_late_specific_init();
-#endif
 	env_set("cpu", get_imx_type((cpurev & 0xFF000) >> 12));
 	env_set("imx_cpu", get_imx_type((cpurev & 0xFF000) >> 12));
 #ifndef CONFIG_SYS_BOARD
@@ -345,7 +342,6 @@ int board_late_init(void)
 #if defined(CONFIG_CMD_FASTBOOT) || defined(CONFIG_CMD_DFU)
 	addserial_env("serial#");
 #endif
-	print_time_rv4162();
 
 #if !defined(CONFIG_ENV_IS_NOWHERE)
 	uboot_release = env_get(str_uboot_release);
@@ -359,5 +355,18 @@ int board_late_init(void)
 		}
 	}
 #endif
+#ifdef CONFIG_CMD_FBPANEL
+	fbp_setup_env_cmds();
+#endif
+	board_eth_addresses();
 	return 0;
+}
+
+int board_late_init(void)
+{
+#ifdef CONFIG_BOARD_LATE_SPECIFIC_INIT
+	board_late_specific_init();
+#endif
+	print_time_rv4162();
+	return bdcommon_env_init();
 }
