@@ -980,6 +980,11 @@ int enable_fec_anatop_clock(int fec_id, enum enet_freq freq)
 }
 #endif
 
+int set_clk_qspi(void)
+{
+	return 0;
+}
+
 static u32 get_usdhc_clk(u32 port)
 {
 	u32 root_freq = 0, usdhc_podf = 0, clk_sel = 0;
