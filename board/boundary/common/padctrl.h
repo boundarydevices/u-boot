@@ -5,6 +5,8 @@
  */
 #ifdef CONFIG_MX6SX
 #include "padctrl-mx6sx.h"
+#elif defined(CONFIG_MX6ULL)
+#include "padctrl-mx6ull.h"
 #elif defined(CONFIG_MX7D)
 #include "padctrl-mx7d.h"
 #elif defined(CONFIG_MX51)
