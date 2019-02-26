@@ -1,0 +1,6 @@
+rta BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/rta/
+F:	include/configs/rta.h
+F:	configs/rta_512m_defconfig
