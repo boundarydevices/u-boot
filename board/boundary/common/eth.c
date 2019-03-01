@@ -54,7 +54,7 @@
 #endif
 
 #define ALL_PHY_MASK(a) (ATHEROS_MASK(a) | KSZ9021_MASK(a))
-#ifdef CONFIG_RGMII2
+#ifdef CONFIG_FEC_ENET2
 #define COMBINED_MASK(a) (ALL_PHY_MASK(a) | (ALL_PHY_MASK(a + 1) << 16))
 #else
 #define COMBINED_MASK(a) ALL_PHY_MASK(a)
@@ -166,7 +166,7 @@ static void init_fec_clocks(void)
 	udelay(100);	/* Wait 100 us before using mii interface */
 }
 
-#if defined(CONFIG_RGMII2)
+#if defined(CONFIG_FEC_ENET2)
 #define FEC_INDEX	0	/* FEC0 for imx6sx */
 #else
 #define FEC_INDEX	-1	/* just plain FEC */
@@ -189,7 +189,7 @@ static void init_fec(bd_t *bis, unsigned phy_mask)
 	bus = fec_get_miibus(mdio_base, -1);
 	if (!bus)
 		return;
-#if defined(CONFIG_RGMII1) || !defined(CONFIG_MX6SX)
+#if defined(CONFIG_FEC_ENET1) || !defined(CONFIG_MX6SX)
 	phydev = phy_find_by_mask(bus, phy_mask & 0xffff, PHY_INTERFACE_MODE_RGMII);
 	if (!phydev) {
 		printf("%s: phy not found\n", __func__);
@@ -203,7 +203,7 @@ static void init_fec(bd_t *bis, unsigned phy_mask)
 		goto error;
 	}
 #endif
-#if defined(CONFIG_RGMII2)
+#if defined(CONFIG_FEC_ENET2)
 	phydev = phy_find_by_mask(bus, phy_mask >> 16, PHY_INTERFACE_MODE_RGMII);
 	if (!phydev) {
 		printf("%s: phy2 not found\n", __func__);
@@ -469,7 +469,7 @@ free_slave:
 void board_eth_addresses(void)
 {
 #if defined(CONFIG_USB_ETHER)
-#if defined(CONFIG_FEC_MXC) && defined(CONFIG_RGMII1) && defined(CONFIG_RGMII2)
+#if defined(CONFIG_FEC_MXC) && defined(CONFIG_FEC_ENET1) && defined(CONFIG_FEC_ENET2)
 #define USB_ETH "eth2addr"
 #elif defined(CONFIG_FEC_MXC)
 #define USB_ETH "eth1addr"
