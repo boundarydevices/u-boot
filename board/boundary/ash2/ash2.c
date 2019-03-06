@@ -550,11 +550,14 @@ static int read_keys_int(int cnt)
 	return mask;
 }
 
+void board_late_specific_init(void)
+{
+	env_set_hex("switch", sw_vals);
+}
+
 int board_init(void)
 {
-	unsigned sw = read_keys_int(6);
-
-	sw_vals = sw;
+	sw_vals = read_keys_int(6);
 	common_board_init(i2c_pads, I2C_BUS_CNT, IOMUXC_GPR1_OTG_ID_GPIO1,
 			displays, display_cnt, 0);
 	return 0;
