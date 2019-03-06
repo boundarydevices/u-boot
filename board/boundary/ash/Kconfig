@@ -15,6 +15,10 @@ config SYS_SOC
 config SYS_CONFIG_NAME
 	default "ash"
 
+config BOARD_LATE_SPECIFIC_INIT
+	bool
+	default	y
+
 source "board/boundary/common/Kconfig"
 
 endif

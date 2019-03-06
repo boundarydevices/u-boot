@@ -416,6 +416,8 @@ int board_spi_cs_gpio(unsigned bus, unsigned cs)
 #endif
 
 #ifdef CONFIG_CMD_FBPANEL
+static int sw_vals = -1;
+
 void board_enable_lvds(const struct display_info_t *di, int enable)
 {
 	if (di->addr_num == 0x24) {
@@ -561,13 +563,6 @@ void board_poweroff(void)
 	mdelay(500);
 }
 
-int board_init(void)
-{
-	common_board_init(i2c_pads, I2C_BUS_CNT, IOMUXC_GPR1_OTG_ID_GPIO1,
-			displays, display_cnt, 0);
-	return 0;
-}
-
 const struct button_key board_buttons[] = {
 	{"sw1",		GP_GPIOKEY_SW1,		'1', 1},
 	{"sw2",		GP_GPIOKEY_SW2,		'2', 1},
@@ -580,6 +575,39 @@ const struct button_key board_buttons[] = {
 	{"door",	GP_GPIOKEY_DOOR_CLOSED, 'D', 1},
 	{NULL, 0, 0, 0},
 };
+
+static int read_keys_int(int cnt)
+{
+	int i = 0;
+	const struct button_key *bb = board_buttons;
+	unsigned short gp;
+	int mask = 0;
+
+	while (i < cnt) {
+		if (!bb->name)
+			break;
+		gp = bb->gpnum;
+		if (gpio_get_value(gp) ^ bb->active_low) {
+			mask |= 1 << i;
+		}
+		i++;
+		bb++;
+	}
+	return mask;
+}
+
+void board_late_specific_init(void)
+{
+	env_set_hex("switch", sw_vals);
+}
+
+int board_init(void)
+{
+	sw_vals = read_keys_int(5);
+	common_board_init(i2c_pads, I2C_BUS_CNT, IOMUXC_GPR1_OTG_ID_GPIO1,
+			displays, display_cnt, 0);
+	return 0;
+}
 
 #ifdef CONFIG_CMD_BMODE
 const struct boot_mode board_boot_modes[] = {
