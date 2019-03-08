@@ -551,6 +551,8 @@ struct hdmitx_dev {
 	unsigned int dc30;
 	enum eotf_type hdmi_current_eotf_type;
 	enum mode_type hdmi_current_tunnel_mode;
+	/* Add dongle_mode, clock, phy may be different from mbox */
+	unsigned int dongle_mode;
 };
 
 struct hdmi_format_para *hdmi_get_fmt_paras(enum hdmi_vic vic);

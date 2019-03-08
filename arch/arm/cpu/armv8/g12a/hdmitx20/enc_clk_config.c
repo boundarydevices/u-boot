@@ -176,6 +176,34 @@ static bool set_hpll_hclk_v3(unsigned int m, unsigned int frac_val)
 	return ret; /* return hpll locked status */
 }
 
+#define IS_DONGLE_MODE(hdev) \
+	((hdev->dongle_mode) \
+	&& (hdev->para->cs == HDMI_COLOR_FORMAT_422 \
+		|| hdev->para->cd == HDMI_COLOR_DEPTH_24B) \
+	&& (hdev->vic == HDMI_1280x720p50_16x9 \
+		|| hdev->vic == HDMI_1280x720p60_16x9 \
+		|| hdev->vic == HDMI_1920x1080i60_16x9 \
+		|| hdev->vic == HDMI_1920x1080i50_16x9 \
+		|| hdev->vic == HDMI_1920x1080p60_16x9 \
+		|| hdev->vic == HDMI_1920x1080p50_16x9))
+
+static void set_hpll_hclk_dongle_5940m(void)
+{
+	hd_write_reg(P_HHI_HDMI_PLL_CNTL0, 0x0b3a04f7);
+	hd_set_reg_bits(P_HHI_HDMI_PLL_CNTL0, 0x3, 28, 2);
+	hd_write_reg(P_HHI_HDMI_PLL_CNTL1, 0x10000);
+	hd_write_reg(P_HHI_HDMI_PLL_CNTL2, 0x00100140);
+	hd_write_reg(P_HHI_HDMI_PLL_CNTL3, 0x2a295c00);
+	hd_write_reg(P_HHI_HDMI_PLL_CNTL4, 0x65771290);
+	hd_write_reg(P_HHI_HDMI_PLL_CNTL5, 0x39272000);
+	hd_write_reg(P_HHI_HDMI_PLL_CNTL6, 0x50540000);
+	printk("HPLL: 0x%lx\n", hd_read_reg(P_HHI_HDMI_PLL_CNTL0));
+	hd_set_reg_bits(P_HHI_HDMI_PLL_CNTL0, 0x0, 29, 1);
+	printk("HPLL: 0x%lx\n", hd_read_reg(P_HHI_HDMI_PLL_CNTL0));
+	WAIT_FOR_PLL_LOCKED(P_HHI_HDMI_PLL_CNTL0);
+	printk("HPLL: 0x%lx\n", hd_read_reg(P_HHI_HDMI_PLL_CNTL0));
+}
+
 static void set_hpll_clk_out(unsigned clk, struct hdmitx_dev *hdev)
 {
 	unsigned int frac_rate = 1;
@@ -186,6 +214,10 @@ static void set_hpll_clk_out(unsigned clk, struct hdmitx_dev *hdev)
 
 	switch (clk) {
 	case 5940000:
+		if (IS_DONGLE_MODE(hdev)) {
+			set_hpll_hclk_dongle_5940m();
+			break;
+		}
 		if (set_hpll_hclk_v1(0xf7, frac_rate ? 0x8148 : 0x10000, hdev))
 			break;
 		else if (set_hpll_hclk_v2(0x7b,0x18000))
@@ -332,6 +364,8 @@ static void set_hpll_sspll(struct hdmitx_dev *hdev)
 		hd_set_reg_bits(P_HHI_HDMI_PLL_CNTL2, 1, 8, 1);
 		/* 2: 1000ppm  1: 500ppm */
 		hd_set_reg_bits(P_HHI_HDMI_PLL_CNTL2, 2, 4, 4);
+		if (hdev->dongle_mode)
+			hd_set_reg_bits(P_HHI_HDMI_PLL_CNTL2, 4, 4, 4);
 		/* bit[15] hdmi_dpll_sdmnc_en */
 		hd_set_reg_bits(P_HHI_HDMI_PLL_CNTL3, 0, 15, 1);
 		hd_set_reg_bits(P_HHI_HDMI_PLL_CNTL0, 0, 29, 1);

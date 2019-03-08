@@ -403,6 +403,12 @@ static void hdmitx_output_blank(unsigned int blank)
 
 void hdmi_tx_init(void)
 {
+	char *dongle_mode = NULL;
+
+	dongle_mode = getenv("dongle_mode");
+	if (dongle_mode && (dongle_mode[0] == '1'))
+		hdmitx_device.dongle_mode = 1;
+
 	hdmitx_device.HWOp.get_hpd_state = hdmitx_get_hpd_state;
 	hdmitx_device.HWOp.read_edid = hdmitx_read_edid;
 	hdmitx_device.HWOp.turn_off = hdmitx_turnoff;
@@ -1124,16 +1130,20 @@ static void hdmitx_set_pll(struct hdmitx_dev *hdev)
 	hdmitx_set_clk(hdev);
 }
 
-static void set_phy_by_mode(unsigned int mode)
+static void set_phy_by_mode(struct hdmitx_dev *hdev, unsigned int mode)
 {
 	switch (mode) {
 	case 1: /* 5.94/4.5/3.7Gbps */
 		hd_write_reg(P_HHI_HDMI_PHY_CNTL0, 0x37eb65c4);
+		if (hdev->dongle_mode)
+			hd_write_reg(P_HHI_HDMI_PHY_CNTL0, 0x37eb5584);
 		hd_write_reg(P_HHI_HDMI_PHY_CNTL3, 0x2ab0ff3b);
 		hd_write_reg(P_HHI_HDMI_PHY_CNTL5, 0x0000080b);
 		break;
 	case 2: /* 2.97Gbps */
 		hd_write_reg(P_HHI_HDMI_PHY_CNTL0, 0x33eb6262);
+		if (hdev->dongle_mode)
+			hd_write_reg(P_HHI_HDMI_PHY_CNTL0, 0x33eb4262);
 		hd_write_reg(P_HHI_HDMI_PHY_CNTL3, 0x2ab0ff3b);
 		hd_write_reg(P_HHI_HDMI_PHY_CNTL5, 0x00000003);
 		break;
@@ -1158,18 +1168,18 @@ static void hdmitx_set_phy(struct hdmitx_dev *hdev)
 	case HDMI_4096x2160p60_256x135:
 		if ((hdev->para->cs == HDMI_COLOR_FORMAT_420)
 			&& (hdev->para->cd == HDMI_COLOR_DEPTH_24B))
-			set_phy_by_mode(2);
+			set_phy_by_mode(hdev, 2);
 		else
-			set_phy_by_mode(1);
+			set_phy_by_mode(hdev, 1);
 		break;
 	case HDMI_3840x2160p50_16x9_Y420:
 	case HDMI_3840x2160p60_16x9_Y420:
 	case HDMI_4096x2160p50_256x135_Y420:
 	case HDMI_4096x2160p60_256x135_Y420:
 		if (hdev->para->cd == HDMI_COLOR_DEPTH_24B)
-			set_phy_by_mode(2);
+			set_phy_by_mode(hdev, 2);
 		else
-			set_phy_by_mode(1);
+			set_phy_by_mode(hdev, 1);
 		break;
 	case HDMI_3840x2160p24_16x9:
 	case HDMI_3840x2160p24_64x27:
@@ -1182,9 +1192,9 @@ static void hdmitx_set_phy(struct hdmitx_dev *hdev)
 	case HDMI_4096x2160p30_256x135:
 		if ((hdev->para->cs == HDMI_COLOR_FORMAT_422)
 			|| (hdev->para->cd == HDMI_COLOR_DEPTH_24B))
-			set_phy_by_mode(2);
+			set_phy_by_mode(hdev, 2);
 		else
-			set_phy_by_mode(1);
+			set_phy_by_mode(hdev, 1);
 		break;
 	case HDMI_1920x1080p60_16x9:
 	case HDMI_1920x1080p50_16x9:
@@ -1193,7 +1203,7 @@ static void hdmitx_set_phy(struct hdmitx_dev *hdev)
 	case HDMI_1280x720p100_16x9:
 	case HDMI_1280x720p120_16x9:
 	default:
-		set_phy_by_mode(3);
+		set_phy_by_mode(hdev, 3);
 		break;
 	}
 /* P_HHI_HDMI_PHY_CNTL1	bit[1]: enable clock	bit[0]: soft reset */
