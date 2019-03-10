@@ -9,5 +9,9 @@
 #
 
 #ccflags-y += -DDEBUG
+ifdef CONFIG_DM_PWM
+obj-y	+= pwm-uclass.o
+obj-$(CONFIG_PWM_MESON)		+= pwm-meson.o
+endif
 
 obj-$(CONFIG_PWM_IMX) += pwm-imx.o pwm-imx-util.o

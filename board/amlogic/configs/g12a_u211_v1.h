@@ -567,6 +567,10 @@
 #define CONFIG_SYS_I2C_SPEED		400000
 #endif
 
+/* PWM DM driver*/
+#define CONFIG_DM_PWM
+#define CONFIG_PWM_MESON
+
 #define CONFIG_EFUSE 1
 
 /* commands */
