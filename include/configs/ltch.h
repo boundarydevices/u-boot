@@ -18,5 +18,6 @@
 
 #include "boundary.h"
 #define CONFIG_EXTRA_ENV_SETTINGS BD_BOUNDARY_ENV_SETTINGS \
+	"usb_connect_wait=3000\0" \
 
 #endif	       /* __CONFIG_H */
