@@ -3,8 +3,9 @@
  *
  * SPDX-License-Identifier:	GPL-2.0+
  */
-#define PAD_CTRL_ENET_MDC	(PAD_CTL_DSE3)
-#define PAD_CTRL_ENET_MDIO	(PAD_CTL_DSE3 | PAD_CTL_ODE)
+#define PAD_CTRL_ENET_MDC	(PAD_CTL_DSE0)
+/* PAD_CTL_ODE is screwy on MDIO, it behaves like a strong hysteresis */
+#define PAD_CTRL_ENET_MDIO	(PAD_CTL_DSE0)
 
 #define PAD_CTRL_ENET_RX	(PAD_CTL_DSE1 | PAD_CTL_FSEL2 | PAD_CTL_HYS)
 #define PAD_CTRL_ENET_RX_DN	(PAD_CTRL_ENET_RX | PAD_CTL_PE)
