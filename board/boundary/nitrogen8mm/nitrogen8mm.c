@@ -68,8 +68,15 @@ static iomux_v3_cfg_t const init_pads[] = {
 
 #ifdef CONFIG_FEC_MXC
 	/* PHY - AR8035 */
+#ifdef CONFIG_FEC_PHY_BITBANG
+#define GP_MII_MDIO	IMX_GPIO_NR(1, 17)
+	IMX8MM_PAD_ENET_MDIO_GPIO1_IO17 | MUX_PAD_CTRL(0),
+#define GP_MII_MDC	IMX_GPIO_NR(1, 16)
+	IMX8MM_PAD_ENET_MDC_GPIO1_IO16 | MUX_PAD_CTRL(0),
+#else
 	IMX8MM_PAD_ENET_MDIO_ENET1_MDIO | MUX_PAD_CTRL(PAD_CTRL_ENET_MDIO),
 	IMX8MM_PAD_ENET_MDC_ENET1_MDC | MUX_PAD_CTRL(PAD_CTRL_ENET_MDC),
+#endif
 	IMX8MM_PAD_ENET_TX_CTL_ENET1_RGMII_TX_CTL | MUX_PAD_CTRL(PAD_CTRL_ENET_TX),
 	IMX8MM_PAD_ENET_TD0_ENET1_RGMII_TD0 | MUX_PAD_CTRL(PAD_CTRL_ENET_TX),
 	IMX8MM_PAD_ENET_TD1_ENET1_RGMII_TD1 | MUX_PAD_CTRL(PAD_CTRL_ENET_TX),
@@ -166,6 +173,10 @@ static const struct display_info_t displays[] = {
 
 int board_init(void)
 {
+#ifdef CONFIG_FEC_PHY_BITBANG
+	gpio_request(GP_MII_MDC, "mii_mdc");
+	gpio_request(GP_MII_MDIO, "mii_mdio");
+#endif
 	gpio_request(GP_I2C2_SN65DSI83_EN, "sn65dsi83_enable");
 	gpio_request(GP_GT911_RESET, "gt911_reset");
 	gpio_request(GPIRQ_GT911, "gt911_irq");
