@@ -376,6 +376,15 @@ static void setup_enet_ksz9021(void)
 #endif
 
 #if defined(CONFIG_PHY_ATHEROS) || defined(CONFIG_PHY_MICREL)
+static void release_phy_reset(int gp)
+{
+#ifdef CONFIG_FEC_RESET_PULLUP
+	gpio_direction_input(gp);
+#else
+	gpio_set_value(gp, 1);
+#endif
+}
+
 static void setup_iomux_enet(int kz)
 {
 #ifdef GP_KS8995_RESET
@@ -396,11 +405,13 @@ static void setup_iomux_enet(int kz)
 	/* 1 ms minimum reset pulse for ar8035 */
 	udelay(1000 * 10);
 #ifdef GP_RGMII2_PHY_RESET
-	gpio_set_value(GP_RGMII2_PHY_RESET, 1); /* PHY reset */
+	release_phy_reset(GP_RGMII2_PHY_RESET);
 #endif
+
 #ifdef GP_RGMII_PHY_RESET
-	gpio_set_value(GP_RGMII_PHY_RESET, 1); /* PHY reset */
+	release_phy_reset(GP_RGMII_PHY_RESET);
 #endif
+
 #ifdef GP_KS8995_POWER_DOWN
 	gpio_direction_output(GP_KS8995_POWER_DOWN, 1);
 #endif

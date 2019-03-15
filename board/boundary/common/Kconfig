@@ -11,6 +11,10 @@ config MAX77823
 	default y if TARGET_NITROGEN6_SCM
 	default y if TARGET_VP
 
+config FEC_RESET_PULLUP
+	bool
+	default y if TARGET_NITROGEN8MM
+
 config OTG_CHARGER
 	bool "otg_charger"
 	depends on MAX77823
