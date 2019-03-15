@@ -289,6 +289,10 @@ config FEC_MXC
 	  This driver supports the 10/100 Fast Ethernet controller for
 	  NXP i.MX processors.
 
+config FEC_PHY_BITBANG
+	bool "FEC PHY bitbang"
+	depends on FEC_MXC
+
 config FMAN_ENET
 	bool "Freescale FMan ethernet support"
 	depends on ARM || PPC
