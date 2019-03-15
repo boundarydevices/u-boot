@@ -83,6 +83,73 @@ static void swap_packet(uint32_t *packet, int length)
 #endif
 
 /* MII-interface related functions */
+#ifdef CONFIG_FEC_PHY_BITBANG
+#include <asm-generic/gpio.h>
+#include <asm/mach-imx/gpio.h>
+
+#ifdef CONFIG_IMX8M
+#define GP_MII_MDIO	IMX_GPIO_NR(1, 17)
+#define GP_MII_MDC	IMX_GPIO_NR(1, 16)
+#endif
+
+static void bangout(unsigned val, int cnt)
+{
+	int bit_val;
+	int prev_bit_val = 1;
+
+	gpio_direction_input(GP_MII_MDIO);
+	udelay(1);
+	gpio_direction_output(GP_MII_MDC, 1);
+
+	while (cnt) {
+		cnt--;
+		udelay(1);
+		gpio_set_value(GP_MII_MDC, 0);
+		bit_val = (val >> cnt) & 1;
+		if (prev_bit_val != bit_val) {
+			prev_bit_val = bit_val;
+			if (bit_val)
+				gpio_direction_input(GP_MII_MDIO);
+			else
+				gpio_direction_output(GP_MII_MDIO, 0);
+		}
+		udelay(1);
+		gpio_set_value(GP_MII_MDC, 1);
+	}
+}
+
+static int fec_mdio_read(struct ethernet_regs *eth, uint8_t phyaddr,
+		uint8_t regaddr)
+{
+	int val;
+	int i;
+
+	val = FEC_MII_DATA_ST | FEC_MII_DATA_OP_RD | FEC_MII_DATA_TA |
+			(phyaddr << FEC_MII_DATA_PA_SHIFT) | regaddr << FEC_MII_DATA_RA_SHIFT;
+
+	bangout(0xffffffff, 32);
+	bangout(val >> 17, 32 - 17);
+	gpio_direction_input(GP_MII_MDIO);
+
+	val = 0;
+	for (i = 0; i < 17; i++) {
+		val <<= 1;
+		udelay(1);
+		if (gpio_get_value(GP_MII_MDIO))
+			val |= 1;
+		gpio_set_value(GP_MII_MDC, 0);
+		udelay(1);
+		gpio_set_value(GP_MII_MDC, 1);
+	}
+	val &= 0xffff;
+
+	gpio_direction_input(GP_MII_MDC);
+
+	debug("%s: phy: %02x reg:%02x val:%#x\n", __func__, phyaddr,
+	      regaddr, val);
+	return val;
+}
+#else
 static int fec_mdio_read(struct ethernet_regs *eth, uint8_t phyaddr,
 		uint8_t regaddr)
 {
@@ -120,6 +187,7 @@ static int fec_mdio_read(struct ethernet_regs *eth, uint8_t phyaddr,
 	      regaddr, val);
 	return val;
 }
+#endif
 
 static void fec_mii_setspeed(struct ethernet_regs *eth)
 {
@@ -148,6 +216,25 @@ static void fec_mii_setspeed(struct ethernet_regs *eth)
 	debug("%s: mii_speed %08x\n", __func__, readl(&eth->mii_speed));
 }
 
+#ifdef CONFIG_FEC_PHY_BITBANG
+static int fec_mdio_write(struct ethernet_regs *eth, uint8_t phyaddr,
+		uint8_t regaddr, uint16_t data)
+{
+	uint32_t val;
+
+	val = FEC_MII_DATA_ST | FEC_MII_DATA_OP_WR |FEC_MII_DATA_TA |
+		(phyaddr << FEC_MII_DATA_PA_SHIFT) |
+		(regaddr << FEC_MII_DATA_RA_SHIFT) | data;
+
+
+	bangout(0xffffffff, 32);
+	bangout(val, 32);
+
+	gpio_direction_input(GP_MII_MDC);
+	gpio_direction_input(GP_MII_MDIO);
+	return 0;
+}
+#else
 static int fec_mdio_write(struct ethernet_regs *eth, uint8_t phyaddr,
 		uint8_t regaddr, uint16_t data)
 {
@@ -177,6 +264,7 @@ static int fec_mdio_write(struct ethernet_regs *eth, uint8_t phyaddr,
 
 	return 0;
 }
+#endif
 
 static int fec_phy_read(struct mii_dev *bus, int phyaddr, int dev_addr,
 			int regaddr)
