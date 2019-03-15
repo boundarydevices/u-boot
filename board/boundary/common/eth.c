@@ -405,13 +405,10 @@ static void setup_iomux_enet(int kz)
 	gpio_direction_output(GP_KS8995_POWER_DOWN, 1);
 #endif
 
-#ifdef CONFIG_MX7D
 	/* strap hold time for AR8031, 18 fails, 19 works, so 40 should be safe */
-	udelay(40);
-#else
 	/* strap hold time for AR8035, 5 fails, 6 works, so 12 should be safe */
-	udelay(24);
-#endif
+	/* 110 works for imx8MM, so 220 should be safe */
+	udelay(220);
 #ifdef GP_KS8995_RESET
 	gpio_direction_output(GP_KS8995_RESET, 1);
 #endif
