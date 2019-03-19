@@ -890,6 +890,8 @@ static int do_temp_triming(cmd_tbl_t *cmdtp, int flag1,
 #if defined(R1P1_TSENSOR_MODE)
 			case MESON_CPU_MAJOR_ID_G12A:
 			case MESON_CPU_MAJOR_ID_G12B:
+			case MESON_CPU_MAJOR_ID_TL1:
+			case MESON_CPU_MAJOR_ID_SM1:
 				if (argc <3) {
 					printf("too little args for txhd temp triming!!\n");
 					return CMD_RET_USAGE;
@@ -937,6 +939,8 @@ int r1p1_temp_read(int type)
 	switch (family_id) {
 		case MESON_CPU_MAJOR_ID_G12A:
 		case MESON_CPU_MAJOR_ID_G12B:
+		case MESON_CPU_MAJOR_ID_TL1:
+		case MESON_CPU_MAJOR_ID_SM1:
 			ts_b = 3159;
 			ts_a = 9411;
 			ts_m = 424;
@@ -1029,6 +1033,7 @@ int r1p1_read_entry(void)
 	switch (family_id) {
 		case MESON_CPU_MAJOR_ID_G12A:
 		case MESON_CPU_MAJOR_ID_G12B:
+		case MESON_CPU_MAJOR_ID_SM1:
 			ret = readl(AO_SEC_GP_CFG10);
 			ver = (ret >> 24) & 0xff;
 			if ((ver & 0x80) == 0) {
@@ -1084,6 +1089,8 @@ int r1p1_temp_trim(int tempbase, int tempver, int type)
 	switch (family_id) {
 		case MESON_CPU_MAJOR_ID_G12A:
 		case MESON_CPU_MAJOR_ID_G12B:
+		case MESON_CPU_MAJOR_ID_TL1:
+		case MESON_CPU_MAJOR_ID_SM1:
 			ts_b = 3159;
 			ts_a = 9411;
 			ts_m = 424;
@@ -1186,6 +1193,7 @@ int r1p1_trim_entry(int tempbase, int tempver)
 	switch (family_id) {
 		case MESON_CPU_MAJOR_ID_G12A:
 		case MESON_CPU_MAJOR_ID_G12B:
+		case MESON_CPU_MAJOR_ID_SM1:
 			ret = readl(AO_SEC_GP_CFG10);
 			ver = (ret >> 24) & 0xff;
 			if (ver & 0x80) {
@@ -1232,6 +1240,7 @@ void r1p1_temp_cooling(void)
 	switch (family_id) {
 		case MESON_CPU_MAJOR_ID_G12A:
 		case MESON_CPU_MAJOR_ID_G12B:
+		case MESON_CPU_MAJOR_ID_SM1:
 			while (1) {
 				temp1 = r1p1_temp_read(1);
 				temp2 = r1p1_temp_read(2);
