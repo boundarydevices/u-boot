@@ -983,7 +983,8 @@ for G12A, set osd2 matrix(10bit) RGB2YUV
 
 	if ((get_cpu_id().family_id == MESON_CPU_MAJOR_ID_G12A) ||
 	    (get_cpu_id().family_id == MESON_CPU_MAJOR_ID_G12B) ||
-	    (get_cpu_id().family_id == MESON_CPU_MAJOR_ID_TL1)) {
+	    (get_cpu_id().family_id == MESON_CPU_MAJOR_ID_TL1) ||
+	    (get_cpu_id().family_id == MESON_CPU_MAJOR_ID_SM1)) {
 		/* RGB -> 709 limit */
 		m = RGB709_to_YUV709l_coeff;
 
@@ -1045,7 +1046,8 @@ static void set_osd2_rgb2yuv(bool on)
 
 	if ((get_cpu_id().family_id == MESON_CPU_MAJOR_ID_G12A) ||
 	    (get_cpu_id().family_id == MESON_CPU_MAJOR_ID_G12B) ||
-	    (get_cpu_id().family_id == MESON_CPU_MAJOR_ID_TL1)) {
+	    (get_cpu_id().family_id == MESON_CPU_MAJOR_ID_TL1) ||
+	    (get_cpu_id().family_id == MESON_CPU_MAJOR_ID_SM1)) {
 		/* RGB -> 709 limit */
 		m = RGB709_to_YUV709l_coeff;
 
@@ -1084,7 +1086,8 @@ static void set_osd3_rgb2yuv(bool on)
 	int *m = NULL;
 
 	if ((get_cpu_id().family_id == MESON_CPU_MAJOR_ID_G12A) ||
-		(get_cpu_id().family_id == MESON_CPU_MAJOR_ID_G12B)){
+		(get_cpu_id().family_id == MESON_CPU_MAJOR_ID_G12B) ||
+		(get_cpu_id().family_id == MESON_CPU_MAJOR_ID_SM1)) {
 		/* RGB -> 709 limit */
 		m = RGB709_to_YUV709l_coeff;
 
@@ -1134,7 +1137,8 @@ static void set_vpp_bitdepth(void)
 	#endif
 	} else if ((get_cpu_id().family_id == MESON_CPU_MAJOR_ID_G12A) ||
 		   (get_cpu_id().family_id == MESON_CPU_MAJOR_ID_G12B) ||
-		   (get_cpu_id().family_id == MESON_CPU_MAJOR_ID_TL1)) {
+		   (get_cpu_id().family_id == MESON_CPU_MAJOR_ID_TL1) ||
+		   (get_cpu_id().family_id == MESON_CPU_MAJOR_ID_SM1)) {
 		/*after this step vd1 output data is U12,*/
 		vpp_reg_write(DOLBY_PATH_CTRL, 0xf);
 	}
@@ -1498,6 +1502,16 @@ void vpp_init(void)
 
 		/* set vpp data path to u12 */
 		set_vpp_bitdepth();
+	} else if (get_cpu_id().family_id == MESON_CPU_MAJOR_ID_SM1) {
+		/* osd1: rgb->yuv limit,osd2: rgb2yuv limit,osd3: rgb2yuv limit*/
+		set_osd1_rgb2yuv(1);
+		set_osd2_rgb2yuv(1);
+		set_osd3_rgb2yuv(1);
+
+		/* set vpp data path to u12 */
+		set_vpp_bitdepth();
+
+		hdr_func(OSD1_HDR, HDR_BYPASS);
 	} else {
 		/* set dummy data default YUV black */
 		vpp_reg_write(VPP_DUMMY_DATA1, 0x108080);
