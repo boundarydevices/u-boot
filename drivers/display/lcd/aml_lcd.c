@@ -72,6 +72,9 @@ static void lcd_chip_detect(void)
 	case MESON_CPU_MAJOR_ID_G12B:
 		aml_lcd_driver.chip_type = LCD_CHIP_G12B;
 		break;
+	case MESON_CPU_MAJOR_ID_SM1:
+		aml_lcd_driver.chip_type = LCD_CHIP_SM1;
+		break;
 	default:
 		aml_lcd_driver.chip_type = LCD_CHIP_MAX;
 	}
@@ -869,6 +872,7 @@ static void lcd_reg_print(void)
 	switch (aml_lcd_driver.chip_type) {
 	case LCD_CHIP_G12A:
 	case LCD_CHIP_G12B:
+	case LCD_CHIP_SM1:
 		if (lcd_drv->lcd_config->lcd_clk_path) {
 			for (i = 0; i < ARRAY_SIZE(lcd_reg_dump_clk_gp0_g12a); i++) {
 				printf("hiu     [0x%08x] = 0x%08x\n",
