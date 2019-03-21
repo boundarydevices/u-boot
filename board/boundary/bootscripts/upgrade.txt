@@ -207,6 +207,9 @@ if itest.s "x" != "x${next}" ; then
 fi
 fi
 
-while echo "---- U-Boot upgraded. Please reset the board" ; do
-	sleep 120
+if itest.s "x" == "x${reset}" ; then
+	while echo "---- U-Boot upgraded. Please reset the board" ; do
+		sleep 120
+	done
+fi
 done
