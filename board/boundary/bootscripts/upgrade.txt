@@ -212,4 +212,6 @@ if itest.s "x" == "x${reset}" ; then
 		sleep 120
 	done
 fi
+sleep 1
+reset
 done
