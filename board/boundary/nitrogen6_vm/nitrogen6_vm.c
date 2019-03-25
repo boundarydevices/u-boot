@@ -128,12 +128,17 @@ static const iomux_v3_cfg_t init_pads[] = {
 	IOMUX_PAD_CTRL(EIM_RW__GPIO2_IO26, WEAK_PULLUP),
 
 	/* I2C3 */
+#define GPIRQ_GT911 		IMX_GPIO_NR(1, 9)
 #define GPIRQ_TOUCH		IMX_GPIO_NR(1, 9)
 	IOMUX_PAD_CTRL(GPIO_9__GPIO1_IO09, WEAK_PULLUP),
 #define GP_AR1021_5_WIRE_SEL	IMX_GPIO_NR(5, 2)
 	IOMUX_PAD_CTRL(EIM_A25__GPIO5_IO02, HIGH_Z_SLOW),
 #define GP_PCAP_NRESET		IMX_GPIO_NR(1, 21)
 	IOMUX_PAD_CTRL(SD1_DAT3__GPIO1_IO21, WEAK_PULLUP_OUTPUT),
+
+	/* I2C3 - goodix touch */
+#define GP_GT911_RESET		IMX_GPIO_NR(3, 30)
+	IOMUX_PAD_CTRL(EIM_D30__GPIO3_IO30, WEAK_PULLDN_OUTPUT),
 
 	/* LVDS */
 #define GP_LVDS_BKL_EN		IMX_GPIO_NR(7, 12)
@@ -323,6 +328,40 @@ int board_spi_cs_gpio(unsigned bus, unsigned cs)
 #endif
 
 #ifdef CONFIG_CMD_FBPANEL
+
+int board_detect_gt911(struct display_info_t const *di)
+{
+	int ret;
+#ifdef CONFIG_DM_I2C
+	struct udevice *dev, *chip;
+#endif
+	if (di->bus_gp)
+		gpio_direction_output(di->bus_gp, 1);
+	gpio_set_value(GP_GT911_RESET, 0);
+	mdelay(20);
+	gpio_direction_output(GPIRQ_GT911, di->addr_num == 0x14 ? 1 : 0);
+	udelay(100);
+	gpio_set_value(GP_GT911_RESET, 1);
+	mdelay(6);
+	gpio_set_value(GPIRQ_GT911, 0);
+	mdelay(50);
+	gpio_direction_input(GPIRQ_GT911);
+#ifdef CONFIG_DM_I2C
+	ret = uclass_get_device(UCLASS_I2C, di->bus_num, &dev);
+	if (ret)
+		return 0;
+
+	ret = dm_i2c_probe(dev, di->addr_num, 0x0, &chip);
+#else
+	ret = i2c_set_bus_num(di->bus_num);
+	if (ret == 0)
+		ret = i2c_probe(di->addr_num);
+#endif
+	if (ret && di->bus_gp)
+		gpio_direction_input(di->bus_gp);
+	return (ret == 0);
+}
+
 void board_enable_lvds(const struct display_info_t *di, int enable)
 {
 	gpio_direction_output(GP_LVDS_BACKLIGHT, enable);
@@ -351,6 +390,8 @@ static const struct display_info_t displays[] = {
 #ifndef CONFIG_DEFAULT_HITACHI_HVGA
 	VD_HITACHI_HVGA(LCD, fbp_detect_i2c, 2, 0x38),
 #endif
+	VD_LTK0680YTMDB(LCD, board_detect_gt911, fbp_bus_gp(2, 0, 0, 0), 0x5d),
+
 	VD_HANNSTAR7(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
 	VD_AUO_B101EW05(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
 	VD_LG1280_800(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
@@ -380,6 +421,7 @@ static const unsigned short gpios_out_low[] = {
 	GP_LVDS_BKL_EN,
 	GP_RGB_BACKLIGHT,
 	GP_LVDS_BACKLIGHT,
+	GP_GT911_RESET,
 	GP_SGTL5000_MUTE,
 	GP_USB_OTG_PWR,		/* disable USB otg power */
 	GP_EMMC_RESET,		/* hold in reset */
