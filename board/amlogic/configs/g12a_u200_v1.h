@@ -313,6 +313,7 @@
             "run upgrade_check;"\
             "run init_display;"\
             "run storeargs;"\
+            "run upgrade_key;" \
             "forceupdate;" \
             "bcb uboot-command;"\
             "run switch_bootmode;"
