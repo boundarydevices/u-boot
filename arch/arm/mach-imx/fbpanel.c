@@ -411,7 +411,7 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		size -= sz;
 	}
 
-	if (fb == FB_MIPI) {
+	if ((fb == FB_MIPI) || (di->fbflags & FBF_MODE_VIDEO)) {
 		sz = snprintf(buf, size, "fdt %s mipi mode-skip-eot;",
 			(di->fbflags & FBF_MODE_SKIP_EOT) ? "set" : "rm");
 		buf += sz;
@@ -450,7 +450,8 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 			(di->fbflags >> FBF_DSI_LANE_SHIFT) & 7);
 		buf += sz;
 		size -= sz;
-
+	}
+	if (fb == FB_MIPI) {
 		sz = snprintf(buf, size,
 				"fdt set backlight_mipi status okay;"
 				"fdt set mipi_dsi status okay;"
