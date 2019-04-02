@@ -1254,6 +1254,7 @@ config ARCH_STM32MP
 	select SYSCON
 	select SYSRESET
 	select SYS_THUMB_BUILD
+	imply SPL_SYSRESET
 	help
 	  Support for STM32MP SoC family developed by STMicroelectronics,
 	  MPUs based on ARM cortex A core
