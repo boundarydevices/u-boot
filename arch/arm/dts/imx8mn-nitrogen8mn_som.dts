@@ -1,0 +1,66 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright 2019 Boundary Devices
+ */
+
+#include "imx8mn-nitrogen8mn.dts"
+
+&iomuxc {
+	pinctrl_i2c2_sn65dsi83: i2c2-sn65dsi83grp {
+		fsl,pins = <
+#define GPIRQ_I2C2_SN65DSI83	<&gpio1 1 IRQ_TYPE_LEVEL_HIGH>
+			MX8MMN(IOMUXC_GPIO1_IO01_GPIO1_IO1, 0x04)
+#undef  GP_I2C2_SN65DSI83_EN
+#define GP_I2C2_SN65DSI83_EN	<&gpio5 0 GPIO_ACTIVE_HIGH>
+			MX8MMN(IOMUXC_SAI3_TXC_GPIO5_IO0, 0x106)
+		>;
+	};
+
+	/delete-node/ i2c3a-rv4162grp;
+	/delete-node/ i2c3b-csi1grp;
+
+	pinctrl_i2c2_rv4162: i2c2-rv4162grp {
+		fsl,pins = <
+#undef  GPIRQ_RV4162
+#define GPIRQ_RV4162		<&gpio1 3 IRQ_TYPE_LEVEL_LOW>
+			MX8MMN(IOMUXC_GPIO1_IO03_GPIO1_IO3, 0x1c0)
+		>;
+	};
+
+	pinctrl_i2c3_csi1: i2c3-csi1grp {
+		fsl,pins = <
+#undef GP_CSI1_MIPI_PWDN
+#define GP_CSI1_MIPI_PWDN	<&gpio1 11 GPIO_ACTIVE_HIGH>
+			MX8MMN(IOMUXC_GPIO1_IO11_GPIO1_IO11, 0x141)
+#undef  GP_CSI1_MIPI_RESET
+#define GP_CSI1_MIPI_RESET	<&gpio1 9 GPIO_ACTIVE_LOW>
+			MX8MMN(IOMUXC_GPIO1_IO09_GPIO1_IO9, 0x101)
+		>;
+	};
+
+	pinctrl_pwm4: pwm4grp {
+		fsl,pins = <
+			MX8MMN(IOMUXC_GPIO1_IO15_PWM4_OUT, 0x16)
+		>;
+	};
+};
+
+/ {
+	model = "Boundary Devices i.MX8MNano Nitrogen8MN Som";
+	compatible = "boundary,imx8mn-nitrogen8mn_som", "fsl,imx8mn";
+};
+
+&i2c2 {
+	rtc@68 {
+		compatible = "microcrystal,rv4162";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_i2c2_rv4162>;
+		reg = <0x68>;
+		interrupts-extended = GPIRQ_RV4162;
+		wakeup-source;
+	};
+};
+
+&i2c3 {
+	/delete-node/ i2cmux@70;
+};
