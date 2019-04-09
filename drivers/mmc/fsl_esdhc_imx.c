@@ -823,6 +823,8 @@ static int esdhc_set_voltage(struct mmc *mmc)
 	struct fsl_esdhc *regs = priv->c.esdhc_regs;
 	int ret;
 
+	if (priv->c.vs18_enable)
+		mmc->signal_voltage = MMC_SIGNAL_VOLTAGE_180;
 	priv->signal_voltage = mmc->signal_voltage;
 	switch (mmc->signal_voltage) {
 	case MMC_SIGNAL_VOLTAGE_330:
@@ -831,7 +833,7 @@ static int esdhc_set_voltage(struct mmc *mmc)
 #if CONFIG_IS_ENABLED(DM_REGULATOR)
 		if (!IS_ERR_OR_NULL(priv->vqmmc_dev)) {
 			ret = regulator_set_value(priv->vqmmc_dev, 3300000);
-			if (ret) {
+			if (ret && (ret != -ENOSYS)) {
 				printf("Setting to 3.3V error");
 				return -EIO;
 			}
@@ -850,7 +852,7 @@ static int esdhc_set_voltage(struct mmc *mmc)
 #if CONFIG_IS_ENABLED(DM_REGULATOR)
 		if (!IS_ERR_OR_NULL(priv->vqmmc_dev)) {
 			ret = regulator_set_value(priv->vqmmc_dev, 1800000);
-			if (ret) {
+			if (ret && (ret != -ENOSYS)) {
 				printf("Setting to 1.8V error");
 				return -EIO;
 			}
