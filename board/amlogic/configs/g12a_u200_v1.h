@@ -101,6 +101,7 @@
         "fb_width=1920\0" \
         "fb_height=1080\0" \
         "frac_rate_policy=1\0" \
+        "sdr2hdr=2\0" \
         "hdmi_read_edid=1\0" \
         "usb_burning=update 1000\0" \
         "fdt_high=0x20000000\0"\
