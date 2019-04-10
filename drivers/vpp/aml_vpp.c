@@ -27,6 +27,7 @@
 #include <asm/arch/cpu.h>
 #include "aml_vpp.h"
 #include "hdr2.h"
+#include <amlogic/hdmi.h>
 
 #define VPP_PR(fmt, args...)     printf("vpp: "fmt"", ## args)
 
@@ -480,6 +481,16 @@ static int YUV709l_to_RGB709_coeff12[MATRIX_5x3_COEF_SIZE] = {
 #define FRAC(a) ((((a) >= 0) ? \
 	((a) & 0x3ff) : ((~(a) + 1) & 0x3ff)) * 10000 / 1024)
 
+#define INORM	50000
+static u32 bt2020_primaries[3][2] = {
+	{0.17 * INORM + 0.5, 0.797 * INORM + 0.5},	/* G */
+	{0.131 * INORM + 0.5, 0.046 * INORM + 0.5},	/* B */
+	{0.708 * INORM + 0.5, 0.292 * INORM + 0.5},	/* R */
+};
+
+static u32 bt2020_white_point[2] = {
+	0.3127 * INORM + 0.5, 0.3290 * INORM + 0.5
+};
 
 /* OSD csc defines end */
 
@@ -1431,6 +1442,64 @@ void vpp_matrix_update(int type)
 	default:
 		break;
 	}
+}
+
+static void amvecm_cp_hdr_info(struct master_display_info_s *hdr_data)
+{
+	int i, j;
+
+	hdr_data->features =
+		(0 << 30) /*sdr output 709*/
+		| (1 << 29)	/*video available*/
+		| (5 << 26)	/* unspecified */
+		| (0 << 25)	/* limit */
+		| (1 << 24)	/* color available */
+		| (9 << 16)	/* bt2020 */
+		| (16 << 8)	/* bt2020-10 */
+		| (10 << 0);	/* bt2020c */
+
+	for (i = 0; i < 3; i++)
+		for (j = 0; j < 2; j++)
+			hdr_data->primaries[i][j] =
+					bt2020_primaries[i][j];
+	hdr_data->white_point[0] = bt2020_white_point[0];
+	hdr_data->white_point[1] = bt2020_white_point[1];
+	/* default luminance */
+	hdr_data->luminance[0] = 5000 * 10000;
+	hdr_data->luminance[1] = 50;
+
+	/* content_light_level */
+	hdr_data->max_content = 0;
+	hdr_data->max_frame_average = 0;
+	hdr_data->luminance[0] = hdr_data->luminance[0] / 10000;
+	hdr_data->present_flag = 1;
+}
+
+void hdr_tx_pkt_cb(void)
+{
+	int sdr_mode = 0;
+	struct master_display_info_s hdr_data;
+	struct hdr_info *hdrinfo;
+	const char *sdr_mode_env = getenv("sdr2hdr");
+
+	if (sdr_mode_env == NULL)
+		return;
+
+	sdr_mode = simple_strtoul(sdr_mode_env, NULL, 10);
+	hdrinfo = hdmitx_get_rx_hdr_info();
+
+	if ((hdrinfo && hdrinfo->hdr_sup_eotf_smpte_st_2084) &&
+		(sdr_mode == 2)) {
+		hdr_func(OSD1_HDR, SDR_HDR);
+		hdr_func(VD1_HDR, SDR_HDR);
+		amvecm_cp_hdr_info(&hdr_data);
+		hdmitx_set_drm_pkt(&hdr_data);
+	}
+
+	VPP_PR("sdr_mode = %d\n", sdr_mode);
+	if (hdrinfo)
+		VPP_PR("Rx hdr_info.hdr_sup_eotf_smpte_st_2084 = %d\n",
+			hdrinfo->hdr_sup_eotf_smpte_st_2084);
 }
 
 void vpp_init(void)

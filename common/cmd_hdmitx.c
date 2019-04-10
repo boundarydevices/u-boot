@@ -440,3 +440,13 @@ U_BOOT_CMD(hdmitx, CONFIG_SYS_MAXARGS, 0, do_hdmitx,
 	"hdmitx rx_det\n"
 	"    Auto detect if RX is FBC and set outputmode\n"
 );
+
+struct hdr_info *hdmitx_get_rx_hdr_info(void)
+{
+	struct hdmitx_dev *hdev = &hdmitx_device;
+
+	if (hdev)
+		return &hdev->RXCap.hdr_info;
+	else
+		return NULL;
+}

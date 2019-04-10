@@ -260,7 +260,7 @@
             "else "\
                 "setenv reboot_mode_android ""normal"";"\
                 "run storeargs;"\
-                "hdmitx hpd;hdmitx get_preferred_mode;osd open;osd clear;imgread pic logo bootup $loadaddr;bmp display $bootup_offset;bmp scale;vout output ${outputmode};"\
+                "hdmitx hpd;hdmitx get_preferred_mode;osd open;osd clear;imgread pic logo bootup $loadaddr;bmp display $bootup_offset;bmp scale;vout output ${outputmode};vpp hdrpkt;"\
             "fi;fi;"\
             "\0"\
         "cmdline_keys="\

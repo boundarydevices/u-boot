@@ -33,8 +33,22 @@ static int do_vpp_pq(cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[])
 	return CMD_RET_SUCCESS;
 }
 
+static int do_hdr_packet(cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[])
+{
+
+	if (argc < 1) {
+		printf("[vpp] hdr packet error !!!\n");
+		return cmd_usage(cmdtp);
+	}
+
+	hdr_tx_pkt_cb();
+
+	return CMD_RET_SUCCESS;
+}
+
 static cmd_tbl_t cmd_vpp_sub[] = {
 	U_BOOT_CMD_MKENT(pq, 5, 1, do_vpp_pq, "", ""),
+	U_BOOT_CMD_MKENT(hdrpkt, 1, 1, do_hdr_packet, "", ""),
 };
 
 static int do_vpp(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])

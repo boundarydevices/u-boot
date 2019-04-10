@@ -561,7 +561,14 @@ int hdmi_outputmode_check(char *mode);
 /* Parsing RAW EDID data from edid to pRXCap */
 unsigned int hdmi_edid_parsing(unsigned char *edid, struct rx_cap *pRXCap);
 struct hdmi_format_para *hdmi_match_dtd_paras(struct dtd *t);
-void hdmitx_set_drm_pkt(struct master_display_info_s *data);
+
+extern void hdmitx_set_drm_pkt(struct master_display_info_s *data);
+#ifndef CONFIG_AML_HDMITX20
+void __attribute__((weak))hdmitx_set_drm_pkt(struct master_display_info_s *data)
+{
+}
+#endif
+
 void hdmitx_set_vsif_pkt(enum eotf_type type, enum mode_type tunnel_mode,
 	struct dv_vsif_para *data);
 void hdmitx_set_hdr10plus_pkt(unsigned int flag,
@@ -582,5 +589,13 @@ extern struct hdmitx_dev hdmitx_device;
 #endif
 
 #define hdmitx_debug() /* printf("hd: %s[%d]\n", __func__, __LINE__) */
+
+extern struct hdr_info *hdmitx_get_rx_hdr_info(void);
+#ifndef CONFIG_AML_HDMITX20
+struct hdr_info * __attribute__((weak))hdmitx_get_rx_hdr_info(void)
+{
+	return NULL;
+}
+#endif
 
 #endif
