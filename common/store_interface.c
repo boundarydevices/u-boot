@@ -442,11 +442,15 @@ int store_ddr_parameter_write(uint8_t *buffer, uint32_t length)
 		return -ENODEV;
 	}
 
-	if (IS_STORAGE_EMMC_BOOT(device_boot_flag))
+	if (IS_STORAGE_EMMC_BOOT(device_boot_flag)) {
+		extern int amlmmc_check_and_update_boot_info(void);
+		amlmmc_check_and_update_boot_info();
 		ret = mmc_ddr_parameter_write(buffer, (int)length);
 #if defined(CONFIG_AML_MTD)
-	else
+	} else
 		ret = amlnf_ddr_parameter_write(buffer, (int)length);
+#else
+	}
 #endif
 	return ret;
 }
@@ -585,6 +589,7 @@ static int do_store_ddr_parameter_ops(cmd_tbl_t * cmdtp,
 			return CMD_RET_FAILURE;
 		}
 	}
+
 	addr = (ulong)simple_strtoul(argv[3], NULL, 16);
 	if (is_write)
 		store_ddr_parameter_write((uint8_t *)addr, actualDtbSz);

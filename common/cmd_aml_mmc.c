@@ -434,6 +434,49 @@ static u32 _calc_boot_info_checksum(struct storage_emmc_boot_info *boot_info)
 	return checksum;
 }
 
+#define MAX_REACHABLE_RSV_RANGE	0x30000
+static int amlmmc_boot_info_check(struct mmc *mmc, int dev)
+{
+	struct storage_emmc_boot_info *boot_info;
+	struct virtual_partition *ddr_part;
+	u64 src;
+	u32 *buffer, checksum = 0;
+	int i = 0, ret = -1;
+
+	buffer = malloc(MMC_BLOCK_SIZE);
+	if (!buffer)
+		return -ENOMEM;
+
+	if (mmc->block_dev.block_read(dev, 0, 1, buffer) != 1) {
+		ret = -EIO;
+		goto _err;
+	}
+	boot_info = (struct storage_emmc_boot_info *)buffer;
+	ddr_part =  aml_get_virtual_partition_by_name(MMC_DDR_PARAMETER_NAME);
+	if (boot_info->ddr.addr != ddr_part->offset / MMC_BLOCK_SIZE)
+		goto _err;
+
+	if (!boot_info->checksum || boot_info->version != 0x01)
+		goto _err;
+
+	src = boot_info->rsv_base_addr + boot_info->ddr.addr;
+	if (!src || src == (uint64_t)(-1) || src > MAX_REACHABLE_RSV_RANGE)
+		goto _err;
+
+	do {
+		checksum += buffer[i];
+	} while (i++ < ((EMMC_BOOT_INFO_SIZE >> 2) - 2));
+
+	if (!checksum)
+		goto _err;
+
+	if (checksum == boot_info->checksum)
+		ret = 0;
+_err:
+	free(buffer);
+	return ret;
+}
+
 #define GET_RSERVED_BASE_ADDR()	(_get_inherent_offset(MMC_RESERVED_NAME))
 static int amlmmc_write_info_sector(struct mmc *mmc, int dev)
 {
@@ -465,6 +508,34 @@ static int amlmmc_write_info_sector(struct mmc *mmc, int dev)
 		ret = -EIO;
 
 	free(buffer);
+	return ret;
+}
+
+int amlmmc_check_and_update_boot_info(void)
+{
+	struct mmc *mmc;
+	int ret = 0, i;
+
+	mmc = find_mmc_device(CONFIG_SYS_MMC_BOOT_DEV);
+	if (!mmc)
+		return -ENODEV;
+	ret = mmc_init(mmc);
+	if (ret)
+		return -ENODEV;
+
+	for (i = 1; i < 3; i++) {
+		if (mmc_select_hwpart(CONFIG_SYS_MMC_BOOT_DEV, i)) {
+			printf("switch dev %d to boot%d fail\n",
+				CONFIG_SYS_MMC_BOOT_DEV, i - 1);
+			continue;
+		}
+		if (!amlmmc_boot_info_check(mmc, CONFIG_SYS_MMC_BOOT_DEV))
+			break;
+		ret = amlmmc_write_info_sector(mmc, CONFIG_SYS_MMC_BOOT_DEV);
+		if (ret)
+			return -EIO;
+	}
+	mmc_select_hwpart(CONFIG_SYS_MMC_BOOT_DEV, 0);
 	return ret;
 }
 
