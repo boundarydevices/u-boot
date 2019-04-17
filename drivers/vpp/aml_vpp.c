@@ -1497,7 +1497,8 @@ void vpp_init(void)
 		set_vpp_bitdepth();
 
 		if ((get_cpu_id().family_id == MESON_CPU_MAJOR_ID_G12A) ||
-			(get_cpu_id().family_id == MESON_CPU_MAJOR_ID_G12B))
+			(get_cpu_id().family_id == MESON_CPU_MAJOR_ID_G12B &&
+			 get_cpu_id().chip_rev == MESON_CPU_CHIP_REVISION_A))
 			hdr_func(OSD1_HDR, HDR_BYPASS);
 	} else {
 		/* set dummy data default YUV black */
