@@ -51,3 +51,7 @@ config CMD_OTG_CABLE
 	bool "Enable otg cable detection"
 	depends on ARCH_MX6
 	default y
+
+config EXTRA_ENV_SETTINGS_DEFCONFIG
+	string "defconfig specific environment variables"
+	default ""
