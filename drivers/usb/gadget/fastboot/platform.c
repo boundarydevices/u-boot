@@ -264,7 +264,7 @@ void set_usb_phy21_tuning_fb_reset(void)
 #endif
 
 #if (defined CONFIG_TXLX_USB)
-#define USB_RESET1       (volatile unsigned long *)0xffd04408
+#define USB_RESET1       (volatile unsigned long *)0xffd01008
 #else
 #define USB_RESET1       (volatile unsigned long *)0xc1104408
 #endif
