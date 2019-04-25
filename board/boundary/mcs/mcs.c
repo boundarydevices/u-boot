@@ -79,10 +79,10 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IOMUX_PAD_CTRL(KEY_ROW4__GPIO4_IO15, WEAK_PULLUP),
 	/* J5 4-wire/5-wire select (4-wire is 0) */
 #define GP_4_5_WIRE_SELECT	IMX_GPIO_NR(5, 2)
-	IOMUX_PAD_CTRL(EIM_A25__GPIO5_IO02, WEAK_PULLDN),
+	IOMUX_PAD_CTRL(EIM_A25__GPIO5_IO02, INPUT_FLOAT),
 	/* SD3_DAT4 - jumpered 4-wire/5-wire select on first rev (4-wire was low) */
 #define GP_4_5_WIRE_SELECT_R1	IMX_GPIO_NR(7, 1)
-	IOMUX_PAD_CTRL(SD3_DAT4__GPIO7_IO01, WEAK_PULLDN),
+	IOMUX_PAD_CTRL(SD3_DAT4__GPIO7_IO01, INPUT_FLOAT),
 
 	/* HOGS - general gpios */
 	IOMUX_PAD_CTRL(EIM_A19__GPIO2_IO19, WEAK_PULLUP),	/* J54 pin 9 */
