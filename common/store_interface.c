@@ -687,7 +687,11 @@ static int do_store_exit(cmd_tbl_t * cmdtp, int flag, int argc, char * const arg
         }
     }
 #endif
-    return 0;
+	if (device_boot_flag == EMMC_BOOT_FLAG) {
+		/* partition table need renew */
+		is_partition_checked = false;
+	}
+	return 0;
 }
 
 static int do_store_disprotect(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
