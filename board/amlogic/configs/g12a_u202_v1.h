@@ -666,8 +666,8 @@
 #endif
 
 /* Choose One of Ethernet Type */
-#undef CONFIG_ETHERNET_NONE
-#define ETHERNET_INTERNAL_PHY
+#define CONFIG_ETHERNET_NONE
+#undef ETHERNET_INTERNAL_PHY
 #undef ETHERNET_EXTERNAL_PHY
 
 #define CONFIG_CMD_AML_MTEST 1
