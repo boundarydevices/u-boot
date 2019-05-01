@@ -293,6 +293,7 @@ static const struct display_info_t displays[] = {
 	/* hdmi */
 	VD_1920_1080M_60(HDMI, board_detect_hdmi, 0, 0x50),
 	VD_1280_720M_60(HDMI, NULL, 0, 0x50),
+	VD_MIPI_M101NWWB_NO_CMDS(MIPI, fbp_detect_i2c, fbp_bus_gp(0, GP_I2C1D_SN65DSI83_EN, 0, 0), 0x2c),
 	VD_MIPI_M101NWWB(MIPI, fbp_detect_i2c, fbp_bus_gp(0, GP_I2C1D_SN65DSI83_EN, 0, 0), 0x2c),
 	VD_LTK080A60A004T(MIPI, board_detect_gt911, fbp_bus_gp(0, GP_LTK08_MIPI_EN, GP_LTK08_MIPI_EN, 0), 0x5d),	/* Goodix touchscreen */
 	VD_LCM_JM430(MIPI, fbp_detect_i2c, fbp_bus_gp(0, GP_ST1633_RESET, GP_TC358762_EN, 30), fbp_addr_gp(0x55, GP_LCM_JM430_BKL_EN, 0, 0)),		/* Sitronix touch */
