@@ -241,10 +241,12 @@ int board_ehci_power(int port, int on)
 
 #ifdef CONFIG_FSL_ESDHC
 struct fsl_esdhc_cfg board_usdhc_cfg[] = {
+#if 0
 	{.esdhc_base = USDHC1_BASE_ADDR, .bus_width = 4,
 			.gp_cd = GP_USDHC1_CD},
+#endif
 	{.esdhc_base = USDHC2_BASE_ADDR, .bus_width = 8,
-			.vs18_enable = 1},
+			.vs18_enable = 0},
 };
 #endif
 
