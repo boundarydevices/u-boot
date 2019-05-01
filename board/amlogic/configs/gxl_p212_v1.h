@@ -110,6 +110,7 @@
         "frac_rate_policy=1\0" \
         "sdr2hdr=0\0" \
         "usb_burning=update 1000\0" \
+        "otg_device=1\0"\
         "fdt_high=0x20000000\0"\
         "lock=10001000\0"\
         "try_auto_burn=update 700 750;\0"\
@@ -139,7 +140,7 @@
             "else fi;"\
             "\0"\
     "storeargs="\
-            "setenv bootargs ${initargs} ${fs_type} reboot_mode_android=${reboot_mode_android} androidboot.selinux=${EnableSelinux} logo=${display_layer},loaded,${fb_addr},${outputmode} maxcpus=${maxcpus} vout=${outputmode},enable hdmimode=${hdmimode} frac_rate_policy=${frac_rate_policy} cvbsmode=${cvbsmode} hdmitx=${cecconfig},${colorattribute} cvbsdrv=${cvbs_drv} irq_check_en=${Irq_check_en}  androidboot.firstboot=${firstboot} jtag=${jtag}; "\
+            "setenv bootargs ${initargs} ${fs_type} otg_device=${otg_device} reboot_mode_android=${reboot_mode_android} androidboot.selinux=${EnableSelinux} logo=${display_layer},loaded,${fb_addr},${outputmode} maxcpus=${maxcpus} vout=${outputmode},enable hdmimode=${hdmimode} frac_rate_policy=${frac_rate_policy} cvbsmode=${cvbsmode} hdmitx=${cecconfig},${colorattribute} cvbsdrv=${cvbs_drv} irq_check_en=${Irq_check_en}  androidboot.firstboot=${firstboot} jtag=${jtag}; "\
 	    "setenv bootargs ${bootargs} androidboot.veritymode=enforcing androidboot.hardware=amlogic;"\
         "setenv bootargs ${bootargs} page_trace=${page_trace};" \
 	    "setenv bootargs ${bootargs} androidboot.rpmb_state=${rpmb_state};"\
