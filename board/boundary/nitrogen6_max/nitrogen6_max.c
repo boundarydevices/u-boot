@@ -452,6 +452,10 @@ void enable_backlight(const struct display_info_t *di, int enable, int gp_backli
 		if (gp)
 			gpio_set_value(gp, 0);
 	} else {
+#ifdef CONFIG_DEFAULT_DISPLAY_PM9598
+		if (enable)
+			mdelay(100);
+#endif
 		gpio_direction_output(gp_backlight, enable);
 	}
 }
@@ -505,8 +509,15 @@ static const struct display_info_t displays[] = {
 	VD_1024_768M_60(HDMI, NULL, 1, 0x50),
 
 	/* ft5x06 */
+#ifdef CONFIG_DEFAULT_DISPLAY_PM9598
+	VD_PM9598(LVDS2, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_HANNSTAR7(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+#else
 	VD_HANNSTAR7(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_PM9598(LVDS2, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+#endif
 	VD_HANNSTAR7(LVDS2, NULL, fbp_bus_gp(2, 0, GP_LVDS2_BKL_EN, 0), 0x38),
+	VD_PM9598(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x38),
 	VD_AUO_B101EW05(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
 	VD_AUO_B101EW05(LVDS2, NULL, fbp_bus_gp(2, 0, GP_LVDS2_BKL_EN, 0), 0x38),
 	VD_LG1280_800(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
@@ -514,6 +525,7 @@ static const struct display_info_t displays[] = {
 	VD_M101NWWB(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
 	VD_M101NWWB(LVDS2, NULL, fbp_bus_gp(2, 0, GP_LVDS2_BKL_EN, 0), 0x38),
 	VD_DT070BTFT(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_DT070BTFT(LVDS2, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
 	VD_WSVGA(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
 	VD_TM070JDHG30(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
 	VD_ND1024_600(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
