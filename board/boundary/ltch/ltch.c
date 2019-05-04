@@ -328,11 +328,15 @@ int board_spi_cs_gpio(unsigned bus, unsigned cs)
 
 void board_enable_lvds(const struct display_info_t *di, int enable)
 {
+	if (enable)
+		mdelay(100);
 	gpio_set_value(GP_BACKLIGHT_LVDS, enable);
 }
 
 void board_enable_lvds2(const struct display_info_t *di, int enable)
 {
+	if (enable)
+		mdelay(100);
 	gpio_set_value(GP_BACKLIGHT_LVDS2, enable);
 }
 
