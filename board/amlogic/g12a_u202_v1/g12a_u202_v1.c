@@ -804,19 +804,19 @@ int checkhw(char * name)
 		switch (ddr_size) {
 			case 0x80000000:
 				if (!strcmp(ddr_mode, "1g")) {
-					strcpy(loc_name, "sm1_ac200_1g\0");
+					strcpy(loc_name, "sm1_ac202_1g\0");
 					break;
 				}
-				strcpy(loc_name, "sm1_ac200_2g\0");
+				strcpy(loc_name, "sm1_ac202_2g\0");
 				break;
 			case 0x40000000:
-				strcpy(loc_name, "sm1_ac200_1g\0");
+				strcpy(loc_name, "sm1_ac202_1g\0");
 				break;
 			case 0x2000000:
-				strcpy(loc_name, "sm1_ac200_512m\0");
+				strcpy(loc_name, "sm1_ac202_512m\0");
 				break;
 			default:
-				strcpy(loc_name, "sm1_ac200_unsupport");
+				strcpy(loc_name, "sm1_ac202_unsupport");
 				break;
 		}
 	}
