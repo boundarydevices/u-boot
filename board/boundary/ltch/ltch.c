@@ -116,11 +116,11 @@ static const iomux_v3_cfg_t init_pads[] = {
 #define GP_LED3V		IMX_GPIO_NR(5, 7)
 	IOMUX_PAD_CTRL(DISP0_DAT13__GPIO5_IO07, WEAK_PULLUP),
 #define GP_LED3V_CTRL		IMX_GPIO_NR(5, 5)
-	IOMUX_PAD_CTRL(DISP0_DAT11__GPIO5_IO05, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(DISP0_DAT11__GPIO5_IO05, WEAK_PULLDN),
 #define GP_LED5V		IMX_GPIO_NR(5, 8)
 	IOMUX_PAD_CTRL(DISP0_DAT14__GPIO5_IO08, WEAK_PULLUP),
 #define GP_LED5V_CTRL		IMX_GPIO_NR(4, 31)
-	IOMUX_PAD_CTRL(DISP0_DAT10__GPIO4_IO31, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(DISP0_DAT10__GPIO4_IO31, WEAK_PULLDN),
 
 #define GP_TP55			IMX_GPIO_NR(7, 13)
 	IOMUX_PAD_CTRL(GPIO_18__GPIO7_IO13, WEAK_PULLUP),
@@ -398,14 +398,14 @@ static const unsigned short gpios_out_low[] = {
 	GP_UART5_TX_EN,
 	GP_USB_HUB_RESET,	/* disable hub */
 	GP_EMMC_RESET,		/* hold in reset */
+	GP_LED3V_CTRL,
+	GP_LED5V_CTRL,
 };
 
 static const unsigned short gpios_out_high[] = {
 	GP_ECSPI1_NOR_CS,	/* SS1 of spi nor */
 	GP_LED3V,
-	GP_LED3V_CTRL,
 	GP_LED5V,
-	GP_LED5V_CTRL,
 };
 
 static const unsigned short gpios_in[] = {
