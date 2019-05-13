@@ -15,6 +15,7 @@ config FEC_RESET_PULLUP
 	bool
 	default y if TARGET_NITROGEN8MM
 	default y if TARGET_NITROGEN8MM_SOM
+	default y if TARGET_NITROGEN7
 
 config OTG_CHARGER
 	bool "otg_charger"
