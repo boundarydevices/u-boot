@@ -378,10 +378,12 @@ static void setup_enet_ksz9021(void)
 #if defined(CONFIG_PHY_ATHEROS) || defined(CONFIG_PHY_MICREL)
 static void release_phy_reset(int gp)
 {
-#ifdef CONFIG_FEC_RESET_PULLUP
-	gpio_direction_input(gp);
-#else
 	gpio_set_value(gp, 1);
+#ifdef CONFIG_FEC_RESET_PULLUP
+	udelay(20);
+	gpio_direction_input(gp);
+	/* Let external pull have time to pull to guaranteed high */
+	udelay(200);
 #endif
 }
 
@@ -418,8 +420,7 @@ static void setup_iomux_enet(int kz)
 
 	/* strap hold time for AR8031, 18 fails, 19 works, so 40 should be safe */
 	/* strap hold time for AR8035, 5 fails, 6 works, so 12 should be safe */
-	/* 110 works for imx8MM, so 220 should be safe */
-	udelay(220);
+	udelay(40);
 #ifdef GP_KS8995_RESET
 	gpio_direction_output(GP_KS8995_RESET, 1);
 #endif
