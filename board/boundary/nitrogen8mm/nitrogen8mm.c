@@ -239,9 +239,29 @@ int board_usb_cleanup(int index, enum usb_init_type init)
 	return 0;
 }
 
+#if defined(CONFIG_CMD_FASTBOOT) || defined(CONFIG_CMD_DFU)
+extern void imx_get_mac_from_fuse(int dev_id, unsigned char *mac);
+static void addserial_env(const char* env_var)
+{
+        unsigned char mac_address[8];
+        char serialbuf[20];
+
+        if (!env_get(env_var)) {
+                imx_get_mac_from_fuse(0, mac_address);
+                snprintf(serialbuf, sizeof(serialbuf), "%02x%02x%02x%02x%02x%02x",
+                         mac_address[0], mac_address[1], mac_address[2],
+                         mac_address[3], mac_address[4], mac_address[5]);
+                env_set(env_var, serialbuf);
+        }
+}
+#endif
+
 int board_late_init(void)
 {
 	set_env_vars();
+#if defined(CONFIG_USB_FUNCTION_FASTBOOT) || defined(CONFIG_CMD_DFU)
+	addserial_env("serial#");
+#endif
 #ifdef CONFIG_ENV_IS_IN_MMC
 	env_set_ulong("mmcdev", 0);
 	run_command("mmc dev 0", 0);
