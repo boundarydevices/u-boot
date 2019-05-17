@@ -9,6 +9,7 @@
 #include <linux/sizes.h>
 #include <linux/stringify.h>
 #include <asm/arch/imx-regs.h>
+#include "imx_env.h"
 
 #define CONFIG_SYS_BOOTM_LEN		(64 * SZ_1M)
 
@@ -56,8 +57,16 @@
 #include <config_distro_bootcmd.h>
 #endif
 
+#define CONFIG_MFG_ENV_SETTINGS \
+	CONFIG_MFG_ENV_SETTINGS_DEFAULT \
+	"initrd_addr=0x43800000\0" \
+	"initrd_high=0xffffffffffffffff\0" \
+	"emmc_dev=0\0"\
+	"sd_dev=1\0" \
+
 /* Initial environment variables */
 #define CONFIG_EXTRA_ENV_SETTINGS		\
+	CONFIG_MFG_ENV_SETTINGS \
 	BOOTENV \
 	"scriptaddr=" __stringify(CONFIG_SYS_LOAD_ADDR) "\0" \
 	"kernel_addr_r=" __stringify(CONFIG_SYS_LOAD_ADDR) "\0" \
@@ -98,4 +107,7 @@
 #define CONFIG_SYS_FSL_USDHC_NUM	2
 #define CONFIG_SYS_FSL_ESDHC_ADDR       0
 
+#define CONFIG_CMD_READ
+#define CONFIG_SERIAL_TAG
+#define CONFIG_FASTBOOT_USB_DEV 0
 #endif
