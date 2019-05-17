@@ -19441,8 +19441,8 @@
 //           the aync fifo will be reseted.
 // Bit 1,
 // Bit 0    if true, the output result of VPP is saturated
-#define   VPP2_MISC                                (0x1926)
-#define P_VPP2_MISC                                (volatile unsigned int *)((0x1926  << 2) + 0xff900000)
+#define   VPP2_MISC                                (0x1e26)
+#define P_VPP2_MISC                                (volatile unsigned int *)((0x1e26  << 2) + 0xff900000)
 //Bit 31:20 ofifo line length minus 1
 //Bit 19  if true invert input vs
 //Bit 18  if true invert input hs
@@ -19451,8 +19451,8 @@
 //Bit 15  force one go_field, one pluse, write only
 //Bit 14  force one go_line, one pluse, write only
 //Bit 12:0 ofifo size (actually only bit 10:1 is valid), always even number
-#define   VPP2_OFIFO_SIZE                          (0x1927)
-#define P_VPP2_OFIFO_SIZE                          (volatile unsigned int *)((0x1927  << 2) + 0xff900000)
+#define   VPP2_OFIFO_SIZE                          (0x1e27)
+#define P_VPP2_OFIFO_SIZE                          (volatile unsigned int *)((0x1e27  << 2) + 0xff900000)
 //Read only
 //Bit 28:17 current scale out fifo counter
 //Bit 16:12 current afifo counter
@@ -19872,8 +19872,8 @@
 #define   VPP2_OSD_SCALE_COEF                      (0x19cd)
 #define P_VPP2_OSD_SCALE_COEF                      (volatile unsigned int *)((0x19cd  << 2) + 0xff900000)
 //Bit 12:0 line number use to generate interrupt when line == this number
-#define   VPP2_INT_LINE_NUM                        (0x19ce)
-#define P_VPP2_INT_LINE_NUM                        (volatile unsigned int *)((0x19ce  << 2) + 0xff900000)
+#define   VPP2_INT_LINE_NUM                        (0x1e20)
+#define P_VPP2_INT_LINE_NUM                        (volatile unsigned int *)((0x1e20  << 2) + 0xff900000)
 // synopsys translate_off
 // synopsys translate_on
 //
@@ -23752,8 +23752,8 @@
 // Bit     4 RW, ctrl_422to444
 // Bit  3: 0 RW, osd_blk_enable. Bit 0 to enable block 0: 1=enable, 0=disable;
 //                               Bit 1 to enable block 1, and so on.
-#define   VIU2_OSD1_CTRL_STAT                      (0x1e10)
-#define P_VIU2_OSD1_CTRL_STAT                      (volatile unsigned int *)((0x1e10  << 2) + 0xff900000)
+#define   VIU2_OSD1_CTRL_STAT                      (0x1e30)
+#define P_VIU2_OSD1_CTRL_STAT                      (volatile unsigned int *)((0x1e30  << 2) + 0xff900000)
 // Bit 31:26 Reserved
 // Bit 25:16 R, fifo_count
 // Bit 15: 6 Reserved
@@ -23762,8 +23762,8 @@
 // Bit     2 RW, alpha_9b_mode
 // Bit     1 RW, reserved
 // Bit     0 RW, color_expand_mode
-#define   VIU2_OSD1_CTRL_STAT2                     (0x1e2d)
-#define P_VIU2_OSD1_CTRL_STAT2                     (volatile unsigned int *)((0x1e2d  << 2) + 0xff900000)
+#define   VIU2_OSD1_CTRL_STAT2                     (0x1e4d)
+#define P_VIU2_OSD1_CTRL_STAT2                     (volatile unsigned int *)((0x1e4d  << 2) + 0xff900000)
 // Bit 31: 9 Reserved
 // Bit     8 RW, 0 = Write LUT, 1 = Read LUT
 // Bit  7: 0 RW, lut_addr
@@ -23779,14 +23779,14 @@
 // Bit 23:16 RW, Cb or G
 // Bit 15: 8 RW, Cr or B
 // Bit  7: 0 RW, Alpha
-#define   VIU2_OSD1_TCOLOR_AG0                     (0x1e17)
-#define P_VIU2_OSD1_TCOLOR_AG0                     (volatile unsigned int *)((0x1e17  << 2) + 0xff900000)
-#define   VIU2_OSD1_TCOLOR_AG1                     (0x1e18)
-#define P_VIU2_OSD1_TCOLOR_AG1                     (volatile unsigned int *)((0x1e18  << 2) + 0xff900000)
-#define   VIU2_OSD1_TCOLOR_AG2                     (0x1e19)
-#define P_VIU2_OSD1_TCOLOR_AG2                     (volatile unsigned int *)((0x1e19  << 2) + 0xff900000)
-#define   VIU2_OSD1_TCOLOR_AG3                     (0x1e1a)
-#define P_VIU2_OSD1_TCOLOR_AG3                     (volatile unsigned int *)((0x1e1a  << 2) + 0xff900000)
+#define   VIU2_OSD1_TCOLOR_AG0                     (0x1e37)
+#define P_VIU2_OSD1_TCOLOR_AG0                     (volatile unsigned int *)((0x1e37  << 2) + 0xff900000)
+#define   VIU2_OSD1_TCOLOR_AG1                     (0x1e38)
+#define P_VIU2_OSD1_TCOLOR_AG1                     (volatile unsigned int *)((0x1e38  << 2) + 0xff900000)
+#define   VIU2_OSD1_TCOLOR_AG2                     (0x1e39)
+#define P_VIU2_OSD1_TCOLOR_AG2                     (volatile unsigned int *)((0x1e39  << 2) + 0xff900000)
+#define   VIU2_OSD1_TCOLOR_AG3                     (0x1e3a)
+#define P_VIU2_OSD1_TCOLOR_AG3                     (volatile unsigned int *)((0x1e3a  << 2) + 0xff900000)
 // Bit 31:30 Reserved
 // Bit    29 RW, y_rev: 0=normal read, 1=reverse read in Y direction
 // Bit    28 RW, x_rev: 0=normal read, 1=reverse read in X direction
@@ -23803,8 +23803,8 @@
 // Bit  5: 2 RW, color_matrix
 // Bit     1 RW, interlace_en
 // Bit     0 RW, interlace_sel_odd
-#define   VIU2_OSD1_BLK0_CFG_W0                    (0x1e1b)
-#define P_VIU2_OSD1_BLK0_CFG_W0                    (volatile unsigned int *)((0x1e1b  << 2) + 0xff900000)
+#define   VIU2_OSD1_BLK0_CFG_W0                    (0x1e3b)
+#define P_VIU2_OSD1_BLK0_CFG_W0                    (volatile unsigned int *)((0x1e3b  << 2) + 0xff900000)
 #define   VIU2_OSD1_BLK1_CFG_W0                    (0x1e1f)
 #define P_VIU2_OSD1_BLK1_CFG_W0                    (volatile unsigned int *)((0x1e1f  << 2) + 0xff900000)
 #define   VIU2_OSD1_BLK2_CFG_W0                    (0x1e23)
@@ -23815,8 +23815,8 @@
 // Bit 28:16 RW, x_end
 // Bit 15:13 Reserved
 // Bit 12: 0 RW, x_start
-#define   VIU2_OSD1_BLK0_CFG_W1                    (0x1e1c)
-#define P_VIU2_OSD1_BLK0_CFG_W1                    (volatile unsigned int *)((0x1e1c  << 2) + 0xff900000)
+#define   VIU2_OSD1_BLK0_CFG_W1                    (0x1e3c)
+#define P_VIU2_OSD1_BLK0_CFG_W1                    (volatile unsigned int *)((0x1e3c  << 2) + 0xff900000)
 #define   VIU2_OSD1_BLK1_CFG_W1                    (0x1e20)
 #define P_VIU2_OSD1_BLK1_CFG_W1                    (volatile unsigned int *)((0x1e20  << 2) + 0xff900000)
 #define   VIU2_OSD1_BLK2_CFG_W1                    (0x1e24)
@@ -23827,8 +23827,8 @@
 // Bit 28:16 RW, y_end
 // Bit 15:13 Reserved
 // Bit 12: 0 RW, y_start
-#define   VIU2_OSD1_BLK0_CFG_W2                    (0x1e1d)
-#define P_VIU2_OSD1_BLK0_CFG_W2                    (volatile unsigned int *)((0x1e1d  << 2) + 0xff900000)
+#define   VIU2_OSD1_BLK0_CFG_W2                    (0x1e3d)
+#define P_VIU2_OSD1_BLK0_CFG_W2                    (volatile unsigned int *)((0x1e3d  << 2) + 0xff900000)
 #define   VIU2_OSD1_BLK1_CFG_W2                    (0x1e21)
 #define P_VIU2_OSD1_BLK1_CFG_W2                    (volatile unsigned int *)((0x1e21  << 2) + 0xff900000)
 #define   VIU2_OSD1_BLK2_CFG_W2                    (0x1e25)
@@ -23839,8 +23839,8 @@
 // Bit 27:16 RW, h_end
 // Bit 15:12 Reserved
 // Bit 11: 0 RW, h_start
-#define   VIU2_OSD1_BLK0_CFG_W3                    (0x1e1e)
-#define P_VIU2_OSD1_BLK0_CFG_W3                    (volatile unsigned int *)((0x1e1e  << 2) + 0xff900000)
+#define   VIU2_OSD1_BLK0_CFG_W3                    (0x1e3e)
+#define P_VIU2_OSD1_BLK0_CFG_W3                    (volatile unsigned int *)((0x1e3e  << 2) + 0xff900000)
 #define   VIU2_OSD1_BLK1_CFG_W3                    (0x1e22)
 #define P_VIU2_OSD1_BLK1_CFG_W3                    (volatile unsigned int *)((0x1e22  << 2) + 0xff900000)
 #define   VIU2_OSD1_BLK2_CFG_W3                    (0x1e26)
@@ -23851,12 +23851,12 @@
 // Bit 27:16 RW, v_end
 // Bit 15:12 Reserved
 // Bit 11: 0 RW, v_start
-#define   VIU2_OSD1_BLK0_CFG_W4                    (0x1e13)
-#define P_VIU2_OSD1_BLK0_CFG_W4                    (volatile unsigned int *)((0x1e13  << 2) + 0xff900000)
-#define   VIU2_OSD1_BLK1_CFG_W4                    (0x1e14)
-#define P_VIU2_OSD1_BLK1_CFG_W4                    (volatile unsigned int *)((0x1e14  << 2) + 0xff900000)
-#define   VIU2_OSD1_BLK2_CFG_W4                    (0x1e15)
-#define P_VIU2_OSD1_BLK2_CFG_W4                    (volatile unsigned int *)((0x1e15  << 2) + 0xff900000)
+#define   VIU2_OSD1_BLK0_CFG_W4                    (0x1e64)
+#define P_VIU2_OSD1_BLK0_CFG_W4                    (volatile unsigned int *)((0x1e64  << 2) + 0xff900000)
+#define   VIU2_OSD1_BLK1_CFG_W4                    (0x1e65)
+#define P_VIU2_OSD1_BLK1_CFG_W4                    (volatile unsigned int *)((0x1e65  << 2) + 0xff900000)
+#define   VIU2_OSD1_BLK2_CFG_W4                    (0x1e66)
+#define P_VIU2_OSD1_BLK2_CFG_W4                    (volatile unsigned int *)((0x1e66  << 2) + 0xff900000)
 #define   VIU2_OSD1_BLK3_CFG_W4                    (0x1e16)
 #define P_VIU2_OSD1_BLK3_CFG_W4                    (volatile unsigned int *)((0x1e16  << 2) + 0xff900000)
 // Bit    31 RW, burst_len_sel[2] of [2:0]
@@ -23876,18 +23876,18 @@
 // Bit     3 RW, fifo_sync_rst
 // Bit  2: 1 RW, endian
 // Bit     0 RW, urgent
-#define   VIU2_OSD1_FIFO_CTRL_STAT                 (0x1e2b)
-#define P_VIU2_OSD1_FIFO_CTRL_STAT                 (volatile unsigned int *)((0x1e2b  << 2) + 0xff900000)
+#define   VIU2_OSD1_FIFO_CTRL_STAT                 (0x1e4b)
+#define P_VIU2_OSD1_FIFO_CTRL_STAT                 (volatile unsigned int *)((0x1e4b  << 2) + 0xff900000)
 // Bit 31:24 R, Y or R
 // Bit 23:16 R, Cb or G
 // Bit 15: 8 R, Cr or B
 // Bit  7: 0 R, Output Alpha[8:1]
-#define   VIU2_OSD1_TEST_RDDATA                    (0x1e2c)
-#define P_VIU2_OSD1_TEST_RDDATA                    (volatile unsigned int *)((0x1e2c  << 2) + 0xff900000)
+#define   VIU2_OSD1_TEST_RDDATA                    (0x1e4c)
+#define P_VIU2_OSD1_TEST_RDDATA                    (volatile unsigned int *)((0x1e4c  << 2) + 0xff900000)
 // Bit    15 RW, prot_en: 1=Borrow PROT's FIFO storage, either for rotate or non-rotate.
 // Bit 12: 0 RW, effective FIFO size when prot_en=1.
-#define   VIU2_OSD1_PROT_CTRL                      (0x1e2e)
-#define P_VIU2_OSD1_PROT_CTRL                      (volatile unsigned int *)((0x1e2e  << 2) + 0xff900000)
+#define   VIU2_OSD1_PROT_CTRL                      (0x1e4e)
+#define P_VIU2_OSD1_PROT_CTRL                      (volatile unsigned int *)((0x1e4e  << 2) + 0xff900000)
 //------------------------------------------------------------------------------
 // OSD2 registers
 //------------------------------------------------------------------------------

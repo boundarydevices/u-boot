@@ -173,7 +173,7 @@ typedef struct pic_info_t {
 	unsigned int pic_height;
 	unsigned int bpp;
 	ulong pic_image;
-}pic_info_t;
+} pic_info_t;
 static pic_info_t g_pic_info;
 static int img_video_init = 0;
 static int fb_index = -1;
@@ -199,22 +199,29 @@ static void osd_layer_init(GraphicDevice *gdev, int layer)
 	const struct color_bit_define_s *color =
 			&default_color_format_array[gdev->gdfIndex];
 
-#ifdef CONFIG_OSD_SCALE_ENABLE
-	xres = gdev->fb_width;
-	yres = gdev->fb_height;
-	xres_virtual = gdev->fb_width;
-	yres_virtual = gdev->fb_height * 2;
-	disp_end_x = gdev->fb_width - 1;
-	disp_end_y = gdev->fb_height - 1;
-#else
-	xres = gdev->winSizeX;
-	yres = gdev->winSizeY;
-	xres_virtual = gdev->winSizeX;
-	yres_virtual = gdev->winSizeY * 2;
-	disp_end_x = gdev->winSizeX - 1;
-	disp_end_y = gdev->winSizeY - 1;
+	if (index >= VIU2_OSD1) {
+		xres = gdev->winSizeX;
+		yres = gdev->winSizeY;
+		xres_virtual = gdev->winSizeX;
+		yres_virtual = gdev->winSizeY * 2;
+		disp_end_x = gdev->winSizeX - 1;
+		disp_end_y = gdev->winSizeY - 1;
+	} else {
+		xres = gdev->fb_width;
+		yres = gdev->fb_height;
+		xres_virtual = gdev->fb_width;
+		yres_virtual = gdev->fb_height * 2;
+		disp_end_x = gdev->fb_width - 1;
+		disp_end_y = gdev->fb_height - 1;
+	}
+
+#ifdef CONFIG_AML_MESON_G12A
+	if (index >= VIU2_OSD1)
+		osd_init_hw_viu2();
+	else
 #endif
-	osd_init_hw();
+		osd_init_hw();
+
 	osd_setup_hw(index,
 		     xoffset,
 		     yoffset,
@@ -376,6 +383,7 @@ static void get_osd_version(void)
 	else
 		osd_hw.osd_ver = OSD_NORMAL;
 }
+
 int get_osd_layer(void)
 {
 	char *layer_str;
@@ -387,6 +395,8 @@ int get_osd_layer(void)
 			osd_index = OSD1;
 		else if (strcmp(layer_str, "osd1") == 0)
 			osd_index = OSD2;
+		else if (strcmp(layer_str, "viu2_osd0") == 0)
+			osd_index = VIU2_OSD1;
 		fb_index = osd_index;
 	}
 	return fb_index;
@@ -420,8 +430,13 @@ static void *osd_hw_init(void)
 			return NULL;
 		}
 		osd_layer_init(&fb_gdev, OSD2);
-	}
-	else {
+	} else if (osd_index == VIU2_OSD1) {
+		if (osd_hw.osd_ver == OSD_SIMPLE) {
+			osd_loge("AXG not support viu2 osd0\n");
+			return NULL;
+		}
+		osd_layer_init(&fb_gdev, VIU2_OSD1);
+	} else {
 		osd_loge("display_layer(%d) invalid\n", osd_index);
 		return NULL;
 	}
@@ -595,15 +610,10 @@ int video_display_bitmap(ulong bmp_image, int x, int y)
 	uchar *bmap;
 	ushort padded_line;
 	unsigned long width, height;
-#ifdef CONFIG_OSD_SCALE_ENABLE
-	unsigned long pheight = fb_gdev.fb_height;
-	unsigned long pwidth = fb_gdev.fb_width;
-#else
-	unsigned long pheight = info->width;
-	unsigned long pwidth = info->height;
-#endif
+	unsigned long pheight;
+	unsigned long pwidth;
 	unsigned colors, bpix, bmp_bpix;
-	int lcd_line_length = (pwidth * NBITS(info->vl_bpix)) / 8;
+	uint lcd_line_length;
 	int osd_index = -1;
 
 	osd_index = get_osd_layer();
@@ -612,6 +622,16 @@ int video_display_bitmap(ulong bmp_image, int x, int y)
 		return (-1);
 	}
 
+	/* viu1 has scaler, viu2 has no scaler */
+	if (osd_index >= VIU2_OSD1) {
+		pwidth = info->width;
+		pheight = info->height;
+	} else {
+		pheight = fb_gdev.fb_height;
+		pwidth = fb_gdev.fb_width;
+	}
+
+	lcd_line_length = (pwidth * NBITS(info->vl_bpix)) / 8;
 	if (fb_gdev.mode != FULL_SCREEN_MODE)
 		if (parse_bmp_info(bmp_image))
 			return -1;
@@ -973,15 +993,19 @@ int video_scale_bitmap(void)
 		fb_gdev.fb_width, fb_gdev.fb_height, fb_gdev.winSizeX, fb_gdev.winSizeY);
 
 	layer_str = getenv("display_layer");
-	vout_get_current_axis(axis);
 	if (strcmp(layer_str, "osd0") == 0)
-		osd_index = 0;
+		osd_index = OSD1;
 	else if (strcmp(layer_str, "osd1") == 0)
-		osd_index = 1;
-	else {
+		osd_index = OSD2;
+	else if (strcmp(layer_str, "viu2_osd0") == 0) {
+		osd_index = VIU2_OSD1;
+		goto enable_osd;
+	} else {
 		osd_logd2("video_scale_bitmap: invalid display_layer\n");
 		return (-1);
 	}
+	vout_get_current_axis(axis);
+
 #ifdef CONFIG_OSD_SUPERSCALE_ENABLE
 	if ((fb_gdev.fb_width * 2 != fb_gdev.winSizeX) ||
 	    (fb_gdev.fb_height * 2 != fb_gdev.winSizeY)) {
@@ -1005,6 +1029,8 @@ int video_scale_bitmap(void)
 	if (osd_hw.osd_ver == OSD_HIGH_ONE)
 		osd_update_blend(&disp_data);
 #endif
+
+enable_osd:
 	osd_enable_hw(osd_index, 1);
 
 	return (1);
