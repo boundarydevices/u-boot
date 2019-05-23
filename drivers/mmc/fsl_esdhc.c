@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0+
 /*
  * Copyright 2007, 2010-2011 Freescale Semiconductor, Inc
+ * Copyright 2019 NXP Semiconductors
  * Andy Fleming
  *
  * Based vaguely on the pxa mmc code:
@@ -25,6 +26,7 @@
 #include <asm-generic/gpio.h>
 #include <dm/pinctrl.h>
 #include <asm/arch/sys_proto.h>
+
 #if !CONFIG_IS_ENABLED(BLK)
 #include "mmc_private.h"
 #endif
@@ -38,6 +40,7 @@ DECLARE_GLOBAL_DATA_PTR;
 				IRQSTATEN_DEBE | IRQSTATEN_BRR | IRQSTATEN_BWR | \
 				IRQSTATEN_DINT)
 #define MAX_TUNING_LOOP 40
+#define ESDHC_DRIVER_STAGE_VALUE 0xffffffff
 
 struct fsl_esdhc {
 	uint    dsaddr;		/* SDMA system address register */
@@ -1696,17 +1699,14 @@ static int fsl_esdhc_probe(struct udevice *dev)
 	}
 
 	mmc = &plat->mmc;
+	mmc->cfg = &plat->cfg;
+	mmc->dev = dev;
 #if !CONFIG_IS_ENABLED(BLK)
-	if (!mmc->cfg)
-		mmc->cfg = &plat->cfg;
-	if (!mmc->priv)
-		mmc->priv = priv;
-
-	/* the following chunk was mmc_register() */
+	mmc->priv = priv;
 
 	/* Setup dsr related values */
 	mmc->dsr_imp = 0;
-	mmc->dsr = 0xffffffff;
+	mmc->dsr = ESDHC_DRIVER_STAGE_VALUE;
 	/* Setup the universal parts of the block interface just once */
 	bdesc = mmc_get_blk_desc(mmc);
 	bdesc->if_type = IF_TYPE_MMC;
@@ -1720,8 +1720,7 @@ static int fsl_esdhc_probe(struct udevice *dev)
 	bdesc->part_type = mmc->cfg->part_type;
 	mmc_list_add(mmc);
 #endif
-	mmc->cfg = &plat->cfg;
-	mmc->dev = dev;
+
 	upriv->mmc = mmc;
 
 	return esdhc_init_common(priv, mmc);
