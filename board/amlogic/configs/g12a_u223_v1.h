@@ -1,7 +1,5 @@
 
 /*
- * board/amlogic/configs/g12a_u221_v1.h
- *
  * Copyright (C) 2015 Amlogic, Inc. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,8 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
-#ifndef __G12A_U221_V1_H__
-#define __G12A_U221_V1_H__
+#ifndef __BOARD_H__
+#define __BOARD_H__
 
 #include <asm/arch/cpu.h>
 
