@@ -445,3 +445,26 @@ U_BOOT_CMD(
 );
 
 #endif  /* CONFIG_CMD_LINK_LOCAL */
+
+static int do_ethloop(cmd_tbl_t *cmdtp, int flag, int argc,
+			char * const argv[])
+{
+	if (argc != 1)
+		return -1;
+
+	if (NetLoop(ETHLOOP) < 0) {
+		printf("loopback test failed\n");
+		return 1;
+	}
+
+	printf("loopback test successfully completed\n");
+	return 0;
+}
+
+U_BOOT_CMD(
+	ethloop,	1,	1,	do_ethloop,
+	"ethloop\t- loopback test using ethernet test package\n",
+	""
+);
+
+

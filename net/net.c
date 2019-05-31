@@ -108,6 +108,9 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
+#define ETHLOOP_LEN		256
+static void EthLoopStart(void);
+static void EthLoopHandler (uchar * pkt, unsigned dest, IPaddr_t sip, unsigned src, unsigned len);
 /** BOOTP EXTENTIONS **/
 
 /* Our subnet mask (0=unknown) */
@@ -154,6 +157,7 @@ unsigned	NetIPID;
 /* Ethernet bcast address */
 uchar		NetBcastAddr[6] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
 uchar		NetEtherNullAddr[6];
+uchar		EtherPacket[ETHLOOP_LEN];	/* buffer for loopback test frame */
 #ifdef CONFIG_API
 void		(*push_packet)(void *, int len) = 0;
 #endif
@@ -396,6 +400,9 @@ restart:
 			BootpReset();
 			NetOurIP = 0;
 			BootpRequest();
+			break;
+		case ETHLOOP:
+			EthLoopStart();
 			break;
 
 #if defined(CONFIG_CMD_RARP)
@@ -1053,6 +1060,9 @@ NetReceive(uchar *inpkt, int len)
 
 	switch (eth_proto) {
 
+	case PROT_TEST:
+		EthLoopHandler((uchar *)NetRxPacket, 0, 0, 0, NetRxPacketLen);
+		break;
 	case PROT_ARP:
 		ArpReceive(et, ip, len);
 		break;
@@ -1259,6 +1269,7 @@ common:
 #ifdef CONFIG_CMD_RARP
 	case RARP:
 #endif
+  case ETHLOOP:
 	case BOOTP:
 	case CDP:
 	case DHCP:
@@ -1372,6 +1383,48 @@ int net_update_ether(struct ethernet_hdr *et, uchar *addr, uint prot)
 		return E802_HDR_SIZE;
 	}
 }
+
+int EthLoopSend(void)
+{
+	int i;
+	uchar *pkt;
+
+	for (i=0 ; i<ETHLOOP_LEN ; i++) {
+		EtherPacket[i] = i;
+	}
+	pkt = (uchar *)EtherPacket;
+	pkt += NetSetEther (pkt, NetOurEther, PROT_TEST); /* set our MAC address as destination address */
+	(void) eth_send(EtherPacket, ETHLOOP_LEN);
+
+	return 1;	/* waiting */
+}
+
+static void EthLoopTimeout (void)
+{
+	eth_halt();
+	net_set_state(NETLOOP_FAIL);	/* we did not get the reply */
+}
+
+static void EthLoopHandler (uchar * pkt, unsigned dest, IPaddr_t sip, unsigned src, unsigned len)
+{
+	int i;
+
+	net_set_state(NETLOOP_SUCCESS);
+	len -= 4;
+	for (i=0 ; i<len ; i++) {
+		if (EtherPacket[i] != pkt[i]) {
+			net_set_state(NETLOOP_FAIL);
+			break;
+		}
+	}
+}
+
+static void EthLoopStart(void)
+{
+	NetSetTimeout (1000UL, EthLoopTimeout);
+	EthLoopSend();
+}
+
 
 void net_set_ip_header(uchar *pkt, IPaddr_t dest, IPaddr_t source)
 {

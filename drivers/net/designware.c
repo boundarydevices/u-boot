@@ -17,6 +17,7 @@
 #include <asm/io.h>
 #include <asm/arch/io.h>
 #include "designware.h"
+#include <asm/arch/secure_apb.h>
 
 #if !defined(CONFIG_PHYLIB)
 # error "DesignWare Ether MAC requires PHYLIB - missing CONFIG_PHYLIB"
@@ -311,7 +312,6 @@ static int dw_eth_send(struct eth_device *dev, void *packet, int length)
 	}
 
 	memcpy((void *)(phys_addr_t)desc_p->dmamac_addr, packet, length);
-
 	/* Flush data to be sent */
 	flush_dcache_range((phys_addr_t)priv->txbuffs, (phys_addr_t)priv->txbuffs + TX_TOTAL_BUFSIZE);
 
@@ -370,7 +370,6 @@ static int dw_eth_recv(struct eth_device *dev)
 		invalidate_dcache_range((phys_addr_t)priv->rxbuffs, (phys_addr_t)priv->rxbuffs + RX_TOTAL_BUFSIZE);
 
 		NetReceive((uchar *)(phys_addr_t)desc_p->dmamac_addr, length);
-
 		/*
 		 * Make the current descriptor valid again and go to
 		 * the next one
@@ -597,6 +596,126 @@ static int do_cbusreg(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	return 0;
 }
 
+static int do_autocali(cmd_tbl_t *cmdtp, int flag, int argc,
+			char * const argv[])
+{
+	unsigned int i,j /*, valid = 0*/;
+	unsigned int loop_num;
+	unsigned int loop_type;
+	u16 reg = 0;
+
+	if (argc < 3) {
+		return cmd_usage(cmdtp);
+	}
+
+	loop_num = simple_strtoul(argv[1], NULL, 10);
+	loop_type = simple_strtoul(argv[2], NULL, 10);
+	if (loop_type) {
+		phy_write(priv->phydev, MDIO_DEVAD_NONE, 0, 0x5040);
+		mdelay(100);
+	} else {
+		//MDI 1000M loopback
+		phy_write(priv->phydev, MDIO_DEVAD_NONE, 31, 0x0a43);
+		phy_write(priv->phydev, MDIO_DEVAD_NONE, 0, 0x8000);
+		mdelay(40);
+		phy_write(priv->phydev, MDIO_DEVAD_NONE, 0, 0x1140);
+		phy_write(priv->phydev, MDIO_DEVAD_NONE, 24, 0x2d18);
+		mdelay(400);
+	}
+	printf("----------normal----------\n");
+	for (i = 0; i < 16; i++) {
+		writel(i << 16, 0xff634544);
+		printf("0x%05x\n", i << 16);
+		mdelay(20);
+		for (j=0; j<loop_num; j++) {
+			if (NetLoop(ETHLOOP) < 0) {
+				printf("failed\n\n");
+			} else {
+				printf("success\n\n");
+			}
+			mdelay(10);
+		}
+	}
+	printf("----------invert----------\n");
+	writel(0x1629, 0xff634540);
+	for (i = 0; i < 16; i++) {
+		writel(i << 16, 0xff634544);
+		printf("0x%05x\n", i << 16);
+		mdelay(20);
+		for (j=0; j<loop_num; j++) {
+			if (NetLoop(ETHLOOP) < 0) {
+				printf("failed\n\n");
+			} else {
+				printf("success\n\n");
+			}
+			mdelay(10);
+		}
+	}
+	/*no cali match*/
+	/*add 2ns delay and invert clk*/
+	/*reset exphy to add 2ns delay*/
+#if 0
+	clrbits_le32(P_PERIPHS_PIN_MUX_6, 0xf << 16);
+	clrbits_le32(P_PREG_PAD_GPIO4_EN_N, 1 << 4);
+	setbits_le32(P_PREG_PAD_GPIO4_O, 1 << 4);
+
+	clrbits_le32(P_PERIPHS_PIN_MUX_7, 0xf << 28);
+	clrbits_le32(P_PREG_PAD_GPIO4_EN_N, 1 << 15);
+	mdelay(20);
+	setbits_le32(P_PREG_PAD_GPIO4_EN_N, 1 << 15);
+	mdelay(100);
+#else
+	phy_write(priv->phydev, MDIO_DEVAD_NONE,31, 0xd08);
+	reg = phy_read(priv->phydev, MDIO_DEVAD_NONE,0x15);
+	reg = phy_write(priv->phydev, MDIO_DEVAD_NONE, 0x15, reg | 0x8);
+	phy_write(priv->phydev, MDIO_DEVAD_NONE, 31, 0x0);
+#endif
+	/*inverte clk*/
+	writel(0x1629, 0xff634540);
+	/*test cali value*/
+	if (loop_type) {
+		phy_write(priv->phydev, MDIO_DEVAD_NONE, 0, 0x5040);
+		mdelay(100);
+	} else {
+		phy_write(priv->phydev, MDIO_DEVAD_NONE, 31, 0x0a43);
+		phy_write(priv->phydev, MDIO_DEVAD_NONE, 0, 0x8000);
+		mdelay(40);
+		phy_write(priv->phydev, MDIO_DEVAD_NONE, 0, 0x1140);
+		phy_write(priv->phydev, MDIO_DEVAD_NONE, 24, 0x2d18);
+		mdelay(400);
+	}
+	printf("----invert && add 2ns-----\n");
+	for (i = 0; i < 16; i++) {
+		writel(i << 16, 0xff634544);
+		printf("0x%05x\n", i << 16);
+		mdelay(20);
+		for (j=0;j<loop_num;j++) {
+			if (NetLoop(ETHLOOP) < 0) {
+				printf("failed\n\n");
+			} else {
+				printf("success\n\n");
+			}
+			mdelay(10);
+		}
+	}
+	writel(0x1621, 0xff634540);
+
+	printf("----normal && add 2ns-----\n");
+	for (i = 0; i < 16; i++) {
+		writel(i << 16, 0xff634544);
+		printf("0x%05x\n", i << 16);
+		mdelay(20);
+		for (j=0; j<loop_num; j++) {
+			if (NetLoop(ETHLOOP) < 0) {
+				printf("failed\n\n");
+			} else {
+				printf("success\n\n");
+			}
+			mdelay(10);
+		}
+	}
+	return 0;
+}
 U_BOOT_CMD(
 		phyreg, 4, 1, do_phyreg,
 		"ethernet phy register read/write/dump",
@@ -619,4 +738,9 @@ U_BOOT_CMD(
 		"r reg        - read cbus register\n"
 		"        w reg val    - write cbus register"
 		);
+U_BOOT_CMD(
+	autocali,	3,	1,	do_autocali,
+	"auto cali\t- auto set cali value for exphy\n",
+	""
+)
 /* amlogic debug cmd end */
