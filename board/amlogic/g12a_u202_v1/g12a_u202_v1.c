@@ -611,6 +611,7 @@ int board_init(void)
 #ifdef CONFIG_USB_XHCI_AMLOGIC_V2
 	board_usb_pll_disable(&g_usb_config_GXL_skt);
 	board_usb_init(&g_usb_config_GXL_skt,BOARD_USB_MODE_HOST);
+	gpio_set_vbus_power(1);
 #endif /*CONFIG_USB_XHCI_AMLOGIC*/
 
 #if 0
