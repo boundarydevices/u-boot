@@ -44,7 +44,7 @@
 /* configs for CEC */
 #define CONFIG_CEC_OSD_NAME		"Mbox"
 #define CONFIG_CEC_WAKEUP
-
+#define CONFIG_BT_WAKEUP
 #define CONFIG_INSTABOOT
 /* configs for dtb in boot.img */
 //#define DTB_BIND_KERNEL
@@ -108,8 +108,11 @@
         "fb_width=1920\0" \
         "fb_height=1080\0" \
         "frac_rate_policy=1\0" \
+        "sdr2hdr=0\0" \
         "usb_burning=update 1000\0" \
+        "otg_device=1\0"\
         "fdt_high=0x20000000\0"\
+        "lock=10001000\0"\
         "try_auto_burn=update 700 750;\0"\
         "sdcburncfg=aml_sdc_burn.ini\0"\
         "sdc_burning=sdc_burn ${sdcburncfg}\0"\
@@ -117,15 +120,18 @@
         "wipe_cache=successful\0"\
         "EnableSelinux=enforcing\0"\
         "recovery_part=recovery\0"\
-        "lock=10001000\0"\
         "recovery_offset=0\0"\
         "cvbs_drv=0\0"\
         "active_slot=normal\0"\
+        "page_trace=on\0"\
         "boot_part=boot\0"\
+        "rpmb_state=0\0"\
+        "Irq_check_en=0\0"\
         "reboot_mode_android=""normal""\0"\
         "fs_type=""rootfstype=ramfs""\0"\
+        "colorattribute=444,8bit\0"\
         "initargs="\
-            "init=/init console=ttyS0,115200 no_console_suspend earlyprintk=aml-uart,0xc81004c0 ramoops.pstore_en=1 ramoops.record_size=0x8000 ramoops.console_size=0x4000 "\
+            "init=/init console=ttyS0,115200 no_console_suspend earlycon=aml_uart,0xc81004c0 ramoops.pstore_en=1 ramoops.record_size=0x8000 ramoops.console_size=0x4000 "\
             "\0"\
         "upgrade_check="\
             "echo upgrade_step=${upgrade_step}; "\
@@ -134,8 +140,10 @@
             "else fi;"\
             "\0"\
     "storeargs="\
-            "setenv bootargs ${initargs} ${fs_type} reboot_mode_android=${reboot_mode_android} androidboot.selinux=${EnableSelinux} logo=${display_layer},loaded,${fb_addr},${outputmode} maxcpus=${maxcpus} vout=${outputmode},enable hdmimode=${hdmimode} cvbsmode=${cvbsmode} hdmitx=${cecconfig} cvbsdrv=${cvbs_drv} androidboot.firstboot=${firstboot} jtag=${jtag}; "\
-	"setenv bootargs ${bootargs} androidboot.hardware=amlogic;"\
+            "setenv bootargs ${initargs} otg_device=${otg_device} reboot_mode_android=${reboot_mode_android} androidboot.selinux=${EnableSelinux} logo=${display_layer},loaded,${fb_addr},${outputmode} maxcpus=${maxcpus} vout=${outputmode},enable hdmimode=${hdmimode} frac_rate_policy=${frac_rate_policy} cvbsmode=${cvbsmode} hdmitx=${cecconfig},${colorattribute} cvbsdrv=${cvbs_drv} irq_check_en=${Irq_check_en}  androidboot.firstboot=${firstboot} jtag=${jtag}; "\
+	    "setenv bootargs ${bootargs} androidboot.veritymode=enforcing androidboot.hardware=amlogic;"\
+        "setenv bootargs ${bootargs} page_trace=${page_trace};" \
+	    "setenv bootargs ${bootargs} androidboot.rpmb_state=${rpmb_state};"\
             "run cmdline_keys;"\
             "\0"\
         "switch_bootmode="\
@@ -175,7 +183,7 @@
             "fi;"\
             "get_valid_slot;"\
             "get_avb_mode;"\
-            "echo active_slot: ${active_slot};"\
+            "echo active_slot: ${active_slot} avb2: ${avb2};"\
             "if test ${active_slot} != normal; then "\
                     "setenv bootargs ${bootargs} androidboot.slot_suffix=${active_slot};"\
             "fi;"\
@@ -278,12 +286,23 @@
                 "if keyman read usid ${loadaddr} str; then "\
                     "setenv bootargs ${bootargs} androidboot.serialno=${usid};"\
                     "setenv serial ${usid};"\
+                "else "\
+                    "setenv bootargs ${bootargs} androidboot.serialno=1234567890;"\
+                    "setenv serial 1234567890;"\
                 "fi;"\
                 "if keyman read mac ${loadaddr} str; then "\
                     "setenv bootargs ${bootargs} mac=${mac} androidboot.mac=${mac};"\
                 "fi;"\
+                "if keyman read mac_bt ${loadaddr} str; then "\
+                    "setenv bootargs ${bootargs} mac_bt=${mac_bt} androidboot.mac_bt=${mac_bt};"\
+                "fi;"\
                 "if keyman read deviceid ${loadaddr} str; then "\
                     "setenv bootargs ${bootargs} androidboot.deviceid=${deviceid};"\
+                "fi;"\
+                "if keyman read region_code ${loadaddr} str; then "\
+                    "setenv bootargs ${bootargs} androidboot.wificountrycode=${region_code};"\
+                "else "\
+                    "setenv bootargs ${bootargs} androidboot.wificountrycode=US;"\
                 "fi;"\
             "fi;"\
             "\0"\
@@ -321,7 +340,7 @@
 #define CONFIG_CPU_CLK					1200 //MHz. Range: 600-1800, should be multiple of 24
 
 /* ddr */
-#define CONFIG_DDR_SIZE					1024 //MB //0 means ddr size auto-detect
+#define CONFIG_DDR_SIZE					0 //MB //0 means ddr size auto-detect
 #define CONFIG_DDR_CLK					792  //MHz, Range: 384-1200, should be multiple of 24
 #define CONFIG_DDR4_CLK					1008  //MHz, for boards which use different ddr chip
 /* DDR type setting
@@ -407,6 +426,12 @@
 	#define	CONFIG_SYS_MMC_ENV_DEV 1
 	#define CONFIG_EMMC_DDR52_EN 0
 	#define CONFIG_EMMC_DDR52_CLK 35000000
+    /*
+        flash/erase operation region on boot1
+        in bytes, 2M by default
+    */
+    //#define CONFIG_EMMC_BOOT1_TOUCH_REGION    (0x200000)
+
 #endif
 /* storage macro checks */
 #if defined(CONFIG_AML_MTD) && defined(CONFIG_AML_NAND)
@@ -530,6 +555,11 @@
 #define CONFIG_FS_EXT4 1
 #define CONFIG_LZO 1
 
+#define CONFIG_MDUMP_COMPRESS 1
+#define CONFIG_EXT4_WRITE 1
+#define CONFIG_CMD_EXT4 1
+#define CONFIG_CMD_EXT4_WRITE 1
+
 /* Cache Definitions */
 //#define CONFIG_SYS_DCACHE_OFF
 //#define CONFIG_SYS_ICACHE_OFF
@@ -582,11 +612,15 @@
 //board customer ID
 //#define CONFIG_CUSTOMER_ID  (0x6472616F624C4D41)
 
+//anti-rollback function
+//#define CONFIG_AML_ANTIROLLBACK 1
+
 #if defined(CONFIG_CUSTOMER_ID)
   #undef CONFIG_AML_CUSTOMER_ID
   #define CONFIG_AML_CUSTOMER_ID  CONFIG_CUSTOMER_ID
 #endif
 #define CONFIG_INTERNAL_PHY
 
+//#define CONFIG_AVB2
 #endif
 
