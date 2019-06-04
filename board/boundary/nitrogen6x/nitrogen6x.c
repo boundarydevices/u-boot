@@ -362,6 +362,9 @@ void board_pre_enable(const struct display_info_t *di)
 }
 
 static const struct display_info_t displays[] = {
+#ifdef CONFIG_EXTRA_ENV_SETTINGS_DEFCONFIG
+	VD_WXGA(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
+#endif
 	/* hdmi */
 	VD_1280_720M_60(HDMI, fbp_detect_i2c, 1, 0x50),
 	VD_1920_1080M_60(HDMI, NULL, 1, 0x50),
@@ -390,7 +393,9 @@ static const struct display_info_t displays[] = {
 
 	VD_SHARP_LQ101K1LY04(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
 	VD_WXGA_J(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
+#ifndef CONFIG_EXTRA_ENV_SETTINGS_DEFCONFIG
 	VD_WXGA(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
+#endif
 	VD_WVGA(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
 	VD_AA065VE11(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
 	VD_VGA(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),

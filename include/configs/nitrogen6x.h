@@ -26,6 +26,10 @@
 #define CONFIG_USB_MAX_CONTROLLER_COUNT 2
 
 #define BD_I2C_MASK	7
+#ifndef CONFIG_EXTRA_ENV_SETTINGS_DEFCONFIG
+#define CONFIG_EXTRA_ENV_SETTINGS_DEFCONFIG
+#endif
+
 
 #if defined(CONFIG_SABRELITE)
 #include "boundary.h"
@@ -42,11 +46,13 @@
 	"ramdiskaddr=0x13000000\0" \
 	"ip_dyn=yes\0" \
 	"usb_pgood_delay=2000\0" \
-	BOOTENV
+	BOOTENV \
+	CONFIG_EXTRA_ENV_SETTINGS_DEFCONFIG
 
 #else
 #include "boundary.h"
 #define CONFIG_EXTRA_ENV_SETTINGS BD_BOUNDARY_ENV_SETTINGS \
+	CONFIG_EXTRA_ENV_SETTINGS_DEFCONFIG
 
 #endif
 
