@@ -45,6 +45,8 @@ extern int store_write_ops(
 #define CMD_WIPE_DATA          "wipe_data"
 #define CMD_SYSTEM_CRASH    "system_crash"
 #define CMD_RUN_RECOVERY   "boot-recovery"
+#define CMD_RESIZE_DATA    "resize2fs_data"
+#define CMD_FOR_RECOVERY "recovery_"
 
 struct bootloader_message {
     char command[32];
@@ -118,6 +120,17 @@ static int do_RunBcbCommand(
         memcpy(miscbuf, CMD_RUN_RECOVERY, sizeof(CMD_RUN_RECOVERY));
         memcpy(miscbuf+sizeof(command)+sizeof(status), "recovery\n--system_crash", sizeof("recovery\n--system_crash"));
         store_write_ops((unsigned char *)partition, (unsigned char *)miscbuf, 0, sizeof(miscbuf));
+    } else if (!memcmp(command_mark, CMD_RESIZE_DATA, strlen(command_mark))) {
+        printf("Start to write --resize2fs_data to %s\n", partition);
+        memcpy(miscbuf, CMD_RUN_RECOVERY, sizeof(CMD_RUN_RECOVERY));
+        memcpy(miscbuf+sizeof(command)+sizeof(status), "recovery\n--resize2fs_data", sizeof("recovery\n--resize2fs_data"));
+        store_write_ops((unsigned char *)partition, (unsigned char *)miscbuf, 0, sizeof(miscbuf));
+    } else if (!memcmp(command_mark, CMD_FOR_RECOVERY, strlen(CMD_FOR_RECOVERY))) {
+        memcpy(miscbuf, CMD_RUN_RECOVERY, sizeof(CMD_RUN_RECOVERY));
+        sprintf(recovery, "%s%s", "recovery\n--", command_mark);
+        memcpy(miscbuf+sizeof(command)+sizeof(status), recovery, strlen(recovery));
+        store_write_ops((unsigned char *)partition, (unsigned char *)miscbuf, 0, sizeof(miscbuf));
+        return 0;
     }
 
     printf("Start read %s partition datas!\n", partition);
