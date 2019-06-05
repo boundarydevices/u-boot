@@ -17,6 +17,7 @@
 #include <malloc.h>
 #include <asm/cpu_id.h>
 #include <asm/arch/gpio.h>
+#include <vpp.h>
 #ifdef CONFIG_OF_LIBFDT
 #include <libfdt.h>
 #endif
@@ -180,6 +181,17 @@ static void lcd_power_ctrl(int status)
 		LCDPR("%s: %d\n", __func__, status);
 }
 
+static void lcd_gamma_init(void)
+{
+	lcd_wait_vsync();
+	vpp_disable_lcd_gamma_table();
+
+	vpp_init_lcd_gamma_table();
+
+	lcd_wait_vsync();
+	vpp_enable_lcd_gamma_table();
+}
+
 static void lcd_module_enable(char *mode)
 {
 	unsigned int sync_duration;
@@ -201,6 +213,7 @@ static void lcd_module_enable(char *mode)
 		(sync_duration / 10), (sync_duration % 10));
 
 	lcd_drv->driver_init_pre();
+	lcd_gamma_init();
 	lcd_power_ctrl(1);
 
 	pconf->retry_enable_cnt = 0;

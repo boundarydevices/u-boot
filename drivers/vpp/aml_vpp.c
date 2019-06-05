@@ -1441,13 +1441,9 @@ void vpp_init_lcd_gamma_table(void)
 {
 	VPP_PR("%s\n", __func__);
 
-	vpp_disable_lcd_gamma_table();
-
 	vpp_set_lcd_gamma_table(gamma_table_r, H_SEL_R);
 	vpp_set_lcd_gamma_table(gamma_table_g, H_SEL_G);
 	vpp_set_lcd_gamma_table(gamma_table_b, H_SEL_B);
-
-	vpp_enable_lcd_gamma_table();
 }
 
 void vpp_matrix_update(int type)
