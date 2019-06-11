@@ -2855,14 +2855,15 @@ void osd_init_hw_viu2(void)
 	data32 |= 2 << 22;
 	/* bit 28:24, fifo_lim */
 	data32 |= 2 << 24;
-	/* fifo_depth_val: 32*8=256 */
-	data32 |= 32 << 12;
+	/* fifo_depth_val: 32 or 64 *8 = 256 or 512 */
+	data32 |= 64 << 12;
 
 	osd_reg_write(VIU2_OSD1_FIFO_CTRL_STAT, data32);
 
 	/* enable osd */
 	data32 = 0x1 << 0;
 	data32 |= OSD_GLOBAL_ALPHA_DEF << 12;
+	data32 |= 0x80000000;
 	osd_reg_write(VIU2_OSD1_CTRL_STAT , data32);
 
 	/* set replaced_alpha */
