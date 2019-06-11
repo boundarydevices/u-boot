@@ -111,7 +111,7 @@ void get_wakeup_source(void *response, unsigned int suspend_from)
 
 	p->status = RESPONSE_OK;
 	val = (POWER_KEY_WAKEUP_SRC | AUTO_WAKEUP_SRC | REMOTE_WAKEUP_SRC |
-	       BT_WAKEUP_SRC);
+	       BT_WAKEUP_SRC | CECB_WAKEUP_SRC);
 
 	p->sources = val;
 
