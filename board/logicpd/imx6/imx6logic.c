@@ -12,7 +12,7 @@
 #include <miiphy.h>
 #include <input.h>
 #include <mmc.h>
-#include <fsl_esdhc.h>
+#include <fsl_esdhc_imx.h>
 #include <asm/io.h>
 #include <asm/gpio.h>
 #include <linux/sizes.h>

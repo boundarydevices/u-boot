@@ -26,7 +26,7 @@
 #include <asm/io.h>
 #include <dm/platform_data/serial_mxc.h>
 #include <dm/platdata.h>
-#include <fsl_esdhc.h>
+#include <fsl_esdhc_imx.h>
 #include <i2c.h>
 #include <input.h>
 #include <imx_thermal.h>
@@ -302,7 +302,7 @@ int board_ehci_power(int port, int on)
 }
 #endif
 
-#ifdef CONFIG_FSL_ESDHC
+#ifdef CONFIG_FSL_ESDHC_IMX
 /* use the following sequence: eMMC, MMC */
 struct fsl_esdhc_cfg usdhc_cfg[CONFIG_SYS_FSL_USDHC_NUM] = {
 	{USDHC3_BASE_ADDR},

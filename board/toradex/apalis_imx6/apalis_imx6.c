@@ -27,7 +27,7 @@
 #include <asm/mach-imx/video.h>
 #include <dm/platform_data/serial_mxc.h>
 #include <dm/platdata.h>
-#include <fsl_esdhc.h>
+#include <fsl_esdhc_imx.h>
 #include <i2c.h>
 #include <input.h>
 #include <imx_thermal.h>
