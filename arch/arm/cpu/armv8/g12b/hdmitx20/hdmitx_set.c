@@ -22,6 +22,7 @@
 #include <common.h>
 #include <asm/io.h>
 #include <asm/arch/register.h>
+#include <asm/cpu_id.h>
 #include <amlogic/vout.h>
 #include <amlogic/hdmi.h>
 #include "hdmitx_reg.h"
@@ -1152,9 +1153,13 @@ static void set_phy_by_mode(struct hdmitx_dev *hdev, unsigned int mode)
 		hd_write_reg(P_HHI_HDMI_PHY_CNTL5, 0x0000080b);
 		break;
 	case 2: /* 2.97Gbps */
-		hd_write_reg(P_HHI_HDMI_PHY_CNTL0, 0x33eb6272);
-		if (hdev->dongle_mode)
-			hd_write_reg(P_HHI_HDMI_PHY_CNTL0, 0x33eb4262);
+		if (get_cpu_id().family_id == MESON_CPU_MAJOR_ID_G12B) {
+			hd_write_reg(P_HHI_HDMI_PHY_CNTL0, 0x33eb6272);
+			if (hdev->dongle_mode)
+				hd_write_reg(P_HHI_HDMI_PHY_CNTL0, 0x33eb4262);
+		} else
+			/* SM1 */
+			hd_write_reg(P_HHI_HDMI_PHY_CNTL0, 0x33eb42a2);
 		hd_write_reg(P_HHI_HDMI_PHY_CNTL3, 0x2ab0ff3b);
 		hd_write_reg(P_HHI_HDMI_PHY_CNTL5, 0x00000003);
 		break;
