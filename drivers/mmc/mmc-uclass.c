@@ -266,6 +266,15 @@ int mmc_of_parse(struct udevice *dev, struct mmc_config *cfg)
 				    MMC_MODE_HS400 | MMC_MODE_HS400_ES);
 	}
 
+	if (dev_read_bool(dev, "non-removable")) {
+		cfg->host_caps |= MMC_CAP_NONREMOVABLE;
+	} else {
+		if (dev_read_bool(dev, "cd-inverted"))
+			cfg->host_caps |= MMC_CAP_CD_ACTIVE_HIGH;
+		if (dev_read_bool(dev, "broken-cd"))
+			cfg->host_caps |= MMC_CAP_NEEDS_POLL;
+	}
+
 	return 0;
 }
 
