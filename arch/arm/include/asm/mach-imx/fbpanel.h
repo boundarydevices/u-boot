@@ -594,12 +594,12 @@ void fbp_setup_env_cmds(void);
 		.refresh	= 60,\
 		.xres		= 480,\
 		.yres		= 272,\
-		.pixclock	= 1000000000000ULL/((480+40+4+2)*(272+8+8+1)*60),\
+		.pixclock	= 1000000000000ULL/((480+40+4+4)*(272+8+8+1)*60),\
 		.left_margin	= 40,\
 		.right_margin	= 4,\
 		.upper_margin	= 8,\
 		.lower_margin	= 8,\
-		.hsync_len	= 2,\
+		.hsync_len	= 4,\
 		.vsync_len	= 1,\
 		.sync		= FB_SYNC_EXT | FB_SYNC_CLK_LAT_FALL,\
 		.vmode		= FB_VMODE_NONINTERLACED\
