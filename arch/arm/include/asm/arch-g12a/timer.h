@@ -38,4 +38,13 @@ uint32_t get_time(void);
  */
 void _udelay(unsigned int us);
 
+void TE_time(const char *szInfo);
+
+#if defined(BL33_BOOT_TIME_PROBE)
+	#define TE TE_time
+#else
+	#define TE(...)
+#endif
+
+
 #endif /* __TIMER_H */

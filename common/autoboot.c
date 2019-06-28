@@ -12,8 +12,15 @@
 #include <fdtdec.h>
 #include <menu.h>
 #include <post.h>
+#include <asm/arch/timer.h>
 
 DECLARE_GLOBAL_DATA_PTR;
+
+#if defined(BL33_BOOT_TIME_PROBE)
+	#define TE TE_time
+#else
+	#define TE(...)
+#endif
 
 #define MAX_DELAY_STOP_STR 32
 
@@ -144,6 +151,8 @@ static int menukey;
 
 static int abortboot_normal(int bootdelay)
 {
+	TE(__func__);
+
 	int abort = 0;
 	unsigned long ts;
 	int key = 0;
@@ -207,6 +216,8 @@ static int abortboot_normal(int bootdelay)
 	if (abort)
 		gd->flags &= ~GD_FLG_SILENT;
 #endif
+
+		TE(__func__);
 
 	return abort;
 }

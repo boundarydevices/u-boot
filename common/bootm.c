@@ -40,6 +40,12 @@
 #include "anti-rollback.h"
 #endif
 
+#if defined(BL33_BOOT_TIME_PROBE)
+	#define TE TE_time
+#else
+	#define TE(...)
+#endif
+
 #ifndef CONFIG_SYS_BOOTM_LEN
 /* use 8MByte as default max gunzip size */
 #define CONFIG_SYS_BOOTM_LEN	0x800000
@@ -53,6 +59,7 @@ extern void check_ramdump(void);
 #ifndef USE_HOSTCC
 
 DECLARE_GLOBAL_DATA_PTR;
+#include <asm/arch/timer.h>
 
 static const void *boot_get_kernel(cmd_tbl_t *cmdtp, int flag, int argc,
 				   char * const argv[], bootm_headers_t *images,
@@ -96,6 +103,8 @@ static int bootm_start(cmd_tbl_t *cmdtp, int flag, int argc,
 static int bootm_find_os(cmd_tbl_t *cmdtp, int flag, int argc,
 			 char * const argv[])
 {
+	TE(__func__);
+
 	const void *os_hdr;
 	bool ep_found = false;
 	int ret;
@@ -233,11 +242,15 @@ static int bootm_find_os(cmd_tbl_t *cmdtp, int flag, int argc,
 
 	images.os.start = (ulong)os_hdr;
 
+	TE(__func__);
+
 	return 0;
 }
 
 static int bootm_find_ramdisk(int flag, int argc, char * const argv[])
 {
+	TE(__func__);
+
 	int ret;
 
 	/* find ramdisk */
@@ -247,6 +260,8 @@ static int bootm_find_ramdisk(int flag, int argc, char * const argv[])
 		puts("Ramdisk image is corrupt or invalid\n");
 		return 1;
 	}
+
+	TE(__func__);
 
 	return 0;
 }
@@ -330,6 +345,8 @@ static int read_fdto_partition(void)
 #ifdef CONFIG_OF_LIBFDT_OVERLAY
 static int get_fdto_totalsize(u32 *tz)
 {
+	TE(__func__);
+
 	unsigned long long dtbo_mem_addr = NULL;
 	int ret;
 
@@ -339,6 +356,8 @@ static int get_fdto_totalsize(u32 *tz)
 
 	dtbo_mem_addr = simple_strtoul(getenv("dtbo_mem_addr"), NULL, 16);
 	*tz = android_dt_get_totalsize(dtbo_mem_addr);
+
+	TE(__func__);
 
 	return 0;
 }
@@ -408,6 +427,8 @@ static int do_fdt_overlay(void)
 #if defined(CONFIG_OF_LIBFDT)
 static int bootm_find_fdt(int flag, int argc, char * const argv[])
 {
+	TE(__func__);
+
 	int ret;
 	#ifdef CONFIG_OF_LIBFDT_OVERLAY
 	struct fdt_header *fdth = NULL;
@@ -470,6 +491,8 @@ static int bootm_find_fdt(int flag, int argc, char * const argv[])
 	#ifdef CONFIG_OF_LIBFDT_OVERLAY
 	do_fdt_overlay();
 	#endif
+
+	TE(__func__);
 
 	return 0;
 }
@@ -613,6 +636,8 @@ static int decomp_image(int comp, ulong load, ulong image_start, int type,
 static int bootm_load_os(bootm_headers_t *images, unsigned long *load_end,
 			 int boot_progress)
 {
+	TE(__func__);
+
 	image_info_t os = images->os;
 	ulong load = os.load;
 	ulong blob_start = os.start;
@@ -666,6 +691,8 @@ static int bootm_load_os(bootm_headers_t *images, unsigned long *load_end,
 		}
 #endif
 	}
+
+	TE(__func__);
 
 	return 0;
 }

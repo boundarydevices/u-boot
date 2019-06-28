@@ -12,6 +12,7 @@
 #include <common.h>
 #include <command.h>
 #include <linux/ctype.h>
+#include <asm/arch/timer.h>
 
 /*
  * Use puts() instead of printf() to avoid printf buffer overflow
@@ -490,7 +491,15 @@ static int cmd_call(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	int result;
 
+#ifndef BL33_BOOT_TIME_PROBE
 	result = (cmdtp->cmd)(cmdtp, flag, argc, argv);
+#else
+	int i = get_time();
+	result = (cmdtp->cmd)(cmdtp, flag, argc, argv);
+	int j = get_time();
+    if ((j-i)/1000 >= 50)
+		printf("\nTE begin: %d TE end: %d : %s %s : used %d\n",i,j,argv[0],argv[1],j-i);
+#endif
 	if (result)
 		debug("Command failed, result=%d", result);
 	return result;

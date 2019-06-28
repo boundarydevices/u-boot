@@ -55,8 +55,15 @@
 #include <dm/root.h>
 #include <linux/compiler.h>
 #include <linux/err.h>
+#include <asm/arch/timer.h>
 
 DECLARE_GLOBAL_DATA_PTR;
+
+#if defined(BL33_BOOT_TIME_PROBE)
+	#define TE TE_time
+#else
+	#define TE(...)
+#endif
 
 ulong monitor_flash_len;
 
@@ -421,6 +428,8 @@ static int should_load_env(void)
 
 static int initr_env(void)
 {
+	TE(__func__);
+
 	/* initialize environment */
 	if (should_load_env())
 		env_relocate();
@@ -447,6 +456,9 @@ static int initr_env(void)
 #endif /* CONFIG_I2CFAST */
 #endif /* CONFIG_405GP, CONFIG_405EP */
 #endif /* CONFIG_SYS_EXTBDINFO */
+
+	TE(__func__);
+
 	return 0;
 }
 
@@ -575,12 +587,17 @@ static int initr_bbmii(void)
 #ifdef CONFIG_CMD_NET
 static int initr_net(void)
 {
+	TE(__func__);
+
 	puts("Net:   ");
 	eth_initialize(gd->bd);
 #if defined(CONFIG_RESET_PHY_R)
 	debug("Reset Ethernet PHY\n");
 	reset_phy();
 #endif
+
+	TE(__func__);
+
 	return 0;
 }
 #endif
