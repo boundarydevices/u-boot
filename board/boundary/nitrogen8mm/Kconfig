@@ -9,6 +9,10 @@ config SYS_VENDOR
 config SYS_CONFIG_NAME
 	default "nitrogen8mm"
 
+config DDR_RANK_BITS
+	int "ddr rank bits"
+	default 1
+
 source "board/boundary/common/Kconfig"
 
 endif
