@@ -70,7 +70,6 @@
 			printk("pll[0x%x] reset %d times\n", reg, 9 - cnt);\
 	} while (0)
 
-
 static void set_hdmitx_sys_clk(void)
 {
 	hd_set_reg_bits(P_HHI_HDMI_CLK_CNTL, 0, 9, 3);

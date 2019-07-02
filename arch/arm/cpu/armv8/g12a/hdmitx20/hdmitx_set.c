@@ -1107,7 +1107,6 @@ static void config_hdmi20_tx ( enum hdmi_vic vic, struct hdmi_format_para *para,
 	/* Reset pulse */
 	hdmitx_rd_check_reg(HDMITX_DWC_MC_LOCKONCLOCK, 0xff, 0x9f);
 
-	hd_write_reg(P_ENCP_VIDEO_EN, 0);
 	hdmitx_wr_reg(HDMITX_DWC_MC_CLKDIS, 0xdf);
 
 	hdmitx_wr_reg(HDMITX_DWC_MC_SWRSTZREQ, 0);
@@ -1126,7 +1125,6 @@ static void config_hdmi20_tx ( enum hdmi_vic vic, struct hdmi_format_para *para,
 		hdmitx_rd_reg(HDMITX_DWC_FC_VSYNCINWIDTH));
 
 	hdmitx_wr_reg(HDMITX_DWC_MC_CLKDIS, 0);
-	hd_write_reg(P_ENCP_VIDEO_EN, 0xff);
 } /* config_hdmi20_tx */
 
 /* Set TV encoder for HDMI */
@@ -1251,11 +1249,8 @@ static void enc_vpu_bridge_reset(int mode)
     printk("%s[%d]\n", __func__, __LINE__);
     wr_clk = (hd_read_reg(P_VPU_HDMI_SETTING) & 0xf00) >> 8;
     if (mode) {
-        hd_write_reg(P_ENCP_VIDEO_EN, 0);
         hd_set_reg_bits(P_VPU_HDMI_SETTING, 0, 0, 2);  // [    0] src_sel_enci: Disable ENCP output to HDMI
         hd_set_reg_bits(P_VPU_HDMI_SETTING, 0, 8, 4);  // [    0] src_sel_enci: Disable ENCP output to HDMI
-        mdelay(1);
-        hd_write_reg(P_ENCP_VIDEO_EN, 1);
         mdelay(1);
         hd_set_reg_bits(P_VPU_HDMI_SETTING, wr_clk, 8, 4);
         mdelay(1);
@@ -1613,7 +1608,6 @@ static void hdmi_tvenc4k2k_set(enum hdmi_vic vic)
 			(0 << 12)
 	);
 	hd_set_reg_bits(P_VPU_HDMI_SETTING, 1, 1, 1);
-	hd_write_reg(P_ENCP_VIDEO_EN, 1);
 }
 
 static void hdmi_tvenc480i_set(enum hdmi_vic vic)
@@ -2036,7 +2030,6 @@ static void hdmi_tvenc_set_def(enum hdmi_vic vic)
 			(0 << 12)
 		);
 		hd_set_reg_bits(P_VPU_HDMI_SETTING, 1, 1, 1);
-		hd_write_reg(P_ENCP_VIDEO_EN, 1); /* Enable VENC */
 		break;
 	case HDMI_720x480p60_16x9:
 	case HDMI_720x576p50_16x9:
@@ -2339,7 +2332,6 @@ static void hdmi_tvenc_set(enum hdmi_vic vic)
                      (0                                 <<12)   // [15:12] rd_rate. 0=A read every clk2; 1=A read every 2 clk2; ...; 15=A read every 16 clk2.
 		);
 		hd_set_reg_bits(P_VPU_HDMI_SETTING, 1, 1, 1);  // [    1] src_sel_encp: Enable ENCP output to HDMI
-		hd_write_reg(P_ENCP_VIDEO_EN, 1); // Enable VENC
 		break;
 	case HDMI_720x480p60_16x9:
 	case HDMI_720x576p50_16x9:
@@ -2414,20 +2406,22 @@ static void hdmi_tvenc_set(enum hdmi_vic vic)
 
 void hdmitx_set_dith(struct hdmitx_dev* hdev)
 {
+	unsigned int hs_flag = 0;
+
 	switch (hdev->para->cd) {
 	case HDMI_COLOR_DEPTH_30B:
 	case HDMI_COLOR_DEPTH_36B:
 	case HDMI_COLOR_DEPTH_48B:
 		/* 12-10 dithering on */
 		hd_set_reg_bits(P_VPU_HDMI_FMT_CTRL, 0, 4, 1);
+		hs_flag = (hd_read_reg(P_VPU_HDMI_SETTING) >> 2) & 0x3;
 		hd_set_reg_bits(P_VPU_HDMI_SETTING, 0, 2, 2);
 		/* 12-10 rounding off */
 		hd_set_reg_bits(P_VPU_HDMI_FMT_CTRL, 0, 10, 1);
 		/* 10-8 dithering off (2x2 old dither) */
 		hd_set_reg_bits(P_VPU_HDMI_DITH_CNTL, 0, 4, 1);
 		/* set hsync/vsync */
-		hd_set_reg_bits(P_VPU_HDMI_DITH_CNTL,
-			(hd_read_reg(P_VPU_HDMI_SETTING) >> 2) & 0x3, 2, 2);
+		hd_set_reg_bits(P_VPU_HDMI_DITH_CNTL, hs_flag, 2, 2);
 		break;
 	default:
 		/* 12-10 dithering off */
@@ -2993,9 +2987,9 @@ static void hdmitx_set_hw(struct hdmitx_dev* hdev)
 		return;
 	}
 	hdmitx_set_pll(hdev);
-	hdmitx_set_phy(hdev);
 	hdmitx_enc(hdev->vic);
 	hdmitx_set_dith(hdev);
+	hdmitx_set_phy(hdev);
 	hdmitx_set_vdac(0);
 
 	// --------------------------------------------------------
@@ -3089,6 +3083,7 @@ static void hdmitx_set_hw(struct hdmitx_dev* hdev)
 		set_tmds_clk_div40(0);
 		break;
 	}
+	hd_write_reg(P_ENCP_VIDEO_EN, 1); /* enable it finially */
 	hdmitx_set_reg_bits(HDMITX_DWC_FC_INVIDCONF, 0, 3, 1);
 	msleep(1);
 	hdmitx_set_reg_bits(HDMITX_DWC_FC_INVIDCONF, 1, 3, 1);

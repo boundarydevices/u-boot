@@ -407,7 +407,6 @@ void hdmi_tx_set(struct hdmitx_dev *hdev)
 	hdmitx_debug();
 	ddc_init();
 	hdmitx_set_hw(hdev);
-	hdmitx_set_phy(hdev);
 	hdmitx_debug();
 	msleep(20);
 	hdmitx_wr_reg(HDMITX_DWC_FC_GCP, (1 << 0));
@@ -1207,11 +1206,8 @@ static void enc_vpu_bridge_reset(int mode)
     printk("%s[%d]\n", __func__, __LINE__);
     wr_clk = (hd_read_reg(P_VPU_HDMI_SETTING) & 0xf00) >> 8;
     if (mode) {
-        hd_write_reg(P_ENCP_VIDEO_EN, 0);
         hd_set_reg_bits(P_VPU_HDMI_SETTING, 0, 0, 2);  // [    0] src_sel_enci: Disable ENCP output to HDMI
         hd_set_reg_bits(P_VPU_HDMI_SETTING, 0, 8, 4);  // [    0] src_sel_enci: Disable ENCP output to HDMI
-        mdelay(1);
-        hd_write_reg(P_ENCP_VIDEO_EN, 1);
         mdelay(1);
         hd_set_reg_bits(P_VPU_HDMI_SETTING, wr_clk, 8, 4);
         mdelay(1);
@@ -1567,7 +1563,6 @@ static void hdmi_tvenc4k2k_set(enum hdmi_vic vic)
 			(0 << 12)
 	);
 	hd_set_reg_bits(P_VPU_HDMI_SETTING, 1, 1, 1);
-	hd_write_reg(P_ENCP_VIDEO_EN, 1);
 }
 
 static void hdmi_tvenc480i_set(enum hdmi_vic vic)
@@ -1984,7 +1979,6 @@ static void hdmi_tvenc_set_def(enum hdmi_vic vic)
 			(0 << 12)
 		);
 		hd_set_reg_bits(P_VPU_HDMI_SETTING, 1, 1, 1);
-		hd_write_reg(P_ENCP_VIDEO_EN, 1); /* Enable VENC */
 		break;
 	case HDMI_720x480p60_16x9:
 	case HDMI_720x576p50_16x9:
@@ -2129,7 +2123,6 @@ static void hdmi_tvenc_set(enum hdmi_vic vic)
                      (0                                 <<12)   // [15:12] rd_rate. 0=A read every clk2; 1=A read every 2 clk2; ...; 15=A read every 16 clk2.
 		);
 		hd_set_reg_bits(P_VPU_HDMI_SETTING, 1, 1, 1);  // [    1] src_sel_encp: Enable ENCP output to HDMI
-		hd_write_reg(P_ENCP_VIDEO_EN, 1); // Enable VENC
 		break;
 	case HDMI_720x480p60_16x9:
 	case HDMI_720x576p50_16x9:
@@ -2285,6 +2278,7 @@ static void hdmitx_set_hw(struct hdmitx_dev* hdev)
 
 	hdmitx_set_pll(hdev);
 	hdmitx_enc(hdev->vic);
+	hdmitx_set_phy(hdev);
 	hdmitx_set_vdac(0);
 
 	// --------------------------------------------------------
@@ -2389,6 +2383,7 @@ static void hdmitx_set_hw(struct hdmitx_dev* hdev)
 		enc_vpu_bridge_reset(1);
 		break;
 	}
+	hd_write_reg(P_ENCP_VIDEO_EN, 1); /* enable it finially */
 	hdmitx_set_reg_bits(HDMITX_DWC_FC_INVIDCONF, 0, 3, 1);
 	msleep(1);
 	hdmitx_set_reg_bits(HDMITX_DWC_FC_INVIDCONF, 1, 3, 1);
