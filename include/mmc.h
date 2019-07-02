@@ -224,6 +224,7 @@ static inline bool mmc_is_tuning_cmd(uint cmdidx)
 #define EXT_CSD_HS_TIMING		185	/* R/W */
 #define EXT_CSD_REV			192	/* RO */
 #define EXT_CSD_CARD_TYPE		196	/* RO */
+#define EXT_CSD_PART_SWITCH_TIME	199	/* RO */
 #define EXT_CSD_SEC_CNT			212	/* RO, 4 bytes */
 #define EXT_CSD_HC_WP_GRP_SIZE		221	/* RO */
 #define EXT_CSD_HC_ERASE_GRP_SIZE	224	/* RO */
@@ -614,6 +615,7 @@ struct mmc {
 	u8 wr_rel_set;
 	u8 part_config;
 	u8 gen_cmd6_time;
+	u8 part_switch_time;
 	uint tran_speed;
 	uint legacy_speed; /* speed for the legacy mode provided by the card */
 	uint read_bl_len;
@@ -837,6 +839,9 @@ int board_mmc_init(bd_t *bis);
 int cpu_mmc_init(bd_t *bis);
 int mmc_get_env_addr(struct mmc *mmc, int copy, u32 *env_addr);
 int mmc_get_env_dev(void);
+
+/* Minimum partition switch timeout in units of 10-milliseconds */
+#define MMC_MIN_PART_SWITCH_TIME	30 /* 300 ms */
 
 /* Set block count limit because of 16 bit register limit on some hardware*/
 #ifndef CONFIG_SYS_MMC_MAX_BLK_COUNT
