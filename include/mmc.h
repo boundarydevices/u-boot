@@ -455,7 +455,6 @@ struct dm_mmc_ops {
 	int (*execute_tuning)(struct udevice *dev, uint opcode);
 #endif
 
-#if CONFIG_IS_ENABLED(MMC_UHS_SUPPORT)
 	/**
 	 * wait_dat0() - wait until dat0 is in the target state
 	 *		(CLK must be running during the wait)
@@ -466,7 +465,6 @@ struct dm_mmc_ops {
 	 * @return 0 if dat0 is in the target state, -ve on error
 	 */
 	int (*wait_dat0)(struct udevice *dev, int state, int timeout);
-#endif
 
 	/**
 	 * card_busy() - See whether a card is busy
