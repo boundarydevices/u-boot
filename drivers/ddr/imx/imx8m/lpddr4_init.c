@@ -185,6 +185,5 @@ void ddr_init(struct dram_timing_info *dram_timing)
 	debug("DDRINFO: ddrmix config done\n");
 
 	/* save the dram timing config into memory */
-	if (!imx8mq)
-		dram_config_save(dram_timing, CONFIG_SAVED_DRAM_TIMING_BASE);
+	dram_config_save(dram_timing, CONFIG_SAVED_DRAM_TIMING_BASE);
 }
