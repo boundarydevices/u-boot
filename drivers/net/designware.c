@@ -18,6 +18,7 @@
 #include <asm/arch/io.h>
 #include "designware.h"
 #include <asm/arch/secure_apb.h>
+#include <amlogic/keyunify.h>
 
 #if !defined(CONFIG_PHYLIB)
 # error "DesignWare Ether MAC requires PHYLIB - missing CONFIG_PHYLIB"
@@ -25,6 +26,8 @@
 
 struct eth_device *dev = NULL;
 struct dw_eth_dev *priv = NULL;
+int do_cali_process = 0;
+int do_cali_timeout = 0;
 
 static int dw_mdio_read(struct mii_dev *bus, int addr, int devad, int reg)
 {
@@ -213,9 +216,11 @@ static void dw_adjust_link(struct eth_mac_regs *mac_p,
 
 	writel(conf, &mac_p->conf);
 
-	printf("Speed: %d, %s duplex%s\n", phydev->speed,
-	       (phydev->duplex) ? "full" : "half",
-	       (phydev->port == PORT_FIBRE) ? ", fiber mode" : "");
+	if (!do_cali_process) {
+		printf("Speed: %d, %s duplex%s\n", phydev->speed,
+			(phydev->duplex) ? "full" : "half",
+			(phydev->port == PORT_FIBRE) ? ", fiber mode" : "");
+	}
 }
 
 static void dw_eth_halt(struct eth_device *dev)
@@ -414,8 +419,14 @@ static int dw_phy_init(struct eth_device *dev)
 	return 1;
 }
 
+#ifdef ETHERNET_EXTERNAL_PHY
+int check_eth_para(void);
+char bestwindow = -1;
+char cmd[64];
+#endif
 int designware_initialize(ulong base_addr, u32 interface)
 {
+	int ret;
 	dev = (struct eth_device *) malloc(sizeof(struct eth_device));
 	if (!dev)
 		return -ENOMEM;
@@ -455,8 +466,19 @@ int designware_initialize(ulong base_addr, u32 interface)
 
 	dw_mdio_init(dev->name, priv->mac_regs_p);
 	priv->bus = miiphy_get_dev_by_name(dev->name);
+	ret = dw_phy_init(dev);
 
-	return dw_phy_init(dev);
+#ifdef ETHERNET_EXTERNAL_PHY
+	if (check_eth_para()) {
+		run_command("autocali 5 1 1 0", 0);
+	}
+	if (bestwindow >= 0) {
+		sprintf(cmd, "fdt set /ethernet@%08x auto_cali_idx <%d>", (unsigned int)base_addr, bestwindow);
+		run_command("fdt addr $dtb_mem_addr", 0);
+		run_command(cmd, 0);
+	}
+#endif
+	return ret;
 }
 
 /* amlogic debug cmd start */
@@ -595,6 +617,87 @@ static int do_cbusreg(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 
 	return 0;
 }
+#ifdef ETHERNET_EXTERNAL_PHY
+int print_flag = 0;
+
+#define ETH_MAGIC "exphy:"
+struct unify_eth_info {
+	char magic[6];
+	char index;
+	char chk;
+};
+
+int check_eth_para(void)
+{
+	struct unify_eth_info unify_eth;
+	int ret;
+
+	ret = key_unify_read("eth_exphy_para", &unify_eth, sizeof(struct unify_eth_info));
+	if (ret)
+		return ret;
+
+	if (strncmp(unify_eth.magic, ETH_MAGIC, 6) != 0)
+		return -1;
+
+	if (unify_eth.index + unify_eth.chk !=0xff)
+		return -1;
+
+	bestwindow = unify_eth.index;
+	return 0;
+}
+
+int calc_result(u16* calilist)
+{
+	int best_window = -1;
+	int start_window = -1;
+	int end_window = -1;
+	int cur_test_start_window = -1;
+	int cur_window;
+	int i,j;
+	u16 cali;
+
+	for (i=0; i<4; i++) {
+		cali = calilist[i];
+		cur_test_start_window = -1;
+		for (j=0; j<16; j++) {
+			cur_window = (i * 16) +j;
+			if (cali & (1<<j)) {
+				if (cur_test_start_window == -1)
+					cur_test_start_window = cur_window;
+
+				if (j == 15) {
+					if (cur_window - cur_test_start_window >= end_window - start_window) {
+						start_window = cur_test_start_window;
+						end_window = cur_window;
+						if (print_flag)
+							printf("cur: %d, start:%d, end:%d\n", cur_window,start_window,end_window);
+					}
+				}
+			} else {
+				if (cur_test_start_window != -1) {
+					if (cur_window-1 - cur_test_start_window >= end_window - start_window) {
+						start_window = cur_test_start_window;
+						end_window = cur_window-1;
+						if (print_flag)
+							printf("cur: %d, start:%d, end:%d\n", cur_window,start_window,end_window);
+					}
+					cur_test_start_window = -1;
+				}
+			}
+		}
+	}
+
+	if (print_flag)
+		printf("final start:%d, end:%d\n", start_window,end_window);
+	if ((start_window == -1) || (end_window == -1))
+		best_window = -1;
+	else {
+		best_window = (start_window + end_window)/2;
+		if (((end_window & 0xf) == 0xf) && ((best_window & 0xf) != 0xf))
+			best_window += 1;
+	}
+	return best_window;
+}
 
 static int do_autocali(cmd_tbl_t *cmdtp, int flag, int argc,
 			char * const argv[])
@@ -603,16 +706,24 @@ static int do_autocali(cmd_tbl_t *cmdtp, int flag, int argc,
 	unsigned int loop_num;
 	unsigned int loop_type;
 	u16 reg = 0;
+	u16 calilist[4];
+	int cali_window;
+	struct unify_eth_info unify_eth;
 
-	if (argc < 3) {
+	if (argc < 5) {
 		return cmd_usage(cmdtp);
 	}
-
 	loop_num = simple_strtoul(argv[1], NULL, 10);
 	loop_type = simple_strtoul(argv[2], NULL, 10);
+	print_flag = simple_strtoul(argv[4], NULL, 10);
+	do_cali_timeout = simple_strtoul(argv[3], NULL, 10);
+	do_cali_process = 1;
+	for (i=0; i<4; i++) {
+		calilist[i] = 0;
+	}
 	if (loop_type) {
 		phy_write(priv->phydev, MDIO_DEVAD_NONE, 0, 0x5040);
-		mdelay(100);
+		mdelay(2);
 	} else {
 		//MDI 1000M loopback
 		phy_write(priv->phydev, MDIO_DEVAD_NONE, 31, 0x0a43);
@@ -622,100 +733,129 @@ static int do_autocali(cmd_tbl_t *cmdtp, int flag, int argc,
 		phy_write(priv->phydev, MDIO_DEVAD_NONE, 24, 0x2d18);
 		mdelay(400);
 	}
-	printf("----------normal----------\n");
+	if (print_flag)
+		printf("----------normal----------\n");
+
+	phy_write(priv->phydev, MDIO_DEVAD_NONE,31, 0xd08);
+	reg = phy_read(priv->phydev, MDIO_DEVAD_NONE,0x15);
+	reg = phy_write(priv->phydev, MDIO_DEVAD_NONE, 0x15, reg & (~0x8));
+	phy_write(priv->phydev, MDIO_DEVAD_NONE, 31, 0x0);
+	writel(0x1621, 0xff634540);
 	for (i = 0; i < 16; i++) {
 		writel(i << 16, 0xff634544);
-		printf("0x%05x\n", i << 16);
-		mdelay(20);
+		if (print_flag)
+			printf("0x%05x\n", i << 16);
+		//mdelay(20);
 		for (j=0; j<loop_num; j++) {
 			if (NetLoop(ETHLOOP) < 0) {
-				printf("failed\n\n");
+				if (print_flag)
+					printf("-------------failed\n\n");
+				calilist[0] &=(~(1<<i));
+				break;
 			} else {
-				printf("success\n\n");
+				if (print_flag)
+					printf("-------------success\n\n");
+				calilist[0] |=(1<<i);
 			}
-			mdelay(10);
+			mdelay(1);
 		}
 	}
-	printf("----------invert----------\n");
+	if (print_flag)
+		printf("----------invert----------\n");
 	writel(0x1629, 0xff634540);
 	for (i = 0; i < 16; i++) {
 		writel(i << 16, 0xff634544);
-		printf("0x%05x\n", i << 16);
-		mdelay(20);
+		if (print_flag)
+			printf("0x%05x\n", i << 16);
+		//mdelay(20);
 		for (j=0; j<loop_num; j++) {
 			if (NetLoop(ETHLOOP) < 0) {
-				printf("failed\n\n");
+				if (print_flag)
+					printf("-------------failed\n\n");
+				calilist[1] &=(~(1<<i));
+				break;
 			} else {
-				printf("success\n\n");
+				if (print_flag)
+					printf("-------------success\n\n");
+				calilist[1] |=(1<<i);
 			}
-			mdelay(10);
+			mdelay(1);
 		}
 	}
-	/*no cali match*/
+
 	/*add 2ns delay and invert clk*/
 	/*reset exphy to add 2ns delay*/
-#if 0
-	clrbits_le32(P_PERIPHS_PIN_MUX_6, 0xf << 16);
-	clrbits_le32(P_PREG_PAD_GPIO4_EN_N, 1 << 4);
-	setbits_le32(P_PREG_PAD_GPIO4_O, 1 << 4);
-
-	clrbits_le32(P_PERIPHS_PIN_MUX_7, 0xf << 28);
-	clrbits_le32(P_PREG_PAD_GPIO4_EN_N, 1 << 15);
-	mdelay(20);
-	setbits_le32(P_PREG_PAD_GPIO4_EN_N, 1 << 15);
-	mdelay(100);
-#else
 	phy_write(priv->phydev, MDIO_DEVAD_NONE,31, 0xd08);
 	reg = phy_read(priv->phydev, MDIO_DEVAD_NONE,0x15);
 	reg = phy_write(priv->phydev, MDIO_DEVAD_NONE, 0x15, reg | 0x8);
 	phy_write(priv->phydev, MDIO_DEVAD_NONE, 31, 0x0);
-#endif
+
 	/*inverte clk*/
 	writel(0x1629, 0xff634540);
-	/*test cali value*/
-	if (loop_type) {
-		phy_write(priv->phydev, MDIO_DEVAD_NONE, 0, 0x5040);
-		mdelay(100);
-	} else {
-		phy_write(priv->phydev, MDIO_DEVAD_NONE, 31, 0x0a43);
-		phy_write(priv->phydev, MDIO_DEVAD_NONE, 0, 0x8000);
-		mdelay(40);
-		phy_write(priv->phydev, MDIO_DEVAD_NONE, 0, 0x1140);
-		phy_write(priv->phydev, MDIO_DEVAD_NONE, 24, 0x2d18);
-		mdelay(400);
-	}
-	printf("----invert && add 2ns-----\n");
+
+	if (print_flag)
+		printf("----invert && add 2ns-----\n");
 	for (i = 0; i < 16; i++) {
 		writel(i << 16, 0xff634544);
-		printf("0x%05x\n", i << 16);
-		mdelay(20);
+		if (print_flag)
+			printf("0x%05x\n", i << 16);
+		//mdelay(20);
 		for (j=0;j<loop_num;j++) {
 			if (NetLoop(ETHLOOP) < 0) {
-				printf("failed\n\n");
+				if (print_flag)
+					printf("-------------failed\n\n");
+				calilist[2] &=(~(1<<i));
+				break;
 			} else {
-				printf("success\n\n");
+				if (print_flag)
+					printf("-------------success\n\n");
+				calilist[2] |=(1<<i);
 			}
-			mdelay(10);
+			mdelay(1);
 		}
 	}
-	writel(0x1621, 0xff634540);
 
-	printf("----normal && add 2ns-----\n");
+	if (print_flag)
+		printf("----normal && add 2ns-----\n");
+	writel(0x1621, 0xff634540);
 	for (i = 0; i < 16; i++) {
 		writel(i << 16, 0xff634544);
-		printf("0x%05x\n", i << 16);
-		mdelay(20);
+		if (print_flag)
+			printf("0x%05x\n", i << 16);
+		//mdelay(20);
 		for (j=0; j<loop_num; j++) {
 			if (NetLoop(ETHLOOP) < 0) {
-				printf("failed\n\n");
+				if (print_flag)
+					printf("-------------failed\n\n");
+				calilist[3] &=(~(1<<i));
+				break;
 			} else {
-				printf("success\n\n");
+				if (print_flag)
+					printf("-------------success\n\n");
+				calilist[3] |=(1<<i);
 			}
-			mdelay(10);
+			mdelay(1);
 		}
 	}
+
+	if (print_flag)
+		printf("result:	%04x\t%04x\t%04x\t%04x\n", calilist[0], calilist[1], calilist[2], calilist[3]);
+
+	cali_window = calc_result(calilist);
+	printf("The Best Window is index %d\n", cali_window);
+
+	strncpy(unify_eth.magic, ETH_MAGIC, 6);
+	unify_eth.index = cali_window;
+	unify_eth.chk = 0xff - unify_eth.index;
+
+	key_unify_write("eth_exphy_para", &unify_eth, sizeof(struct unify_eth_info));
+	bestwindow = unify_eth.index;
+	do_cali_process = 0;
 	return 0;
 }
+
+#endif
+
 U_BOOT_CMD(
 		phyreg, 4, 1, do_phyreg,
 		"ethernet phy register read/write/dump",
@@ -738,9 +878,15 @@ U_BOOT_CMD(
 		"r reg        - read cbus register\n"
 		"        w reg val    - write cbus register"
 		);
+#ifdef ETHERNET_EXTERNAL_PHY
 U_BOOT_CMD(
-	autocali,	3,	1,	do_autocali,
+	autocali,	5,	1,	do_autocali,
 	"auto cali\t- auto set cali value for exphy\n",
-	""
-)
+	"loopcnt type timeout flag\n"
+	"		loopcnt	- loop package count\n"
+	"		type	- 0: pcs loop 1: phy loop\n"
+	"		timeout	- timeout (ms)\n"
+	"		flag	- print flag\n"
+);
+#endif
 /* amlogic debug cmd end */

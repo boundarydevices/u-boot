@@ -132,6 +132,9 @@ char		NetOurRootPath[64] = {0,};
 /* Our bootfile size in blocks */
 ushort		NetBootFileSize;
 
+extern int do_cali_process;
+extern int do_cali_timeout;
+
 #ifdef CONFIG_MCAST_TFTP	/* Multicast TFTP */
 IPaddr_t Mcast_addr;
 #endif
@@ -335,9 +338,9 @@ int NetLoop(enum proto_t protocol)
 	NetDevExists = 0;
 	NetTryCount = 1;
 	debug_cond(DEBUG_INT_STATE, "--- NetLoop Entry\n");
-
 	bootstage_mark_name(BOOTSTAGE_ID_ETH_START, "eth_start");
 	net_init();
+
 	if (eth_is_on_demand_init() || protocol != NETCONS) {
 		eth_halt();
 		eth_set_current();
@@ -1388,10 +1391,12 @@ int EthLoopSend(void)
 {
 	int i;
 	uchar *pkt;
+	static int start_num=0;
 
 	for (i=0 ; i<ETHLOOP_LEN ; i++) {
-		EtherPacket[i] = i;
+		EtherPacket[i] = i + start_num;
 	}
+	start_num++;
 	pkt = (uchar *)EtherPacket;
 	pkt += NetSetEther (pkt, NetOurEther, PROT_TEST); /* set our MAC address as destination address */
 	(void) eth_send(EtherPacket, ETHLOOP_LEN);
@@ -1421,7 +1426,11 @@ static void EthLoopHandler (uchar * pkt, unsigned dest, IPaddr_t sip, unsigned s
 
 static void EthLoopStart(void)
 {
-	NetSetTimeout (1000UL, EthLoopTimeout);
+	ulong timeout = 1000UL;
+
+	if (do_cali_process && do_cali_timeout)
+		timeout = do_cali_timeout;
+	NetSetTimeout (timeout, EthLoopTimeout);
 	EthLoopSend();
 }
 
