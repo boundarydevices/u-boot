@@ -59,6 +59,10 @@ config CMD_OTG_CABLE
 	depends on ARCH_MX6
 	default y
 
+config HDMI_CLK2
+	bool "clk2 is routed to hdmi refclk"
+	depends on ARCH_IMX8M
+
 config EXTRA_ENV_SETTINGS_DEFCONFIG
 	string "defconfig specific environment variables"
 	default ""

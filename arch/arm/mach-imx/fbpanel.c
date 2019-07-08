@@ -963,6 +963,14 @@ static void setup_clock(struct display_info_t const *di)
 #else
 static void setup_clock(struct display_info_t const *di)
 {
+#ifdef CONFIG_HDMI_CLK2
+	struct anamix_pll *ana_pll = (struct anamix_pll *)ANATOP_BASE_ADDR;
+
+	if (di->fbtype == FB_HDMI) {
+		writel(0x01, &ana_pll->pllout_monitor_cfg);
+		writel(0x11, &ana_pll->pllout_monitor_cfg);
+	}
+#endif
 }
 #endif
 
