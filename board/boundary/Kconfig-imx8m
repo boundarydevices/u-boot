@@ -2,4 +2,11 @@ choice
 	prompt	"Boundary i.MX8M board select"
 	optional
 
+config TARGET_BIO
+	bool "bio"
+	select IMX8MQ
+	select SUPPORT_SPL
+
 endchoice
+
+source "board/boundary/bio/Kconfig"

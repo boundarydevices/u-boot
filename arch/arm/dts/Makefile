@@ -763,6 +763,7 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
 	imx8mm-evk.dtb \
 	imx8mm-verdin.dtb \
 	imx8mn-ddr4-evk.dtb \
+	imx8mq-bio.dtb \
 	imx8mq-evk.dtb \
 	imx8mm-beacon-kit.dtb \
 	imx8mq-phanbell.dtb \
