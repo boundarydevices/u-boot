@@ -95,6 +95,8 @@
 
 #define IOMUXC_GPR_GPR1_GPR_ENET_QOS_INTF_SEL_MASK 0x70000
 
+extern void imx_get_mac_from_fuse(int dev_id, unsigned char *mac);
+
 struct iomuxc_gpr_base_regs {
 	u32 gpr[47];
 };
