@@ -182,6 +182,8 @@
 #define SRC_DDR1_RCR_CORE_RESET_N_MASK	BIT(1)
 #define SRC_DDR1_RCR_PRESET_N_MASK	BIT(0)
 
+extern void imx_get_mac_from_fuse(int dev_id, unsigned char *mac);
+
 struct iomuxc_gpr_base_regs {
 	u32 gpr[47];
 };
