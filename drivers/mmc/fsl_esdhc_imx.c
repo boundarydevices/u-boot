@@ -102,7 +102,6 @@ struct fsl_esdhc_plat {
 
 struct esdhc_soc_data {
 	u32 flags;
-	u32 caps;
 };
 
 /**
@@ -1507,10 +1506,8 @@ static int fsl_esdhc_probe(struct udevice *dev)
 	priv->c.esdhc_regs = (struct fsl_esdhc *)addr;
 	priv->dev = dev;
 	priv->mode = -1;
-	if (data) {
+	if (data)
 		priv->flags = data->flags;
-		priv->caps = data->caps;
-	}
 
 	val = dev_read_u32_default(dev, "bus-width", -1);
 	if (val == 8)
@@ -1581,10 +1578,6 @@ static int fsl_esdhc_probe(struct udevice *dev)
 		dev_dbg(dev, "no vmmc-supply\n");
 #endif
 
-	if (fdt_get_property(fdt, node, "no-1-8-v", NULL))
-		priv->caps &= ~(UHS_CAPS | MMC_MODE_HS200 | MMC_MODE_HS400 |
-				MMC_MODE_HS400_ES);
-
 	/*
 	 * TODO:
 	 * Because lack of clk driver, if SDHC clk is not enabled,
@@ -1640,6 +1633,10 @@ static int fsl_esdhc_probe(struct udevice *dev)
 		dev_err(dev, "fsl_esdhc_init failure\n");
 		return ret;
 	}
+
+	ret = mmc_of_parse(dev, &plat->cfg);
+	if (ret)
+		return ret;
 
 	mmc = &plat->mmc;
 	mmc->cfg = &plat->cfg;
@@ -1708,17 +1705,12 @@ static struct esdhc_soc_data usdhc_imx7d_data = {
 	.flags = ESDHC_FLAG_USDHC | ESDHC_FLAG_STD_TUNING
 			| ESDHC_FLAG_HAVE_CAP1 | ESDHC_FLAG_HS200
 			| ESDHC_FLAG_HS400,
-	.caps = UHS_CAPS | MMC_MODE_HS200 | MMC_MODE_DDR_52MHz |
-		MMC_MODE_HS_52MHz | MMC_MODE_HS,
 };
 
 static struct esdhc_soc_data usdhc_imx8qm_data = {
 	.flags = ESDHC_FLAG_USDHC | ESDHC_FLAG_STD_TUNING
 			| ESDHC_FLAG_HAVE_CAP1 | ESDHC_FLAG_HS200
 			| ESDHC_FLAG_HS400 | ESDHC_FLAG_HS400_ES,
-	.caps = UHS_CAPS | MMC_MODE_HS400 | MMC_MODE_HS400_ES |
-		MMC_MODE_HS200 | MMC_MODE_DDR_52MHz | MMC_MODE_HS_52MHz |
-		MMC_MODE_HS,
 };
 
 static const struct udevice_id fsl_esdhc_ids[] = {
