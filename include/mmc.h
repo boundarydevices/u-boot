@@ -265,7 +265,7 @@ static inline bool mmc_is_tuning_cmd(uint cmdidx)
 #define EXT_CSD_DDR_BUS_WIDTH_8	6	/* Card is in 8 bit DDR mode */
 #define EXT_CSD_DDR		4	/* Card is in DDR mode */
 #define EXT_CSD_DDR_FLAG	BIT(2)	/* Flag for DDR mode */
-#define EXT_CSD_BUS_WIDTH_STROBE BIT(7) /* Enhanced strobe mode */
+#define EXT_CSD_BUS_WIDTH_STROBE BIT(7)	/* Enhanced strobe mode */
 
 #define EXT_CSD_TIMING_LEGACY	0	/* no high speed */
 #define EXT_CSD_TIMING_HS	1	/* HS */
@@ -476,8 +476,10 @@ struct dm_mmc_ops {
 	 */
 	int (*card_busy)(struct udevice *dev);
 
-	/* hs400_enhanced_strobe() - set enhanced strobe */
-	void (*hs400_enhanced_strobe)(struct udevice *dev);
+#if CONFIG_IS_ENABLED(MMC_HS400_ES_SUPPORT)
+	/* set_enhanced_strobe() - set HS400 enhanced strobe */
+	int (*set_enhanced_strobe)(struct udevice *dev);
+#endif
 };
 
 #define mmc_get_ops(dev)        ((struct dm_mmc_ops *)(dev)->driver->ops)
@@ -500,6 +502,7 @@ int mmc_getwp(struct mmc *mmc);
 int mmc_execute_tuning(struct mmc *mmc, uint opcode);
 int mmc_wait_dat0(struct mmc *mmc, int state, int timeout);
 int mmc_card_busy(struct mmc *mmc);
+int mmc_set_enhanced_strobe(struct mmc *mmc);
 
 #else
 struct mmc_ops {
@@ -512,7 +515,6 @@ struct mmc_ops {
 	int (*getwp)(struct mmc *mmc);
 	int (*execute_tuning)(struct mmc *mmc, uint opcode);
 	int (*card_busy)(struct mmc *mmc);
-	void (*hs400_enhanced_strobe)(struct mmc *mmc);
 };
 #endif
 
@@ -563,6 +565,10 @@ static inline bool mmc_is_mode_ddr(enum bus_mode mode)
 		return true;
 #if CONFIG_IS_ENABLED(MMC_HS400_SUPPORT)
 	else if (mode == MMC_HS_400)
+		return true;
+#endif
+#if CONFIG_IS_ENABLED(MMC_HS400_ES_SUPPORT)
+	else if (mode == MMC_HS_400_ES)
 		return true;
 #endif
 	else
