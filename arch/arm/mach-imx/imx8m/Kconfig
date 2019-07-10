@@ -21,6 +21,11 @@ config TARGET_BIO
 	select IMX8MQ
 	select SUPPORT_SPL
 
+config TARGET_MOO
+	bool "moo"
+	select IMX8MM
+	select SUPPORT_SPL
+
 config TARGET_NITROGEN8M
 	bool "nitrogen8m"
 	select IMX8MQ
@@ -52,6 +57,7 @@ config SYS_SOC
 	default "imx8m"
 
 source "board/boundary/bio/Kconfig"
+source "board/boundary/moo/Kconfig"
 source "board/boundary/nitrogen8m/Kconfig"
 source "board/boundary/nitrogen8m_som/Kconfig"
 source "board/boundary/nitrogen8mm/Kconfig"
