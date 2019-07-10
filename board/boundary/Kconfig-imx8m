@@ -68,6 +68,12 @@ config TARGET_KEA
 	select IMX8MM
 	select SUPPORT_SPL
 
+config TARGET_MOO
+	bool "moo"
+	select BINMAN
+	select IMX8MM
+	select SUPPORT_SPL
+
 endchoice
 
 source "board/boundary/ash8mm/Kconfig"
@@ -81,3 +87,4 @@ source "board/boundary/dwe/Kconfig"
 source "board/boundary/em/Kconfig"
 source "board/boundary/hl8mm/Kconfig"
 source "board/boundary/kea/Kconfig"
+source "board/boundary/moo/Kconfig"
