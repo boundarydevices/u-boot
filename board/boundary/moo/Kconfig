@@ -1,0 +1,14 @@
+if TARGET_MOO
+
+config SYS_BOARD
+	default "moo"
+
+config SYS_VENDOR
+	default "boundary"
+
+config SYS_CONFIG_NAME
+	default "moo"
+
+source "board/boundary/common/Kconfig"
+
+endif

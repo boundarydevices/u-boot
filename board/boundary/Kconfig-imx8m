@@ -17,8 +17,14 @@ config TARGET_HL8MM
 	select IMX8MM
 	select SUPPORT_SPL
 
+config TARGET_MOO
+	bool "moo"
+	select IMX8MM
+	select SUPPORT_SPL
+
 endchoice
 
 source "board/boundary/bio/Kconfig"
 source "board/boundary/dwe/Kconfig"
 source "board/boundary/hl8mm/Kconfig"
+source "board/boundary/moo/Kconfig"
