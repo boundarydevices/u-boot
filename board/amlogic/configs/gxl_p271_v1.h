@@ -133,7 +133,7 @@
             "else fi;"\
             "\0"\
     "storeargs="\
-            "setenv bootargs ${initargs} ${fs_type} reboot_mode_android=${reboot_mode_android} androidboot.selinux=${EnableSelinux} logo=${display_layer},loaded,${fb_addr},${outputmode} maxcpus=${maxcpus} vout=${outputmode},enable hdmimode=${hdmimode} cvbsmode=${cvbsmode} hdmitx=${cecconfig} cvbsdrv=${cvbs_drv} androidboot.firstboot=${firstboot} jtag=${jtag}; "\
+            "setenv bootargs ${initargs} reboot_mode_android=${reboot_mode_android} androidboot.selinux=${EnableSelinux} logo=${display_layer},loaded,${fb_addr},${outputmode} maxcpus=${maxcpus} vout=${outputmode},enable hdmimode=${hdmimode} cvbsmode=${cvbsmode} hdmitx=${cecconfig} cvbsdrv=${cvbs_drv} androidboot.firstboot=${firstboot} jtag=${jtag}; "\
 	"setenv bootargs ${bootargs} androidboot.hardware=amlogic;"\
             "run cmdline_keys;"\
             "\0"\
@@ -169,8 +169,9 @@
             "get_system_as_root_mode;"\
             "echo system_mode: ${system_mode};"\
             "if test ${system_mode} = 1; then "\
-                    "setenv fs_type ""ro rootwait skip_initramfs"";"\
-                    "run storeargs;"\
+                    "setenv bootargs ${bootargs} ro rootwait skip_initramfs;"\
+            "else "\
+                    "setenv bootargs ${bootargs} ${fs_type};"\
             "fi;"\
             "get_valid_slot;"\
             "get_avb_mode;"\
@@ -186,7 +187,7 @@
                 "fi;fi;"\
             "fi;"\
             "if imgread kernel ${boot_part} ${loadaddr}; then bootm ${loadaddr}; fi;"\
-            "run update;"\
+            "run storeargs; run update;"\
             "\0"\
         "factory_reset_poweroff_protect="\
             "echo wipe_data=${wipe_data}; echo wipe_cache=${wipe_cache};"\
@@ -228,6 +229,7 @@
             "if fatload mmc 0 ${loadaddr} recovery.img; then "\
                     "if fatload mmc 0 ${dtb_mem_addr} dtb.img; then echo sd dtb.img loaded; fi;"\
                     "wipeisb; "\
+                    "setenv bootargs ${bootargs} ${fs_type};"\
                     "bootm ${loadaddr};fi;"\
             "\0"\
         "recovery_from_udisk="\
@@ -236,20 +238,21 @@
             "if fatload usb 0 ${loadaddr} recovery.img; then "\
                 "if fatload usb 0 ${dtb_mem_addr} dtb.img; then echo udisk dtb.img loaded; fi;"\
                 "wipeisb; "\
+                "setenv bootargs ${bootargs} ${fs_type};"\
                 "bootm ${loadaddr};fi;"\
             "\0"\
         "recovery_from_flash="\
             "get_valid_slot;"\
             "echo active_slot: ${active_slot};"\
             "if test ${active_slot} = normal; then "\
-                "setenv bootargs ${bootargs} aml_dt=${aml_dt} recovery_part={recovery_part} recovery_offset={recovery_offset};"\
+                "setenv bootargs ${bootargs} ${fs_type} aml_dt=${aml_dt} recovery_part={recovery_part} recovery_offset={recovery_offset};"\
                 "if itest ${upgrade_step} == 3; then "\
                     "if ext4load mmc 1:2 ${dtb_mem_addr} /recovery/dtb.img; then echo cache dtb.img loaded; fi;"\
                     "if ext4load mmc 1:2 ${loadaddr} /recovery/recovery.img; then echo cache recovery.img loaded; wipeisb; bootm ${loadaddr}; fi;"\
                 "else fi;"\
                 "if imgread kernel ${recovery_part} ${loadaddr} ${recovery_offset}; then wipeisb; bootm ${loadaddr}; fi;"\
             "else "\
-                "setenv bootargs ${bootargs} aml_dt=${aml_dt} recovery_part=${boot_part} recovery_offset=${recovery_offset};"\
+                "setenv bootargs ${bootargs} ${fs_type} aml_dt=${aml_dt} recovery_part=${boot_part} recovery_offset=${recovery_offset};"\
                 "if imgread kernel ${boot_part} ${loadaddr}; then bootm ${loadaddr}; fi;"\
             "fi;"\
             "\0"\
