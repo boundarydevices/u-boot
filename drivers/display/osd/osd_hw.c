@@ -836,7 +836,28 @@ void osd_setting_default_hwc(u32 index, struct pandata_s *disp_data)
 void osd_update_blend(struct pandata_s *disp_data)
 {
 	u32 width, height;
+	int vmode = -1;
 
+#ifdef CONFIG_AML_VOUT
+	vmode = vout_get_current_vmode();
+#endif
+	switch (vmode) {
+	/* case VMODE_LCD: */
+	case VMODE_480I:
+	case VMODE_480CVBS:
+	case VMODE_576I:
+	case VMODE_576CVBS:
+	case VMODE_1080I:
+	case VMODE_1080I_50HZ:
+#ifdef CONFIG_AML_VOUT_FRAMERATE_AUTOMATION
+	case VMODE_1080I_59HZ:
+#endif
+		disp_data->y_start /=2;
+		disp_data->y_end /= 2;
+		break;
+	default:
+		break;
+	}
 	width = disp_data->x_end - disp_data->x_start + 1;
 	height = disp_data->y_end - disp_data->y_start + 1;
 
@@ -847,7 +868,6 @@ void osd_update_blend(struct pandata_s *disp_data)
 		disp_data->y_start << 16 | disp_data->y_end);
 	osd_reg_write(VPP_OUT_H_V_SIZE,
 			width << 16 | height);
-
 }
 #endif
 
