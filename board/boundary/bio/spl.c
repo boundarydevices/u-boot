@@ -121,21 +121,30 @@ int power_init_boundary(void)
 
 	i2c_set_bus_num(0);
 #define PF8100	0x08
+#define SW1_VOLT	0x51
 #define SW2_VOLT	0x59
 #define SW3_CONFIG2	0x5e
 #define SW3_VOLT	0x61
 #define SW4_CONFIG2	0x66
 #define SW4_VOLT	0x69
 #define SW5_VOLT	0x71
+#define SW6_VOLT	0x79
 
-	buf[0] = 0x50;	/* (.90-.4)*160=.50*160=80=0x50  80/160+.4=.90 gpu/dram/arm */
+	buf[0] = 0x50;	/* (.90-.4)*160=.50*160=80=0x50  80/160+.4=.90 */
+	/* dram */
 	ret = i2c_write(PF8100, SW2_VOLT, 1, buf, 1);
 	if (ret)
 		return ret;
+	/* aux_0p9 */
 	ret = i2c_write(PF8100, SW4_VOLT, 1, buf, 1);
 	if (ret)
 		return ret;
+	/* arm */
 	ret = i2c_write(PF8100, SW3_VOLT, 1, buf, 1);
+	if (ret)
+		return ret;
+	/* soc */
+	ret = i2c_write(PF8100, SW1_VOLT, 1, buf, 1);
 	if (ret)
 		return ret;
 	/*
@@ -148,8 +157,13 @@ int power_init_boundary(void)
 		ret = i2c_write(PF8100, SW3_CONFIG2, 1, buf, 1);
 	}
 
-	buf[0] = 0x40;	/* (.80-.4)*160=.40*160=64=0x40  64/160+.4=.80 vpu */
+	/* vpu/gpu */
+	buf[0] = 0x50;	/* (.90-.4)*160=.50*160=80=0x50  80/160+.4=.90 */
 	ret = i2c_write(PF8100, SW5_VOLT, 1, buf, 1);
+
+	/* DRAM_1P1V */
+	buf[0] = 0x70;	/* (1.10-.4)*160=.70*160=112=0x70  112/160+.4=1.10 */
+	ret = i2c_write(PF8100, SW6_VOLT, 1, buf, 1);
 
 	return ret;
 }
