@@ -122,7 +122,11 @@ if itest.s "x" != "x${root_dev_part}" ; then
 elif test "sata" = "${devtype}" ; then
 	setenv bootargs "${bootargs} root=/dev/sda${bpart}" ;
 elif test "usb" = "${devtype}" ; then
-	setenv bootargs "${bootargs} root=/dev/sda${bpart}" ;
+	if itest.s "x1" == "x${devnum}" ; then
+		setenv bootargs "${bootargs} root=/dev/sdb${bpart}" ;
+	else
+		setenv bootargs "${bootargs} root=/dev/sda${bpart}" ;
+	fi
 else
 	setenv bootargs "${bootargs} root=/dev/mmcblk${devnum}p${bpart}"
 fi
