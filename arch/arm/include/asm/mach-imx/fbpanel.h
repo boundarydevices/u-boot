@@ -756,6 +756,7 @@ void fbp_setup_env_cmds(void);
 #define VDF_TM070JDHG30(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
 {\
 	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	.pwm_period = 32000, \
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
