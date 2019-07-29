@@ -449,15 +449,34 @@ static void cec_report_device_power_status(int dst)
 
 static void cec_set_stream_path(void)
 {
-	unsigned char phy_addr_ab = (readl(AO_DEBUG_REG1) >> 8) & 0xff;
-	unsigned char phy_addr_cd = readl(AO_DEBUG_REG1) & 0xff;
+	/*unsigned char phy_addr_ab = (readl(AO_DEBUG_REG1) >> 8) & 0xff;*/
+	/*unsigned char phy_addr_cd = readl(AO_DEBUG_REG1) & 0xff;*/
 
 	if ((hdmi_cec_func_config >> CEC_FUNC_MASK) & 0x1) {
 		if ((hdmi_cec_func_config >> AUTO_POWER_ON_MASK) & 0x1) {
-			if ((phy_addr_ab == cec_msg.buf[cec_msg.rx_read_pos].msg[2]) &&
-			    (phy_addr_cd == cec_msg.buf[cec_msg.rx_read_pos].msg[3]))  {
+			/* some tv send a wrong phy address */
+			/*if ((phy_addr_ab == cec_msg.buf[cec_msg.rx_read_pos].msg[2]) &&*/
+			/*    (phy_addr_cd == cec_msg.buf[cec_msg.rx_read_pos].msg[3]))  */{
 				cec_msg.cec_power = 0x1;
+				uart_puts("stream_path pw on\n");
 			}
+		}
+	}
+}
+
+void cec_routing_change(void)
+{
+	/*unsigned char phy_addr_ab = (readl(P_AO_DEBUG_REG1) >> 8) & 0xff;*/
+	/*unsigned char phy_addr_cd = readl(P_AO_DEBUG_REG1) & 0xff;*/
+
+	if ((hdmi_cec_func_config >> CEC_FUNC_MASK) & 0x1) {
+		if ((hdmi_cec_func_config >> AUTO_POWER_ON_MASK) & 0x1) {
+			/* wake up if routing destination is self */
+			/* some tv send a wrong phy address */
+			/*if ((phy_addr_ab == cec_msg.buf[cec_msg.rx_read_pos].msg[4]) &&*/
+			/*	(phy_addr_cd == cec_msg.buf[cec_msg.rx_read_pos].msg[5]))*/
+			cec_msg.cec_power = 0x1;
+			uart_puts("routing_change pw on\n");
 		}
 	}
 }
@@ -591,6 +610,9 @@ static unsigned int cec_handle_message(void)
 			break;
 		case CEC_OC_SET_STREAM_PATH:
 			cec_set_stream_path();
+			break;
+		case CEC_OC_ROUTING_CHANGE:
+			cec_routing_change();
 			break;
 		case CEC_OC_GIVE_DEVICE_POWER_STATUS:
 			cec_report_device_power_status(source);
@@ -775,10 +797,12 @@ void cec_node_init(void)
 	static unsigned int retry = 0;
 	static int regist_devs = 0;
 	static int *probe = NULL;
-
 	int tx_stat;
 	unsigned char msg[1];
 	unsigned int kern_log_addr = (readl(AO_DEBUG_REG1) >> 16) & 0xf;
+	unsigned char phy_addr_ab = (readl(P_AO_DEBUG_REG1) >> 8) & 0xff;
+	unsigned char phy_addr_cd = readl(P_AO_DEBUG_REG1) & 0xff;
+
 	int player_dev[3][3] =
 		{{CEC_PLAYBACK_DEVICE_1_ADDR, CEC_PLAYBACK_DEVICE_2_ADDR, CEC_PLAYBACK_DEVICE_3_ADDR},
 		 {CEC_PLAYBACK_DEVICE_2_ADDR, CEC_PLAYBACK_DEVICE_3_ADDR, CEC_PLAYBACK_DEVICE_1_ADDR},
@@ -807,6 +831,9 @@ void cec_node_init(void)
 		 * started one to allocate.
 		 */
 		cec_dbg_print("kern log_addr:0x", kern_log_addr);
+		uart_puts("\n");
+		cec_dbg_print("kern phy_addr:0x", phy_addr_ab);
+		cec_dbg_print(" ", phy_addr_cd);
 		uart_puts("\n");
 		/* we don't need probe TV address */
 		if (!is_playback_dev(kern_log_addr)) {

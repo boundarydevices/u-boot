@@ -454,14 +454,16 @@ static void cec_report_device_power_status(int dst)
 
 static void cec_set_stream_path(void)
 {
-	unsigned char phy_addr_ab = (readl(AO_DEBUG_REG1) >> 8) & 0xff;
-	unsigned char phy_addr_cd = readl(AO_DEBUG_REG1) & 0xff;
+	/*unsigned char phy_addr_ab = (readl(AO_DEBUG_REG1) >> 8) & 0xff;*/
+	/*unsigned char phy_addr_cd = readl(AO_DEBUG_REG1) & 0xff;*/
 
 	if ((hdmi_cec_func_config >> CEC_FUNC_MASK) & 0x1) {
 		if ((hdmi_cec_func_config >> AUTO_POWER_ON_MASK) & 0x1) {
-			if ((phy_addr_ab == cec_msg.buf[cec_msg.rx_read_pos].msg[2]) &&
-			    (phy_addr_cd == cec_msg.buf[cec_msg.rx_read_pos].msg[3]))  {
+			/* some tv send a wrong phy address */
+			/*if ((phy_addr_ab == cec_msg.buf[cec_msg.rx_read_pos].msg[2]) &&*/
+			/*    (phy_addr_cd == cec_msg.buf[cec_msg.rx_read_pos].msg[3]))*/  {
 				cec_msg.cec_power = 0x1;
+				uart_puts("stream_path pw on\n");
 			}
 		}
 	}
@@ -469,15 +471,17 @@ static void cec_set_stream_path(void)
 
 void cec_routing_change(void)
 {
-	unsigned char phy_addr_ab = (readl(P_AO_DEBUG_REG1) >> 8) & 0xff;
-	unsigned char phy_addr_cd = readl(P_AO_DEBUG_REG1) & 0xff;
+	/*unsigned char phy_addr_ab = (readl(P_AO_DEBUG_REG1) >> 8) & 0xff;*/
+	/*unsigned char phy_addr_cd = readl(P_AO_DEBUG_REG1) & 0xff;*/
 
 	if ((hdmi_cec_func_config >> CEC_FUNC_MASK) & 0x1) {
 		if ((hdmi_cec_func_config >> AUTO_POWER_ON_MASK) & 0x1) {
 			/* wake up if routing destination is self */
-			if ((phy_addr_ab == cec_msg.buf[cec_msg.rx_read_pos].msg[4]) &&
-				(phy_addr_cd == cec_msg.buf[cec_msg.rx_read_pos].msg[5]))
-				cec_msg.cec_power = 0x1;
+			/* some tv send a wrong phy address */
+			/*if ((phy_addr_ab == cec_msg.buf[cec_msg.rx_read_pos].msg[4]) &&*/
+			/*	(phy_addr_cd == cec_msg.buf[cec_msg.rx_read_pos].msg[5]))*/
+			cec_msg.cec_power = 0x1;
+			uart_puts("routing_change pw on\n");
 		}
 	}
 }
@@ -626,6 +630,7 @@ static unsigned int cec_handle_message(void)
 			     (0x6d == cec_msg.buf[cec_msg.rx_read_pos].msg[2]) ||
 			     (0x09 == cec_msg.buf[cec_msg.rx_read_pos].msg[2]) )) {
 				cec_msg.cec_power = 0x1;
+				uart_puts("USER_CONTROL_PRESSED pw on\n");
 			}
 			break;
 		case CEC_OC_MENU_REQUEST:
@@ -644,6 +649,7 @@ static unsigned int cec_handle_message(void)
 				wake =  (phy_addr << 0) |
 					(source << 16);
 				writel(wake, AO_RTI_STATUS_REG1);
+				uart_puts("OTP pw on\n");
 			}
 			break;
 
@@ -658,6 +664,7 @@ static unsigned int cec_handle_message(void)
 				wake =  (phy_addr << 0) |
 					(source << 16);
 				writel(wake, AO_RTI_STATUS_REG1);
+				uart_puts("ACTIVE_SOURCE pw on\n");
 			}
 			break;
 
@@ -799,10 +806,12 @@ void cec_node_init(void)
 	static unsigned int retry = 0;
 	static int regist_devs = 0;
 	static int *probe = NULL;
-
 	int tx_stat;
 	unsigned char msg[1];
 	unsigned int kern_log_addr = (readl(AO_DEBUG_REG1) >> 16) & 0xf;
+	unsigned char phy_addr_ab = (readl(P_AO_DEBUG_REG1) >> 8) & 0xff;
+	unsigned char phy_addr_cd = readl(P_AO_DEBUG_REG1) & 0xff;
+
 	int player_dev[3][3] =
 		{{CEC_PLAYBACK_DEVICE_1_ADDR, CEC_PLAYBACK_DEVICE_2_ADDR, CEC_PLAYBACK_DEVICE_3_ADDR},
 		 {CEC_PLAYBACK_DEVICE_2_ADDR, CEC_PLAYBACK_DEVICE_3_ADDR, CEC_PLAYBACK_DEVICE_1_ADDR},
@@ -813,6 +822,7 @@ void cec_node_init(void)
 		uart_puts("failed on retried all possible address\n");
 		return ;
 	}
+
 	writel(0, AO_RTI_STATUS_REG1);
 	if (probe == NULL) {
 		cec_msg.rx_read_pos = 0;
@@ -831,6 +841,9 @@ void cec_node_init(void)
 		 * started one to allocate.
 		 */
 		cec_dbg_print("kern log_addr:0x", kern_log_addr);
+		uart_puts("\n");
+		cec_dbg_print("kern phy_addr:0x", phy_addr_ab);
+		cec_dbg_print(" ", phy_addr_cd);
 		uart_puts("\n");
 		/* we don't need probe TV address */
 		if (!is_playback_dev(kern_log_addr)) {
