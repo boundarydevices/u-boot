@@ -72,4 +72,4 @@ CONFIG_USB_ETH_CDC=y
 CONFIG_VIDEO=y
 # CONFIG_VIDEO_SW_CURSOR is not set
 CONFIG_OF_LIBFDT=y
-CONFIG_EXTRA_ENV_SETTINGS_DEFCONFIG="fb_lvds=wxga\0panel=LDB-WXGA\0preboot=gpio set 204\0custom_test=sabrelite_fbd\0"
+CONFIG_EXTRA_ENV_SETTINGS_DEFCONFIG="fb_lvds=auo_b101ew05\0panel=LDB-WXGA\0preboot=gpio set 204\0custom_test=sabrelite_fbd\0"
