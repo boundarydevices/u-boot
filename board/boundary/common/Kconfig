@@ -66,3 +66,6 @@ config HDMI_CLK2
 config EXTRA_ENV_SETTINGS_DEFCONFIG
 	string "defconfig specific environment variables"
 	default ""
+
+config USB_BOOT_FIRST
+	bool "Try booting from USB before mmc/sata"

@@ -318,10 +318,17 @@
 #endif
 
 #ifndef BOOT_TARGET_DEVICES
+#ifdef CONFIG_USB_BOOT_FIRST
+#define BOOT_TARGET_DEVICES(func) \
+	DISTRO_BOOT_DEV_USB(func) \
+	DISTRO_BOOT_DEV_MMC(func) \
+	DISTRO_BOOT_DEV_SATA(func)
+#else
 #define BOOT_TARGET_DEVICES(func) \
 	DISTRO_BOOT_DEV_MMC(func) \
 	DISTRO_BOOT_DEV_SATA(func) \
 	DISTRO_BOOT_DEV_USB(func)
+#endif
 #endif
 
 #define BOOTENV_EXTRA_BOOT_SCRIPTS " 6x_bootscript "
