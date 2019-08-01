@@ -18,9 +18,6 @@
 #define CONFIG_SYS_FSL_USDHC_NUM	1
 #define CONFIG_USB_MAX_CONTROLLER_COUNT 1
 #define BD_I2C_MASK	2
-#define BOOT_TARGET_DEVICES(func) \
-	DISTRO_BOOT_DEV_USB(func) \
-	DISTRO_BOOT_DEV_MMC(func)
 #define BD_USB_START 	"setexpr otgstat *0x020c9030 \\\\& 0x08000000;" \
 				"if itest.l ${otgstat} -eq 0 ; then " \
 					"usb start;" \
