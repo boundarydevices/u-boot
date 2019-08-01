@@ -181,6 +181,12 @@ static const struct display_info_t displays[] = {
 	VD_LCM_JM430(MIPI, fbp_detect_i2c, fbp_bus_gp(1, GP_ST1633_RESET, GP_TC358762_EN, 30), fbp_addr_gp(0x55, GP_LCM_JM430_BKL_EN, 0, 0)),		/* Sitronix touch */
 	VD_LTK0680YTMDB(MIPI, NULL, fbp_bus_gp(1, GP_MIPI_RESET, GP_MIPI_RESET, 0), 0x5d),
 	VD_MIPI_COM50H5N03ULC(MIPI, NULL, fbp_bus_gp(1, GP_MIPI_RESET, GP_MIPI_RESET, 0), 0x00),
+	VD_MIPI_640_480M_60(MIPI, fbp_detect_i2c, 1, 0x70),
+	VD_MIPI_1280_720M_60(MIPI, NULL, 1, 0x70),
+	VD_MIPI_1920_1080M_60(MIPI, NULL, 1, 0x70),
+	VD_MIPI_1024_768M_60(MIPI, NULL, 1, 0x70),
+	VD_MIPI_800_600MR_60(MIPI, NULL, 1, 0x70),
+	VD_MIPI_720_480M_60(MIPI, NULL, 1, 0x70),
 };
 #define display_cnt	ARRAY_SIZE(displays)
 #else
