@@ -28,9 +28,6 @@
 #define BD_MMC_UMS_DISKS "0"
 
 #undef CONFIG_SYS_BOARD
-#define BOOT_TARGET_DEVICES(func) \
-	DISTRO_BOOT_DEV_USB(func) \
-	DISTRO_BOOT_DEV_MMC(func)
 
 #include "boundary.h"
 #define CONFIG_EXTRA_ENV_SETTINGS BD_BOUNDARY_ENV_SETTINGS \
