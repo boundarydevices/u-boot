@@ -28,7 +28,11 @@ config SAVED_DRAM_TIMING_BASE
 	  after DRAM is trained, need to save the dram related timming
 	  info into memory for low power use. OCRAM_S is used for this
 	  purpose on i.MX8MM.
-	default 0x180000
+	default 0x00180000 if IMX8MM
+	default 0x00180000 if IMX8MN
+	default 0x00180000 if IMX8MP
+	default 0x40000000 if IMX8MQ
+	default 0x00000000
 
 config IMX8M_DRAM_INLINE_ECC
 	bool "imx8mp inline ECC"
