@@ -106,15 +106,11 @@ void wait_ddrphy_training_complete(void)
 
 void ddrphy_init_set_dfi_clk(unsigned int drate)
 {
-	if (drate >= 1600) {
-		dram_pll_init(MHZ(drate/4));
+	if (drate >= 667) {
+		dram_pll_init(MHZ((drate + 1)/4));
 		dram_disable_bypass();
 	} if (drate <= 400) {
-#ifdef CONFIG_IMX8MQ
-		dram_pll_init(MHZ(200));
-#else
 		dram_enable_bypass(MHZ(drate));
-#endif
 	}
 }
 
