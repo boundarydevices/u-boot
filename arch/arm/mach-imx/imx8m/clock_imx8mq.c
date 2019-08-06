@@ -631,16 +631,16 @@ void dram_disable_bypass(void)
  * 6-1 PLL_OUTPUT_DIV_VAL - SSCG_PLL_OUTPUT_DIV_VAL
  * 0  PLL_FILTER_RANGE, 0 - 25-35 MHz, 1 - 35 to 54 MHz
  *
- * 167 0x00f5a406
  * 700 0x00ec4580
  *
  */
 unsigned dram_cfg2[] = {
-		/* 25/31*46*9/4= 166.935/2 (DDR) */
-MHZ(167), SSCG_PLL_REF_DIVR2_VAL(30) | SSCG_PLL_FEEDBACK_DIV_F1_VAL(45) | SSCG_PLL_FEEDBACK_DIV_F2_VAL(8) | SSCG_PLL_OUTPUT_DIV_VAL(3),
 		/* 25/44*48*22/12= 100/2 (DDR) */
 		/* 0x015dea96: 0000 000 101011 101111 010101 001011 0 */
 MHZ(100), SSCG_PLL_REF_DIVR2_VAL(43) | SSCG_PLL_FEEDBACK_DIV_F1_VAL(47) | SSCG_PLL_FEEDBACK_DIV_F2_VAL(21) | SSCG_PLL_OUTPUT_DIV_VAL(11),
+		/* 25/31*46*9/4= 166.935/2 (DDR) */
+		/* 0x00f5a406: 0000 000 011110 101101 001000 000011 0 */
+MHZ(167), SSCG_PLL_REF_DIVR2_VAL(30) | SSCG_PLL_FEEDBACK_DIV_F1_VAL(45) | SSCG_PLL_FEEDBACK_DIV_F2_VAL(8) | SSCG_PLL_OUTPUT_DIV_VAL(3),
 		/* 25/30*45*8/3= 200/2 (DDR) */
 		/* 0x00f5a406: 0000 000 011110 101101 001000 000011 0 */
 MHZ(200), SSCG_PLL_REF_DIVR2_VAL(29) | SSCG_PLL_FEEDBACK_DIV_F1_VAL(44) | SSCG_PLL_FEEDBACK_DIV_F2_VAL(7) | SSCG_PLL_OUTPUT_DIV_VAL(2),
@@ -710,8 +710,10 @@ void dram_pll_init(ulong pll_val)
 	__udelay(100);
 	clrbits_le32(pll_control_reg, SSCG_PLL_BYPASS2_MASK);
 	/* Wait lock */
-	while (!(readl(pll_control_reg) & SSCG_PLL_LOCK_MASK))
-		;
+	ret = readl_poll_timeout(pll_control_reg, val,
+				 val & SSCG_PLL_LOCK_MASK, 10);
+	if (ret)
+		printf("%s timeout\n", __func__);
 }
 
 static int frac_pll_init(u32 pll, enum frac_pll_out_val val)
