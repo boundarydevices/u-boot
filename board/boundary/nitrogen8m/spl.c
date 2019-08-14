@@ -177,17 +177,6 @@ int power_init_board(void)
 
 void spl_board_init(void)
 {
-	enable_tzc380();
-	imx_iomux_v3_setup_multiple_pads(init_pads, ARRAY_SIZE(init_pads));
-
-	/* Adjust pmic voltage to 1.0V for 800M */
-	setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info1);
-
-	power_init_board();
-
-	/* DDR initialization */
-	spl_dram_init();
-
 #ifndef CONFIG_SPL_USB_SDP_SUPPORT
 	/* Serial download mode */
 	if (is_usb_boot()) {
@@ -210,6 +199,8 @@ int board_fit_config_name_match(const char *name)
 
 void board_init_f(ulong dummy)
 {
+	int ret;
+
 	/* Clear global data */
 	memset((void *)gd, 0, sizeof(gd_t));
 
@@ -223,6 +214,23 @@ void board_init_f(ulong dummy)
 
 	/* Clear the BSS. */
 	memset(__bss_start, 0, __bss_end - __bss_start);
+
+	ret = spl_init();
+	if (ret) {
+		printf("spl_init() failed: %d\n", ret);
+		hang();
+	}
+
+	enable_tzc380();
+	imx_iomux_v3_setup_multiple_pads(init_pads, ARRAY_SIZE(init_pads));
+
+	/* Adjust pmic voltage to 1.0V for 800M */
+	setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info1);
+
+	power_init_board();
+
+	/* DDR initialization */
+	spl_dram_init();
 
 	board_init_r(NULL, 0);
 }
