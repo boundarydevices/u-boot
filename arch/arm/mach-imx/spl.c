@@ -188,13 +188,6 @@ u32 spl_boot_device(void)
 #endif /* CONFIG_MX7 || CONFIG_IMX8M || CONFIG_IMX8 */
 
 #ifdef CONFIG_SPL_USB_GADGET
-int g_dnl_bind_fixup(struct usb_device_descriptor *dev, const char *name)
-{
-	put_unaligned(CONFIG_USB_GADGET_PRODUCT_NUM + 0xfff, &dev->idProduct);
-
-	return 0;
-}
-
 #define SDPV_BCD_DEVICE 0x500
 int g_dnl_get_board_bcd_device_number(int gcnum)
 {
