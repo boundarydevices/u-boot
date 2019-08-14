@@ -63,7 +63,16 @@ static struct usb_device_descriptor device_desc = {
 	.bDeviceSubClass = 0, /*0x02:CDC-modem , 0x00:CDC-serial*/
 
 	.idVendor = __constant_cpu_to_le16(CONFIG_USB_GADGET_VENDOR_NUM),
-	.idProduct = __constant_cpu_to_le16(CONFIG_USB_GADGET_PRODUCT_NUM),
+#if defined(CONFIG_SPL_BUILD)
+#if (CONFIG_USB_GADGET_SPL_SPD_PRODUCT_NUM != 0)
+#define PRODUCT_NUM	CONFIG_USB_GADGET_SPL_SPD_PRODUCT_NUM
+#else
+#define PRODUCT_NUM	(CONFIG_USB_GADGET_PRODUCT_NUM + 0xfff)
+#endif
+#else
+#define PRODUCT_NUM	CONFIG_USB_GADGET_PRODUCT_NUM
+#endif
+	.idProduct = __constant_cpu_to_le16(PRODUCT_NUM),
 	/* .iProduct = DYNAMIC */
 	/* .iSerialNumber = DYNAMIC */
 	.bNumConfigurations = 1,
