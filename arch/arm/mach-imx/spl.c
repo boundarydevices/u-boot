@@ -152,15 +152,6 @@ u32 spl_boot_device(void)
 }
 #endif /* CONFIG_MX6 || CONFIG_MX7 || CONFIG_IMX8M */
 
-#ifdef CONFIG_SPL_USB_GADGET_SUPPORT
-int g_dnl_bind_fixup(struct usb_device_descriptor *dev, const char *name)
-{
-	put_unaligned(CONFIG_USB_GADGET_PRODUCT_NUM + 0xfff, &dev->idProduct);
-
-	return 0;
-}
-#endif
-
 #if defined(CONFIG_SPL_MMC_SUPPORT)
 /* called from spl_mmc to see type of boot mode for storage (RAW or FAT) */
 #if defined(CONFIG_IMX8M)
