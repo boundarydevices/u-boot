@@ -628,7 +628,7 @@ int dm_scan_fdt_dev(struct udevice *dev);
 typedef void (*dr_release_t)(struct udevice *dev, void *res);
 typedef int (*dr_match_t)(struct udevice *dev, void *res, void *match_data);
 
-#ifdef CONFIG_DEVRES
+#if defined(CONFIG_DEVRES) && CONFIG_IS_ENABLED(DM)
 
 #ifdef CONFIG_DEBUG_DEVRES
 void *__devres_alloc(dr_release_t release, size_t size, gfp_t gfp,
