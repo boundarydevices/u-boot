@@ -463,10 +463,10 @@ struct dm_mmc_ops {
 	 *
 	 * @dev:	Device to check
 	 * @state:	target state
-	 * @timeout:	timeout in us
+	 * @timeout_us:	timeout in us
 	 * @return 0 if dat0 is in the target state, -ve on error
 	 */
-	int (*wait_dat0)(struct udevice *dev, int state, int timeout);
+	int (*wait_dat0)(struct udevice *dev, int state, int timeout_us);
 
 	/**
 	 * card_busy() - See whether a card is busy
@@ -491,7 +491,7 @@ int dm_mmc_set_vdd(struct udevice *dev, bool enable);
 int dm_mmc_get_cd(struct udevice *dev);
 int dm_mmc_get_wp(struct udevice *dev);
 int dm_mmc_execute_tuning(struct udevice *dev, uint opcode);
-int dm_mmc_wait_dat0(struct udevice *dev, int state, int timeout);
+int dm_mmc_wait_dat0(struct udevice *dev, int state, int timeout_us);
 int dm_mmc_card_busy(struct udevice *dev);
 
 /* Transition functions for compatibility */
@@ -500,7 +500,7 @@ int mmc_set_vdd(struct mmc *mmc, bool enable);
 int mmc_getcd(struct mmc *mmc);
 int mmc_getwp(struct mmc *mmc);
 int mmc_execute_tuning(struct mmc *mmc, uint opcode);
-int mmc_wait_dat0(struct mmc *mmc, int state, int timeout);
+int mmc_wait_dat0(struct mmc *mmc, int state, int timeout_us);
 int mmc_card_busy(struct mmc *mmc);
 int mmc_set_enhanced_strobe(struct mmc *mmc);
 
@@ -620,8 +620,8 @@ struct mmc {
 	u8 part_attr;
 	u8 wr_rel_set;
 	u8 part_config;
-	u8 gen_cmd6_time;
-	u8 part_switch_time;
+	u8 gen_cmd6_time;	/* units: 10 ms */
+	u8 part_switch_time;	/* units: 10 ms */
 	uint tran_speed;
 	uint legacy_speed; /* speed for the legacy mode provided by the card */
 	uint read_bl_len;
