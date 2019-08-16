@@ -24,7 +24,7 @@ BL32="tee.bin"
 if [ ! -f $BL32 ]; then
 	BL32=/dev/null
 else
-	echo "Building with TEE support, make sure your $BL31 is compiled with spd. If you do not want tee, please delete $BL31" >&2
+	echo "Building with TEE support, make sure your $BL31 is compiled with spd. If you do not want tee, please delete $BL32" >&2
 	echo "$BL32 size: " >&2
 	ls -lct $BL32 | awk '{print $5}' >&2
 fi
