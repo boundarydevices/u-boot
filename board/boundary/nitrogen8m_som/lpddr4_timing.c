@@ -1259,4 +1259,5 @@ struct dram_timing_info lpddr4_timing = {
 	.fsp_msg_num = ARRAY_SIZE(lpddr4_dram_fsp_msg),
 	.ddrphy_pie = lpddr4_phy_pie,
 	.ddrphy_pie_num = ARRAY_SIZE(lpddr4_phy_pie),
+	.fsp_table = { 3200, 400, },
 };
