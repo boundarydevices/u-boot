@@ -44,6 +44,7 @@ struct dram_timing_info {
 	unsigned int fsp_table[4];
 };
 
+extern struct dram_timing_info dram_timing;
 extern struct dram_timing_info lpddr4_timing;
 extern struct dram_cfg_param ddrphy_trained_csr[];
 extern uint32_t ddrphy_trained_csr_num;
