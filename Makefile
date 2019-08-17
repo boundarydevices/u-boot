@@ -1068,8 +1068,19 @@ U_BOOT_ITS := u-boot.its
 ifeq ($(CONFIG_SPL_FIT_GENERATOR),"arch/arm/mach-imx/mkimage_fit_atf.sh")
 U_BOOT_ITS_DEPS += u-boot-nodtb.bin
 endif
+
+ifdef CONFIG_IMX8MM
+SOC_CPU = iMX8MM
+TEE_LOAD_ADDR = 0xbe000000
+ATF_LOAD_ADDR = 0x00920000
+endif
+ifdef CONFIG_IMX8MQ
+SOC_CPU = iMX8MQ
+TEE_LOAD_ADDR = 0xfe000000
+ATF_LOAD_ADDR = 0x00910000
+endif
 $(U_BOOT_ITS): $(U_BOOT_ITS_DEPS) FORCE
-	$(srctree)/$(CONFIG_SPL_FIT_GENERATOR) \
+	TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ATF_LOAD_ADDR=$(ATF_LOAD_ADDR) BL31=bl31-${SOC_CPU}.bin $(srctree)/$(CONFIG_SPL_FIT_GENERATOR) \
 	$(patsubst %,arch/$(ARCH)/dts/%.dtb,$(subst ",,$(CONFIG_OF_LIST))) > $@
 endif
 endif
