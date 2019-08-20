@@ -99,6 +99,7 @@ static void parse_cfg_cmd(int32_t cmd, char *token, char *name, int lineno)
 		break;
 	case CMD_SIGNED_HDMI:
 		signed_hdmi = token;
+		break;
 	case CMD_FIT:
 		using_fit = 1;
 		break;
@@ -120,7 +121,8 @@ static void parse_cfg_fld(int32_t *cmd, char *token,
 				name, lineno, token);
 			exit(EXIT_FAILURE);
 		}
-		break;
+		if (*cmd != CMD_FIT)
+			break;
 	case CFG_REG_SIZE:
 		parse_cfg_cmd(*cmd, token, name, lineno);
 		break;
