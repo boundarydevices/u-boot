@@ -27,7 +27,7 @@ DECLARE_GLOBAL_DATA_PTR;
 void spl_dram_init(void)
 {
 	/* ddr train */
-	ddr_init(&lpddr4_timing);
+	ddr_init(&dram_timing);
 }
 
 #define I2C_PAD_CTRL	(PAD_CTL_DSE3 | PAD_CTL_HYS | PAD_CTL_PUE | PAD_CTL_PE)
