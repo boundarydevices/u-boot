@@ -225,18 +225,6 @@ int power_init_boundary(void)
 
 void spl_board_init(void)
 {
-	int i;
-	enable_tzc380();
-
-	for (i = 0; i < ARRAY_SIZE(i2c_pad_info1); i++)
-		setup_i2c(i, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info1[i]);
-
-	malloc(sizeof(int));
-
-	power_init_boundary();
-	/* DDR initialization */
-	spl_dram_init();
-
 #ifndef CONFIG_SPL_USB_SDP_SUPPORT
 	/* Serial download mode */
 	if (is_usb_boot()) {
@@ -259,6 +247,9 @@ int board_fit_config_name_match(const char *name)
 
 void board_init_f(ulong dummy)
 {
+	int ret;
+	int i;
+
 	/* Clear global data */
 	memset((void *)gd, 0, sizeof(gd_t));
 
@@ -272,6 +263,21 @@ void board_init_f(ulong dummy)
 
 	/* Clear the BSS. */
 	memset(__bss_start, 0, __bss_end - __bss_start);
+
+	ret = spl_init();
+	if (ret) {
+		printf("spl_init() failed: %d\n", ret);
+		hang();
+	}
+
+	enable_tzc380();
+
+	for (i = 0; i < ARRAY_SIZE(i2c_pad_info1); i++)
+		setup_i2c(i, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info1[i]);
+
+	power_init_boundary();
+	/* DDR initialization */
+	spl_dram_init();
 
 	board_init_r(NULL, 0);
 }
