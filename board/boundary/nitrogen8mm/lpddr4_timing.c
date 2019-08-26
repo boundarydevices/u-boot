@@ -1276,7 +1276,7 @@ static struct dram_fsp_msg lpddr4_dram_fsp_msg[] = {
 	},
 };
 
-struct dram_timing_info lpddr4_timing = {
+struct dram_timing_info dram_timing = {
 	.ddrc_cfg = lpddr4_ddrc_cfg,
 	.ddrc_cfg_num = ARRAY_SIZE(lpddr4_ddrc_cfg),
 	.ddrphy_cfg = lpddr4_ddrphy_cfg,
