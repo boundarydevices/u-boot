@@ -200,7 +200,7 @@
 #include <config_distro_bootcmd.h>
 
 #define BD_RAM_BASE	0x80000000
-#define BD_RAM_SCRIPT	"40008000"
+#define BD_RAM_SCRIPT	"40020000"
 #define BD_RAM_KERNEL	"40800000"
 #define BD_RAM_RAMDISK	"42800000"
 #define BD_RAM_FDT	"43000000"
