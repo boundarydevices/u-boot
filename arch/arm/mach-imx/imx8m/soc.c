@@ -471,19 +471,24 @@ usb_modify_speed:
 }
 #endif
 
+#if defined(CONFIG_SPL_BUILD) || !defined(CONFIG_SYSRESET)
 void reset_cpu(ulong addr)
 {
-	struct watchdog_regs *wdog = (struct watchdog_regs *)WDOG1_BASE_ADDR;
+       struct watchdog_regs *wdog = (struct watchdog_regs *)addr;
 
-	/* Clear WDA to trigger WDOG_B immediately */
-	writew((WCR_WDE | WCR_SRS), &wdog->wcr);
+       if (!addr)
+	       wdog = (struct watchdog_regs *)WDOG1_BASE_ADDR;
 
-	while (1) {
-		/*
-		 * spin for .5 seconds before reset
-		 */
-	}
+       /* Clear WDA to trigger WDOG_B immediately */
+       writew((WCR_WDE | WCR_SRS), &wdog->wcr);
+
+       while (1) {
+               /*
+                * spin for .5 seconds before reset
+                */
+       }
 }
+#endif
 
 #if defined(CONFIG_ARCH_MISC_INIT)
 #define FSL_SIP_BUILDINFO			0xC2000003
