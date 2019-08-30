@@ -2549,9 +2549,6 @@ static void hdmitx_set_hw(struct hdmitx_dev* hdev)
 		set_tmds_clk_div40(0);
 		break;
 	}
-	hdmitx_set_reg_bits(HDMITX_DWC_FC_INVIDCONF, 0, 3, 1);
-	msleep(1);
-	hdmitx_set_reg_bits(HDMITX_DWC_FC_INVIDCONF, 1, 3, 1);
 }
 
 // Use this self-made function rather than %, because % appears to produce wrong
