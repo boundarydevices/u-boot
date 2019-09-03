@@ -117,14 +117,26 @@ int board_postclk_init(void)
 }
 #endif
 
+#define MAX_LOW_SIZE	(0x100000000ULL - CONFIG_SYS_SDRAM_BASE)
+#define SDRAM_SIZE	((1ULL * CONFIG_DDR_MB) << 20)
+
+#if SDRAM_SIZE > MAX_LOW_SIZE
+#define MEM_SIZE	MAX_LOW_SIZE
+#else
+#define MEM_SIZE	SDRAM_SIZE
+#endif
+
+int dram_init_banksize(void)
+{
+	gd->bd->bi_dram[0].start = CONFIG_SYS_SDRAM_BASE;
+	gd->bd->bi_dram[0].size = SDRAM_SIZE;
+	return 0;
+}
+
 int dram_init(void)
 {
 	/* rom_pointer[1] contains the size of TEE occupies */
-	if (rom_pointer[1])
-		gd->ram_size = PHYS_SDRAM_SIZE - rom_pointer[1];
-	else
-		gd->ram_size = PHYS_SDRAM_SIZE;
-
+	gd->ram_size = MEM_SIZE - rom_pointer[1];
 	return 0;
 }
 
