@@ -12,6 +12,22 @@
 
 #define LPDDR4_CS	0x3	/* 2 ranks */
 
+#if CONFIG_DDR_MB == 2048
+	/* Address map is from MSB 28: cs, r14, r13-r0, b2-b0, c9-c0 */
+#define VAL_DDRC_ADDRMAP0		0x00000016
+#define VAL_DDRC_ADDRMAP6		0x0f070707
+#elif CONFIG_DDR_MB == 3072
+	/* Address map is from MSB 29: r15, r14, cs, r13-r0, b2-b0, c9-c0 */
+#define VAL_DDRC_ADDRMAP0		0x00000015
+#define VAL_DDRC_ADDRMAP6		0x48080707
+#elif CONFIG_DDR_MB == 4096
+	/* Address map is from MSB 29: cs, r15, r14, r13-r0, b2-b0, c9-c0 */
+#define VAL_DDRC_ADDRMAP0		0x00000017
+#define VAL_DDRC_ADDRMAP6		0x07070707
+#else
+#error unsupported memory size
+#endif
+
 static struct dram_cfg_param lpddr4_ddrc_cfg[] = {
 	/* Start to config, default 3200mbps */
 	/* dis_dq=1, indicates no reads or writes are issued to SDRAM */
@@ -60,13 +76,13 @@ static struct dram_cfg_param lpddr4_ddrc_cfg[] = {
 	{ DDRC_DRAMTMG2(0), 0x070E1213 },
 
 	/* address mapping */
-	{ DDRC_ADDRMAP0(0), 0x00000016 },
+	{ DDRC_ADDRMAP0(0), VAL_DDRC_ADDRMAP0 },
 	{ DDRC_ADDRMAP3(0), 0x00000000 },
 	{ DDRC_ADDRMAP4(0), 0x00001f1f },
 	{ DDRC_ADDRMAP1(0), 0x00080808 },
 	{ DDRC_ADDRMAP2(0), 0x00000000 },
 	{ DDRC_ADDRMAP5(0), 0x07070707 },
-	{ DDRC_ADDRMAP6(0), 0x0F070707 },
+	{ DDRC_ADDRMAP6(0), VAL_DDRC_ADDRMAP6 },
 	{ DDRC_ADDRMAP7(0), 0x00000f0f },
 
 	/* performance setting */
