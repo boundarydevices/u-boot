@@ -53,11 +53,15 @@ for board in ${boards} ; do
 				if [ $? -eq 1 ] ; then
 					cp defconfig configs/${defconfig}_defconfig;
 					echo updated ${defconfig}_defconfig;
-#					git update-index configs/${defconfig}_defconfig;
+					git update-index configs/${defconfig}_defconfig;
 					update_cnt=`expr $update_cnt + 1`;
 					for insert_config in ${cfgs} ; do
 						if [ `expr "${board_cfgs}" : "[A-Z0-9_:]*:${insert_config}:"` -eq 0 ] ; then
-							cnt=`sed -n "/${insert_config}=/=" configs/${defconfig}_defconfig`
+							if [[ ${insert_config} == *=* ]] ; then
+								cnt=`sed -n "/${insert_config}/=" configs/${defconfig}_defconfig`
+							else
+								cnt=`sed -n "/${insert_config}=/=" configs/${defconfig}_defconfig`
+							fi
 							if [ "${cnt}" != "" ] ; then
 								board_cfgs="${board_cfgs}:${insert_config}:"
 							fi
@@ -75,10 +79,10 @@ for board in ${boards} ; do
 		echo "${board}: ${update_cnt} defconfigs updated, ${already_there} already there";
 		numsuccess=`expr $numsuccess + 1`;
 		if [ ${board_cfgs} != ":" ] ; then
-#			git c -m"${board}: add ${board_cfgs//::/ } to defconfigs";
+			git c -m"${board}: add ${board_cfgs//::/ } to defconfigs";
 			echo updating ${board} ${board_cfgs//::/ }
 		else
-#			git c -m"${board}: reorder defconfigs";
+			git c -m"${board}: reorder defconfigs";
 			echo reorder ${board} ${board_cfgs//::/ }
 		fi
 	else
