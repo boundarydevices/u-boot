@@ -402,7 +402,6 @@
 #define CONFIG_SYS_MEMTEST_SCRATCH     (BD_RAM_BASE + 0x00800000)
 
 /* Physical Memory Map */
-#define CONFIG_NR_DRAM_BANKS	       1
 #if defined(CONFIG_MX51) || defined(CONFIG_MX53)
 #define PHYS_SDRAM		       CSD0_BASE_ADDR
 #else
