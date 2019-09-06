@@ -421,7 +421,6 @@ static const unsigned short gpios_out_low[] = {
 	GP_LVDS_BKL_EN,
 	GP_RGB_BACKLIGHT,
 	GP_LVDS_BACKLIGHT,
-	GP_GT911_RESET,
 	GP_SGTL5000_MUTE,
 	GP_USB_OTG_PWR,		/* disable USB otg power */
 	GP_EMMC_RESET,		/* hold in reset */
@@ -430,6 +429,7 @@ static const unsigned short gpios_out_low[] = {
 static const unsigned short gpios_out_high[] = {
 	GP_ECSPI1_CS1,		/* SS1 of spi nor */
 	GP_PCAP_NRESET,		/* PCAP reset on J40 */
+	GP_GT911_RESET,
 };
 
 static const unsigned short gpios_in[] = {
