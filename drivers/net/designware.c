@@ -19,6 +19,7 @@
 #include "designware.h"
 #include <asm/arch/secure_apb.h>
 #include <amlogic/keyunify.h>
+#include <version.h>
 
 #if !defined(CONFIG_PHYLIB)
 # error "DesignWare Ether MAC requires PHYLIB - missing CONFIG_PHYLIB"
@@ -625,6 +626,7 @@ struct unify_eth_info {
 	char magic[6];
 	char index;
 	char chk;
+	char ver[24];
 };
 
 int check_eth_para(void)
@@ -640,6 +642,9 @@ int check_eth_para(void)
 		return -1;
 
 	if (unify_eth.index + unify_eth.chk !=0xff)
+		return -1;
+
+	if (strcmp(unify_eth.ver, PLAIN_VERSION) != 0)
 		return -1;
 
 	bestwindow = unify_eth.index;
@@ -737,6 +742,8 @@ static int do_autocali(cmd_tbl_t *cmdtp, int flag, int argc,
 		printf("----------normal----------\n");
 
 	phy_write(priv->phydev, MDIO_DEVAD_NONE,31, 0xd08);
+	reg = phy_read(priv->phydev, MDIO_DEVAD_NONE,0x11);
+	reg = phy_write(priv->phydev, MDIO_DEVAD_NONE, 0x11, reg & (~0x100));
 	reg = phy_read(priv->phydev, MDIO_DEVAD_NONE,0x15);
 	reg = phy_write(priv->phydev, MDIO_DEVAD_NONE, 0x15, reg & (~0x8));
 	phy_write(priv->phydev, MDIO_DEVAD_NONE, 31, 0x0);
@@ -847,6 +854,7 @@ static int do_autocali(cmd_tbl_t *cmdtp, int flag, int argc,
 	strncpy(unify_eth.magic, ETH_MAGIC, 6);
 	unify_eth.index = cali_window;
 	unify_eth.chk = 0xff - unify_eth.index;
+	strcpy(unify_eth.ver, PLAIN_VERSION);
 
 	key_unify_write("eth_exphy_para", &unify_eth, sizeof(struct unify_eth_info));
 	bestwindow = unify_eth.index;
