@@ -83,3 +83,7 @@ config NXP_BOARD_REVISION
 	  NXP boards based on i.MX6/7 contain the board revision information
 	  stored in the fuses. Select this option if you want to be able to
 	  retrieve the board revision information.
+
+config SPL_IMX_ROMAPI_LOADADDR
+	hex "Default load address to load image through ROM API"
+	depends on IMX8MN
