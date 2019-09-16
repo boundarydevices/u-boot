@@ -54,11 +54,9 @@ void enable_tzc380(void)
 
 	/* Enable TZASC and lock setting */
 	setbits_le32(&gpr->gpr[10], GPR_TZASC_EN);
-#ifdef CONFIG_IMX8MM
-	setbits_le32(&gpr->gpr[10], GPR_TZASC_SWAP_ID);
-#endif
 	setbits_le32(&gpr->gpr[10], GPR_TZASC_EN_LOCK);
-
+	if (is_imx8mm() || is_imx8mn())
+		setbits_le32(&gpr->gpr[10], GPR_TZASC_SWAP_ID);
 	/*
 	 * set Region 0 attribute to allow secure and non-secure read/write permission
 	 * Found some masters like usb dwc3 controllers can't work with secure memory.
