@@ -10,7 +10,6 @@
 #include <asm/arch/lpddr4_define.h>
 #include <asm/arch/imx8m_ddr.h>
 
-#define LPDDR4_CS	0x3	/* 2 ranks */
 #define DDR_BOOT_P1	/* default DDR boot frequency point */
 
 #define WR_POST_EXT_3200
@@ -20,6 +19,17 @@
 #define VAL_INIT4	((LPDDR4_MR3 << 16) | 8)
 #endif
 
+#if CONFIG_DDR_RANK_BITS == 0
+#define LPDDR4_CS	0x1	/* 0 rank bits, 1 chip select */
+#if CONFIG_DDR_MB == 2048
+	/* Address map is from MSB 28: r15, r14, r13-r0, b2-b0, c9-c0 */
+#define VAL_DDRC_ADDRMAP0		0x0000001F
+#define VAL_DDRC_ADDRMAP6		0x07070707
+#else
+#error unsupported memory size
+#endif
+#elif CONFIG_DDR_RANK_BITS == 1
+#define LPDDR4_CS	0x3	/* 1 rank bit, 2 chip selects */
 #if CONFIG_DDR_MB == 2048
 	/* Address map is from MSB 28: cs, r14, r13-r0, b2-b0, c9-c0 */
 #define VAL_DDRC_ADDRMAP0		0x00000016
@@ -35,6 +45,9 @@
 #else
 #error unsupported memory size
 #endif
+#else
+#error unsupported rank bits
+#endif
 
 static struct dram_cfg_param lpddr4_ddrc_cfg[] = {
 	/* Start to config, default 3200mbps */
@@ -42,7 +55,7 @@ static struct dram_cfg_param lpddr4_ddrc_cfg[] = {
 	{ DDRC_DBG1(0), 1 },
 	/* selfref_en=1, SDRAM enter self-refresh state */
 	{ DDRC_PWRCTL(0), 1 },
-	{ DDRC_MSTR(0), 0xa3080020 },
+	{ DDRC_MSTR(0), 0xa0080020 | (LPDDR4_CS << 24) },
 	{ DDRC_MSTR2(0), 0 },
 	{ DDRC_DERATEEN(0), 0x0203 },
 	{ DDRC_DERATEINT(0), 0x0186a000 },
@@ -397,7 +410,7 @@ static struct dram_cfg_param lpddr4_fsp0_cfg[] = {
 	{ 0x5400f, 0 },
 	{ 0x54010, 0 },
 	{ 0x54011, 0 },
-	{ 0x54012, (LPDDR4_CS << 8) | 0x10 },
+	{ 0x54012, 0x10 | (LPDDR4_CS << 8) },
 	{ 0x54013, 0 },
 	{ 0x54014, 0 },
 	{ 0x54015, 0 },
@@ -423,7 +436,7 @@ static struct dram_cfg_param lpddr4_fsp0_cfg[] = {
 	{ 0x54029, 0 },
 	{ 0x5402a, 0 },
 	{ 0x5402b, 0x1000 },
-	{ 0x5402c, 3 },
+	{ 0x5402c, LPDDR4_CS },
 	{ 0x5402d, 0 },
 	{ 0x5402e, 0 },
 	{ 0x5402f, 0 },
@@ -473,7 +486,7 @@ static struct dram_cfg_param lpddr4_fsp1_cfg[] = {
 	{ 0x5400f, 0 },
 	{ 0x54010, 0 },
 	{ 0x54011, 0 },
-	{ 0x54012, (LPDDR4_CS << 8) | 0x10 },
+	{ 0x54012, 0x10 | (LPDDR4_CS << 8) },
 	{ 0x54013, 0 },
 	{ 0x54014, 0 },
 	{ 0x54015, 0 },
@@ -498,7 +511,7 @@ static struct dram_cfg_param lpddr4_fsp1_cfg[] = {
 	{ 0x54029, 0 },
 	{ 0x5402a, 0 },
 	{ 0x5402b, 0x1000 },
-	{ 0x5402c, 3 },
+	{ 0x5402c, LPDDR4_CS },
 	{ 0x5402d, 0 },
 	{ 0x5402e, 0 },
 	{ 0x5402f, 0 },
@@ -545,7 +558,7 @@ static struct dram_cfg_param lpddr4_fsp0_2d_cfg[] = {
 	{ 0x5400f, (LPDDR4_2D_SHARE << 8) | 0 },
 	{ 0x54010, LPDDR4_2D_WEIGHT },
 	{ 0x54011, 0 },
-	{ 0x54012, (LPDDR4_CS << 8) | 0x10 },
+	{ 0x54012, 0x10 | (LPDDR4_CS << 8) },
 	{ 0x54013, 0 },
 	{ 0x54014, 0 },
 	{ 0x54015, 0 },
@@ -572,7 +585,7 @@ static struct dram_cfg_param lpddr4_fsp0_2d_cfg[] = {
 	{ 0x54029, 0 },
 	{ 0x5402a, 0 },
 	{ 0x5402b, 0x1000 },
-	{ 0x5402c, 3 },
+	{ 0x5402c, LPDDR4_CS },
 	{ 0x5402d, 0 },
 	{ 0x5402e, 0 },
 	{ 0x5402f, 0 },
