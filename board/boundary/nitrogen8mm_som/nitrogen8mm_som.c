@@ -229,8 +229,47 @@ int board_init(void)
 	return 0;
 }
 
+#define PF8100 0x08
+#define PF8X00_PROGID	0x03
+#define ID_DUAL	0x08
+
+void check_dual_sw4(void)
+{
+	struct udevice *bus;
+	struct udevice *i2c_dev;
+	unsigned char id[4];
+	int ret;
+
+	ret = uclass_get_device_by_seq(UCLASS_I2C, 0, &bus);
+	if (ret) {
+		printf("%s: Can't find bus\n", __func__);
+		return;
+	}
+
+	ret = dm_i2c_probe(bus, PF8100, 0, &i2c_dev);
+	if (ret) {
+		printf("%s: Can't find device id=0x%x\n", __func__, PF8100);
+		return;
+	}
+
+	ret = dm_i2c_read(i2c_dev, PF8X00_PROGID, id, 1);
+	if ((ret >= 0) && (id[0] == ID_DUAL)) {
+		/*
+		 * about 20 boards were stuffed with a dual phase sw3-sw4 PF8100
+		 * use sw4 as VDD_ARM for these boards.
+		 */
+		env_set("cmd_board",
+			"fdt set reg_sw4 dual-phase; "
+			"fdt get value reg reg_sw4 phandle; "
+			"fdt set a53 arm-supply <${reg}>; "
+			"fdt get value gp gpio0 phandle; "
+			"fdt set wdog0 reset-gpios <${gp} 2 1>");
+	}
+}
+
 static void set_env_vars(void)
 {
+	check_dual_sw4();
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	if (!env_get("board"))
 		env_set("board", "nitrogen8mm_som");
