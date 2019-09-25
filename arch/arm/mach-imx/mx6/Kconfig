@@ -564,6 +564,7 @@ config TARGET_TA
 
 config TARGET_USD
 	bool "usd"
+	select MX6Q
 
 config TARGET_USD_MR2
 	bool "usd_mr2"
