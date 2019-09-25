@@ -483,6 +483,7 @@ config TARGET_MX6_R
 
 config TARGET_NEOL
 	bool "neol"
+	select MX6Q
 
 config TARGET_NIT6XLITE
 	bool "nit6xlite"
