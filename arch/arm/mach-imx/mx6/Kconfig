@@ -447,6 +447,7 @@ config TARGET_INSP
 
 config TARGET_IOC
 	bool "ioc"
+	select MX6Q
 
 config TARGET_JLM
 	bool "jlm"
