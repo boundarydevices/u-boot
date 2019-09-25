@@ -64,6 +64,18 @@ if itest.s x${distro_bootpart} == x ; then
 	distro_bootpart=1
 fi
 
+if itest.s "x" != "x${upgradeu_pending}" ; then
+	echo upgradeu_pending is ${upgradeu_pending}
+	echo "Trying upgrade.scr"
+	if load ${devtype} ${devnum}:${distro_bootpart} ${a_script} upgrade.scr ; then
+		setenv upgradeu_pending
+		savee
+		echo "Running upgrade.scr"
+		reset=1
+		source ${a_script}
+	fi
+fi
+
 if load ${devtype} ${devnum}:${distro_bootpart} ${a_script} uEnv.txt ; then
     env import -t ${a_script} ${filesize}
 fi
