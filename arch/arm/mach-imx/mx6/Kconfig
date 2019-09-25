@@ -560,6 +560,7 @@ config TARGET_SP
 
 config TARGET_TA
 	bool "ta"
+	select MX6Q
 
 config TARGET_USD
 	bool "usd"
