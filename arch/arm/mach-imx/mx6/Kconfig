@@ -527,6 +527,7 @@ config TARGET_NW
 
 config TARGET_OC
 	bool "oc"
+	select MX6QDL
 
 config TARGET_PER
 	bool "per"
