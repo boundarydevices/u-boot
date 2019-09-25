@@ -370,6 +370,8 @@ config TARGET_A
 
 config TARGET_ACL
 	bool "acl"
+	select HAS_CAAM
+	select MX6_SMP
 
 config TARGET_AP
 	bool "ap"
