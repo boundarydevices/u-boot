@@ -423,6 +423,7 @@ config TARGET_DASH
 
 config TARGET_EO
 	bool "eo"
+	select MX6QDL
 
 config TARGET_H
 	bool "h"
