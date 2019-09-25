@@ -576,6 +576,7 @@ config TARGET_UTC
 
 config TARGET_VP
 	bool "vp"
+	select MX6Q
 
 config TARGET_YS
 	bool "ys"
