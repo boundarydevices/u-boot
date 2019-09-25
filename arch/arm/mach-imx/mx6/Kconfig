@@ -403,6 +403,7 @@ config TARGET_CID
 
 config TARGET_CID_TAB
 	bool "cid_tab"
+	select MX6Q
 
 config TARGET_CNT
 	bool "cnt"
