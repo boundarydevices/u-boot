@@ -531,6 +531,7 @@ config TARGET_OC
 
 config TARGET_PER
 	bool "per"
+	select MX6Q
 
 config TARGET_RC
 	bool "rc"
