@@ -443,6 +443,7 @@ config TARGET_HP
 
 config TARGET_INSP
 	bool "insp"
+	select MX6Q
 
 config TARGET_IOC
 	bool "ioc"
