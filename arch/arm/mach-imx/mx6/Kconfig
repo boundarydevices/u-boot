@@ -366,6 +366,7 @@ config TARGET_MX6ULL_14X14_EVK
 
 config TARGET_A
 	bool "a"
+	select MX6S
 
 config TARGET_ACL
 	bool "acl"
