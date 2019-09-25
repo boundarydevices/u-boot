@@ -439,6 +439,7 @@ config TARGET_HL
 
 config TARGET_HP
 	bool "hp"
+	select MX6QDL
 
 config TARGET_INSP
 	bool "insp"
