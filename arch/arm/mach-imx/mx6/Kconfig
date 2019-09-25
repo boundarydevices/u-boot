@@ -572,6 +572,7 @@ config TARGET_USD_MR2
 
 config TARGET_UTC
 	bool "utc"
+	select MX6Q
 
 config TARGET_VP
 	bool "vp"
