@@ -491,6 +491,7 @@ config TARGET_NIT6XLITE
 
 config TARGET_NITROGEN6_MAX
 	bool "nitrogen6_max"
+	select MX6QDL
 
 config TARGET_NITROGEN6_SCM
 	bool "nitrogen6_scm"
