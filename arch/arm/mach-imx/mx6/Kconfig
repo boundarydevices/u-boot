@@ -535,6 +535,7 @@ config TARGET_PER
 
 config TARGET_RC
 	bool "rc"
+	select MX6DL
 
 config TARGET_RTA
 	bool "rta"
