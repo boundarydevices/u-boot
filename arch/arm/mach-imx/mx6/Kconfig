@@ -375,6 +375,7 @@ config TARGET_ACL
 
 config TARGET_AP
 	bool "ap"
+	select MX6Q
 
 config TARGET_ASH
 	bool "ash"
