@@ -487,6 +487,7 @@ config TARGET_NEOL
 
 config TARGET_NIT6XLITE
 	bool "nit6xlite"
+	select MX6S
 
 config TARGET_NITROGEN6_MAX
 	bool "nitrogen6_max"
