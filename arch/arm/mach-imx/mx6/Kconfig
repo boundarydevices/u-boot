@@ -463,6 +463,7 @@ config TARGET_LSHORE
 
 config TARGET_LTCH
 	bool "ltch"
+	select MX6Q
 
 config TARGET_MCS
 	bool "mcs"
