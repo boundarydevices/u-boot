@@ -387,6 +387,7 @@ config TARGET_ASH2
 
 config TARGET_BT
 	bool "bt"
+	select MX6Q
 
 config TARGET_BT2
 	bool "bt2"
