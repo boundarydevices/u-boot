@@ -435,6 +435,7 @@ config TARGET_H4
 
 config TARGET_HL
 	bool "hl"
+	select MX6DL
 
 config TARGET_HP
 	bool "hp"
