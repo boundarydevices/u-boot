@@ -503,6 +503,7 @@ config TARGET_NITROGEN6_SOM2
 
 config TARGET_NITROGEN6_VM
 	bool "nitrogen6_vm"
+	select MX6S
 
 config TARGET_NITROGEN6SX
 	bool "nitrogen6sx"
