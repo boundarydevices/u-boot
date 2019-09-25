@@ -467,6 +467,7 @@ config TARGET_LTCH
 
 config TARGET_MCS
 	bool "mcs"
+	select MX6QDL
 
 config TARGET_MED
 	bool "med"
