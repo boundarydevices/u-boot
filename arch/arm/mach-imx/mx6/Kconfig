@@ -523,6 +523,7 @@ config TARGET_OPOS6ULDEV
 
 config TARGET_NW
 	bool "nw"
+	select MX6Q
 
 config TARGET_OC
 	bool "oc"
