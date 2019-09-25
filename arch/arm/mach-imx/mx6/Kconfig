@@ -379,6 +379,7 @@ config TARGET_AP
 
 config TARGET_ASH
 	bool "ash"
+	select MX6DL
 
 config TARGET_ASH2
 	bool "ash2"
