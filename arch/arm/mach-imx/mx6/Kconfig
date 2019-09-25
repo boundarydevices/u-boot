@@ -568,6 +568,7 @@ config TARGET_USD
 
 config TARGET_USD_MR2
 	bool "usd_mr2"
+	select MX6Q
 
 config TARGET_UTC
 	bool "utc"
