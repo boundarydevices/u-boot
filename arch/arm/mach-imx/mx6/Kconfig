@@ -391,6 +391,7 @@ config TARGET_BT
 
 config TARGET_BT2
 	bool "bt2"
+	select MX6Q
 
 config TARGET_CAD
 	bool "cad"
