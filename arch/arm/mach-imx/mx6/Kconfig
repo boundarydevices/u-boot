@@ -411,6 +411,7 @@ config TARGET_CNT
 
 config TARGET_COB
 	bool "cob"
+	select MX6Q
 
 config TARGET_COB2
 	bool "cob2"
