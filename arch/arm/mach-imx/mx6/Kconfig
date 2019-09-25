@@ -419,6 +419,7 @@ config TARGET_COB2
 
 config TARGET_DASH
 	bool "dash"
+	select MX6Q
 
 config TARGET_EO
 	bool "eo"
