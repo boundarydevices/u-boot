@@ -415,6 +415,7 @@ config TARGET_COB
 
 config TARGET_COB2
 	bool "cob2"
+	select MX6Q
 
 config TARGET_DASH
 	bool "dash"
