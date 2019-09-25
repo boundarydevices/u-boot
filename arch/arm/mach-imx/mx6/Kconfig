@@ -455,6 +455,7 @@ config TARGET_JLM
 
 config TARGET_LS
 	bool "ls"
+	select MX6Q
 
 config TARGET_LSHORE
 	bool "lshore"
