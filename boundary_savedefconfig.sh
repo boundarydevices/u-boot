@@ -1,9 +1,13 @@
 #!/bin/bash
-# syntax ./boundary_savedefconfig "commit message"
+# syntax ./boundary_savedefconfig "commit message" [boards]
 #Separate files by board and commit changes after "savedefconfig"
 
 commit_msg=$1;
-boards=`ls -d board/boundary/* | sed 's.board/boundary/..'`;
+if [ -z $2 ] ; then
+	boards=`ls -d board/boundary/* | sed 's.board/boundary/..'`;
+else
+	boards=$2;
+fi
 
 numboards=0;
 numsuccess=0;
@@ -28,6 +32,12 @@ for board in ${boards} ; do
 		cp defconfig configs/${defconfig}_defconfig;
 		echo updated ${defconfig}_defconfig;
 		git update-index configs/${defconfig}_defconfig;
+		dts="`grep -w CONFIG_DEFAULT_DEVICE_TREE configs/${defconfig}_defconfig | sed 's/CONFIG_DEFAULT_DEVICE_TREE=//'| sed 's/\"//g'`";
+		if [ x${dts} != x ] ; then
+			git update-index arch/arm/dts/${dts}.dts;
+			git add arch/arm/dts/${dts}-u-boot.dtsi;
+			git update-index arch/arm/dts/${dts}-u-boot.dtsi;
+		fi
 		update_cnt=`expr $update_cnt + 1`;
 	done
 	if [ x${hfile} == x ] ; then
@@ -36,6 +46,7 @@ for board in ${boards} ; do
 		git update-index include/configs/${hfile}.h
 		git update-index board/boundary/${board}/*.c
 		git update-index board/boundary/${board}/*
+		git update-index arch/arm/mach-imx/mx6/Kconfig
 		echo "${board}: ${update_cnt} defconfigs updated";
 		numsuccess=`expr $numsuccess + 1`;
 		git c -m"${board}: ${commit_msg}";
