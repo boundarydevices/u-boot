@@ -556,6 +556,7 @@ config TARGET_SNAP
 
 config TARGET_SP
 	bool "sp"
+	select MX6S
 
 config TARGET_TA
 	bool "ta"
