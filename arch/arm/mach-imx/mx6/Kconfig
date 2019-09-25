@@ -427,6 +427,7 @@ config TARGET_EO
 
 config TARGET_H
 	bool "h"
+	select MX6QDL
 
 config TARGET_H4
 	bool "h4"
