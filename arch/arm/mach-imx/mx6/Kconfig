@@ -548,6 +548,7 @@ config TARGET_S
 
 config TARGET_SES
 	bool "ses"
+	select MX6Q
 
 config TARGET_SNAP
 	bool "snap"
