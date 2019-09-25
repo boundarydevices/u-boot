@@ -459,6 +459,7 @@ config TARGET_LS
 
 config TARGET_LSHORE
 	bool "lshore"
+	select MX6QDL
 
 config TARGET_LTCH
 	bool "ltch"
