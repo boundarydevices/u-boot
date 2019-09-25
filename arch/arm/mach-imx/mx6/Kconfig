@@ -499,6 +499,7 @@ config TARGET_NITROGEN6_SCM
 
 config TARGET_NITROGEN6_SOM2
 	bool "nitrogen6_som2"
+	select MX6QDL
 
 config TARGET_NITROGEN6_VM
 	bool "nitrogen6_vm"
