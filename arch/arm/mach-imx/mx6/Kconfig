@@ -383,6 +383,7 @@ config TARGET_ASH
 
 config TARGET_ASH2
 	bool "ash2"
+	select MX6DL
 
 config TARGET_BT
 	bool "bt"
