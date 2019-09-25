@@ -88,6 +88,9 @@ else
 fi
 
 fdt resize
+if itest.s "x" != "x${cmd_board}" ; then
+	run cmd_board
+fi
 if itest.s "x" != "x${cmd_custom}" ; then
 	run cmd_custom
 fi
