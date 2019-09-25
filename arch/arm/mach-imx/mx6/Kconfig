@@ -479,6 +479,7 @@ config TARGET_MTP
 
 config TARGET_MX6_R
 	bool "mx6_r"
+	select MX6Q
 
 config TARGET_NEOL
 	bool "neol"
