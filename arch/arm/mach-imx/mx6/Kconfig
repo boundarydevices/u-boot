@@ -475,6 +475,7 @@ config TARGET_MED
 
 config TARGET_MTP
 	bool "mtp"
+	select MX6Q
 
 config TARGET_MX6_R
 	bool "mx6_r"
