@@ -186,7 +186,8 @@ static inline int i2c_get_info_entry_offset(void) {
 #if defined(CONFIG_MX6QDL)
 	int cpu = get_cpu_type();
 
-	if ((cpu != MXC_CPU_MX6Q) && (cpu != MXC_CPU_MX6D))
+	if ((cpu != MXC_CPU_MX6Q) && (cpu != MXC_CPU_MX6QP) &&
+			(cpu != MXC_CPU_MX6D))
 		return 1;
 #endif
 	return 0;
