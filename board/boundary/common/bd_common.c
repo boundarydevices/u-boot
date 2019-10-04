@@ -362,6 +362,11 @@ int bdcommon_env_init(void)
 	return 0;
 }
 
+void board_set_default_env(void)
+{
+	bdcommon_env_init();
+}
+
 int board_late_init(void)
 {
 #ifdef CONFIG_BOARD_LATE_SPECIFIC_INIT
