@@ -310,11 +310,6 @@ int board_init(void)
 	return 0;
 }
 
-void board_set_default_env(void)
-{
-	bdcommon_env_init();
-}
-
 const struct button_key board_buttons[] = {
 	{"tp28",	GP_TP28,	't', 1},
 	{NULL, 0, 0, 0},
