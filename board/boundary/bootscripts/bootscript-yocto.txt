@@ -77,7 +77,7 @@ else
 	exit;
 fi
 
-fdt resize
+fdt resize 4096
 if itest.s "x" != "x${cmd_board}" ; then
 	run cmd_board
 fi
