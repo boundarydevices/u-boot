@@ -4,6 +4,7 @@ setenv initrd_high 0xffffffff
 m4=''
 kernelimage=vmlinuz
 bootcommand=bootz
+img_prefix=/
 a_base=0x10000000
 if itest.s x51 == "x${imx_cpu}" ; then
 	a_base=0x90000000
@@ -15,6 +16,7 @@ elif itest.s x8MQ == "x${imx_cpu}" || itest.s x8MM == "x${imx_cpu}"; then
 	a_base=0x40000000
 	kernelimage=Image
 	bootcommand=booti
+	img_prefix=${prefix}
 fi
 if itest.s "x1" == "x$m4enabled" ; then
 	run m4boot;
@@ -135,8 +137,8 @@ setexpr b1 ${distro_bootpart} / 0x0a;
 setexpr bpart ${b1} * 0x10
 setexpr bpart ${bpart} + ${b0};
 
-if itest.s "x" != "x${root_dev_part}" ; then
-	setenv bootargs "${bootargs} root=${root_dev_part}" ;
+if itest.s "x" != "x${root_dev}" ; then
+	setenv bootargs "${bootargs} root=${root_dev}${bootpart}" ;
 elif test "sata" = "${devtype}" ; then
 	setenv bootargs "${bootargs} root=/dev/sda${bpart}" ;
 elif test "usb" = "${devtype}" ; then
@@ -203,7 +205,7 @@ if itest.s "x" != "x${show_env}" ; then
 fi
 
 echo "----------- trying to load /initrd.img";
-if load ${devtype} ${devnum}:${distro_bootpart} ${a_initrd} ${prefix}initrd.img ; then
+if load ${devtype} ${devnum}:${distro_bootpart} ${a_initrd} ${img_prefix}initrd.img ; then
 	haverd=1;
 	setenv initrd_size ${filesize}
 else
@@ -211,12 +213,12 @@ else
 fi
 
 if itest.s x${haverd} == x ; then
-	if load ${devtype} ${devnum}:${distro_bootpart} ${a_zImage} ${prefix}${kernelimage} ; then
+	if load ${devtype} ${devnum}:${distro_bootpart} ${a_zImage} ${img_prefix}${kernelimage} ; then
 		setenv bootargs ${bootargs} rw
 		${bootcommand} ${a_zImage} - ${a_fdt}
 	fi
 else
-	if load ${devtype} ${devnum}:${distro_bootpart} ${a_zImage} ${prefix}${kernelimage} ; then
+	if load ${devtype} ${devnum}:${distro_bootpart} ${a_zImage} ${img_prefix}${kernelimage} ; then
 		${bootcommand} ${a_zImage} ${a_initrd}:${initrd_size} ${a_fdt} ;
 	fi
 fi
