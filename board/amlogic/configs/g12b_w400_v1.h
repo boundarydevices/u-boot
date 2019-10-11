@@ -83,8 +83,8 @@
         "upgrade_step=0\0"\
         "jtag=disable\0"\
         "loadaddr=1080000\0"\
-        "panel_type=lcd_1\0" \
-        "outputmode=1080p60hz\0" \
+        "panel_type=lcd_2\0" \
+        "outputmode=panel\0" \
         "hdmimode=1080p60hz\0" \
 	"colorattribute=444,8bit\0"\
         "cvbsmode=576cvbs\0" \
