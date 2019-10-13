@@ -54,10 +54,11 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IMX8MM_PAD_GPIO1_IO09_GPIO1_IO9 | MUX_PAD_CTRL(0x06),
 	IMX8MM_PAD_SAI2_RXC_GPIO4_IO22 | MUX_PAD_CTRL(PAD_CTL_DSE1 | PAD_CTL_ODE),
 
-#define GP_CSI1_MIPI_PWDN	IMX_GPIO_NR(1, 3)
-	IMX8MM_PAD_GPIO1_IO03_GPIO1_IO3 | MUX_PAD_CTRL(0x141),
-#define GP_CSI1_MIPI_RESET	IMX_GPIO_NR(1, 4)
-	IMX8MM_PAD_GPIO1_IO04_GPIO1_IO4 | MUX_PAD_CTRL(0x101),
+#define GPIRQ_CSI1_TC3587		IMX_GPIO_NR(1, 8)
+#define GP_CSI1_OV5640_MIPI_POWER_DOWN	IMX_GPIO_NR(1, 8)
+	IMX8MM_PAD_GPIO1_IO08_GPIO1_IO8 | MUX_PAD_CTRL(0x141),
+#define GP_CSI1_OV5640_MIPI_RESET	IMX_GPIO_NR(3, 5)
+	IMX8MM_PAD_NAND_CLE_GPIO3_IO5 | MUX_PAD_CTRL(0x101),
 
 	/* pcie */
 #define GP_PCIE0_RESET		IMX_GPIO_NR(4, 31)
@@ -204,11 +205,11 @@ int board_init(void)
 	gpio_request(GP_GT911_RESET, "gt911_reset");
 	gpio_request(GPIRQ_GT911, "gt911_irq");
 	gpio_request(GP_LTK08_MIPI_EN, "lkt08_mipi_en");
-	gpio_request(GP_CSI1_MIPI_PWDN, "csi1_mipi_pwdn");
-	gpio_request(GP_CSI1_MIPI_RESET, "csi1_mipi_reset");
+	gpio_request(GPIRQ_CSI1_TC3587, "csi1_mipi_pwdn");
+	gpio_request(GP_CSI1_OV5640_MIPI_RESET, "csi1_mipi_reset");
 	gpio_direction_output(GP_GT911_RESET, 0);
-	gpio_direction_output(GP_CSI1_MIPI_PWDN, 1);
-	gpio_direction_output(GP_CSI1_MIPI_RESET, 0);
+	gpio_direction_input(GPIRQ_CSI1_TC3587);
+	gpio_direction_output(GP_CSI1_OV5640_MIPI_RESET, 0);
 #ifdef CONFIG_MXC_SPI
 	setup_spi();
 #endif
