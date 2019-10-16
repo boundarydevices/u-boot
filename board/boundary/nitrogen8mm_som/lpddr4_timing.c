@@ -10,12 +10,28 @@
 #include <asm/arch/lpddr4_define.h>
 #include <asm/arch/imx8m_ddr.h>
 
-#define LPDDR4_CS	0x3	/* 2 ranks */
+#define WR_POST_EXT_3200
+#ifdef WR_POST_EXT_3200  // recommend to define
+#define VAL_INIT4	((LPDDR4_MR3 << 16) | 0x00020008)
+#else
+#define VAL_INIT4	((LPDDR4_MR3 << 16) | 0x00000008)
+#endif
 
+#if CONFIG_DDR_RANK_BITS == 0
+#define LPDDR4_CS	0x1	/* 0 rank bits, 1 chip select */
+#if CONFIG_DDR_MB == 2048
+	/* Address map is from MSB 28: r15, r14, r13-r0, b2-b0, c9-c0 */
+#define VAL_DDRC_ADDRMAP0		0x0000001F
+#define VAL_DDRC_ADDRMAP6		0x07070707
+#else
+#error unsupported memory size
+#endif
+#elif CONFIG_DDR_RANK_BITS == 1
+#define LPDDR4_CS	0x3	/* 1 rank bit, 2 chip selects */
 #if CONFIG_DDR_MB == 2048
 	/* Address map is from MSB 28: cs, r14, r13-r0, b2-b0, c9-c0 */
 #define VAL_DDRC_ADDRMAP0		0x00000016
-#define VAL_DDRC_ADDRMAP6		0x0f070707
+#define VAL_DDRC_ADDRMAP6		0x0F070707
 #elif CONFIG_DDR_MB == 3072
 	/* Address map is from MSB 29: r15, r14, cs, r13-r0, b2-b0, c9-c0 */
 #define VAL_DDRC_ADDRMAP0		0x00000015
@@ -27,6 +43,9 @@
 #else
 #error unsupported memory size
 #endif
+#else
+#error unsupported rank bits
+#endif
 
 static struct dram_cfg_param lpddr4_ddrc_cfg[] = {
 	/* Start to config, default 3200mbps */
@@ -34,14 +53,14 @@ static struct dram_cfg_param lpddr4_ddrc_cfg[] = {
 	{ DDRC_DBG1(0), 0x00000001 },
 	/* selfref_en=1, SDRAM enter self-refresh state */
 	{ DDRC_PWRCTL(0), 0x00000001 },
-	{ DDRC_MSTR(0), 0xa3080020 },
+	{ DDRC_MSTR(0), 0xa0080020 | (LPDDR4_CS << 24) },
 	{ DDRC_DERATEEN(0), 0x00000223 },
 	{ DDRC_DERATEINT(0), 0x016E3600 },
 	{ DDRC_RFSHTMG(0), 0x005B0087 },
 	{ DDRC_INIT0(0), 0xC00305BA },
 	{ DDRC_INIT1(0), 0x00940000 },
 	{ DDRC_INIT3(0), 0x00D4002D },
-	{ DDRC_INIT4(0), (LPDDR4_MR3 << 16) | 0x00020008 },
+	{ DDRC_INIT4(0), VAL_INIT4 },
 	{ DDRC_INIT6(0), 0x0066004D },
 	{ DDRC_INIT7(0), 0x0016004D },
 
@@ -105,7 +124,7 @@ static struct dram_cfg_param lpddr4_ddrc_cfg[] = {
 	{ DDRC_FREQ1_RFSHCTL0(0), 0x0020D040 },
 	{ DDRC_FREQ1_RFSHTMG(0), 0x000C0012 },
 	{ DDRC_FREQ1_INIT3(0), 0x00840000 },
-	{ DDRC_FREQ1_INIT4(0), (LPDDR4_MR3 << 16) | 0x00020008 },
+	{ DDRC_FREQ1_INIT4(0), VAL_INIT4 },
 	{ DDRC_FREQ1_INIT6(0), 0x0066004D },
 	{ DDRC_FREQ1_INIT7(0), 0x0016004D },
 	{ DDRC_FREQ1_DRAMTMG0(0), 0x0A040305 },
@@ -132,7 +151,7 @@ static struct dram_cfg_param lpddr4_ddrc_cfg[] = {
 	{ DDRC_FREQ2_RFSHCTL0(0), 0x0020D040 },
 	{ DDRC_FREQ2_RFSHTMG(0), 0x00030005 },
 	{ DDRC_FREQ2_INIT3(0), 0x00840000 },
-	{ DDRC_FREQ2_INIT4(0), (LPDDR4_MR3 << 16) | 0x00020008 },
+	{ DDRC_FREQ2_INIT4(0), VAL_INIT4 },
 	{ DDRC_FREQ2_INIT6(0), 0x0066004D },
 	{ DDRC_FREQ2_INIT7(0), 0x0016004D },
 	{ DDRC_FREQ2_DRAMTMG0(0), 0x0A010102 },
