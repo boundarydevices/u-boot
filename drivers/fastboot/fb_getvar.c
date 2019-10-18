@@ -3,6 +3,7 @@
  * Copyright (C) 2016 The Android Open Source Project
  */
 
+#include <command.h>
 #include <common.h>
 #include <env.h>
 #include <fastboot.h>
@@ -177,8 +178,18 @@ static void getvar_platform(char *var_parameter, char *response)
 
 static void getvar_current_slot(char *var_parameter, char *response)
 {
-	/* A/B not implemented, for now always return "a" */
-	fastboot_okay("a", response);
+	const char *c = env_get("get_current_slot");
+	const char *slot;
+
+	if (c)
+		if (run_command(c, 0))
+			fastboot_fail("Cannot get_current_slot", response);
+		else {
+			slot = env_get("current_slot");
+			fastboot_okay(slot, response);
+		}
+	else
+		fastboot_fail("get_current_slot not set", response);
 }
 
 #if CONFIG_IS_ENABLED(FASTBOOT_FLASH)
