@@ -231,6 +231,7 @@ int do_avb_verify_part(cmd_tbl_t *cmdtp, int flag,
 	AvbSlotVerifyData *out_data;
 	char *cmdline;
 	char *extra_args;
+	char *slot_suffix = "";
 
 	bool unlocked = false;
 	int res = CMD_RET_FAILURE;
@@ -240,8 +241,11 @@ int do_avb_verify_part(cmd_tbl_t *cmdtp, int flag,
 		return CMD_RET_FAILURE;
 	}
 
-	if (argc != 1)
+	if (argc < 1 || argc > 2)
 		return CMD_RET_USAGE;
+
+	if (argc == 2)
+		slot_suffix = argv[1];
 
 	printf("## Android Verified Boot 2.0 version %s\n",
 	       avb_version_string());
@@ -255,7 +259,7 @@ int do_avb_verify_part(cmd_tbl_t *cmdtp, int flag,
 	slot_result =
 		avb_slot_verify(avb_ops,
 				requested_partitions,
-				"",
+				slot_suffix,
 				unlocked,
 				AVB_HASHTREE_ERROR_MODE_RESTART_AND_INVALIDATE,
 				&out_data);
@@ -345,7 +349,7 @@ static cmd_tbl_t cmd_avb[] = {
 	U_BOOT_CMD_MKENT(read_part, 5, 0, do_avb_read_part, "", ""),
 	U_BOOT_CMD_MKENT(read_part_hex, 4, 0, do_avb_read_part_hex, "", ""),
 	U_BOOT_CMD_MKENT(write_part, 5, 0, do_avb_write_part, "", ""),
-	U_BOOT_CMD_MKENT(verify, 1, 0, do_avb_verify_part, "", ""),
+	U_BOOT_CMD_MKENT(verify, 2, 0, do_avb_verify_part, "", ""),
 };
 
 static int do_avb(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
@@ -380,6 +384,7 @@ U_BOOT_CMD(
 	"    partition <partname> and print to stdout\n"
 	"avb write_part <partname> <offset> <num> <addr> - write <num> bytes to\n"
 	"    <partname> by <offset> using data from <addr>\n"
-	"avb verify - run verification process using hash data\n"
+	"avb verify [slot_suffix] - run verification process using hash data\n"
 	"    from vbmeta structure\n"
+	"    [slot_suffix] - _a, _b, etc (if vbmeta partition is slotted)\n"
 	);
