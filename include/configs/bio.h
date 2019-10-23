@@ -166,7 +166,7 @@
 #endif
 
 #ifdef CONFIG_USB_STORAGE
-#define DISTRO_BOOT_DEV_USB(func) func(USB, usb, 0)
+#define DISTRO_BOOT_DEV_USB(func) func(USB, usb, 1) func(USB, usb, 0)
 #else
 #define DISTRO_BOOT_DEV_USB(func)
 #endif
