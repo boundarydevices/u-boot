@@ -20,7 +20,7 @@
 #include <asm/mach-imx/mxc_i2c.h>
 #include <asm/mach-imx/spi.h>
 #include <mmc.h>
-#include <fsl_esdhc.h>
+#include <fsl_esdhc_imx.h>
 #include <linux/fb.h>
 #include <ipu_pixfmt.h>
 #include <asm/arch/crm_regs.h>
@@ -288,7 +288,7 @@ int board_ehci_power(int port, int on)
 
 #endif
 
-#ifdef CONFIG_FSL_ESDHC
+#ifdef CONFIG_FSL_ESDHC_IMX
 struct fsl_esdhc_cfg board_usdhc_cfg[] = {
 	{.esdhc_base = USDHC4_BASE_ADDR, .bus_width = 8,
 			.gp_reset = GP_EMMC_RESET},
