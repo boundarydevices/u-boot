@@ -15,7 +15,7 @@
 #include <asm/io.h>
 #include <linux/sizes.h>
 #include <common.h>
-#include <fsl_esdhc.h>
+#include <fsl_esdhc_imx.h>
 #include <malloc.h>
 #include <mmc.h>
 #include <power/pmic.h>
@@ -322,7 +322,7 @@ static const struct i2c_pads_info i2c_pads[] = {
 #define I2C_BUS_CNT	0
 #endif
 
-#ifdef CONFIG_FSL_ESDHC
+#ifdef CONFIG_FSL_ESDHC_IMX
 struct fsl_esdhc_cfg board_usdhc_cfg[] = {
 	{.esdhc_base = USDHC1_BASE_ADDR, .bus_width = 4,
 			.gp_cd = GP_USDHC1_CD},
