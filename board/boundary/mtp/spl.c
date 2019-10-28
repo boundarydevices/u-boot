@@ -19,7 +19,7 @@
 #include <asm/mach-imx/mxc_i2c.h>
 #include <asm/mach-imx/boot_mode.h>
 #include <mmc.h>
-#include <fsl_esdhc.h>
+#include <fsl_esdhc_imx.h>
 #include <linux/fb.h>
 #include <ipu_pixfmt.h>
 #include <asm/arch/crm_regs.h>
