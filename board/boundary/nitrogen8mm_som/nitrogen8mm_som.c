@@ -10,7 +10,7 @@
 #include <miiphy.h>
 #include <netdev.h>
 #include <asm-generic/gpio.h>
-#include <fsl_esdhc.h>
+#include <fsl_esdhc_imx.h>
 #include <mmc.h>
 #include <asm/arch/clock.h>
 #include <asm/arch/imx8mm_pins.h>
