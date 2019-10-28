@@ -58,7 +58,7 @@ void set_gpios(const unsigned short *p, int cnt, int val)
 		gpio_direction_output(*p++, val);
 }
 
-#ifdef CONFIG_FSL_ESDHC
+#ifdef CONFIG_FSL_ESDHC_IMX
 int board_mmc_getcd(struct mmc *mmc)
 {
 	struct fsl_esdhc_cfg *cfg = (struct fsl_esdhc_cfg *)mmc->priv;

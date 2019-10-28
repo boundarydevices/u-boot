@@ -7,7 +7,7 @@
 #define __BD_COMMON_H_     1
 #include <asm/mach-imx/boot_mode.h>
 #include <mmc.h>
-#include <fsl_esdhc.h>
+#include <fsl_esdhc_imx.h>
 
 struct button_key {
 	char const	*name;
