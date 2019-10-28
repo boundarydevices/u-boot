@@ -21,7 +21,7 @@
 #include <asm/mach-imx/mxc_i2c.h>
 #include <asm/mach-imx/spi.h>
 #include <mmc.h>
-#include <fsl_esdhc.h>
+#include <fsl_esdhc_imx.h>
 #include <linux/fb.h>
 #include <ipu_pixfmt.h>
 #include <asm/arch/crm_regs.h>
@@ -406,7 +406,7 @@ void board_power_check()
 }
 #endif
 
-#ifdef CONFIG_FSL_ESDHC
+#ifdef CONFIG_FSL_ESDHC_IMX
 struct fsl_esdhc_cfg board_usdhc_cfg[] = {
 	{.esdhc_base = USDHC1_BASE_ADDR, .bus_width = 4,
 			.gp_cd = GP_USDHC1_CD},
