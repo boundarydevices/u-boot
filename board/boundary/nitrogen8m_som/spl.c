@@ -17,7 +17,7 @@
 #include <asm/arch/clock.h>
 #include <asm/mach-imx/gpio.h>
 #include <asm/mach-imx/mxc_i2c.h>
-#include <fsl_esdhc.h>
+#include <fsl_esdhc_imx.h>
 #include <mmc.h>
 #include <asm/arch/ddr.h>
 #ifdef CONFIG_IMX8M_LPDDR4
