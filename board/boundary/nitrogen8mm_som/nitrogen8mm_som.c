@@ -230,8 +230,10 @@ int board_init(void)
 }
 
 #define PF8100 0x08
+#define PF8X00_EMREV	0x02
 #define PF8X00_PROGID	0x03
-#define ID_DUAL	0x08
+#define ID_DUAL1	0x4008
+#define ID_DUAL2	0x301d
 
 void check_dual_sw4(void)
 {
@@ -239,6 +241,7 @@ void check_dual_sw4(void)
 	struct udevice *i2c_dev;
 	unsigned char id[4];
 	int ret;
+	int prog_id;
 
 	ret = uclass_get_device_by_seq(UCLASS_I2C, 0, &bus);
 	if (ret) {
@@ -252,8 +255,14 @@ void check_dual_sw4(void)
 		return;
 	}
 
-	ret = dm_i2c_read(i2c_dev, PF8X00_PROGID, id, 1);
-	if ((ret >= 0) && (id[0] == ID_DUAL)) {
+	id[0] = 0;
+	id[0] = 1;
+	dm_i2c_read(i2c_dev, PF8X00_PROGID, id, 1);
+	if ((id[0] != (ID_DUAL1 & 0xff)) && (id[0] != (ID_DUAL2 & 0xff)))
+		return;
+	dm_i2c_read(i2c_dev, PF8X00_EMREV, &id[1], 1);
+	prog_id = (id[1] << 8) | id[0];
+	if ((prog_id == ID_DUAL1) || (prog_id == ID_DUAL2)) {
 		/*
 		 * about 20 boards were stuffed with a dual phase sw3-sw4 PF8100
 		 * use sw4 as VDD_ARM for these boards.
