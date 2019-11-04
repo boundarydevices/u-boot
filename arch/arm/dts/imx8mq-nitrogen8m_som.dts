@@ -1330,7 +1330,10 @@
 };
 
 &usdhc1 {
+	cap-mmc-highspeed;
 	bus-width = <8>;
+	mmc-ddr-1_8v;
+	mmc-hs200-1_8v;
 	fsl,strobe-dll-delay-target = <5>;
 	fsl,tuning-start-tap = <63>;
 	fsl,tuning-step = <2>;
