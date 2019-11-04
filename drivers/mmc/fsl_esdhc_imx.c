@@ -431,6 +431,51 @@ static inline void sd_swap_dma_buff(struct mmc_data *data)
 }
 #endif
 
+int select_1p8v(struct fsl_esdhc_priv *priv, struct fsl_esdhc *regs)
+{
+#if CONFIG_IS_ENABLED(DM_REGULATOR)
+	int ret;
+
+	if (!IS_ERR_OR_NULL(priv->vqmmc_dev)) {
+		ret = regulator_set_value(priv->vqmmc_dev, 1800000);
+		if (ret && (ret != -ENOSYS)) {
+			pr_err("Setting to 1.8V error");
+			return -EIO;
+		}
+		pr_debug("%s: 1.8v\n", __func__);
+	}
+#endif
+	priv->signal_voltage = MMC_SIGNAL_VOLTAGE_180;
+	esdhc_setbits32(&regs->vendorspec, ESDHC_VENDORSPEC_VSELECT);
+	if (esdhc_read32(&regs->vendorspec) & ESDHC_VENDORSPEC_VSELECT)
+		return 0;
+	return -EAGAIN;
+}
+
+int select_3p3v(struct fsl_esdhc_priv *priv, struct fsl_esdhc *regs)
+{
+#if CONFIG_IS_ENABLED(DM_REGULATOR)
+	int ret;
+
+	if (!IS_ERR_OR_NULL(priv->vqmmc_dev)) {
+		ret = regulator_set_value(priv->vqmmc_dev, 3300000);
+		if (ret && (ret != -ENOSYS)) {
+			pr_err("Setting to 3.3V error");
+			return -EIO;
+		}
+		pr_debug("%s: 3.3v\n", __func__);
+		/* Wait for 5ms */
+		mdelay(5);
+	}
+#endif
+
+	priv->signal_voltage = MMC_SIGNAL_VOLTAGE_330;
+	esdhc_clrbits32(&regs->vendorspec, ESDHC_VENDORSPEC_VSELECT);
+	if (!(esdhc_read32(&regs->vendorspec) & ESDHC_VENDORSPEC_VSELECT))
+		return 0;
+	return -EAGAIN;
+}
+
 /*
  * Sends a command out on the bus.  Takes the mmc pointer,
  * a command pointer, and an optional data pointer.
@@ -536,8 +581,7 @@ static int esdhc_send_cmd_common(struct fsl_esdhc_priv *priv, struct mmc *mmc,
 
 	/* Switch voltage to 1.8V if CMD11 succeeded */
 	if (cmd->cmdidx == SD_CMD_SWITCH_UHS18V) {
-		esdhc_setbits32(&regs->vendorspec, ESDHC_VENDORSPEC_VSELECT);
-
+		select_1p8v(priv, regs);
 		printf("Run CMD11 1.8V switch\n");
 		/* Sleep for 5 ms - max time for card to switch to 1.8V */
 		udelay(5000);
@@ -821,48 +865,16 @@ static int esdhc_set_voltage(struct mmc *mmc)
 {
 	struct fsl_esdhc_priv *priv = dev_get_priv(mmc->dev);
 	struct fsl_esdhc *regs = priv->c.esdhc_regs;
-	int ret;
 
 	if (priv->c.vs18_enable)
 		mmc->signal_voltage = MMC_SIGNAL_VOLTAGE_180;
-	priv->signal_voltage = mmc->signal_voltage;
 	switch (mmc->signal_voltage) {
 	case MMC_SIGNAL_VOLTAGE_330:
 		if (priv->c.vs18_enable)
 			return -ENOTSUPP;
-#if CONFIG_IS_ENABLED(DM_REGULATOR)
-		if (!IS_ERR_OR_NULL(priv->vqmmc_dev)) {
-			ret = regulator_set_value(priv->vqmmc_dev, 3300000);
-			if (ret && (ret != -ENOSYS)) {
-				printf("Setting to 3.3V error");
-				return -EIO;
-			}
-			/* Wait for 5ms */
-			mdelay(5);
-		}
-#endif
-
-		esdhc_clrbits32(&regs->vendorspec, ESDHC_VENDORSPEC_VSELECT);
-		if (!(esdhc_read32(&regs->vendorspec) &
-		    ESDHC_VENDORSPEC_VSELECT))
-			return 0;
-
-		return -EAGAIN;
+		return select_3p3v(priv, regs);
 	case MMC_SIGNAL_VOLTAGE_180:
-#if CONFIG_IS_ENABLED(DM_REGULATOR)
-		if (!IS_ERR_OR_NULL(priv->vqmmc_dev)) {
-			ret = regulator_set_value(priv->vqmmc_dev, 1800000);
-			if (ret && (ret != -ENOSYS)) {
-				printf("Setting to 1.8V error");
-				return -EIO;
-			}
-		}
-#endif
-		esdhc_setbits32(&regs->vendorspec, ESDHC_VENDORSPEC_VSELECT);
-		if (esdhc_read32(&regs->vendorspec) & ESDHC_VENDORSPEC_VSELECT)
-			return 0;
-
-		return -EAGAIN;
+		return select_1p8v(priv, regs);
 	case MMC_SIGNAL_VOLTAGE_120:
 		return -ENOTSUPP;
 	default:
