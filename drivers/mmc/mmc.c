@@ -550,6 +550,8 @@ static int mmc_switch_voltage(struct mmc *mmc, int signal_voltage)
 	if (err)
 		return err;
 
+	mmc->signal_voltage = MMC_SIGNAL_VOLTAGE_180;
+
 	if (!mmc_host_is_spi(mmc) && (cmd.response[0] & MMC_STATUS_ERROR))
 		return -EIO;
 
@@ -662,6 +664,8 @@ static int sd_send_op_cond(struct mmc *mmc, bool uhs_en)
 		err = mmc_switch_voltage(mmc, MMC_SIGNAL_VOLTAGE_180);
 		if (err)
 			return err;
+		/* Some cards seem to need this */
+		mmc_go_idle(mmc);
 	}
 #endif
 
@@ -1287,9 +1291,7 @@ static int sd_get_capabilities(struct mmc *mmc)
 	ALLOC_CACHE_ALIGN_BUFFER(__be32, switch_status, 16);
 	struct mmc_data data;
 	int timeout;
-#if CONFIG_IS_ENABLED(MMC_UHS_SUPPORT)
 	u32 sd3_bus_mode;
-#endif
 
 	mmc->card_caps = MMC_MODE_1BIT | MMC_CAP(MMC_LEGACY);
 
@@ -1366,17 +1368,18 @@ retry_scr:
 		if (!(__be32_to_cpu(switch_status[7]) & SD_HIGHSPEED_BUSY))
 			break;
 	}
+	sd3_bus_mode = __be32_to_cpu(switch_status[3]) >> 16 & 0x1f;
+	pr_debug("%s: sd3_bus_mode=%x\n", __func__, sd3_bus_mode);
 
 	/* If high-speed isn't supported, we return */
-	if (__be32_to_cpu(switch_status[3]) & SD_HIGHSPEED_SUPPORTED)
+	if (sd3_bus_mode & BIT(HIGH_SPEED_BUS_SPEED))
 		mmc->card_caps |= MMC_CAP(SD_HS);
 
-#if CONFIG_IS_ENABLED(MMC_UHS_SUPPORT)
 	/* Version before 3.0 don't support UHS modes */
 	if (mmc->version < SD_VERSION_3)
 		return 0;
 
-	sd3_bus_mode = __be32_to_cpu(switch_status[3]) >> 16 & 0x1f;
+#if CONFIG_IS_ENABLED(MMC_UHS_SUPPORT)
 	if (sd3_bus_mode & SD_MODE_UHS_SDR104)
 		mmc->card_caps |= MMC_CAP(UHS_SDR104);
 	if (sd3_bus_mode & SD_MODE_UHS_SDR50)
@@ -1388,6 +1391,17 @@ retry_scr:
 	if (sd3_bus_mode & SD_MODE_UHS_DDR50)
 		mmc->card_caps |= MMC_CAP(UHS_DDR50);
 #endif
+	/*
+	 * According to the SD spec., the Bus Speed Mode (function group 1) bits
+	 * 2 to 4 are zero if the card is initialized at 3.3V signal level. Thus
+	 * they can be used to determine if the card has already switched to
+	 * 1.8V signaling.
+	 */
+	if (sd3_bus_mode & (SD_MODE_UHS_SDR50 | SD_MODE_UHS_SDR104 |
+	    SD_MODE_UHS_DDR50)) {
+		/* The card is already using 1.8V signaling */
+		mmc_set_signal_voltage(mmc, MMC_SIGNAL_VOLTAGE_180);
+	}
 
 	return 0;
 }
@@ -1767,11 +1781,7 @@ static int sd_select_mode_and_width(struct mmc *mmc, uint card_caps)
 	int err;
 	uint widths[] = {MMC_MODE_4BIT, MMC_MODE_1BIT};
 	const struct mode_width_tuning *mwt;
-#if CONFIG_IS_ENABLED(MMC_UHS_SUPPORT)
-	bool uhs_en = (mmc->ocr & OCR_S18R) ? true : false;
-#else
-	bool uhs_en = false;
-#endif
+	bool uhs_en = (mmc->signal_voltage != MMC_SIGNAL_VOLTAGE_330);
 	uint caps;
 
 #ifdef DEBUG
@@ -1830,7 +1840,7 @@ static int sd_select_mode_and_width(struct mmc *mmc, uint card_caps)
 					err = mmc_execute_tuning(mmc,
 								 mwt->tuning);
 					if (err) {
-						pr_debug("tuning failed\n");
+						pr_err("tuning failed\n");
 						goto error;
 					}
 				}
@@ -1839,7 +1849,7 @@ static int sd_select_mode_and_width(struct mmc *mmc, uint card_caps)
 #if CONFIG_IS_ENABLED(MMC_WRITE)
 				err = sd_read_ssr(mmc);
 				if (err)
-					pr_warn("unable to read ssr\n");
+					pr_err("unable to read ssr\n");
 #endif
 				if (!err)
 					return 0;
@@ -2971,7 +2981,7 @@ int mmc_init(struct mmc *mmc)
 	if (!err)
 		err = mmc_complete_init(mmc);
 	if (err)
-		pr_info("%s: %d, time %lu\n", __func__, err, get_timer(start));
+		pr_err("%s: %d, time %lu\n", __func__, err, get_timer(start));
 
 	return err;
 }
