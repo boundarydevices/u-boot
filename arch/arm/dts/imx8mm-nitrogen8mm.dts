@@ -1149,14 +1149,13 @@
 };
 
 &usdhc1 {
+	cap-mmc-highspeed;
 	bus-width = <8>;
+	mmc-ddr-1_8v;
+	mmc-hs200-1_8v;
 	no-mmc-hs400;
 	non-removable;
-#if 0
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
-#else
-	pinctrl-names = "default";
-#endif
 	pinctrl-0 = <&pinctrl_usdhc1>;
 	pinctrl-1 = <&pinctrl_usdhc1_100mhz>;
 	pinctrl-2 = <&pinctrl_usdhc1_200mhz>;
@@ -1169,11 +1168,16 @@
 
 &usdhc2 {
 	bus-width = <4>;
+	cap-sd-highspeed;
 	cd-gpios = GP_USDHC2_CD;
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
 	pinctrl-0 = <&pinctrl_usdhc2>;
 	pinctrl-1 = <&pinctrl_usdhc2_100mhz>;
 	pinctrl-2 = <&pinctrl_usdhc2_200mhz>;
+	sd-uhs-ddr50;
+	sd-uhs-sdr104;
+	sd-uhs-sdr12;
+	sd-uhs-sdr25;
 	status = "okay";
 #if 1
 	vqmmc-supply = <&reg_usdhc2_vqmmc>;
