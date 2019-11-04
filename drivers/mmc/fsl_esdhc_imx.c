@@ -410,6 +410,57 @@ static inline void sd_swap_dma_buff(struct mmc_data *data)
 }
 #endif
 
+#ifdef MMC_SUPPORTS_TUNING
+static int select_1p8v(struct fsl_esdhc_priv *priv, struct fsl_esdhc *regs)
+{
+	if (CONFIG_IS_ENABLED(DM_REGULATOR) &&
+	    !IS_ERR_OR_NULL(priv->vqmmc_dev)) {
+		int ret = regulator_set_value(priv->vqmmc_dev,
+					      1800000);
+
+		if (ret && (ret != -ENOSYS)) {
+			printf("Setting to 1.8V error");
+			return -EIO;
+		}
+	}
+
+	priv->signal_voltage = MMC_SIGNAL_VOLTAGE_180;
+	esdhc_setbits32(&regs->vendorspec, ESDHC_VENDORSPEC_VSELECT);
+	/*
+	 * some board like imx8mm-evk need about 18ms to switch
+	 * the IO voltage from 3.3v to 1.8v, common code only
+	 * delay 10ms, so need to delay extra time to make sure
+	 * the IO voltage change to 1.8v.
+	 */
+	if (priv->signal_voltage_switch_extra_delay_ms)
+		mdelay(priv->signal_voltage_switch_extra_delay_ms);
+	if (esdhc_read32(&regs->vendorspec) & ESDHC_VENDORSPEC_VSELECT)
+		return 0;
+	return -EAGAIN;
+}
+
+static int select_3p3v(struct fsl_esdhc_priv *priv, struct fsl_esdhc *regs)
+{
+	if (CONFIG_IS_ENABLED(DM_REGULATOR) &&
+	    !IS_ERR_OR_NULL(priv->vqmmc_dev)) {
+		int ret = regulator_set_value(priv->vqmmc_dev,
+					  3300000);
+
+		if (ret && (ret != -ENOSYS)) {
+			printf("Setting to 3.3V error");
+			return -EIO;
+		}
+		mdelay(5);
+	}
+
+	priv->signal_voltage = MMC_SIGNAL_VOLTAGE_330;
+	esdhc_clrbits32(&regs->vendorspec, ESDHC_VENDORSPEC_VSELECT);
+	if (!(esdhc_read32(&regs->vendorspec) & ESDHC_VENDORSPEC_VSELECT))
+		return 0;
+	return -EAGAIN;
+}
+#endif
+
 /*
  * Sends a command out on the bus.  Takes the mmc pointer,
  * a command pointer, and an optional data pointer.
@@ -781,55 +832,16 @@ static int esdhc_set_voltage(struct mmc *mmc)
 {
 	struct fsl_esdhc_priv *priv = dev_get_priv(mmc->dev);
 	struct fsl_esdhc *regs = priv->c.esdhc_regs;
-	int ret;
 
 	if (priv->c.vs18_enable)
 		mmc->signal_voltage = MMC_SIGNAL_VOLTAGE_180;
-	priv->signal_voltage = mmc->signal_voltage;
 	switch (mmc->signal_voltage) {
 	case MMC_SIGNAL_VOLTAGE_330:
 		if (priv->c.vs18_enable)
 			return -ENOTSUPP;
-		if (CONFIG_IS_ENABLED(DM_REGULATOR) &&
-		    !IS_ERR_OR_NULL(priv->vqmmc_dev)) {
-			ret = regulator_set_value(priv->vqmmc_dev,
-						  3300000);
-			if (ret && (ret != -ENOSYS)) {
-				printf("Setting to 3.3V error");
-				return -EIO;
-			}
-			mdelay(5);
-		}
-
-		esdhc_clrbits32(&regs->vendorspec, ESDHC_VENDORSPEC_VSELECT);
-		if (!(esdhc_read32(&regs->vendorspec) &
-		    ESDHC_VENDORSPEC_VSELECT))
-			return 0;
-
-		return -EAGAIN;
+		return select_3p3v(priv, regs);
 	case MMC_SIGNAL_VOLTAGE_180:
-		if (CONFIG_IS_ENABLED(DM_REGULATOR) &&
-		    !IS_ERR_OR_NULL(priv->vqmmc_dev)) {
-			ret = regulator_set_value(priv->vqmmc_dev,
-						  1800000);
-			if (ret && (ret != -ENOSYS)) {
-				printf("Setting to 1.8V error");
-				return -EIO;
-			}
-		}
-		esdhc_setbits32(&regs->vendorspec, ESDHC_VENDORSPEC_VSELECT);
-		/*
-		 * some board like imx8mm-evk need about 18ms to switch
-		 * the IO voltage from 3.3v to 1.8v, common code only
-		 * delay 10ms, so need to delay extra time to make sure
-		 * the IO voltage change to 1.8v.
-		 */
-		if (priv->signal_voltage_switch_extra_delay_ms)
-			mdelay(priv->signal_voltage_switch_extra_delay_ms);
-		if (esdhc_read32(&regs->vendorspec) & ESDHC_VENDORSPEC_VSELECT)
-			return 0;
-
-		return -EAGAIN;
+		return select_1p8v(priv, regs);
 	case MMC_SIGNAL_VOLTAGE_120:
 		return -ENOTSUPP;
 	default:
