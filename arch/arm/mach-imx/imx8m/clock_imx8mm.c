@@ -493,7 +493,9 @@ void mxs_set_lcdclk(uint32_t base_addr, uint32_t freq)
 find:
 	/* Select to video PLL */
 	pr_debug("mxs_set_lcdclk, pre = %d, post = %d\n", pre, post);
+#ifdef CONFIG_IMX8MM
 	clock_set_target_val(LCDIF_PIXEL_CLK_ROOT, CLK_ROOT_ON | CLK_ROOT_SOURCE_SEL(1) | CLK_ROOT_PRE_DIV(pre - 1) | CLK_ROOT_POST_DIV(post - 1));
+#endif
 
 }
 
