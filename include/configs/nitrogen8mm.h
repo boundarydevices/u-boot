@@ -7,6 +7,10 @@
 #ifndef __NITROGEN8MM_H
 #define __NITROGEN8MM_H
 
+#ifdef CONFIG_BOARD_TYPE
+#undef CONFIG_SYS_BOARD
+#define CONFIG_SYS_BOARD CONFIG_BOARD_TYPE
+#endif
 #include <linux/sizes.h>
 #include <asm/arch/imx-regs.h>
 

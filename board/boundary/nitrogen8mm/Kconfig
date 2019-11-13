@@ -1,4 +1,4 @@
-if TARGET_NITROGEN8MM
+if TARGET_NITROGEN8MM || TARGET_NITROGEN8MN
 
 config SYS_BOARD
 	default "nitrogen8mm"

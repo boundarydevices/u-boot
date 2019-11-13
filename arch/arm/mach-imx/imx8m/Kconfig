@@ -66,6 +66,11 @@ config TARGET_IMX8MN_EVK
 	select SUPPORT_SPL
 	select IMX8M_DDR4
 
+config TARGET_NITROGEN8MN
+	bool "nitrogen8mm"
+	select IMX8MN
+	select SUPPORT_SPL
+
 endchoice
 
 config SYS_SOC
