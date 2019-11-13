@@ -135,7 +135,11 @@ flash.bin: MKIMAGEOUTPUT = flash.log
 
 spl/u-boot-spl-ddr.bin: spl/u-boot-spl.bin spl/u-boot-spl.cfgout FORCE
 ifeq ($(DEPFILE_EXISTS),0)
+ifdef CONFIG_IMX8M_LPDDR4
 	$(IMX8M_DEPFILES) spl/u-boot-spl.cfgout 1
+else
+	$(IMX8M_DEPFILES) spl/u-boot-spl.cfgout 2
+endif
 endif
 
 flash.bin: spl/u-boot-spl-ddr.bin u-boot.itb FORCE

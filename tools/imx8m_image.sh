@@ -38,6 +38,8 @@ if [ $post_process = 1 ]; then
 		cat spl/u-boot-spl.bin lpddr4_pmu_train_1d_fw.bin lpddr4_pmu_train_2d_fw.bin > spl/u-boot-spl-ddr.bin
 		rm -f lpddr4_pmu_train_1d_fw.bin lpddr4_pmu_train_2d_fw.bin lpddr4_pmu_train_1d_imem_pad.bin lpddr4_pmu_train_1d_dmem_pad.bin lpddr4_pmu_train_2d_imem_pad.bin
 	fi
+fi
+if [ $post_process = 2 ]; then
 	if [ -f $srctree/ddr4_imem_1d.bin ]; then
 		objcopy -I binary -O binary --pad-to 0x8000 --gap-fill=0x0 $srctree/ddr4_imem_1d.bin ddr4_imem_1d_pad.bin
 		objcopy -I binary -O binary --pad-to 0x4000 --gap-fill=0x0 $srctree/ddr4_dmem_1d.bin ddr4_dmem_1d_pad.bin
