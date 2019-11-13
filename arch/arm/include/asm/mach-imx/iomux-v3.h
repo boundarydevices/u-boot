@@ -300,6 +300,10 @@ if (is_mx6dq() || is_mx6dqp()) {				\
 #define IOMUX_PAD_CTRL(name, ctrl)	NEW_PAD_CTRL(MX51_PAD_##name, ctrl)
 #elif defined(CONFIG_MX53)
 #define IOMUX_PAD_CTRL(name, ctrl)	NEW_PAD_CTRL(MX53_PAD_##name, ctrl)
+#elif defined(CONFIG_IMX8MM)
+#define IOMUX_PAD_CTRL(name, ctrl)	NEW_PAD_CTRL(IMX8MM_PAD_##name, ctrl)
+#elif defined(CONFIG_IMX8MN)
+#define IOMUX_PAD_CTRL(name, ctrl)	NEW_PAD_CTRL(IMX8MN_PAD_##name, ctrl)
 #elif defined(CONFIG_IMX8M)
 #define IOMUX_PAD_CTRL(name, ctrl)	NEW_PAD_CTRL(IMX8MQ_PAD_##name, ctrl)
 #else
