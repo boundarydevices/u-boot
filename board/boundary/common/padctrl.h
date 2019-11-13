@@ -11,7 +11,7 @@
 #include "padctrl-mx7d.h"
 #elif defined(CONFIG_MX51)
 #include "padctrl-mx51.h"
-#elif defined(CONFIG_IMX8MM)
+#elif defined(CONFIG_IMX8MM) || defined(CONFIG_IMX8MN)
 #include "padctrl-imx8mm.h"
 #elif defined(CONFIG_IMX8MQ)
 #include "padctrl-imx8mq.h"

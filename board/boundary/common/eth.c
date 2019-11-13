@@ -18,6 +18,8 @@
 #include <asm/arch/mx7-pins.h>
 #elif defined(CONFIG_IMX8MM)
 #include <asm/arch/imx8mm_pins.h>
+#elif defined(CONFIG_IMX8MN)
+#include <asm/arch/imx8mn_pins.h>
 #elif defined(CONFIG_IMX8MQ)
 #include <asm/arch/imx8mq_pins.h>
 #elif !defined(CONFIG_MX51)
@@ -90,7 +92,7 @@
 #include "eth-mx7d.c"
 #elif defined(CONFIG_MX51)
 #include "eth-mx51.c"
-#elif defined(CONFIG_IMX8MM)
+#elif defined(CONFIG_IMX8MM) || defined(CONFIG_IMX8MN)
 #include "eth-imx8mm.c"
 #elif defined(CONFIG_IMX8MQ)
 #include "eth-imx8mq.c"
