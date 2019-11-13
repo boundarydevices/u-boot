@@ -1640,7 +1640,7 @@ static int init_display(const struct display_info_t *di)
 	ret = 0;
 	if (di->fbtype == FB_HDMI)
 		imx8m_fb_init(&di->mode, 0, di->pixfmt);
-#elif defined(CONFIG_IMX8MM)
+#elif defined(CONFIG_IMX8MM) || defined(CONFIG_IMX8MN)
 	ret = 0;
 #else
 	ret = 0;
@@ -1718,7 +1718,7 @@ static int do_fbpanel(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	ret = init_display(di);
 	if (ret)
 		return ret;
-#elif defined(CONFIG_IMX8MM)
+#elif defined(CONFIG_IMX8MM) || defined(CONFIG_IMX8MN)
 	return 0;
 #elif !defined(CONFIG_MX6SX) && !defined(CONFIG_MX7D)
 	ipuv3_fb_shutdown();
