@@ -104,6 +104,7 @@ void fbp_setup_env_cmds(void);
 #define VD_800_600MR_60(_mode, _detect, _bus, _addr)	VDF_800_600MR_60(_mode, "800x600MR@60", RGB24, FBF_MODESTR, _detect, _bus, _addr)
 #define VD_640_480M_60(_mode, _detect, _bus, _addr)	VDF_640_480M_60(_mode, "640x480M@60", RGB24, FBF_MODESTR, _detect, _bus, _addr)
 #define VD_720_480M_60(_mode, _detect, _bus, _addr)	VDF_720_480M_60(_mode, "720x480M@60", RGB24, FBF_MODESTR, _detect, _bus, _addr)
+#define VD_MIPI_TM070JDHG30(_mode, _detect, _bus, _addr) VDF_MIPI_TM070JDHG30(_mode, "mipi-tm070jdhg30", RGB24, FBF_MIPI_TO_HDMI, _detect, _bus, _addr)
 #define VD_MIPI_1280_720M_60(_mode, _detect, _bus, _addr) VDF_1280_720M_60(_mode, "dsi-1280x720M@60", RGB24, FBF_MIPI_TO_HDMI, _detect, _bus, _addr)
 #define VD_MIPI_1920_1080M_60(_mode, _detect, _bus, _addr) VDF_1920_1080M_60(_mode, "dsi-1920x1080M@60", RGB24, FBF_MIPI_TO_HDMI, _detect, _bus, _addr)
 #define VD_MIPI_1024_768M_60(_mode, _detect, _bus, _addr) VDF_1024_768M_60(_mode, "dsi-1024x768M@60", RGB24, FBF_MIPI_TO_HDMI, _detect, _bus, _addr)
@@ -775,6 +776,28 @@ void fbp_setup_env_cmds(void);
 		.upper_margin   = 2,\
 		.lower_margin   = 39,\
 		.hsync_len      = 1,\
+		.vsync_len      = 1,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
+/* Tianma panel TM070JDHG30 is a 24 bit spwg panel */
+#define VDF_MIPI_TM070JDHG30(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	.pwm_period = 32000, \
+	.mode	= {\
+		.name           = _name,\
+		.refresh        = 60,\
+		.xres           = 1280,\
+		.yres           = 800,\
+		.pixclock       = 1000000000000ULL/74250000,\
+		.left_margin    = 5,\
+		.right_margin   = 67,\
+		.upper_margin   = 2,\
+		.lower_margin   = 39,\
+		.hsync_len      = 12,\
 		.vsync_len      = 1,\
 		.sync           = FB_SYNC_EXT,\
 		.vmode          = FB_VMODE_NONINTERLACED\
