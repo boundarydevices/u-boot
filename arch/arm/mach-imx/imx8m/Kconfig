@@ -25,6 +25,11 @@ config TARGET_BIO
 	select IMX8MQ
 	select SUPPORT_SPL
 
+config TARGET_HL8MM
+	bool "hl8mm"
+	select IMX8MM
+	select SUPPORT_SPL
+
 config TARGET_MOO
 	bool "moo"
 	select IMX8MM
@@ -69,6 +74,7 @@ config SYS_SOC
 source "board/freescale/imx8mn_evk/Kconfig"
 
 source "board/boundary/bio/Kconfig"
+source "board/boundary/hl8mm/Kconfig"
 source "board/boundary/moo/Kconfig"
 source "board/boundary/nitrogen8m/Kconfig"
 source "board/boundary/nitrogen8m_som/Kconfig"
