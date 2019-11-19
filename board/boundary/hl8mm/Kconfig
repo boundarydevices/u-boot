@@ -1,0 +1,14 @@
+if TARGET_HL8MM
+
+config SYS_BOARD
+	default "hl8mm"
+
+config SYS_VENDOR
+	default "boundary"
+
+config SYS_CONFIG_NAME
+	default "hl8mm"
+
+source "board/boundary/common/Kconfig"
+
+endif
