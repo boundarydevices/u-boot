@@ -231,8 +231,56 @@ int board_init(void)
 	return 0;
 }
 
+#ifndef CONFIG_BOARD_REV2
+
+#define PF8100 0x08
+#define PF8X00_EMREV	0x02
+#define PF8X00_PROGID	0x03
+#define ID_DUAL1	0x4008
+#define ID_DUAL2	0x301d
+
+void check_wdog(void)
+{
+	struct udevice *bus;
+	struct udevice *i2c_dev;
+	unsigned char id[4];
+	int ret;
+	int prog_id;
+
+	ret = uclass_get_device_by_seq(UCLASS_I2C, 0, &bus);
+	if (ret) {
+		printf("%s: Can't find bus\n", __func__);
+		return;
+	}
+
+	ret = dm_i2c_probe(bus, PF8100, 0, &i2c_dev);
+	if (ret) {
+		printf("%s: Can't find device id=0x%x\n", __func__, PF8100);
+		return;
+	}
+
+	id[0] = 0;
+	id[0] = 1;
+	dm_i2c_read(i2c_dev, PF8X00_PROGID, id, 1);
+	dm_i2c_read(i2c_dev, PF8X00_EMREV, &id[1], 1);
+	prog_id = (id[1] << 8) | id[0];
+	if ((prog_id != ID_DUAL1) && (prog_id != ID_DUAL2)) {
+		/*
+		 * a couple of boards were stuffed with a pmic
+		 * with a falling edge wdog.
+		 */
+		env_set("cmd_board",
+			"fdt rm wdog0 reset-gpios");
+		printf("cmd_board set to correct wdog edge\n");
+	}
+}
+#endif
+
 static void set_env_vars(void)
 {
+#ifndef CONFIG_BOARD_REV2
+	check_wdog();
+#endif
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	if (!env_get("board"))
 		env_set("board", "nitrogen8mm");

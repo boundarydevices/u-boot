@@ -1,5 +1,13 @@
 if TARGET_NITROGEN8MM || TARGET_NITROGEN8MN
 
+config BOARD_REV2
+	bool "board rev2"
+
+config BOARD_TYPE
+	string
+	depends on BOARD_REV2
+	default "nitrogen8mm_rev2" if BOARD_REV2
+
 config SYS_BOARD
 	default "nitrogen8mm"
 
