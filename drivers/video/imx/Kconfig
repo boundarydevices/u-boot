@@ -75,3 +75,11 @@ config VIDEO_IMX_LCDIFV3
 	help
 	  Support for i.MX8MP LCDIFv3 controller.
 
+config VIDEO_IMX_NW_DSI
+	bool "Enable IMX Northwest DSI video support"
+	select VIDEO_BRIDGE
+	select VIDEO_NW_MIPI_DSI
+	select VIDEO_LINK
+	help
+	  This option enables support DSI internal bridge which can be used on
+	  devices which have DSI devices connected.
