@@ -387,6 +387,25 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 			buf += sz;
 			size -= sz;
 		}
+	} else if (fb == FB_MIPI) {
+		sz = snprintf(buf, size,
+			"fdt set %s dsi-format %s;", fbnames[fb], (interface_width == 24) ? "rgb888" : "rgb666");
+		buf += sz;
+		size -= sz;
+
+		if ((di->addr_num == 0x2c) || (di->fbflags & (FBF_JEIDA | FBF_SPLITMODE))) {
+			if (interface_width == 24) {
+				sz = snprintf(buf, size,
+					"fdt set mipi_to_lvds %s;", (di->fbflags & FBF_JEIDA) ? "jeida" : "spwg");
+				buf += sz;
+				size -= sz;
+			}
+			if (di->fbflags & FBF_SPLITMODE) {
+				sz = snprintf(buf, size, "fdt set mipi_to_lvds split-mode;");
+				buf += sz;
+				size -= sz;
+			}
+		}
 	}
 
 	if (di->fbflags & FBF_PINCTRL) {
