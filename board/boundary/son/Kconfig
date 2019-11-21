@@ -1,0 +1,14 @@
+if TARGET_SON
+
+config SYS_BOARD
+	default "son"
+
+config SYS_VENDOR
+	default "boundary"
+
+config SYS_CONFIG_NAME
+	default "son"
+
+source "board/boundary/common/Kconfig"
+
+endif
