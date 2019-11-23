@@ -1143,12 +1143,12 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 1200,\
 		.yres           = 1920,\
-		.pixclock       = 1000000000000ULL/120000000, /*((1200+60+42+1)*(1920+25+35+1)*60), */\
+		.pixclock       = 1000000000000ULL/120000000, /*((1200+60+42+2)*(1920+25+35+1)*60), */\
 		.left_margin    = 60,\
 		.right_margin   = 42,\
 		.upper_margin   = 25,\
 		.lower_margin   = 35,\
-		.hsync_len      = 1,\
+		.hsync_len      = 2,\
 		.vsync_len      = 1,\
 		.sync           = FB_SYNC_EXT,\
 		.vmode          = FB_VMODE_NONINTERLACED\
