@@ -114,7 +114,7 @@ static int fracpll_configure(enum pll_clocks clock, u32 freq)
 	writel(tmp, &pll->gnrl_ctl);
 
 	/* Wait Lock*/
-	ret = readl_poll_timeout(&pll->gnrl_ctl, val, val & LOCK_STATUS, 100);
+	ret = readl_poll_timeout(&pll->gnrl_ctl, val, val & LOCK_STATUS, 600);
 	if (ret)
 		printf("%s timeout\n", __func__);
 
