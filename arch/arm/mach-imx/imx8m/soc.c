@@ -1266,4 +1266,16 @@ int imx8m_usb_power(int usb_id, bool on)
 	return res.a0;
 #endif
 }
+#ifdef CONFIG_IMX8MQ
+int imx8m_dcss_power_init(void)
+{
+	/* Enable the display CCGR before power on */
+	clock_enable(CCGR_DISPLAY, 1);
+
+	writel(0x0000ffff, 0x303A00EC); /*PGC_CPU_MAPPING */
+	setbits_le32(0x303A00F8, 0x1 << 10); /*PU_PGC_SW_PUP_REQ : disp was 10 */
+
+	return 0;
+}
+#endif
 #endif
