@@ -5,8 +5,9 @@ config BOARD_REV2
 
 config BOARD_TYPE
 	string
-	depends on BOARD_REV2
-	default "nitrogen8mm_rev2" if BOARD_REV2
+	depends on BOARD_REV2 || IMX8MN
+	default "nitrogen8mm_rev2" if BOARD_REV2 && IMX8MM
+	default "nitrogen8mn" if IMX8MN
 
 config SYS_BOARD
 	default "nitrogen8mm"

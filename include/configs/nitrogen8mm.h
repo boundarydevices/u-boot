@@ -27,12 +27,18 @@
 #ifdef CONFIG_SPL_BUILD
 /*#define CONFIG_ENABLE_DDR_TRAINING_DEBUG*/
 #define CONFIG_SPL_LDSCRIPT		"arch/arm/cpu/armv8/u-boot-spl.lds"
+#ifdef CONFIG_IMX8MN
+#define CONFIG_SPL_STACK		0x0095fff0
+#define CONFIG_SPL_BSS_START_ADDR	0x00950000
+#define CONFIG_MALLOC_F_ADDR		0x00940000	/* malloc f used before GD_FLG_FULL_MALLOC_INIT set */
+#else
 #define CONFIG_SPL_STACK		0x0091fff0
 #define CONFIG_SPL_BSS_START_ADDR	0x00910000
+#define CONFIG_MALLOC_F_ADDR		0x00911000	/* malloc f used before GD_FLG_FULL_MALLOC_INIT set */
+#endif
 #define CONFIG_SPL_BSS_MAX_SIZE		0x00001000	/* 4 KB */
 #define CONFIG_SYS_SPL_MALLOC_START	0x42200000
 #define CONFIG_SYS_SPL_MALLOC_SIZE	0x00080000	/* 512 KB */
-#define CONFIG_MALLOC_F_ADDR		0x00911000	/* malloc f used before GD_FLG_FULL_MALLOC_INIT set */
 #define CONFIG_SYS_ICACHE_OFF
 #define CONFIG_SYS_DCACHE_OFF
 
@@ -227,6 +233,36 @@
 #define SYS_AUXCORE_BOOTDATA_DDR	0x80000000
 #define SYS_AUXCORE_BOOTDATA_TCM	0x007E0000
 
+#ifdef CONFIG_IMX8MM
+#define BD_FUSE1		"1 3"
+#define BD_FUSE1_VAL		"10002022"	/* USDHC1 emmc */
+#endif
+
+#ifdef CONFIG_IMX8MN
+#define BD_FUSE1		"1 3"
+#define BD_FUSE1_VAL		"10000200"	/* USDHC1 emmc */
+#define BD_FUSE2		"2 1"
+#define BD_FUSE2_VAL		"00000002"	/* 1.8V */
+#endif
+
+#define BD_FUSE1_STR		"fuse1=" BD_FUSE1 "\0"
+#define BD_FUSE1_VAL_STR	"fuse1_val=" BD_FUSE1_VAL "\0"
+#ifdef BD_FUSE2
+#define BD_FUSE2_STR		"fuse2=" BD_FUSE2 "\0"
+#define BD_FUSE2_VAL_STR	"fuse2_val=" BD_FUSE2_VAL "\0"
+#else
+#define BD_FUSE2_STR		""
+#define BD_FUSE2_VAL_STR	""
+#endif
+
+#define BD_FUSE_MAC1A		"9 1"
+#define BD_FUSE_MAC1A_VAL	"00000019"
+#define BD_FUSE_MAC1B		"9 0"
+
+#define BD_FUSE_MAC1A_STR	"fuse_mac1a=" BD_FUSE_MAC1A "\0"
+#define BD_FUSE_MAC1A_VAL_STR	"fuse_mac1a_val=" BD_FUSE_MAC1A_VAL "\0"
+#define BD_FUSE_MAC1B_STR	"fuse_mac1b=" BD_FUSE_MAC1B "\0"
+
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	"console=" BD_CONSOLE "\0" \
 	"env_dev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
@@ -234,6 +270,13 @@
 	"scriptaddr=" __stringify(CONFIG_LOADADDR) "\0" \
 	"fdt_addr=0x43000000\0" \
 	"fdt_high=0xffffffffffffffff\0" \
+	BD_FUSE1_STR \
+	BD_FUSE1_VAL_STR \
+	BD_FUSE2_STR \
+	BD_FUSE2_VAL_STR \
+	BD_FUSE_MAC1A_STR \
+	BD_FUSE_MAC1A_VAL_STR \
+	BD_FUSE_MAC1B_STR \
 	"initrd_high=0xffffffffffffffff\0" \
 	"m4boot=load ${devtype} ${devnum}:1 ${m4loadaddr} ${m4image}; " \
 		"dcache flush; bootaux ${m4loadaddr}\0" \
