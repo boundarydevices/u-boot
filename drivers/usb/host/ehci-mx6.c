@@ -639,7 +639,7 @@ static int ehci_usb_phy_mode(struct udevice *dev)
 			plat->init_type = USB_INIT_DEVICE;
 		else
 			plat->init_type = USB_INIT_HOST;
-	} else if (is_mx7() || is_imx8mm()) {
+	} else if (is_mx7() || is_imx8mm() || is_imx8mn()) {
 		phy_status = (void __iomem *)(addr +
 					      USBNC_PHY_STATUS_OFFSET);
 		val = readl(phy_status);
@@ -747,7 +747,7 @@ static int ehci_usb_probe(struct udevice *dev)
 
 	priv->ehci = ehci;
 	priv->portnr = dev->seq;
-#ifdef CONFIG_IMX8MM
+#if defined(CONFIG_IMX8MM) || defined(CONFIG_IMX8MN)
 	enable_usboh3_clk(1);
 	imx8m_usb_power(priv->portnr, true);
 #endif
