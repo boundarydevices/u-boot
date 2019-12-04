@@ -367,7 +367,7 @@ static int ft_add_optee_node(void *fdt, bd_t *bd)
 
 int ft_system_setup(void *blob, bd_t *bd)
 {
-#ifndef CONFIG_IMX8MM
+#if !defined(CONFIG_IMX8MM) && !defined(CONFIG_IMX8MN)
 	if (get_boot_device() == USB_BOOT) {
 		const char *nodes_path[] = {
 			"/dcss@32e00000",
