@@ -90,7 +90,9 @@ void ddr_init(struct dram_timing_info *dram_timing)
 		tmp = reg32_read(DDRC_STAT(0));
 	} while ((tmp & 0x33f) != 0x223);
 
+#ifndef CONFIG_IMX8MN
 	reg32_write(DDRC_DDR_SS_GPR0, 0x01); /* LPDDR4 mode */
+#endif
 
 	/* step5 */
 	reg32_write(DDRC_SWCTL(0), 0x00000000);
