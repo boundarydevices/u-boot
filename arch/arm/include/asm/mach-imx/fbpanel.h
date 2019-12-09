@@ -127,6 +127,7 @@ void fbp_setup_env_cmds(void);
 #define VD_INNOLUX_WVGA_M(_mode, _detect, _bus, _addr)	VDF_INNOLUX_WVGA(_mode, "INNOLUX-WVGA", RGB666, FBF_MODESTR, _detect, _bus, _addr)
 #define VD_OKAYA_480_272(_mode, _detect, _bus, _addr)	VDF_OKAYA_480_272(_mode, "okaya_480x272", RGB24, FBF_MODESTR, _detect, _bus, _addr)
 #define VD_LCM_JM430(_mode, _detect, _bus, _addr)	VDF_LCM_JM430(_mode, "lcm_jm430", RGB24, FBF_LCM_JM430, _detect, _bus, _addr)
+#define VD_LCM_JM430_MINI(_mode, _detect, _bus, _addr)	VDF_LCM_JM430_MINI(_mode, "lcm_jm430_mini", RGB24, FBF_LCM_JM430, _detect, _bus, _addr)
 #define VD_QVGA(_mode, _detect, _bus, _addr)		VDF_QVGA(_mode, "qvga", RGB24, FBF_MODESTR, _detect, _bus, _addr)
 #define VD_DT035BTFT(_mode, _detect, _bus, _addr)	VDF_DT035BTFT(_mode, "DT035BTFT", BGR24, FBF_MODESTR, _detect, _bus, _addr)
 #define VD_AT035GT_07ET3(_mode, _detect, _bus, _addr)	VDF_AT035GT_07ET3(_mode, "AT035GT-07ET3", RGB24, FBF_MODESTR, _detect, _bus, _addr)
@@ -603,6 +604,26 @@ void fbp_setup_env_cmds(void);
 		.xres		= 480,\
 		.yres		= 272,\
 		.pixclock	= 1000000000000ULL/((480+40+4+4)*(272+8+8+1)*60),\
+		.left_margin	= 40,\
+		.right_margin	= 4,\
+		.upper_margin	= 8,\
+		.lower_margin	= 8,\
+		.hsync_len	= 4,\
+		.vsync_len	= 1,\
+		.sync		= FB_SYNC_EXT | FB_SYNC_CLK_LAT_FALL,\
+		.vmode		= FB_VMODE_NONINTERLACED\
+	}\
+}
+
+#define VDF_LCM_JM430_MINI(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	.mode	= {\
+		.name		= _name,\
+		.refresh	= 60,\
+		.xres		= 480,\
+		.yres		= 272,\
+		.pixclock	= 1000000000000ULL/13000000,\
 		.left_margin	= 40,\
 		.right_margin	= 4,\
 		.upper_margin	= 8,\
