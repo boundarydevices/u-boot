@@ -295,6 +295,7 @@ ENDPROC(apply_core_errata)
 /*-----------------------------------------------------------------------*/
 
 WEAK(lowlevel_init)
+	msr	daifclr, #4	/* enable aborts */
 	mov	x29, lr			/* Save LR */
 
 #if defined(CONFIG_GICV2) || defined(CONFIG_GICV3)
