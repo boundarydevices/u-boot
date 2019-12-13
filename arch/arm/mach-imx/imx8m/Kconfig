@@ -72,7 +72,12 @@ config TARGET_IMX8MN_EVK
 	select IMX8M_DDR4
 
 config TARGET_NITROGEN8MN
-	bool "nitrogen8mm"
+	bool "nitrogen8mn"
+	select IMX8MN
+	select SUPPORT_SPL
+
+config TARGET_NITROGEN8MN_SOM
+	bool "nitrogen8mn_som"
 	select IMX8MN
 	select SUPPORT_SPL
 

@@ -1,4 +1,9 @@
-if TARGET_NITROGEN8MM_SOM
+if TARGET_NITROGEN8MM_SOM || TARGET_NITROGEN8MN_SOM
+
+config BOARD_TYPE
+	string
+	depends on IMX8MN
+	default "nitrogen8mn_som" if IMX8MN
 
 config SYS_BOARD
 	default "nitrogen8mm_som"
