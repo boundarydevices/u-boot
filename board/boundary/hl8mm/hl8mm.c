@@ -176,8 +176,8 @@ static void set_env_vars(void)
 {
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	if (!env_get("board"))
-		env_set("board", "hl8mm");
-	env_set("soc", "imx8mm");
+		env_set("board", CONFIG_SYS_BOARD);
+	env_set("soc", CONFIG_SYS_SOC);
 	env_set("imx_cpu", get_imx_type((get_cpu_rev() & 0xFF000) >> 12));
 	env_set("uboot_defconfig", CONFIG_DEFCONFIG);
 #endif
