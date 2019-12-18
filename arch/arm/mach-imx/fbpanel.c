@@ -23,6 +23,48 @@
 #include <malloc.h>
 #include <video_fb.h>
 /*
+ * The format of the string is
+ * [*][off|mode_str_name[:[m][j][s][b][18|24][S|D|b|P|l|d|s|v|B|M|U|c|L|E|4|3|2|1][Gn][e][x[x_vals][p[pwm_period]]]:timings]]
+ *
+ * * means select this display for u-boot to initialize.
+ * m : mode_str is used, fdt set fb_xxx mode_str [mode_str_name]
+ * j : display uses JEIDA, fdt set ldb/lvds-channel@n fsl,data-mapping jeida
+ * s : display uses SPLITMODE, fdt set ldb split-mode 1
+ * b : pix_fmt = IPU_PIX_FMT_BGR24
+ * 18 : pix_fmt = IPU_PIX_FMT_RGB666
+ * 24 : pix_fmt = IPU_PIX_FMT_RGB24
+ * S : This display requires SPI initialization
+ * D : Change dtb backlight level, fdt set backlight_lvds brightness-levels <0 1 2 3 4 5 6 7 8 9 10>
+ * b : Change dtb backlight level, low active, fdt set backlight_lvds brightness-levels <10 9 8 7 6 5 4 3 2 1 0>
+ * P : Set pinctrl, fdt get value pin pinctrl_##[mode_str_name] phandle; fdt set fb_mipi pinctrl-0 <${pin}>; fdt set fb_mipi pinctrl-names default
+ * l : Set low active enable gpio, fdt get value gp gpio##[gpio/32] phandle;fdt set fb_mipi enable-gpios <${gp} [gpio&0x1f] 1>
+ * d : Set enable gpio, fdt get value gp gpio##[gpio/32] phandle;fdt set fb_mipi enable-gpios <${gp} [gpio&0x1f] 0>
+ * s : mipi skip_eot, fdt set mipi mode-skip-eot
+ * v : mipi mode video, fdt set mipi mode-video
+ * B : mipi video burst mode, fdt set mipi mode-video-burst
+ * M : mipi byte clock is a multiple of pixel clock, fdt set mipi mode-video-mbc
+ * U : mipi sync pulse, fdt set mipi mode-video-sync-pulse
+ * c : mipi commands, fdt get value cmds mipi_cmds_##[mode_str_name] phandle;fdt set mipi mipi-cmds <${cmds}>
+ * L : backlight enable low active, fdt get value gp gpio##[bkgpio/32] phandle;fdt set backlight_lvds enable-gpios <${gp} [bkgpio&0x1f] 1>
+ * E : backlight enable, fdt get value gp gpio##[bkgpio/32] phandle;fdt set backlight_lvds enable-gpios <${gp} [bkgpio&0x1f] 0>
+ * 4 : mipi 4 lanes
+ * 3 : mipi 3 lanes
+ * 2 : mipi 2 lanes
+ * 1 : mipi 1 lane
+ * G : enable gpio
+ * e : call board_pre_enable
+ * x : x_vals: bus_num,addr,bus_gp,bus_gp_delay_ms,bkgpio,min_hs_clock_multiple
+ * 	bus_num, i2c bus number
+ *      addr_num, hex i2c bus address
+ *      bus_gp, bus enable gpio before probe
+ *      bus_gp_delay_ms, delay after enable before probe
+ *      bkgpio, backlight enable gpio
+ *      min_hs_clock_multiple, mipi hs clk * 2(because of ddr) >= pixel clk * min_hs_clock_multiple
+ * p : pwm_period, fdt get value pwm pwm_lvds phandle; fdt set backlight_lvds pwms <${pwm} 0 [pwm_period]>
+ * timings : clock-frequency,hactive,vactive,hback-porch,hfront-porch,vback-porch,vfront-porch,hsync-len,vsync-len,
+ *
+ */
+/*
  * This creates commands strings to work on dtb files.
  * i.e. if you define the following environment variables
  *
@@ -505,6 +547,19 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 			(i >> 5), backlight_names[fb], i & 0x1f,
 			(di->fbflags & FBF_BKLIT_EN_LOW_ACTIVE) ?
 				GPIO_ACTIVE_LOW : GPIO_ACTIVE_HIGH);
+		buf += sz;
+		size -= sz;
+	}
+	if (di->min_hs_clock_multiple) {
+		i = di->min_hs_clock_multiple;
+		if (di->fbflags & FBF_MIPI_CMDS) {
+			sz = snprintf(buf, size,
+			   "fdt set mipi_cmds_%s min-hs-clock-multiple <%u>;",
+				di->mode.name, i);
+		} else {
+			sz = snprintf(buf, size,
+				"fdt set mipi min-hs-clock-multiple <%u>;", i);
+		}
 		buf += sz;
 		size -= sz;
 	}
@@ -1185,6 +1240,7 @@ static const struct di_parse di_parsing[] = {
 	{ offsetof(struct display_info_t, bus_gp), 10 },
 	{ offsetof(struct display_info_t, bus_gp_delay_ms), 10 },
 	{ offsetof(struct display_info_t, backlight_en_gp), 10 },
+	{ offsetof(struct display_info_t, min_hs_clock_multiple), 10 },
 };
 
 static void check_flags(struct display_info_t *di, const char **pp, struct flags_check *fc_base)

@@ -11,8 +11,8 @@
 #define fbp_bus_gp(bus_num, bus_gp, enable_gp, bus_delay) ((bus_num) | \
 		((bus_gp) << 8) | ((enable_gp) << 16) | ((bus_delay) << 24))
 
-#define fbp_addr_gp(addr_num, backlight_en_gp, spare2, spare3) ((addr_num) | \
-		((backlight_en_gp) << 8) | ((spare2) << 16) | ((spare3) << 24))
+#define fbp_addr_gp(addr_num, backlight_en_gp, min_hs_clock_multiple, spare3) ((addr_num) | \
+		((backlight_en_gp) << 8) | ((min_hs_clock_multiple) << 16) | ((spare3) << 24))
 
 struct display_info_t {
 	union {
@@ -29,7 +29,7 @@ struct display_info_t {
 		struct {
 			unsigned char addr_num;
 			unsigned char backlight_en_gp;
-			unsigned char spare2;
+			unsigned char min_hs_clock_multiple;
 			unsigned char spare3;
 		};
 	};
@@ -80,6 +80,8 @@ struct display_info_t {
 #define FBF_LTK080A60A004T	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_PINCTRL | FBF_ENABLE_GPIOS_DTB)
 #define FBF_M101NWWB		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4)
 #define FBF_MIPI_TO_HDMI	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_DSI_LANES_4)
+#define FBF_MIPI_MQ_TO_HDMI	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_SYNC_PULSE | FBF_DSI_LANES_4)
+#define FBF_MIPI_MQ2_TO_HDMI	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_SYNC_PULSE | FBF_DSI_LANES_2)
 #define FBF_M101NWWB_NO_CMDS	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_DSI_LANES_4)
 #define FBF_OSD050T		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_2)
 
@@ -111,6 +113,14 @@ void fbp_setup_env_cmds(void);
 #define VD_MIPI_800_600MR_60(_mode, _detect, _bus, _addr) VDF_800_600MR_60(_mode, "dsi-800x600MR@60", RGB24, FBF_MIPI_TO_HDMI, _detect, _bus, _addr)
 #define VD_MIPI_640_480M_60(_mode, _detect, _bus, _addr) VDF_640_480M_60(_mode, "dsi-640x480M@60", RGB24, FBF_MIPI_TO_HDMI, _detect, _bus, _addr)
 #define VD_MIPI_720_480M_60(_mode, _detect, _bus, _addr) VDF_720_480M_60(_mode, "dsi-720x480M@60", RGB24, FBF_MIPI_TO_HDMI, _detect, _bus, _addr)
+
+#define VD_MIPI_MQ_1920_1080M_60(_mode, _detect, _bus, _addr) VDF_1920_1080M_60(_mode, "dsi-mq1920x1080M@60", RGB24, FBF_MIPI_MQ_TO_HDMI, _detect, _bus, _addr)
+#define VD_MIPI_MQ_1280_800M_60(_mode, _detect, _bus, _addr) VDF_1280_800M_60(_mode, "dsi-mq1280x800M@60", RGB24, FBF_MIPI_MQ_TO_HDMI, _detect, _bus, _addr)
+#define VD_MIPI_MQ_1280_720M_60(_mode, _detect, _bus, _addr) VDF_1280_720M_60(_mode, "dsi-mq1280x720M@60", RGB24, FBF_MIPI_MQ_TO_HDMI, _detect, _bus, _addr)
+#define VD_MIPI_MQ_1024_768M_60(_mode, _detect, _bus, _addr) VDF_1024_768M_60(_mode, "dsi-mq1024x768M@60", RGB24, FBF_MIPI_MQ_TO_HDMI, _detect, _bus, _addr)
+#define VD_MIPI_MQ_800_600MR_60(_mode, _detect, _bus, _addr) VDF_800_600MR_60(_mode, "dsi-mq800x600MR@60", RGB24, FBF_MIPI_MQ_TO_HDMI, _detect, _bus, _addr)
+#define VD_MIPI_MQ_720_480M_60(_mode, _detect, _bus, _addr) VDF_720_480M_60(_mode, "dsi-mq720x480M@60", RGB24, FBF_MIPI_MQ_TO_HDMI, _detect, _bus, _addr)
+#define VD_MIPI_MQ_640_480M_60(_mode, _detect, _bus, _addr) VDF_640_480M_60(_mode, "dsi-mq640x480M@60", RGB24, FBF_MIPI_MQ2_TO_HDMI, _detect, _bus, _addr)
 #define VD_CLAA_WVGA(_mode, _detect, _bus, _addr)	VDF_CLAA_WVGA(_mode, "CLAA-WVGA", RGB666, FBF_MODESTR, _detect, _bus, _addr)
 #define VD_SHARP_WVGA(_mode, _detect, _bus, _addr)	VDF_SHARP_WVGA(_mode, "sharp-wvga", RGB24, FBF_MODESTR, _detect, _bus, _addr)
 #define VD_TFC_A9700LTWV35TC_C1(_mode, _detect, _bus, _addr)	VDF_TFC_A9700LTWV35TC_C1(_mode, "tfc-a9700ltwv35tc-c1", RGB24, 0, _detect, _bus, _addr)
@@ -192,6 +202,26 @@ void fbp_setup_env_cmds(void);
 	.fbflags = _flags
 
 /* hdmi settings */
+#define VDF_1280_800M_60(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	.mode	= {\
+		.name           = _name,\
+		.refresh        = 60,\
+		.xres           = 1280,\
+		.yres           = 800,\
+		.pixclock       = 1000000000000ULL/((1280+8+64+8)*(800+2+39+1)*60),\
+		.left_margin    = 8,\
+		.right_margin   = 64,\
+		.upper_margin   = 2,\
+		.lower_margin   = 39,\
+		.hsync_len      = 8,\
+		.vsync_len      = 1,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
 #define VDF_1280_720M_60(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
 {\
 	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
