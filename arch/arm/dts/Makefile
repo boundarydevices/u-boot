@@ -943,6 +943,9 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
 	imx8mm-nitrogen8_lite.dtb \
 
 dtb-$(CONFIG_ARCH_IMX8M) += \
+	imx8mn-nitrogen8_nano.dtb \
+
+dtb-$(CONFIG_ARCH_IMX8M) += \
 	imx8mp-crs.dtb \
 
 dtb-$(CONFIG_ARCH_IMX8M) += \
