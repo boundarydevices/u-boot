@@ -1,15 +1,6 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 /*
  * Copyright 2018 Boundary Devices
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
  */
 
 /dts-v1/;
@@ -740,11 +731,12 @@
 	sda-gpios = GP_I2C2_SDA;
 	status = "okay";
 
-	rtc@68 {
+	rtc@52 {
+		backup-switchover-dsm;
 		compatible = "microcrystal,rv3028";
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_i2c2_rv3028>;
-		reg = <0x68>;
+		reg = <0x52>;
 		interrupts-extended = GPIRQ_RV3028;
 		wakeup-source;
 	};
