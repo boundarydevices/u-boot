@@ -7,6 +7,12 @@ config TARGET_BIO
 	select IMX8MQ
 	select SUPPORT_SPL
 
+config TARGET_DWE
+	bool "dwe"
+	select IMX8MM
+	select SUPPORT_SPL
+
 endchoice
 
 source "board/boundary/bio/Kconfig"
+source "board/boundary/dwe/Kconfig"
