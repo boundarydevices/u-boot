@@ -236,6 +236,7 @@ static const struct display_info_t displays[] = {
 	VD_1280_720M_60(HDMI, NULL, 0, 0x50),
 	VD_1024_768M_60(HDMI, NULL, 0, 0x50),
 
+	VD_MIPI_G156HCE_L01(MIPI, NULL, fbp_bus_gp(3, GP_I2C2A_SN65DSI83_EN, 0, 0), 0x2c),
 	VD_MIPI_M101NWWB(MIPI, NULL, fbp_bus_gp(3, GP_I2C2A_SN65DSI83_EN, 0, 0), 0x2c),
 };
 
