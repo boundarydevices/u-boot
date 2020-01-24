@@ -76,6 +76,7 @@ struct display_info_t {
 #define FBF_LTK0680YTMDB	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_PINCTRL | FBF_ENABLE_GPIOS_DTB)
 #define FBF_LTK0680YTMDB_LCD	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_MODESTR)
 
+#define FBF_G156HCE_L01		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_SYNC_PULSE | FBF_DSI_LANES_4 | FBF_SPLITMODE)
 #define FBF_COM50H5N03ULC	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_PINCTRL | FBF_ENABLE_GPIOS_DTB)
 #define FBF_LTK080A60A004T	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_PINCTRL | FBF_ENABLE_GPIOS_DTB)
 #define FBF_M101NWWB		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4)
@@ -169,6 +170,8 @@ void fbp_setup_env_cmds(void);
 #define VD_LTK080A60A004T(_mode, _detect, _bus, _addr)	VDF_LTK080A60A004T(_mode, "ltk080a60a004t", RGB24, FBF_LTK080A60A004T, _detect, _bus, _addr)
 #define VD_LTK0680YTMDB(_mode, _detect, _bus, _addr)	VDF_LTK0680YTMDB(_mode, "ltk0680ytmdb", RGB24, FB_##_mode == FB_LCD ? FBF_LTK0680YTMDB_LCD : FBF_LTK0680YTMDB, _detect, _bus, _addr)
 
+
+#define VD_MIPI_G156HCE_L01(_mode, _detect, _bus, _addr)	VDF_MIPI_G156HCE_L01(_mode, "G156HCE-L01", RGB24, FBF_G156HCE_L01, _detect, _bus, _addr)
 #define VD_MIPI_COM50H5N03ULC(_mode, _detect, _bus, _addr)	VDF_MIPI_COM50H5N03ULC(_mode, "com50h5n03ulc", RGB24, FBF_COM50H5N03ULC, _detect, _bus, _addr)
 #define VD_MIPI_M101NWWB_NO_CMDS(_mode, _detect, _bus, _addr)	VDF_MIPI_M101NWWB(_mode, "m101nwwb", RGB24, FBF_M101NWWB_NO_CMDS, _detect, _bus, _addr)
 #define VD_MIPI_M101NWWB(_mode, _detect, _bus, _addr)	VDF_MIPI_M101NWWB(_mode, "m101nwwb", RGB24, FBF_M101NWWB, _detect, _bus, _addr)
@@ -1119,6 +1122,26 @@ void fbp_setup_env_cmds(void);
 		.upper_margin   = 22,\
 		.lower_margin   = 22,\
 		.hsync_len      = 44,\
+		.vsync_len      = 1,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
+#define VDF_MIPI_G156HCE_L01(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	.mode	= {\
+		.name           = _name,\
+		.refresh        = 60,\
+		.xres           = 1920,\
+		.yres           = 1080, \
+		.pixclock       = 1000000000000ULL/((1920+16+192+16)*(1080+3+26+1)*60),\
+		.left_margin    = 16,\
+		.right_margin   = 192,\
+		.upper_margin   = 3,\
+		.lower_margin   = 26,\
+		.hsync_len      = 16,\
 		.vsync_len      = 1,\
 		.sync           = FB_SYNC_EXT,\
 		.vmode          = FB_VMODE_NONINTERLACED\
