@@ -1,22 +1,38 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 /*
- * Copyright 2018 NXP
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * Copyright 2018 Boundary Devices
  */
+
 /dts-v1/;
 #define MX8MMN(a, b)	MX8MM_##a b
 #define IMX8MMN(a)	IMX8MM_##a
 #include "fsl-imx8mm.dtsi"
+#include "imx8mmn-nitrogen8mm.dtsi"
 
 &iomuxc {
+	/* mcp2515t: can controller */
+	pinctrl_ecspi2_mcp2515t: ecspi2-mcp2515tgrp {
+		fsl,pins = <
+#define GPIRQ_MCP2515T	<&gpio4 14 IRQ_TYPE_LEVEL_LOW>
+			MX8MMN(IOMUXC_SAI1_TXD2_GPIO4_IO14, 0x1c0)
+#define GP_MCP2515T_RESET <&gpio4 1 GPIO_ACTIVE_LOW>
+			MX8MMN(IOMUXC_SAI1_RXC_GPIO4_IO1, 0x100)
+#define GP_CAN_ERR	<&gpio4 15 GPIO_ACTIVE_LOW>
+			MX8MMN(IOMUXC_SAI1_TXD3_GPIO4_IO15, 0x1c0)
+#define GP_CAN_EN	<&gpio3 19 GPIO_ACTIVE_HIGH>
+			MX8MMN(IOMUXC_SAI5_RXFS_GPIO3_IO19, 0x100)
+                >;
+        };
+
+	pinctrl_pcie0: pcie0grp {
+		fsl,pins = <
+#define GP_PCIE0_RESET		<&gpio4 31 GPIO_ACTIVE_LOW>
+			MX8MMN(IOMUXC_SAI3_TXFS_GPIO4_IO31, 0x100)
+#define GP_PCIE0_DISABLE	<&gpio1 4 GPIO_ACTIVE_LOW>
+			MX8MMN(IOMUXC_GPIO1_IO04_GPIO1_IO4, 0x100)
+		>;
+	};
+
 	pinctrl_sai1: sai1grp {
 		fsl,pins = <
 			/* wm8960 */
@@ -34,32 +50,76 @@
 			MX8MMN(IOMUXC_GPIO1_IO15_USB2_OTG_OC, 0x16)
 		>;
 	};
-
-	pinctrl_flexspi: flexspigrp {
-		fsl,pins = <
-			MX8MMN(IOMUXC_NAND_ALE_QSPI_A_SCLK, 0x1c2)
-			MX8MMN(IOMUXC_NAND_CE0_B_QSPI_A_SS0_B, 0x82)
-			MX8MMN(IOMUXC_NAND_DATA00_QSPI_A_DATA0, 0x82)
-			MX8MMN(IOMUXC_NAND_DATA01_QSPI_A_DATA1, 0x82)
-			MX8MMN(IOMUXC_NAND_DATA02_QSPI_A_DATA2, 0x82)
-			MX8MMN(IOMUXC_NAND_DATA03_QSPI_A_DATA3, 0x82)
-		>;
-	};
-
 };
-
-#include "imx8mmn-nitrogen8mm.dtsi"
 
 / {
 	model = "Boundary Devices i.MX8MMini Nitrogen8MM";
 	compatible = "boundary,imx8mm-nitrogen8mm", "fsl,imx8mm";
+
+	clocks {
+		clk16m: clk16m {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <16000000>;
+		};
+	};
+
+#if 0
+	sound-wm8960 {
+		compatible = "fsl,imx-audio-wm8960";
+		model = "wm8960-audio";
+		cpu-dai = <&sai1>;
+		codec-master;
+		audio-codec = <&wm8960>;
+		audio-routing =
+			"Headphone Jack", "HP_L",
+			"Headphone Jack", "HP_R",
+			"Ext Spk", "SPK_LP",
+			"Ext Spk", "SPK_LN",
+			"Ext Spk", "SPK_RP",
+			"Ext Spk", "SPK_RN",
+			"LINPUT1", "Main MIC",
+			"Main MIC", "MICB",
+			"RINPUT1", "Mic Jack",
+			"Mic Jack", "MICB";
+		/* JD2: hp detect high for headphone*/
+		hp-det = <2 0>;
+		hp-det-gpios = GP_WM8960_HP_DET;
+#if 0		/* Jack is not stuffed */
+		mic-det-gpios = GP_WM8960_MIC_DET;
+#endif
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_sound_wm8960>;
+	};
+#endif
 };
 
-&flexspi0 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_flexspi>;
+#if 0
+&csi1_bridge {
+	fsl,mipi-mode;
 	status = "okay";
+
+	port {
+		csi1_ep: endpoint {
+			remote-endpoint = <&csi1_mipi_ep>;
+		};
+	};
 };
+
+&ecspi2 {
+	can0: can@0 {
+		clocks = <&clk16m>;
+		compatible = "microchip,mcp2515";
+		interrupts-extended = GPIRQ_MCP2515T;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_ecspi2_mcp2515t>;
+		reg = <0>;
+		reset-gpios = GP_MCP2515T_RESET;
+		spi-max-frequency = <10000000>;
+		xceiver-gpios = GP_CAN_EN;
+	};
+};
+#endif
 
 &i2c4 {
 	wm8960: codec@1a {
@@ -71,6 +131,27 @@
 	};
 };
 
+#if 0
+&pcie0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_pcie0>;
+	disable-gpio = GP_PCIE0_DISABLE;
+	reset-gpio = GP_PCIE0_RESET;
+	ext_osc = <0>;
+	status = "okay";
+};
+#endif
+
+&sai1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_sai1>;
+	assigned-clocks = <&clk IMX8MMN(CLK_SAI1)>,
+			<&clk IMX8MMN(CLK_SAI1_DIV)>;
+	assigned-clock-parents = <&clk IMX8MMN(AUDIO_PLL1_OUT)>;
+	assigned-clock-rates = <0>, <12288000>;
+	status = "okay";
+};
+
 &usbotg2 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usbotg2>;
@@ -78,3 +159,22 @@
 	dr_mode = "host";
 	status = "okay";
 };
+
+#if 0
+&vpu_g1 {
+	status = "okay";
+};
+
+&vpu_g2 {
+	status = "okay";
+};
+
+&vpu_h1 {
+	status = "okay";
+};
+
+&vpumix_pd {
+	dvfs-supply = <&reg_sw5>;
+	idle-microvolt = <850000 805000 900000>;
+};
+#endif

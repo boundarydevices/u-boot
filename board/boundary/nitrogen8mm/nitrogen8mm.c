@@ -67,8 +67,8 @@ static iomux_v3_cfg_t const init_pads[] = {
 	/* pcie */
 #define GP_PCIE0_RESET		IMX_GPIO_NR(4, 31)
 	IOMUX_PAD_CTRL(SAI3_TXFS__GPIO4_IO31, 0x100),
-#define GP_PCIE0_DISABLE	IMX_GPIO_NR(1, 5)
-	IOMUX_PAD_CTRL(GPIO1_IO05__GPIO1_IO5, 0x100),
+#define GP_PCIE0_DISABLE	IMX_GPIO_NR(1, 4)
+	IOMUX_PAD_CTRL(GPIO1_IO04__GPIO1_IO4, 0x100),
 
 	/* sound - wm8960 */
 #define GP_WM8960_MIC_DET	IMX_GPIO_NR(1, 10)

@@ -1,15 +1,6 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 /*
- * Copyright 2018 NXP
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * Copyright 2018 Boundary Devices
  */
 
 &iomuxc {
@@ -24,7 +15,7 @@
 		fsl,pins = <
 			/* J15 */
 #define GP_ECSPI2_CS0	<&gpio5 13 GPIO_ACTIVE_LOW>
-			MX8MMN(IOMUXC_ECSPI2_SS0_GPIO5_IO13, 0x19)	/* Pin 39 */
+			MX8MMN(IOMUXC_ECSPI2_SS0_GPIO5_IO13, 0x140)	/* Pin 39 */
 			MX8MMN(IOMUXC_ECSPI2_MISO_ECSPI2_MISO, 0x19)	/* Pin 41 */
 			MX8MMN(IOMUXC_ECSPI2_SCLK_ECSPI2_SCLK, 0x19)	/* Pin 43 */
 			MX8MMN(IOMUXC_ECSPI2_MOSI_ECSPI2_MOSI, 0x19)	/* Pin 45 */
@@ -33,9 +24,11 @@
 
 	pinctrl_fec1: fec1grp {
 		fsl,pins = <
-			MX8MMN(IOMUXC_ENET_MDC_ENET1_MDC, 0x00)
 			/* PAD_CTL_ODE is screwy on 8mm mini, avoid it */
-			MX8MMN(IOMUXC_ENET_MDIO_ENET1_MDIO, 0x00)
+#define GP_MII_MDC	<&gpio1 16 GPIO_PULSE_HIGH>
+			MX8MMN(IOMUXC_ENET_MDC_GPIO1_IO16, 0x00)
+#define GP_MII_MDIO	<&gpio1 17 GPIO_ACTIVE_HIGH>
+			MX8MMN(IOMUXC_ENET_MDIO_GPIO1_IO17, 0x00)
 			MX8MMN(IOMUXC_ENET_RD0_ENET1_RGMII_RD0, 0x91)
 			MX8MMN(IOMUXC_ENET_RD1_ENET1_RGMII_RD1, 0x91)
 			MX8MMN(IOMUXC_ENET_RD2_ENET1_RGMII_RD2, 0x91)
@@ -52,6 +45,17 @@
 			MX8MMN(IOMUXC_NAND_RE_B_GPIO3_IO15, 0x159)
 #define GPIRQ_FEC1_PHY	<&gpio3 16 IRQ_TYPE_LEVEL_LOW>
 			MX8MMN(IOMUXC_NAND_READY_B_GPIO3_IO16, 0x159)
+		>;
+	};
+
+	pinctrl_flexspi: flexspigrp {
+		fsl,pins = <
+			MX8MMN(IOMUXC_NAND_ALE_QSPI_A_SCLK, 0x1c2)
+			MX8MMN(IOMUXC_NAND_CE0_B_QSPI_A_SS0_B, 0x82)
+			MX8MMN(IOMUXC_NAND_DATA00_QSPI_A_DATA0, 0x82)
+			MX8MMN(IOMUXC_NAND_DATA01_QSPI_A_DATA1, 0x82)
+			MX8MMN(IOMUXC_NAND_DATA02_QSPI_A_DATA2, 0x82)
+			MX8MMN(IOMUXC_NAND_DATA03_QSPI_A_DATA3, 0x82)
 		>;
 	};
 
@@ -117,12 +121,31 @@
 		>;
 	};
 
+	pinctrl_i2c2_gslx680: i2c2-gslx680grp {
+		fsl,pins = <
+#define GPIRQ_GSLX680	<&gpio1 6 IRQ_TYPE_EDGE_FALLING>
+			MX8MMN(IOMUXC_GPIO1_IO06_GPIO1_IO6, 0x149)
+#define GP_I2C2_GSLX680_POWER	<&gpio1 7 GPIO_ACTIVE_HIGH>
+			MX8MMN(IOMUXC_GPIO1_IO07_GPIO1_IO7, 0x109)
+		>;
+	};
+
 	pinctrl_i2c2_sn65dsi83: i2c2-sn65dsi83grp {
 		fsl,pins = <
 #define GPIRQ_I2C2_SN65DSI83	<&gpio1 1 IRQ_TYPE_LEVEL_HIGH>
 			MX8MMN(IOMUXC_GPIO1_IO01_GPIO1_IO1, 0x04)
 #define GP_I2C2_SN65DSI83_EN	<&gpio1 9 GPIO_ACTIVE_HIGH>
 			MX8MMN(IOMUXC_GPIO1_IO09_GPIO1_IO9, 0x106)
+		>;
+	};
+
+	pinctrl_i2c2_st1633: i2c2-st1633grp {
+		fsl,pins = <
+#define GPIRQ_ST1633 		<&gpio1 6 IRQ_TYPE_EDGE_FALLING>
+#define GP_ST1633_IRQ 		<&gpio1 6 GPIO_ACTIVE_LOW>
+			MX8MMN(IOMUXC_GPIO1_IO06_GPIO1_IO6, 0x1d6)
+#define GP_ST1633_RESET		<&gpio1 7 GPIO_ACTIVE_LOW>
+			MX8MMN(IOMUXC_GPIO1_IO07_GPIO1_IO7, 0x149)
 		>;
 	};
 
@@ -149,11 +172,11 @@
 		>;
 	};
 
-	pinctrl_i2c3b_csi1: i2c3b-csi1grp {
+	pinctrl_i2c3b_ov5640_mipi: i2c3b-ov5640-mipigrp {
 		fsl,pins = <
-#define GP_CSI1_MIPI_PWDN	<&gpio1 8 GPIO_ACTIVE_HIGH>
+#define GP_OV5640_MIPI_POWER_DOWN	<&gpio1 8 GPIO_ACTIVE_HIGH>
 			MX8MMN(IOMUXC_GPIO1_IO08_GPIO1_IO8, 0x141)
-#define GP_CSI1_MIPI_RESET	<&gpio3 5 GPIO_ACTIVE_LOW>
+#define GP_OV5640_MIPI_RESET	<&gpio3 5 GPIO_ACTIVE_LOW>
 			MX8MMN(IOMUXC_NAND_CLE_GPIO3_IO5, 0x101)
 		>;
 	};
@@ -199,15 +222,6 @@
 		fsl,pins = <
 #define GP_LTK08_MIPI_EN	<&gpio1 1 GPIO_ACTIVE_HIGH>
 			MX8MMN(IOMUXC_GPIO1_IO01_GPIO1_IO1, 0x116)
-		>;
-	};
-
-	pinctrl_pcie0: pcie0grp {
-		fsl,pins = <
-#define GP_PCIE0_RESET		<&gpio4 31 GPIO_ACTIVE_LOW>
-			MX8MMN(IOMUXC_SAI3_TXFS_GPIO4_IO31, 0x100)
-#define GP_PCIE0_DISABLE	<&gpio1 5 GPIO_ACTIVE_LOW>
-			MX8MMN(IOMUXC_GPIO1_IO05_GPIO1_IO5, 0x100)
 		>;
 	};
 
@@ -272,7 +286,6 @@
 	pinctrl_sai5: sai5grp {
 		fsl,pins = <
 			MX8MMN(IOMUXC_SAI5_MCLK_SAI5_MCLK, 0xd6)
-			MX8MMN(IOMUXC_SAI5_RXFS_SAI5_RX_SYNC, 0xd6)
 			MX8MMN(IOMUXC_SAI5_RXD0_SAI5_RX_DATA0, 0xd6)
 			MX8MMN(IOMUXC_SAI5_RXD1_SAI5_RX_DATA1, 0xd6)
 			MX8MMN(IOMUXC_SAI5_RXD2_SAI5_RX_DATA2, 0xd6)
@@ -548,35 +561,6 @@
 		startup-delay-us = <70000>;
 		enable-active-high;
 	};
-
-#if 0
-	sound-wm8960 {
-		compatible = "fsl,imx-audio-wm8960";
-		model = "wm8960-audio";
-		cpu-dai = <&sai1>;
-		codec-master;
-		audio-codec = <&wm8960>;
-		audio-routing =
-			"Headphone Jack", "HP_L",
-			"Headphone Jack", "HP_R",
-			"Ext Spk", "SPK_LP",
-			"Ext Spk", "SPK_LN",
-			"Ext Spk", "SPK_RP",
-			"Ext Spk", "SPK_RN",
-			"LINPUT1", "Main MIC",
-			"Main MIC", "MICB",
-			"RINPUT1", "Mic Jack",
-			"Mic Jack", "MICB";
-		/* JD2: hp detect high for headphone*/
-		hp-det = <2 0>;
-		hp-det-gpios = GP_WM8960_HP_DET;
-#if 0		/* Jack is not stuffed */
-		mic-det-gpios = GP_WM8960_MIC_DET;
-#endif
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_sound_wm8960>;
-	};
-#endif
 };
 
 #if 0
@@ -589,17 +573,6 @@
 	assigned-clock-rates = <786432000>, <722534400>;
 };
 
-&csi1_bridge {
-	fsl,mipi-mode;
-	status = "okay";
-
-	port {
-		csi1_ep: endpoint {
-			remote-endpoint = <&csi1_mipi_ep>;
-		};
-	};
-};
-
 &ecspi2 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_ecspi2>;
@@ -608,16 +581,14 @@
 	status = "okay";
 	#address-cells = <1>;
 	#size-cells = <0>;
-
-	spidev@0 {
-		compatible = "spidev";
-		spi-max-frequency = <2000000>;
-		reg = <0>;
-	};
 };
 #endif
 
 &fec1 {
+#if 0
+	mdc-gpios = GP_MII_MDC;
+	mdio-gpios = GP_MII_MDIO;
+#endif
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_fec1>;
 #if 0
@@ -641,6 +612,12 @@
 };
 
 #if 0
+&flexspi0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_flexspi>;
+	status = "okay";
+};
+
 &gpu {
 	status = "okay";
 };
@@ -716,6 +693,7 @@
 				regulator-boot-on;
 				regulator-max-microvolt = <1800000>;
 				regulator-min-microvolt =  <400000>;
+				fast-slew = <1>;
 			};
 
 			reg_sw4: sw4 {
@@ -723,6 +701,7 @@
 				regulator-boot-on;
 				regulator-max-microvolt = <1800000>;
 				regulator-min-microvolt =  <400000>;
+				fast-slew = <1>;
 				dual-phase;
 			};
 
@@ -793,6 +772,29 @@
 		reset-gpios = GP_I2C2_FT5X06_RESET;
 	};
 
+	touchscreen@40 {
+		compatible = "silead,gsl1680";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_i2c2_gslx680>;
+		reg = <0x40>;
+		interrupts-extended = GPIRQ_GSLX680;
+		power-gpios = GP_I2C2_GSLX680_POWER;
+		touchscreen-size-x = <480>;	/* swapped below */
+		touchscreen-size-y = <800>;
+		touchscreen-swapped-x-y;
+	};
+
+	touchscreen@55 {
+		compatible = "sitronix,st1633i";
+		reg = <0x55>;
+		interrupts-extended = GPIRQ_ST1633;
+		/* pins used by touchscreen */
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_i2c2_st1633>;
+		reset-gpios = GP_ST1633_RESET;
+		wakeup-gpios = GP_ST1633_IRQ;
+	};
+
 	touchscreen@5d {
 		compatible = "goodix,gt9271";
 		display = <&display_subsystem>;
@@ -804,8 +806,76 @@
 		irq-gpios = GP_GT911_IRQ;
 		reset-gpios = GP_GT911_RESET;
 	};
+
+	i2cmux@70 {
+		compatible = "pca9546";
+		reg = <0x70>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		i2c2a: i2c2@0 {
+			reg = <0>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+		};
+
+		i2c2b: i2c2@1 {
+			reg = <1>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+		};
+
+		i2c2c: i2c2@2 {
+			reg = <2>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+		};
+
+		i2c2d: i2c2@3 {
+			reg = <3>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+		};
+	};
 #endif
 };
+
+#if 0
+&i2c2a {
+	clock-frequency = <100000>;
+
+	lt8912 {
+		compatible = "lontium,lt8912" ;
+		ddc-i2c-bus = <&i2c2b>;
+		reg = <0x48> ;
+		reset-gpios = <&pca9570 1 GPIO_ACTIVE_LOW>;
+		display-dsi = <&fb_mipi>;
+	};
+};
+
+
+&i2c2b {
+	clock-frequency = <100000>;
+	/* edid  @50 */
+};
+
+&i2c2c {
+	clock-frequency = <100000>;
+
+	/* Touch screens */
+};
+
+&i2c2d {
+	clock-frequency = <100000>;
+
+	pca9570: pca9570@24 {
+		compatible = "nxp,pca9570";
+		gpio-controller;
+		reg = <0x24>;
+		#gpio-cells = <2>;
+	};
+};
+#endif
 
 &i2c3 {
 	clock-frequency = <100000>;
@@ -850,25 +920,25 @@
 
 &i2c3b {
 	ov5640-mipi1@3c {
-		compatible = "ov5640_mipisubdev";
-		reg = <0x3c>;
-		status = "okay";
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_i2c3b_csi1>;
+		AVDD-supply = <&reg_vref_2v5>;
+		DOVDD-supply = <&reg_vref_1v8>;
+		DVDD-supply = <&reg_vref_3v3>;
 		clocks = <&csi_mclk>;
 		clock-names = "csi_mclk";
+		compatible = "ov5640_mipisubdev";
 		csi_id = <0>;
-		AVDD-supply = <&reg_vref_2v5>;
-		DVDD-supply = <&reg_vref_3v3>;
-		DOVDD-supply = <&reg_vref_1v8>;
-		pwn-gpios = GP_CSI1_MIPI_PWDN;
-		rst-gpios = GP_CSI1_MIPI_RESET;
 		mclk = <20000000>;
 		mipi_csi;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_i2c3b_ov5640_mipi>;
+		pwn-gpios = GP_OV5640_MIPI_POWER_DOWN;
+		reg = <0x3c>;
+		rst-gpios = GP_OV5640_MIPI_RESET;
+		status = "okay";
 
 		port {
 			ov5640_mipi1_ep: endpoint {
-				remote-endpoint = <&mipi1_sensor_ep>;
+				remote-endpoint = <&mipi1_ov5640_ep>;
 			};
 		};
 	};
@@ -895,7 +965,7 @@
 	#size-cells = <0>;
 	status = "okay";
 	port {
-		mipi1_sensor_ep: endpoint1 {
+		mipi1_ov5640_ep: endpoint1 {
 			remote-endpoint = <&ov5640_mipi1_ep>;
 			data-lanes = <2>;
 			csis-hs-settle = <13>;
@@ -944,7 +1014,6 @@
 #else
 		mode-video-sync-pulse;
 #endif
-		min-hs-clock-multiple = <8>;
 		panel-height-mm = <136>;
 		panel-width-mm = <217>;
 		power-supply = <&reg_vref_5v>;
@@ -972,15 +1041,6 @@
 };
 
 &mu {
-	status = "okay";
-};
-
-&pcie0 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_pcie0>;
-	disable-gpio = GP_PCIE0_DISABLE;
-	reset-gpio = GP_PCIE0_RESET;
-	ext_osc = <0>;
 	status = "okay";
 };
 
@@ -1012,14 +1072,11 @@
 	status = "okay";
 };
 
-&sai1 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_sai1>;
-	assigned-clocks = <&clk IMX8MMN(CLK_SAI1)>,
-			<&clk IMX8MMN(CLK_SAI1_DIV)>;
-	assigned-clock-parents = <&clk IMX8MMN(AUDIO_PLL1_OUT)>;
-	assigned-clock-rates = <0>, <12288000>;
-	status = "okay";
+&resmem {
+	limit3g@0x100000000 {
+		no-map;
+		reg = <1 0x00000000 0 0x40000000>;
+	};
 };
 
 &sai2 {
@@ -1135,18 +1192,6 @@
 	status = "okay";
 	vmmc-supply = <&reg_wlan_vmmc>;
 	vqmmc-1-8-v;
-};
-
-&vpu_g1 {
-	status = "okay";
-};
-
-&vpu_g2 {
-	status = "okay";
-};
-
-&vpu_h1 {
-	status = "okay";
 };
 #endif
 
