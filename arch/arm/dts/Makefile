@@ -947,6 +947,7 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
 	imx8mm-nitrogen8mm_svt.dtb \
 	imx8mm-nitrogen8mm_som.dtb \
 	imx8mm-nitrogen8mm_tab.dtb \
+	imx8mm-span.dtb \
 
 dtb-$(CONFIG_ARCH_IMX8M) += \
 	imx8mn-nitrogen8_nano.dtb \
