@@ -16,6 +16,7 @@
 #include <asm/arch/sys_proto.h>
 #include <asm/mach-imx/hab.h>
 #include <asm/mach-imx/boot_mode.h>
+#include <asm/mach-imx/optee.h>
 #include <asm/mach-imx/syscounter.h>
 #include <asm/ptrace.h>
 #include <asm/armv8/mmu.h>
