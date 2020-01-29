@@ -70,6 +70,11 @@ config TARGET_SON
 	select IMX8MQ
 	select SUPPORT_SPL
 
+config TARGET_SPAN
+	bool "span"
+	select IMX8MM
+	select SUPPORT_SPL
+
 endchoice
 
 source "board/boundary/bio/Kconfig"
@@ -84,3 +89,4 @@ source "board/boundary/nitrogen8mm/Kconfig"
 source "board/boundary/nitrogen8mm_som/Kconfig"
 source "board/boundary/nitrogen8mp/Kconfig"
 source "board/boundary/son/Kconfig"
+source "board/boundary/span/Kconfig"
