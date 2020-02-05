@@ -18,7 +18,7 @@
 #ifdef WR_POST_EXT_3200  // recommend to define
 #define VAL_INIT4	((LPDDR4_MR3 << 16) | 0x00020008)
 #else
-#define VAL_INIT4	((LPDDR4_MR3 << 16) | 0x00000008)
+#define VAL_INIT4	((LPDDR4_MR3 << 16) | 8)
 #endif
 
 #if CONFIG_DDR_RANK_BITS == 0
