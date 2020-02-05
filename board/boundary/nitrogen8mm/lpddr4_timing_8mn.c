@@ -18,7 +18,7 @@
 #ifdef WR_POST_EXT_3200  // recommend to define
 #define VAL_INIT4	((LPDDR4_MR3 << 16) | 0x00020008)
 #else
-#define VAL_INIT4	((LPDDR4_MR3 << 16) | 0x00000008)
+#define VAL_INIT4	((LPDDR4_MR3 << 16) | 8)
 #endif
 
 #if CONFIG_DDR_RANK_BITS == 0
@@ -186,7 +186,7 @@ static struct dram_cfg_param lpddr4_ddrphy_cfg[] = {
 	{ 0x21015f, 0x01ff },
 	{ 0x21105f, 0x01ff },
 	{ 0x21115f, 0x01ff },
-	{ 0x55, 0x01ff },
+	{ 0x0055, 0x01ff },
 	{ 0x1055, 0x01ff },
 	{ 0x2055, 0x01ff },
 	{ 0x3055, 0x01ff },
@@ -238,7 +238,7 @@ static struct dram_cfg_param lpddr4_ddrphy_cfg[] = {
 	{ 0x210149, 0x0eba },
 	{ 0x211049, 0x0eba },
 	{ 0x211149, 0x0eba },
-	{ 0x43, 0x63 },
+	{ 0x0043, 0x63 },
 	{ 0x1043, 0x63 },
 	{ 0x2043, 0x63 },
 	{ 0x3043, 0x63 },
@@ -340,7 +340,7 @@ static struct dram_cfg_param lpddr4_ddrphy_trained_csr[] = {
 	{ 0x13143, 0 },
 	{ 0x113143, 0 },
 	{ 0x213143, 0 },
-	{ 0x80, 0 },
+	{ 0x0080, 0 },
 	{ 0x100080, 0 },
 	{ 0x200080, 0 },
 	{ 0x1080, 0 },

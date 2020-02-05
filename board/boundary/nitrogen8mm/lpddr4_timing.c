@@ -237,7 +237,7 @@ static struct dram_cfg_param lpddr4_ddrphy_cfg[] = {
 	{ 0x21305f, 0x01ff },
 	{ 0x21315f, 0x01ff },
 
-	{ 0x55, 0x01ff },
+	{ 0x0055, 0x01ff },
 	{ 0x1055, 0x01ff },
 	{ 0x2055, 0x01ff },
 	{ 0x3055, 0x01ff },
@@ -327,7 +327,7 @@ static struct dram_cfg_param lpddr4_ddrphy_cfg[] = {
 	{ 0x213049, 0x0fbe },
 	{ 0x213149, 0x0fbe },
 
-	{ 0x43, 0x63 },
+	{ 0x0043, 0x63 },
 	{ 0x1043, 0x63 },
 	{ 0x2043, 0x63 },
 	{ 0x3043, 0x63 },
@@ -405,7 +405,7 @@ static struct dram_cfg_param lpddr4_ddrphy_cfg[] = {
 	{ 0x2200ca, 0x24 },
 };
 
-/* P0 message block paremeter for training firmware */
+/* P0 message block parameter for training firmware */
 static struct dram_cfg_param lpddr4_fsp0_cfg[] = {
 	{ 0xd0000, 0 },
 	{ 0x54000, 0 },
@@ -480,7 +480,7 @@ static struct dram_cfg_param lpddr4_fsp0_cfg[] = {
 	{ 0xd0000, 1 },
 };
 
-/* P0 2D message block paremeter for training firmware */
+/* P0 2D message block parameter for training firmware */
 static struct dram_cfg_param lpddr4_fsp0_2d_cfg[] = {
 	{ 0xd0000, 0 },
 	{ 0x54000, 0 },
@@ -555,7 +555,7 @@ static struct dram_cfg_param lpddr4_fsp0_2d_cfg[] = {
 	{ 0xd0000, 1 },
 };
 
-/* P1 message block paremeter for training firmware */
+/* P1 message block parameter for training firmware */
 static struct dram_cfg_param lpddr4_fsp1_cfg[] = {
 	{ 0xd0000, 0 },
 	{ 0x54000, 0 },
@@ -630,7 +630,7 @@ static struct dram_cfg_param lpddr4_fsp1_cfg[] = {
 	{ 0xd0000, 1 },
 };
 
-/* P1 message block paremeter for training firmware */
+/* P1 message block parameter for training firmware */
 static struct dram_cfg_param lpddr4_fsp2_cfg[] = {
 	{ 0xd0000, 0 },
 	{ 0x54000, 0 },
