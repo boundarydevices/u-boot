@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0+
 /*
- * Copyright 2018, 2021 NXP
+ * Copyright 2017-2021 NXP
  */
 
 #include <common.h>
@@ -578,7 +578,7 @@ u64 get_page_table_size(void)
 #define FUSE_MAC0_WORD1 453
 #define FUSE_MAC1_WORD0 454
 #define FUSE_MAC1_WORD1 455
-#elif defined(CONFIG_IMX8QXP)
+#elif defined(CONFIG_IMX8QXP) || defined (CONFIG_IMX8DXL)
 #define FUSE_MAC0_WORD0 708
 #define FUSE_MAC0_WORD1 709
 #define FUSE_MAC1_WORD0 710
