@@ -195,6 +195,15 @@
 		pwm_lvds = &pwm4;
 	};
 
+	backlight_lvds: backlight-lvds {
+		compatible = "pwm-backlight";
+		pwms = <&pwm4 0 5000000>;
+		brightness-levels = <0 4 8 16 32 64 128 255>;
+		default-brightness-level = <7>;
+		power-supply = <&reg_3p3v>;
+		status = "okay";
+	};
+
 	chosen {
 		stdout-path = &uart2;
 	};
@@ -218,6 +227,17 @@
 		regulator-max-microvolt = <5000000>;
 		gpio = GP_REG_USBOTG;
 		enable-active-high;
+	};
+
+	panel-lvds0 {
+		compatible = "hannstar,hsd100pxn1";
+		backlight = <&backlight_lvds>;
+
+		port {
+			panel_in: endpoint {
+				remote-endpoint = <&lvds0_out>;
+			};
+		};
 	};
 };
 
@@ -281,6 +301,11 @@
 	};
 };
 
+&hdmi {
+	ddc-i2c-bus = <&i2c2>;
+	status = "okay";
+};
+
 &i2c1 {
 	clock-frequency = <100000>;
 	pinctrl-names = "default", "gpio";
@@ -314,6 +339,24 @@
 	scl-gpios = GP_I2C3_SCL;
 	sda-gpios = GP_I2C3_SDA;
 	status = "okay";
+};
+
+&ldb {
+	status = "okay";
+
+	lvds-channel@0 {
+		fsl,data-mapping = "spwg";
+		fsl,data-width = <24>;
+		status = "okay";
+
+		port@4 {
+			reg = <4>;
+
+			lvds0_out: endpoint {
+				remote-endpoint = <&panel_in>;
+			};
+		};
+	};
 };
 
 &pcie {
