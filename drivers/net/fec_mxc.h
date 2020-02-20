@@ -260,6 +260,7 @@ struct fec_priv {
 #endif
 #if CONFIG_IS_ENABLED(DM_GPIO)
 	struct gpio_desc phy_reset_gpio;
+	struct gpio_desc phy_reset_gpio2;
 	uint32_t reset_delay;
 	uint32_t reset_post_delay;
 #endif

@@ -30,6 +30,7 @@
 #include <asm/arch/imx-regs.h>
 #include <asm/mach-imx/sys_proto.h>
 #include <asm-generic/gpio.h>
+#include <dm/pinctrl.h>
 
 #include "fec_mxc.h"
 #include <eth_phy.h>
@@ -1309,10 +1310,11 @@ static const struct eth_ops fecmxc_ops = {
 	.set_promisc		= fecmxc_set_promisc,
 };
 
-static int device_get_phy_addr(struct fec_priv *priv, struct udevice *dev)
+static unsigned device_get_phy_addr(struct fec_priv *priv, struct udevice *dev)
 {
 	struct ofnode_phandle_args phandle_args;
-	int reg, ret;
+	unsigned mask;
+	int ret;
 
 	ret = dev_read_phandle_with_args(dev, "phy-handle", NULL, 0, 0,
 					 &phandle_args);
@@ -1322,32 +1324,38 @@ static int device_get_phy_addr(struct fec_priv *priv, struct udevice *dev)
 		if (ofnode_valid(priv->phy_of_node))
 			return 0;
 		debug("Failed to find phy-handle (err = %d)\n", ret);
-		return ret;
+		return 0xffffffff;
 	}
 
 	if (!ofnode_is_available(phandle_args.node))
 		return -ENOENT;
 
 	priv->phy_of_node = phandle_args.node;
-	reg = ofnode_read_u32_default(phandle_args.node, "reg", 0);
+	mask = ofnode_read_u32_default(phandle_args.node, "phy-mask", 0);
+	if (!mask)
+		mask = 1 << ofnode_read_u32_default(phandle_args.node, "reg", 0);
 
-	return reg;
+	return mask;
 }
 
 static int fec_phy_init(struct fec_priv *priv, struct udevice *dev)
 {
 	struct phy_device *phydev;
-	int addr;
+	unsigned mask;
 
-	addr = device_get_phy_addr(priv, dev);
 #ifdef CONFIG_FEC_MXC_PHYADDR
-	addr = CONFIG_FEC_MXC_PHYADDR;
+	mask = 1 << CONFIG_FEC_MXC_PHYADDR;
+#else
+	mask = device_get_phy_mask(dev);
 #endif
 
-	phydev = phy_connect(priv->bus, addr, dev, priv->interface);
-	if (!phydev)
+	phydev = phy_find_by_mask(priv->bus, mask, priv->interface);
+	if (!phydev) {
+		printf("Could not get PHY for %s: mask 0x%x\n", priv->bus->name, mask);
 		return -ENODEV;
+	}
 
+	phy_connect_dev(phydev, dev);
 	priv->phydev = phydev;
 	priv->phydev->node = priv->phy_of_node;
 	phy_config(phydev);
@@ -1357,15 +1365,21 @@ static int fec_phy_init(struct fec_priv *priv, struct udevice *dev)
 
 #if CONFIG_IS_ENABLED(DM_GPIO)
 /* FEC GPIO reset */
-static void fec_gpio_reset(struct fec_priv *priv)
+static void fec_gpio_reset(struct fec_priv *priv, struct udevice *dev)
 {
 	debug("fec_gpio_reset: fec_gpio_reset(dev)\n");
 	if (dm_gpio_is_valid(&priv->phy_reset_gpio)) {
+		pinctrl_select_state(dev, "reset");
+		if (dm_gpio_is_valid(&priv->phy_reset_gpio2))
+			dm_gpio_set_value(&priv->phy_reset_gpio2, 1);
 		dm_gpio_set_value(&priv->phy_reset_gpio, 1);
 		mdelay(priv->reset_delay);
 		dm_gpio_set_value(&priv->phy_reset_gpio, 0);
+		if (dm_gpio_is_valid(&priv->phy_reset_gpio2))
+			dm_gpio_set_value(&priv->phy_reset_gpio2, 0);
 		if (priv->reset_post_delay)
 			mdelay(priv->reset_post_delay);
+		pinctrl_select_state(dev, "default");
 	}
 }
 #endif
@@ -1457,7 +1471,7 @@ static int fecmxc_probe(struct udevice *dev)
 #endif
 
 #if CONFIG_IS_ENABLED(DM_GPIO)
-	fec_gpio_reset(priv);
+	fec_gpio_reset(priv, dev);
 #endif
 	/* Reset chip. */
 	writel(readl(&priv->eth->ecntrl) | FEC_ECNTRL_RESET,
@@ -1582,6 +1596,8 @@ static int fecmxc_of_to_plat(struct udevice *dev)
 				   &priv->phy_reset_gpio, GPIOD_IS_OUT);
 	if (ret < 0)
 		return 0; /* property is optional, don't return error! */
+	gpio_request_by_name(dev, "phy-reset-gpios", 1,
+				   &priv->phy_reset_gpio2, GPIOD_IS_OUT);
 
 	priv->reset_delay = dev_read_u32_default(dev, "phy-reset-duration", 1);
 	if (priv->reset_delay > 1000) {
