@@ -48,9 +48,6 @@ DECLARE_GLOBAL_DATA_PTR;
 	PAD_CTL_SPEED_LOW | PAD_CTL_DSE_80ohm |			\
 	PAD_CTL_SRE_FAST  | PAD_CTL_HYS)
 
-#define ENET_PAD_CTRL  (PAD_CTL_PUS_100K_UP |			\
-	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm | PAD_CTL_HYS)
-
 #define SPI_PAD_CTRL (PAD_CTL_HYS | PAD_CTL_SPEED_MED |		\
 	PAD_CTL_DSE_40ohm     | PAD_CTL_SRE_FAST)
 
@@ -161,42 +158,6 @@ static iomux_v3_cfg_t const usdhc2_pads[] = {
 	IOMUX_PAD_CTRL(SD2_DAT3__SD2_DATA3, USDHC_PAD_CTRL),
 };
 
-static iomux_v3_cfg_t const enet_pads1[] = {
-	IOMUX_PAD_CTRL(ENET_MDIO__ENET_MDIO, ENET_PAD_CTRL),
-	IOMUX_PAD_CTRL(ENET_MDC__ENET_MDC, ENET_PAD_CTRL),
-	IOMUX_PAD_CTRL(RGMII_TXC__RGMII_TXC, ENET_PAD_CTRL),
-	IOMUX_PAD_CTRL(RGMII_TD0__RGMII_TD0, ENET_PAD_CTRL),
-	IOMUX_PAD_CTRL(RGMII_TD1__RGMII_TD1, ENET_PAD_CTRL),
-	IOMUX_PAD_CTRL(RGMII_TD2__RGMII_TD2, ENET_PAD_CTRL),
-	IOMUX_PAD_CTRL(RGMII_TD3__RGMII_TD3, ENET_PAD_CTRL),
-	IOMUX_PAD_CTRL(RGMII_TX_CTL__RGMII_TX_CTL, ENET_PAD_CTRL),
-	IOMUX_PAD_CTRL(ENET_REF_CLK__ENET_TX_CLK, ENET_PAD_CTRL),
-	/* pin 35 - 1 (PHY_AD2) on reset */
-	IOMUX_PAD_CTRL(RGMII_RXC__GPIO6_IO30, NO_PAD_CTRL),
-	/* pin 32 - 1 - (MODE0) all */
-	IOMUX_PAD_CTRL(RGMII_RD0__GPIO6_IO25, NO_PAD_CTRL),
-	/* pin 31 - 1 - (MODE1) all */
-	IOMUX_PAD_CTRL(RGMII_RD1__GPIO6_IO27, NO_PAD_CTRL),
-	/* pin 28 - 1 - (MODE2) all */
-	IOMUX_PAD_CTRL(RGMII_RD2__GPIO6_IO28, NO_PAD_CTRL),
-	/* pin 27 - 1 - (MODE3) all */
-	IOMUX_PAD_CTRL(RGMII_RD3__GPIO6_IO29, NO_PAD_CTRL),
-	/* pin 33 - 1 - (CLK125_EN) 125Mhz clockout enabled */
-	IOMUX_PAD_CTRL(RGMII_RX_CTL__GPIO6_IO24, NO_PAD_CTRL),
-	/* pin 42 PHY nRST */
-	IOMUX_PAD_CTRL(EIM_D23__GPIO3_IO23, NO_PAD_CTRL),
-	IOMUX_PAD_CTRL(ENET_RXD0__GPIO1_IO27, NO_PAD_CTRL),
-};
-
-static iomux_v3_cfg_t const enet_pads2[] = {
-	IOMUX_PAD_CTRL(RGMII_RXC__RGMII_RXC, ENET_PAD_CTRL),
-	IOMUX_PAD_CTRL(RGMII_RD0__RGMII_RD0, ENET_PAD_CTRL),
-	IOMUX_PAD_CTRL(RGMII_RD1__RGMII_RD1, ENET_PAD_CTRL),
-	IOMUX_PAD_CTRL(RGMII_RD2__RGMII_RD2, ENET_PAD_CTRL),
-	IOMUX_PAD_CTRL(RGMII_RD3__RGMII_RD3, ENET_PAD_CTRL),
-	IOMUX_PAD_CTRL(RGMII_RX_CTL__RGMII_RX_CTL, ENET_PAD_CTRL),
-};
-
 static iomux_v3_cfg_t const misc_pads[] = {
 	IOMUX_PAD_CTRL(GPIO_1__USB_OTG_ID, WEAK_PULLUP),
 	IOMUX_PAD_CTRL(KEY_COL4__USB_OTG_OC, WEAK_PULLUP),
@@ -230,27 +191,6 @@ static iomux_v3_cfg_t const button_pads[] = {
 	/* Volume Up */
 	IOMUX_PAD_CTRL(GPIO_18__GPIO7_IO13, BUTTON_PAD_CTRL),
 };
-
-static void setup_iomux_enet(void)
-{
-	gpio_direction_output(IMX_GPIO_NR(3, 23), 0); /* SABRE Lite PHY rst */
-	gpio_direction_output(IMX_GPIO_NR(1, 27), 0); /* Nitrogen6X PHY rst */
-	gpio_direction_output(IMX_GPIO_NR(6, 30), 1);
-	gpio_direction_output(IMX_GPIO_NR(6, 25), 1);
-	gpio_direction_output(IMX_GPIO_NR(6, 27), 1);
-	gpio_direction_output(IMX_GPIO_NR(6, 28), 1);
-	gpio_direction_output(IMX_GPIO_NR(6, 29), 1);
-	SETUP_IOMUX_PADS(enet_pads1);
-	gpio_direction_output(IMX_GPIO_NR(6, 24), 1);
-
-	/* Need delay 10ms according to KSZ9021 spec */
-	udelay(1000 * 10);
-	gpio_set_value(IMX_GPIO_NR(3, 23), 1); /* SABRE Lite PHY reset */
-	gpio_set_value(IMX_GPIO_NR(1, 27), 1); /* Nitrogen6X PHY reset */
-
-	SETUP_IOMUX_PADS(enet_pads2);
-	udelay(100);	/* Wait 100 us before using mii interface */
-}
 
 static iomux_v3_cfg_t const usb_pads[] = {
 	IOMUX_PAD_CTRL(GPIO_17__GPIO7_IO12, NO_PAD_CTRL),
@@ -320,53 +260,6 @@ int board_phy_config(struct phy_device *phydev)
 		phydev->drv->config(phydev);
 
 	return 0;
-}
-
-int board_eth_init(struct bd_info *bis)
-{
-	uint32_t base = IMX_FEC_BASE;
-	struct mii_dev *bus = NULL;
-	struct phy_device *phydev = NULL;
-	int ret;
-
-	gpio_request(WL12XX_WL_IRQ_GP, "wifi_irq");
-	gpio_request(IMX_GPIO_NR(6, 30), "rgmii_rxc");
-	gpio_request(IMX_GPIO_NR(6, 25), "rgmii_rd0");
-	gpio_request(IMX_GPIO_NR(6, 27), "rgmii_rd1");
-	gpio_request(IMX_GPIO_NR(6, 28), "rgmii_rd2");
-	gpio_request(IMX_GPIO_NR(6, 29), "rgmii_rd3");
-	gpio_request(IMX_GPIO_NR(6, 24), "rgmii_rx_ctl");
-	gpio_request(IMX_GPIO_NR(3, 23), "rgmii_reset_sabrelite");
-	gpio_request(IMX_GPIO_NR(1, 27), "rgmii_reset_nitrogen6x");
-	setup_iomux_enet();
-
-#ifdef CONFIG_FEC_MXC
-	bus = fec_get_miibus(base, -1);
-	if (!bus)
-		return -EINVAL;
-	/* scan phy 4,5,6,7 */
-	phydev = phy_find_by_mask(bus, (0xf << 4), PHY_INTERFACE_MODE_RGMII);
-	if (!phydev) {
-		ret = -EINVAL;
-		goto free_bus;
-	}
-	printf("using phy at %d\n", phydev->addr);
-	ret  = fec_probe(bis, -1, base, bus, phydev);
-	if (ret)
-		goto free_phydev;
-#endif
-
-#ifdef CONFIG_CI_UDC
-	/* For otg ethernet*/
-	usb_eth_initialize(bis);
-#endif
-	return 0;
-
-free_phydev:
-	free(phydev);
-free_bus:
-	free(bus);
-	return ret;
 }
 
 static void setup_buttons(void)
@@ -1001,5 +894,20 @@ int misc_init_r(void)
 	add_board_boot_modes(board_boot_modes);
 #endif
 	env_set_hex("reset_cause", get_imx_reset_cause());
+
+	gpio_request(WL12XX_WL_IRQ_GP, "wifi_irq");
+	gpio_request(IMX_GPIO_NR(6, 30), "rgmii_rxc");
+	gpio_request(IMX_GPIO_NR(6, 25), "rgmii_rd0");
+	gpio_request(IMX_GPIO_NR(6, 27), "rgmii_rd1");
+	gpio_request(IMX_GPIO_NR(6, 28), "rgmii_rd2");
+	gpio_request(IMX_GPIO_NR(6, 29), "rgmii_rd3");
+	gpio_request(IMX_GPIO_NR(6, 24), "rgmii_rx_ctl");
+
+	gpio_direction_output(IMX_GPIO_NR(6, 30), 1);
+	gpio_direction_output(IMX_GPIO_NR(6, 25), 1);
+	gpio_direction_output(IMX_GPIO_NR(6, 27), 1);
+	gpio_direction_output(IMX_GPIO_NR(6, 28), 1);
+	gpio_direction_output(IMX_GPIO_NR(6, 29), 1);
+	gpio_direction_output(IMX_GPIO_NR(6, 24), 1);
 	return 0;
 }
