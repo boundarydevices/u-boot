@@ -49,6 +49,9 @@ config DEFAULT_HITACHI_HVGA
 config DEFAULT_DISPLAY_PM9598
 	bool "PM9598 display as default"
 
+config DEFAULT_DISPLAY_TM070JDHG30
+	bool "TM070JDHG30 (Tianma) display as default"
+
 config DEFAULT_DISPLAY_WXGA
 	bool "WXGA display as default"
 
