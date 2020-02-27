@@ -136,6 +136,8 @@ config USB_GADGET_VBUS_DRAW
 
 config SDP_LOADADDR
 	hex "Default load address at SDP_WRITE and SDP_JUMP"
+	default 0x40400000 if IMX8MQ || IMX8MM || IMX8MN
+	default 0x80400000 if IMX8QM || IMX8QXP
 	default 0
 
 # Selected by UDC drivers that support high-speed operation.
