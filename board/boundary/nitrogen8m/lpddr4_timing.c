@@ -1,7 +1,11 @@
 /*
- * Copyright 2018 NXP
+ * Copyright 2019 NXP
  *
- * SPDX-License-Identifier: GPL-2.0+
+ * SPDX-License-Identifier:	GPL-2.0+
+ *
+ * Generated code from MX8M_DDR_tool
+ * Align with uboot version:
+ * imx_v2018.03_4.14.78_1.0.0_ga ~ imx_v2018.04_4.19.35_1.0.0_ga
  */
 #include <config.h>
 #include <linux/kernel.h>
@@ -50,8 +54,7 @@
 #endif
 
 static struct dram_cfg_param lpddr4_ddrc_cfg[] = {
-	/* Start to config, default 3200mbps */
-	/* dis_dq=1, indicates no reads or writes are issued to SDRAM */
+	/** Initialize DDRC registers **/
 	{ DDRC_DBG1(0), 1 },
 	/* selfref_en=1, SDRAM enter self-refresh state */
 	{ DDRC_PWRCTL(0), 1 },
@@ -66,7 +69,6 @@ static struct dram_cfg_param lpddr4_ddrc_cfg[] = {
 	{ DDRC_INIT4(0), VAL_INIT4 },
 	{ DDRC_INIT6(0), 0x0066004a },
 	{ DDRC_INIT7(0), 0x0016004a },
-
 	{ DDRC_DRAMTMG0(0), 0x1a201b22 },
 	{ DDRC_DRAMTMG1(0), 0x00060633 },
 	{ DDRC_DRAMTMG3(0), 0x00c0c000 },
@@ -78,11 +80,9 @@ static struct dram_cfg_param lpddr4_ddrc_cfg[] = {
 	{ DDRC_DRAMTMG13(0), 0x0c100002 },
 	{ DDRC_DRAMTMG14(0), 0xe6 },
 	{ DDRC_DRAMTMG17(0), 0x00a00050 },
-
 	{ DDRC_ZQCTL0(0), 0xc3200018 },
 	{ DDRC_ZQCTL1(0), 0x028061a8 },
 	{ DDRC_ZQCTL2(0), 0 },
-
 	{ DDRC_DFITMG0(0), 0x0497820a },
 	{ DDRC_DFITMG1(0), 0x00080303 },
 	{ DDRC_DFIUPD0(0), 0xe0400018 },
@@ -90,11 +90,8 @@ static struct dram_cfg_param lpddr4_ddrc_cfg[] = {
 	{ DDRC_DFIUPD2(0), 0x80000000 },
 	{ DDRC_DFIMISC(0), 0x11 },
 	{ DDRC_DFITMG2(0), 0x170a },
-
 	{ DDRC_DBICTL(0), 1 },
 	{ DDRC_DFIPHYMSTR(0), 1 },
-
-	/* need be refined by ddrphy trained value */
 	{ DDRC_RANKCTL(0), 0x0639 },
 	{ DDRC_DRAMTMG2(0), 0x070e1617 },
 
@@ -111,8 +108,6 @@ static struct dram_cfg_param lpddr4_ddrc_cfg[] = {
 	/* addrmap_row_b15, addrmap_row_b14, addrmap_row_b13, addrmap_row_b12 */
 	{ DDRC_ADDRMAP6(0), VAL_DDRC_ADDRMAP6 },
 	{ DDRC_ADDRMAP7(0), 0x0f0f },
-
-	/* 667mts frequency setting */
 	{ DDRC_FREQ1_DERATEEN(0), 1 },
 	{ DDRC_FREQ1_DERATEINT(0), 0xd0c0 },
 	{ DDRC_FREQ1_RFSHCTL0(0), 0x0020d040 },
@@ -137,44 +132,12 @@ static struct dram_cfg_param lpddr4_ddrc_cfg[] = {
 	{ DDRC_FREQ1_DFITMG0(0), 0x03858202 },
 	{ DDRC_FREQ1_DFITMG1(0), 0x00080303 },
 	{ DDRC_FREQ1_DFITMG2(0), 0x0502 },
-
-	/* 100mts frequency setting */
-	{ DDRC_FREQ2_DERATEEN(0), 1 },
-	{ DDRC_FREQ2_DERATEINT(0), 0x1f40 },
-	{ DDRC_FREQ2_RFSHCTL0(0), 0x0020d040 },
-	{ DDRC_FREQ2_RFSHTMG(0), 0x00030007 },
-	{ DDRC_FREQ2_INIT3(0), 0x00840000 },
-	{ DDRC_FREQ2_INIT4(0), VAL_INIT4 },
-	{ DDRC_FREQ2_INIT6(0), 0x0066004a },
-	{ DDRC_FREQ2_INIT7(0), 0x0016004a },
-	{ DDRC_FREQ2_DRAMTMG0(0), 0x0a010102 },
-	{ DDRC_FREQ2_DRAMTMG1(0), 0x00030404 },
-	{ DDRC_FREQ2_DRAMTMG2(0), 0x0203060b },
-	{ DDRC_FREQ2_DRAMTMG3(0), 0x00505000 },
-	{ DDRC_FREQ2_DRAMTMG4(0), 0x02040202 },
-	{ DDRC_FREQ2_DRAMTMG5(0), 0x02030202 },
-	{ DDRC_FREQ2_DRAMTMG6(0), 0x01010004 },
-	{ DDRC_FREQ2_DRAMTMG7(0), 0x0301 },
-	{ DDRC_FREQ2_DRAMTMG12(0), 0x00020300 },
-	{ DDRC_FREQ2_DRAMTMG13(0), 0x0a100002 },
-	{ DDRC_FREQ2_DRAMTMG14(0), 8 },
-	{ DDRC_FREQ2_DRAMTMG17(0), 0x00050003 },
-	{ DDRC_FREQ2_ZQCTL0(0), 0xc0190004 },
-	{ DDRC_FREQ2_DFITMG0(0), 0x03818200 },
-	{ DDRC_FREQ2_DFITMG1(0), 0x00080303 },
-	{ DDRC_FREQ2_DFITMG2(0), 0x0100 },
-
-	/* performance setting */
-	{ DDRC_ODTCFG(0), 0x0b060908 },
 	{ DDRC_ODTMAP(0), 0 },
 	{ DDRC_SCHED(0), 0x29001505 },
 	{ DDRC_SCHED1(0), 0x2c },
 	{ DDRC_PERFHPR1(0), 0x5900575b },
-	/* 150T starve and 0x90 max tran len */
 	{ DDRC_PERFLPR1(0), 0x90000096 },
-	/* 300T starve and 0x10 max tran len */
 	{ DDRC_PERFWR1(0), 0x1000012c },
-
 	{ DDRC_DBG0(0), 0x16 },
 	{ DDRC_DBG1(0), 0 },
 	{ DDRC_DBGCMD(0), 0 },
@@ -184,19 +147,10 @@ static struct dram_cfg_param lpddr4_ddrc_cfg[] = {
 	{ DDRC_PCFGR_0(0), 0x10f3 },
 	{ DDRC_PCFGW_0(0), 0x72ff },
 	{ DDRC_PCTRL_0(0), 1 },
-	/* disable Read Qos*/
 	{ DDRC_PCFGQOS0_0(0), 0x0e00 },
 	{ DDRC_PCFGQOS1_0(0), 0x0062ffff },
-	/* disable Write Qos*/
 	{ DDRC_PCFGWQOS0_0(0), 0x0e00 },
 	{ DDRC_PCFGWQOS1_0(0), 0xffff },
-
-	/* boot start point */
-#ifdef DDR_BOOT_P2
-	{ DDRC_MSTR2(0), 2 },
-#elif defined(DDR_BOOT_P1)
-	{ DDRC_MSTR2(0), 1 },
-#endif
 };
 
 /* PHY Initialize Configuration */
@@ -233,14 +187,6 @@ static struct dram_cfg_param lpddr4_ddrphy_cfg[] = {
 	{ 0x130a5, 5 },
 	{ 0x130a6, 6 },
 	{ 0x130a7, 7 },
-	{ 0x20110, 2 }, /* MapCAB0toDFI */
-	{ 0x20111, 3 }, /* MapCAB1toDFI */
-	{ 0x20112, 4 }, /* MapCAB2toDFI */
-	{ 0x20113, 5 }, /* MapCAB3toDFI */
-	{ 0x20114, 0 }, /* MapCAB4toDFI */
-	{ 0x20115, 1 }, /* MapCAB5toDFI */
-
-	/* Initialize PHY Configuration */
 	{ 0x1005f, 0x01ff },
 	{ 0x1015f, 0x01ff },
 	{ 0x1105f, 0x01ff },
@@ -278,7 +224,7 @@ static struct dram_cfg_param lpddr4_ddrphy_cfg[] = {
 	{ 0x120024, 0x01ab },
 	{ 0x2003a, 0 },
 	{ 0x20056, 3 },
-	{ 0x120056, 0x0a },
+	{ 0x120056, 3 },
 	{ 0x1004d, 0x0e00 },
 	{ 0x1014d, 0x0e00 },
 	{ 0x1104d, 0x0e00 },
@@ -364,6 +310,12 @@ static struct dram_cfg_param lpddr4_ddrphy_cfg[] = {
 	{ 0x1200c7, 0x80 },
 	{ 0x200ca, 0x0106 },
 	{ 0x1200ca, 0x0106 },
+	{ 0x20110, 2 },
+	{ 0x20111, 3 },
+	{ 0x20112, 4 },
+	{ 0x20113, 5 },
+	{ 0x20114, 0 },
+	{ 0x20115, 1 },
 };
 
 /* P0 message block parameter for training firmware */
@@ -376,7 +328,6 @@ static struct dram_cfg_param lpddr4_fsp0_cfg[] = {
 	{ 0x54008, 0x131f },
 	{ 0x54009, LPDDR4_HDT_CTL_3200_1D },
 	{ 0x5400b, 2 },
-	{ 0x5400d, 0x0100 },
 	{ 0x54012, 0x10 | (LPDDR4_CS << 8) },
 	{ 0x54019, 0x2dd4 },
 	{ 0x5401a, 0x31 },
@@ -405,6 +356,7 @@ static struct dram_cfg_param lpddr4_fsp0_cfg[] = {
 	{ 0xd0000, 1 },
 };
 
+
 /* P1 message block parameter for training firmware */
 static struct dram_cfg_param lpddr4_fsp1_cfg[] = {
 	{ 0xd0000, 0 },
@@ -412,11 +364,10 @@ static struct dram_cfg_param lpddr4_fsp1_cfg[] = {
 	{ 0x54003, 0x029c },
 	{ 0x54004, 2 },
 	{ 0x54005, 0x2228 },
-	{ 0x54006, 0x11 },
+	{ 0x54006, LPDDR4_PHY_VREF_VALUE },
 	{ 0x54008, 0x121f },
-	{ 0x54009, 0xc8 },
+	{ 0x54009, LPDDR4_HDT_CTL_3200_1D },
 	{ 0x5400b, 2 },
-	{ 0x5400d, 0x0100 },
 	{ 0x54012, 0x10 | (LPDDR4_CS << 8) },
 	{ 0x54019, 0x0994 },
 	{ 0x5401a, 0x31 },
@@ -445,15 +396,18 @@ static struct dram_cfg_param lpddr4_fsp1_cfg[] = {
 	{ 0xd0000, 1 },
 };
 
+
+/* P0 2D message block parameter for training firmware */
 static struct dram_cfg_param lpddr4_fsp0_2d_cfg[] = {
 	{ 0xd0000, 0 },
 	{ 0x54003, 0x0c80 },
 	{ 0x54004, 2 },
 	{ 0x54005, 0x2228 },
-	{ 0x54006, 0x11 },
+	{ 0x54006, LPDDR4_PHY_VREF_VALUE },
 	{ 0x54008, 0x61 },
-	{ 0x54009, 0xc8 },
+	{ 0x54009, LPDDR4_HDT_CTL_3200_1D },
 	{ 0x5400b, 2 },
+	{ 0x5400d, 0x0100 },
 	{ 0x5400f, 0x0100 },
 	{ 0x54010, 0x1f7f },
 	{ 0x54012, 0x10 | (LPDDR4_CS << 8) },
@@ -483,8 +437,6 @@ static struct dram_cfg_param lpddr4_fsp0_2d_cfg[] = {
 	{ 0x5403d, 0x1600 },
 	{ 0xd0000, 1 },
 };
-
-#define LPDDR4_TRAIN_SEQ_100	0x121f
 
 /* DRAM PHY init engine image */
 static struct dram_cfg_param lpddr4_phy_pie[] = {
@@ -994,8 +946,6 @@ static struct dram_cfg_param lpddr4_phy_pie[] = {
 	{ 0x90013, 0x6152 },
 	{ 0x20010, 0x5a },
 	{ 0x20011, 3 },
-	{ 0x120010, 0x5a },
-	{ 0x120011, 3 },
 	{ 0x40080, 0xe0 },
 	{ 0x40081, 0x12 },
 	{ 0x40082, 0xe0 },
@@ -1070,46 +1020,6 @@ static struct dram_cfg_param lpddr4_phy_pie[] = {
 	{ 0xd0000, 1 }
 };
 
-/* P2 message block parameter for training firmware */
-static struct dram_cfg_param lpddr4_fsp2_cfg[] = {
-	{ 0xd0000, 0 },
-	{ 0x54002, 2 },
-	{ 0x54003, 0x64 },
-	{ 0x54004, 2 },
-	{ 0x54005, 0x2228 },
-	{ 0x54006, 0x11 },
-	{ 0x54008, 0x121f },
-	{ 0x54009, 0xc8 },
-	{ 0x5400b, 2 },
-	{ 0x5400d, 0x0100 },
-	{ 0x54012, 0x10 | (LPDDR4_CS << 8) },
-	{ 0x54019, 0x0994 },
-	{ 0x5401a, 0x31 },
-	{ 0x5401b, 0x4a66 },
-	{ 0x5401c, 0x4a08 },
-	{ 0x5401e, 0x16 },
-	{ 0x5401f, 0x0994 },
-	{ 0x54020, 0x31 },
-	{ 0x54021, 0x4a66 },
-	{ 0x54022, 0x4a08 },
-	{ 0x54024, 0x16 },
-	{ 0x5402b, 0x1000 },
-	{ 0x5402c, LPDDR4_CS },
-	{ 0x54032, 0x9400 },
-	{ 0x54033, 0x3109 },
-	{ 0x54034, 0x6600 },
-	{ 0x54035, 0x084a },
-	{ 0x54036, 0x4a },
-	{ 0x54037, 0x1600 },
-	{ 0x54038, 0x9400 },
-	{ 0x54039, 0x3109 },
-	{ 0x5403a, 0x6600 },
-	{ 0x5403b, 0x084a },
-	{ 0x5403c, 0x4a },
-	{ 0x5403d, 0x1600 },
-	{ 0xd0000, 1 },
-};
-
 static struct dram_fsp_msg lpddr4_dram_fsp_msg[] = {
 	{
 		/* P0 3200mts 1D */
@@ -1119,30 +1029,22 @@ static struct dram_fsp_msg lpddr4_dram_fsp_msg[] = {
 		.fsp_cfg_num = ARRAY_SIZE(lpddr4_fsp0_cfg),
 	},
 	{
+		/* P1 667mts 1D */
+		.drate = 667,
+		.fw_type = FW_1D_IMAGE,
+		.fsp_cfg = lpddr4_fsp1_cfg,
+		.fsp_cfg_num = ARRAY_SIZE(lpddr4_fsp1_cfg),
+	},
+	{
 		/* P0 3200mts 2D */
 		.drate = 3200,
 		.fw_type = FW_2D_IMAGE,
 		.fsp_cfg = lpddr4_fsp0_2d_cfg,
 		.fsp_cfg_num = ARRAY_SIZE(lpddr4_fsp0_2d_cfg),
 	},
-	{
-		/* P1 668mts 1D */
-		.drate = 668,
-		.fw_type = FW_1D_IMAGE,
-		.fsp_cfg = lpddr4_fsp1_cfg,
-		.fsp_cfg_num = ARRAY_SIZE(lpddr4_fsp1_cfg),
-	},
-#if 0
-	{
-		/* P1 100mts 1D */
-		.drate = 100,
-		.fw_type = FW_1D_IMAGE,
-		.fsp_cfg = lpddr4_fsp2_cfg,
-		.fsp_cfg_num = ARRAY_SIZE(lpddr4_fsp2_cfg),
-	},
-#endif
 };
 
+/* ddr timing config params */
 struct dram_timing_info dram_timing = {
 	.ddrc_cfg = lpddr4_ddrc_cfg,
 	.ddrc_cfg_num = ARRAY_SIZE(lpddr4_ddrc_cfg),
@@ -1152,9 +1054,5 @@ struct dram_timing_info dram_timing = {
 	.fsp_msg_num = ARRAY_SIZE(lpddr4_dram_fsp_msg),
 	.ddrphy_pie = lpddr4_phy_pie,
 	.ddrphy_pie_num = ARRAY_SIZE(lpddr4_phy_pie),
-#if 0
-	.fsp_table = { 3200, 668, 100, },
-#else
-	.fsp_table = { 3200, 668, },
-#endif
+	.fsp_table = { 3200, 667, },
 };
