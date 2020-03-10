@@ -190,6 +190,17 @@ static int env_fat_load(void)
 	err2 = (err2 >= 0) ? 0 : -1;
 	return env_import_redund(buf1, err1, buf2, err2, H_EXTERNAL);
 #else
+#define CONFIG_ENV_FAT_CREATE 1
+
+#ifdef CONFIG_ENV_FAT_CREATE
+	if (err1 == -2) {
+		printf("\"%s\" not found on %s-%d:%d... ",
+			CONFIG_ENV_FAT_FILE, CONFIG_ENV_FAT_INTERFACE, dev, part );
+		env_set("env_need_save", "1");
+		return 0;
+	}
+#endif
+
 	if (err1 < 0) {
 		/*
 		 * This printf is embedded in the messages from env_save that
