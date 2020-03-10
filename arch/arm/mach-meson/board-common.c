@@ -26,10 +26,6 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
-__weak int board_init(void)
-{
-	return 0;
-}
 
 int dram_init(void)
 {
@@ -142,10 +138,19 @@ __weak int meson_board_late_init(void)
 	return 0;
 }
 
-int board_late_init(void)
+__weak int board_init(void)
 {
+	//env init there 
+	env_set_default(NULL, 0);
+	//set env boot_source
 	meson_set_boot_source();
 
+	return 0;
+
+}
+
+int board_late_init(void)
+{
 	return meson_board_late_init();
 }
 
