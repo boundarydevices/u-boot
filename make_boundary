@@ -30,7 +30,6 @@ for board in $boards ; do
 			make flash.bin -j4
 			cp -fv flash.bin ${savedir}/u-boot.${board} ;
 		        ls -l ${savedir}/u-boot.${board};
-		        cp -fv u-boot.bin ${savedir}/u-boot.bin.${board};
 		else
 		        cp -fv u-boot.imx $savedir/u-boot.${board};
 		        ls -l $savedir/u-boot.${board};
