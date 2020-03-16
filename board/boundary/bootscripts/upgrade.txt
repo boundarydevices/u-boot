@@ -59,6 +59,7 @@ mmc dev ${env_dev} ${env_part}
 mmc read ${a_uImage2} ${cntoffset} ${cntfile}
 if cmp.b ${a_uImage1} ${a_uImage2} ${filesize} ; then
 	echo "------- U-Boot versions match" ;
+	echo "------- U-Boot upgrade NOT needed" ;
 	exit ;
 fi
 
@@ -137,7 +138,7 @@ fi
 if cmp.b ${a_uImage1} ${a_uImage2} $filesize ; then
 	echo "------- U-Boot versions match" ;
 	if itest.s "${qspi_match}" == "1" ; then
-		echo "------- upgrade not needed" ;
+		echo "------- U-Boot upgrade NOT needed" ;
 		if itest.s "x" != "x${next}" ; then
 			if ${fs}load ${devtype} ${devnum}:${distro_bootpart} ${a_script} ${next} ; then
 				source ${a_script}
