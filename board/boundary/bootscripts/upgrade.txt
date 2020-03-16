@@ -32,7 +32,6 @@ setexpr a_script ${a_base}
 
 setenv stdout serial,vga
 
-sf probe
 if itest.s "x${sfname}" == "x" ; then
 # U-Boot resides in (e)MMC
 if itest.s "x${env_dev}" == "x" || itest.s "x${env_part}" == "x"; then
