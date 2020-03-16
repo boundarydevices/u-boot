@@ -458,7 +458,7 @@
 				"echo Found U-Boot script "               \
 					"${prefix}${script}; "            \
 				"run boot_a_script; "                     \
-				"echo SCRIPT FAILED: continuing...; "     \
+				"echo script exited: continuing...; "     \
 			"fi; "                                            \
 		"done\0"                                                  \
 	\
