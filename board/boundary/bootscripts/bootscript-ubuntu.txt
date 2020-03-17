@@ -142,7 +142,7 @@ setexpr bpart ${b1} * 0x10
 setexpr bpart ${bpart} + ${b0};
 
 if itest.s "x" != "x${root_dev}" ; then
-	setenv bootargs "${bootargs} root=${root_dev}${bootpart}" ;
+	setenv bootargs "${bootargs} root=${root_dev}${bpart}" ;
 elif test "sata" = "${devtype}" ; then
 	setenv bootargs "${bootargs} root=/dev/sda${bpart}" ;
 elif test "usb" = "${devtype}" ; then
