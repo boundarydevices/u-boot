@@ -24,10 +24,11 @@
 #include <video_fb.h>
 /*
  * The format of the string is
- * [*][off|mode_str_name[:[m][j][s][b][18|24][S|D|b|P|l|d|s|v|B|M|U|c|L|E|4|3|2|1][Gn][e][x[x_vals][p[pwm_period]]]:timings]]
+ * [*][off|mode_str_name[:["dtb_alias",["dtb_alias",]][m][j][s][b][18|24][S|D|b|P|l|d|s|v|B|M|U|c|L|E|4|3|2|1][Gn][e][x[x_vals][p[pwm_period]]]:timings]]
  *
  * * means select this display for u-boot to initialize.
  * m : mode_str is used, fdt set fb_xxx mode_str [mode_str_name]
+ * "dtb_alias" : dtb alias to set status to okay, use to enable touch screen drivers, panel drivers(sn65)
  * j : display uses JEIDA, fdt set ldb/lvds-channel@n fsl,data-mapping jeida
  * s : display uses SPLITMODE, fdt set ldb split-mode 1
  * b : pix_fmt = IPU_PIX_FMT_BGR24
@@ -182,6 +183,22 @@ static const char *const short_names[] = {
 [FB_MIPI] = "mipi",
 };
 
+static const char *new_aliases[FB_COUNT][2];
+
+static const char *const aliases[] = {
+[FBTS_NONE] = NULL,
+[FBTS_ATMEL_MT] = "ts_atmel_mt",
+[FBTS_EGALAX] = "ts_egalax",
+[FBTS_FT5X06] = "ts_ft5x06",
+[FBTS_FUSION7] = "ts_fusion7",
+[FBTS_GSL1680] = "ts_gsl1680",
+[FBTS_GOODIX] = "ts_goodix",
+[FBTS_ILI210X] = "ts_ili210x",
+[FBTS_ST1633I] = "ts_st1633i",
+[FBTS_TSC2004] = "ts_tsc2004",
+[FBP_MIPI_TO_LVDS] = "mipi_to_lvds",
+};
+
 static const char *const timings_properties[] = {
 "clock-frequency",
 "hactive",
@@ -303,6 +320,15 @@ static u32 freq_to_period(u32 val)
 	return (u32)lval;
 }
 
+static const char *get_alias(const struct display_info_t *di, unsigned fb, int i)
+{
+	unsigned a = di->enable_alias[i];
+
+	if (a < ARRAY_SIZE(aliases))
+		return aliases[a];
+	return new_aliases[fb][i];
+}
+
 static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf, int size)
 {
 	const char *mode_str = NULL;
@@ -371,6 +397,17 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 
 	if (!di)
 		goto set_variables;
+
+	for (i = 0; i < ARRAY_SIZE(di->enable_alias); i++) {
+		const char *s = get_alias(di, fb, i);
+
+		if (s) {
+			sz = snprintf(buf, size, "fdt set %s status okay;", s);
+			buf += sz;
+			size -= sz;
+		}
+	}
+
 	interface_width = 18;
 	if (di->pixfmt == IPU_PIX_FMT_RGB24) {
 		fmt = rgb24;
@@ -525,7 +562,7 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 				);
 		buf += sz;
 		size -= sz;
-		if (di->addr_num == 0x2c) {
+		if ((di->addr_num == 0x2c) && (di->enable_alias[0] != FBP_MIPI_TO_LVDS)) {
 			sz = snprintf(buf, size,
 				"fdt set mipi_to_lvds status okay;");
 			buf += sz;
@@ -1288,6 +1325,61 @@ static int code_flags(char *p, int size, int flags, struct flags_check *fc_base)
 	return cnt;
 }
 
+const char *check_alias(const char *p, struct display_info_t *di, unsigned fb, int index)
+{
+	if (*p >= '9') {
+		int len = 0;
+		int i = 0;
+
+		while (p[len] != ',') {
+			if (!p[len]) {
+				printf("expecting ending quote\n");
+				return NULL;
+			}
+			len++;
+		}
+		if (!len) {
+			printf("empty string\n");
+			return NULL;
+		}
+
+		i = 1;
+		while (1) {
+			const char *s;
+
+			if (i >= ARRAY_SIZE(aliases)) {
+				/* Allocate memory to hold alias name */
+				const char *old;
+				char *q;
+
+				old = new_aliases[fb][index];
+				new_aliases[fb][index] = NULL;
+				if (old)
+					free((void *)old);
+
+				q = malloc(len + 1);
+				if (!q)
+					return NULL;
+				memcpy(q, p, len);
+				q[len] = 0;
+				new_aliases[fb][index] = q;
+				i = 255;
+				break;
+			}
+			s = aliases[i];
+			if (!memcmp(p, s, len) && !s[len]) {
+				break;
+			}
+			i++;
+		}
+		di->enable_alias[index] = i;
+		p += len + 1;
+		if (*p == ' ')
+			p++;
+	}
+	return p;
+}
+
 static const struct display_info_t * parse_mode(
 		const struct display_info_t *gdi, int cnt, const char *p,
 		unsigned fb, unsigned *prefer)
@@ -1330,6 +1422,12 @@ static const struct display_info_t * parse_mode(
 	di->fbtype = fb;
 	di->mode.name = mode_str;
 	di->enable = fbp_enable_fb;
+
+	for (i = 0; i < ARRAY_SIZE(di->enable_alias); i++) {
+		p = check_alias(p, di, fb, i);
+		if (!p)
+			return NULL;
+	}
 
 	check_flags(di, &p, fc1);
 	c = *p;
@@ -1507,6 +1605,16 @@ static void str_mode(char *p, int size, const struct display_info_t *di, unsigne
 	if (size > count) {
 		p += count;
 		size -= count;
+	}
+
+	for (i = 0; i < ARRAY_SIZE(di->enable_alias); i++) {
+		const char *s = get_alias(di, di->fbtype, i);
+
+		if (s) {
+			count = snprintf(p, size, "%s,", s);
+			p += count;
+			size -= count;
+		}
 	}
 	count = code_flags(p, size, di->fbflags, fc1);
 	p += count;

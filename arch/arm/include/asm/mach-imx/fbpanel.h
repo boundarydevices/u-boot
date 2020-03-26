@@ -87,6 +87,18 @@ struct display_info_t {
 #define FBF_OSD050T		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_2)
 
 	int	fbflags;
+#define FBTS_NONE	0
+#define FBTS_ATMEL_MT	1
+#define FBTS_EGALAX	2
+#define FBTS_FT5X06	3
+#define FBTS_FUSION7	4
+#define FBTS_GSL1680	5
+#define FBTS_GOODIX	5
+#define FBTS_ILI210X	6
+#define FBTS_ST1633I	7
+#define FBTS_TSC2004	8
+#define FBP_MIPI_TO_LVDS	9
+	unsigned char enable_alias[2];
 	struct	fb_videomode mode;
 };
 int ipu_set_ldb_clock(int rate);
@@ -101,113 +113,114 @@ int fbp_detect_i2c(struct display_info_t const *di);
 void fbp_setup_display(const struct display_info_t *displays, int cnt);
 void fbp_setup_env_cmds(void);
 
-#define VD_1280_720M_60(_mode, _detect, _bus, _addr)	VDF_1280_720M_60(_mode, "1280x720M@60", RGB24, FBF_MODESTR, _detect, _bus, _addr)
-#define VD_1920_1080M_60(_mode, _detect, _bus, _addr)	VDF_1920_1080M_60(_mode, "1920x1080M@60", RGB24, FBF_MODESTR, _detect, _bus, _addr)
-#define VD_1024_768M_60(_mode, _detect, _bus, _addr)	VDF_1024_768M_60(_mode, "1024x768M@60", RGB24, FBF_MODESTR, _detect, _bus, _addr)
-#define VD_800_600MR_60(_mode, _detect, _bus, _addr)	VDF_800_600MR_60(_mode, "800x600MR@60", RGB24, FBF_MODESTR, _detect, _bus, _addr)
-#define VD_640_480M_60(_mode, _detect, _bus, _addr)	VDF_640_480M_60(_mode, "640x480M@60", RGB24, FBF_MODESTR, _detect, _bus, _addr)
-#define VD_720_480M_60(_mode, _detect, _bus, _addr)	VDF_720_480M_60(_mode, "720x480M@60", RGB24, FBF_MODESTR, _detect, _bus, _addr)
-#define VD_MIPI_TM070JDHG30(_mode, _detect, _bus, _addr) VDF_MIPI_TM070JDHG30(_mode, "mipi-tm070jdhg30", RGB24, FBF_MIPI_TO_HDMI, _detect, _bus, _addr)
-#define VD_MIPI_1280_720M_60(_mode, _detect, _bus, _addr) VDF_1280_720M_60(_mode, "dsi-1280x720M@60", RGB24, FBF_MIPI_TO_HDMI, _detect, _bus, _addr)
-#define VD_MIPI_1920_1080M_60(_mode, _detect, _bus, _addr) VDF_1920_1080M_60(_mode, "dsi-1920x1080M@60", RGB24, FBF_MIPI_TO_HDMI, _detect, _bus, _addr)
-#define VD_MIPI_1024_768M_60(_mode, _detect, _bus, _addr) VDF_1024_768M_60(_mode, "dsi-1024x768M@60", RGB24, FBF_MIPI_TO_HDMI, _detect, _bus, _addr)
-#define VD_MIPI_800_600MR_60(_mode, _detect, _bus, _addr) VDF_800_600MR_60(_mode, "dsi-800x600MR@60", RGB24, FBF_MIPI_TO_HDMI, _detect, _bus, _addr)
-#define VD_MIPI_640_480M_60(_mode, _detect, _bus, _addr) VDF_640_480M_60(_mode, "dsi-640x480M@60", RGB24, FBF_MIPI_TO_HDMI, _detect, _bus, _addr)
-#define VD_MIPI_720_480M_60(_mode, _detect, _bus, _addr) VDF_720_480M_60(_mode, "dsi-720x480M@60", RGB24, FBF_MIPI_TO_HDMI, _detect, _bus, _addr)
+#define VD_1280_720M_60(_mode, args...)		VDF_1280_720M_60(_mode, "1280x720M@60", RGB24, FBF_MODESTR, args)
+#define VD_1920_1080M_60(_mode, args...)	VDF_1920_1080M_60(_mode, "1920x1080M@60", RGB24, FBF_MODESTR, args)
+#define VD_1024_768M_60(_mode, args...)		VDF_1024_768M_60(_mode, "1024x768M@60", RGB24, FBF_MODESTR, args)
+#define VD_800_600MR_60(_mode, args...)		VDF_800_600MR_60(_mode, "800x600MR@60", RGB24, FBF_MODESTR, args)
+#define VD_640_480M_60(_mode, args...)		VDF_640_480M_60(_mode, "640x480M@60", RGB24, FBF_MODESTR, args)
+#define VD_720_480M_60(_mode, args...)		VDF_720_480M_60(_mode, "720x480M@60", RGB24, FBF_MODESTR, args)
+#define VD_MIPI_TM070JDHG30(_mode, args...)	VDF_MIPI_TM070JDHG30(_mode, "mipi-tm070jdhg30", RGB24, FBF_MIPI_TO_HDMI, args)
+#define VD_MIPI_1280_720M_60(_mode, args...)	VDF_1280_720M_60(_mode, "dsi-1280x720M@60", RGB24, FBF_MIPI_TO_HDMI, args)
+#define VD_MIPI_1920_1080M_60(_mode, args...)	VDF_1920_1080M_60(_mode, "dsi-1920x1080M@60", RGB24, FBF_MIPI_TO_HDMI, args)
+#define VD_MIPI_1024_768M_60(_mode, args...)	VDF_1024_768M_60(_mode, "dsi-1024x768M@60", RGB24, FBF_MIPI_TO_HDMI, args)
+#define VD_MIPI_800_600MR_60(_mode, args...)	VDF_800_600MR_60(_mode, "dsi-800x600MR@60", RGB24, FBF_MIPI_TO_HDMI, args)
+#define VD_MIPI_640_480M_60(_mode, args...)	VDF_640_480M_60(_mode, "dsi-640x480M@60", RGB24, FBF_MIPI_TO_HDMI, args)
+#define VD_MIPI_720_480M_60(_mode, args...)	VDF_720_480M_60(_mode, "dsi-720x480M@60", RGB24, FBF_MIPI_TO_HDMI, args)
 
-#define VD_MIPI_MQ_1920_1080M_60(_mode, _detect, _bus, _addr) VDF_1920_1080M_60(_mode, "dsi-mq1920x1080M@60", RGB24, FBF_MIPI_MQ_TO_HDMI, _detect, _bus, _addr)
-#define VD_MIPI_MQ_1280_800M_60(_mode, _detect, _bus, _addr) VDF_1280_800M_60(_mode, "dsi-mq1280x800M@60", RGB24, FBF_MIPI_MQ_TO_HDMI, _detect, _bus, _addr)
-#define VD_MIPI_MQ_1280_720M_60(_mode, _detect, _bus, _addr) VDF_1280_720M_60(_mode, "dsi-mq1280x720M@60", RGB24, FBF_MIPI_MQ_TO_HDMI, _detect, _bus, _addr)
-#define VD_MIPI_MQ_1024_768M_60(_mode, _detect, _bus, _addr) VDF_1024_768M_60(_mode, "dsi-mq1024x768M@60", RGB24, FBF_MIPI_MQ_TO_HDMI, _detect, _bus, _addr)
-#define VD_MIPI_MQ_800_600MR_60(_mode, _detect, _bus, _addr) VDF_800_600MR_60(_mode, "dsi-mq800x600MR@60", RGB24, FBF_MIPI_MQ_TO_HDMI, _detect, _bus, _addr)
-#define VD_MIPI_MQ_720_480M_60(_mode, _detect, _bus, _addr) VDF_720_480M_60(_mode, "dsi-mq720x480M@60", RGB24, FBF_MIPI_MQ_TO_HDMI, _detect, _bus, _addr)
-#define VD_MIPI_MQ_640_480M_60(_mode, _detect, _bus, _addr) VDF_640_480M_60(_mode, "dsi-mq640x480M@60", RGB24, FBF_MIPI_MQ2_TO_HDMI, _detect, _bus, _addr)
-#define VD_CLAA_WVGA(_mode, _detect, _bus, _addr)	VDF_CLAA_WVGA(_mode, "CLAA-WVGA", RGB666, FBF_MODESTR, _detect, _bus, _addr)
-#define VD_SHARP_WVGA(_mode, _detect, _bus, _addr)	VDF_SHARP_WVGA(_mode, "sharp-wvga", RGB24, FBF_MODESTR, _detect, _bus, _addr)
-#define VD_TFC_A9700LTWV35TC_C1(_mode, _detect, _bus, _addr)	VDF_TFC_A9700LTWV35TC_C1(_mode, "tfc-a9700ltwv35tc-c1", RGB24, 0, _detect, _bus, _addr)
-#define VD_800X300_565(_mode, _detect, _bus, _addr)	VDF_800X300(_mode, "800x300rgb565", RGB565, FBF_MODESTR, _detect, _bus, _addr)
-#define VD_HITACHI_HVGA(_mode, _detect, _bus, _addr)	VDF_HITACHI_HVGA(_mode, "hitachi_hvga", RGB666, FBF_MODESTR, _detect, _bus, _addr)
-#define VD_HITACHI_HVGA565(_mode, _detect, _bus, _addr)	VDF_HITACHI_HVGA(_mode, "hitachi_hvga565", RGB565, FBF_MODESTR, _detect, _bus, _addr)
-#define VD_NEON_TOUCH640X240(_mode, _detect, _bus, _addr) VDF_NEON_TOUCH640X240(_mode, "NeonTouch640x240", RGB565, FBF_MODESTR, _detect, _bus, _addr)
-#define VD_DC050WX(_mode, _detect, _bus, _addr)		VDF_DC050WX(_mode, "DC050WX", RGB24, FBF_MODESTR, _detect, _bus, _addr)
-#define VD_INNOLUX_WXGA_14IN_12V(_mode, _detect, _bus, _addr) VDF_INNOLUX_WXGA_14IN_12V(_mode, "INNOLUX-WXGA-IN14-12V", RGB666, 0, _detect, _bus, _addr)
-#define VD_AUO_WXGA_11IN_12V(_mode, _detect, _bus, _addr) VDF_AUO_WXGA_11IN_12V(_mode, "AUO-WXGA-IN11-12V", RGB24, 0, _detect, _bus, _addr)
-#define VD_OSD_WSVGA(_mode, _detect, _bus, _addr)	VDF_OSD_WSVGA(_mode, "OSD-WSVGA", RGB666, 0, _detect, _bus, _addr)
-#define VD_INNOLUX_WVGA(_mode, _detect, _bus, _addr)	VDF_INNOLUX_WVGA(_mode, "INNOLUX-WVGA", RGB666, 0, _detect, _bus, _addr)
-#define VD_INNOLUX_WVGA_12V(_mode, _detect, _bus, _addr) VDF_INNOLUX_WVGA(_mode, "INNOLUX-WVGA-12V", RGB666, 0, _detect, _bus, _addr)
-#define VD_INNOLUX_WVGA_M(_mode, _detect, _bus, _addr)	VDF_INNOLUX_WVGA(_mode, "INNOLUX-WVGA", RGB666, FBF_MODESTR, _detect, _bus, _addr)
-#define VD_OKAYA_480_272(_mode, _detect, _bus, _addr)	VDF_OKAYA_480_272(_mode, "okaya_480x272", RGB24, FBF_MODESTR, _detect, _bus, _addr)
-#define VD_LCM_JM430(_mode, _detect, _bus, _addr)	VDF_LCM_JM430(_mode, "lcm_jm430", RGB24, FBF_LCM_JM430, _detect, _bus, _addr)
-#define VD_LCM_JM430_MINI(_mode, _detect, _bus, _addr)	VDF_LCM_JM430_MINI(_mode, "lcm_jm430_mini", RGB24, FBF_LCM_JM430, _detect, _bus, _addr)
-#define VD_QVGA(_mode, _detect, _bus, _addr)		VDF_QVGA(_mode, "qvga", RGB24, FBF_MODESTR, _detect, _bus, _addr)
-#define VD_DT035BTFT(_mode, _detect, _bus, _addr)	VDF_DT035BTFT(_mode, "DT035BTFT", BGR24, FBF_MODESTR, _detect, _bus, _addr)
-#define VD_AT035GT_07ET3(_mode, _detect, _bus, _addr)	VDF_AT035GT_07ET3(_mode, "AT035GT-07ET3", RGB24, FBF_MODESTR, _detect, _bus, _addr)
-#define VD_AMP1024_600(_mode, _detect, _bus, _addr)	VDF_AMP1024_600(_mode, "amp1024x600", RGB666, 0, _detect, _bus, _addr)
-#define VD_ND1024_600(_mode, _detect, _bus, _addr)	VDF_ND1024_600(_mode, "ND-070PCAP-1024x600", RGB24, 0, _detect, _bus, _addr)
+#define VD_MIPI_MQ_1920_1080M_60(_mode, args...) VDF_1920_1080M_60(_mode, "dsi-mq1920x1080M@60", RGB24, FBF_MIPI_MQ_TO_HDMI, args)
+#define VD_MIPI_MQ_1280_800M_60(_mode, args...) VDF_1280_800M_60(_mode, "dsi-mq1280x800M@60", RGB24, FBF_MIPI_MQ_TO_HDMI, args)
+#define VD_MIPI_MQ_1280_720M_60(_mode, args...) VDF_1280_720M_60(_mode, "dsi-mq1280x720M@60", RGB24, FBF_MIPI_MQ_TO_HDMI, args)
+#define VD_MIPI_MQ_1024_768M_60(_mode, args...) VDF_1024_768M_60(_mode, "dsi-mq1024x768M@60", RGB24, FBF_MIPI_MQ_TO_HDMI, args)
+#define VD_MIPI_MQ_800_600MR_60(_mode, args...) VDF_800_600MR_60(_mode, "dsi-mq800x600MR@60", RGB24, FBF_MIPI_MQ_TO_HDMI, args)
+#define VD_MIPI_MQ_720_480M_60(_mode, args...)	VDF_720_480M_60(_mode, "dsi-mq720x480M@60", RGB24, FBF_MIPI_MQ_TO_HDMI, args)
+#define VD_MIPI_MQ_640_480M_60(_mode, args...)	VDF_640_480M_60(_mode, "dsi-mq640x480M@60", RGB24, FBF_MIPI_MQ2_TO_HDMI, args)
+#define VD_CLAA_WVGA(_mode, args...)		VDF_CLAA_WVGA(_mode, "CLAA-WVGA", RGB666, FBF_MODESTR, args)
+#define VD_SHARP_WVGA(_mode, args...)		VDF_SHARP_WVGA(_mode, "sharp-wvga", RGB24, FBF_MODESTR, args)
+#define VD_TFC_A9700LTWV35TC_C1(_mode, args...)	VDF_TFC_A9700LTWV35TC_C1(_mode, "tfc-a9700ltwv35tc-c1", RGB24, 0, args)
+#define VD_800X300_565(_mode, args...)		VDF_800X300(_mode, "800x300rgb565", RGB565, FBF_MODESTR, args)
+#define VD_HITACHI_HVGA(_mode, args...)		VDF_HITACHI_HVGA(_mode, "hitachi_hvga", RGB666, FBF_MODESTR, args)
+#define VD_HITACHI_HVGA565(_mode, args...)	VDF_HITACHI_HVGA(_mode, "hitachi_hvga565", RGB565, FBF_MODESTR, args)
+#define VD_NEON_TOUCH640X240(_mode, args...)	VDF_NEON_TOUCH640X240(_mode, "NeonTouch640x240", RGB565, FBF_MODESTR, args)
+#define VD_DC050WX(_mode, args...)		VDF_DC050WX(_mode, "DC050WX", RGB24, FBF_MODESTR, args)
+#define VD_INNOLUX_WXGA_14IN_12V(_mode, args...) VDF_INNOLUX_WXGA_14IN_12V(_mode, "INNOLUX-WXGA-IN14-12V", RGB666, 0, args)
+#define VD_AUO_WXGA_11IN_12V(_mode, args...)	VDF_AUO_WXGA_11IN_12V(_mode, "AUO-WXGA-IN11-12V", RGB24, 0, args)
+#define VD_OSD_WSVGA(_mode, args...)		VDF_OSD_WSVGA(_mode, "OSD-WSVGA", RGB666, 0, args)
+#define VD_INNOLUX_WVGA(_mode, args...)		VDF_INNOLUX_WVGA(_mode, "INNOLUX-WVGA", RGB666, 0, args)
+#define VD_INNOLUX_WVGA_12V(_mode, args...)	VDF_INNOLUX_WVGA(_mode, "INNOLUX-WVGA-12V", RGB666, 0, args)
+#define VD_INNOLUX_WVGA_M(_mode, args...)	VDF_INNOLUX_WVGA(_mode, "INNOLUX-WVGA", RGB666, FBF_MODESTR, args)
+#define VD_OKAYA_480_272(_mode, args...)	VDF_OKAYA_480_272(_mode, "okaya_480x272", RGB24, FBF_MODESTR, args)
+#define VD_LCM_JM430(_mode, args...)		VDF_LCM_JM430(_mode, "lcm_jm430", RGB24, FBF_LCM_JM430, args)
+#define VD_LCM_JM430_MINI(_mode, args...)	VDF_LCM_JM430_MINI(_mode, "lcm_jm430_mini", RGB24, FBF_LCM_JM430, args)
+#define VD_QVGA(_mode, args...)			VDF_QVGA(_mode, "qvga", RGB24, FBF_MODESTR, args)
+#define VD_DT035BTFT(_mode, args...)		VDF_DT035BTFT(_mode, "DT035BTFT", BGR24, FBF_MODESTR, args)
+#define VD_AT035GT_07ET3(_mode, args...)	VDF_AT035GT_07ET3(_mode, "AT035GT-07ET3", RGB24, FBF_MODESTR, args)
+#define VD_AMP1024_600(_mode, args...)		VDF_AMP1024_600(_mode, "amp1024x600", RGB666, 0, args)
+#define VD_ND1024_600(_mode, args...)		VDF_ND1024_600(_mode, "ND-070PCAP-1024x600", RGB24, 0, args)
 
-#define VD_AM_1280800P2TZQW(_mode, _detect, _bus, _addr) VDF_AM_1280800P2TZQW(_mode, "AM-1280800P2TZQW", RGB24, FBF_BKLIT_DTB, _detect, _bus, _addr)
-#define VD_TM070JDHG30(_mode, _detect, _bus, _addr)	VDF_TM070JDHG30(_mode, "tm070jdhg30", RGB24, 0, _detect, _bus, _addr)
-#define VD_AUO_B101EW05(_mode, _detect, _bus, _addr)	VDF_AUO_B101EW05(_mode, "auo_b101ew05", RGB666, 0, _detect, _bus, _addr)
-#define VD_HANNSTAR7(_mode, _detect, _bus, _addr)	VDF_HANNSTAR7(_mode, "hannstar7", RGB666, 0, _detect, _bus, _addr)
-#define VD_LG1280_800(_mode, _detect, _bus, _addr)	VDF_HANNSTAR7(_mode, "lg1280x800", RGB666, 0, _detect, _bus, _addr)
-#define VD_M101NWWB(_mode, _detect, _bus, _addr)	VDF_HANNSTAR7(_mode, "M101NWWB", RGB24, 0, _detect, _bus, _addr)
-#define VD_LD101WX1(_mode, _detect, _bus, _addr)	VDF_HANNSTAR7(_mode, "ld101wx1", RGB24, 0, _detect, _bus, _addr)
-#define VD_DT070BTFT(_mode, _detect, _bus, _addr)	VDF_DT070BTFT(_mode, "dt070btft", RGB24, FBF_JEIDA, _detect, _bus, _addr)
-#define VD_PM9598(_mode, _detect, _bus, _addr)		VDF_PM9598(_mode, "pm9598", RGB24, FBF_JEIDA, _detect, _bus, _addr)
-#define VD_WSVGA(_mode, _detect, _bus, _addr)		VDF_WSVGA(_mode, "wsvga", RGB666, 0, _detect, _bus, _addr)
-#define VD_ASIT500MA6F5D(_mode, _detect, _bus, _addr)	VDF_ASIT500MA6F5D(_mode, "ASIT500MA6F5D", RGB24, FBF_MODESTR, _detect, _bus, _addr)
-#define VD_FUSION7(_mode, _detect, _bus, _addr)		VDF_FUSION7(_mode, "fusion7", RGB666, FBF_MODESTR, _detect, _bus, _addr)
-#define VD_HANNSTAR(_mode, _detect, _bus, _addr)	VDF_HANNSTAR(_mode, "hannstar", RGB666, 0, _detect, _bus, _addr)
-#define VD_1024_600(_mode, _detect, _bus, _addr)	VDF_1024_600(_mode, "1024x600", RGB666, 0, _detect, _bus, _addr)
-#define VD_AFK1024600A02(_mode, _detect, _bus, _addr)	VDF_AFK1024600A02(_mode, "AFK1024600A02", RGB24, 0, _detect, _bus, _addr)
-#define VD_LG9_7(_mode, _detect, _bus, _addr)		VDF_LG9_7(_mode, "lg9.7", RGB666, 0, _detect, _bus, _addr)
-#define VD_1080P60(_mode, _detect, _bus, _addr)		VDF_1080P60(_mode, "1080P60", RGB24, FBF_SPLITMODE, _detect, _bus, _addr)
-#define VD_1080P60_J(_mode, _detect, _bus, _addr)	VDF_1080P60(_mode, "1080P60_J", RGB24, FBF_SPLITMODE | FBF_JEIDA, _detect, _bus, _addr)
-#define VD_DV210FBM(_mode, _detect, _bus, _addr)	VDF_DV210FBM(_mode, "dv210fbm", RGB24, FBF_SPLITMODE, _detect, _bus, _addr)
-#define VD_SHARP_LQ101K1LY04(_mode, _detect, _bus, _addr) VDF_SHARP_LQ101K1LY04(_mode, "sharp-LQ101K1LY04", RGB24, FBF_JEIDA, _detect, _bus, _addr)
-#define VD_WXGA(_mode, _detect, _bus, _addr)		VDF_WXGA(_mode, "wxga", RGB24, 0, _detect, _bus, _addr)
-#define VD_WXGA_J(_mode, _detect, _bus, _addr)		VDF_WXGA(_mode, "wxga_j", RGB24, FBF_JEIDA, _detect, _bus, _addr)
-#define VD_LTK080A60A004T(_mode, _detect, _bus, _addr)	VDF_LTK080A60A004T(_mode, "ltk080a60a004t", RGB24, FBF_LTK080A60A004T, _detect, _bus, _addr)
-#define VD_LTK0680YTMDB(_mode, _detect, _bus, _addr)	VDF_LTK0680YTMDB(_mode, "ltk0680ytmdb", RGB24, FB_##_mode == FB_LCD ? FBF_LTK0680YTMDB_LCD : FBF_LTK0680YTMDB, _detect, _bus, _addr)
+#define VD_AM_1280800P2TZQW(_mode, args...)	VDF_AM_1280800P2TZQW(_mode, "AM-1280800P2TZQW", RGB24, FBF_BKLIT_DTB, args)
+#define VD_TM070JDHG30(_mode, args...)		VDF_TM070JDHG30(_mode, "tm070jdhg30", RGB24, 0, args)
+#define VD_AUO_B101EW05(_mode, args...)		VDF_AUO_B101EW05(_mode, "auo_b101ew05", RGB666, 0, args)
+#define VD_HANNSTAR7(_mode, args...)		VDF_HANNSTAR7(_mode, "hannstar7", RGB666, 0, args)
+#define VD_LG1280_800(_mode, args...)		VDF_HANNSTAR7(_mode, "lg1280x800", RGB666, 0, args)
+#define VD_M101NWWB(_mode, args...)		VDF_HANNSTAR7(_mode, "M101NWWB", RGB24, 0, args)
+#define VD_LD101WX1(_mode, args...)		VDF_HANNSTAR7(_mode, "ld101wx1", RGB24, 0, args)
+#define VD_DT070BTFT(_mode, args...)		VDF_DT070BTFT(_mode, "dt070btft", RGB24, FBF_JEIDA, args)
+#define VD_PM9598(_mode, args...)		VDF_PM9598(_mode, "pm9598", RGB24, FBF_JEIDA, args)
+#define VD_WSVGA(_mode, args...)		VDF_WSVGA(_mode, "wsvga", RGB666, 0, args)
+#define VD_ASIT500MA6F5D(_mode, args...)	VDF_ASIT500MA6F5D(_mode, "ASIT500MA6F5D", RGB24, FBF_MODESTR, args)
+#define VD_FUSION7(_mode, args...)		VDF_FUSION7(_mode, "fusion7", RGB666, FBF_MODESTR, args)
+#define VD_HANNSTAR(_mode, args...)		VDF_HANNSTAR(_mode, "hannstar", RGB666, 0, args)
+#define VD_1024_600(_mode, args...)		VDF_1024_600(_mode, "1024x600", RGB666, 0, args)
+#define VD_AFK1024600A02(_mode, args...)	VDF_AFK1024600A02(_mode, "AFK1024600A02", RGB24, 0, args)
+#define VD_LG9_7(_mode, args...)		VDF_LG9_7(_mode, "lg9.7", RGB666, 0, args)
+#define VD_1080P60(_mode, args...)		VDF_1080P60(_mode, "1080P60", RGB24, FBF_SPLITMODE, args)
+#define VD_1080P60_J(_mode, args...)		VDF_1080P60(_mode, "1080P60_J", RGB24, FBF_SPLITMODE | FBF_JEIDA, args)
+#define VD_DV210FBM(_mode, args...)		VDF_DV210FBM(_mode, "dv210fbm", RGB24, FBF_SPLITMODE, args)
+#define VD_SHARP_LQ101K1LY04(_mode, args...)	VDF_SHARP_LQ101K1LY04(_mode, "sharp-LQ101K1LY04", RGB24, FBF_JEIDA, args)
+#define VD_WXGA(_mode, args...)			VDF_WXGA(_mode, "wxga", RGB24, 0, args)
+#define VD_WXGA_J(_mode, args...)		VDF_WXGA(_mode, "wxga_j", RGB24, FBF_JEIDA, args)
+#define VD_LTK080A60A004T(_mode, args...)	VDF_LTK080A60A004T(_mode, "ltk080a60a004t", RGB24, FBF_LTK080A60A004T, args)
+#define VD_LTK0680YTMDB(_mode, args...)		VDF_LTK0680YTMDB(_mode, "ltk0680ytmdb", RGB24, FB_##_mode == FB_LCD ? FBF_LTK0680YTMDB_LCD : FBF_LTK0680YTMDB, args)
 
 
-#define VD_MIPI_G156HCE_L01(_mode, _detect, _bus, _addr)	VDF_MIPI_G156HCE_L01(_mode, "G156HCE-L01", RGB24, FBF_G156HCE_L01, _detect, _bus, _addr)
-#define VD_MIPI_COM50H5N03ULC(_mode, _detect, _bus, _addr)	VDF_MIPI_COM50H5N03ULC(_mode, "com50h5n03ulc", RGB24, FBF_COM50H5N03ULC, _detect, _bus, _addr)
-#define VD_MIPI_M101NWWB_NO_CMDS(_mode, _detect, _bus, _addr)	VDF_MIPI_M101NWWB(_mode, "m101nwwb", RGB24, FBF_M101NWWB_NO_CMDS, _detect, _bus, _addr)
-#define VD_MIPI_M101NWWB(_mode, _detect, _bus, _addr)	VDF_MIPI_M101NWWB(_mode, "m101nwwb", RGB24, FBF_M101NWWB, _detect, _bus, _addr)
-#define VD_LD070WSVGA(_mode, _detect, _bus, _addr)	VDF_LD070WSVGA(_mode, "ld070wsvga", RGB24, 0, _detect, _bus, _addr)
-#define VD_SVGA(_mode, _detect, _bus, _addr)		VDF_SVGA(_mode, "svga", RGB666, FBF_MODESTR, _detect, _bus, _addr)
-#define VD_WVGA_TX23D200_24(_mode, _detect, _bus, _addr) VDF_WVGA_TX23D200(_mode, "tx23d200_24", RGB24, 0, _detect, _bus, _addr)
-#define VD_WVGA_TX23D200_24H(_mode, _detect, _bus, _addr) VDF_WVGA_TX23D200(_mode, "tx23d200_24h", RGB24, FBF_BKLIT_DTB, _detect, _bus, _addr)
-#define VD_WVGA_TX23D200_24L(_mode, _detect, _bus, _addr) VDF_WVGA_TX23D200(_mode, "tx23d200_24l", RGB24, FBF_BKLIT_DTB | FBF_BKLIT_LOW_ACTIVE, _detect, _bus, _addr)
-#define VD_WVGA_TX23D200_18(_mode, _detect, _bus, _addr) VDF_WVGA_TX23D200(_mode, "tx23d200_18", RGB666, 0, _detect, _bus, _addr)
-#define VD_WVGA_TX23D200_18H(_mode, _detect, _bus, _addr) VDF_WVGA_TX23D200(_mode, "tx23d200_18h", RGB666, FBF_BKLIT_DTB, _detect, _bus, _addr)
-#define VD_WVGA_TX23D200_18L(_mode, _detect, _bus, _addr) VDF_WVGA_TX23D200(_mode, "tx23d200_18l", RGB666, FBF_BKLIT_DTB | FBF_BKLIT_LOW_ACTIVE, _detect, _bus, _addr)
-#define VD_WVGA(_mode, _detect, _bus, _addr)		VDF_WVGA(_mode, "wvga", RGB666, 0, _detect, _bus, _addr)
-#define VD_WVGA_J(_mode, _detect, _bus, _addr)		VDF_WVGA(_mode, "wvga_j", RGB24, FBF_JEIDA, _detect, _bus, _addr)
-#define VD_AA065VE11(_mode, _detect, _bus, _addr)	VDF_AA065VE11(_mode, "AA065VE11", RGB24, 0, _detect, _bus, _addr)
-#define VD_VGA(_mode, _detect, _bus, _addr)		VDF_VGA(_mode, "vga", RGB24, 0, _detect, _bus, _addr)
-#define VD_LSA40AT9001(_mode, _detect, _bus, _addr)	VDF_LSA40AT9001(_mode, "LSA40AT9001", RGB24, FBF_MODESTR, _detect, _bus, _addr)
-#define VD_AUO_G050(_mode, _detect, _bus, _addr)	VDF_AUO_G050(_mode, "AUO_G050", RGB24, FBF_MODESTR | FBF_SPI, _detect, _bus, _addr)
-#define VD_OSD050T3236(_mode, _detect, _bus, _addr)	VDF_OSD050T3236(_mode, "osd050t3236", RGB24, FBF_OSD050T, _detect, _bus, _addr)
-#define VD_OSD050T3872(_mode, _detect, _bus, _addr)	VDF_OSD050T3872(_mode, "osd050t3872", RGB24, FBF_OSD050T, _detect, _bus, _addr)
-#define VD_A030JN01_UPS051(_mode, _detect, _bus, _addr)	VDF_A030JN01_UPS051(_mode, "A030JN01_UPS051", UPS051, FBF_MODESTR | FBF_SPI, _detect, _bus, _addr)
-#define VD_A030JN01_YUV720(_mode, _detect, _bus, _addr) VDF_A030JN01_YUV720(_mode, "A030JN01_YUV720", YUYV, FBF_MODESTR | FBF_SPI, _detect, _bus, _addr)
-#define VD_KD024FM(_mode, _detect, _bus, _addr)		VDF_KD024FM(_mode, "KD024FM", RGB666, FBF_MODESTR, _detect, _bus, _addr)
+#define VD_MIPI_G156HCE_L01(_mode, args...)	VDF_MIPI_G156HCE_L01(_mode, "G156HCE-L01", RGB24, FBF_G156HCE_L01, args)
+#define VD_MIPI_COM50H5N03ULC(_mode, args...)	VDF_MIPI_COM50H5N03ULC(_mode, "com50h5n03ulc", RGB24, FBF_COM50H5N03ULC, args)
+#define VD_MIPI_M101NWWB_NO_CMDS(_mode, args...) VDF_MIPI_M101NWWB(_mode, "m101nwwb", RGB24, FBF_M101NWWB_NO_CMDS, args)
+#define VD_MIPI_M101NWWB(_mode, args...)	VDF_MIPI_M101NWWB(_mode, "m101nwwb", RGB24, FBF_M101NWWB, args)
+#define VD_LD070WSVGA(_mode, args...)		VDF_LD070WSVGA(_mode, "ld070wsvga", RGB24, 0, args)
+#define VD_SVGA(_mode, args...)			VDF_SVGA(_mode, "svga", RGB666, FBF_MODESTR, args)
+#define VD_WVGA_TX23D200_24(_mode, args...)	VDF_WVGA_TX23D200(_mode, "tx23d200_24", RGB24, 0, args)
+#define VD_WVGA_TX23D200_24H(_mode, args...)	VDF_WVGA_TX23D200(_mode, "tx23d200_24h", RGB24, FBF_BKLIT_DTB, args)
+#define VD_WVGA_TX23D200_24L(_mode, args...)	VDF_WVGA_TX23D200(_mode, "tx23d200_24l", RGB24, FBF_BKLIT_DTB | FBF_BKLIT_LOW_ACTIVE, args)
+#define VD_WVGA_TX23D200_18(_mode, args...)	VDF_WVGA_TX23D200(_mode, "tx23d200_18", RGB666, 0, args)
+#define VD_WVGA_TX23D200_18H(_mode, args...)	VDF_WVGA_TX23D200(_mode, "tx23d200_18h", RGB666, FBF_BKLIT_DTB, args)
+#define VD_WVGA_TX23D200_18L(_mode, args...)	VDF_WVGA_TX23D200(_mode, "tx23d200_18l", RGB666, FBF_BKLIT_DTB | FBF_BKLIT_LOW_ACTIVE, args)
+#define VD_WVGA(_mode, args...)			VDF_WVGA(_mode, "wvga", RGB666, 0, args)
+#define VD_WVGA_J(_mode, args...)		VDF_WVGA(_mode, "wvga_j", RGB24, FBF_JEIDA, args)
+#define VD_AA065VE11(_mode, args...)		VDF_AA065VE11(_mode, "AA065VE11", RGB24, 0, args)
+#define VD_VGA(_mode, args...)			VDF_VGA(_mode, "vga", RGB24, 0, args)
+#define VD_LSA40AT9001(_mode, args...)		VDF_LSA40AT9001(_mode, "LSA40AT9001", RGB24, FBF_MODESTR, args)
+#define VD_AUO_G050(_mode, args...)		VDF_AUO_G050(_mode, "AUO_G050", RGB24, FBF_MODESTR | FBF_SPI, args)
+#define VD_OSD050T3236(_mode, args...)		VDF_OSD050T3236(_mode, "osd050t3236", RGB24, FBF_OSD050T, args)
+#define VD_OSD050T3872(_mode, args...)		VDF_OSD050T3872(_mode, "osd050t3872", RGB24, FBF_OSD050T, args)
+#define VD_A030JN01_UPS051(_mode, args...)	VDF_A030JN01_UPS051(_mode, "A030JN01_UPS051", UPS051, FBF_MODESTR | FBF_SPI, args)
+#define VD_A030JN01_YUV720(_mode, args...)	VDF_A030JN01_YUV720(_mode, "A030JN01_YUV720", YUYV, FBF_MODESTR | FBF_SPI, args)
+#define VD_KD024FM(_mode, args...)		VDF_KD024FM(_mode, "KD024FM", RGB666, FBF_MODESTR, args)
 
-#define VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr) \
+#define VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr, args...) \
 	.bus	= _bus,\
 	.addr	= _addr,\
 	.pixfmt	= IPU_PIX_FMT_##_fmt,\
 	.detect	= _detect,\
 	.enable	= fbp_enable_fb,\
 	.fbtype = FB_##_mode,\
-	.fbflags = _flags
+	.fbflags = _flags, \
+	.enable_alias = {args} \
 
 /* hdmi settings */
-#define VDF_1280_800M_60(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_1280_800M_60(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
@@ -225,9 +238,9 @@ void fbp_setup_env_cmds(void);
 	}\
 }
 
-#define VDF_1280_720M_60(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_1280_720M_60(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
@@ -245,9 +258,9 @@ void fbp_setup_env_cmds(void);
 	}\
 }
 
-#define VDF_1920_1080M_60(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_1920_1080M_60(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
@@ -266,9 +279,9 @@ void fbp_setup_env_cmds(void);
 }
 
 
-#define VDF_1024_768M_60(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_1024_768M_60(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
@@ -286,9 +299,9 @@ void fbp_setup_env_cmds(void);
 	}\
 }
 
-#define VDF_800_600MR_60(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_800_600MR_60(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
@@ -306,9 +319,9 @@ void fbp_setup_env_cmds(void);
 	}\
 }
 
-#define VDF_640_480M_60(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_640_480M_60(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
@@ -326,9 +339,9 @@ void fbp_setup_env_cmds(void);
 	}\
 }
 
-#define VDF_720_480M_60(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_720_480M_60(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
@@ -347,9 +360,9 @@ void fbp_setup_env_cmds(void);
 }
 
 /* tsc2004 */
-#define VDF_CLAA_WVGA(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_CLAA_WVGA(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 57,\
@@ -369,9 +382,9 @@ void fbp_setup_env_cmds(void);
 
 /* tsc2004 */
 /* keep compatible with LQ050Y3DC01 */
-#define VDF_SHARP_WVGA(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_SHARP_WVGA(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
@@ -389,9 +402,9 @@ void fbp_setup_env_cmds(void);
 	}\
 }
 
-#define VDF_TFC_A9700LTWV35TC_C1(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_TFC_A9700LTWV35TC_C1(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
@@ -416,9 +429,9 @@ void fbp_setup_env_cmds(void);
  * hsync = 260 * vsync = 15.6 Khz
  * pixclk = 800 * hsync = 12.48 MHz
  */
-#define VDF_800X300(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_800X300(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name		= _name,\
 		.refresh	= 60,\
@@ -442,9 +455,9 @@ void fbp_setup_env_cmds(void);
  * hsync = 260 * vsync = 15.6 Khz
  * pixclk = 800 * hsync = 12.48 MHz
  */
-#define VDF_HITACHI_HVGA(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_HITACHI_HVGA(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name		= _name,\
 		.refresh	= 60,\
@@ -462,9 +475,9 @@ void fbp_setup_env_cmds(void);
 	}\
 }
 
-#define VDF_NEON_TOUCH640X240(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_NEON_TOUCH640X240(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name		= _name,\
 		.refresh	= 60,\
@@ -483,9 +496,9 @@ void fbp_setup_env_cmds(void);
 }
 
 /* tsc2004 */
-#define VDF_DC050WX(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_DC050WX(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
@@ -505,9 +518,9 @@ void fbp_setup_env_cmds(void);
 
 
 /* INNOLUX model N140BGE, 18 bit LVDS */
-#define VDF_INNOLUX_WXGA_14IN_12V(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_INNOLUX_WXGA_14IN_12V(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name		= _name,\
 		.refresh	= 60,\
@@ -526,9 +539,9 @@ void fbp_setup_env_cmds(void);
 }
 
 /* AUO model B116XAN03.0, 11.6", 1366x768, 24 bit lvds */
-#define VDF_AUO_WXGA_11IN_12V(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_AUO_WXGA_11IN_12V(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name		= _name,\
 		.refresh	= 60,\
@@ -547,9 +560,9 @@ void fbp_setup_env_cmds(void);
 }
 
 /* OSD model OSD101T1315-45, 18 bit LVDS*/
-#define VDF_OSD_WSVGA(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_OSD_WSVGA(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name		= _name,\
 		.refresh	= 60,\
@@ -568,9 +581,9 @@ void fbp_setup_env_cmds(void);
 }
 
 /* INNOLUX model AT070TN83, 800x480  18 bit RGB with or without LVDS converter board */
-#define VDF_INNOLUX_WVGA(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_INNOLUX_WVGA(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name		= _name,\
 		.refresh	= 60,\
@@ -588,9 +601,9 @@ void fbp_setup_env_cmds(void);
 	}\
 }
 
-#define VDF_LB043(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_LB043(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 57,\
@@ -608,9 +621,9 @@ void fbp_setup_env_cmds(void);
 	},\
 }
 
-#define VDF_OKAYA_480_272(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_OKAYA_480_272(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name		= _name,\
 		.refresh	= 57,\
@@ -628,9 +641,9 @@ void fbp_setup_env_cmds(void);
 	}\
 }
 
-#define VDF_LCM_JM430(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_LCM_JM430(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name		= _name,\
 		.refresh	= 60,\
@@ -648,9 +661,9 @@ void fbp_setup_env_cmds(void);
 	}\
 }
 
-#define VDF_LCM_JM430_MINI(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_LCM_JM430_MINI(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name		= _name,\
 		.refresh	= 60,\
@@ -669,9 +682,9 @@ void fbp_setup_env_cmds(void);
 }
 
 /* tsc2004 */
-#define VDF_QVGA(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_QVGA(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
@@ -689,9 +702,9 @@ void fbp_setup_env_cmds(void);
 	}\
 }
 
-#define VDF_SPI_QVGA(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_SPI_QVGA(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
@@ -710,9 +723,9 @@ void fbp_setup_env_cmds(void);
 }
 
 /* tsc2004 */
-#define VDF_DT035BTFT(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_DT035BTFT(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
@@ -730,9 +743,9 @@ void fbp_setup_env_cmds(void);
 	}\
 }
 
-#define VDF_AT035GT_07ET3(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_AT035GT_07ET3(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
@@ -751,9 +764,9 @@ void fbp_setup_env_cmds(void);
 }
 
 /* ili210x touch screen */
-#define VDF_AMP1024_600(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_AMP1024_600(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
@@ -772,9 +785,9 @@ void fbp_setup_env_cmds(void);
 }
 
 /* ft5x06 touch screen */
-#define VDF_ND1024_600(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_ND1024_600(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
@@ -792,9 +805,9 @@ void fbp_setup_env_cmds(void);
 	}\
 }
 
-#define VDF_AM_1280800P2TZQW(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_AM_1280800P2TZQW(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.pwm_period = 100000, \
 	.mode	= {\
 		.name           = _name,\
@@ -815,9 +828,9 @@ void fbp_setup_env_cmds(void);
 
 /* ft5x06 touch screen */
 /* Tianma panel TM070JDHG30 is a 24 bit spwg panel */
-#define VDF_TM070JDHG30(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_TM070JDHG30(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.pwm_period = 32000, \
 	.mode	= {\
 		.name           = _name,\
@@ -837,9 +850,9 @@ void fbp_setup_env_cmds(void);
 }
 
 /* Tianma panel TM070JDHG30 is a 24 bit spwg panel */
-#define VDF_MIPI_TM070JDHG30(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_MIPI_TM070JDHG30(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.pwm_period = 32000, \
 	.mode	= {\
 		.name           = _name,\
@@ -858,9 +871,9 @@ void fbp_setup_env_cmds(void);
 	}\
 }
 
-#define VDF_AUO_B101EW05(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_AUO_B101EW05(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
@@ -881,9 +894,9 @@ void fbp_setup_env_cmds(void);
 /* ft5x06_ts */
 /* lg1280x800(LP101WX1) == hannstar7 */
 /* LG panel LD101WX1 is a 24 bit spwg panel */
-#define VDF_HANNSTAR7(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_HANNSTAR7(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
@@ -902,9 +915,9 @@ void fbp_setup_env_cmds(void);
 }
 
 /* ft5x06_ts */
-#define VDF_DT070BTFT(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_DT070BTFT(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
@@ -922,9 +935,9 @@ void fbp_setup_env_cmds(void);
 	}\
 }
 
-#define VDF_PM9598(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_PM9598(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
@@ -943,9 +956,9 @@ void fbp_setup_env_cmds(void);
 }
 
 /* ft5x06_ts */
-#define VDF_WSVGA(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_WSVGA(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
@@ -964,9 +977,9 @@ void fbp_setup_env_cmds(void);
 }
 
 /* Also works for ER-TFT050-3 */
-#define VDF_ASIT500MA6F5D(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_ASIT500MA6F5D(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.pwm_period = 100000, \
 	.mode	= {\
 		.name           = _name,\
@@ -986,9 +999,9 @@ void fbp_setup_env_cmds(void);
 }
 
 /* fusion7 */
-#define VDF_FUSION7(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_FUSION7(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
@@ -1007,9 +1020,9 @@ void fbp_setup_env_cmds(void);
 }
 
 /* egalax_ts */
-#define VDF_HANNSTAR(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_HANNSTAR(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
@@ -1027,9 +1040,9 @@ void fbp_setup_env_cmds(void);
 	}\
 }
 
-#define VDF_1024_600(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_1024_600(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
@@ -1047,9 +1060,9 @@ void fbp_setup_env_cmds(void);
 	}\
 }
 
-#define VDF_AFK1024600A02(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_AFK1024600A02(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
@@ -1068,9 +1081,9 @@ void fbp_setup_env_cmds(void);
 }
 
 /* egalax_ts */
-#define VDF_LG9_7(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_LG9_7(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
@@ -1088,9 +1101,9 @@ void fbp_setup_env_cmds(void);
 	}\
 }
 
-#define VDF_1080P60(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_1080P60(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
@@ -1108,9 +1121,9 @@ void fbp_setup_env_cmds(void);
 	}\
 }
 
-#define VDF_DV210FBM(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_DV210FBM(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
@@ -1128,9 +1141,9 @@ void fbp_setup_env_cmds(void);
 	}\
 }
 
-#define VDF_MIPI_G156HCE_L01(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_MIPI_G156HCE_L01(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
@@ -1148,9 +1161,9 @@ void fbp_setup_env_cmds(void);
 	}\
 }
 
-#define VDF_SHARP_LQ101K1LY04(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_SHARP_LQ101K1LY04(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
@@ -1168,9 +1181,9 @@ void fbp_setup_env_cmds(void);
 	}\
 }
 
-#define VDF_WXGA(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_WXGA(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
@@ -1189,9 +1202,9 @@ void fbp_setup_env_cmds(void);
 }
 
 
-#define VDF_LTK0680YTMDB(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_LTK0680YTMDB(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
@@ -1209,9 +1222,9 @@ void fbp_setup_env_cmds(void);
 	}\
 }
 
-#define VDF_LTK080A60A004T(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_LTK080A60A004T(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
@@ -1229,9 +1242,9 @@ void fbp_setup_env_cmds(void);
 	}\
 }
 
-#define VDF_MIPI_COM50H5N03ULC(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_MIPI_COM50H5N03ULC(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
@@ -1249,9 +1262,9 @@ void fbp_setup_env_cmds(void);
 	}\
 }
 
-#define VDF_MIPI_M101NWWB(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_MIPI_M101NWWB(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
@@ -1269,9 +1282,9 @@ void fbp_setup_env_cmds(void);
 	}\
 }
 
-#define VDF_LD070WSVGA(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_LD070WSVGA(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 55,\
@@ -1289,9 +1302,9 @@ void fbp_setup_env_cmds(void);
 	}\
 }
 
-#define VDF_SVGA(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_SVGA(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
@@ -1315,9 +1328,9 @@ void fbp_setup_env_cmds(void);
  * 1000000000/1056/525/35.35 = 51 frames/second
  * 1000000000/1056/525/28.6 =  63.068 frames/second
  */
-#define VDF_WVGA_TX23D200(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_WVGA_TX23D200(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
@@ -1335,9 +1348,9 @@ void fbp_setup_env_cmds(void);
 	}\
 }
 
-#define VDF_WVGA(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_WVGA(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
@@ -1355,9 +1368,9 @@ void fbp_setup_env_cmds(void);
 	}\
 }
 
-#define VDF_AA065VE11(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_AA065VE11(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 70,\
@@ -1375,9 +1388,9 @@ void fbp_setup_env_cmds(void);
 	}\
 }
 
-#define VDF_VGA(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_VGA(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
@@ -1395,9 +1408,9 @@ void fbp_setup_env_cmds(void);
 	}\
 }
 
-#define VDF_LSA40AT9001(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_LSA40AT9001(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
@@ -1416,9 +1429,9 @@ void fbp_setup_env_cmds(void);
 }
 
 /* spi panels */
-#define VDF_AUO_G050(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_AUO_G050(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
@@ -1438,9 +1451,9 @@ void fbp_setup_env_cmds(void);
 
 //640 * 3/2 = 960, (1.5 clocks per pixel)
 //33.7M
-#define VDF_A030JN01_UPS051(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_A030JN01_UPS051(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
@@ -1458,9 +1471,9 @@ void fbp_setup_env_cmds(void);
 	}\
 }
 
-#define VDF_OSD050T3236(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_OSD050T3236(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 52,\
@@ -1478,9 +1491,9 @@ void fbp_setup_env_cmds(void);
 	}\
 }
 
-#define VDF_OSD050T3872(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_OSD050T3872(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 52,\
@@ -1499,9 +1512,9 @@ void fbp_setup_env_cmds(void);
 }
 
 /* 27.11 MHz pixel clock */
-#define VDF_A030JN01_YUV720(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_A030JN01_YUV720(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode   = {\
 		.name           = _name,\
 		.refresh        = 60,\
@@ -1519,9 +1532,9 @@ void fbp_setup_env_cmds(void);
 	}\
 }
 
-#define VDF_KD024FM(_mode, _name, _fmt, _flags, _detect, _bus, _addr) \
+#define VDF_KD024FM(_mode, _name, _fmt, _flags, args...) \
 {\
-	VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr),\
+	VD_HEADER(_mode, _fmt, _flags, args),\
 	.pre_enable = board_pre_enable, \
 	.pwm_period = 100000, \
 	.mode   = {\
