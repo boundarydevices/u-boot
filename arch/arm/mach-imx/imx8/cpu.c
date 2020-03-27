@@ -26,6 +26,7 @@
 #include <asm/setup.h>
 #include <asm/mach-imx/boot_mode.h>
 #include <spl.h>
+#include <usb/ci_udc.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
