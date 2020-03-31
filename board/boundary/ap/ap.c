@@ -502,8 +502,8 @@ static const struct display_info_t displays[] = {
 	VD_1024_768M_60(HDMI, NULL, 1, 0x50),
 
 	/* 0x0c is a serializer */
-	VD_TFC_A9700LTWV35TC_C1(LVDS, fbp_detect_serializer, 2, 0x0c),
-	VD_TFC_A9700LTWV35TC_C1(LVDS2, fbp_detect_serializer, 1, 0x0c),
+	VD_TFC_A9700LTWV35TC_C1(LVDS, fbp_detect_serializer, 2, 0x0c, FBTS_GOODIX),
+	VD_TFC_A9700LTWV35TC_C1(LVDS2, fbp_detect_serializer, 1, 0x0c, FBTS_GOODIX2),
 };
 #define display_cnt	ARRAY_SIZE(displays)
 #else
