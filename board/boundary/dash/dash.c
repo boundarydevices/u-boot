@@ -204,9 +204,9 @@ void board_enable_lvds(const struct display_info_t *di, int enable)
 static const struct display_info_t displays[] = {
 	VD_WXGA_J(LVDS, NULL, 0, 0x00),
 	VD_WXGA(LVDS, NULL, 0, 0x00),
-	VD_HANNSTAR(LVDS, fbp_detect_i2c, 2, 0x04),
+	VD_HANNSTAR(LVDS, fbp_detect_i2c, 2, 0x04, FBTS_EGALAX),
 	VD_LG9_7(LVDS, NULL, 2, 0x04),
-	VD_WSVGA(LVDS, fbp_detect_i2c, 2, 0x38),
+	VD_WSVGA(LVDS, fbp_detect_i2c, 2, 0x38, FBTS_FT5X06),
 };
 #define display_cnt	ARRAY_SIZE(displays)
 
