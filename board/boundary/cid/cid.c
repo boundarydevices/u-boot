@@ -593,8 +593,8 @@ void hw_watchdog_reset(void)
 #ifdef CONFIG_CMD_FBPANEL
 
 static const struct display_info_t displays[] = {
-	VD_OSD050T3236(MIPI, NULL, fbp_bus_gp(1, 0, 0, 0), 0x4a),
-	VD_OSD050T3872(MIPI, NULL, fbp_bus_gp(1, 0, 0, 0), 0x4a),
+	VD_OSD050T3236(MIPI, NULL, fbp_bus_gp(1, 0, 0, 0), 0x4a, FBTS_ATMEL_MT),
+	VD_OSD050T3872(MIPI, NULL, fbp_bus_gp(1, 0, 0, 0), 0x4a, FBTS_ATMEL_MT),
 };
 #define display_cnt	ARRAY_SIZE(displays)
 #else
