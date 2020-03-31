@@ -403,7 +403,7 @@ static const struct display_info_t displays[] = {
 	VD_WVGA_TX23D200_18H(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
 	VD_WVGA_TX23D200_24L(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
 	VD_WVGA_TX23D200_24H(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
-	VD_AM_1280800P2TZQW(LVDS, board_detect_lvds, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x24),
+	VD_AM_1280800P2TZQW(LVDS, board_detect_lvds, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x24, FBTS_CYTTSP5),
 
 	/* hdmi */
 	VD_1280_720M_60(HDMI, fbp_detect_i2c, 1, 0x50),
