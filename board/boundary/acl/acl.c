@@ -428,7 +428,7 @@ void board_pre_enable(const struct display_info_t *di)
 }
 
 static const struct display_info_t displays[] = {
-	VD_ASIT500MA6F5D(LCD, NULL, 1, 0x40),
+	VD_ASIT500MA6F5D(LCD, NULL, 1, 0x40, FBTS_GSL1680),
 };
 #define display_cnt	ARRAY_SIZE(displays)
 #else
