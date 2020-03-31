@@ -334,18 +334,18 @@ void board_enable_lcd(const struct display_info_t *di, int enable)
 
 static const struct display_info_t displays[] = {
 	/* tsc2004 */
-	VDF_DC050WX(LCD, "DC050WX", RGB24, 0, NULL, 2, 0x48),
-	VDF_CLAA_WVGA(LCD, "CLAA-WVGA", RGB666, 0, fbp_detect_i2c, 2, 0x48),
-	VDF_SHARP_WVGA(LCD, "sharp-wvga", RGB24, 0, NULL, 2, 0x48),
-	VDF_QVGA(LCD, "qvga", RGB24, 0, NULL, 2, 0x48),
-	VDF_AT035GT_07ET3(LCD, "AT035GT-07ET3", RGB24, 0, NULL, 2, 0x48),
+	VDF_DC050WX(LCD, "DC050WX", RGB24, 0, NULL, 2, 0x48, FBTS_TSC2004),
+	VDF_CLAA_WVGA(LCD, "CLAA-WVGA", RGB666, 0, fbp_detect_i2c, 2, 0x48, FBTS_TSC2004),
+	VDF_SHARP_WVGA(LCD, "sharp-wvga", RGB24, 0, NULL, 2, 0x48, FBTS_TSC2004),
+	VDF_QVGA(LCD, "qvga", RGB24, 0, NULL, 2, 0x48, FBTS_TSC2004),
+	VDF_AT035GT_07ET3(LCD, "AT035GT-07ET3", RGB24, 0, NULL, 2, 0x48, FBTS_TSC2004),
 
 	VDF_1280_720M_60(LCD, "1280x720M@60", RGB24, 0, fbp_detect_i2c, 2, 0x50),
 	VDF_1920_1080M_60(LCD, "1920x1080M@60", RGB24, 0, NULL, 2, 0x50),
 	VDF_1024_768M_60(LCD, "1024x768M@60", RGB24, 0, NULL, 2, 0x50),
 
 	/* fusion7 specific touchscreen */
-	VDF_FUSION7(LCD, "fusion7", RGB666, 0, fbp_detect_i2c, 2, 0x10),
+	VDF_FUSION7(LCD, "fusion7", RGB666, 0, fbp_detect_i2c, 2, 0x10, FBTS_FUSION7),
 
 	VDF_LSA40AT9001(LCD, "LSA40AT9001", RGB24, 0, NULL, 0, 0x00),
 };
