@@ -284,14 +284,14 @@ static const struct display_info_t displays[] = {
 	VD_1024_768M_60(HDMI, NULL, 1, 0x50),
 
 	/* egalax_ts */
-	VD_HANNSTAR(LVDS, fbp_detect_i2c, 2, 0x04),
+	VD_HANNSTAR(LVDS, fbp_detect_i2c, 2, 0x04, FBTS_EGALAX),
 
 	/* ft5x06 */
-	VD_WSVGA(LVDS, fbp_detect_i2c, 2, 0x38),
+	VD_WSVGA(LVDS, fbp_detect_i2c, 2, 0x38, FBTS_FT5X06),
 
 	/* tsc2004 */
-	VD_CLAA_WVGA(LCD, fbp_detect_i2c, 2, 0x48),
-	VD_QVGA(LCD, NULL, 2, 0x48),
+	VD_CLAA_WVGA(LCD, fbp_detect_i2c, 2, 0x48, FBTS_TSC2004),
+	VD_QVGA(LCD, NULL, 2, 0x48, FBTS_TSC2004),
 
 	VD_WXGA_J(LVDS, NULL, 0, 0x00),
 };
