@@ -398,7 +398,7 @@ static const struct display_info_t displays[] = {
 	VD_1024_768M_60(HDMI, NULL, 1, 0x50),
 
 	/* tsc2004 */
-	VD_OKAYA_480_272(LCD, fbp_detect_i2c, 2, 0x48),
+	VD_OKAYA_480_272(LCD, fbp_detect_i2c, 2, 0x48, FBTS_TSC2004),
 };
 #define display_cnt	ARRAY_SIZE(displays)
 #else
