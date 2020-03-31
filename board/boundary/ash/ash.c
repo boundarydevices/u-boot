@@ -446,7 +446,7 @@ static const struct display_info_t displays[] = {
 	VD_WVGA_TX23D200_18H(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
 	VD_WVGA_TX23D200_24L(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
 	VD_WVGA_TX23D200_24H(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
-	VD_AM_1280800P2TZQW(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x24),
+	VD_AM_1280800P2TZQW(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x24, FBTS_CYTTSP5),
 
 	/* hdmi */
 	VD_1280_720M_60(HDMI, fbp_detect_i2c, 1, 0x50),
@@ -454,12 +454,12 @@ static const struct display_info_t displays[] = {
 	VD_1024_768M_60(HDMI, NULL, 1, 0x50),
 
 	/* tsc2004 */
-	VD_CLAA_WVGA(LCD, fbp_detect_i2c, 2, 0x48),
-	VD_SHARP_WVGA(LCD, NULL, 2, 0x48),
-	VD_DC050WX(LCD, NULL, 2, 0x48),
+	VD_CLAA_WVGA(LCD, fbp_detect_i2c, 2, 0x48, FBTS_TSC2004),
+	VD_SHARP_WVGA(LCD, NULL, 2, 0x48, FBTS_TSC2004),
+	VD_DC050WX(LCD, NULL, 2, 0x48, FBTS_TSC2004),
 
 	/* fusion7 specific touchscreen */
-	VD_FUSION7(LCD, fbp_detect_i2c, 2, 0x10),
+	VD_FUSION7(LCD, fbp_detect_i2c, 2, 0x10, FBTS_FUSION7),
 };
 #define display_cnt	ARRAY_SIZE(displays)
 #else
