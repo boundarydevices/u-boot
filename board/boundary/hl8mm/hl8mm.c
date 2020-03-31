@@ -127,7 +127,7 @@ int ft_board_setup(void *blob, bd_t *bd)
 
 
 static const struct display_info_t displays[] = {
-	VD_MIPI_TM070JDHG30(MIPI, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_MIPI_TM070JDHG30(MIPI, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
 	VD_MIPI_640_480M_60(MIPI, fbp_detect_i2c, 1, 0x70),
 	VD_MIPI_1280_720M_60(MIPI, NULL, 1, 0x70),
 	VD_MIPI_1920_1080M_60(MIPI, NULL, 1, 0x70),
