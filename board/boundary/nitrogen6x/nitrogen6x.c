@@ -373,23 +373,23 @@ static const struct display_info_t displays[] = {
 	VD_720_480M_60(HDMI, NULL, 1, 0x50),
 
 	/* ft5x06 */
-	VD_HANNSTAR7(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
-	VD_AUO_B101EW05(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
-	VD_LG1280_800(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
-	VD_M101NWWB(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
-	VD_DT070BTFT(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
-	VD_WSVGA(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
-	VD_TM070JDHG30(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_HANNSTAR7(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
+	VD_AUO_B101EW05(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
+	VD_LG1280_800(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
+	VD_M101NWWB(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
+	VD_DT070BTFT(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
+	VD_WSVGA(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
+	VD_TM070JDHG30(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
 
 	/* ili210x */
-	VD_AMP1024_600(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x41),
+	VD_AMP1024_600(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x41, FBTS_ILI210X),
 
 	/* egalax_ts */
-	VD_HANNSTAR(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x04),
-	VD_LG9_7(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x04),
+	VD_HANNSTAR(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x04, FBTS_EGALAX),
+	VD_LG9_7(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x04, FBTS_EGALAX),
 
 	/* fusion7 specific touchscreen */
-	VD_FUSION7(LCD, fbp_detect_i2c, 2, 0x10),
+	VD_FUSION7(LCD, fbp_detect_i2c, 2, 0x10, FBTS_FUSION7),
 
 	VD_SHARP_LQ101K1LY04(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
 	VD_WXGA_J(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
@@ -401,12 +401,12 @@ static const struct display_info_t displays[] = {
 	VD_VGA(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
 
 	/* tsc2004 */
-	VD_CLAA_WVGA(LCD, fbp_detect_i2c, 2, 0x48),
-	VD_SHARP_WVGA(LCD, NULL, 2, 0x48),
-	VD_DC050WX(LCD, NULL, 2, 0x48),
-	VD_QVGA(LCD, NULL, 2, 0x48),
-	VD_DT035BTFT(LCD, NULL, 2, 0x48),
-	VD_AT035GT_07ET3(LCD, NULL, 2, 0x48),
+	VD_CLAA_WVGA(LCD, fbp_detect_i2c, 2, 0x48, FBTS_TSC2004),
+	VD_SHARP_WVGA(LCD, NULL, 2, 0x48, FBTS_TSC2004),
+	VD_DC050WX(LCD, NULL, 2, 0x48, FBTS_TSC2004),
+	VD_QVGA(LCD, NULL, 2, 0x48, FBTS_TSC2004),
+	VD_DT035BTFT(LCD, NULL, 2, 0x48, FBTS_TSC2004),
+	VD_AT035GT_07ET3(LCD, NULL, 2, 0x48, FBTS_TSC2004),
 
 	VD_LSA40AT9001(LCD, NULL, 0, 0x00),
 #ifdef CONFIG_MXC_SPI_DISPLAY
