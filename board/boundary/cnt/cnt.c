@@ -199,7 +199,7 @@ void board_enable_lvds(const struct display_info_t *di, int enable)
 }
 
 static const struct display_info_t displays[] = {
-	VD_LG1280_800(LVDS, NULL, 0, 0x38),
+	VD_LG1280_800(LVDS, NULL, 0, 0x4d, FBTS_ATMEL_MT),
 };
 #define display_cnt	ARRAY_SIZE(displays)
 #else
