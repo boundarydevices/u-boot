@@ -441,23 +441,23 @@ static const struct display_info_t displays[] = {
 	VDF_1024_768M_60(LCD, "1024x768M@60", RGB24, 0, NULL, 2, 0x50),
 
 	/* ft5x06 */
-	VD_HANNSTAR7(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
-	VD_AUO_B101EW05(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
-	VD_LG1280_800(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
-	VD_M101NWWB(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
-	VD_DT070BTFT(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
-	VD_WSVGA(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
-	VD_TM070JDHG30(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38),
+	VD_HANNSTAR7(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
+	VD_AUO_B101EW05(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
+	VD_LG1280_800(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
+	VD_M101NWWB(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
+	VD_DT070BTFT(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
+	VD_WSVGA(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
+	VD_TM070JDHG30(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
 
 	/* ili210x */
-	VD_AMP1024_600(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x41),
+	VD_AMP1024_600(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x41, FBTS_ILI210X),
 
 	/* egalax_ts */
-	VD_HANNSTAR(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x04),
-	VD_LG9_7(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x04),
+	VD_HANNSTAR(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x04, FBTS_EGALAX),
+	VD_LG9_7(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x04, FBTS_EGALAX),
 
 	/* fusion7 specific touchscreen */
-	VDF_FUSION7(LCD, "fusion7", RGB666, 0, fbp_detect_i2c, 2, 0x10),
+	VDF_FUSION7(LCD, "fusion7", RGB666, 0, fbp_detect_i2c, 2, 0x10, FBTS_FUSION7),
 
 	VD_SHARP_LQ101K1LY04(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
 	VD_WXGA_J(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
@@ -467,11 +467,11 @@ static const struct display_info_t displays[] = {
 	VD_VGA(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
 
 	/* tsc2004 */
-	VDF_CLAA_WVGA(LCD, "CLAA-WVGA", RGB666, 0, fbp_detect_i2c, 2, 0x48),
-	VDF_SHARP_WVGA(LCD, "sharp-wvga", RGB24, 0, NULL, 2, 0x48),
-	VDF_DC050WX(LCD, "DC050WX", RGB24, 0, NULL, 2, 0x48),
-	VDF_QVGA(LCD, "qvga", RGB24, 0, NULL, 2, 0x48),
-	VDF_AT035GT_07ET3(LCD, "AT035GT-07ET3", RGB24, 0, NULL, 2, 0x48),
+	VDF_CLAA_WVGA(LCD, "CLAA-WVGA", RGB666, 0, fbp_detect_i2c, 2, 0x48, FBTS_TSC2004),
+	VDF_SHARP_WVGA(LCD, "sharp-wvga", RGB24, 0, NULL, 2, 0x48, FBTS_TSC2004),
+	VDF_DC050WX(LCD, "DC050WX", RGB24, 0, NULL, 2, 0x48, FBTS_TSC2004),
+	VDF_QVGA(LCD, "qvga", RGB24, 0, NULL, 2, 0x48, FBTS_TSC2004),
+	VDF_AT035GT_07ET3(LCD, "AT035GT-07ET3", RGB24, 0, NULL, 2, 0x48, FBTS_TSC2004),
 
 	VDF_LSA40AT9001(LCD, "LSA40AT9001", RGB24, 0, NULL, 0, 0x00),
 };
