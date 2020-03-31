@@ -286,8 +286,8 @@ void board_enable_lvds2(const struct display_info_t *di, int enable)
 }
 
 static const struct display_info_t displays[] = {
-	VD_1024_600(LVDS, fbp_detect_i2c, 2, 0x04),
-	VD_INNOLUX_WVGA(LVDS2, fbp_detect_i2c, 2, 0x48),
+	VD_1024_600(LVDS, fbp_detect_i2c, 2, 0x04, FBTS_EGALAX),
+	VD_INNOLUX_WVGA(LVDS2, fbp_detect_i2c, 2, 0x48, FBTS_TSC2004),
 };
 #define display_cnt	ARRAY_SIZE(displays)
 #else
