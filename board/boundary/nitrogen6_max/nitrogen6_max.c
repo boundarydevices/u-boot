@@ -549,8 +549,8 @@ static const struct display_info_t displays[] = {
 	VD_VGA(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
 
 	/* 0x0c is a serializer */
-	VD_TFC_A9700LTWV35TC_C1(LVDS, fbp_detect_serializer, fbp_bus_gp(2, 0, 0, 0), 0x0c),
-	VD_TFC_A9700LTWV35TC_C1(LVDS2, fbp_detect_serializer, fbp_bus_gp(1, GP_I2C2MUX_A, 0, 0), 0x0c),
+	VD_TFC_A9700LTWV35TC_C1(LVDS, fbp_detect_serializer, fbp_bus_gp(2, 0, 0, 0), 0x0c, FBTS_FT5X06),
+	VD_TFC_A9700LTWV35TC_C1(LVDS2, fbp_detect_serializer, fbp_bus_gp(1, GP_I2C2MUX_A, 0, 0), 0x0c, FBTS_FT5X06_2),
 
 	/* uses both lvds connectors */
 	VD_1080P60(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
