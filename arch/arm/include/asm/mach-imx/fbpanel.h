@@ -14,6 +14,25 @@
 #define fbp_addr_gp(addr_num, backlight_en_gp, min_hs_clock_multiple, spare3) ((addr_num) | \
 		((backlight_en_gp) << 8) | ((min_hs_clock_multiple) << 16) | ((spare3) << 24))
 
+enum alias_names {
+	FBTS_NONE = 0,
+	FBTS_ATMEL_MT,
+	FBTS_CRTOUCH,
+	FBTS_CYTTSP5,
+	FBTS_EGALAX,
+	FBTS_EXC3000,
+	FBTS_FT5X06,
+	FBTS_FT5X06_2,
+	FBTS_FUSION7,
+	FBTS_GOODIX,
+	FBTS_GOODIX2,
+	FBTS_GSL1680,
+	FBTS_ILI210X,
+	FBTS_ST1633I,
+	FBTS_TSC2004,
+	FBP_MIPI_TO_LVDS,
+};
+
 struct display_info_t {
 	union {
 		int	bus;	/* (bus >> 8) is gpio to enable bus if <>0 */
@@ -87,17 +106,6 @@ struct display_info_t {
 #define FBF_OSD050T		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_2)
 
 	int	fbflags;
-#define FBTS_NONE	0
-#define FBTS_ATMEL_MT	1
-#define FBTS_EGALAX	2
-#define FBTS_FT5X06	3
-#define FBTS_FUSION7	4
-#define FBTS_GSL1680	5
-#define FBTS_GOODIX	5
-#define FBTS_ILI210X	6
-#define FBTS_ST1633I	7
-#define FBTS_TSC2004	8
-#define FBP_MIPI_TO_LVDS	9
 	unsigned char enable_alias[2];
 	struct	fb_videomode mode;
 };
