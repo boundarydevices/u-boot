@@ -400,14 +400,14 @@ static const struct display_info_t displays[] = {
 	VD_1024_768M_60(HDMI, NULL, 1, 0x50),
 
 	/* fusion7 specific touchscreen */
-	VD_FUSION7(LCD, fbp_detect_i2c, 2, 0x10),
+	VD_FUSION7(LCD, fbp_detect_i2c, 2, 0x10, FBTS_FUSION7),
 
 	/* tsc2004 */
-	VD_CLAA_WVGA(LCD, fbp_detect_i2c, 2, 0x48),
-	VD_SHARP_WVGA(LCD, NULL, 2, 0x48),
-	VD_DC050WX(LCD, NULL, 2, 0x48),
-	VD_QVGA(LCD, NULL, 2, 0x48),
-	VD_AT035GT_07ET3(LCD, NULL, 2, 0x48),
+	VD_CLAA_WVGA(LCD, fbp_detect_i2c, 2, 0x48, FBTS_TSC2004),
+	VD_SHARP_WVGA(LCD, NULL, 2, 0x48, FBTS_TSC2004),
+	VD_DC050WX(LCD, NULL, 2, 0x48, FBTS_TSC2004),
+	VD_QVGA(LCD, NULL, 2, 0x48, FBTS_TSC2004),
+	VD_AT035GT_07ET3(LCD, NULL, 2, 0x48, FBTS_TSC2004),
 
 	VD_LSA40AT9001(LCD, NULL, 0, 0x00),
 };
