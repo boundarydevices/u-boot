@@ -480,7 +480,7 @@ void enable_spi_rgb(struct display_info_t const *dev)
 	init_spi(dev);
 	gpio_direction_output(di->cs_gpio, 1);
 	if (di->spi_mosi_w_pads)
-		SETUP_IOMUX_PADS(di->spi_mosi_w_pads);
+		imx_iomux_v3_setup_multiple_pads(di->spi_mosi_w_pads, 1);
 
 	enable_spi_clk(1, dev->bus);
 
@@ -509,7 +509,7 @@ void enable_spi_rgb(struct display_info_t const *dev)
 	 * 6. Display on
 	 */
 	if (di->spi_ss0_pad)
-		SETUP_IOMUX_PADS(di->spi_ss0_pad);
+		imx_iomux_v3_setup_multiple_pads(di->spi_ss0_pad, 1);
 	ret = di->spi_write_rtn(spi, di->init_cmds);
 	if (ret) {
 		printf("%s: Failed to display_init_cmds %d\n", __func__, ret);
@@ -523,7 +523,7 @@ void enable_spi_rgb(struct display_info_t const *dev)
 	}
 	ret = 1;
 	if (di->spi_ss0_gpio_pad)
-		SETUP_IOMUX_PADS(di->spi_ss0_gpio_pad);
+		imx_iomux_v3_setup_multiple_pads(di->spi_ss0_gpio_pad, 1);
 
 	/* Release spi bus */
 release_bus:
@@ -553,7 +553,7 @@ static int do_spid(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		di->spi_setup_rtn(di);
 	gpio_direction_output(di->cs_gpio, 1);
 	if (di->spi_mosi_w_pads)
-		SETUP_IOMUX_PADS(di->spi_mosi_w_pads);
+		imx_iomux_v3_setup_multiple_pads(di->spi_mosi_w_pads, 1);
 
 	enable_spi_clk(1, bus);
 
@@ -588,10 +588,10 @@ static int do_spid(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	buf[arg++] = 0;
 	buf[arg++] = 0;
 	if (di->spi_ss0_pad)
-		SETUP_IOMUX_PADS(di->spi_ss0_pad);
+		imx_iomux_v3_setup_multiple_pads(di->spi_ss0_pad, 1);
 	di->spi_write_rtn(spi, buf);
 	if (di->spi_ss0_gpio_pad)
-		SETUP_IOMUX_PADS(di->spi_ss0_gpio_pad);
+		imx_iomux_v3_setup_multiple_pads(di->spi_ss0_gpio_pad, 1);
 	spi_release_bus(spi);
 free_bus:
 	if (di->spi_exit_rtn)
@@ -623,7 +623,7 @@ static int do_spidr(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		di->spi_setup_rtn(di);
 	gpio_direction_output(di->cs_gpio, 1);
 	if (di->spi_mosi_r_pads)
-		SETUP_IOMUX_PADS(di->spi_mosi_r_pads);
+		imx_iomux_v3_setup_multiple_pads(di->spi_mosi_r_pads, 1);
 
 	enable_spi_clk(1, bus);
 
@@ -643,10 +643,10 @@ static int do_spidr(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 
 	reg = simple_strtoul(argv[1], NULL, 16);
 	if (di->spi_ss0_pad)
-		SETUP_IOMUX_PADS(di->spi_ss0_pad);
+		imx_iomux_v3_setup_multiple_pads(di->spi_ss0_pad, 1);
 	val = di->spi_read_rtn(spi, reg);
 	if (di->spi_ss0_gpio_pad)
-		SETUP_IOMUX_PADS(di->spi_ss0_gpio_pad);
+		imx_iomux_v3_setup_multiple_pads(di->spi_ss0_gpio_pad, 1);
 	printf("spidr: reg:0x%x = 0x%x\n", reg, val);
 	spi_release_bus(spi);
 free_bus:
