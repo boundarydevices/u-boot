@@ -343,14 +343,14 @@ void board_enable_lcd(const struct display_info_t *di, int enable)
 
 static const struct display_info_t displays[] = {
 	/* fusion7 specific touchscreen */
-	VD_FUSION7(LCD, fbp_detect_i2c, 2, 0x10),
+	VD_FUSION7(LCD, fbp_detect_i2c, 2, 0x10, FBTS_FUSION7),
 
 	/* tsc2004 */
-	VD_CLAA_WVGA(LCD, fbp_detect_i2c, 2, 0x48),
-	VD_SHARP_WVGA(LCD, NULL, 2, 0x48),
-	VD_DC050WX(LCD, NULL, 2, 0x48),
-	VD_QVGA(LCD, NULL, 2, 0x48),
-	VD_AT035GT_07ET3(LCD, NULL, 2, 0x48),
+	VD_CLAA_WVGA(LCD, fbp_detect_i2c, 2, 0x48, FBTS_TSC2004),
+	VD_SHARP_WVGA(LCD, NULL, 2, 0x48, FBTS_TSC2004),
+	VD_DC050WX(LCD, NULL, 2, 0x48, FBTS_TSC2004),
+	VD_QVGA(LCD, NULL, 2, 0x48, FBTS_TSC2004),
+	VD_AT035GT_07ET3(LCD, NULL, 2, 0x48, FBTS_TSC2004),
 
 	VD_LSA40AT9001(LCD, NULL, 0, 0x00),
 };
