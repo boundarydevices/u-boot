@@ -214,7 +214,7 @@ static const struct display_info_t displays[] = {
 	VD_1024_768M_60(HDMI, NULL, 1, 0x50),
 
 	/* egalax_ts */
-	VD_HANNSTAR(LVDS, fbp_detect_i2c, 2, 0x04),
+	VD_HANNSTAR(LVDS, fbp_detect_i2c, 2, 0x04, FBTS_EGALAX),
 
 	VD_VGA(LVDS, NULL, 0, 0x00),
 	VD_WXGA_J(LVDS, NULL, 0, 0x00),
