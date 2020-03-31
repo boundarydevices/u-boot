@@ -248,7 +248,7 @@ int fbp_detect_gpio(struct display_info_t const *di)
 }
 
 static const struct display_info_t displays[] = {
-	VD_HANNSTAR7(LVDS, NULL, 0, 0x38),
+	VD_HANNSTAR7(LVDS, NULL, 0, 0x4d),
 	/* has 5 - wire touchscreen */
 	VD_LD101WX1(LVDS, fbp_detect_gpio, 0, 0x00),
 };
