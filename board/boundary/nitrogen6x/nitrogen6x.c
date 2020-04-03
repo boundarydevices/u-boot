@@ -468,6 +468,41 @@ int board_early_init_f(void)
 	return 0;
 }
 
+#define ISL1208_ADDRESS	0x6f
+
+void board_env_init(void)
+{
+#ifdef CONFIG_DM_I2C
+	struct udevice *bus;
+	struct udevice *i2c_dev;
+#else
+	u8 orig_i2c_bus;
+#endif
+	int ret;
+
+#ifdef CONFIG_DM_I2C
+	ret = uclass_get_device_by_seq(UCLASS_I2C, 0, &bus);
+	if (ret) {
+		printf("%s: Can't find bus\n", __func__);
+		return;
+	}
+
+	ret = dm_i2c_probe(bus, ISL1208_ADDRESS, 0, &i2c_dev);
+#else
+	orig_i2c_bus = i2c_get_bus_num();
+	ret = i2c_set_bus_num(0);
+	if (ret == 0)
+		ret = i2c_probe(ISL1208_ADDRESS);
+	i2c_set_bus_num(orig_i2c_bus);
+#endif
+	if (!ret) {
+		/* the dts assumes a rv4162 not isl1208 */
+		env_set("cmd_board",
+			"fdt set rtc_isl1208 status okay;"
+			"fdt set rtc_rv4162 status disabled");
+	}
+}
+
 int board_init(void)
 {
 	common_board_init(i2c_pads, I2C_BUS_CNT, IOMUXC_GPR1_OTG_ID_GPIO1,
