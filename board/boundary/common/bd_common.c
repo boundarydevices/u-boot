@@ -315,7 +315,7 @@ int checkboard(void)
 static const char str_uboot_release[] = "uboot_release";
 static const char cur_uboot_release[] = PLAIN_VERSION;
 
-
+void __weak board_env_init(void) {}
 
 int bdcommon_env_init(void)
 {
@@ -358,6 +358,7 @@ int bdcommon_env_init(void)
 #ifdef CONFIG_CMD_FBPANEL
 	fbp_setup_env_cmds();
 #endif
+	board_env_init();
 	board_eth_addresses();
 	return 0;
 }
