@@ -1,13 +1,13 @@
-if TARGET_NITROGEN8_2ETH
+if TARGET_NITROGEN8_NANO
 
 config SYS_BOARD
-	default "nitrogen8_2eth"
+	default "nitrogen8_nano"
 
 config SYS_VENDOR
 	default "boundary"
 
 config SYS_CONFIG_NAME
-	default "nitrogen8_2eth"
+	default "nitrogen8_nano"
 
 config DDR_RANK_BITS
 	int "ddr rank bits"
