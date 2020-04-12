@@ -91,7 +91,7 @@ struct i2c_pads_info i2c_pad_info1[] = {
 			 PAD_CTL_FSEL2)
 #define USDHC_GPIO_PAD_CTRL (PAD_CTL_HYS | PAD_CTL_DSE1)
 
-static iomux_v3_cfg_t const usdhc1_pads[] = {
+static iomux_v3_cfg_t const init_pads[] = {
 	IOMUX_PAD_CTRL(SD1_CLK__USDHC1_CLK, USDHC_PAD_CTRL),
 	IOMUX_PAD_CTRL(SD1_CMD__USDHC1_CMD, USDHC_PAD_CTRL),
 	IOMUX_PAD_CTRL(SD1_DATA0__USDHC1_DATA0, USDHC_PAD_CTRL),
@@ -104,9 +104,7 @@ static iomux_v3_cfg_t const usdhc1_pads[] = {
 	IOMUX_PAD_CTRL(SD1_DATA7__USDHC1_DATA7, USDHC_PAD_CTRL),
 #define GP_EMMC_RESET	IMX_GPIO_NR(2, 10)
 	IOMUX_PAD_CTRL(SD1_RESET_B__GPIO2_IO10, 0x41),
-};
 
-static iomux_v3_cfg_t const usdhc2_pads[] = {
 	IOMUX_PAD_CTRL(SD2_CLK__USDHC2_CLK, USDHC_PAD_CTRL),
 	IOMUX_PAD_CTRL(SD2_CMD__USDHC2_CMD, USDHC_PAD_CTRL),
 	IOMUX_PAD_CTRL(SD2_DATA0__USDHC2_DATA0, USDHC_PAD_CTRL),
@@ -116,72 +114,14 @@ static iomux_v3_cfg_t const usdhc2_pads[] = {
 	IOMUX_PAD_CTRL(SD2_RESET_B__GPIO2_IO19, USDHC_GPIO_PAD_CTRL),
 #define GP_USDHC2_VSEL		IMX_GPIO_NR(3, 2)
 	IOMUX_PAD_CTRL(NAND_CE1_B__GPIO3_IO2, 0x16),
-#define USDHC2_CD_GPIO		IMX_GPIO_NR(2, 12)
+#define GP_USDHC2_CD		IMX_GPIO_NR(2, 12)
 	IOMUX_PAD_CTRL(SD2_CD_B__GPIO2_IO12, USDHC_GPIO_PAD_CTRL),
 };
 
-static struct fsl_esdhc_cfg usdhc_cfg[] = {
+struct fsl_esdhc_cfg board_usdhc_cfg[] = {
 	{.esdhc_base = USDHC1_BASE_ADDR, .bus_width = 8, .gp_reset = GP_EMMC_RESET},
-	{.esdhc_base = USDHC2_BASE_ADDR, .bus_width = 4,},
+	{.esdhc_base = USDHC2_BASE_ADDR, .bus_width = 4, .gp_cd = GP_USDHC2_CD},
 };
-
-int board_mmc_init(bd_t *bis)
-{
-	int i, ret;
-	/*
-	 * According to the board_mmc_init() the following map is done:
-	 * (U-Boot device node)    (Physical Port)
-	 * mmc0                    USDHC1
-	 * mmc1                    USDHC2
-	 */
-	for (i = 0; i < CONFIG_SYS_FSL_USDHC_NUM; i++) {
-		switch (i) {
-		case 0:
-			usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC_CLK);
-			imx_iomux_v3_setup_multiple_pads(
-				usdhc1_pads, ARRAY_SIZE(usdhc1_pads));
-			gpio_request(GP_EMMC_RESET, "emmc_reset");
-			gpio_direction_output(GP_EMMC_RESET, 0);
-			udelay(500);
-			gpio_direction_output(GP_EMMC_RESET, 1);
-			break;
-		case 1:
-			usdhc_cfg[1].sdhc_clk = mxc_get_clock(MXC_ESDHC2_CLK);
-			imx_iomux_v3_setup_multiple_pads(
-				usdhc2_pads, ARRAY_SIZE(usdhc2_pads));
-			gpio_request(USDHC2_CD_GPIO, "usdhc2 cd");
-			gpio_direction_input(USDHC2_CD_GPIO);
-			break;
-		default:
-			printf("Warning: you configured more USDHC controllers"
-				"(%d) than supported by the board\n", i + 1);
-			return -EINVAL;
-		}
-
-		ret = fsl_esdhc_initialize(bis, &usdhc_cfg[i]);
-		if (ret)
-			return ret;
-	}
-
-	return 0;
-}
-
-int board_mmc_getcd(struct mmc *mmc)
-{
-	struct fsl_esdhc_cfg *cfg = (struct fsl_esdhc_cfg *)mmc->priv;
-	int ret = 0;
-
-	switch (cfg->esdhc_base) {
-	case USDHC1_BASE_ADDR:
-		return 1;
-	case USDHC2_BASE_ADDR:
-		ret = gpio_get_value(USDHC2_CD_GPIO);
-		return ret ? 0 : 1;
-	}
-	printf("c\n");
-
-	return 0;
-}
 
 int power_init_boundary(void)
 {
@@ -219,11 +159,6 @@ int power_init_boundary(void)
 
 	buf[0] = 0x40;	/* (.80-.4)*160=.40*160=64=0x40  64/160+.4=.80 vpu */
 	ret = i2c_write(PF8100, SW5_VOLT, 1, buf, 1);
-
-	gpio_request(GP_USDHC2_VSEL, "usdhc2_vsel");
-	gpio_direction_output(GP_USDHC2_VSEL, 0);
-	imx_iomux_v3_setup_multiple_pads(
-		usdhc2_pads, ARRAY_SIZE(usdhc2_pads));
 	return ret;
 }
 
@@ -275,6 +210,9 @@ void board_init_f(ulong dummy)
 	}
 
 	enable_tzc380();
+	gpio_request(GP_USDHC2_VSEL, "usdhc2_vsel");
+	gpio_direction_output(GP_USDHC2_VSEL, 0);
+	imx_iomux_v3_setup_multiple_pads(init_pads, ARRAY_SIZE(init_pads));
 
 	for (i = 0; i < ARRAY_SIZE(i2c_pad_info1); i++)
 		setup_i2c(i, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info1[i]);
