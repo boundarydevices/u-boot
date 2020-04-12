@@ -80,64 +80,12 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IMX8MQ_PAD_SAI5_RXC__GPIO3_IO20 | MUX_PAD_CTRL(0x16),
 };
 
-static struct fsl_esdhc_cfg usdhc_cfg[] = {
+struct fsl_esdhc_cfg board_usdhc_cfg[] = {
 	{.esdhc_base = USDHC1_BASE_ADDR, .bus_width = 8,
 			.gp_reset = GP_EMMC_RESET},
-	{.esdhc_base = USDHC2_BASE_ADDR, .bus_width = 4,},
+	{.esdhc_base = USDHC2_BASE_ADDR, .bus_width = 4,
+			.gp_cd = GP_USDHC2_CD},
 };
-
-int board_mmc_init(bd_t *bis)
-{
-	int i, ret;
-	/*
-	 * According to the board_mmc_init() the following map is done:
-	 * (U-Boot device node)    (Physical Port)
-	 * mmc0                    USDHC1
-	 * mmc1                    USDHC2
-	 */
-	for (i = 0; i < CONFIG_SYS_FSL_USDHC_NUM; i++) {
-		switch (i) {
-		case 0:
-			usdhc_cfg[0].sdhc_clk = mxc_get_clock(USDHC1_CLK_ROOT);
-			gpio_request(GP_EMMC_RESET, "usdhc1_reset");
-			gpio_direction_output(GP_EMMC_RESET, 0);
-			udelay(500);
-			gpio_direction_output(GP_EMMC_RESET, 1);
-			break;
-		case 1:
-			usdhc_cfg[1].sdhc_clk = mxc_get_clock(USDHC2_CLK_ROOT);
-			gpio_request(GP_USDHC2_CD, "usdhc2 cd");
-			gpio_direction_input(GP_USDHC2_CD);
-			break;
-		default:
-			printf("Warning: you configured more USDHC controllers"
-				"(%d) than supported by the board\n", i + 1);
-			return -EINVAL;
-		}
-
-		ret = fsl_esdhc_initialize(bis, &usdhc_cfg[i]);
-		if (ret)
-			return ret;
-	}
-
-	return 0;
-}
-
-int board_mmc_getcd(struct mmc *mmc)
-{
-	struct fsl_esdhc_cfg *cfg = (struct fsl_esdhc_cfg *)mmc->priv;
-	int ret = 0;
-
-	switch (cfg->esdhc_base) {
-	case USDHC1_BASE_ADDR:
-		return 1;
-	case USDHC2_BASE_ADDR:
-		ret = gpio_get_value(GP_USDHC2_CD);
-		return ret ? 0 : 1;
-	}
-
-	return 0;
-}
 
 int power_init_boundary(void)
 {
@@ -189,9 +137,6 @@ int power_init_boundary(void)
 	/* DRAM_1P1V */
 	buf[0] = 0x70;	/* (1.10-.4)*160=.70*160=112=0x70  112/160+.4=1.10 */
 	ret = i2c_write(PF8100, SW6_VOLT, 1, buf, 1);
-
-	gpio_request(GP_USDHC2_VSEL, "usdhc2_vsel");
-	gpio_direction_output(GP_USDHC2_VSEL, 0);
 	return ret;
 }
 
@@ -242,6 +187,8 @@ void board_init_f(ulong dummy)
 	}
 
 	enable_tzc380();
+	gpio_request(GP_USDHC2_VSEL, "usdhc2_vsel");
+	gpio_direction_output(GP_USDHC2_VSEL, 0);
 	imx_iomux_v3_setup_multiple_pads(init_pads, ARRAY_SIZE(init_pads));
 
 	/* Adjust pmic voltage to 1.0V for 800M */
