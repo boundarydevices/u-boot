@@ -19,10 +19,12 @@ for board in ${boards} ; do
 	defconfigs="";
 	hfile="";
 	if [ -e board/boundary/${board}/Kconfig ] ; then
-		target=`grep '^if TARGET_' board/boundary/${board}/Kconfig | sed 's.if ..'`;
-		echo board=${board} target=${target};
+		targets=`grep '^if TARGET_' board/boundary/${board}/Kconfig | sed 's.if ..' | sed 's. ||. .'`;
+		echo board=${board} target=${targets};
 		hfile=`grep -A1 SYS_CONFIG_NAME board/boundary/${board}/Kconfig | grep default | sed 's.default "..' | sed 's."..' | sed 's/[ \x09]*//'`;
-		defconfigs=`git grep -w CONFIG_${target} configs/ | sed 's.configs/..'| sed 's/_defconfig:.*$//'`;
+		for target in ${targets} ; do
+			defconfigs="${defconfigs} `git grep -w CONFIG_${target} configs/ | sed 's.configs/..'| sed 's/_defconfig:.*$//'`";
+		done
 	fi
 	board_cfgs=":"
 	for defconfig in ${defconfigs} ; do
