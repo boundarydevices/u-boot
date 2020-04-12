@@ -28,7 +28,6 @@
 #include <dm.h>
 #include <i2c.h>
 #include <spl.h>
-#include <usb.h>
 #include "../common/padctrl.h"
 #include "../common/bd_common.h"
 
@@ -101,7 +100,6 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IOMUX_PAD_CTRL(SD1_RESET_B__GPIO2_IO10, 0x41),
 };
 
-
 int board_early_init_f(void)
 {
 	struct wdog_regs *wdog = (struct wdog_regs *)WDOG1_BASE_ADDR;
@@ -116,46 +114,7 @@ int board_early_init_f(void)
 	return 0;
 }
 
-#ifdef CONFIG_BOARD_POSTCLK_INIT
-int board_postclk_init(void)
-{
-	/* TODO */
-	return 0;
-}
-#endif
-
-#define MAX_LOW_SIZE	(0x100000000ULL - CONFIG_SYS_SDRAM_BASE)
-#define SDRAM_SIZE	((1ULL * CONFIG_DDR_MB) << 20)
-
-#if SDRAM_SIZE > MAX_LOW_SIZE
-#define MEM_SIZE	MAX_LOW_SIZE
-#else
-#define MEM_SIZE	SDRAM_SIZE
-#endif
-
-int dram_init_banksize(void)
-{
-	gd->bd->bi_dram[0].start = CONFIG_SYS_SDRAM_BASE;
-	gd->bd->bi_dram[0].size = SDRAM_SIZE;
-	return 0;
-}
-
-int dram_init(void)
-{
-	/* rom_pointer[1] contains the size of TEE occupies */
-	gd->ram_size = MEM_SIZE - rom_pointer[1];
-	return 0;
-}
-
-#ifdef CONFIG_OF_BOARD_SETUP
-int ft_board_setup(void *blob, bd_t *bd)
-{
-	return 0;
-}
-#endif
-
 #ifdef CONFIG_CMD_FBPANEL
-
 int board_detect_gt911(struct display_info_t const *di)
 {
 	int ret;
@@ -239,7 +198,7 @@ int board_init(void)
 #define ID_DUAL1	0x4008
 #define ID_DUAL2	0x301d
 
-void check_dual_sw4(void)
+static void check_dual_sw4(void)
 {
 	struct udevice *bus;
 	struct udevice *i2c_dev;
@@ -280,57 +239,7 @@ void check_dual_sw4(void)
 	}
 }
 
-static void set_env_vars(void)
+void board_env_init(void)
 {
 	check_dual_sw4();
-#ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
-	if (!env_get("board"))
-		env_set("board", CONFIG_SYS_BOARD);
-	env_set("soc", CONFIG_SYS_SOC);
-	env_set("imx_cpu", get_imx_type((get_cpu_rev() & 0xFF000) >> 12));
-	env_set("uboot_defconfig", CONFIG_DEFCONFIG);
-#endif
 }
-
-void board_set_default_env(void)
-{
-	set_env_vars();
-#ifdef CONFIG_CMD_FBPANEL
-	fbp_setup_env_cmds();
-#endif
-	board_eth_addresses();
-}
-
-int board_usb_init(int index, enum usb_init_type init)
-{
-	return 0;
-}
-
-int board_usb_cleanup(int index, enum usb_init_type init)
-{
-	imx8m_usb_power(index, false);
-	return 0;
-}
-
-int board_late_init(void)
-{
-	set_env_vars();
-#ifdef CONFIG_ENV_IS_IN_MMC
-	env_set_ulong("mmcdev", 0);
-	run_command("mmc dev 0", 0);
-#endif
-	/* No display yet for mini so need to setup cmd_... */
-#ifdef CONFIG_CMD_FBPANEL
-	board_video_skip();
-#endif
-	return 0;
-}
-
-#ifdef CONFIG_FSL_FASTBOOT
-#ifdef CONFIG_ANDROID_RECOVERY
-int is_recovery_key_pressing(void)
-{
-	return 0; /*TODO*/
-}
-#endif /*CONFIG_ANDROID_RECOVERY*/
-#endif /*CONFIG_FSL_FASTBOOT*/
