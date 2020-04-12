@@ -28,7 +28,6 @@
 #include <dm.h>
 #include <i2c.h>
 #include <spl.h>
-#include <usb.h>
 #include "../common/padctrl.h"
 #include "../common/bd_common.h"
 
@@ -97,32 +96,6 @@ int board_early_init_f(void)
 	return 0;
 }
 
-#ifdef CONFIG_BOARD_POSTCLK_INIT
-int board_postclk_init(void)
-{
-	/* TODO */
-	return 0;
-}
-#endif
-
-int dram_init(void)
-{
-	/* rom_pointer[1] contains the size of TEE occupies */
-	if (rom_pointer[1])
-		gd->ram_size = PHYS_SDRAM_SIZE - rom_pointer[1];
-	else
-		gd->ram_size = PHYS_SDRAM_SIZE;
-
-	return 0;
-}
-
-#ifdef CONFIG_OF_BOARD_SETUP
-int ft_board_setup(void *blob, bd_t *bd)
-{
-	return 0;
-}
-#endif
-
 int board_init(void)
 {
 #ifdef CONFIG_FEC_PHY_BITBANG
@@ -142,50 +115,3 @@ int board_init(void)
 #endif
 	return 0;
 }
-
-static void set_env_vars(void)
-{
-#ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
-	if (!env_get("board"))
-		env_set("board", "moo");
-	env_set("soc", "imx8mm");
-	env_set("imx_cpu", get_imx_type((get_cpu_rev() & 0xFF000) >> 12));
-	env_set("uboot_defconfig", CONFIG_DEFCONFIG);
-#endif
-}
-
-void board_set_default_env(void)
-{
-	set_env_vars();
-	board_eth_addresses();
-}
-
-int board_usb_init(int index, enum usb_init_type init)
-{
-	return 0;
-}
-
-int board_usb_cleanup(int index, enum usb_init_type init)
-{
-	imx8m_usb_power(index, false);
-	return 0;
-}
-
-int board_late_init(void)
-{
-	set_env_vars();
-#ifdef CONFIG_ENV_IS_IN_MMC
-	env_set_ulong("mmcdev", 0);
-	run_command("mmc dev 0", 0);
-#endif
-	return 0;
-}
-
-#ifdef CONFIG_FSL_FASTBOOT
-#ifdef CONFIG_ANDROID_RECOVERY
-int is_recovery_key_pressing(void)
-{
-	return 0; /*TODO*/
-}
-#endif /*CONFIG_ANDROID_RECOVERY*/
-#endif /*CONFIG_FSL_FASTBOOT*/
