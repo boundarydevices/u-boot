@@ -47,17 +47,6 @@ struct i2c_pads_info i2c_pad_info1 = {
 	},
 };
 
-int board_mmc_getcd(struct mmc *mmc)
-{
-	struct fsl_esdhc_cfg *cfg = (struct fsl_esdhc_cfg *)mmc->priv;
-
-	switch (cfg->esdhc_base) {
-	case USDHC1_BASE_ADDR:
-		return 1;
-	}
-	return 0;
-}
-
 #define USDHC_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_HYS | PAD_CTL_PUE | \
 			 PAD_CTL_FSEL2)
 #define USDHC_GPIO_PAD_CTRL (PAD_CTL_PUE | PAD_CTL_DSE1)
@@ -80,42 +69,10 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IMX8MQ_PAD_SD1_RESET_B__GPIO2_IO10 | MUX_PAD_CTRL(NO_PAD_CTRL),
 };
 
-static struct fsl_esdhc_cfg usdhc_cfg[] = {
+struct fsl_esdhc_cfg board_usdhc_cfg[] = {
 	{.esdhc_base = USDHC1_BASE_ADDR, .bus_width = 8,
 			.gp_reset = GP_EMMC_RESET},
 };
-
-int board_mmc_init(bd_t *bis)
-{
-	int i, ret;
-	/*
-	 * According to the board_mmc_init() the following map is done:
-	 * (U-Boot device node)    (Physical Port)
-	 * mmc0                    USDHC1
-	 * mmc1                    USDHC2
-	 */
-	for (i = 0; i < CONFIG_SYS_FSL_USDHC_NUM; i++) {
-		switch (i) {
-		case 0:
-			usdhc_cfg[0].sdhc_clk = mxc_get_clock(USDHC1_CLK_ROOT);
-			gpio_request(GP_EMMC_RESET, "usdhc1_reset");
-			gpio_direction_output(GP_EMMC_RESET, 0);
-			udelay(500);
-			gpio_direction_output(GP_EMMC_RESET, 1);
-			break;
-		default:
-			printf("Warning: you configured more USDHC controllers"
-				"(%d) than supported by the board\n", i + 1);
-			return -EINVAL;
-		}
-
-		ret = fsl_esdhc_initialize(bis, &usdhc_cfg[i]);
-		if (ret)
-			return ret;
-	}
-
-	return 0;
-}
 
 #define GP_ARM_DRAM_VSEL		IMX_GPIO_NR(3, 24)
 #define GP_DRAM_1P1_VSEL		IMX_GPIO_NR(2, 11)
