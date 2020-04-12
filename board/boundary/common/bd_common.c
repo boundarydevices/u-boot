@@ -5,7 +5,7 @@
  */
 #include <common.h>
 #include <asm/arch/clock.h>
-#if !defined(CONFIG_MX7D) && !defined(CONFIG_MX51) && !defined(CONFIG_MX6ULL)
+#if !defined(CONFIG_MX7D) && !defined(CONFIG_MX51) && !defined(CONFIG_MX6ULL) && !defined(CONFIG_IMX8M)
 #include <asm/arch/iomux.h>
 #endif
 #include <asm/arch/sys_proto.h>
@@ -17,14 +17,41 @@
 #include <i2c.h>
 #include <linux/fb.h>
 #include <version.h>
+#include <usb.h>
+#ifdef CONFIG_IMX8MQ
+#include <dwc3-uboot.h>
+#include <linux/usb/dwc3.h>
+#endif
+
 #include "bd_common.h"
 
 DECLARE_GLOBAL_DATA_PTR;
 
+#define MAX_LOW_SIZE	(0x100000000ULL - CONFIG_SYS_SDRAM_BASE)
+#define SDRAM_SIZE	((1ULL * CONFIG_DDR_MB) << 20)
+
+#if SDRAM_SIZE > MAX_LOW_SIZE
+#define MEM_SIZE	MAX_LOW_SIZE
+#else
+#define MEM_SIZE	SDRAM_SIZE
+#endif
+
+#if defined(CONFIG_IMX8M)
+int dram_init_banksize(void)
+{
+	gd->bd->bi_dram[0].start = CONFIG_SYS_SDRAM_BASE;
+	gd->bd->bi_dram[0].size = SDRAM_SIZE;
+	return 0;
+}
+#endif
+
 int dram_init(void)
 {
-#if defined(CONFIG_MX51) || defined(CONFIG_MX7D)
-	gd->ram_size = ((ulong)CONFIG_DDR_MB * 1024 * 1024);
+#if defined(CONFIG_IMX8M)
+	/* rom_pointer[1] contains the size of TEE occupies */
+	gd->ram_size = MEM_SIZE - rom_pointer[1];
+#elif defined(CONFIG_MX51) || defined(CONFIG_MX7D)
+	gd->ram_size = MEM_SIZE;
 #else
 	gd->ram_size = imx_ddr_size();
 #endif
@@ -32,6 +59,134 @@ int dram_init(void)
 
 	return 0;
 }
+
+#if defined(CONFIG_BOARD_POSTCLK_INIT) && defined(CONFIG_IMX8M)
+int board_postclk_init(void)
+{
+	/* TODO */
+	return 0;
+}
+#endif
+
+
+#ifdef CONFIG_OF_BOARD_SETUP
+int ft_board_setup(void *blob, bd_t *bd)
+{
+	return 0;
+}
+#endif
+
+#if defined(CONFIG_IMX8MM)
+int board_usb_init(int index, enum usb_init_type init)
+{
+	return 0;
+}
+
+int board_usb_cleanup(int index, enum usb_init_type init)
+{
+	imx8m_usb_power(index, false);
+	return 0;
+}
+#endif
+
+#if defined(CONFIG_USB_DWC3) || defined(CONFIG_USB_XHCI_IMX8M)
+
+#define USB_PHY_CTRL0			0xF0040
+#define USB_PHY_CTRL0_REF_SSP_EN	BIT(2)
+
+#define USB_PHY_CTRL1			0xF0044
+#define USB_PHY_CTRL1_RESET		BIT(0)
+#define USB_PHY_CTRL1_COMMONONN		BIT(1)
+#define USB_PHY_CTRL1_ATERESET		BIT(3)
+#define USB_PHY_CTRL1_VDATSRCENB0	BIT(19)
+#define USB_PHY_CTRL1_VDATDETENB0	BIT(20)
+
+#define USB_PHY_CTRL2			0xF0048
+#define USB_PHY_CTRL2_TXENABLEN0	BIT(8)
+
+static struct dwc3_device dwc3_device_data = {
+	.maximum_speed = USB_SPEED_SUPER,
+	.base = USB1_BASE_ADDR,
+	.dr_mode = USB_DR_MODE_PERIPHERAL,
+	.index = 0,
+//	.power_down_scale = 2,
+};
+
+int usb_gadget_handle_interrupts(void)
+{
+	dwc3_uboot_handle_interrupt(0);
+	return 0;
+}
+
+static void dwc3_nxp_usb_phy_init(struct dwc3_device *dwc3)
+{
+	struct dwc3 *dwc3_reg = (struct dwc3 *)(dwc3->base + DWC3_REG_OFFSET);
+	u32 val;
+
+	val = readl(dwc3->base + USB_PHY_CTRL1);
+	val &= ~(USB_PHY_CTRL1_VDATSRCENB0 | USB_PHY_CTRL1_VDATDETENB0 |
+			USB_PHY_CTRL1_COMMONONN);
+	val |= USB_PHY_CTRL1_RESET | USB_PHY_CTRL1_ATERESET;
+	writel(val, dwc3->base + USB_PHY_CTRL1);
+
+	val = readl(dwc3->base + USB_PHY_CTRL0);
+	val |= USB_PHY_CTRL0_REF_SSP_EN;
+	writel(val, dwc3->base + USB_PHY_CTRL0);
+
+	val = readl(dwc3->base + USB_PHY_CTRL2);
+	val |= USB_PHY_CTRL2_TXENABLEN0;
+	writel(val, dwc3->base + USB_PHY_CTRL2);
+
+	val = readl(dwc3->base + USB_PHY_CTRL1);
+	val &= ~(USB_PHY_CTRL1_RESET | USB_PHY_CTRL1_ATERESET);
+	writel(val, dwc3->base + USB_PHY_CTRL1);
+
+	val = readl(&dwc3_reg->g_ctl);
+	val &= ~(DWC3_GCTL_PWRDNSCALE_MASK);
+	val |= DWC3_GCTL_PWRDNSCALE(2);
+
+	writel(val, &dwc3_reg->g_ctl);
+}
+
+int __weak board_usb_hub_gpio_init(void)
+{
+	return 0;
+}
+
+int board_usb_init(int index, enum usb_init_type init)
+{
+	int ret = 0;
+	imx8m_usb_power(index, true);
+
+	if (index == 0 && init == USB_INIT_DEVICE) {
+		dwc3_nxp_usb_phy_init(&dwc3_device_data);
+		return dwc3_uboot_init(&dwc3_device_data);
+	} else if (index == 0 && init == USB_INIT_HOST) {
+		return ret;
+	}
+
+	if (index == 1) {
+		int gp = board_usb_hub_gpio_init();
+		/* Release HUB reset */
+		if (gp) {
+			gpio_request(gp, "usb1_rst");
+			gpio_direction_output(gp, 1);
+		}
+	}
+
+	return 0;
+}
+int board_usb_cleanup(int index, enum usb_init_type init)
+{
+	int ret = 0;
+	if (index == 0 && init == USB_INIT_DEVICE)
+		dwc3_uboot_exit(index);
+
+	imx8m_usb_power(index, false);
+
+	return ret;
+}
+#endif
 
 /*
  * Do not overwrite the console
@@ -58,7 +213,7 @@ void set_gpios(const unsigned short *p, int cnt, int val)
 		gpio_direction_output(*p++, val);
 }
 
-#ifdef CONFIG_FSL_ESDHC_IMX
+#if defined(CONFIG_FSL_ESDHC_IMX) && !CONFIG_IS_ENABLED(DM_MMC)
 int board_mmc_getcd(struct mmc *mmc)
 {
 	struct fsl_esdhc_cfg *cfg = (struct fsl_esdhc_cfg *)mmc->priv;
@@ -73,6 +228,10 @@ int board_mmc_getcd(struct mmc *mmc)
 #define BASE1 MMC_SDHC1_BASE_ADDR
 #define BASE2 MMC_SDHC2_BASE_ADDR
 #define CNT CONFIG_SYS_FSL_ESDHC_NUM
+#elif defined(CONFIG_IMX8M)
+#define BASE1 USDHC1_BASE_ADDR
+#define BASE2 USDHC2_BASE_ADDR
+#define CNT CONFIG_SYS_FSL_USDHC_NUM
 #else
 #define BASE1 USDHC1_BASE_ADDR
 #define BASE2 USDHC2_BASE_ADDR
@@ -93,7 +252,7 @@ int board_mmc_init(bd_t *bis)
 			cfg->sdhc_clk = mxc_get_clock(MXC_ESDHC_CLK);
 		} else if (cfg->esdhc_base == BASE2) {
 			cfg->sdhc_clk = mxc_get_clock(MXC_ESDHC2_CLK);
-#if !defined(CONFIG_MX51) && !defined(CONFIG_MX6ULL)
+#if !defined(CONFIG_MX51) && !defined(CONFIG_MX6ULL) && !defined(CONFIG_IMX8M)
 		} else if (cfg->esdhc_base == BASE3) {
 			cfg->sdhc_clk = mxc_get_clock(MXC_ESDHC3_CLK);
 #ifndef CONFIG_MX7D
@@ -102,7 +261,11 @@ int board_mmc_init(bd_t *bis)
 #endif
 #endif
 		} else {
+#if defined(CONFIG_IMX8M)
+			printf("unknown esdhc base %llx\n", cfg->esdhc_base);
+#else
 			printf("unknown esdhc base %lx\n", cfg->esdhc_base);
+#endif
 			break;
 		}
 
@@ -294,7 +457,9 @@ static void addserial_env(const char* env_var)
 }
 #endif
 
-#ifndef CONFIG_SYS_BOARD
+#ifdef CONFIG_SYS_BOARD
+#define board_type CONFIG_SYS_BOARD
+#else
 /* CANNOT be in BSS section, will clobber relocation table */
 const char *board_type = (void*)1;
 #endif
@@ -317,22 +482,44 @@ static const char cur_uboot_release[] = PLAIN_VERSION;
 
 void __weak board_env_init(void) {}
 
+#if defined(CONFIG_CMD_FASTBOOT) || defined(CONFIG_CMD_DFU)
+int __weak board_fastboot_key_pressed(void)
+{
+	return 0;
+}
+#endif
+
+#if defined(CONFIG_FSL_FASTBOOT) && defined(CONFIG_ANDROID_RECOVERY)
+int is_recovery_key_pressing(void)
+{
+	return 0; /*TODO*/
+}
+#endif
+
 int bdcommon_env_init(void)
 {
 	char *uboot_release;
+#ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	int cpurev = get_cpu_rev();
 
+#if defined(CONFIG_IMX8MQ)
+	env_set("soc", "imx8mq");
+#else
+	env_set("soc", CONFIG_SYS_SOC);
+#endif
+#if !defined(CONFIG_IMX8M)
 	env_set("cpu", get_imx_type((cpurev & 0xFF000) >> 12));
+#endif
 	env_set("imx_cpu", get_imx_type((cpurev & 0xFF000) >> 12));
-#ifndef CONFIG_SYS_BOARD
 	/*
 	 * These lines are specific to nitrogen6x, as
 	 * everyone else has board in their default environment.
 	 */
 	if (!env_get("board"))
 		env_set("board", board_type);
-#endif
 	env_set("uboot_defconfig", CONFIG_DEFCONFIG);
+#endif
+
 #ifdef CONFIG_ENV_WLMAC
 	addmac_env("wlmac");
 #endif
@@ -341,6 +528,10 @@ int bdcommon_env_init(void)
 #endif
 #if defined(CONFIG_CMD_FASTBOOT) || defined(CONFIG_CMD_DFU)
 	addserial_env("serial#");
+	if (board_fastboot_key_pressed()) {
+		printf("Starting fastboot...\n");
+		env_set("preboot", "fastboot 0");
+	}
 #endif
 
 #if !defined(CONFIG_ENV_IS_NOWHERE)
@@ -368,11 +559,21 @@ void board_set_default_env(void)
 	bdcommon_env_init();
 }
 
+void init_usb_clk(int usbno);
+
 int board_late_init(void)
 {
+#if defined(CONFIG_IMX8MQ)
+	init_usb_clk(0);
+	init_usb_clk(1);
+#endif
 #ifdef CONFIG_BOARD_LATE_SPECIFIC_INIT
 	board_late_specific_init();
 #endif
 	print_time_rv4162();
+#if defined(CONFIG_IMX8MM) && defined(CONFIG_CMD_FBPANEL)
+	/* No display yet for mini so need to setup cmd_... */
+	board_video_skip();
+#endif
 	return bdcommon_env_init();
 }
