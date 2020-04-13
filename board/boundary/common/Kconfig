@@ -73,3 +73,7 @@ config EXTRA_ENV_SETTINGS_DEFCONFIG
 
 config USB_BOOT_FIRST
 	bool "Try booting from USB before mmc/sata"
+
+config CONFIG_LPDDR4_AB
+	bool "Channel A to A, B to B"
+	default y if TARGET_DWE
