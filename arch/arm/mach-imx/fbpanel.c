@@ -24,16 +24,16 @@
 #include <video_fb.h>
 /*
  * The format of the string is
- * [*][off|mode_str_name[:["dtb_alias",["dtb_alias",]][m][j][s][b][18|24][S|D|b|P|l|d|s|v|B|M|U|c|L|E|4|3|2|1][Gn][e][x[x_vals][p[pwm_period]]]:timings]]
+ * [*][off|mode_str_name[:["dtb_alias",["dtb_alias",]][18|24][m][j][s][b][:][S|D|b|P|l|d|s|v|B|M|U|c|L|E|4|3|2|1][Gn][e][x[x_vals][p[pwm_period]]]:timings]]
  *
  * * means select this display for u-boot to initialize.
- * m : mode_str is used, fdt set fb_xxx mode_str [mode_str_name]
  * "dtb_alias" : dtb alias to set status to okay, use to enable touch screen drivers, panel drivers(sn65)
+ * 18 : pix_fmt = IPU_PIX_FMT_RGB666
+ * 24 : pix_fmt = IPU_PIX_FMT_RGB24
+ * m : mode_str is used, fdt set fb_xxx mode_str [mode_str_name]
  * j : display uses JEIDA, fdt set ldb/lvds-channel@n fsl,data-mapping jeida
  * s : display uses SPLITMODE, fdt set ldb split-mode 1
  * b : pix_fmt = IPU_PIX_FMT_BGR24
- * 18 : pix_fmt = IPU_PIX_FMT_RGB666
- * 24 : pix_fmt = IPU_PIX_FMT_RGB24
  * S : This display requires SPI initialization
  * D : Change dtb backlight level, fdt set backlight_lvds brightness-levels <0 1 2 3 4 5 6 7 8 9 10>
  * b : Change dtb backlight level, low active, fdt set backlight_lvds brightness-levels <10 9 8 7 6 5 4 3 2 1 0>
@@ -1434,14 +1434,6 @@ static const struct display_info_t * parse_mode(
 			return NULL;
 	}
 
-	check_flags(di, &p, fc1);
-	c = *p;
-
-	if (c == 'b') {
-		pix_fmt = IPU_PIX_FMT_BGR24;
-		p++;
-		c = *p;
-	}
 	value = simple_strtoul(p, &endp, 10);
 	if (endp <= p) {
 		printf("expecting 18|24\n");
@@ -1452,8 +1444,19 @@ static const struct display_info_t * parse_mode(
 		return NULL;
 	}
 	p = endp;
+
+	check_flags(di, &p, fc1);
+	c = *p;
+
+	if (c == 'b') {
+		pix_fmt = IPU_PIX_FMT_BGR24;
+		p++;
+		c = *p;
+	}
 	di->pixfmt = (value == 24) ? pix_fmt : IPU_PIX_FMT_RGB666;
 
+	if (c == ',')
+		p++;
 	check_flags(di, &p, fc2);
 	c = *p;
 
@@ -1621,22 +1624,24 @@ static void str_mode(char *p, int size, const struct display_info_t *di, unsigne
 			size -= count;
 		}
 	}
-	count = code_flags(p, size, di->fbflags, fc1);
-	p += count;
-	size -= count;
-
 	if ((di->pixfmt == IPU_PIX_FMT_RGB24) ||
 			(di->pixfmt == IPU_PIX_FMT_BGR24))
 		interface_width = 24;
-	if (di->pixfmt == IPU_PIX_FMT_BGR24) {
-		*p++ = 'b';
-		size--;
-	}
 	count = snprintf(p, size, "%d", interface_width);
 	if (size > count) {
 		p += count;
 		size -= count;
 	}
+
+	count = code_flags(p, size, di->fbflags, fc1);
+	p += count;
+	size -= count;
+
+	if (di->pixfmt == IPU_PIX_FMT_BGR24) {
+		*p++ = 'b';
+		size--;
+	}
+	*p++ = ',';
 	count = code_flags(p, size, di->fbflags, fc2);
 	p += count;
 	size -= count;
