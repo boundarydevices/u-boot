@@ -8,5 +8,4 @@ obj-y += dwe.o
 
 ifdef CONFIG_SPL_BUILD
 obj-y += spl.o
-obj-$(CONFIG_IMX8MM) += lpddr4_timing.o
 endif
