@@ -8,5 +8,4 @@ obj-y += nitrogen8_nano.o
 
 ifdef CONFIG_SPL_BUILD
 obj-y += spl.o
-obj-$(CONFIG_IMX8MN) += lpddr4_timing_8mn.o
 endif
