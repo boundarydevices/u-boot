@@ -5,6 +5,7 @@ ifneq ($(CONFIG_ARCH_IMX8M),y)
 obj-$(CONFIG_CMD_KBD)  += cmd_kbd.o
 endif
 ifdef CONFIG_SPL_BUILD
+obj-y += spl.o
 ifeq ($(CONFIG_LPDDR4_AB),y)
 obj-$(CONFIG_IMX8MM) += lpddr4_timing_8mm_ab.o
 else

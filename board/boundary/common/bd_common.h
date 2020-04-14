@@ -52,4 +52,5 @@ void max77834_power_check(void);
 void fan53526_init(void);
 int otg_power_detect(void);
 int bdcommon_env_init(void);
+void spl_dram_init(void);
 #endif
