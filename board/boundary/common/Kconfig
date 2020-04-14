@@ -82,3 +82,8 @@ config DDR_RANK_BITS
 	int "ddr rank bits"
 	depends on ARCH_IMX8M
 	default 1
+
+config DDR_CHANNEL_CNT
+	int "ddr channel count"
+	depends on ARCH_IMX8M
+	default 2

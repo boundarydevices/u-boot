@@ -6,10 +6,14 @@ obj-$(CONFIG_CMD_KBD)  += cmd_kbd.o
 endif
 ifdef CONFIG_SPL_BUILD
 obj-y += spl.o
+ifeq ($(CONFIG_DDR_CHANNEL_CNT),1)
+obj-$(CONFIG_IMX8MM) += lpddr4_timing_8mm_ch1.o
+else
 ifeq ($(CONFIG_LPDDR4_AB),y)
 obj-$(CONFIG_IMX8MM) += lpddr4_timing_8mm_ab.o
 else
 obj-$(CONFIG_IMX8MM) += lpddr4_timing_8mm.o
+endif
 endif
 obj-$(CONFIG_IMX8MN) += lpddr4_timing_8mn.o
 obj-$(CONFIG_IMX8MQ) += lpddr4_timing_8mq.o
