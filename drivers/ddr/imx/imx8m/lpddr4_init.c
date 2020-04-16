@@ -24,11 +24,12 @@ void lpddr4_cfg_umctl2(struct dram_cfg_param *ddrc_cfg, int num)
 	}
 }
 
-void ddr_init(struct dram_timing_info *dram_timing)
+int ddr_init(struct dram_timing_info *dram_timing)
 {
 	unsigned mstr2;
 	unsigned int tmp;
 	int imx8mq = is_imx8mq();
+	int ret;
 
 	debug("DDRINFO: start lpddr4 ddr init\n");
 	/* step 1: reset */
@@ -111,7 +112,9 @@ void ddr_init(struct dram_timing_info *dram_timing)
 
 	/* step8 Configure LPDDR4 PHY's registers */
 	debug("DDRINFO:ddrphy config start\n");
-	ddr_cfg_phy(dram_timing);
+	ret = ddr_cfg_phy(dram_timing);
+	if (ret)
+		return ret;
 	debug("DDRINFO: ddrphy config done\n");
 
 	/*
@@ -188,4 +191,5 @@ void ddr_init(struct dram_timing_info *dram_timing)
 
 	/* save the dram timing config into memory */
 	dram_config_save(dram_timing, CONFIG_SAVED_DRAM_TIMING_BASE);
+	return 0;
 }
