@@ -6,46 +6,8 @@
  * Generated code from MX8M_DDR_tool
  * Align with uboot-imx_v2018.03_4.14.78_1.0.0_ga
  */
-
-#include <config.h>
-#include <linux/kernel.h>
-#include <asm/arch/ddr.h>
-#include <asm/arch/ddr_memory_map.h>
-#include <asm/arch/lpddr4_define.h>
-#include <asm/arch/imx8m_ddr.h>
-
 #define WR_POST_EXT_3200
-#ifdef WR_POST_EXT_3200  // recommend to define
-#define VAL_INIT4	((LPDDR4_MR3 << 16) | 0x00020008)
-#else
-#define VAL_INIT4	((LPDDR4_MR3 << 16) | 8)
-#endif
-
-#if CONFIG_DDR_RANK_BITS == 0
-#define LPDDR4_CS	0x1	/* 0 rank bits, 1 chip select */
-#if CONFIG_DDR_MB == 1024
-	/* Address map is from MSB 28: r15, r14, r13-r0, b2-b0, c9-c0 */
-#define VAL_DDRC_ADDRMAP0		0x0000001F
-#define VAL_DDRC_ADDRMAP6		0x07070707
-#else
-#error unsupported memory size
-#endif
-#elif CONFIG_DDR_RANK_BITS == 1
-#define LPDDR4_CS	0x3	/* 1 rank bit, 2 chip selects */
-#if CONFIG_DDR_MB == 1024
-	/* Address map is from MSB 28: cs, r14, r13-r0, b2-b0, c9-c0 */
-#define VAL_DDRC_ADDRMAP0		0x00000016
-#define VAL_DDRC_ADDRMAP6		0x0F070707
-#elif CONFIG_DDR_MB == 2048
-	/* Address map is from MSB 29: cs, r15, r14, r13-r0, b2-b0, c9-c0 */
-#define VAL_DDRC_ADDRMAP0		0x00000017
-#define VAL_DDRC_ADDRMAP6		0x07070707
-#else
-#error unsupported memory size
-#endif
-#else
-#error unsupported rank bits
-#endif
+#include "lpddr4_timing.h"
 
 static struct dram_cfg_param lpddr4_ddrc_cfg[] = {
 	/** Initialize DDRC registers **/

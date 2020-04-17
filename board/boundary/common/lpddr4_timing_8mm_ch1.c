@@ -12,32 +12,8 @@
  *
  * SPDX-License-Identifier: GPL-2.0+
  */
-#include <config.h>
-#include <linux/kernel.h>
-#include <asm/arch/ddr.h>
-#include <asm/arch/ddr_memory_map.h>
-#include <asm/arch/lpddr4_define.h>
-#include <asm/arch/imx8m_ddr.h>
-
 #define WR_POST_EXT_3200
-#ifdef WR_POST_EXT_3200  // recommend to define
-#define VAL_INIT4	((LPDDR4_MR3 << 16) | 0x00020008)
-#else
-#define VAL_INIT4	((LPDDR4_MR3 << 16) | 8)
-#endif
-
-#if CONFIG_DDR_RANK_BITS == 0
-#define LPDDR4_CS	0x1	/* 0 rank bits, 1 chip select */
-#if CONFIG_DDR_MB == 1024
-	/* Address map is from MSB 28: r15, r14, r13-r0, b2-b0, c9-c0 */
-#define VAL_DDRC_ADDRMAP0		0x0000001F
-#define VAL_DDRC_ADDRMAP6		0x06060606
-#else
-#error unsupported memory size
-#endif
-#else
-#error unsupported rank bits
-#endif
+#include "lpddr4_timing.h"
 
 static struct dram_cfg_param lpddr4_ddrc_cfg[] = {
 	/** Initialize DDRC registers **/
