@@ -86,4 +86,5 @@ config DDR_RANK_BITS
 config DDR_CHANNEL_CNT
 	int "ddr channel count"
 	depends on ARCH_IMX8M
+	default 1 if IMX8MN
 	default 2
