@@ -250,6 +250,7 @@ int do_avb_verify_part(struct cmd_tbl *cmdtp, int flag,
 	const char * const requested_partitions[] = {"boot", NULL};
 	AvbSlotVerifyResult slot_result;
 	AvbSlotVerifyData *out_data;
+	AvbVBMetaImageHeader toplevel_vbmeta;
 	enum avb_boot_state boot_state;
 	char *cmdline;
 	char *extra_args;
@@ -315,7 +316,31 @@ int do_avb_verify_part(struct cmd_tbl *cmdtp, int flag,
 
 		res = CMD_RET_SUCCESS;
 	} else {
-		printf("Verification failed, reason: %s\n", str_avb_slot_error(slot_result));
+		/* Check the vbmeta top level flags to see if 'disable-verity'
+		 * was executed on this partition
+		 */
+		avb_vbmeta_image_header_to_host_byte_order(
+			(const AvbVBMetaImageHeader*)
+				out_data->vbmeta_images[0].vbmeta_data,
+				&toplevel_vbmeta);
+		if (toplevel_vbmeta.flags &
+		    AVB_VBMETA_IMAGE_FLAGS_HASHTREE_DISABLED) {
+			printf("Verification disabled\n");
+			res = CMD_RET_SUCCESS;
+			if (out_data->cmdline) {
+			    extra_args = avb_set_state(avb_ops, AVB_ORANGE);
+			    if (extra_args)
+			    cmdline = append_cmd_line(out_data->cmdline,
+						      extra_args);
+			    else
+			    cmdline = out_data->cmdline;
+
+			    env_set(AVB_BOOTARGS, cmdline);
+			}
+		} else {
+			printf("Verification failed, reason: %s\n",
+				str_avb_slot_error(slot_result));
+		}
 	}
 
 	if (out_data)
