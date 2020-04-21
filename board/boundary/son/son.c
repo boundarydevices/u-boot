@@ -101,13 +101,13 @@ int board_detect_hdmi(struct display_info_t const *di)
 }
 
 static const struct display_info_t displays[] = {
+	VD_MIPI_G156HCE_L01(MIPI, NULL, fbp_bus_gp(3, GP_I2C2A_SN65DSI83_EN, 0, 0), 0x2c, FBP_MIPI_TO_LVDS, FBTS_FT5X06),
+	VD_MIPI_M101NWWB(MIPI, NULL, fbp_bus_gp(3, GP_I2C2A_SN65DSI83_EN, 0, 0), 0x2c, FBP_MIPI_TO_LVDS, FBTS_FT5X06),
+
 	/* hdmi */
 	VD_1920_1080M_60(HDMI, board_detect_hdmi, 0, 0x50),
 	VD_1280_720M_60(HDMI, NULL, 0, 0x50),
 	VD_1024_768M_60(HDMI, NULL, 0, 0x50),
-
-	VD_MIPI_G156HCE_L01(MIPI, NULL, fbp_bus_gp(3, GP_I2C2A_SN65DSI83_EN, 0, 0), 0x2c, FBP_MIPI_TO_LVDS, FBTS_FT5X06),
-	VD_MIPI_M101NWWB(MIPI, NULL, fbp_bus_gp(3, GP_I2C2A_SN65DSI83_EN, 0, 0), 0x2c, FBP_MIPI_TO_LVDS, FBTS_FT5X06),
 };
 
 #define display_cnt	ARRAY_SIZE(displays)
