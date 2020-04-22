@@ -336,6 +336,9 @@ int do_avb_verify_part(cmd_tbl_t *cmdtp, int flag,
 		printf("Unknown error occurred\n");
 	}
 
+	if (out_data)
+		avb_slot_verify_data_free(out_data);
+
 	return res;
 }
 
