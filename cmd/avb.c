@@ -335,13 +335,8 @@ int do_avb_verify_part(cmd_tbl_t *cmdtp, int flag,
 		printf("Unknown error occurred\n");
 	}
 
-	/* Free image buffers now that verification is complete */
-	if (slot_result != AVB_SLOT_VERIFY_RESULT_ERROR_OOM) {
-		int i;
-		for (i = 0; i < (int)out_data->num_loaded_partitions; i++)
-			if (out_data->loaded_partitions[i].data)
-				free(out_data->loaded_partitions[i].data);
-	}
+	if (out_data)
+		avb_slot_verify_data_free(out_data);
 
 	return res;
 }
