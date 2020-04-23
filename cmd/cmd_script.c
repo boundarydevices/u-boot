@@ -196,11 +196,18 @@ int do_script (struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[])
     return rcode;
 }
 
-U_BOOT_CMD(
-	script, 5, 0,	do_script,
-	"# run plain script from memory",
+static char script_help_text[] =
 	"[addr|check] [bytes] [no_chk] [silent] - run script starting at addr\n"
 	"	bytes - read bytes (hex) limit\n"
 	"	no_chk - no check header not ignore 1st line\n"
-	"	silent - be silent\n"
+	"	silent - be silent\n";
+
+U_BOOT_CMD(
+	script, 5, 0,	do_script,
+	"# run plain script from memory", script_help_text
+);
+
+U_BOOT_CMD(
+	autoscr, 5, 0,	do_script,
+	"# run plain script from memory", script_help_text
 );
