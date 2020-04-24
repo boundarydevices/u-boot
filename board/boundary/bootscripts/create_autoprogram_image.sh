@@ -62,7 +62,11 @@ echo "|||| Your gzdest is: mmc $1";
 echo "|||| Your source image file is: $2";
 echo "|||| Your output image file name will be: $3";
 
+MYSIZE=$(expr $(stat -c%s "$2") / 1024 / 1024 + 8)
+
 mkdir $TEMP
+
+rm -r $3 $TEMP/temp.txt $TEMP/temp2.txt $TEMP/boot.scr $TEMP/$3 $TEMP/out_image/; sync
 
 cp dir2fat32.sh image-gzwrite.txt split-for-gzwrite.sh $2 $TEMP; sync
 cd $TEMP
@@ -76,15 +80,9 @@ mkimage -A arm -O linux -T script -C none -a 0 -e 0 -n "bootscript" -d temp2.txt
 
 echo "|||| 1- creating bootscript is done ";
 
-rm temp.txt temp2.txt
-
-rm -r out_image
-
 mkdir out_image; sync
 
 cp boot.scr out_image/; sync
-
-rm boot.scr;
 
 echo "|||| 2- splitting the input image file... ";
 
@@ -98,32 +96,20 @@ cp $2.* out_image/; sync
 
 echo "|||| 3- copying image parts to out_image directory is done ";
 
-echo "|||| 4- removing image parts... ";
-
-rm $2.*;
-
-echo "|||| 4- removing image parts is done ";
-
-echo "|||| 5- creating the output fat32 image file... ";
-
-MYSIZE=$(expr $(stat -c%s "out_image") / 1024 / 1024 + 8)
+echo "|||| 4- creating the output fat32 image file... ";
 
 ./dir2fat32.sh $3 $MYSIZE out_image; sync
 
-echo "|||| 5- creating the output fat32 image file is done ";
-
-echo "|||| 6- removing out_image/ directory... ";
-
-rm -r out_image/;
-
-rm $TEMP/$2;
-
-echo "|||| 6- removing out_image/ directory is done ";
+echo "|||| 4- creating the output fat32 image file is done ";
 
 cd -
 
 cp $TEMP/$3 .; sync
 
-rm $TEMP/$3;
+echo "|||| 5- removing temporary created files and folders... ";
+
+rm -r $TEMP/temp.txt $TEMP/temp2.txt $TEMP/boot.scr $TEMP/$2 $TEMP/$2.* $TEMP/$3; sync
+
+echo "|||| 5- removing temporary created files and folders... ";
 
 echo "|||| PROCESS COMPLETED. Please flash out.img to an sdcard and use it to auto flash emmc."
