@@ -135,6 +135,7 @@ static void meson_set_boot_source(void)
 
 __weak int meson_board_late_init(void)
 {
+	meson_set_boot_source();
 	return 0;
 }
 
