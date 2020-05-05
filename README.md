@@ -1,7 +1,7 @@
 u-boot-imx
 ==========
 
-This repository is used to track U-Boot for our i.MX6 based boards:
+This repository is used to track U-Boot for our i.MX based boards:
 
 * [BD-SL-i.MX6 (SABRE Lite)][sabrelite]
 * [Nitrogen6X][nitrogen6x]
@@ -13,6 +13,11 @@ This repository is used to track U-Boot for our i.MX6 based boards:
 * [Nitrogen6 SoloX][nitrogen6-sx]
 * [Nitrogen7][nitrogen7]
 * [Nitrogen8M][nitrogen8m]
+* [Nitrogen8M SOM][nitrogen8m-som]
+* [Nitrogen8M Mini][nitrogen8mm]
+* [Nitrogen8M Mini SOM][nitrogen8mm-som]
+* [Nitrogen8M Nano][nitrogen8mn]
+* [Nitrogen8M Nano SOM][nitrogen8mn-som]
 
 It is based on the main-line upstream at [http://git.denx.de][denx].
 
@@ -35,4 +40,8 @@ preserve the history for customers who base their efforts on ours.
 [nitrogen6-sx]:http://boundarydevices.com/product/nit6_solox-imx6 "Nit6_SoloX product page"
 [nitrogen7]:https://boundarydevices.com/product/nitrogen7 "Nitrogen7 product page"
 [nitrogen8m]:https://boundarydevices.com/product/nitrogen8m "Nitrogen8M product page"
-
+[nitrogen8m-som]:https://boundarydevices.com/product/nitrogen8m-som "Nitrogen8M SOM product page"
+[nitrogen8mm]:https://boundarydevices.com/product/nitrogen8m-mini "Nitrogen8M Mini product page"
+[nitrogen8mm-som]:https://boundarydevices.com/product/nitrogen8m-mini-som "Nitrogen8M Mini SOM product page"
+[nitrogen8mn]:https://boundarydevices.com/product/nitrogen8m-nano "Nitrogen8M Nano product page"
+[nitrogen8mn-som]:https://boundarydevices.com/product/nitrogen8m-nano-som "Nitrogen8M Nano SOM product page"
