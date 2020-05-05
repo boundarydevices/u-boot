@@ -76,8 +76,9 @@
 #endif
 /*
  * rank0 will succeed, even if really rank 1, so we need
- * to probe memory if rank0 succeeds
+ * to probe memory if rank0 succeeds, except for i.MX8MN
  */
+#ifndef CONFIG_IMX8MN
 #ifdef VAL_DDRC_ADDRMAP0_R1
 #define LPDDR4_CS_NEW			LPDDR4_CS_R1
 #define VAL_DDRC_ADDRMAP0_NEW		VAL_DDRC_ADDRMAP0_R1
@@ -97,6 +98,7 @@
 #define LPDDR4_CS_NEW			LPDDR4_CS_R0
 #define VAL_DDRC_ADDRMAP0_NEW		VAL_DDRC_ADDRMAP0_R0
 #define VAL_DDRC_ADDRMAP6_NEW		VAL_DDRC_ADDRMAP6_R0
+#endif
 #endif
 
 #else
