@@ -571,8 +571,8 @@ int board_late_init(void)
 	board_late_specific_init();
 #endif
 	print_time_rv4162();
-#if defined(CONFIG_IMX8MM) && defined(CONFIG_CMD_FBPANEL)
-	/* No display yet for mini so need to setup cmd_... */
+#if (defined(CONFIG_IMX8MM) || defined(CONFIG_IMX8MN)) && defined(CONFIG_CMD_FBPANEL)
+	/* No display yet for mini/nano so need to setup cmd_... */
 	board_video_skip();
 #endif
 	return bdcommon_env_init();
