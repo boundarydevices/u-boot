@@ -17,23 +17,29 @@
 #endif
 
 #if CONFIG_DDR_CHANNEL_CNT == 1
+#ifdef CONFIG_IMX8MN
+#define IBASE_DIFF	1
+#else
+#define IBASE_DIFF	0
+#endif
+
 #if CONFIG_DDR_MB == 1024
 	/* Address map is from MSB 28: r15, r14, r13-r0, b2-b0, c9-c0 */
 #define VAL_DDRC_ADDRMAP0_R0		0x0000001F
-#define VAL_DDRC_ADDRMAP6_R0		0x06060606
+#define VAL_DDRC_ADDRMAP6_R0		(0x06060606 + IBASE_DIFF * 0x01010101)
 	/* Address map is from MSB 28: cs, r14, r13-r0, b2-b0, c9-c0 */
-#define VAL_DDRC_ADDRMAP0_R1		0x00000015
-#define VAL_DDRC_ADDRMAP6_R1		0x0F060606
+#define VAL_DDRC_ADDRMAP0_R1		(0x00000015 + IBASE_DIFF * 0x01)
+#define VAL_DDRC_ADDRMAP6_R1		(0x0F060606 + IBASE_DIFF * 0x010101)
 
 #elif CONFIG_DDR_MB == 1536
 	/* Address map is from MSB 29: r15, r14, cs, r13-r0, b2-b0, c9-c0 */
-#define VAL_DDRC_ADDRMAP0_R1		0x00000014
-#define VAL_DDRC_ADDRMAP6_R1		0x47070606
+#define VAL_DDRC_ADDRMAP0_R1		(0x00000014 + IBASE_DIFF * 0x01)
+#define VAL_DDRC_ADDRMAP6_R1		(0x47070606 + IBASE_DIFF * 0x01010101)
 
 #elif CONFIG_DDR_MB == 2048
 	/* Address map is from MSB 29: cs, r15, r14, r13-r0, b2-b0, c9-c0 */
-#define VAL_DDRC_ADDRMAP0_R1		0x00000016
-#define VAL_DDRC_ADDRMAP6_R1		0x06060606
+#define VAL_DDRC_ADDRMAP0_R1		(0x00000016 + IBASE_DIFF * 0x01)
+#define VAL_DDRC_ADDRMAP6_R1		(0x06060606 + IBASE_DIFF * 0x01010101)
 #else
 #error unsupported memory size
 #endif
