@@ -960,4 +960,11 @@ config VIDEO_IT6263_BRIDGE
 	Say Y here if you want to enable support for ITE IT6263
 	LVDS to HDMI connector, currently only support 1280x720P.
 
+config VIDEO_LINK
+	bool "Enable video link framework support"
+	depends on DM_VIDEO
+	help
+	   This option enables a video link framework basing on port-endpoint graph
+	   to connect video components.
+
 endmenu

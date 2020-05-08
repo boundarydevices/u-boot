@@ -18,6 +18,7 @@
 #include <stdio_dev.h>
 #include <serial.h>
 #include <splash.h>
+#include <video_link.h>
 #include <i2c.h>
 
 #include <dm/device-internal.h>
@@ -341,6 +342,8 @@ int stdio_add_devices(void)
 		struct udevice *vdev;
 		int ret;
 
+		if (IS_ENABLED(CONFIG_VIDEO_LINK))
+			video_link_init();
 		if (!IS_ENABLED(CONFIG_SYS_CONSOLE_IS_IN_ENV)) {
 			for (ret = uclass_first_device(UCLASS_VIDEO, &vdev);
 			     vdev;
