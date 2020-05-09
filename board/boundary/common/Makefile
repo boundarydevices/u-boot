@@ -18,6 +18,7 @@ endif
 obj-$(CONFIG_IMX8MN) += lpddr4_timing_8mn.o
 obj-$(CONFIG_IMX8MQ) += lpddr4_timing_8mq.o
 endif
+obj-$(CONFIG_CMD_FBPANEL) += display.o
 obj-$(CONFIG_MAX77823)  += max77823.o
 obj-$(CONFIG_FAN53526)  += fan53526.o
 obj-$(CONFIG_CMD_OTG_CABLE)  += cmd_otg_cable.o

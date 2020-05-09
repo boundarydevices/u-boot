@@ -53,4 +53,6 @@ void fan53526_init(void);
 int otg_power_detect(void);
 int bdcommon_env_init(void);
 void spl_dram_init(void);
+int board_detect_lcd133(struct display_info_t const *di);
+
 #endif
