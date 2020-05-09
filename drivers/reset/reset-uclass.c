@@ -115,7 +115,11 @@ static int __reset_get_bulk(struct udevice *dev, ofnode node,
 	if (count < 1)
 		return count;
 
-	bulk->resets = devm_kcalloc(dev, count, sizeof(struct reset_ctl),
+	if (dev)
+		bulk->resets = devm_kcalloc(dev, count, sizeof(struct reset_ctl),
+				    GFP_KERNEL);
+	else
+		bulk->resets = kzalloc(count * sizeof(struct reset_ctl),
 				    GFP_KERNEL);
 	if (!bulk->resets)
 		return -ENOMEM;
@@ -137,6 +141,11 @@ bulk_get_err:
 		      __func__, dev);
 
 	return ret;
+}
+
+int reset_get_bulk_nodev(ofnode node, struct reset_ctl_bulk *bulk)
+{
+	return __reset_get_bulk(NULL, node, bulk);
 }
 
 int reset_get_bulk(struct udevice *dev, struct reset_ctl_bulk *bulk)
