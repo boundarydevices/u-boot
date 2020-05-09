@@ -173,4 +173,11 @@ config RESET_RASPBERRYPI
 	  relevant. This driver provides a reset controller capable of
 	  interfacing with RPi4's co-processor and model these firmware
 	  initialization routines as reset lines.
+
+config RESET_DISPMIX
+	bool "i.MX8M Display MIX Reset Driver"
+	depends on DM_RESET && ARCH_IMX8M && DM_VIDEO
+	default n
+	help
+	  Support for reset controller on i.MX8M SoCs.
 endmenu
