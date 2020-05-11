@@ -39,12 +39,15 @@ static iomux_v3_cfg_t const init_pads[] = {
 #define GP_LCM_JM430_BKL_EN		IMX_GPIO_NR(1, 1)
 /* This enables 5V power on LTK080A60A004T mipi display */
 #define GP_LTK08_MIPI_EN		IMX_GPIO_NR(1, 1)
+#define GP_LCD133_070_RESET		IMX_GPIO_NR(1, 1)
 	IMX8MQ_PAD_GPIO1_IO01__GPIO1_IO1 | MUX_PAD_CTRL(0x16),
 
 #define GPIRQ_GT911 			IMX_GPIO_NR(3, 12)
+#define GPIRQ_LCD133_TOUCH		IMX_GPIO_NR(3, 12)
 	IMX8MQ_PAD_NAND_DATA06__GPIO3_IO12 | MUX_PAD_CTRL(0xd6),
 #define GP_GT911_RESET			IMX_GPIO_NR(3, 13)
 #define GP_ST1633_RESET			IMX_GPIO_NR(3, 13)
+#define GP_LCD133_TOUCH_RESET		IMX_GPIO_NR(3, 13)
 	IMX8MQ_PAD_NAND_DATA07__GPIO3_IO13 | MUX_PAD_CTRL(0x49),
 
 #define GP_ARM_DRAM_VSEL		IMX_GPIO_NR(3, 24)
@@ -53,6 +56,9 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IMX8MQ_PAD_SD1_STROBE__GPIO2_IO11 | MUX_PAD_CTRL(0x16),
 #define GP_SOC_GPU_VPU_VSEL		IMX_GPIO_NR(2, 20)
 	IMX8MQ_PAD_SD2_WP__GPIO2_IO20 | MUX_PAD_CTRL(0x16),
+
+#define GP_BACKLIGHT_MIPI		IMX_GPIO_NR(5, 3)
+	IMX8MQ_PAD_SPDIF_TX__GPIO5_IO3 | MUX_PAD_CTRL(0x4),
 
 #define GP_FASTBOOT_KEY			IMX_GPIO_NR(1, 7)
 	IMX8MQ_PAD_GPIO1_IO07__GPIO1_IO7 | MUX_PAD_CTRL(WEAK_PULLUP),
@@ -63,6 +69,8 @@ static iomux_v3_cfg_t const init_pads[] = {
 #define GP_TC358762_EN			IMX_GPIO_NR(3, 15)
 #define GP_I2C4_SN65DSI83_EN		IMX_GPIO_NR(3, 15)
 #define GP_MIPI_RESET			IMX_GPIO_NR(3, 15)
+/* enable for TPS65132 Single Inductor - Dual Output Power Supply */
+#define GP_LCD133_070_ENABLE		IMX_GPIO_NR(3, 15)
 	IMX8MQ_PAD_NAND_RE_B__GPIO3_IO15 | MUX_PAD_CTRL(0x6),
 
 
@@ -104,6 +112,7 @@ int board_early_init_f(void)
 	imx_iomux_v3_setup_multiple_pads(init_pads, ARRAY_SIZE(init_pads));
 	set_wdog_reset(wdog);
 
+	gpio_direction_output(GP_BACKLIGHT_MIPI, 0);
 	gpio_direction_output(GP_ARM_DRAM_VSEL, 0);
 	gpio_direction_output(GP_DRAM_1P1_VSEL, 0);
 	gpio_direction_output(GP_SOC_GPU_VPU_VSEL, 0);
@@ -170,6 +179,8 @@ static const struct display_info_t displays[] = {
 	VD_LCM_JM430(MIPI, fbp_detect_i2c, fbp_bus_gp(3, GP_ST1633_RESET, GP_TC358762_EN, 30), fbp_addr_gp(0x55, GP_LCM_JM430_BKL_EN, 0, 0), FBTS_ST1633I),		/* Sitronix touch */
 	VD_LTK0680YTMDB(MIPI, NULL, fbp_bus_gp(3, GP_MIPI_RESET, GP_MIPI_RESET, 0), 0x5d, FBTS_GOODIX),
 	VD_MIPI_COM50H5N03ULC(MIPI, NULL, fbp_bus_gp(3, GP_MIPI_RESET, GP_MIPI_RESET, 0), 0x00),
+	/* 0x3e is the TPS65132 power chip on our adapter board */
+	VD_MIPI_LCD133_070(MIPI, board_detect_lcd133, fbp_bus_gp(3, GP_LCD133_070_ENABLE, GP_LCD133_070_ENABLE, 1), fbp_addr_gp(0x3e, 0, 0, 0), FBTS_FT7250),
 	VD_MIPI_MQ_1920_1080M_60(MIPI, fbp_detect_i2c, 3, 0x70),
 	VD_MIPI_MQ_1280_800M_60(MIPI, NULL, 3, 0x70),
 	VD_MIPI_MQ_1280_720M_60(MIPI, NULL, 3, fbp_addr_gp(0x70,0,8,0)),
@@ -206,4 +217,10 @@ int board_fastboot_key_pressed(void)
 	gpio_request(GP_FASTBOOT_KEY, "fastboot_key");
 	gpio_direction_input(GP_FASTBOOT_KEY);
 	return !gpio_get_value(GP_FASTBOOT_KEY);
+}
+
+void board_env_init(void)
+{
+	/* An unmodified panel has reset connected directly to 1.8V, so make input */
+	gpio_direction_input(GP_LCD133_070_RESET);
 }
