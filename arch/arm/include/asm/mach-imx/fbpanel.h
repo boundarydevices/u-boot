@@ -11,8 +11,8 @@
 #define fbp_bus_gp(bus_num, bus_gp, enable_gp, bus_delay) ((bus_num) | \
 		((bus_gp) << 8) | ((enable_gp) << 16) | ((bus_delay) << 24))
 
-#define fbp_addr_gp(addr_num, backlight_en_gp, min_hs_clock_multiple, spare3) ((addr_num) | \
-		((backlight_en_gp) << 8) | ((min_hs_clock_multiple) << 16) | ((spare3) << 24))
+#define fbp_addr_gp(addr_num, backlight_en_gp, min_hs_clock_multiple, reset_gp) ((addr_num) | \
+		((backlight_en_gp) << 8) | ((min_hs_clock_multiple) << 16) | ((reset_gp) << 24))
 
 enum alias_names {
 	FBTS_NONE = 0,
@@ -23,6 +23,7 @@ enum alias_names {
 	FBTS_EXC3000,
 	FBTS_FT5X06,
 	FBTS_FT5X06_2,
+	FBTS_FT7250,
 	FBTS_FUSION7,
 	FBTS_GOODIX,
 	FBTS_GOODIX2,
@@ -49,7 +50,7 @@ struct display_info_t {
 			unsigned char addr_num;
 			unsigned char backlight_en_gp;
 			unsigned char min_hs_clock_multiple;
-			unsigned char spare3;
+			unsigned char reset_gp;
 		};
 	};
 	int	pixfmt;
@@ -99,6 +100,7 @@ struct display_info_t {
 #define FBF_COM50H5N03ULC	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_PINCTRL | FBF_ENABLE_GPIOS_DTB)
 #define FBF_LTK080A60A004T	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_PINCTRL | FBF_ENABLE_GPIOS_DTB)
 #define FBF_M101NWWB		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4)
+#define FBF_LCD133_070		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_PINCTRL | FBF_ENABLE_GPIOS_DTB)
 #define FBF_MIPI_TO_HDMI	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_DSI_LANES_4)
 #define FBF_MIPI_MQ_TO_HDMI	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_SYNC_PULSE | FBF_DSI_LANES_4)
 #define FBF_MIPI_MQ2_TO_HDMI	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_SYNC_PULSE | FBF_DSI_LANES_2)
@@ -195,6 +197,7 @@ void fbp_setup_env_cmds(void);
 #define VD_MIPI_COM50H5N03ULC(_mode, args...)	VDF_MIPI_COM50H5N03ULC(_mode, "com50h5n03ulc", RGB24, FBF_COM50H5N03ULC, args)
 #define VD_MIPI_M101NWWB_NO_CMDS(_mode, args...) VDF_MIPI_M101NWWB(_mode, "m101nwwb", RGB24, FBF_M101NWWB_NO_CMDS, args)
 #define VD_MIPI_M101NWWB(_mode, args...)	VDF_MIPI_M101NWWB(_mode, "m101nwwb", RGB24, FBF_M101NWWB, args)
+#define VD_MIPI_LCD133_070(_mode, args...)	VDF_MIPI_LCD133_070(_mode, "lcd133_070", RGB24, FBF_LCD133_070, args)
 #define VD_LD070WSVGA(_mode, args...)		VDF_LD070WSVGA(_mode, "ld070wsvga", RGB24, 0, args)
 #define VD_SVGA(_mode, args...)			VDF_SVGA(_mode, "svga", RGB666, FBF_MODESTR, args)
 #define VD_WVGA_TX23D200_24(_mode, args...)	VDF_WVGA_TX23D200(_mode, "tx23d200_24", RGB24, 0, args)
@@ -1225,6 +1228,26 @@ void fbp_setup_env_cmds(void);
 		.lower_margin   = 12,\
 		.hsync_len      = 24,\
 		.vsync_len      = 2,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
+#define VDF_MIPI_LCD133_070(_mode, _name, _fmt, _flags, args...) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, args),\
+	.mode	= {\
+		.name           = _name,\
+		.refresh        = 60,\
+		.xres           = 1200,\
+		.yres           = 1920,\
+		.pixclock       = 1000000000000ULL/((1200+104+73+8)*(1920+108+74+1)*60), \
+		.left_margin    = 104,\
+		.right_margin   = 73,\
+		.upper_margin   = 108,\
+		.lower_margin   = 74,\
+		.hsync_len      = 8,\
+		.vsync_len      = 1,\
 		.sync           = FB_SYNC_EXT,\
 		.vmode          = FB_VMODE_NONINTERLACED\
 	}\

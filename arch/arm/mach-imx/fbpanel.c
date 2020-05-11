@@ -24,7 +24,7 @@
 #include <video_fb.h>
 /*
  * The format of the string is
- * [*][off|mode_str_name[:["dtb_alias",["dtb_alias",]][18|24][m][j][s][b][:][S|D|b|P|l|d|s|v|B|M|U|c|L|E|4|3|2|1][Gn][e][x[x_vals][p[pwm_period]]]:timings]]
+ * [*][off|mode_str_name[:["dtb_alias",["dtb_alias",]][18|24][m][j][s][b][:][S|D|b|P|l|d|s|v|B|M|U|c|L|E|4|3|2|1][Gn][Rn][e][x[x_vals][p[pwm_period]]]:timings]]
  *
  * * means select this display for u-boot to initialize.
  * "dtb_alias" : dtb alias to set status to okay, use to enable touch screen drivers, panel drivers(sn65)
@@ -53,6 +53,7 @@
  * 2 : mipi 2 lanes
  * 1 : mipi 1 lane
  * G : enable gpio
+ * R : reset gpio
  * e : call board_pre_enable
  * x : x_vals: bus_num,addr,bus_gp,bus_gp_delay_ms,bkgpio,min_hs_clock_multiple
  * 	bus_num, i2c bus number
@@ -194,6 +195,7 @@ static const char *const aliases[] = {
 [FBTS_EXC3000] = "ts_exc3000",
 [FBTS_FT5X06] = "ts_ft5x06",
 [FBTS_FT5X06_2] = "ts_ft5x06_2",
+[FBTS_FT7250] = "ts_ft7250",
 [FBTS_FUSION7] = "ts_fusion7",
 [FBTS_GOODIX] = "ts_goodix",
 [FBTS_GOODIX2] = "ts_goodix2",
@@ -510,6 +512,17 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 			(i >> 5), fbnames[fb], i & 0x1f,
 			(di->fbflags & FBF_ENABLE_GPIOS_ACTIVE_LOW) ?
 				GPIO_ACTIVE_LOW : GPIO_ACTIVE_HIGH);
+		buf += sz;
+		size -= sz;
+	}
+
+	i = di->reset_gp;
+	if (i) {
+		sz = snprintf(buf, size,
+			"fdt get value gp gpio%u phandle;"
+			"fdt set %s reset-gpios <${gp} %u %u>;",
+			(i >> 5), fbnames[fb], i & 0x1f,
+			GPIO_ACTIVE_LOW);
 		buf += sz;
 		size -= sz;
 	}
@@ -1471,6 +1484,17 @@ static const struct display_info_t * parse_mode(
 		di->enable_gp = value;
 		c = *p;
 	}
+	if (c == 'R') {
+		p++;
+		value = simple_strtoul(p, &endp, 10);
+		if (endp <= p) {
+			printf("expecting gpio number\n");
+			return NULL;
+		}
+		p = endp;
+		di->reset_gp = value;
+		c = *p;
+	}
 	if (c == 'e') {
 		di->pre_enable = board_pre_enable;
 		p++;
@@ -1648,6 +1672,13 @@ static void str_mode(char *p, int size, const struct display_info_t *di, unsigne
 
 	if (di->enable_gp) {
 		count = snprintf(p, size, "G%u", di->enable_gp);
+		if (size > count) {
+			p += count;
+			size -= count;
+		}
+	}
+	if (di->reset_gp) {
+		count = snprintf(p, size, "R%u", di->reset_gp);
 		if (size > count) {
 			p += count;
 			size -= count;
