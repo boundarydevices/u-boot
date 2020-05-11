@@ -43,19 +43,27 @@ static iomux_v3_cfg_t const init_pads[] = {
 #define GP_LCM_JM430_BKL_EN		IMX_GPIO_NR(1, 1)
 /* This enables 5V power on LTK080A60A004T mipi display */
 #define GP_LTK08_MIPI_EN		IMX_GPIO_NR(1, 1)
-	IOMUX_PAD_CTRL(GPIO1_IO01__GPIO1_IO1, 0x16),
+#define GP_LCD133_070_RESET		IMX_GPIO_NR(1, 1)
+	IOMUX_PAD_CTRL(GPIO1_IO01__GPIO1_IO1, 0x146),
 
 #define GPIRQ_GT911 			IMX_GPIO_NR(1, 6)
+#define GPIRQ_I2C2_FT5X06		IMX_GPIO_NR(1, 6)
 	IOMUX_PAD_CTRL(GPIO1_IO06__GPIO1_IO6, 0xd6),
 #define GP_GT911_RESET			IMX_GPIO_NR(1, 7)
 #define GP_ST1633_RESET			IMX_GPIO_NR(1, 7)
+#define GP_I2C2_FT7250_RESET		IMX_GPIO_NR(1, 7)
 	IOMUX_PAD_CTRL(GPIO1_IO07__GPIO1_IO7, 0x49),
 
 #define GP_TC358762_EN		IMX_GPIO_NR(1, 9)
 #define GP_I2C2_SN65DSI83_EN	IMX_GPIO_NR(1, 9)
 #define GP_MIPI_RESET		IMX_GPIO_NR(1, 9)
+/* enable for TPS65132 Single Inductor - Dual Output Power Supply */
+#define GP_LCD133_070_ENABLE		IMX_GPIO_NR(1, 9)
 	IOMUX_PAD_CTRL(GPIO1_IO09__GPIO1_IO9, 0x06),
 	IOMUX_PAD_CTRL(SAI2_RXC__GPIO4_IO22, PAD_CTL_DSE1 | PAD_CTL_ODE),
+
+#define GP_BACKLIGHT_MIPI		IMX_GPIO_NR(5, 3)
+	IOMUX_PAD_CTRL(SPDIF_TX__GPIO5_IO3, 0x116),
 
 #define GPIRQ_CSI1_TC3587		IMX_GPIO_NR(1, 8)
 #define GP_CSI1_OV5640_MIPI_POWER_DOWN	IMX_GPIO_NR(1, 8)
@@ -102,6 +110,7 @@ int board_early_init_f(void)
 {
 	struct wdog_regs *wdog = (struct wdog_regs *)WDOG1_BASE_ADDR;
 
+	gpio_direction_output(GP_BACKLIGHT_MIPI, 0);
 	gpio_request(GP_I2C2_SN65DSI83_EN, "sn65en");
 	gpio_direction_output(GP_I2C2_SN65DSI83_EN, 0);
 	imx_iomux_v3_setup_multiple_pads(init_pads, ARRAY_SIZE(init_pads));
@@ -145,6 +154,8 @@ static const struct display_info_t displays[] = {
 	VD_LCM_JM430_MINI(MIPI, fbp_detect_i2c, fbp_bus_gp(1, GP_ST1633_RESET, GP_TC358762_EN, 30), fbp_addr_gp(0x55, GP_LCM_JM430_BKL_EN, 0, 0), FBTS_ST1633I),	/* Sitronix touch */
 	VD_LTK0680YTMDB(MIPI, NULL, fbp_bus_gp(1, GP_MIPI_RESET, GP_MIPI_RESET, 0), 0x5d, FBTS_GOODIX),
 	VD_MIPI_COM50H5N03ULC(MIPI, NULL, fbp_bus_gp(1, GP_MIPI_RESET, GP_MIPI_RESET, 0), 0x00),
+	/* 0x3e is the TPS65132 power chip on our adapter board */
+	VD_MIPI_LCD133_070(MIPI, board_detect_lcd133, fbp_bus_gp(1, GP_LCD133_070_ENABLE, GP_LCD133_070_ENABLE, 1), fbp_addr_gp(0x3e, 0, 0, 0), FBTS_FT7250),
 	VD_MIPI_640_480M_60(MIPI, fbp_detect_i2c, 1, 0x70),
 	VD_MIPI_1280_720M_60(MIPI, NULL, 1, 0x70),
 	VD_MIPI_1920_1080M_60(MIPI, NULL, 1, 0x70),
@@ -240,4 +251,6 @@ void board_env_init(void)
 #ifndef CONFIG_BOARD_REV2
 	check_wdog();
 #endif
+	/* An unmodified panel has reset connected directly to 1.8V, so make input */
+	gpio_direction_input(GP_LCD133_070_RESET);
 }
