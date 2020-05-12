@@ -139,14 +139,6 @@ if itest.s "x" == "x${root}"; then
 	fi
 fi
 
-if itest.s "x" == "x$cma" ; then
-	cma=256M
-fi
-
-if itest.s "x" == "x$vmalloc" ; then
-	vmalloc=400M
-fi
-
 if itest.s "x" != "x$show_fdt" ; then
 	fdt print /
 fi
@@ -155,8 +147,21 @@ if itest.s "x" != "x$show_env" ; then
 	printenv
 fi
 
-setenv bootargs "$bootargs console=${console},115200 vmalloc=${vmalloc}"
-setenv bootargs "$bootargs cma=${cma} consoleblank=0 root=${root} rootwait"
+if itest.s x${console} != x ; then
+	setenv bootargs ${bootargs} console=${console},115200
+fi
+if itest.s "x" == "x$vmalloc" ; then
+	vmalloc=400M
+fi
+if itest.s x${consoleblank} == x ; then
+	consoleblank=0
+fi
+setenv bootargs ${bootargs} vmalloc=${vmalloc} consoleblank=${consoleblank} rootwait fixrtc cpu=${imx_cpu} board=${board} uboot_release=${uboot_release}
+
+if itest.s "x" == "x$cma" ; then
+	cma=256M
+fi
+setenv bootargs "${bootargs} cma=${cma} root=${root}"
 
 if itest.s "x" != "x${loglevel}" ; then
 	setenv bootargs ${bootargs} loglevel=${loglevel}

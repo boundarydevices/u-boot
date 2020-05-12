@@ -89,10 +89,13 @@ fi
 if itest.s x${console} != x ; then
 	setenv bootargs ${bootargs} console=${console},115200
 fi
+if itest.s "x" == "x$vmalloc" ; then
+	vmalloc=400M
+fi
 if itest.s x${consoleblank} == x ; then
 	consoleblank=0
 fi
-setenv bootargs ${bootargs} vmalloc=400M consoleblank=${consoleblank} rootwait fixrtc cpu=${imx_cpu} board=${board}
+setenv bootargs ${bootargs} vmalloc=${vmalloc} consoleblank=${consoleblank} rootwait fixrtc cpu=${imx_cpu} board=${board} uboot_release=${uboot_release}
 
 setenv bootargs ${bootargs} systemd.gpt_auto=0
 
