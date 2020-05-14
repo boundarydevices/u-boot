@@ -106,7 +106,7 @@
 #if defined(CONFIG_ENV_IS_IN_MMC)
 #define CONFIG_ENV_OFFSET               (-CONFIG_ENV_SIZE)
 #define CONFIG_SYS_MMC_ENV_DEV		0	/* USDHC1 */
-#define CONFIG_SYS_MMC_ENV_PART		0	/* mmcblk0boot0 */
+#define CONFIG_SYS_MMC_ENV_PART		1	/* mmcblk0boot0 */
 #elif defined(CONFIG_ENV_IS_IN_SPI_FLASH)
 #define CONFIG_ENV_OFFSET		(4 * 1024 * 1024)
 #define CONFIG_ENV_SECT_SIZE		(64 * 1024)
