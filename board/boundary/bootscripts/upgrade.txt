@@ -21,6 +21,9 @@ elif itest.s x8MQ == "x${imx_cpu}" || itest.s x8MM == "x${imx_cpu}" || itest.s x
 elif itest.s x8MNano == "x${imx_cpu}"; then
 	a_base=0x42000000
 	offset=0x8000
+	if itest ${env_part} != 0 ; then
+		offset=0x0
+	fi
 fi
 
 qspi_match=1
