@@ -47,7 +47,7 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IMX8MQ_PAD_NAND_DATA06__GPIO3_IO12 | MUX_PAD_CTRL(0xd6),
 #define GP_GT911_RESET			IMX_GPIO_NR(3, 13)
 #define GP_ST1633_RESET			IMX_GPIO_NR(3, 13)
-#define GP_LCD133_TOUCH_RESET		IMX_GPIO_NR(3, 13)
+#define GP_I2C2_FT7250_RESET		IMX_GPIO_NR(3, 13)
 	IMX8MQ_PAD_NAND_DATA07__GPIO3_IO13 | MUX_PAD_CTRL(0x49),
 
 #define GP_ARM_DRAM_VSEL		IMX_GPIO_NR(3, 24)
@@ -223,4 +223,9 @@ void board_env_init(void)
 {
 	/* An unmodified panel has reset connected directly to 1.8V, so make input */
 	gpio_direction_input(GP_LCD133_070_RESET);
+	/*
+	 * If touchscreen reset is low, display will not initialize, but runs fine
+	 * after init independent of gpio level
+	 */
+	gpio_direction_output(GP_I2C2_FT7250_RESET, 1);
 }
