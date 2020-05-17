@@ -253,4 +253,9 @@ void board_env_init(void)
 #endif
 	/* An unmodified panel has reset connected directly to 1.8V, so make input */
 	gpio_direction_input(GP_LCD133_070_RESET);
+	/*
+	 * If touchscreen reset is low, display will not initialize, but runs fine
+	 * after init independent of gpio level
+	 */
+	gpio_direction_output(GP_I2C2_FT7250_RESET, 1);
 }
