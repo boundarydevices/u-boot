@@ -1392,9 +1392,15 @@ SOC_CPU = iMX8MQ
 TEE_LOAD_ADDR = 0xfe000000
 ATF_LOAD_ADDR = 0x00910000
 endif
+DTBS = $(patsubst %,arch/$(ARCH)/dts/%.dtb,$(subst ",,$(CONFIG_OF_LIST)))
+PAD_IMAGE = $(srctree)/arch/arm/mach-imx/pad_image.sh
 $(U_BOOT_ITS): $(U_BOOT_ITS_DEPS) FORCE
+ifdef CONFIG_IMX_HAB
+	$(PAD_IMAGE) bl31-${SOC_CPU}.bin
+	$(PAD_IMAGE) u-boot-nodtb.bin $(DTBS)
+endif
 	TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ATF_LOAD_ADDR=$(ATF_LOAD_ADDR) BL31=bl31-${SOC_CPU}.bin $(srctree)/$(CONFIG_SPL_FIT_GENERATOR) \
-	$(patsubst %,arch/$(ARCH)/dts/%.dtb,$(subst ",,$(CONFIG_OF_LIST))) > $@
+	$(DTBS) > $@
 endif
 endif
 
