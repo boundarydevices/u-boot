@@ -20,6 +20,7 @@ else
 fi
 
 BL32="tee.bin"
+LOADABLES="\"atf@1\""
 
 if [ ! -f $BL32 ]; then
 	BL32=/dev/null
@@ -27,9 +28,18 @@ else
 	echo "Building with TEE support, make sure your $BL31 is compiled with spd. If you do not want tee, please delete $BL32" >&2
 	echo "$BL32 size: " >&2
 	ls -lct $BL32 | awk '{print $5}' >&2
+	LOADABLES="$LOADABLES, \"tee@1\""
 fi
 
 BL33="u-boot-nodtb.bin"
+DEK_BLOB="dek_blob_fit_dummy.bin"
+
+if [ ! -f $DEK_BLOB ]; then
+	DEK_BLOB=/dev/null
+else
+	echo "Building with encrypted boot support, make sure to replace DEK Blob in final image." >&2
+	LOADABLES="\"dek_blob@1\", $LOADABLES"
+fi
 
 if [ ! -f $BL33 ]; then
 	echo "ERROR: $BL33 file NOT found" >&2
@@ -44,7 +54,6 @@ do
 	echo "$dtname size: " >&2
 	ls -lct $dtname | awk '{print $5}' >&2
 done
-
 
 cat << __HEADER_EOF
 /dts-v1/;
@@ -105,6 +114,18 @@ cat << __HEADER_EOF
 __HEADER_EOF
 fi
 
+if [ -f $DEK_BLOB ]; then
+cat << __HEADER_EOF
+		dek_blob@1 {
+			description = "dek_blob";
+			data = /incbin/("$DEK_BLOB");
+			type = "script";
+			compression = "none";
+			load = <$DEK_BLOB_LOAD_ADDR>;
+		};
+__HEADER_EOF
+fi
+
 cat << __CONF_HEADER_EOF
 	};
 	configurations {
@@ -120,7 +141,7 @@ cat << __CONF_SECTION_EOF
 		config@$cnt {
 			description = "$(basename $dtname .dtb)";
 			firmware = "uboot@1";
-			loadables = "atf@1", "tee@1";
+			loadables = $LOADABLES;
 			fdt = "fdt@$cnt";
 		};
 __CONF_SECTION_EOF
@@ -129,7 +150,7 @@ cat << __CONF_SECTION1_EOF
 		config@$cnt {
 			description = "$(basename $dtname .dtb)";
 			firmware = "uboot@1";
-			loadables = "atf@1";
+			loadables = $LOADABLES;
 			fdt = "fdt@$cnt";
 		};
 __CONF_SECTION1_EOF
