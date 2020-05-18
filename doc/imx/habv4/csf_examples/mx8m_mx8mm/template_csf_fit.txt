@@ -1,0 +1,35 @@
+[Header]
+    Version = 4.3
+    Hash Algorithm = sha256
+    Engine = CAAM
+    Engine Configuration = 0
+    Certificate Format = X509
+    Signature Format = CMS
+
+[Install SRK]
+    # Index of the key location in the SRK table to be installed
+    File = "_SRK_TABLE_"
+    Source index = 0
+
+[Install CSFK]
+    # Key used to authenticate the CSF data
+    File = "_SIGN_KEY_"
+
+[Authenticate CSF]
+
+[Install Key]
+    # Key slot index used to authenticate the key to be installed
+    Verification index = 0
+    # Target key slot in HAB key store where key will be installed
+    Target index = 2
+    # Key to install
+    File = "_SIGN_KEY_"
+
+[Authenticate Data]
+    # Key slot index used to authenticate the image data
+    Verification index = 2
+    # Authenticate Start Address, Offset, Length and file
+    Blocks = _FIT_START_ADDR_ _FIT_OFFSET_ _FIT_LENGTH_ "flash.bin", \
+             _UBOOT_START_ADDR_ _UBOOT_OFFSET_ _UBOOT_LENGTH_ "flash.bin", \
+             _DTB_START_ADDR_ _DTB_OFFSET_ _DTB_LENGTH_ "flash.bin", \
+             _ATF_START_ADDR_ _ATF_OFFSET_ _ATF_LENGTH_ "flash.bin"
