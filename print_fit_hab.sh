@@ -60,8 +60,17 @@ uboot_load_addr=`printf "0x%X" ${uboot_load_addr}`
 
 echo ${uboot_load_addr} ${uboot_sign_off} ${uboot_size}
 
+if [ $# -ge 1 ]; then
+	DTBS="$*"
+else
+	source .config
+	for i in $CONFIG_OF_LIST; do
+		DTBS="arch/arm/dts/$i.dtb $DTBS"
+	done
+fi
+
 cnt=0
-for dtname in $*
+for dtname in $DTBS
 do
 	if [ ${cnt} -ge 0 ]
 	then
@@ -105,7 +114,6 @@ tee_load_addr=`printf "0x%X" ${tee_load_addr}`
 atf_size=`printf "0x%X" ${atf_size}`
 atf_sign_off=`printf "0x%X" ${atf_sign_off}`
 atf_load_addr=`printf "0x%X" ${atf_load_addr}`
-
 echo ${atf_load_addr} ${atf_sign_off} ${atf_size}
 
 if [ ${tee_size} != 0x0 ]
