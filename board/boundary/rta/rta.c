@@ -214,8 +214,7 @@ int board_usb_phy_mode(int port)
 {
 	if (port == 1)
 		return USB_INIT_HOST;
-	else
-		return usb_phy_mode(port);
+	return gpio_get_value(GP_USB_OTG1_ID) ? USB_INIT_DEVICE : USB_INIT_HOST;
 }
 
 int board_ehci_hcd_init(int port)
