@@ -368,6 +368,7 @@ static int sw_vals = -1;
 
 static ulong swm00[] = { CONFIG_SWM_DISPLAY_00_A, CONFIG_SWM_DISPLAY_00_B };
 static ulong swm24[] = { CONFIG_SWM_DISPLAY_24_A, CONFIG_SWM_DISPLAY_24_B };
+static ulong swm38[] = { CONFIG_SWM_DISPLAY_38_A, CONFIG_SWM_DISPLAY_38_B };
 
 int board_detect_lvds(const struct display_info_t *di)
 {
@@ -380,7 +381,7 @@ int board_detect_lvds(const struct display_info_t *di)
 	snprintf(buf, sizeof(buf), "swm%02x_%c", di->addr_num, 'a' + swl);
 
 	mask = env_get_hex(buf, (di->addr_num == 0x24) ?
-			swm24[swl] :  swm00[swl]);
+			swm24[swl] : (di->addr_num == 0x38) ? swm38[swl] : swm00[swl]);
 	return (swm & mask) ? 1 : 0;
 }
 
@@ -404,6 +405,7 @@ static const struct display_info_t displays[] = {
 	VD_WVGA_TX23D200_24L(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
 	VD_WVGA_TX23D200_24H(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
 	VD_AM_1280800P2TZQW(LVDS, board_detect_lvds, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x24, FBTS_CYTTSP5),
+	VD_DT070BTFT(LVDS, board_detect_lvds, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
 
 	/* hdmi */
 	VD_1280_720M_60(HDMI, fbp_detect_i2c, 1, 0x50),
