@@ -1135,6 +1135,10 @@ void do_error(struct pt_regs *pt_regs, unsigned int esr)
 		}
 	}
 
+	/* Skip if i.MX8M Nano as it triggers when Ethernet is enabled */
+	if (is_imx8mn())
+		return;
+
 	efi_restore_gd();
 	printf("\"Error\" handler, esr 0x%08x\n", esr);
 	show_regs(pt_regs);
