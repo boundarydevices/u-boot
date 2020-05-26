@@ -575,7 +575,6 @@ int imx8m_usb_power(int usb_id, bool on)
 	return 0;
 }
 
-#if defined(CONFIG_SPL_BUILD)
 #if defined(CONFIG_IMX8MQ) || defined(CONFIG_IMX8MM) || defined(CONFIG_IMX8MN)
 bool serror_need_skip = true;
 void do_error(struct pt_regs *pt_regs, unsigned int esr)
@@ -600,13 +599,16 @@ void do_error(struct pt_regs *pt_regs, unsigned int esr)
 		}
 	}
 
+	/* Skip if i.MX8M Nano as it triggers when Ethernet is enabled */
+	if (is_imx8mn())
+		return;
+
 	efi_restore_gd();
 	printf("\"Error\" handler, esr 0x%08x\n", esr);
 	show_regs(pt_regs);
 	panic("Resetting CPU ...\n");
 
 }
-#endif
 #endif
 
 #endif
