@@ -308,6 +308,13 @@
 		>;
 	};
 
+	pinctrl_reg_usdhc2_vqmmc: reg_usdhc2_vqmmcgrp {
+		fsl,pins = <
+#define GP_USDHC2_VSEL	<&gpio1 8 GPIO_ACTIVE_HIGH>
+			MX8MQ_IOMUXC_GPIO1_IO08_GPIO1_IO8		0x16
+		>;
+	};
+
 	pinctrl_reg_wlan_vmmc: reg-wlan-vmmcgrp {
 		fsl,pins = <
 #define GP_REG_WLAN_VMMC	<&gpio3 20 GPIO_ACTIVE_HIGH>
@@ -566,6 +573,21 @@
 		regulator-max-microvolt = <5000000>;
 		gpio = GP_REG_USB_OTG_VBUS;
 		enable-active-high;
+	};
+
+	reg_usdhc2_vqmmc: regulator-usdhc2-vqmmc {
+		compatible = "regulator-gpio";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_reg_usdhc2_vqmmc>;
+		regulator-name = "reg_sd2_vsel";
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-type = "voltage";
+		regulator-boot-on;
+		regulator-always-on;
+		gpios = GP_USDHC2_VSEL;
+		states = <1800000 0x1
+			  3300000 0x0>;
 	};
 
 	reg_vref_0v9: regulator-vref-0v9 {
@@ -1363,7 +1385,7 @@
 	sd-uhs-sdr25;
 	status = "okay";
 	vmmc-supply = <&reg_vref_3v3>;
-	vqmmc-supply = <&reg_vref_1v8>;
+	vqmmc-supply = <&reg_usdhc2_vqmmc>;
 };
 #endif
 
