@@ -23,6 +23,7 @@
 #ifdef CONFIG_IMX8M_LPDDR4
 #include <asm/arch/imx8m_ddr.h>
 #endif
+#include "../common/padctrl.h"
 #include "../common/bd_common.h"
 
 DECLARE_GLOBAL_DATA_PTR;
@@ -62,11 +63,24 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IMX8MQ_PAD_SD1_DATA7__USDHC1_DATA7 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 #define GP_EMMC_RESET	IMX_GPIO_NR(2, 10)
 	IMX8MQ_PAD_SD1_RESET_B__GPIO2_IO10 | MUX_PAD_CTRL(NO_PAD_CTRL),
+
+#ifdef CONFIG_USDHC2_SD
+	IMX8MQ_PAD_SD2_CLK__USDHC2_CLK | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	IMX8MQ_PAD_SD2_CMD__USDHC2_CMD | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	IMX8MQ_PAD_SD2_DATA0__USDHC2_DATA0 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	IMX8MQ_PAD_SD2_DATA1__USDHC2_DATA1 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	IMX8MQ_PAD_SD2_DATA2__USDHC2_DATA2 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	IMX8MQ_PAD_SD2_DATA3__USDHC2_DATA3 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+#define GP_USDHC2_CD	IMX_GPIO_NR(2, 12)
+	IMX8MQ_PAD_SD2_CD_B__GPIO2_IO12 | MUX_PAD_CTRL(WEAK_PULLUP),
+#endif
 };
 
 struct fsl_esdhc_cfg board_usdhc_cfg[] = {
-	{.esdhc_base = USDHC1_BASE_ADDR, .bus_width = 8,
-			.gp_reset = GP_EMMC_RESET},
+	{.esdhc_base = USDHC1_BASE_ADDR, .bus_width = 8, .gp_reset = GP_EMMC_RESET},
+#ifdef CONFIG_USDHC2_SD
+	{.esdhc_base = USDHC2_BASE_ADDR, .bus_width = 4, .gp_cd = GP_USDHC2_CD},
+#endif
 };
 
 #define GP_ARM_DRAM_VSEL		IMX_GPIO_NR(3, 24)

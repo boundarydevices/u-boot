@@ -9,6 +9,9 @@ config SYS_VENDOR
 config SYS_CONFIG_NAME
 	default "nitrogen8m_som"
 
+config USDHC2_SD
+	bool "An SD card is on carrier instead of wifi"
+
 source "board/boundary/common/Kconfig"
 
 endif

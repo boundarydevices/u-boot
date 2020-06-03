@@ -7,6 +7,10 @@
 #ifndef __NITROGEN8M_SOM_H
 #define __NITROGEN8M_SOM_H
 
+#ifdef CONFIG_BOARD_TYPE
+#undef CONFIG_SYS_BOARD
+#define CONFIG_SYS_BOARD CONFIG_BOARD_TYPE
+#endif
 #include <linux/sizes.h>
 #include <asm/arch/imx-regs.h>
 
@@ -125,7 +129,11 @@
 
 #define CONFIG_FSL_USDHC
 
+#ifdef CONFIG_USDHC2_SD
+#define CONFIG_SYS_FSL_USDHC_NUM	2
+#else
 #define CONFIG_SYS_FSL_USDHC_NUM	1
+#endif
 #define CONFIG_SYS_FSL_ESDHC_ADDR       0
 
 #define CONFIG_SUPPORT_EMMC_BOOT	/* eMMC specific */

@@ -106,8 +106,6 @@
 			MX8MQ_IOMUXC_SAI5_RXD2_GPIO3_IO23		0xd6
 			/* J13 Pin 4, WL_IRQ, not needed for Silex */
 			MX8MQ_IOMUXC_SAI5_RXD0_GPIO3_IO21		0xd6
-			/* J13 pin 9, unused */
-			MX8MQ_IOMUXC_SD2_CD_B_GPIO2_IO12		0x19
 			/* J13 Pin 41, BT_CLK_REQ */
 			MX8MQ_IOMUXC_SAI5_RXD1_GPIO3_IO22		0xd6
 			/* J13 Pin 42, BT_HOST_WAKE */
@@ -455,6 +453,8 @@
 			MX8MQ_IOMUXC_SD2_DATA3_USDHC2_DATA3		0xc3
 			/* Bluetooth slow clock */
 			MX8MQ_IOMUXC_GPIO1_IO00_ANAMIX_REF_CLK_32K	0x03
+#define GP_USDHC2_CD	<&gpio2 12 GPIO_ACTIVE_LOW>
+			MX8MQ_IOMUXC_SD2_CD_B_GPIO2_IO12		0x41
 		>;
 	};
 
@@ -1348,24 +1348,26 @@
 	vqmmc-1-8-v;
 };
 
-#if 0
+#ifdef CONFIG_USDHC2_SD
 &usdhc2 {
+	cap-sd-highspeed;
+	cd-gpios = GP_USDHC2_CD;
 	bus-width = <4>;
-	fsl,tuning-start-tap = <70>;
-	fsl,tuning-step = <2>;
-	no-sd-uhs-sdr104;
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
 	pinctrl-0 = <&pinctrl_usdhc2>;
 	pinctrl-1 = <&pinctrl_usdhc2_100mhz>;
 	pinctrl-2 = <&pinctrl_usdhc2_200mhz>;
-	non-removable;
+	sd-uhs-ddr50;
+	sd-uhs-sdr104;
+	sd-uhs-sdr12;
+	sd-uhs-sdr25;
 	status = "okay";
-	tuning-delay = <32>;
-	tuning-mode = <1>;
-	vmmc-supply = <&reg_wlan_vmmc>;
-	vqmmc-1-8-v;
+	vmmc-supply = <&reg_vref_3v3>;
+	vqmmc-supply = <&reg_vref_1v8>;
 };
+#endif
 
+#if 0
 &vpu {
 	regulator-supply = <&reg_vref_0v9>;
 	status = "okay";
