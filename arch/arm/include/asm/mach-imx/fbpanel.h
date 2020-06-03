@@ -32,6 +32,7 @@ enum alias_names {
 	FBTS_ST1633I,
 	FBTS_TSC2004,
 	FBP_MIPI_TO_LVDS,
+	FBP_SPI_LCD,
 };
 
 struct display_info_t {
@@ -92,6 +93,7 @@ struct display_info_t {
 #define FBF_DSI_LANES_3		(0x3 << FBF_DSI_LANE_SHIFT)
 #define FBF_DSI_LANES_4		(0x4 << FBF_DSI_LANE_SHIFT)
 
+#define FBF_DMT050WVNXCMI	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4)
 #define FBF_LCM_JM430		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_SYNC_PULSE | FBF_MIPI_CMDS | FBF_DSI_LANES_1 | FBF_BKLIT_EN_DTB | FBF_ENABLE_GPIOS_DTB)
 #define FBF_LTK0680YTMDB	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_PINCTRL | FBF_ENABLE_GPIOS_DTB)
 #define FBF_LTK0680YTMDB_LCD	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_MODESTR)
@@ -159,6 +161,7 @@ void fbp_setup_env_cmds(void);
 #define VD_INNOLUX_WVGA_12V(_mode, args...)	VDF_INNOLUX_WVGA(_mode, "INNOLUX-WVGA-12V", RGB666, 0, args)
 #define VD_INNOLUX_WVGA_M(_mode, args...)	VDF_INNOLUX_WVGA(_mode, "INNOLUX-WVGA", RGB666, FBF_MODESTR, args)
 #define VD_OKAYA_480_272(_mode, args...)	VDF_OKAYA_480_272(_mode, "okaya_480x272", RGB24, FBF_MODESTR, args)
+#define VD_DMT050WVNXCMI(_mode, args...)	VDF_DMT050WVNXCMI(_mode, "dmt050wvnxcmi", RGB24, FBF_DMT050WVNXCMI, args)
 #define VD_LCM_JM430(_mode, args...)		VDF_LCM_JM430(_mode, "lcm_jm430", RGB24, FBF_LCM_JM430, args)
 #define VD_LCM_JM430_MINI(_mode, args...)	VDF_LCM_JM430_MINI(_mode, "lcm_jm430_mini", RGB24, FBF_LCM_JM430, args)
 #define VD_QVGA(_mode, args...)			VDF_QVGA(_mode, "qvga", RGB24, FBF_MODESTR, args)
@@ -666,6 +669,26 @@ void fbp_setup_env_cmds(void);
 		.upper_margin	= 8,\
 		.lower_margin	= 8,\
 		.hsync_len	= 4,\
+		.vsync_len	= 1,\
+		.sync		= FB_SYNC_EXT | FB_SYNC_CLK_LAT_FALL,\
+		.vmode		= FB_VMODE_NONINTERLACED\
+	}\
+}
+
+#define VDF_DMT050WVNXCMI(_mode, _name, _fmt, _flags, args...) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, args),\
+	.mode	= {\
+		.name		= _name,\
+		.refresh	= 60,\
+		.xres		= 480,\
+		.yres		= 854,\
+		.pixclock	= 1000000000000ULL/32000000,\
+		.left_margin	= 8,\
+		.right_margin	= 64,\
+		.upper_margin	= 20,\
+		.lower_margin	= 20,\
+		.hsync_len	= 8,\
 		.vsync_len	= 1,\
 		.sync		= FB_SYNC_EXT | FB_SYNC_CLK_LAT_FALL,\
 		.vmode		= FB_VMODE_NONINTERLACED\
