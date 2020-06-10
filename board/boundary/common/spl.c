@@ -22,7 +22,9 @@ struct dram_cfg_param_change ddrc_cfg_tbl[] = {
 
 struct dram_cfg_param_change ddrc_fsp_cfg_tbl[] = {
 	{ 0x54012, (LPDDR4_CS << 8) | (0x0110 & 0xff), (LPDDR4_CS_NEW << 8) | (0x0110 & 0xff) },
+#ifndef CONFIG_IMX8MN
 	{ 0x5402c, LPDDR4_CS, LPDDR4_CS_NEW },
+#endif
 };
 
 int fix_tbl(struct dram_cfg_param *cfg, int cfg_num, struct dram_cfg_param_change *fix, int fix_num)
