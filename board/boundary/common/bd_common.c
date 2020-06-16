@@ -239,7 +239,9 @@ int board_mmc_getcd(struct mmc *mmc)
 #define BASE1 USDHC1_BASE_ADDR
 #define BASE2 USDHC2_BASE_ADDR
 #define BASE3 USDHC3_BASE_ADDR
+#ifndef CONFIG_MX7D
 #define BASE4 USDHC4_BASE_ADDR
+#endif
 #define CNT CONFIG_SYS_FSL_USDHC_NUM
 #endif
 
