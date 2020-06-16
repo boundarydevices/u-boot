@@ -224,11 +224,13 @@ int env_save(void)
 
 		printf("Saving Environment to %s... ", drv->name);
 		ret = drv->save();
-		if (ret)
+		if (ret) {
 			printf("Failed (%d)\n", ret);
-		else
+			if (prio >= ARRAY_SIZE(env_locations))
+				break;
+		} else {
 			printf("OK\n");
-
+		}
 		if (!ret)
 			return 0;
 	}
