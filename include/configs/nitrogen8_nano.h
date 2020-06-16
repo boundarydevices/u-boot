@@ -105,8 +105,8 @@
 #define CONFIG_ENV_SIZE			0x2000
 #if defined(CONFIG_ENV_IS_IN_MMC)
 #define CONFIG_ENV_OFFSET               (-CONFIG_ENV_SIZE)
-#define CONFIG_SYS_MMC_ENV_DEV		0	/* USDHC1 */
-#define CONFIG_SYS_MMC_ENV_PART		1	/* mmcblk0boot0 */
+#define CONFIG_SYS_MMC_ENV_DEV		2	/* USDHC3 */
+#define CONFIG_SYS_MMC_ENV_PART		1	/* mmcblk2boot0 */
 #elif defined(CONFIG_ENV_IS_IN_SPI_FLASH)
 #define CONFIG_ENV_OFFSET		(4 * 1024 * 1024)
 #define CONFIG_ENV_SECT_SIZE		(64 * 1024)
@@ -117,7 +117,7 @@
 #endif
 #define CONFIG_ENV_OVERWRITE
 
-#define CONFIG_MMCROOT			"/dev/mmcblk1p2"  /* USDHC2 */
+#define CONFIG_MMCROOT			"/dev/mmcblk2p2"  /* USDHC3 */
 
 /* Size of malloc() pool */
 #define CONFIG_SYS_MALLOC_LEN		(128 * 1024 * 1024)
@@ -154,7 +154,7 @@
 
 /* USDHC */
 #define CONFIG_FSL_USDHC
-#define CONFIG_SYS_FSL_USDHC_NUM	2
+#define CONFIG_SYS_FSL_USDHC_NUM	3
 #define CONFIG_SYS_FSL_ESDHC_ADDR       0
 
 #define CONFIG_SUPPORT_EMMC_BOOT	/* eMMC specific */
@@ -206,7 +206,7 @@
 #endif
 
 #ifdef CONFIG_CMD_MMC
-#define DISTRO_BOOT_DEV_MMC(func) func(MMC, mmc, 1) func(MMC, mmc, 0)
+#define DISTRO_BOOT_DEV_MMC(func) func(MMC, mmc, 1) func(MMC, mmc, 2)
 #else
 #define DISTRO_BOOT_DEV_MMC(func)
 #endif
@@ -238,12 +238,12 @@
 
 #ifdef CONFIG_IMX8MM
 #define BD_FUSE1		"1 3"
-#define BD_FUSE1_VAL		"10002022"	/* USDHC1 emmc */
+#define BD_FUSE1_VAL		"1000202a"	/* USDHC3 emmc */
 #endif
 
 #ifdef CONFIG_IMX8MN
 #define BD_FUSE1		"1 3"
-#define BD_FUSE1_VAL		"00000a00"	/* USDHC1 emmc */
+#define BD_FUSE1_VAL		"00000000"	/* USDHC3 emmc */
 #define BD_FUSE2		"2 1"
 #define BD_FUSE2_VAL		"00000002"	/* 1.8V */
 #endif
