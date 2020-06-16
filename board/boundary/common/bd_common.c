@@ -231,6 +231,9 @@ int board_mmc_getcd(struct mmc *mmc)
 #elif defined(CONFIG_IMX8M)
 #define BASE1 USDHC1_BASE_ADDR
 #define BASE2 USDHC2_BASE_ADDR
+#if defined(CONFIG_IMX8MM)||defined(CONFIG_IMX8MN)
+#define BASE3 USDHC3_BASE_ADDR
+#endif
 #define CNT CONFIG_SYS_FSL_USDHC_NUM
 #else
 #define BASE1 USDHC1_BASE_ADDR
@@ -252,13 +255,13 @@ int board_mmc_init(bd_t *bis)
 			cfg->sdhc_clk = mxc_get_clock(MXC_ESDHC_CLK);
 		} else if (cfg->esdhc_base == BASE2) {
 			cfg->sdhc_clk = mxc_get_clock(MXC_ESDHC2_CLK);
-#if !defined(CONFIG_MX51) && !defined(CONFIG_MX6ULL) && !defined(CONFIG_IMX8M)
+#ifdef BASE3
 		} else if (cfg->esdhc_base == BASE3) {
 			cfg->sdhc_clk = mxc_get_clock(MXC_ESDHC3_CLK);
-#ifndef CONFIG_MX7D
+#endif
+#ifdef BASE4
 		} else if (cfg->esdhc_base == BASE4) {
 			cfg->sdhc_clk = mxc_get_clock(MXC_ESDHC4_CLK);
-#endif
 #endif
 		} else {
 #if defined(CONFIG_IMX8M)
