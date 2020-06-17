@@ -248,7 +248,7 @@
 	disable-over-current;
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usbotg2>;
-	power-polarity-active-high;
+	power-active-high;
 	reset-gpios = GP_OTG2_HUB_RESET;
 	dr_mode = "host";
 	status = "okay";
