@@ -1201,7 +1201,7 @@
 &usbotg1 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usbotg1>;
-	power-polarity-active-high;
+	power-active-high;
 	dr_mode = "otg";
 	status = "okay";
 };
