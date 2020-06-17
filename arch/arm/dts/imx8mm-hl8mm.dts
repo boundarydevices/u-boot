@@ -933,7 +933,7 @@
 &usbotg1 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usbotg1>;
-	power-polarity-active-high;
+	power-active-high;
 	dr_mode = "otg";
 	status = "okay";
 };
@@ -942,7 +942,7 @@
 	dr_mode = "host";
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usbotg2>;
-	power-polarity-active-high;
+	power-active-high;
 	reset-gpios = GP_OTG2_HUB_RESET;
 	status = "okay";
 };
