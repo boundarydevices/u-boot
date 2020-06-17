@@ -1059,7 +1059,7 @@
 &usbotg1 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usbotg1>;
-	power-polarity-active-high;
+	power-active-high;
 	dr_mode = "otg";
 	status = "okay";
 };
@@ -1067,7 +1067,7 @@
 &usbotg2 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usbotg2>;
-	power-polarity-active-high;
+	power-active-high;
 	reset-gpios = GP_OTG2_HUB_RESET, GP_MODEM_ON, GP_MODEM_RESET, GP_BT_RESET;
 	vbus-supply = <&reg_vref_3v7>;
 	dr_mode = "host";
