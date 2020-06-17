@@ -289,7 +289,7 @@
 	pinctrl_usbotg2: usbotg2grp {
 		fsl,pins = <
 			MX8MMN(IOMUXC_GPIO1_IO14_USB2_OTG_PWR, 0x16)
-			MX8MMN(IOMUXC_GPIO1_IO15_USB2_OTG_OC, 0x16)
+			MX8MMN(IOMUXC_GPIO1_IO15_USB2_OTG_OC, 0x156)
 		>;
 	};
 
@@ -830,15 +830,16 @@
 	dr_mode = "otg";
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usbotg1>;
-	power-polarity-active-high;
+	power-active-high;
 	status = "okay";
 };
 
 &usbotg2 {
 	dr_mode = "host";
+	over-current-active-low;
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usbotg2>;
-	power-polarity-active-high;
+	power-active-high;
 	status = "okay";
 };
 

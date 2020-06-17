@@ -121,6 +121,9 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IOMUX_PAD_CTRL(ENET_TD3__ENET1_RGMII_TD3, PAD_CTRL_ENET_TX),
 	IOMUX_PAD_CTRL(ENET_TXC__ENET1_RGMII_TXC, PAD_CTRL_ENET_TX),
 #endif
+
+	IOMUX_PAD_CTRL(GPIO1_IO14__USB2_OTG_PWR, 0x16),
+	IOMUX_PAD_CTRL(GPIO1_IO15__USB2_OTG_OC, WEAK_PULLUP),
 };
 
 static const unsigned short gpios_out_low[] = {
