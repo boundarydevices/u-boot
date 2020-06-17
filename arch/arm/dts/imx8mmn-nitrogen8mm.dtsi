@@ -1135,10 +1135,11 @@
 #endif
 
 &usbotg1 {
+	dr_mode = "otg";
+	over-current-active-low;
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usbotg1>;
-	power-polarity-active-high;
-	dr_mode = "otg";
+	power-active-high;
 	status = "okay";
 };
 
