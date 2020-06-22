@@ -74,6 +74,7 @@
 
 /* ENET Config */
 /* ENET1 */
+#define GP_RGMII_PHY_RESET	IMX_GPIO_NR(2, 10)
 #if defined(CONFIG_CMD_NET)
 #define CONFIG_MII
 #define CONFIG_ETHPRIME			"FEC"
