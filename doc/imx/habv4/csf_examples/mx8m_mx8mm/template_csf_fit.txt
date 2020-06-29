@@ -23,7 +23,7 @@
     # Target key slot in HAB key store where key will be installed
     Target index = 2
     # Key to install
-    File = "_SIGN_KEY_"
+    File = "_IMG_KEY_"
 
 [Authenticate Data]
     # Key slot index used to authenticate the image data
