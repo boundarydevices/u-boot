@@ -18,6 +18,11 @@ if [ -z "$SIGN_KEY" ] || [ ! -f $SIGN_KEY ]; then
 	exit 1
 fi
 
+if [ -z "$IMG_KEY" ] || [ ! -f $IMG_KEY ]; then
+	echo "Missing IMG_KEY variable pointing to cst binary!"
+	exit 1
+fi
+
 if [ -z "$SRK_TABLE" ] || [ ! -f $SRK_TABLE ]; then
 	echo "Missing SRK_TABLE variable pointing to cst binary!"
 	exit 1
@@ -36,6 +41,7 @@ done
 cp doc/imx/habv4/csf_examples/mx8m_mx8mm/template_csf_spl.txt csf_spl.txt
 cp doc/imx/habv4/csf_examples/mx8m_mx8mm/template_csf_fit.txt csf_fit.txt
 sed -i "s|_SIGN_KEY_|$SIGN_KEY|g" csf_*.txt
+sed -i "s|_IMG_KEY_|$IMG_KEY|g" csf_*.txt
 sed -i "s|_SRK_TABLE_|$SRK_TABLE|g" csf_*.txt
 
 # update SPL values
