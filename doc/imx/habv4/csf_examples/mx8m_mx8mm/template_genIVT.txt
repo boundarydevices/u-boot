@@ -1,0 +1,12 @@
+#! /usr/bin/perl -w
+use strict;
+open(my $out, '>:raw', 'ivt.bin') or die "Unable to open: $!";
+print $out pack("V", 0x412000D1); # IVT Header
+print $out pack("V", _LOADADDR_); # Jump Location
+print $out pack("V", 0x0); # Reserved
+print $out pack("V", 0x0); # DCD pointer
+print $out pack("V", 0x0); # Boot Data
+print $out pack("V", _IVTADDRESS_); # Self Pointer
+print $out pack("V", _CSFADDRESS_); # CSF Pointer
+print $out pack("V", 0x0); # Reserved
+close($out);
