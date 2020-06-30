@@ -9,22 +9,22 @@ for i in flash.bin flash.log .config; do
 done
 
 if [ -z "$CST_BIN" ] || [ ! -f $CST_BIN ]; then
-	echo "Missing CST_BIN variable pointing to cst binary!"
+	echo "Missing CST_BIN variable!"
 	exit 1
 fi
 
 if [ -z "$SIGN_KEY" ] || [ ! -f $SIGN_KEY ]; then
-	echo "Missing SIGN_KEY variable pointing to cst binary!"
+	echo "Missing SIGN_KEY variable!"
 	exit 1
 fi
 
 if [ -z "$IMG_KEY" ] || [ ! -f $IMG_KEY ]; then
-	echo "Missing IMG_KEY variable pointing to cst binary!"
+	echo "Missing IMG_KEY variable!"
 	exit 1
 fi
 
 if [ -z "$SRK_TABLE" ] || [ ! -f $SRK_TABLE ]; then
-	echo "Missing SRK_TABLE variable pointing to cst binary!"
+	echo "Missing SRK_TABLE variable!"
 	exit 1
 fi
 
