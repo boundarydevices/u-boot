@@ -24,22 +24,22 @@ else
 fi
 
 if [ -z "$CST_BIN" ] || [ ! -f $CST_BIN ]; then
-	echo "Missing CST_BIN variable pointing to cst binary!"
+	echo "Missing CST_BIN variable!"
 	exit 1
 fi
 
 if [ -z "$SIGN_KEY" ] || [ ! -f $SIGN_KEY ]; then
-	echo "Missing SIGN_KEY variable pointing to cst binary!"
+	echo "Missing SIGN_KEY variable!"
 	exit 1
 fi
 
 if [ -z "$IMG_KEY" ] || [ ! -f $IMG_KEY ]; then
-	echo "Missing IMG_KEY variable pointing to cst binary!"
+	echo "Missing IMG_KEY variable!"
 	exit 1
 fi
 
 if [ -z "$SRK_TABLE" ] || [ ! -f $SRK_TABLE ]; then
-	echo "Missing SRK_TABLE variable pointing to cst binary!"
+	echo "Missing SRK_TABLE variable!"
 	exit 1
 fi
 
@@ -70,9 +70,6 @@ sed -i "s|_SIGN_KEY_|$SIGN_KEY|g" csf_image.txt
 sed -i "s|_IMG_KEY_|$IMG_KEY|g" csf_image.txt
 sed -i "s|_SRK_TABLE_|$SRK_TABLE|g" csf_image.txt
 # update IMAGE values
-IMAGE_START_ADDR=`awk '/sld hab block/{print $4}' flash.log`
-IMAGE_OFFSET=`awk '/sld hab block/{print $5}' flash.log`
-IMAGE_LENGTH=`awk '/sld hab block/{print $6}' flash.log`
 sed -i "s|_IMAGE_START_ADDR_|$LOADADDR|g" csf_image.txt
 sed -i "s|_IMAGE_OFFSET_|0x0|g" csf_image.txt
 sed -i "s|_IMAGE_LENGTH_|$CSFOFFSET|g" csf_image.txt
