@@ -246,6 +246,7 @@ static void check_dual_sw4(void)
 			"fdt set reg_sw4 dual-phase; "
 			"fdt get value reg reg_sw4 phandle; "
 			"fdt set a53 arm-supply <${reg}>; "
+			"fdt set a53 cpu-supply <${reg}>; "
 			"fdt get value gp gpio0 phandle; "
 			"fdt set wdog0 reset-gpios <${gp} 2 1>");
 	}
