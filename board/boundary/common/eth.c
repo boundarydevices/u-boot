@@ -437,21 +437,30 @@ static void setup_iomux_enet(int kz)
 #ifdef CONFIG_PHY_ATHEROS
 static void phy_ar8031_config(struct phy_device *phydev)
 {
-	int val;
+	int regval;
+	ulong freq;
 
 	/* Select 125MHz clk from local PLL on CLK_25M */
 	phy_write(phydev, MDIO_DEVAD_NONE, 0xd, 0x0007);
 	phy_write(phydev, MDIO_DEVAD_NONE, 0xe, 0x8016);
 	phy_write(phydev, MDIO_DEVAD_NONE, 0xd, 0x4007);
-	val = phy_read(phydev, MDIO_DEVAD_NONE, 0xe);
-	val &= ~0x1c;
-	phy_write(phydev, MDIO_DEVAD_NONE, 0xe, (val|0x0018));
+	regval = phy_read(phydev, MDIO_DEVAD_NONE, 0xe);
+	regval &= ~0x1c;
+	freq = env_get_ulong("phy_clock_out", 10, 125000000);
+	if (freq >= 125000000) {
+		regval |= 0x18;
+	} else if (freq >= 62500000) {
+		regval |= 0x10;
+	} else if (freq >= 50000000) {
+		regval |= 0x08;
+	}
+	phy_write(phydev, MDIO_DEVAD_NONE, 0xe, regval);
 
 #if 0 //done in ar8031_config
 	/* introduce tx clock delay */
 	phy_write(phydev, MDIO_DEVAD_NONE, 0x1d, 0x05);
-	val = phy_read(phydev, MDIO_DEVAD_NONE, 0x1e);
-	phy_write(phydev, MDIO_DEVAD_NONE, 0x1e, (val|0x0100));
+	regval = phy_read(phydev, MDIO_DEVAD_NONE, 0x1e);
+	phy_write(phydev, MDIO_DEVAD_NONE, 0x1e, (regval|0x0100));
 #endif
 }
 
