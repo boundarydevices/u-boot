@@ -64,7 +64,8 @@ static int ar8035_config(struct phy_device *phydev)
 	phy_write(phydev, MDIO_DEVAD_NONE, 0xe, 0x8016);
 	phy_write(phydev, MDIO_DEVAD_NONE, 0xd, 0x4007);
 	regval = phy_read(phydev, MDIO_DEVAD_NONE, 0xe);
-	regval &= ~0x1c;
+	regval &= ~0x11c;
+	regval |= 0x80;	/* 1/2 drive strength */
 	freq = env_get_ulong("phy_clock_out", 10, 125000000);
 	if (freq >= 125000000) {
 		regval |= 0x18;
@@ -72,6 +73,9 @@ static int ar8035_config(struct phy_device *phydev)
 		regval |= 0x10;
 	} else if (freq >= 50000000) {
 		regval |= 0x08;
+	} else if (freq == 0) {
+		/* 1/4 drive strength since off was requested */
+		regval |= 0x180;
 	}
 	phy_write(phydev, MDIO_DEVAD_NONE, 0xe, regval);
 
