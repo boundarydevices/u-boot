@@ -48,6 +48,7 @@ SIZE="0x`od -t x4 -j 0x10 -N 0x4 --endian=little $IMAGE | head -n1 | awk '{print
 IVTOFFSET=$SIZE
 IVTSIZE="0x20"
 printf -v CSFOFFSET '%#x' "$((IVTOFFSET + IVTSIZE))"
+echo IVT offset is $IVTOFFSET
 
 echo Padding Image file...
 objcopy -I binary -O binary --pad-to=$SIZE --gap-fill=0x00 $IMAGE Image-pad.bin
