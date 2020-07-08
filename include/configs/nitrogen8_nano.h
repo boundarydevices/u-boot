@@ -249,7 +249,7 @@
 
 #ifdef CONFIG_IMX8MN
 #define BD_FUSE1		"1 3"
-#define BD_FUSE1_VAL		"00000000"	/* USDHC3 emmc */
+#define BD_FUSE1_VAL		"10002000"	/* USDHC3 emmc */
 #define BD_FUSE2		"2 1"
 #define BD_FUSE2_VAL		"00000002"	/* 1.8V */
 #endif
