@@ -56,6 +56,7 @@ static iomux_v3_cfg_t const init_pads[] = {
 #define GP_SC18IS602B_RESET	IMX_GPIO_NR(5, 0)
 #define GP_I2C2_SN65DSI83_EN	IMX_GPIO_NR(5, 0)
 #define GP_MIPI_RESET		IMX_GPIO_NR(5, 0)
+#define	GP_LT8912_RESET		IMX_GPIO_NR(5, 0)
 /* enable for TPS65132 Single Inductor - Dual Output Power Supply */
 #define GP_LCD133_070_ENABLE		IMX_GPIO_NR(5, 0)
 	IOMUX_PAD_CTRL(SAI3_TXC__GPIO5_IO0, 0x06),
@@ -159,12 +160,13 @@ static const struct display_info_t displays[] = {
 	VD_MIPI_COM50H5N03ULC(MIPI, NULL, fbp_bus_gp(3, GP_MIPI_RESET, GP_MIPI_RESET, 0), 0x00),
 	/* 0x3e is the TPS65132 power chip on our adapter board */
 	VD_MIPI_LCD133_070(MIPI, board_detect_lcd133, fbp_bus_gp(3, GP_LCD133_070_ENABLE, GP_LCD133_070_ENABLE, 1), fbp_addr_gp(0x3e, 0, 0, 0), FBTS_FT7250),
-	VD_MIPI_640_480M_60(MIPI, fbp_detect_i2c, 3, 0x70),
-	VD_MIPI_1280_720M_60(MIPI, NULL, 3, 0x70),
-	VD_MIPI_1920_1080M_60(MIPI, NULL, 3, 0x70),
-	VD_MIPI_1024_768M_60(MIPI, NULL, 3, 0x70),
-	VD_MIPI_800_600MR_60(MIPI, NULL, 3, 0x70),
-	VD_MIPI_720_480M_60(MIPI, NULL, 3, 0x70),
+	VD_MIPI_640_480M_60(MIPI, board_detect_pca9546, fbp_bus_gp((3 | (3 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
+	VD_MIPI_1280_720M_60(MIPI, NULL, 3, 0x68, FBP_PCA9546),
+	VD_MIPI_1920_1080M_60(MIPI, NULL, 3, 0x68, FBP_PCA9546),
+	VD_MIPI_1024_768M_60(MIPI, NULL, 3, 0x68, FBP_PCA9546),
+	VD_MIPI_800_600MR_60(MIPI, NULL, 3, 0x68, FBP_PCA9546),
+	VD_MIPI_720_480M_60(MIPI, NULL, 3, 0x68, FBP_PCA9546),
+	VD_MIPI_VTFT101RPFT20(MIPI, fbp_detect_i2c, 3, 0x70, FBP_PCA9540),
 };
 #define display_cnt	ARRAY_SIZE(displays)
 #else
