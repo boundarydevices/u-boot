@@ -136,6 +136,7 @@ void fbp_setup_env_cmds(void);
 #define VD_640_480M_60(_mode, args...)		VDF_640_480M_60(_mode, "640x480M@60", RGB24, FBF_MODESTR, args)
 #define VD_720_480M_60(_mode, args...)		VDF_720_480M_60(_mode, "720x480M@60", RGB24, FBF_MODESTR, args)
 #define VD_MIPI_TM070JDHG30(_mode, args...)	VDF_MIPI_TM070JDHG30(_mode, "mipi-tm070jdhg30", RGB24, FBF_MIPI_TO_HDMI, args)
+#define VD_MIPI_1280_800M_60(_mode, args...)	VDF_1280_800M_60(_mode, "dsi-1280x800M@60", RGB24, FBF_MIPI_TO_HDMI, args)
 #define VD_MIPI_1280_720M_60(_mode, args...)	VDF_1280_720M_60(_mode, "dsi-1280x720M@60", RGB24, FBF_MIPI_TO_HDMI, args)
 #define VD_MIPI_1920_1080M_60(_mode, args...)	VDF_1920_1080M_60(_mode, "dsi-1920x1080M@60", RGB24, FBF_MIPI_TO_HDMI, args)
 #define VD_MIPI_1024_768M_60(_mode, args...)	VDF_1024_768M_60(_mode, "dsi-1024x768M@60", RGB24, FBF_MIPI_TO_HDMI, args)
