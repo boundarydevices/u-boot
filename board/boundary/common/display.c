@@ -72,3 +72,53 @@ int board_detect_lcd133(struct display_info_t const *di)
 	return (ret == 0);
 }
 
+/* pca9546 mux */
+int board_detect_pca9546(struct display_info_t const *di)
+{
+	int ret;
+	int sub_bus;
+#ifdef CONFIG_DM_I2C
+	struct udevice *bus, *mux, *subdev;
+#else
+	u8 orig_i2c_bus;
+#endif
+
+	if (di->bus_gp)
+		gpio_direction_output(di->bus_gp, 1);
+	if (di->enable_gp)
+		gpio_direction_output(di->enable_gp, 1);
+	if (di->bus_gp_delay_ms)
+		mdelay(di->bus_gp_delay_ms);
+#ifdef CONFIG_DM_I2C
+	ret = uclass_get_device(UCLASS_I2C, di->bus_num & 0xf, &bus);
+	if (ret)
+		return 0;
+
+	ret = dm_i2c_probe(bus, 0x70, 0x0, &mux);
+	if (!ret) {
+		/* write control register, select sub bus */
+		sub_bus = di->bus_num >> 4;
+		dm_i2c_write(mux, 1 << sub_bus, NULL, 0);
+		ret = dm_i2c_probe(bus, di->addr_num, 0x0, &subdev);
+	}
+#else
+	orig_i2c_bus = i2c_get_bus_num();
+	ret = i2c_set_bus_num(di->bus_num);
+	if (!ret) {
+		/* write control register, select sub bus */
+		sub_bus = di->bus_num >> 4;
+		ret = i2c_write(0x70, 1 << sub_bus, 1, NULL, 0);
+		if (!ret)
+			ret = i2c_probe(di->addr_num);
+	}
+	i2c_set_bus_num(orig_i2c_bus);
+#endif
+	if (ret) {
+		if (di->bus_gp)
+			gpio_direction_input(di->bus_gp);
+		if (di->enable_gp)
+			gpio_direction_input(di->enable_gp);
+	}
+	return (ret == 0);
+}
+
