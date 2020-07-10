@@ -205,6 +205,9 @@ static const char *const aliases[] = {
 [FBTS_TSC2004] = "ts_tsc2004",
 [FBP_MIPI_TO_LVDS] = "mipi_to_lvds",
 [FBP_SPI_LCD] = "spi_lcd",
+[FBP_PCA9540] = "pca9540",
+[FBP_PCA9546] = "pca9546",
+
 };
 
 static const char *const timings_properties[] = {

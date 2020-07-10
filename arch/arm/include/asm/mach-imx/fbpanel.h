@@ -33,6 +33,8 @@ enum alias_names {
 	FBTS_TSC2004,
 	FBP_MIPI_TO_LVDS,
 	FBP_SPI_LCD,
+	FBP_PCA9540,
+	FBP_PCA9546,
 };
 
 struct display_info_t {
@@ -104,6 +106,7 @@ struct display_info_t {
 #define FBF_M101NWWB		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4)
 #define FBF_LCD133_070		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_PINCTRL | FBF_ENABLE_GPIOS_DTB)
 #define FBF_MIPI_TO_HDMI	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_DSI_LANES_4)
+#define FBF_VTFT101		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_DSI_LANES_4)
 #define FBF_MIPI_MQ_TO_HDMI	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_SYNC_PULSE | FBF_DSI_LANES_4)
 #define FBF_MIPI_MQ2_TO_HDMI	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_SYNC_PULSE | FBF_DSI_LANES_2)
 #define FBF_M101NWWB_NO_CMDS	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_DSI_LANES_4)
@@ -138,6 +141,7 @@ void fbp_setup_env_cmds(void);
 #define VD_MIPI_800_600MR_60(_mode, args...)	VDF_800_600MR_60(_mode, "dsi-800x600MR@60", RGB24, FBF_MIPI_TO_HDMI, args)
 #define VD_MIPI_640_480M_60(_mode, args...)	VDF_640_480M_60(_mode, "dsi-640x480M@60", RGB24, FBF_MIPI_TO_HDMI, args)
 #define VD_MIPI_720_480M_60(_mode, args...)	VDF_720_480M_60(_mode, "dsi-720x480M@60", RGB24, FBF_MIPI_TO_HDMI, args)
+#define VD_MIPI_VTFT101RPFT20(_mode, args...)	VDF_MIPI_VTFT101RPFT20(_mode, "vtft101rpft20", RGB24, FBF_VTFT101, args)
 
 #define VD_MIPI_MQ_1920_1080M_60(_mode, args...) VDF_1920_1080M_60(_mode, "dsi-mq1920x1080M@60", RGB24, FBF_MIPI_MQ_TO_HDMI, args)
 #define VD_MIPI_MQ_1280_800M_60(_mode, args...) VDF_1280_800M_60(_mode, "dsi-mq1280x800M@60", RGB24, FBF_MIPI_MQ_TO_HDMI, args)
@@ -292,6 +296,26 @@ void fbp_setup_env_cmds(void);
 	}\
 }
 
+
+#define VDF_MIPI_VTFT101RPFT20(_mode, _name, _fmt, _flags, args...) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, args),\
+	.mode	= {\
+		.name           = _name,\
+		.refresh        = 60,\
+		.xres           = 1280,\
+		.yres           = 800,\
+		.pixclock       = 1000000000000ULL/((1280+16+16+16)*(800+8+2+2)*60),\
+		.left_margin    = 16,\
+		.right_margin   = 16,\
+		.upper_margin   = 8,\
+		.lower_margin   = 2,\
+		.hsync_len      = 16,\
+		.vsync_len      = 2,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
 
 #define VDF_1024_768M_60(_mode, _name, _fmt, _flags, args...) \
 {\
