@@ -1,0 +1,6 @@
+i.MX8MP Nitrogen8mp BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/nitrogen8mp/
+F:	include/configs/nitrogen8mp.h
+F:	configs/nitrogen8mp_2gr0_defconfig
