@@ -955,6 +955,7 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
 
 dtb-$(CONFIG_ARCH_IMX8M) += \
 	imx8mp-crs.dtb \
+	imx8mp-nitrogen8mp.dtb \
 
 dtb-$(CONFIG_ARCH_IMX8M) += \
 	imx8mq-bio.dtb \
