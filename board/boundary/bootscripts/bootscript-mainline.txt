@@ -4,13 +4,17 @@ setenv initrd_high 0xffffffff
 kernelimage=zImage
 bootcommand=bootz
 a_base=0x10000000
-if itest.s x51 == "x${imx_cpu}" ; then
+
+#grab 1st 2/3 characters of string
+setexpr cpu2 sub "^(..?).*" "\\1" "${imx_cpu}"
+setexpr cpu3 sub "^(..?.?).*" "\\1" "${imx_cpu}"
+if itest.s x51 == "x${cpu2}" ; then
 	a_base=0x90000000
-elif itest.s x53 == "x${imx_cpu}"; then
+elif itest.s x53 == "x${cpu2}"; then
 	a_base=0x70000000
-elif itest.s x6SX == "x${imx_cpu}" || itest.s x6ULL == "x${imx_cpu}" || itest.s x7D == "x${imx_cpu}"; then
+elif itest.s x6SX == "x${cpu3}" || itest.s x6U == "x${cpu2}" || itest.s x7D == "x${cpu2}"; then
 	a_base=0x80000000
-elif itest.s x8MQ == "x${imx_cpu}" || itest.s x8MM == "x${imx_cpu}" || itest.s x8MMQ == "x${imx_cpu}" || itest.s x8MNano == "x${imx_cpu}"; then
+elif itest.s x8M == "x${cpu2}"; then
 	a_base=0x40000000
 	kernelimage=Image
 	bootcommand=booti
@@ -30,30 +34,28 @@ if itest.s "x" == "x${board}" ; then
 fi
 
 if itest.s "x" == "x${fdt_file}" ; then
-	if itest.s x6SOLO == "x${imx_cpu}" ; then
-		fdt_file=imx6dl-${board}.dtb;
-	elif itest.s x6DL == "x${imx_cpu}" ; then
-		fdt_file=imx6dl-${board}.dtb;
-	elif itest.s x6QP == "x${imx_cpu}" ; then
-		fdt_file=imx6qp-${board}.dtb;
-	elif itest.s x6SX == "x${imx_cpu}" ; then
-		fdt_file=imx6sx-${board}.dtb;
-	elif itest.s x6ULL == "x${imx_cpu}" ; then
-		fdt_file=imx6ull-${board}.dtb;
-	elif itest.s x7D == "x${imx_cpu}" ; then
-		fdt_file=imx7d-${board}.dtb;
-	elif itest.s x8MQ == "x${imx_cpu}" ; then
-		fdt_file=imx8mq-${board}.dtb;
-	elif itest.s x8MM == "x${imx_cpu}" ; then
-		fdt_file=imx8mm-${board}.dtb;
-	elif itest.s x8MMQ == "x${imx_cpu}" ; then
-		fdt_file=imx8mm-${board}.dtb;
-	elif itest.s x8MNano == "x${imx_cpu}" ; then
-		fdt_file=imx8mn-${board}.dtb;
-	elif itest.s x51 == "x${imx_cpu}" ; then
+	if itest.s x51 == "x${cpu2}" ; then
 		fdt_file=imx51-${board}.dtb;
-	elif itest.s x53 == "x${imx_cpu}" ; then
+	elif itest.s x53 == "x${cpu2}" ; then
 		fdt_file=imx53-${board}.dtb;
+	if itest.s x6DL == "x${cpu3}" || itest.s x6SO == "x${cpu3}" ; then
+		fdt_file=imx6dl-${board}.dtb;
+	elif itest.s x6QP == "x${cpu3}" ; then
+		fdt_file=imx6qp-${board}.dtb;
+	elif itest.s x6SX == "x${cpu3}" ; then
+		fdt_file=imx6sx-${board}.dtb;
+	elif itest.s x6UL == "x${cpu3}" ; then
+		fdt_file=imx6ull-${board}.dtb;
+	elif itest.s x7D == "x${cpu2}" ; then
+		fdt_file=imx7d-${board}.dtb;
+	elif itest.s x8MM == "x${cpu3}" ; then
+		fdt_file=imx8mm-${board}.dtb;
+	elif itest.s x8MN == "x${cpu3}" ; then
+		fdt_file=imx8mn-${board}.dtb;
+	elif itest.s x8MP == "x${cpu3}" ; then
+		fdt_file=imx8mp-${board}.dtb;
+	elif itest.s x8MQ == "x${cpu3}" ; then
+		fdt_file=imx8mq-${board}.dtb;
 	else
 		fdt_file=imx6q-${board}.dtb;
 	fi
