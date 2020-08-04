@@ -29,4 +29,14 @@ int board_early_init_f(void)
 out:
 	return 0;
 }
+
+int misc_init_r(void)
+{
+#if defined CONFIG_POWER_FUSB302
+    fusb302_init();
+#endif
+
+    return 0;
+}
+
 #endif
