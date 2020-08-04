@@ -1,6 +1,5 @@
 setenv bootargs ''
 
-setenv initrd_high 0xffffffff
 m4=''
 kernelimage=vmlinuz
 bootcommand=bootz
@@ -103,7 +102,6 @@ setenv bootargs ${bootargs} systemd.gpt_auto=0
 
 if load ${devtype} ${devnum}:${distro_bootpart} ${a_fdt} ${prefix}${fdt_file} ; then
 	fdt addr ${a_fdt}
-	setenv fdt_high 0xffffffff
 	echo "Device tree loaded: ${prefix}${fdt_file}";
 else
 	echo "!!!! Error loading ${prefix}${fdt_file}";

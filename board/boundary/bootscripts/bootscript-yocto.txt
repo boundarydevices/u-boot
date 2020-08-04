@@ -1,6 +1,5 @@
 setenv bootargs ''
 
-setenv initrd_high 0xffffffff
 m4=''
 kernelimage=zImage
 bootcommand=bootz
@@ -87,7 +86,6 @@ setenv bootargs ${bootargs} vmalloc=${vmalloc} consoleblank=${consoleblank} root
 
 if load ${devtype} ${devnum}:${distro_bootpart} ${a_fdt} ${prefix}${fdt_file} ; then
 	fdt addr ${a_fdt}
-	setenv fdt_high 0xffffffff
 else
 	echo "!!!! Error loading ${prefix}${fdt_file}";
 	exit;
