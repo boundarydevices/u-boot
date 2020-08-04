@@ -30,3 +30,4 @@ obj-$(CONFIG_POWER_FSL) += power_fsl.o
 obj-$(CONFIG_$(SPL_TPL_)POWER_I2C) += power_i2c.o
 obj-$(CONFIG_POWER_SPI) += power_spi.o
 obj-$(CONFIG_POWER_MT6323) += mt6323.o
+obj-$(CONFIG_POWER_FUSB302) += fusb302.o
