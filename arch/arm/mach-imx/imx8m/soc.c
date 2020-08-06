@@ -812,6 +812,24 @@ static int ft_add_optee_node(void *fdt, struct bd_info *bd)
 	if (!rom_pointer[1])
 		return 0;
 
+#ifdef CONFIG_OF_LIBFDT_OVERLAY
+	if (rom_pointer[2]) {
+		void *fdto = (void *)rom_pointer[2];
+		if (fdt_magic(fdto) == FDT_MAGIC) {
+			debug("OP-TEE: applying overlay on 0x%p\n", fdto);
+			ret = fdt_overlay_apply_verbose(fdt, fdto);
+			if (ret == 0) {
+				debug("Overlay applied with success");
+				fdt_pack(fdt);
+				return 0;
+			}
+		} else {
+			printf("%s: optee dtb overlay(0x%p) is invalid\n", __func__, fdto);
+		}
+	}
+	/* Fallback to previous implementation */
+#endif
+
 	offs = fdt_increase_size(fdt, 512);
 	if (offs) {
 		printf("No Space for dtb\n");
