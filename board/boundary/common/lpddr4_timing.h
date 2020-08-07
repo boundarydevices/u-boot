@@ -45,7 +45,12 @@
 #endif
 
 #elif CONFIG_DDR_CHANNEL_CNT == 2
-#if CONFIG_DDR_MB == 2048
+#if CONFIG_DDR_MB == 1024
+	/* Address map is from MSB 28: r14, r13-r0, b2-b0, c9-c0 */
+#define VAL_DDRC_ADDRMAP0_R0		0x0000001F
+#define VAL_DDRC_ADDRMAP6_R0		0x0F070707
+
+#elif CONFIG_DDR_MB == 2048
 	/* Address map is from MSB 28: r15, r14, r13-r0, b2-b0, c9-c0 */
 #define VAL_DDRC_ADDRMAP0_R0		0x0000001F
 #define VAL_DDRC_ADDRMAP6_R0		0x07070707
