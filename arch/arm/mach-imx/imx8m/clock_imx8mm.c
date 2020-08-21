@@ -600,7 +600,7 @@ int clock_init(void)
 
 	/* Configure ARM at 1GHz */
 	clock_set_target_val(ARM_A53_CLK_ROOT, CLK_ROOT_ON |
-			     CLK_ROOT_SOURCE_SEL(0));
+			     CLK_ROOT_SOURCE_SEL(2));
 
 	intpll_configure(ANATOP_ARM_PLL, INTPLL_OUT_1200M);
 
