@@ -24,7 +24,7 @@
 #include <video_fb.h>
 /*
  * The format of the string is
- * [*][off|mode_str_name[:["dtb_alias",["dtb_alias",]][18|24][m][j][s][b][:][S|D|b|P|l|d|s|v|B|M|U|c|L|E|4|3|2|1][Gn][Rn][e][x[x_vals][p[pwm_period]]]:timings]]
+ * [*][off|mode_str_name[:["dtb_alias",["dtb_alias",]][18|24][m][j][s][b][:][S|D|b|P|l|d|s|h|f|a|v|B|M|U|c|L|E|4|3|2|1][Gn][Rn][e][x[x_vals][p[pwm_period]]]:timings]]
  *
  * * means select this display for u-boot to initialize.
  * "dtb_alias" : dtb alias to set status to okay, use to enable touch screen drivers, panel drivers(sn65)
@@ -41,6 +41,9 @@
  * l : Set low active enable gpio, fdt get value gp gpio##[gpio/32] phandle;fdt set fb_mipi enable-gpios <${gp} [gpio&0x1f] 1>
  * d : Set enable gpio, fdt get value gp gpio##[gpio/32] phandle;fdt set fb_mipi enable-gpios <${gp} [gpio&0x1f] 0>
  * s : mipi skip_eot, fdt set mipi mode-skip-eot
+ * h : fdt set mipi mode-video-hbp-disable
+ * f : fdt set mipi mode-video-hfp-disable
+ * a : fdt set mipi mode-video-hsa-disable
  * v : mipi mode video, fdt set mipi mode-video
  * B : mipi video burst mode, fdt set mipi mode-video-burst
  * M : mipi byte clock is a multiple of pixel clock, fdt set mipi mode-video-mbc
@@ -201,6 +204,7 @@ static const char *const aliases[] = {
 [FBTS_GOODIX2] = "ts_goodix2",
 [FBTS_GSL1680] = "ts_gsl1680",
 [FBTS_ILI210X] = "ts_ili210x",
+[FBTS_ILI251X] = "ts_ili251x",
 [FBTS_ST1633I] = "ts_st1633i",
 [FBTS_TSC2004] = "ts_tsc2004",
 [FBP_MIPI_TO_LVDS] = "mipi_to_lvds",
@@ -536,6 +540,24 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 			(di->fbflags & FBF_MODE_SKIP_EOT) ? "set" : "rm");
 		buf += sz;
 		size -= sz;
+
+		if (di->fbflags & FBF_DSI_HBP_DISABLE) {
+			sz = snprintf(buf, size, "fdt set mipi mode-video-hbp-disable;");
+			buf += sz;
+			size -= sz;
+		}
+
+		if (di->fbflags & FBF_DSI_HFP_DISABLE) {
+			sz = snprintf(buf, size, "fdt set mipi mode-video-hfp-disable;");
+			buf += sz;
+			size -= sz;
+		}
+
+		if (di->fbflags & FBF_DSI_HSA_DISABLE) {
+			sz = snprintf(buf, size, "fdt set mipi mode-video-hsa-disable;");
+			buf += sz;
+			size -= sz;
+		}
 
 		sz = snprintf(buf, size, "fdt %s mipi mode-video;",
 			(di->fbflags & FBF_MODE_VIDEO) ? "set" : "rm");
@@ -1274,6 +1296,9 @@ static struct flags_check fc2[] = {
 	{ 'l', FBF_ENABLE_GPIOS_ACTIVE_LOW},
 	{ 'd', FBF_ENABLE_GPIOS_DTB},
 	{ 's', FBF_MODE_SKIP_EOT},
+	{ 'h', FBF_DSI_HBP_DISABLE},
+	{ 'f', FBF_DSI_HFP_DISABLE},
+	{ 'a', FBF_DSI_HSA_DISABLE},
 	{ 'v', FBF_MODE_VIDEO},
 	{ 'B', FBF_MODE_VIDEO_BURST},
 	{ 'M', FBF_MODE_VIDEO_MBC},

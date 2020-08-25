@@ -29,6 +29,7 @@ enum alias_names {
 	FBTS_GOODIX2,
 	FBTS_GSL1680,
 	FBTS_ILI210X,
+	FBTS_ILI251X,
 	FBTS_ST1633I,
 	FBTS_TSC2004,
 	FBP_MIPI_TO_LVDS,
@@ -89,6 +90,9 @@ struct display_info_t {
 	/* mipi byte clock a multiple of the pixel clock */
 #define FBF_MODE_VIDEO_MBC	0x8000
 #define FBF_MODE_VIDEO_SYNC_PULSE 0x10000
+#define FBF_DSI_HBP_DISABLE	BIT(17)
+#define FBF_DSI_HFP_DISABLE	BIT(18)
+#define FBF_DSI_HSA_DISABLE	BIT(19)
 #define FBF_DSI_LANE_SHIFT	20
 #define FBF_DSI_LANES_1		(0x1 << FBF_DSI_LANE_SHIFT)
 #define FBF_DSI_LANES_2		(0x2 << FBF_DSI_LANE_SHIFT)
@@ -111,6 +115,7 @@ struct display_info_t {
 #define FBF_MIPI_MQ_TO_HDMI	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_SYNC_PULSE | FBF_DSI_LANES_4)
 #define FBF_MIPI_MQ2_TO_HDMI	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_SYNC_PULSE | FBF_DSI_LANES_2)
 #define FBF_M101NWWB_NO_CMDS	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_DSI_LANES_4)
+#define FBF_MTD0900DCP27KF	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_DSI_LANES_4 | FBF_DSI_HBP_DISABLE | FBF_DSI_HFP_DISABLE | FBF_DSI_HSA_DISABLE)
 #define FBF_OSD050T		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_2)
 
 	int	fbflags;
@@ -213,6 +218,7 @@ void fbp_setup_env_cmds(void);
 #define VD_MIPI_COM50H5N03ULC(_mode, args...)	VDF_MIPI_COM50H5N03ULC(_mode, "com50h5n03ulc", RGB24, FBF_COM50H5N03ULC, args)
 #define VD_MIPI_M101NWWB_NO_CMDS(_mode, args...) VDF_MIPI_M101NWWB(_mode, "m101nwwb", RGB24, FBF_M101NWWB_NO_CMDS, args)
 #define VD_MIPI_M101NWWB(_mode, args...)	VDF_MIPI_M101NWWB(_mode, "m101nwwb", RGB24, FBF_M101NWWB, args)
+#define VD_MIPI_MTD0900DCP27KF(_mode, args...)	VDF_MIPI_MTD0900DCP27KF(_mode, "mtd0900dcp27kf", RGB24, FBF_MTD0900DCP27KF, args)
 #define VD_MIPI_LCD133_070(_mode, args...)	VDF_MIPI_LCD133_070(_mode, "lcd133_070", RGB24, FBF_LCD133_070, args)
 #define VD_LD070WSVGA(_mode, args...)		VDF_LD070WSVGA(_mode, "ld070wsvga", RGB24, 0, args)
 #define VD_SVGA(_mode, args...)			VDF_SVGA(_mode, "svga", RGB666, FBF_MODESTR, args)
@@ -1363,6 +1369,26 @@ void fbp_setup_env_cmds(void);
 		.upper_margin   = 3,\
 		.lower_margin   = 24,\
 		.hsync_len      = 2,\
+		.vsync_len      = 1,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
+#define VDF_MIPI_MTD0900DCP27KF(_mode, _name, _fmt, _flags, args...) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, args),\
+	.mode	= {\
+		.name           = _name,\
+		.refresh        = 60,\
+		.xres           = 1280,\
+		.yres           = 720,\
+		.pixclock       = 1000000000000ULL/((1280+40+20+4)*(720+12+5+1)*60),\
+		.left_margin    = 40,\
+		.right_margin   = 20,\
+		.upper_margin   = 12,\
+		.lower_margin   = 5,\
+		.hsync_len      = 4,\
 		.vsync_len      = 1,\
 		.sync           = FB_SYNC_EXT,\
 		.vmode          = FB_VMODE_NONINTERLACED\
