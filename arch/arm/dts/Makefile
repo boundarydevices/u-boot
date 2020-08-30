@@ -763,6 +763,7 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
 	imx8mm-dwe.dtb \
 	imx8mm-hl8mm.dtb \
 	imx8mm-moo.dtb \
+	imx8mm-nitrogen8_lite.dtb \
 	imx8mm-evk.dtb \
 	imx8mm-verdin.dtb \
 	imx8mn-ddr4-evk.dtb \

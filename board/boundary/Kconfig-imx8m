@@ -22,9 +22,14 @@ config TARGET_MOO
 	select IMX8MM
 	select SUPPORT_SPL
 
+config TARGET_NITROGEN8_LITE
+	bool "nitrogen8_lite"
+	select SUPPORT_SPL
+
 endchoice
 
 source "board/boundary/bio/Kconfig"
 source "board/boundary/dwe/Kconfig"
 source "board/boundary/hl8mm/Kconfig"
 source "board/boundary/moo/Kconfig"
+source "board/boundary/nitrogen8_lite/Kconfig"
