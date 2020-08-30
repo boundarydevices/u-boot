@@ -1,0 +1,17 @@
+if TARGET_NITROGEN8_LITE
+
+config SYS_BOARD
+	default "nitrogen8_lite"
+
+config SYS_VENDOR
+	default "boundary"
+
+config SYS_CONFIG_NAME
+	default "nitrogen8_lite"
+
+config ENV_ON_SD
+	bool "env and u-boot loaded from sd card"
+
+source "board/boundary/common/Kconfig"
+
+endif
