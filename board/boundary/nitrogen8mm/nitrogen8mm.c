@@ -40,6 +40,7 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IOMUX_PAD_CTRL(UART2_RXD__UART2_DCE_RX, UART_PAD_CTRL),
 	IOMUX_PAD_CTRL(UART2_TXD__UART2_DCE_TX, UART_PAD_CTRL),
 
+#define GPIRQ_SN65DSI83			IMX_GPIO_NR(1, 1)
 #define GP_LCM_JM430_BKL_EN		IMX_GPIO_NR(1, 1)
 /* This enables 5V power on LTK080A60A004T mipi display */
 #define GP_LTK08_MIPI_EN		IMX_GPIO_NR(1, 1)
@@ -47,16 +48,16 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IOMUX_PAD_CTRL(GPIO1_IO01__GPIO1_IO1, 0x146),
 
 #define GPIRQ_GT911 			IMX_GPIO_NR(1, 6)
-#define GPIRQ_I2C2_FT5X06		IMX_GPIO_NR(1, 6)
+#define GPIRQ_TS_FT5X06			IMX_GPIO_NR(1, 6)
 	IOMUX_PAD_CTRL(GPIO1_IO06__GPIO1_IO6, 0xd6),
 #define GP_GT911_RESET			IMX_GPIO_NR(1, 7)
 #define GP_ST1633_RESET			IMX_GPIO_NR(1, 7)
-#define GP_I2C2_FT7250_RESET		IMX_GPIO_NR(1, 7)
+#define GP_TS_FT7250_RESET		IMX_GPIO_NR(1, 7)
 	IOMUX_PAD_CTRL(GPIO1_IO07__GPIO1_IO7, 0x49),
 
 #define GP_TC358762_EN		IMX_GPIO_NR(1, 9)
 #define GP_SC18IS602B_RESET	IMX_GPIO_NR(1, 9)
-#define GP_I2C2_SN65DSI83_EN	IMX_GPIO_NR(1, 9)
+#define GP_SN65DSI83_EN		IMX_GPIO_NR(1, 9)
 #define GP_MIPI_RESET		IMX_GPIO_NR(1, 9)
 /* enable for TPS65132 Single Inductor - Dual Output Power Supply */
 #define GP_LCD133_070_ENABLE		IMX_GPIO_NR(1, 9)
@@ -117,13 +118,13 @@ int board_early_init_f(void)
 	struct wdog_regs *wdog = (struct wdog_regs *)WDOG1_BASE_ADDR;
 
 	gpio_direction_output(GP_BACKLIGHT_MIPI, 0);
-	gpio_request(GP_I2C2_SN65DSI83_EN, "sn65en");
-	gpio_direction_output(GP_I2C2_SN65DSI83_EN, 0);
+	gpio_request(GP_SN65DSI83_EN, "sn65en");
+	gpio_direction_output(GP_SN65DSI83_EN, 0);
 	imx_iomux_v3_setup_multiple_pads(init_pads, ARRAY_SIZE(init_pads));
 
 	gpio_direction_output(GP_EMMC_RESET, 1);
 	set_wdog_reset(wdog);
-	gpio_direction_output(GP_I2C2_SN65DSI83_EN, 0);
+	gpio_direction_output(GP_SN65DSI83_EN, 0);
 	return 0;
 }
 
@@ -155,7 +156,7 @@ int board_detect_gt911(struct display_info_t const *di)
 }
 
 static const struct display_info_t displays[] = {
-	VD_MIPI_M101NWWB(MIPI, fbp_detect_i2c, fbp_bus_gp(1, GP_I2C2_SN65DSI83_EN, 0, 0), 0x2c, FBP_MIPI_TO_LVDS, FBTS_FT5X06),
+	VD_MIPI_M101NWWB(MIPI, fbp_detect_i2c, fbp_bus_gp(1, GP_SN65DSI83_EN, 0, 0), 0x2c, FBP_MIPI_TO_LVDS, FBTS_FT5X06),
 	VD_MIPI_MTD0900DCP27KF(MIPI, fbp_detect_i2c, fbp_bus_gp(1, 0, 0, 0), 0x41, FBP_MIPI_TO_LVDS, FBTS_ILI251X),
 	VD_DMT050WVNXCMI(MIPI, fbp_detect_i2c, fbp_bus_gp(1, GP_SC18IS602B_RESET, 0, 30), fbp_addr_gp(0x2f, 0, 6, 0), FBP_SPI_LCD, FBTS_GOODIX),
 	VD_LTK080A60A004T(MIPI, board_detect_gt911, fbp_bus_gp(1, GP_LTK08_MIPI_EN, GP_LTK08_MIPI_EN, 0), 0x5d, FBTS_GOODIX),	/* Goodix touchscreen */
@@ -185,7 +186,7 @@ int board_init(void)
 	gpio_request(GP_MII_MDC, "mii_mdc");
 	gpio_request(GP_MII_MDIO, "mii_mdio");
 #endif
-	gpio_request(GP_I2C2_SN65DSI83_EN, "sn65dsi83_enable");
+	gpio_request(GP_SN65DSI83_EN, "sn65dsi83_enable");
 	gpio_request(GP_GT911_RESET, "gt911_reset");
 	gpio_request(GPIRQ_GT911, "gt911_irq");
 	gpio_request(GP_LTK08_MIPI_EN, "lkt08_mipi_en");
@@ -267,5 +268,5 @@ void board_env_init(void)
 	 * If touchscreen reset is low, display will not initialize, but runs fine
 	 * after init independent of gpio level
 	 */
-	gpio_direction_output(GP_I2C2_FT7250_RESET, 1);
+	gpio_direction_output(GP_TS_FT7250_RESET, 1);
 }
