@@ -12,10 +12,9 @@ config MAX77823
 	default y if TARGET_VP
 
 config FEC_RESET_PULLUP
-	bool
-	default y if TARGET_NITROGEN8MM
-	default y if TARGET_NITROGEN8MN
-	default y if TARGET_NITROGEN8MM_SOM
+	bool "fec pullup on reset"
+	default y if IMX8MM
+	default y if IMX8MN
 	default y if TARGET_NITROGEN7
 
 config OTG_CHARGER
