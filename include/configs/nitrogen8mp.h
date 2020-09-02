@@ -185,7 +185,7 @@
 #endif
 
 #ifdef CONFIG_CMD_MMC
-#define DISTRO_BOOT_DEV_MMC(func) func(MMC, mmc, 1) func(MMC, mmc, 0)
+#define DISTRO_BOOT_DEV_MMC(func) func(MMC, mmc, 2) func(MMC, mmc, 0)
 #else
 #define DISTRO_BOOT_DEV_MMC(func)
 #endif
