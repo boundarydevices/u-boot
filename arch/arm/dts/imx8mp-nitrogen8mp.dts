@@ -366,6 +366,10 @@
 };
 
 &eqos {
+	compatible = "fsl,imx-eqos";
+	/delete-property/ assigned-clocks;
+	/delete-property/ assigned-clock-parents;
+	/delete-property/ assigned-clock-rates;
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_eqos>;
 #if 0
