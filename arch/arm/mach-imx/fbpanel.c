@@ -51,6 +51,7 @@
  * c : mipi commands, fdt get value cmds mipi_cmds_##[mode_str_name] phandle;fdt set mipi mipi-cmds <${cmds}>
  * L : backlight enable low active, fdt get value gp gpio##[bkgpio/32] phandle;fdt set backlight_lvds enable-gpios <${gp} [bkgpio&0x1f] 1>
  * E : backlight enable, fdt get value gp gpio##[bkgpio/32] phandle;fdt set backlight_lvds enable-gpios <${gp} [bkgpio&0x1f] 0>
+ * I : use IPU clock
  * 4 : mipi 4 lanes
  * 3 : mipi 3 lanes
  * 2 : mipi 2 lanes
@@ -845,7 +846,7 @@ static void setup_clock(struct display_info_t const *di)
 	u32 diff;
 	u32 reg;
 
-	if (!(di->mode.sync & FB_SYNC_EXT))
+	if (di->fbflags & FBF_USE_IPU_CLOCK)
 		return;
 
 	desired_freq = period_to_freq(di->mode.pixclock) * 16;
@@ -904,7 +905,7 @@ static void setup_clock(struct display_info_t const *di)
 	int ipu_div = 7;
 	int x = 1;
 
-	if (!(di->mode.sync & FB_SYNC_EXT))
+	if (di->fbflags & FBF_USE_IPU_CLOCK)
 		return;
 
 #if defined(CONFIG_MX6SX)
@@ -1306,6 +1307,7 @@ static struct flags_check fc2[] = {
 	{ 'c', FBF_MIPI_CMDS},
 	{ 'L', FBF_BKLIT_EN_LOW_ACTIVE},
 	{ 'E', FBF_BKLIT_EN_DTB},
+	{ 'I', FBF_USE_IPU_CLOCK},
 	{ '4', FBF_DSI_LANES_4},
 	{ '3', FBF_DSI_LANES_3},
 	{ '2', FBF_DSI_LANES_2},
@@ -1588,7 +1590,8 @@ static const struct display_info_t * parse_mode(
 			p++;
 	}
 
-	di->mode.sync |= FB_SYNC_EXT;
+	if (!(di->fbflags & FBF_USE_IPU_CLOCK))
+		di->mode.sync |= FB_SYNC_EXT;
 	if (*p) {
 		printf("extra parameters found:%s\n", p);
 		return NULL;

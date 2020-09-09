@@ -93,7 +93,9 @@ struct display_info_t {
 #define FBF_DSI_HBP_DISABLE	BIT(17)
 #define FBF_DSI_HFP_DISABLE	BIT(18)
 #define FBF_DSI_HSA_DISABLE	BIT(19)
-#define FBF_DSI_LANE_SHIFT	20
+#define FBF_USE_IPU_CLOCK	BIT(20)
+#define FBF_MODESTR_IPU		(FBF_MODESTR | FBF_USE_IPU_CLOCK)
+#define FBF_DSI_LANE_SHIFT	28
 #define FBF_DSI_LANES_1		(0x1 << FBF_DSI_LANE_SHIFT)
 #define FBF_DSI_LANES_2		(0x2 << FBF_DSI_LANE_SHIFT)
 #define FBF_DSI_LANES_3		(0x3 << FBF_DSI_LANE_SHIFT)
@@ -173,6 +175,7 @@ void fbp_setup_env_cmds(void);
 #define VD_INNOLUX_WVGA_12V(_mode, args...)	VDF_INNOLUX_WVGA(_mode, "INNOLUX-WVGA-12V", RGB666, 0, args)
 #define VD_INNOLUX_WVGA_M(_mode, args...)	VDF_INNOLUX_WVGA(_mode, "INNOLUX-WVGA", RGB666, FBF_MODESTR, args)
 #define VD_OKAYA_480_272(_mode, args...)	VDF_OKAYA_480_272(_mode, "okaya_480x272", RGB24, FBF_MODESTR, args)
+#define VD_OKAYA_480_272_IPU(_mode, args...)	VDF_OKAYA_480_272_IPU(_mode, "okaya_480x272ipu", RGB24, FBF_MODESTR_IPU, args)
 #define VD_DMT050WVNXCMI(_mode, args...)	VDF_DMT050WVNXCMI(_mode, "dmt050wvnxcmi", RGB24, FBF_DMT050WVNXCMI, args)
 #define VD_LCM_JM430(_mode, args...)		VDF_LCM_JM430(_mode, "lcm_jm430", RGB24, FBF_LCM_JM430, args)
 #define VD_LCM_JM430_MINI(_mode, args...)	VDF_LCM_JM430_MINI(_mode, "lcm_jm430", RGB24, FBF_LCM_JM430, args)
@@ -690,6 +693,26 @@ void fbp_setup_env_cmds(void);
 		.hsync_len	= 41,\
 		.vsync_len	= 10,\
 		.sync		= FB_SYNC_EXT | FB_SYNC_CLK_LAT_FALL,\
+		.vmode		= FB_VMODE_NONINTERLACED\
+	}\
+}
+
+#define VDF_OKAYA_480_272_IPU(_mode, _name, _fmt, _flags, args...) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, args),\
+	.mode	= {\
+		.name		= _name,\
+		.refresh	= 57,\
+		.xres		= 480,\
+		.yres		= 272,\
+		.pixclock	= 97786,\
+		.left_margin	= 2,\
+		.right_margin	= 1,\
+		.upper_margin	= 3,\
+		.lower_margin	= 2,\
+		.hsync_len	= 41,\
+		.vsync_len	= 10,\
+		.sync		= FB_SYNC_CLK_LAT_FALL,\
 		.vmode		= FB_VMODE_NONINTERLACED\
 	}\
 }
