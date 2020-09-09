@@ -493,6 +493,7 @@ static const struct display_info_t displays[] = {
 	/* PMIC touch controller */
 	VD_800X300_565(LCD2, NULL, 0, 0x00),
 	VD_OKAYA_480_272(LCD, NULL, 0, 0x00),
+	VD_OKAYA_480_272_IPU(LCD, NULL, 0, 0x00),
 };
 #define display_cnt	ARRAY_SIZE(displays)
 #else
