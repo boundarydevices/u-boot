@@ -216,7 +216,7 @@
 #define SYS_AUXCORE_BOOTDATA_TCM	0x007E0000
 
 #define BD_FUSE1		"1 3"
-#define BD_FUSE1_VAL		"10000000"	/* USDHC3 emmc */
+#define BD_FUSE1_VAL		"10002000"	/* USDHC3 emmc */
 
 #define BD_FUSE1_STR		"fuse1=" BD_FUSE1 "\0"
 #define BD_FUSE1_VAL_STR	"fuse1_val=" BD_FUSE1_VAL "\0"
