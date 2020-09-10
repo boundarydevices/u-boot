@@ -9,6 +9,7 @@
 #include <fb_mmc.h>
 #include <fb_nand.h>
 #include <fs.h>
+#include <mmc.h>
 #include <version.h>
 
 static void getvar_version(char *var_parameter, char *response);
@@ -23,6 +24,7 @@ static void getvar_current_slot(char *var_parameter, char *response);
 static void getvar_has_slot(char *var_parameter, char *response);
 #endif
 #if CONFIG_IS_ENABLED(FASTBOOT_FLASH_MMC)
+static void getvar_mmc_size(char *var_parameter, char *response);
 static void getvar_partition_type(char *part_name, char *response);
 #endif
 #if CONFIG_IS_ENABLED(FASTBOOT_FLASH)
@@ -67,6 +69,9 @@ static const struct {
 		.dispatch = getvar_has_slot
 #endif
 #if CONFIG_IS_ENABLED(FASTBOOT_FLASH_MMC)
+	}, {
+		.variable = "mmc_size",
+		.dispatch = getvar_mmc_size
 	}, {
 		.variable = "partition-type",
 		.dispatch = getvar_partition_type
@@ -214,6 +219,16 @@ fail:
 #endif
 
 #if CONFIG_IS_ENABLED(FASTBOOT_FLASH_MMC)
+static void getvar_mmc_size(char *var_parameter, char *response)
+{
+	struct mmc *mmc = find_mmc_device(CONFIG_FASTBOOT_FLASH_MMC_DEV);
+
+	if (mmc)
+		fastboot_response("OKAY", response, "%llu", mmc->capacity_user);
+	else
+		fastboot_fail("mmc device not found", response);
+}
+
 static void getvar_partition_type(char *part_name, char *response)
 {
 	int r;
