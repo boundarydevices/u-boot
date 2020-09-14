@@ -1,0 +1,86 @@
+choice
+	prompt	"Boundary i.MX8M board select"
+	optional
+
+config TARGET_BIO
+	bool "bio"
+	select IMX8MQ
+	select SUPPORT_SPL
+
+config TARGET_DWE
+	bool "dwe"
+	select IMX8MM
+	select SUPPORT_SPL
+
+config TARGET_HL8MM
+	bool "hl8mm"
+	select IMX8MM
+	select SUPPORT_SPL
+
+config TARGET_MOO
+	bool "moo"
+	select IMX8MM
+	select SUPPORT_SPL
+
+config TARGET_NITROGEN8_LITE
+	bool "nitrogen8_lite"
+	select SUPPORT_SPL
+
+config TARGET_NITROGEN8_NANO
+	bool "nitrogen8_nano"
+	select SUPPORT_SPL
+
+config TARGET_NITROGEN8M
+	bool "nitrogen8m"
+	select IMX8MQ
+	select SUPPORT_SPL
+
+config TARGET_NITROGEN8M_SOM
+	bool "nitrogen8m_som"
+	select IMX8MQ
+	select SUPPORT_SPL
+
+config TARGET_NITROGEN8MM
+	bool "nitrogen8mm"
+	select IMX8MM
+	select SUPPORT_SPL
+
+config TARGET_NITROGEN8MN
+	bool "nitrogen8mn"
+	select IMX8MN
+	select SUPPORT_SPL
+
+config TARGET_NITROGEN8MM_SOM
+	bool "nitrogen8mm_som"
+	select IMX8MM
+	select SUPPORT_SPL
+
+config TARGET_NITROGEN8MN_SOM
+	bool "nitrogen8mn_som"
+	select IMX8MN
+	select SUPPORT_SPL
+
+config TARGET_SON
+	bool "son"
+	select IMX8MQ
+	select SUPPORT_SPL
+
+config TARGET_SPAN
+	bool "span"
+	select IMX8MM
+	select SUPPORT_SPL
+
+endchoice
+
+source "board/boundary/bio/Kconfig"
+source "board/boundary/dwe/Kconfig"
+source "board/boundary/hl8mm/Kconfig"
+source "board/boundary/moo/Kconfig"
+source "board/boundary/nitrogen8_lite/Kconfig"
+source "board/boundary/nitrogen8_nano/Kconfig"
+source "board/boundary/nitrogen8m/Kconfig"
+source "board/boundary/nitrogen8m_som/Kconfig"
+source "board/boundary/nitrogen8mm/Kconfig"
+source "board/boundary/nitrogen8mm_som/Kconfig"
+source "board/boundary/son/Kconfig"
+source "board/boundary/span/Kconfig"
