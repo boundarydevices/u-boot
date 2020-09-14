@@ -1,0 +1,5 @@
+choice
+	prompt	"Boundary i.MX8M board select"
+	optional
+
+endchoice

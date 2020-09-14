@@ -24,7 +24,7 @@ config SYS_SOC
 	default "imx8m"
 
 choice
-	prompt  "NXP i.MX8M board select"
+	prompt	"i.MX8M board select"
 	optional
 
 config TARGET_IMX8MQ_EVK
@@ -72,7 +72,16 @@ config TARGET_IMX8MM_BEACON
 	select SUPPORT_SPL
 	select IMX8M_LPDDR4
 
+config BOUNDARY_BOARD_IMX8M
+	bool "Boundary Devices i.MX8M board"
+
 endchoice
+
+menu "Boundary Devices i.MX8M boards"
+	depends on BOUNDARY_BOARD_IMX8M
+
+source "board/boundary/Kconfig-imx8m"
+endmenu
 
 source "board/freescale/imx8mq_evk/Kconfig"
 source "board/freescale/imx8mm_evk/Kconfig"
