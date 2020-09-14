@@ -1,0 +1,15 @@
+choice
+	prompt	"Boundary i.MX6 board select"
+	optional
+
+config TARGET_NITROGEN6X
+	bool "nitrogen6x"
+	depends on MX6DL || MX6Q || MX6QDL || MX6S
+	imply USB_ETHER_ASIX
+	imply USB_ETHER_MCS7830
+	imply USB_ETHER_SMSC95XX
+	imply USB_HOST_ETHER
+
+endchoice
+
+source "board/boundary/nitrogen6x/Kconfig"
