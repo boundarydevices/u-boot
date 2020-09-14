@@ -1,0 +1,272 @@
+choice
+	prompt	"Boundary i.MX6 board select"
+	optional
+
+config TARGET_A
+	bool "a"
+	select MX6S
+
+config TARGET_ACL
+	bool "acl"
+	select HAS_CAAM
+	select MX6_SMP
+
+config TARGET_AP
+	bool "ap"
+	select MX6Q
+
+config TARGET_ASH
+	bool "ash"
+	select MX6DL
+
+config TARGET_ASH2
+	bool "ash2"
+	select MX6DL
+
+config TARGET_BT
+	bool "bt"
+	select MX6Q
+
+config TARGET_BT2
+	bool "bt2"
+	select MX6Q
+
+config TARGET_CAD
+	bool "cad"
+	select MX6S
+
+config TARGET_CID
+	bool "cid"
+	select MX6Q
+
+config TARGET_CID_TAB
+	bool "cid_tab"
+	select MX6Q
+
+config TARGET_CNT
+	bool "cnt"
+	select MX6Q
+
+config TARGET_COB
+	bool "cob"
+	select MX6Q
+
+config TARGET_COB2
+	bool "cob2"
+	select MX6Q
+
+config TARGET_DASH
+	bool "dash"
+	select MX6Q
+
+config TARGET_EO
+	bool "eo"
+	select MX6QDL
+
+config TARGET_H
+	bool "h"
+	select MX6QDL
+
+config TARGET_H4
+	bool "h4"
+	select MX6Q
+
+config TARGET_HL
+	bool "hl"
+	select MX6DL
+
+config TARGET_HP
+	bool "hp"
+	select MX6QDL
+
+config TARGET_INSP
+	bool "insp"
+	select MX6Q
+
+config TARGET_IOC
+	bool "ioc"
+	select MX6Q
+
+config TARGET_JLM
+	bool "jlm"
+	select MX6Q
+
+config TARGET_LS
+	bool "ls"
+	select MX6Q
+
+config TARGET_LSHORE
+	bool "lshore"
+	select MX6QDL
+
+config TARGET_LTCH
+	bool "ltch"
+	select MX6Q
+
+config TARGET_MCS
+	bool "mcs"
+	select MX6QDL
+
+config TARGET_MED
+	bool "med"
+	select MX6Q
+
+config TARGET_MTP
+	bool "mtp"
+	select MX6Q
+
+config TARGET_MX6_R
+	bool "mx6_r"
+	select MX6Q
+
+config TARGET_NEOL
+	bool "neol"
+	select MX6Q
+
+config TARGET_NIT6XLITE
+	bool "nit6xlite"
+	select MX6S
+
+config TARGET_NITROGEN6_MAX
+	bool "nitrogen6_max"
+	select MX6QDL
+
+config TARGET_NITROGEN6_SCM
+	bool "nitrogen6_scm"
+	select MX6SX
+
+config TARGET_NITROGEN6_SOM2
+	bool "nitrogen6_som2"
+	select MX6QDL
+
+config TARGET_NITROGEN6_VM
+	bool "nitrogen6_vm"
+	select MX6S
+
+config TARGET_NITROGEN6SX
+	bool "nitrogen6sx"
+	select MX6SX
+
+config TARGET_NITROGEN6X
+	bool "nitrogen6x"
+	imply USB_HOST_ETHER
+	imply USB_ETHER_ASIX
+	imply USB_ETHER_SMSC95XX
+	imply USB_ETHER_MCS7830
+	select MX6QDL
+
+config TARGET_NW
+	bool "nw"
+	select MX6Q
+
+config TARGET_OC
+	bool "oc"
+	select MX6QDL
+
+config TARGET_PER
+	bool "per"
+	select MX6Q
+
+config TARGET_RC
+	bool "rc"
+	select MX6DL
+
+config TARGET_RTA
+	bool "rta"
+	select MX6ULL
+	select BOARD_LATE_INIT
+
+config TARGET_S
+	bool "s"
+	select MX6Q
+
+config TARGET_SES
+	bool "ses"
+	select MX6Q
+
+config TARGET_SNAP
+	bool "snap"
+	select MX6Q
+
+config TARGET_SP
+	bool "sp"
+	select MX6S
+
+config TARGET_TA
+	bool "ta"
+	select MX6Q
+
+config TARGET_USD
+	bool "usd"
+	select MX6Q
+
+config TARGET_USD_MR2
+	bool "usd_mr2"
+	select MX6Q
+
+config TARGET_UTC
+	bool "utc"
+	select MX6Q
+
+config TARGET_VP
+	bool "vp"
+	select MX6Q
+
+config TARGET_YS
+	bool "ys"
+	select MX6SX
+
+endchoice
+
+source "board/boundary/a/Kconfig"
+source "board/boundary/acl/Kconfig"
+source "board/boundary/ap/Kconfig"
+source "board/boundary/ash/Kconfig"
+source "board/boundary/ash2/Kconfig"
+source "board/boundary/bt/Kconfig"
+source "board/boundary/bt2/Kconfig"
+source "board/boundary/cad/Kconfig"
+source "board/boundary/cid/Kconfig"
+source "board/boundary/cid_tab/Kconfig"
+source "board/boundary/cnt/Kconfig"
+source "board/boundary/cob/Kconfig"
+source "board/boundary/cob2/Kconfig"
+source "board/boundary/dash/Kconfig"
+source "board/boundary/eo/Kconfig"
+source "board/boundary/h/Kconfig"
+source "board/boundary/h4/Kconfig"
+source "board/boundary/hl/Kconfig"
+source "board/boundary/hp/Kconfig"
+source "board/boundary/insp/Kconfig"
+source "board/boundary/ioc/Kconfig"
+source "board/boundary/jlm/Kconfig"
+source "board/boundary/ls/Kconfig"
+source "board/boundary/lshore/Kconfig"
+source "board/boundary/ltch/Kconfig"
+source "board/boundary/mcs/Kconfig"
+source "board/boundary/med/Kconfig"
+source "board/boundary/mtp/Kconfig"
+source "board/boundary/mx6_r/Kconfig"
+source "board/boundary/neol/Kconfig"
+source "board/boundary/nit6xlite/Kconfig"
+source "board/boundary/nitrogen6_max/Kconfig"
+source "board/boundary/nitrogen6_scm/Kconfig"
+source "board/boundary/nitrogen6_som2/Kconfig"
+source "board/boundary/nitrogen6_vm/Kconfig"
+source "board/boundary/nitrogen6sx/Kconfig"
+source "board/boundary/nitrogen6x/Kconfig"
+source "board/boundary/nw/Kconfig"
+source "board/boundary/oc/Kconfig"
+source "board/boundary/per/Kconfig"
+source "board/boundary/rc/Kconfig"
+source "board/boundary/rta/Kconfig"
+source "board/boundary/s/Kconfig"
+source "board/boundary/ses/Kconfig"
+source "board/boundary/snap/Kconfig"
+source "board/boundary/sp/Kconfig"
+source "board/boundary/ta/Kconfig"
+source "board/boundary/usd/Kconfig"
+source "board/boundary/usd_mr2/Kconfig"
+source "board/boundary/utc/Kconfig"
+source "board/boundary/vp/Kconfig"
+source "board/boundary/ys/Kconfig"
