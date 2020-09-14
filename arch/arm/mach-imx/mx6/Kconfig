@@ -477,14 +477,6 @@ config TARGET_MYS_6ULX
 	select DM_THERMAL
 	select SUPPORT_SPL
 
-config TARGET_NITROGEN6X
-	bool "nitrogen6x"
-	depends on MX6DL || MX6Q || MX6QDL || MX6S
-	imply USB_ETHER_ASIX
-	imply USB_ETHER_MCS7830
-	imply USB_ETHER_SMSC95XX
-	imply USB_HOST_ETHER
-
 config TARGET_OPOS6ULDEV
 	bool "Armadeus OPOS6ULDev board"
 	depends on MX6UL
@@ -707,7 +699,17 @@ config TARGET_BRPPT2
           Support
           B&R BRPPT2 platform
           based on Freescale's iMX6 SoC
+
+config BOUNDARY_BOARD_IMX6
+	bool "Boundary Devices i.MX6 board"
+
 endchoice
+
+menu "Boundary Devices i.MX8M boards"
+	depends on BOUNDARY_BOARD_IMX6
+
+source "board/boundary/Kconfig-imx6"
+endmenu
 
 config SYS_SOC
 	default "mx6"
@@ -719,7 +721,6 @@ source "board/armadeus/opos6uldev/Kconfig"
 source "board/bachmann/ot1200/Kconfig"
 source "board/barco/platinum/Kconfig"
 source "board/barco/titanium/Kconfig"
-source "board/boundary/nitrogen6x/Kconfig"
 source "board/bticino/mamoj/Kconfig"
 source "board/ccv/xpress/Kconfig"
 source "board/compulab/cm_fx6/Kconfig"
