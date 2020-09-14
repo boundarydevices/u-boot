@@ -25,7 +25,7 @@ config SYS_SOC
 	default "imx8m"
 
 choice
-	prompt "NXP i.MX8M board select"
+	prompt	"i.MX8M board select"
 	optional
 
 config TARGET_IMX8MQ_CM
@@ -216,7 +216,17 @@ config TARGET_IMX8MP_RSB3720A1_6G
 	select IMX8MP
 	select SUPPORT_SPL
 	select IMX8M_LPDDR4
+
+config BOUNDARY_BOARD_IMX8M
+	bool "Boundary Devices i.MX8M board"
+
 endchoice
+
+menu "Boundary Devices i.MX8M boards"
+	depends on BOUNDARY_BOARD_IMX8M
+
+source "board/boundary/Kconfig-imx8m"
+endmenu
 
 source "board/advantech/imx8mp_rsb3720a1/Kconfig"
 source "board/beacon/imx8mm/Kconfig"

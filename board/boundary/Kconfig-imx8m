@@ -1,0 +1,8 @@
+choice
+	prompt	"Boundary i.MX8M board select"
+	optional
+
+config TARGET_ASH8MM
+	bool "ash8mm"
+
+endchoice
