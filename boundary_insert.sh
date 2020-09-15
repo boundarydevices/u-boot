@@ -39,14 +39,15 @@ for board in ${boards} ; do
 		done
 
 		if [ "${cfgs}" != "" ] ; then
-			make ${defconfig}_defconfig;
+			cp configs/${defconfig}_defconfig configs/t_defconfig
 			for insert_config in ${cfgs} ; do
 				if [[ ${insert_config} == *=* ]] ; then
-					echo "${insert_config}" >>.config;
+					echo "${insert_config}" >>configs/t_defconfig;
 				else
-					echo "${insert_config}=y" >>.config;
+					echo "${insert_config}=y" >>configs/t_defconfig;
 				fi
 			done
+			make t_defconfig;
 			make savedefconfig;
 			diff -q defconfig configs/${defconfig}_defconfig;
 			if [ $? -eq 0 ] ; then
@@ -92,4 +93,6 @@ for board in ${boards} ; do
 	fi
 	numboards=`expr $numboards + 1`;
 done
+
+rm configs/t_defconfig
 echo -e "\n\ninsert for ${numboards} boards. ${numsuccess} succeeded and ${numfailures} failed, ${skipped} skipped";
