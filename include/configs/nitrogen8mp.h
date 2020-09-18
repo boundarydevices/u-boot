@@ -93,7 +93,9 @@
 #define CONFIG_MMCROOT			"/dev/mmcblk2p2"  /* USDHC3 */
 
 /* Size of malloc() pool */
-#define CONFIG_SYS_MALLOC_LEN		SZ_32M
+#define CONFIG_SYS_MALLOC_LEN		SZ_128M
+/* bootm image length (Android) */
+#define CONFIG_SYS_BOOTM_LEN		(96 * 1024 * 1024)
 
 /* Totally 6GB DDR */
 #define CONFIG_SYS_SDRAM_BASE		0x40000000
