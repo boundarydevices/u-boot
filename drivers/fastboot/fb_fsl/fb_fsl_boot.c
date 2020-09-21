@@ -222,7 +222,7 @@ U_BOOT_CMD(
 );
 #endif
 
-#if defined CONFIG_SYSTEM_RAMDISK_SUPPORT && defined CONFIG_ANDROID_AUTO_SUPPORT
+#ifdef CONFIG_SYSTEM_RAMDISK_SUPPORT
 /* Setup booargs for taking the system parition as ramdisk */
 static void fastboot_setup_system_boot_args(const char *slot, bool append_root)
 {
@@ -253,6 +253,12 @@ static void fastboot_setup_system_boot_args(const char *slot, bool append_root)
 					ptentry->partition_index);
 		}
 		strcat(bootargs_3rd, "rootwait");
+
+		/* for standard android, recovery ramdisk will be used anyway, to
+		 * boot up Android, "androidboot.force_normal_boot=1" is needed */
+#ifndef CONFIG_ANDROID_AUTO_SUPPORT
+			strcat(bootargs_3rd, " androidboot.force_normal_boot=1");
+#endif
 
 		env_set("bootargs_3rd", bootargs_3rd);
 	} else {
@@ -414,7 +420,6 @@ int vbh_calculate(uint8_t *vbh, AvbSlotVerifyData *avb_out_data)
 		ret = -1;
 		goto fail;
 	}
-
 	/* Calculate VBH2 */
 	if (sha256_concatenation(hash_buf, vbh, image_hash)) {
 		ret = -1;
@@ -680,14 +685,9 @@ int do_boota(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]) {
 		strcat(bootargs_sec, avb_out_data->cmdline);
 #else
 		strcat(bootargs_sec, strstr(avb_out_data->cmdline, "androidboot"));
-		/* for standard android, recovery ramdisk will be used anyway, to
-		 * boot up Android, "androidboot.force_normal_boot=1" is needed */
-		if(!is_recovery_mode) {
-			strcat(bootargs_sec, " androidboot.force_normal_boot=1");
-		}
 #endif
 		env_set("bootargs_sec", bootargs_sec);
-#if defined CONFIG_SYSTEM_RAMDISK_SUPPORT && defined CONFIG_ANDROID_AUTO_SUPPORT
+#ifdef CONFIG_SYSTEM_RAMDISK_SUPPORT
 		if(!is_recovery_mode) {
 			if(avb_out_data->cmdline != NULL && strstr(avb_out_data->cmdline, "root="))
 				fastboot_setup_system_boot_args(avb_out_data->ab_suffix, false);
