@@ -176,8 +176,8 @@ static const iomux_v3_cfg_t init_pads[] = {
 	IOMUX_PAD_CTRL(SD1_DATA1__USDHC1_DATA1, USDHC1_PAD_CTRL),
 	IOMUX_PAD_CTRL(SD1_DATA2__USDHC1_DATA2, USDHC1_PAD_CTRL),
 	IOMUX_PAD_CTRL(SD1_DATA3__USDHC1_DATA3, USDHC1_PAD_CTRL),
-#define GP_USDHC1_CD	IMX_GPIO_NR(3, 26)
-	IOMUX_PAD_CTRL(LCD_DATA21__GPIO3_IO26, WEAK_PULLUP),
+#define GP_USDHC1_CD	IMX_GPIO_NR(1, 19)
+	IOMUX_PAD_CTRL(UART1_RTS_B__GPIO1_IO19, WEAK_PULLUP),
 
 	/* usdhc2 - eMMC */
 	IOMUX_PAD_CTRL(NAND_RE_B__USDHC2_CLK, USDHC2_CLK_PAD_CTRL),
@@ -240,7 +240,7 @@ int board_ehci_power(int port, int on)
 
 #ifdef CONFIG_FSL_ESDHC_IMX
 struct fsl_esdhc_cfg board_usdhc_cfg[] = {
-#if 0
+#if CONFIG_SYS_FSL_USDHC_NUM == 2
 	{.esdhc_base = USDHC1_BASE_ADDR, .bus_width = 4,
 			.gp_cd = GP_USDHC1_CD},
 #endif
