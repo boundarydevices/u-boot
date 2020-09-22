@@ -102,16 +102,16 @@ int android_image_get_kernel(const struct andr_img_hdr *hdr, int verify,
 			if (bootargs)
 				sprintf(commandline, "%s ", bootargs);
 		}
+	}
 
-		if (*hdr->cmdline) {
-			if (strlen(hdr->cmdline) + 1 >
-				sizeof(commandline) - strlen(commandline)) {
-				printf("cmdline in bootimg is too long!\n");
-				return -1;
-			}
-			else
-				strncat(commandline, hdr->cmdline, sizeof(commandline) - strlen(commandline));
+	if (*hdr->cmdline) {
+		if (strlen(hdr->cmdline) + 1 >
+			sizeof(commandline) - strlen(commandline)) {
+			printf("cmdline in bootimg is too long!\n");
+			return -1;
 		}
+		else
+			strncat(commandline, hdr->cmdline, sizeof(commandline) - strlen(commandline));
 	}
 
 	/* Add 'bootargs_ram_capacity' to hold the parameters based on different ram capacity */
