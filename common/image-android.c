@@ -233,16 +233,16 @@ int android_image_get_kernel(const struct andr_img_hdr *hdr, int verify,
 			if (bootargs)
 				sprintf(commandline, "%s ", bootargs);
 		}
+	}
 
-		if (*hdr->cmdline) {
-			if (strlen(hdr->cmdline) + 1 >
-				COMMANDLINE_LENGTH - strlen(commandline)) {
-				printf("cmdline in bootimg is too long!\n");
-				return -1;
-			}
-			else
-				strncat(commandline, hdr->cmdline, COMMANDLINE_LENGTH - strlen(commandline));
+	if (*hdr->cmdline) {
+		if (strlen(hdr->cmdline) + 1 >
+			COMMANDLINE_LENGTH - strlen(commandline)) {
+			printf("cmdline in bootimg is too long!\n");
+			return -1;
 		}
+		else
+			strncat(commandline, hdr->cmdline, COMMANDLINE_LENGTH - strlen(commandline));
 	}
 
 	append_kernel_cmdline(commandline);
