@@ -37,7 +37,7 @@ if itest.s "x" == "x${fdt_file}" ; then
 		fdt_file=imx51-${board}.dtb;
 	elif itest.s x53 == "x${cpu2}" ; then
 		fdt_file=imx53-${board}.dtb;
-	if itest.s x6DL == "x${cpu3}" || itest.s x6SO == "x${cpu3}" ; then
+	elif itest.s x6DL == "x${cpu3}" || itest.s x6SO == "x${cpu3}" ; then
 		fdt_file=imx6dl-${board}.dtb;
 	elif itest.s x6QP == "x${cpu3}" ; then
 		fdt_file=imx6qp-${board}.dtb;
