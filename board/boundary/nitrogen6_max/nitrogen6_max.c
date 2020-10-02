@@ -515,7 +515,6 @@ static const struct display_info_t displays[] = {
 #else
 	VD_HANNSTAR7(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
 	VD_PM9598(LVDS2, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
-#endif
 	VD_HANNSTAR7(LVDS2, NULL, fbp_bus_gp(2, 0, GP_LVDS2_BKL_EN, 0), 0x38, FBTS_FT5X06),
 	VD_PM9598(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
 	VD_AUO_B101EW05(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
@@ -555,6 +554,7 @@ static const struct display_info_t displays[] = {
 	/* uses both lvds connectors */
 	VD_1080P60(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
 	VD_1080P60_J(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
+#endif
 
 	/* tsc2004 */
 	VD_CLAA_WVGA(LCD, fbp_detect_i2c, 2, 0x48, FBTS_TSC2004),
