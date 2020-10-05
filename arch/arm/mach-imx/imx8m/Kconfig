@@ -10,11 +10,11 @@ config IMX8MQ
 	select IMX8M
 
 config IMX8MM
-	bool
+	bool "imx8mm"
 	select IMX8M
 
 config IMX8MN
-	bool
+	bool "imx8mn"
 	select IMX8M
 
 config IMX8MP
