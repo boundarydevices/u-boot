@@ -9,6 +9,8 @@
 #define _ASM_ARCH_IMX8M_CLOCK_H
 #include <linux/bitops.h>
 
+#define MHZ(X)	((X) * 1000000UL)
+
 #ifdef CONFIG_IMX8MQ
 #include <asm/arch/clock_imx8mq.h>
 #elif defined(CONFIG_IMX8MM) || defined(CONFIG_IMX8MN) || \
