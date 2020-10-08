@@ -45,11 +45,6 @@ static iomux_v3_cfg_t const init_pads[] = {
 #define GP_ECSPI2_CS0		IMX_GPIO_NR(5, 13)
 	IOMUX_PAD_CTRL(ECSPI2_SS0__GPIO5_IO13, 0x140),
 
-#define GP_FEC1_RESET	IMX_GPIO_NR(3, 15)
-	IOMUX_PAD_CTRL(NAND_RE_B__GPIO3_IO15, 0x119),
-#define GPIRQ_FEC1_PHY	IMX_GPIO_NR(3, 16)
-	IOMUX_PAD_CTRL(NAND_READY_B__GPIO3_IO16, 0x159),
-
 #define GP_GPIOKEY_POWER_FAIL	IMX_GPIO_NR(1, 3)
 	IOMUX_PAD_CTRL(GPIO1_IO03__GPIO1_IO3, 0x140),
 
@@ -128,7 +123,6 @@ static iomux_v3_cfg_t const init_pads[] = {
 
 static const unsigned short gpios_out_low[] = {
 	GP_BT_RFKILL_RESET,
-	GP_FEC1_RESET,
 	GP_PCIE0_RESET,
 	GP_PCIE0_DISABLE,
 	GP_REG_3P7V,
@@ -153,7 +147,6 @@ static const unsigned short gpios_out_high[] = {
 };
 
 static const unsigned short gpios_in[] = {
-	GPIRQ_FEC1_PHY,
 	GP_GPIOKEY_POWER_FAIL,
 	GPIRQ_RV3028,
 	GP_USDHC2_CD,
