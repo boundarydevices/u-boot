@@ -38,6 +38,10 @@ DECLARE_GLOBAL_DATA_PTR;
 static int mxcfb_map_video_memory(struct fb_info *fbi);
 static int mxcfb_unmap_video_memory(struct fb_info *fbi);
 
+#if !CONFIG_IS_ENABLED(DM_VIDEO)
+/* graphics setup */
+static GraphicDevice panel;
+#endif
 static struct fb_videomode const *gmode;
 static uint8_t gdisp;
 static uint32_t gpixfmt;
@@ -382,8 +386,10 @@ static int mxcfb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
 
 static int mxcfb_map_video_memory(struct fb_info *fbi)
 {
+#if CONFIG_IS_ENABLED(DM_VIDEO)
 	struct mxcfb_info *mxc_fbi = (struct mxcfb_info *)fbi->par;
 	struct video_uc_platdata *plat = dev_get_uclass_platdata(mxc_fbi->udev);
+#endif
 
 	if (fbi->fix.smem_len < fbi->var.yres_virtual * fbi->fix.line_length) {
 		fbi->fix.smem_len = fbi->var.yres_virtual *
@@ -391,7 +397,12 @@ static int mxcfb_map_video_memory(struct fb_info *fbi)
 	}
 	fbi->fix.smem_len = roundup(fbi->fix.smem_len, ARCH_DMA_MINALIGN);
 
+#if CONFIG_IS_ENABLED(DM_VIDEO)
 	fbi->screen_base = (char *)plat->base;
+#else
+	fbi->screen_base = (char *)memalign(ARCH_DMA_MINALIGN,
+					    fbi->fix.smem_len);
+#endif
 
 	fbi->fix.smem_start = (unsigned long)fbi->screen_base;
 	if (fbi->screen_base == 0) {
@@ -405,7 +416,10 @@ static int mxcfb_map_video_memory(struct fb_info *fbi)
 		(uint32_t) fbi->fix.smem_start, fbi->fix.smem_len);
 
 	fbi->screen_size = fbi->fix.smem_len;
+
+#if CONFIG_IS_ENABLED(VIDEO)
 	gd->fb_base = fbi->fix.smem_start;
+#endif
 
 	/* Clear the screen */
 	memset((char *)fbi->screen_base, 0, fbi->fix.smem_len);
@@ -481,7 +495,11 @@ extern struct clk *g_ipu_clk;
  *
  * @return      Appropriate error code to the kernel common code
  */
-static int mxcfb_probe(struct udevice *dev, u32 interface_pix_fmt,
+static int mxcfb_probe(
+#if CONFIG_IS_ENABLED(DM_VIDEO)
+		struct udevice *dev,
+#endif
+		u32 interface_pix_fmt,
 		       uint8_t disp, struct fb_videomode const *mode)
 {
 	struct fb_info *fbi;
@@ -505,7 +523,9 @@ static int mxcfb_probe(struct udevice *dev, u32 interface_pix_fmt,
 	}
 
 	mxcfbi->ipu_di = disp;
+#if CONFIG_IS_ENABLED(DM_VIDEO)
 	mxcfbi->udev = dev;
+#endif
 
 	if (!ipu_clk_enabled())
 		clk_enable(g_ipu_clk);
@@ -537,6 +557,18 @@ static int mxcfb_probe(struct udevice *dev, u32 interface_pix_fmt,
 
 	mxcfb_set_par(fbi);
 
+#if !CONFIG_IS_ENABLED(DM_VIDEO)
+	panel.winSizeX = mode->xres;
+	panel.winSizeY = mode->yres;
+	panel.plnSizeX = mode->xres;
+	panel.plnSizeY = mode->yres;
+
+	panel.frameAdrs = (u32)fbi->screen_base;
+	panel.memSize = fbi->screen_size;
+
+	panel.gdfBytesPP = 2;
+	panel.gdfIndex = GDF_16BIT_565RGB;
+#endif
 #ifdef DEBUG
 	ipu_dump_registers();
 #endif
@@ -566,6 +598,23 @@ void ipuv3_fb_shutdown(void)
 	}
 }
 
+#if !CONFIG_IS_ENABLED(DM_VIDEO)
+void *video_hw_init(void)
+{
+	int ret;
+
+	ret = ipu_probe();
+	if (ret)
+		puts("Error initializing IPU\n");
+
+	ret = mxcfb_probe(gpixfmt, gdisp, gmode);
+	debug("Framebuffer at 0x%x\n", (unsigned int)panel.frameAdrs);
+	gd->fb_base = panel.frameAdrs;
+
+	return (void *)&panel;
+}
+#endif
+
 int ipuv3_fb_init(struct fb_videomode const *mode,
 		  uint8_t disp,
 		  uint32_t pixfmt)
@@ -577,6 +626,7 @@ int ipuv3_fb_init(struct fb_videomode const *mode,
 	return 0;
 }
 
+#if CONFIG_IS_ENABLED(DM_VIDEO)
 enum {
 	/* Maximum display size we support */
 	LCD_MAX_WIDTH		= 1920,
@@ -674,3 +724,4 @@ U_BOOT_DRIVER(fsl_imx6q_ipu) = {
 	.priv_auto_alloc_size = sizeof(struct ipuv3_video_priv),
 	.flags	= DM_FLAG_PRE_RELOC,
 };
+#endif /* CONFIG_DM_VIDEO */
