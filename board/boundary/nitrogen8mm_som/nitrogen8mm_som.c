@@ -64,6 +64,7 @@ static iomux_v3_cfg_t const init_pads[] = {
 #define GPIRQ_RV4162		<&gpio4 22 IRQ_TYPE_LEVEL_LOW>
 	IOMUX_PAD_CTRL(GPIO1_IO03__GPIO1_IO3, 0x1c0),
 
+#define GPIRQ_CSI1_TC3587	IMX_GPIO_NR(1, 11)
 #define GP_CSI1_MIPI_PWDN	IMX_GPIO_NR(1, 11)
 	IOMUX_PAD_CTRL(GPIO1_IO11__GPIO1_IO11, 0x141),
 #define GP_CSI1_MIPI_RESET	IMX_GPIO_NR(1, 9)
@@ -185,10 +186,10 @@ int board_init(void)
 	gpio_request(GP_GT911_RESET, "gt911_reset");
 	gpio_request(GPIRQ_GT911, "gt911_irq");
 	gpio_request(GP_LTK08_MIPI_EN, "lkt08_mipi_en");
-	gpio_request(GP_CSI1_MIPI_PWDN, "csi1_mipi_pwdn");
+	gpio_request(GPIRQ_CSI1_TC3587, "csi1_mipi_pwdn");
 	gpio_request(GP_CSI1_MIPI_RESET, "csi1_mipi_reset");
 	gpio_direction_output(GP_GT911_RESET, 0);
-	gpio_direction_output(GP_CSI1_MIPI_PWDN, 1);
+	gpio_direction_input(GPIRQ_CSI1_TC3587);
 	gpio_direction_output(GP_CSI1_MIPI_RESET, 0);
 #ifdef CONFIG_MXC_SPI
 	setup_spi();
