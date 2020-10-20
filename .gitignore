@@ -5,6 +5,9 @@
 #
 # Normal rules (sorted alphabetically)
 #
+
+/bl31.c
+
 .*
 *.a
 *.asn1.[ch]
