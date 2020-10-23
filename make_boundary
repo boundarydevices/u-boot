@@ -31,7 +31,13 @@ for board in $boards ; do
 			cp -fv flash.bin ${savedir}/u-boot.${board} ;
 		        ls -l ${savedir}/u-boot.${board};
 		else
-		        cp -fv u-boot.imx $savedir/u-boot.${board};
+			cnt=`sed -n "/CONFIG_OF_CONTROL=/=" configs/${board}_defconfig`
+			if [ "${cnt}" != "" ] ; then
+				uboot=u-boot-dtb.imx
+			else
+				uboot=u-boot.imx
+			fi
+		        cp -fv $uboot $savedir/u-boot.${board};
 		        ls -l $savedir/u-boot.${board};
 		fi
 		numsuccess=`expr $numsuccess + 1`;
