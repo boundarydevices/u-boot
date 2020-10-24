@@ -7,7 +7,6 @@
 #define __LPDDR4_DEFINE_H_
 
 #define LPDDR4_DVFS_DBI
-#define DDR_ONE_RANK
 /* #define LPDDR4_DBI_ON */
 #define DFI_BUG_WR
 #define M845S_4GBx2
@@ -20,12 +19,6 @@
 #else
 #define LPDDR4_MR3			0x31
 #define LPDDR4_PHY_DMIPinPresent	0x0
-#endif
-
-#ifdef DDR_ONE_RANK
-#define LPDDR4_CS			0x1
-#else
-#define LPDDR4_CS			0x3
 #endif
 
 /* PHY training feature */
