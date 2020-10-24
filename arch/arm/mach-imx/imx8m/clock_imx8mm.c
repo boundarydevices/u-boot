@@ -850,6 +850,42 @@ u32 imx_get_eqos_csr_clk(void)
 }
 #endif
 
+#if defined(CONFIG_IMX8MP)
+void init_usb_clk(int usbno)
+{
+	clock_enable(CCGR_USB_MSCALE_PL301, 0);
+	clock_enable(CCGR_USB_PHY_8MP, 0);
+
+	/* HSIOMIX AXI BUS root already been set by ROM */
+
+	/* 100MHz */
+	clock_set_target_val(USB_CORE_REF_CLK_ROOT, CLK_ROOT_ON |
+			     CLK_ROOT_SOURCE_SEL(1));
+	/* 100MHz */
+	clock_set_target_val(USB_PHY_REF_CLK_ROOT, CLK_ROOT_ON |
+			     CLK_ROOT_SOURCE_SEL(1));
+
+	clock_enable(CCGR_USB_MSCALE_PL301, 1);
+	clock_enable(CCGR_USB_PHY_8MP, 1);
+}
+#else
+void enable_usboh3_clk(unsigned char enable)
+{
+	if (enable) {
+		clock_enable(CCGR_USB_MSCALE_PL301, 0);
+		/* 500M */
+		clock_set_target_val(USB_BUS_CLK_ROOT, CLK_ROOT_ON | CLK_ROOT_SOURCE_SEL(1));
+		/* 100M */
+		clock_set_target_val(USB_CORE_REF_CLK_ROOT, CLK_ROOT_ON | CLK_ROOT_SOURCE_SEL(1));
+		/* 100M */
+		clock_set_target_val(USB_PHY_REF_CLK_ROOT, CLK_ROOT_ON | CLK_ROOT_SOURCE_SEL(1));
+		clock_enable(CCGR_USB_MSCALE_PL301, 1);
+	} else {
+		clock_enable(CCGR_USB_MSCALE_PL301, 0);
+	}
+}
+#endif
+
 #ifdef CONFIG_FEC_MXC
 int set_clk_enet(enum enet_freq type)
 {
