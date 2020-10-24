@@ -604,4 +604,5 @@ enum clk_src_index {
 #define INTPLL_AFC_EN_MASK		BIT(2)
 #define INTPLL_ICP_MASK			GENMASK(1, 0)
 
+void enable_usboh3_clk(unsigned char enable);
 #endif
