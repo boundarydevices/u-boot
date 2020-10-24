@@ -244,8 +244,8 @@ struct anamix_pll {
 	u32 sys_pll1_gnrl_ctl;
 	u32 sys_pll1_div_ctl;
 	u32 sys_pll1_locked_ctl1;
-	u32 reserved2[24];
 	u32 sys_pll1_mnit_ctl;
+	u32 reserved2[24];
 	u32 sys_pll2_gnrl_ctl;
 	u32 sys_pll2_div_ctl;
 	u32 sys_pll2_locked_ctl1;
