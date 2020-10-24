@@ -8,6 +8,7 @@
 
 #include <asm/mach-imx/sys_proto.h>
 
+struct wdog_regs;
 void set_wdog_reset(struct wdog_regs *wdog);
 void enable_tzc380(void);
 void restore_boot_params(void);
