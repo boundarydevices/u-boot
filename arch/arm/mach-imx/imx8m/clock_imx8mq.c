@@ -341,7 +341,7 @@ u32 get_arm_core_clk(void)
 	return root_src_clk;
 }
 
-unsigned int mxc_get_clock(enum mxc_clock clk)
+unsigned int mxc_get_clock(enum clk_root_index clk)
 {
 	u32 val;
 
@@ -352,13 +352,10 @@ unsigned int mxc_get_clock(enum mxc_clock clk)
 		clock_get_target_val(IPG_CLK_ROOT, &val);
 		val = val & 0x3;
 		return get_root_clk(AHB_CLK_ROOT) / (val + 1);
-	case MXC_ESDHC_CLK:
-		return get_root_clk(USDHC1_CLK_ROOT);
-	case MXC_ESDHC2_CLK:
-		return get_root_clk(USDHC2_CLK_ROOT);
 	default:
-		return get_root_clk(clk);
+		break;
 	}
+	return get_root_clk(clk);
 }
 
 u32 imx_get_uartclk(void)

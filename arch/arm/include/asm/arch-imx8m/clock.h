@@ -258,7 +258,7 @@ int clock_init(void);
 void init_clk_usdhc(u32 index);
 void init_uart_clk(u32 index);
 void init_wdog_clk(void);
-unsigned int mxc_get_clock(enum mxc_clock clk);
+unsigned int mxc_get_clock(enum clk_root_index clk);
 int clock_enable(enum clk_ccgr_index index, bool enable);
 int clock_root_enabled(enum clk_root_index clock_id);
 int clock_root_cfg(enum clk_root_index clock_id, enum root_pre_div pre_div,

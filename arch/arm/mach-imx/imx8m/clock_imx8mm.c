@@ -743,7 +743,7 @@ u32 get_arm_core_clk(void)
 	return root_src_clk;
 }
 
-u32 mxc_get_clock(enum mxc_clock clk)
+u32 mxc_get_clock(enum clk_root_index clk)
 {
 	u32 val;
 
@@ -754,26 +754,10 @@ u32 mxc_get_clock(enum mxc_clock clk)
 		clock_get_target_val(IPG_CLK_ROOT, &val);
 		val = val & 0x3;
 		return get_root_clk(AHB_CLK_ROOT) / 2 / (val + 1);
-	case MXC_CSPI_CLK:
-		return get_root_clk(ECSPI1_CLK_ROOT);
-	case MXC_ESDHC_CLK:
-		return get_root_clk(USDHC1_CLK_ROOT);
-	case MXC_ESDHC2_CLK:
-		return get_root_clk(USDHC2_CLK_ROOT);
-	case MXC_ESDHC3_CLK:
-		return get_root_clk(USDHC3_CLK_ROOT);
-	case MXC_I2C_CLK:
-		return get_root_clk(I2C1_CLK_ROOT);
-	case MXC_UART_CLK:
-		return get_root_clk(UART1_CLK_ROOT);
-	case MXC_QSPI_CLK:
-		return get_root_clk(QSPI_CLK_ROOT);
 	default:
-		printf("Unsupported mxc_clock %d\n", clk);
 		break;
 	}
-
-	return 0;
+	return get_root_clk(clk);
 }
 
 #ifdef CONFIG_DWC_ETH_QOS
