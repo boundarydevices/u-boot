@@ -207,53 +207,35 @@ struct anamix_pll {
 	u32 sscg_pllout_div_cfg;
 };
 #else
+
+struct ana_grp {
+	u32 gnrl_ctl;
+	u32 fdiv_ctl0;
+	u32 fdiv_ctl1;
+	u32 sscg_ctl;
+	u32 mnit_ctl;
+};
+
+struct ana_grp2 {
+	u32 gnrl_ctl;
+	u32 div_ctl;
+	u32 locked_ctl;
+	u32 mnit_ctl;
+};
+
 struct anamix_pll {
-	u32 audio_pll1_gnrl_ctl;
-	u32 audio_pll1_fdiv_ctl0;
-	u32 audio_pll1_fdiv_ctl1;
-	u32 audio_pll1_sscg_ctl;
-	u32 audio_pll1_mnit_ctl;
-	u32 audio_pll2_gnrl_ctl;
-	u32 audio_pll2_fdiv_ctl0;
-	u32 audio_pll2_fdiv_ctl1;
-	u32 audio_pll2_sscg_ctl;
-	u32 audio_pll2_mnit_ctl;
-	u32 video_pll1_gnrl_ctl;
-	u32 video_pll1_fdiv_ctl0;
-	u32 video_pll1_fdiv_ctl1;
-	u32 video_pll1_sscg_ctl;
-	u32 video_pll1_mnit_ctl;
+	struct ana_grp audio_pll1;
+	struct ana_grp audio_pll2;
+	struct ana_grp video_pll1;
 	u32 reserved[5];
-	u32 dram_pll_gnrl_ctl;
-	u32 dram_pll_fdiv_ctl0;
-	u32 dram_pll_fdiv_ctl1;
-	u32 dram_pll_sscg_ctl;
-	u32 dram_pll_mnit_ctl;
-	u32 gpu_pll_gnrl_ctl;
-	u32 gpu_pll_div_ctl;
-	u32 gpu_pll_locked_ctl1;
-	u32 gpu_pll_mnit_ctl;
-	u32 vpu_pll_gnrl_ctl;
-	u32 vpu_pll_div_ctl;
-	u32 vpu_pll_locked_ctl1;
-	u32 vpu_pll_mnit_ctl;
-	u32 arm_pll_gnrl_ctl;
-	u32 arm_pll_div_ctl;
-	u32 arm_pll_locked_ctl1;
-	u32 arm_pll_mnit_ctl;
-	u32 sys_pll1_gnrl_ctl;
-	u32 sys_pll1_div_ctl;
-	u32 sys_pll1_locked_ctl1;
-	u32 sys_pll1_mnit_ctl;
-	u32 reserved2[24];
-	u32 sys_pll2_gnrl_ctl;
-	u32 sys_pll2_div_ctl;
-	u32 sys_pll2_locked_ctl1;
-	u32 sys_pll2_mnit_ctl;
-	u32 sys_pll3_gnrl_ctl;
-	u32 sys_pll3_div_ctl;
-	u32 sys_pll3_locked_ctl1;
-	u32 sys_pll3_mnit_ctl;
+	struct ana_grp dram_pll;
+	struct ana_grp2 gpu_pll;
+	struct ana_grp2 vpu_pll;
+	struct ana_grp2 arm_pll;
+	struct ana_grp2 sys_pll1;
+	u32 reserved2[6*4];
+	struct ana_grp2 sys_pll2;
+	struct ana_grp2 sys_pll3;
 	u32 anamix_misc_ctl;
 	u32 anamix_clk_mnit_ctl;
 	u32 reserved3[437];

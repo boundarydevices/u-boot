@@ -75,10 +75,10 @@ static int fracpll_configure(enum pll_clocks pll, u32 freq)
 		setbits_le32(GPC_BASE_ADDR + 0xF8, 1 << 5);
 		writel(SRC_DDR1_ENABLE_MASK, SRC_BASE_ADDR + 0x1004);
 
-		pll_base = &ana_pll->dram_pll_gnrl_ctl;
+		pll_base = &ana_pll->dram_pll.gnrl_ctl;
 		break;
 	case ANATOP_VIDEO_PLL:
-		pll_base = &ana_pll->video_pll1_gnrl_ctl;
+		pll_base = &ana_pll->video_pll1.gnrl_ctl;
 		break;
 	default:
 		return 0;
@@ -167,13 +167,12 @@ void dram_disable_bypass(void)
 
 int intpll_configure(enum pll_clocks pll, ulong freq)
 {
-	void __iomem *pll_gnrl_ctl, __iomem *pll_div_ctl;
+	struct ana_grp2 *ag;
 	u32 pll_div_ctl_val, pll_clke_masks;
 
 	switch (pll) {
 	case ANATOP_SYSTEM_PLL1:
-		pll_gnrl_ctl = &ana_pll->sys_pll1_gnrl_ctl;
-		pll_div_ctl = &ana_pll->sys_pll1_div_ctl;
+		ag = &ana_pll->sys_pll1;
 		pll_clke_masks = INTPLL_DIV20_CLKE_MASK |
 			INTPLL_DIV10_CLKE_MASK | INTPLL_DIV8_CLKE_MASK |
 			INTPLL_DIV6_CLKE_MASK | INTPLL_DIV5_CLKE_MASK |
@@ -181,8 +180,7 @@ int intpll_configure(enum pll_clocks pll, ulong freq)
 			INTPLL_DIV2_CLKE_MASK | INTPLL_CLKE_MASK;
 		break;
 	case ANATOP_SYSTEM_PLL2:
-		pll_gnrl_ctl = &ana_pll->sys_pll2_gnrl_ctl;
-		pll_div_ctl = &ana_pll->sys_pll2_div_ctl;
+		ag = &ana_pll->sys_pll2;
 		pll_clke_masks = INTPLL_DIV20_CLKE_MASK |
 			INTPLL_DIV10_CLKE_MASK | INTPLL_DIV8_CLKE_MASK |
 			INTPLL_DIV6_CLKE_MASK | INTPLL_DIV5_CLKE_MASK |
@@ -190,23 +188,19 @@ int intpll_configure(enum pll_clocks pll, ulong freq)
 			INTPLL_DIV2_CLKE_MASK | INTPLL_CLKE_MASK;
 		break;
 	case ANATOP_SYSTEM_PLL3:
-		pll_gnrl_ctl = &ana_pll->sys_pll3_gnrl_ctl;
-		pll_div_ctl = &ana_pll->sys_pll3_div_ctl;
+		ag = &ana_pll->sys_pll3;
 		pll_clke_masks = INTPLL_CLKE_MASK;
 		break;
 	case ANATOP_ARM_PLL:
-		pll_gnrl_ctl = &ana_pll->arm_pll_gnrl_ctl;
-		pll_div_ctl = &ana_pll->arm_pll_div_ctl;
+		ag = &ana_pll->arm_pll;
 		pll_clke_masks = INTPLL_CLKE_MASK;
 		break;
 	case ANATOP_GPU_PLL:
-		pll_gnrl_ctl = &ana_pll->gpu_pll_gnrl_ctl;
-		pll_div_ctl = &ana_pll->gpu_pll_div_ctl;
+		ag = &ana_pll->gpu_pll;
 		pll_clke_masks = INTPLL_CLKE_MASK;
 		break;
 	case ANATOP_VPU_PLL:
-		pll_gnrl_ctl = &ana_pll->vpu_pll_gnrl_ctl;
-		pll_div_ctl = &ana_pll->vpu_pll_div_ctl;
+		ag = &ana_pll->vpu_pll;
 		pll_clke_masks = INTPLL_CLKE_MASK;
 		break;
 	default:
@@ -248,22 +242,22 @@ int intpll_configure(enum pll_clocks pll, ulong freq)
 		return -EINVAL;
 	};
 	/* Bypass clock and set lock to pll output lock */
-	setbits_le32(pll_gnrl_ctl, INTPLL_BYPASS_MASK | INTPLL_LOCK_SEL_MASK);
+	setbits_le32(&ag->gnrl_ctl, INTPLL_BYPASS_MASK | INTPLL_LOCK_SEL_MASK);
 	/* Enable reset */
-	clrbits_le32(pll_gnrl_ctl, INTPLL_RST_MASK);
+	clrbits_le32(&ag->gnrl_ctl, INTPLL_RST_MASK);
 	/* Configure */
-	writel(pll_div_ctl_val, pll_div_ctl);
+	writel(pll_div_ctl_val, &ag->div_ctl);
 
 	__udelay(100);
 
 	/* Disable reset */
-	setbits_le32(pll_gnrl_ctl, INTPLL_RST_MASK);
+	setbits_le32(&ag->gnrl_ctl, INTPLL_RST_MASK);
 	/* Wait Lock */
-	while (!(readl(pll_gnrl_ctl) & INTPLL_LOCK_MASK))
+	while (!(readl(&ag->gnrl_ctl) & INTPLL_LOCK_MASK))
 		;
 	/* Clear bypass */
-	clrbits_le32(pll_gnrl_ctl, INTPLL_BYPASS_MASK);
-	setbits_le32(pll_gnrl_ctl, pll_clke_masks);
+	clrbits_le32(&ag->gnrl_ctl, INTPLL_BYPASS_MASK);
+	setbits_le32(&ag->gnrl_ctl, pll_clke_masks);
 
 	return 0;
 }
@@ -395,21 +389,21 @@ int clock_init(void)
 	 * sys pll2 fixed at 1GHz
 	 * Here we only enable the outputs.
 	 */
-	val_cfg0 = readl(&ana_pll->sys_pll1_gnrl_ctl);
+	val_cfg0 = readl(&ana_pll->sys_pll1.gnrl_ctl);
 	val_cfg0 |= INTPLL_CLKE_MASK | INTPLL_DIV2_CLKE_MASK |
 		INTPLL_DIV3_CLKE_MASK | INTPLL_DIV4_CLKE_MASK |
 		INTPLL_DIV5_CLKE_MASK | INTPLL_DIV6_CLKE_MASK |
 		INTPLL_DIV8_CLKE_MASK | INTPLL_DIV10_CLKE_MASK |
 		INTPLL_DIV20_CLKE_MASK;
-	writel(val_cfg0, &ana_pll->sys_pll1_gnrl_ctl);
+	writel(val_cfg0, &ana_pll->sys_pll1.gnrl_ctl);
 
-	val_cfg0 = readl(&ana_pll->sys_pll2_gnrl_ctl);
+	val_cfg0 = readl(&ana_pll->sys_pll2.gnrl_ctl);
 	val_cfg0 |= INTPLL_CLKE_MASK | INTPLL_DIV2_CLKE_MASK |
 		INTPLL_DIV3_CLKE_MASK | INTPLL_DIV4_CLKE_MASK |
 		INTPLL_DIV5_CLKE_MASK | INTPLL_DIV6_CLKE_MASK |
 		INTPLL_DIV8_CLKE_MASK | INTPLL_DIV10_CLKE_MASK |
 		INTPLL_DIV20_CLKE_MASK;
-	writel(val_cfg0, &ana_pll->sys_pll2_gnrl_ctl);
+	writel(val_cfg0, &ana_pll->sys_pll2.gnrl_ctl);
 
 	/* Configure ARM at 1.2GHz */
 	clock_set_target_val(ARM_A53_CLK_ROOT, CLK_ROOT_ON |
@@ -465,22 +459,20 @@ u32 imx_get_uartclk(void)
 
 static u32 decode_intpll(enum clk_root_src intpll)
 {
+	struct ana_grp2 *ag;
 	u32 pll_gnrl_ctl, pll_div_ctl, pll_clke_mask;
 	u32 main_div, pre_div, post_div, div;
 	u64 freq;
 
 	switch (intpll) {
 	case ARM_PLL_CLK:
-		pll_gnrl_ctl = readl(&ana_pll->arm_pll_gnrl_ctl);
-		pll_div_ctl = readl(&ana_pll->arm_pll_div_ctl);
+		ag = &ana_pll->arm_pll;
 		break;
 	case GPU_PLL_CLK:
-		pll_gnrl_ctl = readl(&ana_pll->gpu_pll_gnrl_ctl);
-		pll_div_ctl = readl(&ana_pll->gpu_pll_div_ctl);
+		ag = &ana_pll->gpu_pll;
 		break;
 	case VPU_PLL_CLK:
-		pll_gnrl_ctl = readl(&ana_pll->vpu_pll_gnrl_ctl);
-		pll_div_ctl = readl(&ana_pll->vpu_pll_div_ctl);
+		ag = &ana_pll->vpu_pll;
 		break;
 	case SYSTEM_PLL1_800M_CLK:
 	case SYSTEM_PLL1_400M_CLK:
@@ -491,8 +483,7 @@ static u32 decode_intpll(enum clk_root_src intpll)
 	case SYSTEM_PLL1_100M_CLK:
 	case SYSTEM_PLL1_80M_CLK:
 	case SYSTEM_PLL1_40M_CLK:
-		pll_gnrl_ctl = readl(&ana_pll->sys_pll1_gnrl_ctl);
-		pll_div_ctl = readl(&ana_pll->sys_pll1_div_ctl);
+		ag = &ana_pll->sys_pll1;
 		break;
 	case SYSTEM_PLL2_1000M_CLK:
 	case SYSTEM_PLL2_500M_CLK:
@@ -503,16 +494,16 @@ static u32 decode_intpll(enum clk_root_src intpll)
 	case SYSTEM_PLL2_125M_CLK:
 	case SYSTEM_PLL2_100M_CLK:
 	case SYSTEM_PLL2_50M_CLK:
-		pll_gnrl_ctl = readl(&ana_pll->sys_pll2_gnrl_ctl);
-		pll_div_ctl = readl(&ana_pll->sys_pll2_div_ctl);
+		ag = &ana_pll->sys_pll2;
 		break;
 	case SYSTEM_PLL3_CLK:
-		pll_gnrl_ctl = readl(&ana_pll->sys_pll3_gnrl_ctl);
-		pll_div_ctl = readl(&ana_pll->sys_pll3_div_ctl);
+		ag = &ana_pll->sys_pll3;
 		break;
 	default:
 		return -EINVAL;
 	}
+	pll_gnrl_ctl = readl(&ag->gnrl_ctl);
+	pll_div_ctl = readl(&ag->div_ctl);
 
 	/* Only support SYS_XTAL 24M, PAD_CLK not take into consideration */
 	if ((pll_gnrl_ctl & INTPLL_REF_CLK_SEL_MASK) != 0)
@@ -612,34 +603,30 @@ static u32 decode_intpll(enum clk_root_src intpll)
 
 static u32 decode_fracpll(enum clk_root_src frac_pll)
 {
+	struct ana_grp *ag;
 	u32 pll_gnrl_ctl, pll_fdiv_ctl0, pll_fdiv_ctl1;
 	u32 main_div, pre_div, post_div, k;
 
 	switch (frac_pll) {
 	case DRAM_PLL1_CLK:
-		pll_gnrl_ctl = readl(&ana_pll->dram_pll_gnrl_ctl);
-		pll_fdiv_ctl0 = readl(&ana_pll->dram_pll_fdiv_ctl0);
-		pll_fdiv_ctl1 = readl(&ana_pll->dram_pll_fdiv_ctl1);
+		ag = &ana_pll->dram_pll;
 		break;
 	case AUDIO_PLL1_CLK:
-		pll_gnrl_ctl = readl(&ana_pll->audio_pll1_gnrl_ctl);
-		pll_fdiv_ctl0 = readl(&ana_pll->audio_pll1_fdiv_ctl0);
-		pll_fdiv_ctl1 = readl(&ana_pll->audio_pll1_fdiv_ctl1);
+		ag = &ana_pll->audio_pll1;
 		break;
 	case AUDIO_PLL2_CLK:
-		pll_gnrl_ctl = readl(&ana_pll->audio_pll2_gnrl_ctl);
-		pll_fdiv_ctl0 = readl(&ana_pll->audio_pll2_fdiv_ctl0);
-		pll_fdiv_ctl1 = readl(&ana_pll->audio_pll2_fdiv_ctl1);
+		ag = &ana_pll->audio_pll2;
 		break;
 	case VIDEO_PLL_CLK:
-		pll_gnrl_ctl = readl(&ana_pll->video_pll1_gnrl_ctl);
-		pll_fdiv_ctl0 = readl(&ana_pll->video_pll1_fdiv_ctl0);
-		pll_fdiv_ctl1 = readl(&ana_pll->video_pll1_fdiv_ctl1);
+		ag = &ana_pll->video_pll1;
 		break;
 	default:
 		printf("Not supported\n");
 		return 0;
 	}
+	pll_gnrl_ctl = readl(&ag->gnrl_ctl);
+	pll_fdiv_ctl0 = readl(&ag->fdiv_ctl0);
+	pll_fdiv_ctl1 = readl(&ag->fdiv_ctl1);
 
 	/* Only support SYS_XTAL 24M, PAD_CLK not take into consideration */
 	if ((pll_gnrl_ctl & GENMASK(1, 0)) != 0)
