@@ -274,4 +274,5 @@ void mxs_set_lcdclk(u32 base_addr, u32 freq);
 int set_clk_qspi(void);
 void enable_ocotp_clk(unsigned char enable);
 int enable_i2c_clk(unsigned char enable, unsigned int i2c_num);
+int set_clk_eqos(enum enet_freq type);
 int set_clk_enet(enum enet_freq type);
