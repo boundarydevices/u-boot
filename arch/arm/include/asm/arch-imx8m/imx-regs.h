@@ -93,6 +93,8 @@
 #define SRC_DDR1_RCR_CORE_RESET_N_MASK	BIT(1)
 #define SRC_DDR1_RCR_PRESET_N_MASK	BIT(0)
 
+#define IOMUXC_GPR_GPR1_GPR_ENET_QOS_INTF_SEL_MASK 0x70000
+
 struct iomuxc_gpr_base_regs {
 	u32 gpr[47];
 };
