@@ -8,6 +8,8 @@
 #include <asm/arch/ddr.h>
 #include <asm/arch/lpddr4_define.h>
 
+#define LPDDR4_CS 3
+
 struct dram_cfg_param lpddr4_ddrc_cfg[] = {
 	/* Start to config, default 3200mbps */
 	{ DDRC_DBG1(0),	0x00000001 },
