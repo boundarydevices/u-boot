@@ -23,7 +23,53 @@ DECLARE_GLOBAL_DATA_PTR;
 
 __weak int spl_board_boot_device(enum boot_device boot_dev_spl)
 {
-	return 0;
+	switch (boot_dev_spl) {
+#if defined(CONFIG_MX7)
+	case SD1_BOOT:
+	case MMC1_BOOT:
+	case SD2_BOOT:
+	case MMC2_BOOT:
+	case SD3_BOOT:
+	case MMC3_BOOT:
+		return BOOT_DEVICE_MMC1;
+#elif defined(CONFIG_IMX8)
+	case MMC1_BOOT:
+		return BOOT_DEVICE_MMC1;
+	case SD2_BOOT:
+		return BOOT_DEVICE_MMC2_2;
+	case SD3_BOOT:
+		return BOOT_DEVICE_MMC1;
+	case FLEXSPI_BOOT:
+		return BOOT_DEVICE_SPI;
+#elif defined(CONFIG_IMX8M)
+	case SD1_BOOT:
+	case MMC1_BOOT:
+		return BOOT_DEVICE_MMC1;
+	case SD2_BOOT:
+	case MMC2_BOOT:
+		return BOOT_DEVICE_MMC2;
+#if defined(CONFIG_IMX8MM)||defined(CONFIG_IMX8MN)||defined(CONFIG_IMX8MP)
+	case SD3_BOOT:
+	case MMC3_BOOT:
+		return BOOT_DEVICE_MMC3;
+#endif
+#endif
+	case NAND_BOOT:
+		return BOOT_DEVICE_NAND;
+	case SPI_NOR_BOOT:
+		return BOOT_DEVICE_SPI;
+	case USB_BOOT:
+#ifdef CONFIG_SPL_BOOTROM_SUPPORT
+		return BOOT_DEVICE_BOOTROM;
+#else
+		return BOOT_DEVICE_BOARD;
+#endif
+	case QSPI_BOOT:
+		return BOOT_DEVICE_NOR;
+	default:
+		break;
+	}
+	return BOOT_DEVICE_NONE;
 }
 
 #if defined(CONFIG_MX6)
@@ -135,55 +181,8 @@ u32 spl_boot_device(void)
 	if (is_boot_from_usb())
 		return BOOT_DEVICE_BOARD;
 #endif
+	return spl_board_boot_device(get_boot_device());
 
-	enum boot_device boot_device_spl = get_boot_device();
-
-	if (IS_ENABLED(CONFIG_IMX8MM) || IS_ENABLED(CONFIG_IMX8MN) ||
-	    IS_ENABLED(CONFIG_IMX8MP))
-		return spl_board_boot_device(boot_device_spl);
-
-	switch (boot_device_spl) {
-#if defined(CONFIG_MX7)
-	case SD1_BOOT:
-	case MMC1_BOOT:
-	case SD2_BOOT:
-	case MMC2_BOOT:
-	case SD3_BOOT:
-	case MMC3_BOOT:
-		return BOOT_DEVICE_MMC1;
-#elif defined(CONFIG_IMX8)
-	case MMC1_BOOT:
-		return BOOT_DEVICE_MMC1;
-	case SD2_BOOT:
-		return BOOT_DEVICE_MMC2_2;
-	case SD3_BOOT:
-		return BOOT_DEVICE_MMC1;
-	case FLEXSPI_BOOT:
-		return BOOT_DEVICE_SPI;
-#elif defined(CONFIG_IMX8M)
-	case SD1_BOOT:
-	case MMC1_BOOT:
-		return BOOT_DEVICE_MMC1;
-	case SD2_BOOT:
-	case MMC2_BOOT:
-		return BOOT_DEVICE_MMC2;
-#if defined(CONFIG_IMX8MM)||defined(CONFIG_IMX8MN)
-	case SD3_BOOT:
-	case MMC3_BOOT:
-		return BOOT_DEVICE_MMC3;
-#endif
-#endif
-	case NAND_BOOT:
-		return BOOT_DEVICE_NAND;
-	case SPI_NOR_BOOT:
-		return BOOT_DEVICE_SPI;
-	case USB_BOOT:
-		return BOOT_DEVICE_BOARD;
-	case QSPI_BOOT:
-		return BOOT_DEVICE_NOR;
-	default:
-		return BOOT_DEVICE_NONE;
-	}
 }
 #endif /* CONFIG_MX7 || CONFIG_IMX8M || CONFIG_IMX8 */
 
