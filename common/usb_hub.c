@@ -165,7 +165,7 @@ static void usb_hub_power_on(struct usb_hub_device *hub)
 	int i;
 	struct usb_device *dev;
 	unsigned pgood_delay = hub->desc.bPwrOn2PwrGood * 2;
-	const char *env;
+	unsigned delay;
 
 	dev = hub->pusb_dev;
 
@@ -190,10 +190,12 @@ static void usb_hub_power_on(struct usb_hub_device *hub)
 	 * but allow this time to be increased via env variable as some
 	 * devices break the spec and require longer warm-up times
 	 */
-	env = env_get("usb_pgood_delay");
-	if (env)
-		pgood_delay = max(pgood_delay,
-			          (unsigned)simple_strtol(env, NULL, 0));
+#ifdef CONFIG_SPL_BUILD
+	delay = 2000;
+#else
+	delay = env_get_ulong("usb_pgood_delay", 10, 0);
+#endif
+	pgood_delay = max(pgood_delay, delay);
 	debug("pgood_delay=%dms\n", pgood_delay);
 
 	/*
@@ -207,7 +209,12 @@ static void usb_hub_power_on(struct usb_hub_device *hub)
 	 * will be done based on this value in the USB port loop in
 	 * usb_hub_configure() later.
 	 */
-	hub->connect_timeout = hub->query_delay + env_get_ulong("usb_connect_wait", 10, 1000);
+	hub->connect_timeout = hub->query_delay;
+#ifdef CONFIG_SPL_BUILD
+	hub->connect_timeout += 1000;
+#else
+	hub->connect_timeout += env_get_ulong("usb_connect_wait", 10, 1000);
+#endif
 	debug("devnum=%d poweron: query_delay=%d connect_timeout=%d\n",
 	      dev->devnum, max(100, (int)pgood_delay),
 	      max(100, (int)pgood_delay) + 1000);
