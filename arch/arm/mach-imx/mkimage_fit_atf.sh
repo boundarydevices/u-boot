@@ -136,7 +136,6 @@ __CONF_HEADER_EOF
 cnt=1
 for dtname in $*
 do
-if [ -f $BL32 ]; then
 cat << __CONF_SECTION_EOF
 		config@$cnt {
 			description = "$(basename $dtname .dtb)";
@@ -145,16 +144,6 @@ cat << __CONF_SECTION_EOF
 			fdt = "fdt@$cnt";
 		};
 __CONF_SECTION_EOF
-else
-cat << __CONF_SECTION1_EOF
-		config@$cnt {
-			description = "$(basename $dtname .dtb)";
-			firmware = "uboot@1";
-			loadables = $LOADABLES;
-			fdt = "fdt@$cnt";
-		};
-__CONF_SECTION1_EOF
-fi
 cnt=$((cnt+1))
 done
 
