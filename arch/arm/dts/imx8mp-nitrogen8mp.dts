@@ -142,9 +142,10 @@
 		>;
 	};
 
-	pinctrl_reg_usdhc1_vmmc: regusdhc1vmmc {
+	pinctrl_reg_usdhc1_vqmmc: reg_usdhc1_vqmmcgrp {
 		fsl,pins = <
-			MX8MP_IOMUXC_SD1_RESET_B__GPIO2_IO10	0x41
+#define GP_USDHC1_VSEL	 <&gpio3 14 GPIO_ACTIVE_HIGH>
+			MX8MP_IOMUXC_NAND_DQS__GPIO3_IO14	0x116
 		>;
 	};
 
@@ -181,13 +182,6 @@
 	pinctrl_usb1_vbus: usb1grp {
 		fsl,pins = <
 			MX8MP_IOMUXC_GPIO1_IO14__GPIO1_IO14	0x19
-		>;
-	};
-
-	pinctrl_reg_usdhc1_vqmmc: reg_usdhc1_vqmmcgrp {
-		fsl,pins = <
-#define GP_USDHC1_VSEL	 <&gpio3 14 GPIO_ACTIVE_HIGH>
-			MX8MP_IOMUXC_NAND_DQS__GPIO3_IO14	0x116
 		>;
 	};
 
@@ -310,19 +304,13 @@
 		regulator-always-on;
 	};
 
-	reg_usdhc1_vmmc: regulator-usdhc1 {
+	reg_vref_3v3: regulator-vref-3v3 {
 		compatible = "regulator-fixed";
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_reg_usdhc1_vmmc>;
-		regulator-name = "VSD_3V3";
+		regulator-name = "vref-3v3";
 		regulator-min-microvolt = <3300000>;
 		regulator-max-microvolt = <3300000>;
-		gpio = <&gpio2 10 GPIO_ACTIVE_HIGH>;
-		enable-active-high;
-		startup-delay-us = <100>;
-		off-on-delay-us = <12000>;
 	};
-	
+
 	reg_usdhc1_vqmmc: regulator-usdhc1-vqmmc {
 		compatible = "regulator-gpio";
 		pinctrl-names = "default";
@@ -669,7 +657,7 @@
 	pinctrl-1 = <&pinctrl_usdhc1_100mhz>, <&pinctrl_usdhc1_gpio>;
 	pinctrl-2 = <&pinctrl_usdhc1_200mhz>, <&pinctrl_usdhc1_gpio>;
 	status = "okay";
-	vmmc-supply = <&reg_usdhc1_vmmc>;
+	vmmc-supply = <&reg_vref_3v3>;
 	vqmmc-supply = <&reg_usdhc1_vqmmc>;
 };
 
