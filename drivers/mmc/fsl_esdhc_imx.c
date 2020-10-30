@@ -1350,7 +1350,9 @@ int fsl_esdhc_initialize(struct bd_info *bis, struct fsl_esdhc_cfg *cfg)
 	if (!mmc)
 		return -EIO;
 
+#if !CONFIG_IS_ENABLED(BLK)
 	priv->mmc = mmc;
+#endif
 
 	return 0;
 }
