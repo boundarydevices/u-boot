@@ -245,6 +245,7 @@ const char *env_ext4_get_dev_part(void);
  * Return:  an enum env_location value on success, or -ve error code.
  */
 enum env_location env_get_location(enum env_operation op, int prio);
+enum env_location env_get_location_std(enum env_operation op, int prio);
 #endif /* DO_DEPS_ONLY */
 
 #endif /* _ENV_INTERNAL_H_ */

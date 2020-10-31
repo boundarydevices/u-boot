@@ -1387,6 +1387,8 @@ enum env_location env_get_location(enum env_operation op, int prio)
 		else if (IS_ENABLED(CONFIG_ENV_IS_IN_FAT))
 			return ENVL_FAT;
 		return ENVL_NOWHERE;
+	case USB_BOOT:
+		return env_get_location_std(op, prio);
 	default:
 		return ENVL_NOWHERE;
 	}
