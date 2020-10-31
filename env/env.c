@@ -126,12 +126,17 @@ static void env_set_inited(enum env_location location)
  * Returns:
  * an enum env_location value on success, a negative error code otherwise
  */
-__weak enum env_location env_get_location(enum env_operation op, int prio)
+enum env_location env_get_location_std(enum env_operation op, int prio)
 {
 	if (prio >= ARRAY_SIZE(env_locations))
 		return ENVL_UNKNOWN;
 
 	return env_locations[prio];
+}
+
+__weak enum env_location env_get_location(enum env_operation op, int prio)
+{
+	return env_get_location_std(op, prio);
 }
 
 

@@ -1177,6 +1177,9 @@ enum env_location env_get_location(enum env_operation op, int prio)
 		env_loc =  ENVL_MMC;
 		break;
 #endif
+	case USB_BOOT:
+		env_loc = env_get_location_std(op, prio);
+		break;
 	default:
 #if defined(CONFIG_ENV_IS_NOWHERE)
 		env_loc = ENVL_NOWHERE;
