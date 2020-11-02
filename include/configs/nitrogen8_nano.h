@@ -275,6 +275,8 @@
 	"env_dev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
 	"env_part=" __stringify(CONFIG_SYS_MMC_ENV_PART) "\0" \
 	"scriptaddr=" __stringify(CONFIG_LOADADDR) "\0" \
+	"fastboot_raw_partition_bootloader=0x0 0x1ff0 mmcpart 1\0" \
+	"fastboot_raw_partition_bootloader-env=0x1ff0 0x10 mmcpart 1\0" \
 	"fdt_addr=0x43000000\0" \
 	"fdt_high=0xffffffffffffffff\0" \
 	BD_FUSE1_STR \
