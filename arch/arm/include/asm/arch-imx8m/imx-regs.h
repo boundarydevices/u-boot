@@ -49,6 +49,9 @@
 #if defined(CONFIG_IMX8MM) || defined(CONFIG_IMX8MN) || defined(CONFIG_IMX8MP)
 #define USDHC3_BASE_ADDR	0x30B60000
 #endif
+#if defined(CONFIG_IMX8MP)
+#define EQOS_BASE_ADDR		0x30Bf0000
+#endif
 
 #if defined(CONFIG_IMX8MQ) || defined(CONFIG_IMX8MP)
 #define USB1_BASE_ADDR         0x38100000
