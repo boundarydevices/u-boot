@@ -260,7 +260,7 @@ static void fec_mii_setspeed(struct ethernet_regs *eth)
 	int ret;
 
 	ret = fec_get_clk_rate(NULL, 0);
-	if (ret < 0) {
+	if (ret <= 0) {
 		printf("Can't find FEC0 clk rate: %d\n", ret);
 		return;
 	}
