@@ -5,6 +5,7 @@
 
 insert_configs=$1;
 check_config=$2;
+
 boards=`ls -d board/boundary/* | sed 's.board/boundary/..'`;
 
 numboards=0;
@@ -28,19 +29,31 @@ for board in ${boards} ; do
 	board_cfgs=":"
 	for defconfig in ${defconfigs} ; do
 		cfgs=""
-		for insert_config in ${insert_configs} ; do
-			if [[ ${insert_config} == *=* ]] ; then
-				cnt=`sed -n "/${insert_config}/=" configs/${defconfig}_defconfig`
+		if [[ ${insert_configs} == *=\"* ]] ; then
+			if [[ ${insert_configs} == *=* ]] ; then
+				cnt=`sed -n "/${insert_configs}/=" configs/${defconfig}_defconfig`
 			else
-				cnt=`sed -n "/${insert_config}=/=" configs/${defconfig}_defconfig`
+				cnt=`sed -n "/${insert_configs}=/=" configs/${defconfig}_defconfig`
 			fi
 			if [ "${cnt}" != "" ] ; then
 				already_there=`expr $already_there + 1`;
 			else
-				cfgs="${cfgs} ${insert_config}"
+				cfgs="${cfgs} ${insert_configs}"
 			fi
-		done
-
+		else
+			for insert_config in ${insert_configs} ; do
+				if [[ ${insert_config} == *=* ]] ; then
+					cnt=`sed -n "/${insert_config}/=" configs/${defconfig}_defconfig`
+				else
+					cnt=`sed -n "/${insert_config}=/=" configs/${defconfig}_defconfig`
+				fi
+				if [ "${cnt}" != "" ] ; then
+					already_there=`expr $already_there + 1`;
+				else
+					cfgs="${cfgs} ${insert_config}"
+				fi
+			done
+		fi
 		cnt=`sed -n "/${check_config}=/=" configs/${defconfig}_defconfig`
 		if [ "${cnt}" == "" ] ; then
 			cfgs=""
@@ -48,13 +61,21 @@ for board in ${boards} ; do
 
 		if [ "${cfgs}" != "" ] ; then
 			make ${defconfig}_defconfig;
-			for insert_config in ${cfgs} ; do
-				if [[ ${insert_config} == *=* ]] ; then
-					echo "${insert_config}" >>.config;
+			if [[ ${insert_configs} == *=\"* ]] ; then
+				if [[ ${insert_configs} == *=* ]] ; then
+					echo "${insert_configs}" >>.config;
 				else
-					echo "${insert_config}=y" >>.config;
+					echo "${insert_configs}=y" >>.config;
 				fi
-			done
+			else
+				for insert_config in ${cfgs} ; do
+					if [[ ${insert_config} == *=* ]] ; then
+						echo "${insert_config}" >>.config;
+					else
+						echo "${insert_config}=y" >>.config;
+					fi
+				done
+			fi
 			make savedefconfig;
 			diff -q defconfig configs/${defconfig}_defconfig;
 			if [ $? -eq 0 ] ; then
