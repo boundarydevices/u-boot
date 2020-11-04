@@ -276,7 +276,7 @@
 		ranges = <0x0 0x0 0x0 0x3e000000>;
 		dma-ranges = <0x40000000 0x0 0x40000000 0xc0000000>;
 
-		bus@30000000 { /* AIPS1 */
+		aips1: bus@30000000 { /* AIPS1 */
 			compatible = "fsl,imx8mq-aips-bus", "simple-bus";
 			#address-cells = <1>;
 			#size-cells = <1>;
@@ -617,7 +617,7 @@
 			};
 		};
 
-		bus@30400000 { /* AIPS2 */
+		aips2: bus@30400000 { /* AIPS2 */
 			compatible = "fsl,imx8mq-aips-bus", "simple-bus";
 			#address-cells = <1>;
 			#size-cells = <1>;
@@ -676,7 +676,7 @@
 			};
 		};
 
-		bus@30800000 { /* AIPS3 */
+		aips3: bus@30800000 { /* AIPS3 */
 			compatible = "fsl,imx8mq-aips-bus", "simple-bus";
 			#address-cells = <1>;
 			#size-cells = <1>;
