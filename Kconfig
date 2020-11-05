@@ -469,6 +469,14 @@ config MP
 	  This provides an option to bringup different processors
 	  in multiprocessor cases.
 
+config OPTEE_FIRMWARE
+	string "Include OPTEE firmware file"
+
+config OPTEE_FIRMWARE_SET
+	bool "OPTEE_FIRMWARE value given"
+	default y if OPTEE_FIRMWARE != ""
+
+
 config EXAMPLES
 	bool "Compile API examples"
 	depends on !SANDBOX
