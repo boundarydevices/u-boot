@@ -1367,9 +1367,43 @@ U_BOOT_ITS := u-boot.its
 ifeq ($(CONFIG_SPL_FIT_GENERATOR),"arch/arm/mach-rockchip/make_fit_atf.py")
 U_BOOT_ITS_DEPS += u-boot
 endif
+
+ifdef CONFIG_IMX8MM
+SOC_CPU = iMX8MM
+TEE_LOAD_ADDR = 0xbe000000
+ATF_LOAD_ADDR = 0x00920000
+endif
+ifdef CONFIG_IMX8MN
+SOC_CPU = iMX8MN
+TEE_LOAD_ADDR = 0xbe000000
+ATF_LOAD_ADDR = 0x00960000
+endif
+ifdef CONFIG_IMX8MP
+SOC_CPU = iMX8MP
+TEE_LOAD_ADDR = 0x56000000
+ATF_LOAD_ADDR = 0x00970000
+endif
+ifdef CONFIG_IMX8MQ
+SOC_CPU = iMX8MQ
+TEE_LOAD_ADDR = 0xfe000000
+ATF_LOAD_ADDR = 0x00910000
+endif
+ifeq ($(CONFIG_OPTEE_FIRMWARE), "")
+BL31=bl31-${SOC_CPU}.bin
+BL32=
+else
+BL31=bl31-tee-${SOC_CPU}.bin
+BL32=$(CONFIG_OPTEE_FIRMWARE)
+endif
+DTBS = $(patsubst %,arch/$(ARCH)/dts/%.dtb,$(subst ",,$(CONFIG_OF_LIST)))
+PAD_IMAGE = $(srctree)/arch/arm/mach-imx/pad_image.sh
 $(U_BOOT_ITS): $(U_BOOT_ITS_DEPS) FORCE
-	$(srctree)/$(CONFIG_SPL_FIT_GENERATOR) \
-	$(patsubst %,arch/$(ARCH)/dts/%.dtb,$(subst ",,$(CONFIG_OF_LIST))) > $@
+ifdef CONFIG_IMX_HAB
+	$(PAD_IMAGE) bl31-${SOC_CPU}.bin
+	$(PAD_IMAGE) u-boot-nodtb.bin $(DTBS)
+endif
+	TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ATF_LOAD_ADDR=$(ATF_LOAD_ADDR) BL31=$(BL31) BL32=$(BL32) $(srctree)/$(CONFIG_SPL_FIT_GENERATOR) \
+	$(DTBS) > $@
 endif
 endif
 
