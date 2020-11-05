@@ -130,5 +130,6 @@ int fec_probe(struct bd_info *bd, int dev_id, uint32_t base_addr,
 struct eth_device;
 int fecmxc_register_mii_postcall(struct eth_device *dev, int (*cb)(int));
 #endif
+void fec_env_set_ethaddr(int dev_id);
 
 #endif /* _NETDEV_H_ */

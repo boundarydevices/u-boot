@@ -1100,7 +1100,42 @@ struct mii_dev *fec_get_miibus(ulong base_addr, int dev_id)
 	return bus;
 }
 
+void fec_env_set_ethaddr(int dev_id)
+{
+	unsigned char ethaddr[6];
+	char mac[16];
+
+	if (dev_id)
+		sprintf(mac, "eth%daddr", dev_id);
+	else
+		strcpy(mac, "ethaddr");
+	if (!env_get(mac)) {
+		if (fec_get_hwaddr(dev_id, ethaddr) == 0) {
+			eth_env_set_enetaddr(mac, ethaddr);
+			debug("got MAC%d address from fuse: %pM, %s\n", dev_id, ethaddr, mac);
+		}
+	}
+}
+
 #ifndef CONFIG_DM_ETH
+static void fec_set_ethaddr(int dev_id, struct eth_device *edev)
+{
+	unsigned char ethaddr[6];
+	char mac[16];
+
+	if (fec_get_hwaddr(dev_id, ethaddr) == 0) {
+		debug("got MAC%d address from fuse: %pM\n", dev_id, ethaddr);
+		if (edev)
+			memcpy(edev->enetaddr, ethaddr, 6);
+		if (dev_id)
+			sprintf(mac, "eth%daddr", dev_id);
+		else
+			strcpy(mac, "ethaddr");
+		if (!env_get(mac))
+			eth_env_set_enetaddr(mac, ethaddr);
+	}
+}
+
 #ifdef CONFIG_PHYLIB
 int fec_probe(struct bd_info *bd, int dev_id, uint32_t base_addr,
 		struct mii_dev *bus, struct phy_device *phydev)
@@ -1111,8 +1146,6 @@ static int fec_probe(struct bd_info *bd, int dev_id, uint32_t base_addr,
 {
 	struct eth_device *edev;
 	struct fec_priv *fec;
-	unsigned char ethaddr[6];
-	char mac[16];
 	uint32_t start;
 	int ret = 0;
 
@@ -1178,16 +1211,7 @@ static int fec_probe(struct bd_info *bd, int dev_id, uint32_t base_addr,
 	/* only support one eth device, the index number pointed by dev_id */
 	edev->index = fec->dev_id;
 
-	if (fec_get_hwaddr(fec->dev_id, ethaddr) == 0) {
-		debug("got MAC%d address from fuse: %pM\n", fec->dev_id, ethaddr);
-		memcpy(edev->enetaddr, ethaddr, 6);
-		if (fec->dev_id)
-			sprintf(mac, "eth%daddr", fec->dev_id);
-		else
-			strcpy(mac, "ethaddr");
-		if (!env_get(mac))
-			eth_env_set_enetaddr(mac, ethaddr);
-	}
+	fec_set_ethaddr(fec->dev_id, edev);
 	return ret;
 err4:
 	fec_free_descs(fec);
