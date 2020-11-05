@@ -657,6 +657,9 @@ config SPL_FIT_SOURCE
 	  U-Boot FIT image. This could specify further image to load and/or
 	  execute.
 
+config OPTEE_FIRMWARE
+	string "Include OPTEE firmware file"
+
 config USE_SPL_FIT_GENERATOR
 	bool "Use a script to generate the .its script"
 	default y if SPL_FIT

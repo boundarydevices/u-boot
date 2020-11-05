@@ -19,16 +19,18 @@ else
 	ls -lct $BL31 | awk '{print $5}' >&2
 fi
 
-BL32="tee.bin"
 LOADABLES="\"atf@1\""
 
-if [ ! -f $BL32 ]; then
-	BL32=/dev/null
-else
-	echo "Building with TEE support, make sure your $BL31 is compiled with spd. If you do not want tee, please delete $BL32" >&2
-	echo "$BL32 size: " >&2
-	ls -lct $BL32 | awk '{print $5}' >&2
-	LOADABLES="$LOADABLES, \"tee@1\""
+if [ ! -z "$BL32" ]; then
+	if [ ! -f $BL32 ]; then
+		echo "ERROR: BL32 file $BL32 NOT found" >&2
+		exit 0
+	else
+		echo "Building with TEE support, make sure your $BL31 is compiled with spd. If you do not want tee, please remove CONFIG_OPTEE_FIRMWARE" >&2
+		echo "$BL32 size: " >&2
+		ls -lct $BL32 | awk '{print $5}' >&2
+		LOADABLES="$LOADABLES, \"tee@1\""
+	fi
 fi
 
 BL33="u-boot-nodtb.bin"
@@ -100,7 +102,7 @@ cat << __HEADER_EOF
 		};
 __HEADER_EOF
 
-if [ -f $BL32 ]; then
+if [ ! -z "$BL32" ]; then
 cat << __HEADER_EOF
 		tee@1 {
 			description = "TEE firmware";
