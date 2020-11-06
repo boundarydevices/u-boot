@@ -128,13 +128,15 @@ static int ar803x_delay_config(struct phy_device *phydev)
 	int ret;
 
 	if (phydev->interface == PHY_INTERFACE_MODE_RGMII_TXID ||
-	    phydev->interface == PHY_INTERFACE_MODE_RGMII_ID)
+	    phydev->interface == PHY_INTERFACE_MODE_RGMII_ID ||
+	    phydev->interface == PHY_INTERFACE_MODE_RGMII)
 		ret = ar803x_enable_tx_delay(phydev, true);
 	else
 		ret = ar803x_enable_tx_delay(phydev, false);
 
 	if (phydev->interface == PHY_INTERFACE_MODE_RGMII_RXID ||
-	    phydev->interface == PHY_INTERFACE_MODE_RGMII_ID)
+	    phydev->interface == PHY_INTERFACE_MODE_RGMII_ID ||
+	    phydev->interface == PHY_INTERFACE_MODE_RGMII)
 		ret = ar803x_enable_rx_delay(phydev, true);
 	else
 		ret = ar803x_enable_rx_delay(phydev, false);
