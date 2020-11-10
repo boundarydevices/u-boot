@@ -199,6 +199,7 @@ static int imx8m_xhci_probe(struct udevice *dev)
 	struct xhci_hccr *hccr;
 	struct xhci_hcor *hcor;
 	fdt_addr_t hcd_base;
+	int index;
 
 	int ret = 0;
 
@@ -210,7 +211,13 @@ static int imx8m_xhci_probe(struct udevice *dev)
 		printf("Can't get the XHCI register base address\n");
 		return -ENXIO;
 	}
-	imx8m_usb_power(hcd_base == USB1_BASE_ADDR ? 0 : 1, true);
+	index = hcd_base == USB1_BASE_ADDR ? 0 : 1;
+	ret = board_usb_init(index, USB_INIT_HOST);
+	if (ret != 0) {
+		imx8m_usb_power(index, false);
+		puts("Failed to initialize board for imx8m USB\n");
+		return ret;
+	}
 
 	imx8_of_clk_init(dev, priv);
 	imx8_of_reset_gpio_init(dev, priv);
