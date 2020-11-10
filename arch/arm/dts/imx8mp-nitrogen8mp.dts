@@ -179,6 +179,23 @@
 		>;
 	};
 
+	pinctrl_usb3_0: usb3-0grp {
+		fsl,pins = <
+#if 1
+			MX8MP_IOMUXC_GPIO1_IO13__USB1_OTG_OC	0x116
+#else
+			MX8MP_IOMUXC_GPIO1_IO13__GPIO1_IO13	0x116
+#endif
+		>;
+	};
+
+	pinctrl_usb3_1: usb3-1grp {
+		fsl,pins = <
+#define GP_USB3_1_HUB_RESET	<&gpio1 6 GPIO_ACTIVE_LOW>
+			MX8MP_IOMUXC_GPIO1_IO06__GPIO1_IO06	0x16
+		>;
+	};
+
 	pinctrl_usb1_vbus: usb1grp {
 		fsl,pins = <
 			MX8MP_IOMUXC_GPIO1_IO14__GPIO1_IO14	0x19
@@ -579,13 +596,14 @@
 	status = "okay";
 };
 
-#if 0
 &usb3_phy0 {
 	status = "okay";
 };
 
 &usb_dwc3_0 {
 	dr_mode = "otg";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usb3_0>;
 	hnp-disable;
 	srp-disable;
 	adp-disable;
@@ -599,9 +617,11 @@
 
 &usb_dwc3_1 {
 	dr_mode = "host";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usb3_1>;
+	reset-gpios = GP_USB3_1_HUB_RESET;
 	status = "okay";
 };
-#endif
 
 &usdhc1 {
 	bus-width = <4>;

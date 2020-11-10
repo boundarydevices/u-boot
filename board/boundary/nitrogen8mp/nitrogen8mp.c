@@ -27,10 +27,12 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #define UART_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_FSEL1)
 #define WDOG_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_ODE | PAD_CTL_PUE | PAD_CTL_PE)
+#define GP_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_ODE | PAD_CTL_PUE | PAD_CTL_PE)
 
 static iomux_v3_cfg_t const uart_pads[] = {
 	MX8MP_PAD_UART2_RXD__UART2_DCE_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
 	MX8MP_PAD_UART2_TXD__UART2_DCE_TX | MUX_PAD_CTRL(UART_PAD_CTRL),
+	MX8MP_PAD_GPIO1_IO06__GPIO1_IO06 | MUX_PAD_CTRL(GP_PAD_CTRL),
 };
 
 static iomux_v3_cfg_t const wdog_pads[] = {
@@ -241,7 +243,8 @@ static void dwc3_usb_phy_init(struct dwc3_device *dwc3)
 #endif
 
 #if defined(CONFIG_USB_DWC3) || defined(CONFIG_USB_XHCI_IMX8M)
-#define USB2_PWR_EN IMX_GPIO_NR(1, 14)
+#define GP_USB3_1_HUB_RESET	IMX_GPIO_NR(1, 6)
+
 int board_usb_init(int index, enum usb_init_type init)
 {
 	int ret = 0;
@@ -253,9 +256,8 @@ int board_usb_init(int index, enum usb_init_type init)
 	} else if (index == 0 && init == USB_INIT_HOST) {
 		return ret;
 	} else if (index == 1 && init == USB_INIT_HOST) {
-		/* Enable GPIO1_IO14 for 5V VBUS */
-		gpio_request(USB2_PWR_EN, "usb2_pwr");
-		gpio_direction_output(USB2_PWR_EN, 1);
+		/* Enable hub  */
+		gpio_direction_output(GP_USB3_1_HUB_RESET, 1);
 	}
 
 	return 0;
@@ -268,8 +270,8 @@ int board_usb_cleanup(int index, enum usb_init_type init)
 		dwc3_uboot_exit(index);
 	} else if (index == 0 && init == USB_INIT_HOST) {
 	} else if (index == 1 && init == USB_INIT_HOST) {
-		/* Disable GPIO1_IO14 for 5V VBUS */
-		gpio_direction_output(USB2_PWR_EN, 0);
+		/* Disable hub */
+		gpio_direction_output(GP_USB3_1_HUB_RESET, 0);
 	}
 
 	imx8m_usb_power(index, false);
@@ -297,6 +299,8 @@ int board_typec_get_mode(int index)
 
 int board_init(void)
 {
+	gpio_request(GP_USB3_1_HUB_RESET, "usb2_hub_reset");
+	gpio_direction_output(GP_USB3_1_HUB_RESET, 0);
 #ifdef CONFIG_FEC_MXC
 	setup_fec();
 #endif
