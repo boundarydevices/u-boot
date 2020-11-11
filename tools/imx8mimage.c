@@ -446,8 +446,7 @@ void build_image(int ofd)
 		 * Aligned to 104KB = 92KB FW image + 0x8000
 		 * (IVT and alignment) + 0x4000 (second IVT + CSF)
 		 */
-		file_off += ALIGN(sbuf.st_size,
-				  HDMI_FW_SIZE + 0x2000 + 0x1000);
+		file_off += ALIGN(sbuf.st_size, 0x1000);
 	}
 
 	header_image_off = file_off + ivt_offset;
