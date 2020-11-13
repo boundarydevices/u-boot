@@ -773,14 +773,10 @@ int clock_init(void)
 	 * We set ARM clock to 1Ghz for consumer, 800Mhz for industrial
 	 */
 	grade = get_cpu_temp_grade(NULL, NULL);
-	if (!grade)
-		frac_pll_init(ANATOP_ARM_PLL, FRAC_PLL_OUT_1000M);
-	else
-		frac_pll_init(ANATOP_ARM_PLL, FRAC_PLL_OUT_800M);
-
-	/* Bypass CCM A53 ROOT, Switch to ARM PLL -> MUX-> CPU */
-	clock_set_target_val(CORE_SEL_CFG, CLK_ROOT_SOURCE_SEL(1));
-
+	frac_pll_init(ANATOP_ARM_PLL, grade ? FRAC_PLL_OUT_800M : FRAC_PLL_OUT_1000M);
+	clock_set_target_val(ARM_A53_CLK_ROOT, CLK_ROOT_ON |
+		     CLK_ROOT_SOURCE_SEL(1) |
+		     CLK_ROOT_POST_DIV(CLK_ROOT_POST_DIV1));
 	/*
 	 * According to ANAMIX SPEC
 	 * sys pll1 fixed at 800MHz
