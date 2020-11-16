@@ -413,8 +413,9 @@ int clock_init(void)
 
 	intpll_configure(ANATOP_ARM_PLL, MHZ(1200));
 
-	/* Bypass CCM A53 ROOT, Switch to ARM PLL -> MUX-> CPU */
-	clock_set_target_val(CORE_SEL_CFG, CLK_ROOT_SOURCE_SEL(1));
+	clock_set_target_val(ARM_A53_CLK_ROOT, CLK_ROOT_ON |
+			     CLK_ROOT_SOURCE_SEL(1) |
+			     CLK_ROOT_POST_DIV(CLK_ROOT_POST_DIV1));
 
 	if (is_imx8mn() || is_imx8mp())
 		intpll_configure(ANATOP_SYSTEM_PLL3, MHZ(600));
