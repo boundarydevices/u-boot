@@ -39,8 +39,6 @@
 
 #endif
 
-#define CONFIG_PREBOOT
-
 #define CONFIG_REMAKE_ELF
 
 #define CONFIG_BOARD_POSTCLK_INIT
