@@ -39,7 +39,6 @@
 
 #endif
 
-#define CONFIG_PREBOOT
 
 #define CONFIG_REMAKE_ELF
 
