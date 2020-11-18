@@ -18,11 +18,6 @@
 
 #define CONFIG_FEC_MXC_PHYADDR		7
 #define CONFIG_IMX_HDMI
-#define CONFIG_PREBOOT	"if itest.s x != x$splashsize ; then " \
-				"sf probe && " \
-				"sf read $splashimage $splashflash $splashsize" \
-				" && bmp d $splashimage;" \
-			"fi"
 #define CONFIG_SYS_FSL_USDHC_NUM	2
 #define CONFIG_USB_MAX_CONTROLLER_COUNT 2
 #define BD_I2C_MASK	7
