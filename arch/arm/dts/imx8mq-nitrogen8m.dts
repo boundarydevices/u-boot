@@ -1317,16 +1317,12 @@
 	status = "okay";
 };
 
-&usb_dwc3_0 {
+&usb_dwc3_1 {
+	dr_mode = "host";
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usb_dwc3_1>;
 	reset-gpios = GP_USB3_1_HUB_RESET;
 	status = "okay";
-};
-
-&usb_dwc3_1 {
-	status = "okay";
-	dr_mode = "host";
 };
 
 &usdhc1 {
