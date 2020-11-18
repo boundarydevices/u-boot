@@ -19,7 +19,6 @@
 #include <linux/fb.h>
 #include <net.h>
 #include <version.h>
-#include <usb.h>
 #if defined(CONFIG_USB_DWC3) || defined(CONFIG_USB_XHCI_IMX8M)
 #include <dwc3-uboot.h>
 #include <linux/usb/dwc3.h>
@@ -239,6 +238,7 @@ int board_usb_init(int index, enum usb_init_type init)
 
 	return 0;
 }
+
 int board_usb_cleanup(int index, enum usb_init_type init)
 {
 	int ret = 0;
@@ -248,6 +248,12 @@ int board_usb_cleanup(int index, enum usb_init_type init)
 	imx8m_usb_power(index, false);
 
 	return ret;
+}
+
+void board_usb_reset(int index, enum usb_init_type init)
+{
+	board_usb_init(index, init);
+	board_usb_cleanup(index, init);
 }
 #endif
 

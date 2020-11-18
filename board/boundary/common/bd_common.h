@@ -8,6 +8,7 @@
 #include <asm/mach-imx/boot_mode.h>
 #include <mmc.h>
 #include <fsl_esdhc_imx.h>
+#include <usb.h>
 
 struct button_key {
 	char const	*name;
@@ -27,6 +28,7 @@ void board_preboot_keys(void);
 void board_late_specific_init(void);
 void board_eth_addresses(void);
 const char *board_get_board_type(void);
+void board_usb_reset(int index, enum usb_init_type init);
 void set_gpios_in(const unsigned short *p, int cnt);
 void set_gpios(const unsigned short *p, int cnt, int val);
 
