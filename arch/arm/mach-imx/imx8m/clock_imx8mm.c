@@ -44,7 +44,6 @@ int enable_i2c_clk(unsigned char enable, unsigned i2c_num)
 	return 0;
 }
 
-#ifdef CONFIG_SPL_BUILD
 static struct imx_int_pll_rate_table imx8mm_fracpll_tbl[] = {
 	PLL_1443X_RATE(1000000000U, 250, 3, 1, 0),
 	PLL_1443X_RATE(800000000U, 300, 9, 0, 0),
@@ -125,6 +124,7 @@ static int fracpll_configure(enum pll_clocks clock, u32 freq)
 	return ret;
 }
 
+#ifdef CONFIG_SPL_BUILD
 void dram_pll_init(ulong pll_val)
 {
 	fracpll_configure(ANATOP_DRAM_PLL, pll_val);
@@ -276,6 +276,60 @@ int intpll_configure(enum pll_clocks clock, ulong freq)
 
 	return ret;
 }
+
+#define VIDEO_PLL_RATE 594000000U
+
+#ifdef CONFIG_IMX8MP
+void enable_display_clk(unsigned char enable)
+{
+	if (enable) {
+		clock_enable(CCGR_DISPMIX, false);
+
+		/* Set Video PLL to 594Mhz, p = 1, m = 99,  k = 0, s = 2 */
+		fracpll_configure(ANATOP_VIDEO_PLL, VIDEO_PLL_RATE);
+
+		/* 500Mhz */
+		clock_set_target_val(MEDIA_AXI_CLK_ROOT, CLK_ROOT_ON | CLK_ROOT_SOURCE_SEL(1) | CLK_ROOT_PRE_DIV(CLK_ROOT_PRE_DIV2));
+
+		/* 200Mhz */
+		clock_set_target_val(MEDIA_APB_CLK_ROOT, CLK_ROOT_ON | CLK_ROOT_SOURCE_SEL(2) |CLK_ROOT_PRE_DIV(CLK_ROOT_PRE_DIV4));
+
+		/* 27Mhz MIPI DPHY PLL ref from video PLL */
+		clock_set_target_val(MEDIA_MIPI_PHY1_REF_CLK_ROOT, CLK_ROOT_ON | CLK_ROOT_SOURCE_SEL(7) |CLK_ROOT_POST_DIV(CLK_ROOT_POST_DIV22));
+		clock_enable(CCGR_DISPMIX, true);
+	} else {
+		clock_enable(CCGR_DISPMIX, false);
+	}
+}
+#else
+void enable_display_clk(unsigned char enable)
+{
+	if (enable) {
+		clock_enable(CCGR_DISPMIX, false);
+
+		/* Set Video PLL to 594Mhz, p = 1, m = 99,  k = 0, s = 2 */
+		fracpll_configure(ANATOP_VIDEO_PLL, VIDEO_PLL_RATE);
+
+		/* 500Mhz */
+		clock_set_target_val(DISPLAY_AXI_CLK_ROOT, CLK_ROOT_ON | CLK_ROOT_SOURCE_SEL(1) | CLK_ROOT_PRE_DIV(CLK_ROOT_PRE_DIV2));
+
+		/* 200Mhz */
+		clock_set_target_val(DISPLAY_APB_CLK_ROOT, CLK_ROOT_ON | CLK_ROOT_SOURCE_SEL(2) |CLK_ROOT_PRE_DIV(CLK_ROOT_PRE_DIV4));
+
+		clock_set_target_val(MIPI_DSI_CORE_CLK_ROOT, CLK_ROOT_ON | CLK_ROOT_SOURCE_SEL(1));
+
+		/* 27Mhz MIPI DPHY PLL ref from video PLL */
+#ifdef CONFIG_IMX8MN
+		clock_set_target_val(DISPLAY_DSI_PHY_REF_CLK_ROOT, CLK_ROOT_ON | CLK_ROOT_SOURCE_SEL(7) |CLK_ROOT_POST_DIV(CLK_ROOT_POST_DIV22));
+#else
+		clock_set_target_val(MIPI_DSI_PHY_REF_CLK_ROOT, CLK_ROOT_ON | CLK_ROOT_SOURCE_SEL(7) |CLK_ROOT_POST_DIV(CLK_ROOT_POST_DIV22));
+#endif
+		clock_enable(CCGR_DISPMIX, true);
+	} else {
+		clock_enable(CCGR_DISPMIX, false);
+	}
+}
+#endif
 
 void init_uart_clk(u32 index)
 {
@@ -452,10 +506,9 @@ int clock_init(void)
 
 	clock_enable(CCGR_SEC_DEBUG, 1);
 
+	enable_display_clk(1);
 	return 0;
 };
-
-#define VIDEO_PLL_RATE 594000000U
 
 void mxs_set_lcdclk(uint32_t base_addr, uint32_t freq)
 {
