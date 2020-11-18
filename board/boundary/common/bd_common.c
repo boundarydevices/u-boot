@@ -531,13 +531,6 @@ int bdcommon_env_init(void)
 #ifdef CONFIG_ENV_BD_ADDR
 	addmac_env("bd_addr");
 #endif
-#if defined(CONFIG_CMD_FASTBOOT) || defined(CONFIG_CMD_DFU)
-	addserial_env("serial#");
-	if (board_fastboot_key_pressed()) {
-		printf("Starting fastboot...\n");
-		env_set("preboot", "fastboot 0");
-	}
-#endif
 
 #if !defined(CONFIG_ENV_IS_NOWHERE)
 	uboot_release = env_get(str_uboot_release);
@@ -556,6 +549,13 @@ int bdcommon_env_init(void)
 #endif
 	board_env_init();
 	board_eth_addresses();
+#if defined(CONFIG_CMD_FASTBOOT) || defined(CONFIG_CMD_DFU)
+	addserial_env("serial#");
+	if (board_fastboot_key_pressed()) {
+		printf("Starting fastboot...\n");
+		env_set("preboot", "fastboot 0");
+	}
+#endif
 	return 0;
 }
 
