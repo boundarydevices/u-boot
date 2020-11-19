@@ -279,6 +279,7 @@ int intpll_configure(enum pll_clocks clock, ulong freq)
 
 #define VIDEO_PLL_RATE 594000000U
 
+#ifndef CONFIG_SPL_BUILD
 #ifdef CONFIG_IMX8MP
 void enable_display_clk(unsigned char enable)
 {
@@ -329,6 +330,7 @@ void enable_display_clk(unsigned char enable)
 		clock_enable(CCGR_DISPMIX, false);
 	}
 }
+#endif
 #endif
 
 void init_uart_clk(u32 index)
@@ -506,7 +508,9 @@ int clock_init(void)
 
 	clock_enable(CCGR_SEC_DEBUG, 1);
 
+#ifndef CONFIG_SPL_BUILD
 	enable_display_clk(1);
+#endif
 	return 0;
 };
 
