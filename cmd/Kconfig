@@ -2427,4 +2427,10 @@ config CMD_KHADAS_KBI
 	help
 	  Khadas Bootloader Instructions
 
+config CMD_SCRIPT
+	bool "simple plain script run from mem without mkimage wrappers"
+	default y
+	help
+	  simple plain script run from mem without mkimage wrappers
+
 endmenu

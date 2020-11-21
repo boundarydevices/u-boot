@@ -195,6 +195,7 @@ obj-$(CONFIG_CMD_REGULATOR) += regulator.o
 obj-$(CONFIG_CMD_BLOB) += blob.o
 
 obj-$(CONFIG_CMD_KHADAS_KBI) += kbi.o
+obj-$(CONFIG_CMD_SCRIPT) += script.o
 
 # Android Verified Boot 2.0
 obj-$(CONFIG_CMD_AVB) += avb.o

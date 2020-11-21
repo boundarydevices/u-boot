@@ -380,7 +380,7 @@
 		BOOTENV_RUN_NET_USB_START \
 		BOOTENV_RUN_PCI_ENUM \
 		"if dhcp ${scriptaddr} ${boot_script_dhcp}; then " \
-			"source ${scriptaddr}; " \
+			"script ${scriptaddr}; " \
 		"fi;" \
 		BOOTENV_EFI_RUN_DHCP \
 		"\0"
@@ -431,7 +431,9 @@
 	BOOTENV_SHARED_EFI \
 	BOOTENV_SHARED_VIRTIO \
 	"boot_prefixes=/ /boot/\0" \
-	"boot_scripts=boot.scr.uimg boot.scr\0" \
+	"loadaddr=0x01000000\0" \
+	"bootfile=boot.scr.uimg\0" \
+	"boot_scripts=boot.cmd boot.ini boot.scr.uimg boot.scr\0" \
 	"boot_script_dhcp=boot.scr.uimg\0" \
 	BOOTENV_BOOT_TARGETS \
 	\
@@ -451,8 +453,8 @@
 	\
 	"boot_a_script="                                                  \
 		"load ${devtype} ${devnum}:${distro_bootpart} "           \
-			"${scriptaddr} ${prefix}${script}; "              \
-		"source ${scriptaddr}\0"                                  \
+			"${scriptaddr} ${prefix}${script} && "            \
+		"script ${scriptaddr} \0"                                 \
 	\
 	"scan_dev_for_scripts="                                           \
 		"for script in ${boot_scripts}; do "                      \
