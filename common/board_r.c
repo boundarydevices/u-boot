@@ -597,6 +597,17 @@ static int run_main_loop(void)
 	return 0;
 }
 
+static int run_env_save(void)
+{
+	if ( env_get("env_need_save") ){
+		printf("[i] env_need_save... ");
+		env_set("env_need_save",NULL);
+		run_command("saveenv",1);
+	}
+	return 0;
+}
+
+
 /*
  * We hope to remove most of the driver-related init and do it if/when
  * the driver is later used.
@@ -806,6 +817,7 @@ static init_fnc_t init_sequence_r[] = {
 #ifdef CONFIG_EFI_SETUP_EARLY
 	(init_fnc_t)efi_init_obj_list,
 #endif
+	run_env_save,
 	run_main_loop,
 };
 
