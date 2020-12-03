@@ -157,43 +157,7 @@ static const struct display_info_t displays[] = {
 	VD_MIPI_VTFT101RPFT20(MIPI, NULL, (1 | (3 << 4)), 0x70, FBP_PCA9540),
 
 	/* lvds */
-	VD_HANNSTAR7(LVDS, fbp_detect_i2c, fbp_bus_gp(3, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06_2),
-	VD_PM9598(LVDS2, NULL, fbp_bus_gp(3, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06_2),
-	VD_HANNSTAR7(LVDS2, NULL, fbp_bus_gp(3, 0, GP_LVDS2_BKL_EN, 0), 0x38, FBTS_FT5X06_2),
-	VD_PM9598(LVDS, NULL, fbp_bus_gp(3, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06_2),
-	VD_AUO_B101EW05(LVDS, NULL, fbp_bus_gp(3, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06_2),
-	VD_AUO_B101EW05(LVDS2, NULL, fbp_bus_gp(3, 0, GP_LVDS2_BKL_EN, 0), 0x38, FBTS_FT5X06_2),
-	VD_LG1280_800(LVDS, NULL, fbp_bus_gp(3, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06_2),
-	VD_LG1280_800(LVDS2, NULL, fbp_bus_gp(3, 0, GP_LVDS2_BKL_EN, 0), 0x38, FBTS_FT5X06_2),
-	VD_M101NWWB(LVDS, NULL, fbp_bus_gp(3, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06_2),
-	VD_M101NWWB(LVDS2, NULL, fbp_bus_gp(3, 0, GP_LVDS2_BKL_EN, 0), 0x38, FBTS_FT5X06_2),
-	VD_DT070BTFT(LVDS, NULL, fbp_bus_gp(3, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06_2),
-	VD_DT070BTFT(LVDS2, NULL, fbp_bus_gp(3, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06_2),
-	VD_WSVGA(LVDS, NULL, fbp_bus_gp(3, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06_2),
-	VD_TM070JDHG30(LVDS, NULL, fbp_bus_gp(3, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06_2),
-	VD_ND1024_600(LVDS, fbp_detect_i2c, fbp_bus_gp(3, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06_2),
-
-	/* ili210x */
-	VD_AMP1024_600(LVDS, fbp_detect_i2c, fbp_bus_gp(3, 0, GP_LVDS_BKL_EN, 0), 0x41, FBTS_ILI210X),
-
-	/* egalax_ts */
-	VD_HANNSTAR(LVDS, fbp_detect_i2c, fbp_bus_gp(3, 0, GP_LVDS_BKL_EN, 0), 0x04, FBTS_EGALAX),
-	VD_HANNSTAR(LVDS2, NULL, fbp_bus_gp(3, 0, GP_LVDS2_BKL_EN, 0), 0x04, FBTS_EGALAX),
-	VD_LG9_7(LVDS, NULL, fbp_bus_gp(3, 0, GP_LVDS_BKL_EN, 0), 0x04, FBTS_EGALAX),
-
-	/* fusion7 specific touchscreen */
-	VD_FUSION7(LCD, fbp_detect_i2c, 3, 0x10, FBTS_FUSION7),
-
-	VD_SHARP_LQ101K1LY04(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
-	VD_WXGA(LVDS, NULL, 0, 0x00),
-	VD_LD070WSVGA(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
-	VD_WVGA(LVDS, NULL, 0, 0x00),
-	VD_AA065VE11(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
-	VD_VGA(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
-
-	/* uses both lvds connectors */
-	VD_1080P60(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
-	VD_1080P60_J(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
+	VD_M101NWWB(LVDS, fbp_detect_i2c, fbp_bus_gp(3, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06_2),
 };
 #define display_cnt	ARRAY_SIZE(displays)
 #else
