@@ -92,6 +92,7 @@ GTAGS
 *.orig
 *~
 \#*#
+/fip/
 
 # Python cache
 __pycache__
