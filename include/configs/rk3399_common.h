@@ -59,6 +59,24 @@
 #define ROCKCHIP_DEVICE_SETTINGS
 #endif
 
+#define CONFIG_SYS_VIDEO_LOGO_MAX_SIZE 8192000
+#define CONFIG_VIDEO_BMP_GZIP 1
+
+#define CONSOLE_FONT_COLOR 14
+
+#define PREBOOT_LOAD_LOGO \
+   "ll=0; test $boot_source = spi && sf probe && sf read $loadaddr 0x170000 0x10000 && ll=1; " \
+   "test $ll = 0 && ll=1 && " \
+   "load mmc 1 $loadaddr splash.bmp || " \
+   "load mmc 2 $loadaddr splash.bmp || " \
+   "load mmc 1:2 $loadaddr /usr/share/fenix/logo/logo.bmp || " \
+   "load mmc 2:2 $loadaddr /usr/share/fenix/logo/logo.bmp || " \
+   "ll=0; " \
+   "test $ll = 1 && bmp display $loadaddr m m || ll=0; " \
+   "test $ll = 0 && fdt addr $fdtcontroladdr && fdt get addr logoaddr /logo data && bmp display $logoaddr m m; "
+
+#define PREBOOT_CMD "run load_logo; usb start; kbi init; sleep 1;"
+
 #include <config_distro_bootcmd.h>
 #include <environment/distro/sf.h>
 #define CONFIG_EXTRA_ENV_SETTINGS \
@@ -70,7 +88,9 @@
 	BOOTENV_SF \
 	"altbootcmd=" \
 		"setenv boot_syslinux_conf extlinux/extlinux-rollback.conf;" \
-		"run distro_bootcmd\0"
+		"run distro_bootcmd\0" \
+		"load_logo=" PREBOOT_LOAD_LOGO "\0" \
+		"preboot=" PREBOOT_CMD "\0"
 
 #endif
 
