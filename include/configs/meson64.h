@@ -81,6 +81,9 @@
 	func(DHCP, dhcp, na)
 #endif
 
+#define CONFIG_HOSTNAME CONFIG_DEFAULT_DEVICE_TREE
+#define CONFIG_BOOTP_SEND_HOSTNAME 1
+
 #include <config_distro_bootcmd.h>
 
 #ifndef CONFIG_EXTRA_ENV_SETTINGS
