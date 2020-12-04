@@ -105,7 +105,7 @@ static int env_fat_save(void)
 					&dev_desc, &info, 1);
 
 #ifdef CONFIG_ENV_FAT_AUTO_SOURCE
-	part = detect_source();
+	part = detect_source(part);
 #endif
 
 	if (part < 0)
@@ -165,7 +165,7 @@ static int env_fat_load(void)
 					&dev_desc, &info, 1);
 
 #ifdef CONFIG_ENV_FAT_AUTO_SOURCE
-	part = detect_source();
+	part = detect_source(part);
 #endif
 
 	if (part < 0)
