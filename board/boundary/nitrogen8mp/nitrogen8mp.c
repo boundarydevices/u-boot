@@ -221,6 +221,8 @@ int board_init(void)
 #ifdef CONFIG_CMD_FBPANEL
 	fbp_setup_display(displays, display_cnt);
 #endif
+	board_usb_reset(0, USB_INIT_DEVICE);
+
 	return 0;
 }
 
