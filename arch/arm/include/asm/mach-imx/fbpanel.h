@@ -190,7 +190,7 @@ void fbp_setup_env_cmds(void);
 #define VD_AUO_B101EW05(_mode, args...)		VDF_AUO_B101EW05(_mode, "auo_b101ew05", RGB666, 0, args)
 #define VD_HANNSTAR7(_mode, args...)		VDF_HANNSTAR7(_mode, "hannstar7", RGB666, 0, args)
 #define VD_LG1280_800(_mode, args...)		VDF_HANNSTAR7(_mode, "lg1280x800", RGB666, 0, args)
-#define VD_M101NWWB(_mode, args...)		VDF_HANNSTAR7(_mode, "M101NWWB", RGB24, 0, args)
+#define VD_M101NWWB(_mode, args...)		VDF_M101NWWB(_mode, "M101NWWB", RGB24, 0, args)
 #define VD_LD101WX1(_mode, args...)		VDF_HANNSTAR7(_mode, "ld101wx1", RGB24, 0, args)
 #define VD_DT070BTFT(_mode, args...)		VDF_DT070BTFT(_mode, "dt070btft", RGB24, FBF_JEIDA, args)
 #define VD_DT070BTFT_18(_mode, args...)		VDF_DT070BTFT(_mode, "dt070btft_18", RGB666, 0, args)
@@ -1373,6 +1373,26 @@ void fbp_setup_env_cmds(void);
 		.lower_margin   = 6,\
 		.hsync_len      = 15,\
 		.vsync_len      = 3,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
+#define VDF_M101NWWB(_mode, _name, _fmt, _flags, args...) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, args),\
+	.mode	= {\
+		.name           = _name,\
+		.refresh        = 60,\
+		.xres           = 1280,\
+		.yres           = 800,\
+		.pixclock       = 1000000000000ULL/74250000,\
+		.left_margin    = 5,\
+		.right_margin   = 123,\
+		.upper_margin   = 3,\
+		.lower_margin   = 24,\
+		.hsync_len      = 2,\
+		.vsync_len      = 1,\
 		.sync           = FB_SYNC_EXT,\
 		.vmode          = FB_VMODE_NONINTERLACED\
 	}\
