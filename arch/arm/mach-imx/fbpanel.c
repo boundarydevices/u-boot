@@ -468,6 +468,14 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 
 	if ((fb == FB_LVDS) || (fb == FB_LVDS2)) {
 
+		sz = snprintf(buf, size, "fdt set ldb status okay;");
+		buf += sz;
+		size -= sz;
+
+		sz = snprintf(buf, size, "fdt set %s status okay;", ch_names[fb]);
+		buf += sz;
+		size -= sz;
+
 		sz = snprintf(buf, size, "fdt set %s fsl,data-width <%u>;",
 				ch_names[fb],
 				interface_width);
