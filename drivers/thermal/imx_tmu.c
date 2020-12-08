@@ -134,7 +134,7 @@ static int read_temperature(struct udevice *dev, int *temp)
 	u32 valid = 0;
 
 	do {
-		mdelay(100);
+		mdelay(10);
 		retry--;
 
 		if (drv_data & FLAGS_VER3) {
