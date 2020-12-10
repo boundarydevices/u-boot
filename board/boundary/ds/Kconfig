@@ -1,0 +1,14 @@
+if TARGET_DS
+
+config SYS_BOARD
+	default "ds"
+
+config SYS_VENDOR
+	default "boundary"
+
+config SYS_CONFIG_NAME
+	default "ds"
+
+source "board/boundary/common/Kconfig"
+
+endif

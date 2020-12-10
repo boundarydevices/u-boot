@@ -38,6 +38,12 @@ config TARGET_CRS
 	select IMX8MP
 	select SUPPORT_SPL
 
+config TARGET_DS
+	bool "ds"
+	select BINMAN
+	select IMX8MQ
+	select SUPPORT_SPL
+
 endchoice
 
 source "board/boundary/ash8mm/Kconfig"
@@ -46,3 +52,4 @@ source "board/boundary/c2-imx8mm/Kconfig"
 source "board/boundary/c2-mid/Kconfig"
 source "board/boundary/cle/Kconfig"
 source "board/boundary/crs/Kconfig"
+source "board/boundary/ds/Kconfig"
