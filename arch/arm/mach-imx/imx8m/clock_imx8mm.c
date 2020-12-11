@@ -124,6 +124,11 @@ static int fracpll_configure(enum pll_clocks clock, u32 freq)
 	return ret;
 }
 
+u32 imx_get_fecclk(void)
+{
+	return get_root_clk(ENET_AXI_CLK_ROOT);
+}
+
 #ifdef CONFIG_SPL_BUILD
 void dram_pll_init(ulong pll_val)
 {
