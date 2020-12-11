@@ -82,6 +82,9 @@ static iomux_v3_cfg_t const init_pads[] = {
 
 #define GP_USB1_HUB_RESET	IMX_GPIO_NR(1, 6)
 	IOMUX_PAD_CTRL(GPIO1_IO06__GPIO1_IO06, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(GPIO1_IO12__HSIOMIX_usb1_OTG_PWR, 0x16),
+	IOMUX_PAD_CTRL(GPIO1_IO13__HSIOMIX_usb1_OTG_OC,	0x116),
+	IOMUX_PAD_CTRL(SAI1_RXD0__GPIO4_IO02, 0x03),	/* float for OTG1 mode */
 };
 
 int board_early_init_f(void)
@@ -165,6 +168,22 @@ static const struct display_info_t displays[] = {
 #define display_cnt	0
 #endif
 
+static void reset_tusb320(void)
+{
+	struct udevice *dev, *chip;
+	int ret;
+
+	ret = uclass_get_device(UCLASS_I2C, 3, &dev);
+	if (ret)
+		return;
+	ret = dm_i2c_probe(dev, 0x60, 0x0, &chip);
+	if (ret)
+		return;
+	ret = dm_i2c_reg_write(chip, 0x0a, 0x08);
+	if (ret < 0)
+		printf("tusb320 reset failed(%d)\n", ret);
+}
+
 int board_init(void)
 {
 	gpio_request(GP_TS_GT911_RESET, "gt11_reset");
@@ -179,6 +198,7 @@ int board_init(void)
 	gpio_direction_output(GP_TS_GT911_RESET, 0);
 	gpio_direction_output(GP_USB1_HUB_RESET, 0);
 
+	reset_tusb320();
 #ifdef CONFIG_DM_ETH
 	board_eth_init(gd->bd);
 #endif
