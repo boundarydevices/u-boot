@@ -216,7 +216,7 @@ static int fec_get_clk_rate(void *udev, int idx)
 	struct udevice *dev;
 	int ret;
 
-	if (IS_ENABLED(CONFIG_IMX8) ||
+	if (IS_ENABLED(CONFIG_DM_ETH) &&
 	    CONFIG_IS_ENABLED(CLK_CCF)) {
 		dev = udev;
 		if (!dev) {
