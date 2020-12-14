@@ -85,6 +85,8 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IOMUX_PAD_CTRL(GPIO1_IO12__HSIOMIX_usb1_OTG_PWR, 0x16),
 	IOMUX_PAD_CTRL(GPIO1_IO13__HSIOMIX_usb1_OTG_OC,	0x116),
 	IOMUX_PAD_CTRL(SAI1_RXD0__GPIO4_IO02, 0x03),	/* float for OTG1 mode */
+#define GP_FASTBOOT_KEY		IMX_GPIO_NR(5, 9)
+	IOMUX_PAD_CTRL(ECSPI1_SS0__GPIO5_IO09, WEAK_PULLUP),
 };
 
 int board_early_init_f(void)
@@ -210,17 +212,11 @@ int board_init(void)
 	return 0;
 }
 
-#ifdef CONFIG_FSL_FASTBOOT
-#ifdef CONFIG_ANDROID_RECOVERY
-int is_recovery_key_pressing(void)
+#if defined(CONFIG_CMD_FASTBOOT) || defined(CONFIG_CMD_DFU)
+int board_fastboot_key_pressed(void)
 {
-	return 0; /*TODO*/
-}
-#endif /*CONFIG_ANDROID_RECOVERY*/
-#endif /*CONFIG_FSL_FASTBOOT*/
-
-#ifdef CONFIG_ANDROID_SUPPORT
-bool is_power_key_pressed(void) {
-	return (bool)(!!(readl(SNVS_HPSR) & (0x1 << 6)));
+	gpio_request(GP_FASTBOOT_KEY, "fastboot_key");
+	gpio_direction_input(GP_FASTBOOT_KEY);
+	return !gpio_get_value(GP_FASTBOOT_KEY);
 }
 #endif
