@@ -223,6 +223,7 @@ void fbp_setup_env_cmds(void);
 #define VD_MIPI_M101NWWB(_mode, args...)	VDF_MIPI_M101NWWB(_mode, "m101nwwb", RGB24, FBF_M101NWWB, args)
 #define VD_MIPI_MTD0900DCP27KF(_mode, args...)	VDF_MIPI_MTD0900DCP27KF(_mode, "mtd0900dcp27kf", RGB24, FBF_MTD0900DCP27KF, args)
 #define VD_MIPI_LCD133_070(_mode, args...)	VDF_MIPI_LCD133_070(_mode, "lcd133_070", RGB24, FBF_LCD133_070, args)
+#define VD_MIPI_X090DTLNC01(_mode, args...)	VDF_MIPI_X090DTLNC01(_mode, "x090dtlnc01", RGB24, FBF_M101NWWB, args)
 #define VD_LD070WSVGA(_mode, args...)		VDF_LD070WSVGA(_mode, "ld070wsvga", RGB24, 0, args)
 #define VD_SVGA(_mode, args...)			VDF_SVGA(_mode, "svga", RGB666, FBF_MODESTR, args)
 #define VD_WVGA_TX23D200_24(_mode, args...)	VDF_WVGA_TX23D200(_mode, "tx23d200_24", RGB24, 0, args)
@@ -1407,6 +1408,26 @@ void fbp_setup_env_cmds(void);
 		.xres           = 1280,\
 		.yres           = 720,\
 		.pixclock       = 1000000000000ULL/((1280+40+20+4)*(720+12+5+1)*60),\
+		.left_margin    = 40,\
+		.right_margin   = 20,\
+		.upper_margin   = 12,\
+		.lower_margin   = 5,\
+		.hsync_len      = 4,\
+		.vsync_len      = 1,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
+#define VDF_MIPI_X090DTLNC01(_mode, _name, _fmt, _flags, args...) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, args),\
+	.mode	= {\
+		.name           = _name,\
+		.refresh        = 60,\
+		.xres           = 1280,\
+		.yres           = 720,\
+		.pixclock       = 1000000000000ULL/66000000,\
 		.left_margin    = 40,\
 		.right_margin   = 20,\
 		.upper_margin   = 12,\
