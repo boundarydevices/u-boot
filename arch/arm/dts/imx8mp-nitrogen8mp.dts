@@ -1611,7 +1611,6 @@
 	sd-uhs-sdr12;
 	sd-uhs-sdr25;
 	status = "okay";
-	vmmc-supply = <&reg_vref_3v3>;
 };
 
 #if 0
@@ -1631,7 +1630,10 @@
 #endif
 
 &usdhc3 {
+	cap-mmc-highspeed;
 	bus-width = <8>;
+	mmc-ddr-1_8v;
+	mmc-hs200-1_8v;
 	no-mmc-hs400;
 	non-removable;
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
