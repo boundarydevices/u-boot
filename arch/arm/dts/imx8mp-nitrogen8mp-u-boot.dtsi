@@ -104,10 +104,6 @@
 	u-boot,dm-spl;
 };
 
-&reg_usdhc1_vqmmc {
-	u-boot,dm-spl;
-};
-
 &reg_vref_3v3 {
 	u-boot,dm-spl;
 };
