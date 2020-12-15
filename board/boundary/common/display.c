@@ -60,7 +60,7 @@ static int detect_pca9546(struct display_info_t const *di, int sub_bus, int sub_
 	}
 #else
 	orig_i2c_bus = i2c_get_bus_num();
-	ret = i2c_set_bus_num(di->bus_num);
+	ret = i2c_set_bus_num(di->bus_num & 0x0f);
 	/* write control register, select sub bus */
 	if (!ret && (sub_bus >= 0))
 		ret = i2c_write(0x70, 1 << sub_bus, 1, NULL, 0);
