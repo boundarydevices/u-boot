@@ -114,7 +114,8 @@ int board_usb_hub_gpio_init(void)
 int board_detect_gt911(struct display_info_t const *di)
 {
 	int ret;
-	struct udevice *dev, *chip;
+	struct udevice *bus, *mux, *chip;
+	int sub_bus;
 
 	if (di->bus_gp)
 		gpio_direction_output(di->bus_gp, 1);
@@ -127,11 +128,19 @@ int board_detect_gt911(struct display_info_t const *di)
 	gpio_set_value(GPIRQ_TS_GT911, 0);
 	mdelay(50);
 	gpio_direction_input(GPIRQ_TS_GT911);
-	ret = uclass_get_device(UCLASS_I2C, di->bus_num, &dev);
+	ret = uclass_get_device(UCLASS_I2C, di->bus_num & 0x0f, &bus);
 	if (ret)
 		return 0;
 
-	ret = dm_i2c_probe(dev, di->addr_num, 0x0, &chip);
+	sub_bus = di->bus_num >> 4;
+	if (sub_bus) {
+		ret = dm_i2c_probe(bus, 0x70, 0x0, &mux);
+		if (!ret) {
+			/* write control register, select sub bus */
+			dm_i2c_write(mux, 1 << sub_bus, NULL, 0);
+		}
+	}
+	ret = dm_i2c_probe(bus, di->addr_num, 0x0, &chip);
 	if (ret && di->bus_gp)
 		gpio_direction_input(di->bus_gp);
 	return (ret == 0);
