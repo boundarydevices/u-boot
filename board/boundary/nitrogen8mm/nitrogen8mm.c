@@ -214,8 +214,7 @@ int board_init(void)
 	return 0;
 }
 
-#ifndef CONFIG_BOARD_REV2
-
+#if !defined(CONFIG_BOARD_REV2) && !defined(CONFIG_BOARD_GENO)
 #define PF8100 0x08
 #define PF8X00_EMREV	0x02
 #define PF8X00_PROGID	0x03
@@ -261,7 +260,7 @@ static void check_wdog(void)
 
 void board_env_init(void)
 {
-#ifndef CONFIG_BOARD_REV2
+#if !defined(CONFIG_BOARD_REV2) && !defined(CONFIG_BOARD_GENO)
 	check_wdog();
 #endif
 	/* An unmodified panel has reset connected directly to 1.8V, so make input */
