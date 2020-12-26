@@ -49,7 +49,6 @@ int ssusb_check_clocks(struct ssusb_mtk *ssusb, u32 ex_clks)
 				 ((value & check_val) == check_val), 10000);
 	if (ret) {
 		dev_err(ssusb->dev, "clks of sts1 are not stable!\n");
-		return ret;
 	}
 
 	ret = readl_poll_timeout(ibase + U3D_SSUSB_IP_PW_STS2, value,
