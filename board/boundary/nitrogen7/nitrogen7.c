@@ -407,6 +407,10 @@ int board_early_init_f(void)
 
 int board_init(void)
 {
+#ifdef CONFIG_FSL_QSPI
+	/* Set the clock */
+	set_clk_qspi(20000000);
+#endif
 	common_board_init(i2c_pads, I2C_BUS_CNT, 0,
 			displays, display_cnt, 0);
 	return 0;
