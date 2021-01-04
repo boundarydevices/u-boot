@@ -62,14 +62,16 @@
 			#clock-cells = <0>;
 			clock-frequency = <16000000>;
 		};
+
+		pcie0_refclk: pcie0-refclk {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <100000000>;
+		};
 	};
 
 #if 0
 	sound-wm8960 {
-		compatible = "fsl,imx-audio-wm8960";
-		model = "wm8960-audio";
-		cpu-dai = <&sai1>;
-		codec-master;
 		audio-codec = <&wm8960>;
 		audio-routing =
 			"Headphone Jack", "HP_L",
@@ -82,12 +84,15 @@
 			"Main MIC", "MICB",
 			"RINPUT1", "Mic Jack",
 			"Mic Jack", "MICB";
+		codec-master;
+		compatible = "fsl,imx-audio-wm8960";
+		cpu-dai = <&sai1>;
 		/* JD2: hp detect high for headphone*/
 		hp-det = <2 0>;
 		hp-det-gpios = GP_WM8960_HP_DET;
-#if 0		/* Jack is not stuffed */
+		/* Jack is not stuffed */
 		mic-det-gpios = GP_WM8960_MIC_DET;
-#endif
+		model = "wm8960-audio";
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_sound_wm8960>;
 	};
@@ -107,6 +112,9 @@
 };
 
 &ecspi2 {
+	assigned-clocks = <&clk IMX8MMN(CLK_ECSPI2)>;
+	assigned-clock-parents = <&clk IMX8MMN(SYS_PLL1_40M)>;
+	assigned-clock-rates = <40000000>;
 	can0: can@0 {
 		clocks = <&clk16m>;
 		compatible = "microchip,mcp2515";
@@ -135,6 +143,11 @@
 &pcie0 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_pcie0>;
+	clocks = <&clk IMX8MM_CLK_PCIE1_ROOT>,
+		 <&clk IMX8MM_CLK_PCIE1_AUX>,
+		 <&clk IMX8MM_CLK_PCIE1_PHY>,
+		 <&pcie0_refclk>;
+	clock-names = "pcie", "pcie_aux", "pcie_phy", "pcie_bus";
 	disable-gpio = GP_PCIE0_DISABLE;
 	reset-gpio = GP_PCIE0_RESET;
 	ext_osc = <0>;
@@ -143,11 +156,11 @@
 #endif
 
 &sai1 {
+	assigned-clocks = <&clk IMX8MMN(AUDIO_PLL1)>, <&clk IMX8MMN(AUDIO_PLL2)>, <&clk IMX8MMN(CLK_SAI1)>;
+	assigned-clock-parents = <0>, <0>, <&clk IMX8MMN(AUDIO_PLL1_OUT)>;
+	assigned-clock-rates = <786432000>, <722534400>, <12288000>;
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_sai1>;
-	assigned-clocks = <&clk IMX8MMN(CLK_SAI1)>;
-	assigned-clock-parents = <&clk IMX8MMN(AUDIO_PLL1_OUT)>;
-	assigned-clock-rates = <12288000>;
 	status = "okay";
 };
 
