@@ -18,12 +18,13 @@ This repository is used to track U-Boot for our i.MX based boards:
 * [Nitrogen8M Mini SOM][nitrogen8mm-som]
 * [Nitrogen8M Nano][nitrogen8mn]
 * [Nitrogen8M Nano SOM][nitrogen8mn-som]
+* [Nitrogen8M Plus SOM][nitrogen8mp-som]
 
 It is based on the main-line upstream at [http://git.denx.de][denx].
 
 Latest stable branch is:
 
-* [boundary-v2018.07](https://github.com/boundarydevices/u-boot-imx6/tree/boundary-v2018.07): Based on v2018.07.
+* [boundary-v2020.10](https://github.com/boundarydevices/u-boot-imx6/tree/boundary-v2020.10): Based on v2020.10.
 
 [Other branches](http://github.com/boundarydevices/u-boot-imx6/branches) are used for work in progress, sharing experimental code and to
 preserve the history for customers who base their efforts on ours.
@@ -45,3 +46,4 @@ preserve the history for customers who base their efforts on ours.
 [nitrogen8mm-som]:https://boundarydevices.com/product/nitrogen8m-mini-som "Nitrogen8M Mini SOM product page"
 [nitrogen8mn]:https://boundarydevices.com/product/nitrogen8m-nano "Nitrogen8M Nano product page"
 [nitrogen8mn-som]:https://boundarydevices.com/product/nitrogen8m-nano-som "Nitrogen8M Nano SOM product page"
+[nitrogen8mp-som]:https://boundarydevices.com/product/nitrogen8m-plus-som "Nitrogen8M Plus SOM product page"
