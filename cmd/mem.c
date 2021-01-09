@@ -721,6 +721,7 @@ static ulong mem_test_alt(vu_long *buf, ulong start_addr, ulong end_addr,
 	vu_long temp;
 	vu_long anti_pattern;
 	vu_long num_words;
+	vu_long limit;
 	static const ulong bitpattern[] = {
 		0x00000001,	/* single bit */
 		0x00000003,	/* two adjacent bits */
@@ -885,48 +886,72 @@ static ulong mem_test_alt(vu_long *buf, ulong start_addr, ulong end_addr,
 	/*
 	 * Fill memory with a known pattern.
 	 */
-	for (pattern = 1, offset = 0; offset < num_words; pattern++, offset++) {
+	limit = 0;
+	pattern = 1;
+	offset = 0;
+	while (limit < num_words) {
 		WATCHDOG_RESET();
-		addr[offset] = pattern;
+		limit += 0x100000;
+		if (limit > num_words)
+			limit = num_words;
+		for (; offset < num_words; pattern++, offset++) {
+			addr[offset] = pattern;
+		}
 	}
 
 	/*
 	 * Check each location and invert it for the second pass.
 	 */
-	for (pattern = 1, offset = 0; offset < num_words; pattern++, offset++) {
+	limit = 0;
+	pattern = 1;
+	offset = 0;
+	while (limit < num_words) {
 		WATCHDOG_RESET();
-		temp = addr[offset];
-		if (temp != pattern) {
-			printf("\nFAILURE (read/write) @ 0x%.8lx:"
-				" expected 0x%.8lx, actual 0x%.8lx)\n",
-				start_addr + offset*sizeof(vu_long),
-				pattern, temp);
-			errs++;
-			if (ctrlc())
-				return -1;
-		}
+		limit += 0x100000;
+		if (limit > num_words)
+			limit = num_words;
+		for (; offset < num_words; pattern++, offset++) {
+			temp = addr[offset];
+			if (temp != pattern) {
+				printf("\nFAILURE (read/write) @ 0x%.8lx:"
+					" expected 0x%.8lx, actual 0x%.8lx)\n",
+					start_addr + offset*sizeof(vu_long),
+					pattern, temp);
+				errs++;
+				if (ctrlc())
+					return -1;
+			}
 
-		anti_pattern = ~pattern;
-		addr[offset] = anti_pattern;
+			anti_pattern = ~pattern;
+			addr[offset] = anti_pattern;
+		}
 	}
 
 	/*
 	 * Check each location for the inverted pattern and zero it.
 	 */
-	for (pattern = 1, offset = 0; offset < num_words; pattern++, offset++) {
+	limit = 0;
+	pattern = 1;
+	offset = 0;
+	while (limit < num_words) {
 		WATCHDOG_RESET();
-		anti_pattern = ~pattern;
-		temp = addr[offset];
-		if (temp != anti_pattern) {
-			printf("\nFAILURE (read/write): @ 0x%.8lx:"
-				" expected 0x%.8lx, actual 0x%.8lx)\n",
-				start_addr + offset*sizeof(vu_long),
-				anti_pattern, temp);
-			errs++;
-			if (ctrlc())
-				return -1;
+		limit += 0x100000;
+		if (limit > num_words)
+			limit = num_words;
+		for (; offset < num_words; pattern++, offset++) {
+			anti_pattern = ~pattern;
+			temp = addr[offset];
+			if (temp != anti_pattern) {
+				printf("\nFAILURE (read/write): @ 0x%.8lx:"
+					" expected 0x%.8lx, actual 0x%.8lx)\n",
+					start_addr + offset*sizeof(vu_long),
+					anti_pattern, temp);
+				errs++;
+				if (ctrlc())
+					return -1;
+			}
+			addr[offset] = 0;
 		}
-		addr[offset] = 0;
 	}
 
 	return errs;
@@ -1001,6 +1026,7 @@ static ulong mem_test_quick(vu_long *buf, ulong start_addr, ulong end_addr,
 			    vu_long pattern, int iteration)
 {
 	vu_long *end;
+	vu_long *limit;
 	vu_long *addr;
 	ulong errs = 0;
 	ulong incr, length;
@@ -1028,29 +1054,45 @@ static ulong mem_test_quick(vu_long *buf, ulong start_addr, ulong end_addr,
 		"\b\b\b\b\b\b\b\b\b\b",
 		pattern, "");
 
-	for (addr = buf, val = pattern; addr < end; addr++) {
+	addr = buf;
+	val = pattern;
+	limit = addr;
+	while (limit < end) {
 		WATCHDOG_RESET();
-		*addr = val;
-		val += incr;
+		limit += 0x100000;
+		if (limit > end)
+			limit = end;
+		for (; addr < end; addr++) {
+			*addr = val;
+			val += incr;
+		}
 	}
 
 	puts("Reading...");
 
-	for (addr = buf, val = pattern; addr < end; addr++) {
+	addr = buf;
+	val = pattern;
+	limit = addr;
+	while (limit < end) {
 		WATCHDOG_RESET();
-		readback = *addr;
-		if (readback != val) {
-			ulong offset = addr - buf;
+		limit += 0x100000;
+		if (limit > end)
+			limit = end;
+		for (; addr < end; addr++) {
+			readback = *addr;
+			if (readback != val) {
+				ulong offset = addr - buf;
 
-			printf("\nMem error @ 0x%08X: "
-				"found %08lX, expected %08lX\n",
-				(uint)(uintptr_t)(start_addr + offset*sizeof(vu_long)),
-				readback, val);
-			errs++;
-			if (ctrlc())
-				return -1;
+				printf("\nMem error @ 0x%08X: "
+					"found %08lX, expected %08lX\n",
+					(uint)(uintptr_t)(start_addr + offset*sizeof(vu_long)),
+					readback, val);
+				errs++;
+				if (ctrlc())
+					return -1;
+			}
+			val += incr;
 		}
-		val += incr;
 	}
 
 	return errs;
