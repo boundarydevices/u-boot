@@ -894,7 +894,7 @@ static ulong mem_test_alt(vu_long *buf, ulong start_addr, ulong end_addr,
 		limit += 0x100000;
 		if (limit > num_words)
 			limit = num_words;
-		for (; offset < num_words; pattern++, offset++) {
+		for (; offset < limit; pattern++, offset++) {
 			addr[offset] = pattern;
 		}
 	}
@@ -910,7 +910,7 @@ static ulong mem_test_alt(vu_long *buf, ulong start_addr, ulong end_addr,
 		limit += 0x100000;
 		if (limit > num_words)
 			limit = num_words;
-		for (; offset < num_words; pattern++, offset++) {
+		for (; offset < limit; pattern++, offset++) {
 			temp = addr[offset];
 			if (temp != pattern) {
 				printf("\nFAILURE (read/write) @ 0x%.8lx:"
@@ -938,7 +938,7 @@ static ulong mem_test_alt(vu_long *buf, ulong start_addr, ulong end_addr,
 		limit += 0x100000;
 		if (limit > num_words)
 			limit = num_words;
-		for (; offset < num_words; pattern++, offset++) {
+		for (; offset < limit; pattern++, offset++) {
 			anti_pattern = ~pattern;
 			temp = addr[offset];
 			if (temp != anti_pattern) {
@@ -1062,7 +1062,7 @@ static ulong mem_test_quick(vu_long *buf, ulong start_addr, ulong end_addr,
 		limit += 0x100000;
 		if (limit > end)
 			limit = end;
-		for (; addr < end; addr++) {
+		for (; addr < limit; addr++) {
 			*addr = val;
 			val += incr;
 		}
@@ -1078,7 +1078,7 @@ static ulong mem_test_quick(vu_long *buf, ulong start_addr, ulong end_addr,
 		limit += 0x100000;
 		if (limit > end)
 			limit = end;
-		for (; addr < end; addr++) {
+		for (; addr < limit; addr++) {
 			readback = *addr;
 			if (readback != val) {
 				ulong offset = addr - buf;
