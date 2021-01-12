@@ -162,10 +162,6 @@
 #define BD_RAM_RAMDISK	"42800000"
 #define BD_RAM_FDT	"43000000"
 
-/* M4 specific */
-#define SYS_AUXCORE_BOOTDATA_DDR	0x80000000
-#define SYS_AUXCORE_BOOTDATA_TCM	0x007E0000
-
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	"console=" BD_CONSOLE "\0" \
 	"disable_giga=1\0" \
@@ -178,7 +174,7 @@
 	"m4boot=load ${devtype} ${devnum}:1 ${m4loadaddr} ${m4image}; " \
 		"dcache flush; bootaux ${m4loadaddr}\0" \
 	"m4image=m4_fw.bin\0" \
-	"m4loadaddr="__stringify(SYS_AUXCORE_BOOTDATA_TCM)"\0" \
+	"m4loadaddr="__stringify(CONFIG_IMX_MCORE_TCM_ADDR)"\0" \
 	"netargs=setenv bootargs console=${console},115200 root=/dev/nfs rw " \
 		"ip=dhcp nfsroot=${tftpserverip}:${nfsroot},v3,tcp\0" \
 	"netboot=run netargs; " \
