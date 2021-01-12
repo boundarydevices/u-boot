@@ -32,6 +32,24 @@ config IMX_BOOTAUX
 	help
 	  bootaux [addr] to boot auxiliary core.
 
+if IMX_BOOTAUX
+
+config IMX_MCORE_TCM_ADDR
+	hex "M-core ITCM address"
+	default 0x007E0000 if ARCH_IMX8M
+	default 0x007F8000 if ARCH_MX7 || ARCH_MX6
+	help
+	  M-core TCM address where program can be loaded
+
+config IMX_MCORE_TCM_SIZE
+	hex "M-core ITCM size"
+	default 0x00020000 if ARCH_IMX8M
+	default 0x00008000 if ARCH_MX7 || ARCH_MX6
+	help
+	  M-core TCM size where program can be loaded
+
+endif
+
 config IMX_MODULE_FUSE
 	bool "i.MX Module Fuse"
 	depends on ARCH_MX6
