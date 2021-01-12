@@ -153,6 +153,10 @@ void arch_lmb_reserve_generic(struct lmb *lmb, ulong sp, ulong end, ulong align)
 
 		break;
 	}
+#if defined(CONFIG_IMX_MCORE_TCM_ADDR) && defined(CONFIG_IMX_MCORE_TCM_SIZE)
+	/* Workaround to declare TCM memory to load M core binary */
+	lmb_add(lmb, CONFIG_IMX_MCORE_TCM_ADDR, CONFIG_IMX_MCORE_TCM_SIZE);
+#endif
 }
 
 /**
