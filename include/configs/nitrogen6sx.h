@@ -14,9 +14,6 @@
 #define CONFIG_MACH_TYPE	3769
 
 /* M4 specific */
-#define SYS_AUXCORE_BOOTDATA_DDR	0x9ff00000
-#define SYS_AUXCORE_BOOTDATA_OCRAM	0x00910000
-#define SYS_AUXCORE_BOOTDATA_TCM	0x007F8000
 #define EXTRA_ENV_M4 \
 	"loadm4image=load ${devtype} ${devnum}:1 ${loadaddr} ${m4image}\0" \
 	"m4boot=run m4boot_nor\0" \
@@ -25,7 +22,7 @@
 	"m4boot_nor=sf probe; sf read ${m4loadaddr} ${m4offset} ${m4size}; " \
 		"dcache flush; bootaux ${m4loadaddr}\0" \
 	"m4image=m4_fw.bin\0" \
-	"m4loadaddr="__stringify(SYS_AUXCORE_BOOTDATA_TCM)"\0" \
+	"m4loadaddr="__stringify(CONFIG_IMX_MCORE_TCM_ADDR)"\0" \
 	"m4loaddevs=mmc\0" \
 	"m4offset=0x1e0000\0" \
 	"m4size=0x8000\0" \
