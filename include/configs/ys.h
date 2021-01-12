@@ -16,9 +16,6 @@
 #define CONFIG_SYS_CONSOLE_IS_IN_ENV
 
 /* M4 specific */
-#define SYS_AUXCORE_BOOTDATA_DDR		0x9ff00000
-#define SYS_AUXCORE_BOOTDATA_OCRAM	0x00910000
-#define SYS_AUXCORE_BOOTDATA_TCM		0x007F8000
 #define EXTRA_ENV_M4 \
 	"m4image=m4_fw.bin\0" \
 	"m4offset=0x1e0000\0" \
@@ -34,7 +31,7 @@
 			"fi; " \
 		"done; " \
 		"done\0" \
-	"m4loadaddr="__stringify(CONFIG_SYS_AUXCORE_BOOTDATA_TCM)"\0" \
+	"m4loadaddr="__stringify(CONFIG_CONFIG_IMX_MCORE_TCM_ADDR)"\0" \
 	"m4boot=run m4boot_nor\0" \
 	"m4boot_ext=load ${dtype} ${disk}:1 ${m4loadaddr} ${m4image}; " \
 		"dcache flush; bootaux ${m4loadaddr}\0" \
