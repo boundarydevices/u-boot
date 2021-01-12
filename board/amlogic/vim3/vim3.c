@@ -151,6 +151,12 @@ int meson_ft_board_setup(void *blob, struct bd_info *bd)
 
 int misc_init_r(void)
 {
+
+#if defined CONFIG_POWER_FUSB302
+#include <fusb302.h>
+	fusb302_init();
+#endif
+
 	u8 mac_addr[MAC_ADDR_LEN];
 	char efuse_mac_addr[EFUSE_MAC_SIZE], tmp[3];
 	ssize_t len;
