@@ -197,6 +197,13 @@ config PANEL
 	help
 	  This provides panel uclass driver that enables basic panel support.
 
+config PANEL_MIPI_SIMPLE
+	bool "Enable simple mipi panel support"
+	depends on PANEL
+	help
+	  This turns on a simple panel driver that enables a compatible
+	  mipi video panel.
+
 config SIMPLE_PANEL
 	bool "Enable simple panel support"
 	depends on PANEL
