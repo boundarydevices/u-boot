@@ -34,6 +34,7 @@ void enable_ocotp_clk(unsigned char enable);
 #endif
 #ifdef CONFIG_USB_EHCI_HCD
 void enable_usboh3_clk(unsigned char enable);
+int enable_usb_pll(ulong usb_phy_base);
 #endif
 void init_clk_usdhc(u32 index);
 void clock_init(void);
