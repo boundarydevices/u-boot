@@ -22,6 +22,7 @@ obj-$(CONFIG_$(SPL_TPL_)VIDEO) += video-uclass.o vidconsole-uclass.o
 obj-$(CONFIG_$(SPL_TPL_)VIDEO) += video_bmp.o
 obj-$(CONFIG_$(SPL_TPL_)PANEL) += panel-uclass.o
 obj-$(CONFIG_PANEL_HX8238D) += hx8238d.o
+obj-$(CONFIG_PANEL_MIPI_COMMON) += panel-common.o panel-sn65dsi83.o
 obj-$(CONFIG_$(SPL_TPL_)SIMPLE_PANEL) += simple_panel.o
 
 obj-$(CONFIG_VIDEO_LOGO) += u_boot_logo.o
