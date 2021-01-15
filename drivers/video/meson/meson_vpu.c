@@ -53,8 +53,23 @@ static int meson_vpu_setup_mode(struct udevice *dev, struct udevice *disp)
 	if (disp) {
 		ret = display_read_timing(disp, &timing);
 		if (ret) {
-			debug("%s: Failed to read timings\n", __func__);
-			goto cvbs;
+			if (IS_ENABLED(CONFIG_VIDEO_MESON_HDMI_FAIL_SAVE_FULL_HD)) {
+				printf("DISPLAY: setup failsave FullHD mode\n");
+				timing.pixelclock.typ = 148500000;
+				timing.hactive.typ = 1920;
+				timing.hfront_porch.typ = 88;
+				timing.hback_porch.typ = 148;
+				timing.hsync_len.typ = 44;
+				timing.vactive.typ = 1080;
+				timing.vfront_porch.typ = 4;
+				timing.vback_porch.typ = 36;
+				timing.vsync_len.typ = 5;
+				timing.flags = 10;
+				timing.hdmi_monitor = true;
+			} else {
+				debug("%s: Failed to read timings\n", __func__);
+				goto cvbs;
+			}
 		}
 
 		uc_priv->xsize = timing.hactive.typ;

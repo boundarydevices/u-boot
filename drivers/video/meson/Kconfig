@@ -10,3 +10,13 @@ config VIDEO_MESON
 	select DISPLAY
 	help
 	  Enable Amlogic Meson Video Processing Unit video support.
+
+config VIDEO_MESON_HDMI_FAIL_SAVE_FULL_HD
+	bool "Enable HDMI fail-save FullHD mode"
+	depends on VIDEO_MESON
+	default y
+	help
+	  Force setup FullHD display mode, if proper timing cant readed.
+	  from display! Its happens for some 4K display, which send
+	  unsupported high timings, but same time can works as FullHD!
+	  Also its will be useful for suspended or disconnected displays
