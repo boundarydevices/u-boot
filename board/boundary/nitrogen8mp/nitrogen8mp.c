@@ -229,3 +229,30 @@ int board_fastboot_key_pressed(void)
 	return !gpio_get_value(GP_FASTBOOT_KEY);
 }
 #endif
+
+static void check_usb_mux(void)
+{
+	struct udevice *bus;
+	struct udevice *i2c_dev;
+	int ret;
+
+	ret = uclass_get_device_by_seq(UCLASS_I2C, 3, &bus);
+	if (ret) {
+		printf("%s: Can't find bus\n", __func__);
+		return;
+	}
+
+	ret = dm_i2c_probe(bus, 0x60, 0, &i2c_dev);
+	if (ret)
+		return;
+
+	/*
+	 * The 1st few boards used a TUSB320 instead of hd3ss3220
+	 */
+	env_set("cmd_board", "fdt set usb_mux reg <0x60>");
+}
+
+void board_env_init(void)
+{
+	check_usb_mux();
+}
