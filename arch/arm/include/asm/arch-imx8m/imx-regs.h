@@ -124,6 +124,14 @@ struct iomuxc_gpr_base_regs {
 	u32 gpr[47];
 };
 
+
+#define MXC_ECSPI
+
+#define MXC_SPI_BASE_ADDRESSES \
+	ECSPI1_BASE_ADDR, \
+	ECSPI2_BASE_ADDR, \
+	ECSPI3_BASE_ADDR, \
+
 struct ocotp_regs {
 	u32	ctrl;
 	u32	ctrl_set;
