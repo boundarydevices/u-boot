@@ -512,17 +512,16 @@ static int mxs_of_get_timings(struct udevice *dev,
 		return -EINVAL;
 	}
 
+	ret = ofnode_decode_display_timing(display_node, 0, timings);
+	if (ret) {
+		dev_info(dev, "failed to get display timings\n");
+	}
+
 	priv->disp_dev = video_link_get_next_device(dev);
-	if (priv->disp_dev) {
+	if (priv->disp_dev && ret) {
 		ret = video_link_get_display_timings(timings);
 		if (ret) {
 			dev_err(dev, "failed to get any video link display timings\n");
-			return -EINVAL;
-		}
-	} else {
-		ret = ofnode_decode_display_timing(display_node, 0, timings);
-		if (ret) {
-			dev_err(dev, "failed to get any display timings\n");
 			return -EINVAL;
 		}
 	}
