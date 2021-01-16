@@ -33,6 +33,8 @@ enum alias_names {
 	FBTS_ST1633I,
 	FBTS_TSC2004,
 	FBP_MIPI_TO_LVDS,
+	FBP_LT8912,
+	FBP_LT8912_2,
 	FBP_SPI_LCD,
 	FBP_PCA9540,
 	FBP_PCA9546,
@@ -145,6 +147,8 @@ void fbp_setup_env_cmds(void);
 #define VD_720_480M_60(_mode, args...)		VDF_720_480M_60(_mode, "720x480M@60", RGB24, FBF_MODESTR, args)
 #define VD_MIPI_TM070JDHG30(_mode, args...)	VDF_MIPI_TM070JDHG30(_mode, "mipi-tm070jdhg30", RGB24, FBF_MIPI_TO_HDMI, args)
 #define VD_MIPI_1280_800M_60(_mode, args...)	VDF_1280_800M_60(_mode, "dsi-1280x800M@60", RGB24, FBF_MIPI_TO_HDMI, args)
+#define VD_TM070JDHG30_LT8912(_mode, args...)	VDF_MIPI_TM070JDHG30(_mode, "tm070jdhg30_lt8912", RGB24, FBF_M101NWWB_NO_CMDS, args)
+
 #define VD_MIPI_1280_720M_60(_mode, args...)	VDF_1280_720M_60(_mode, "dsi-1280x720M@60", RGB24, FBF_MIPI_TO_HDMI, args)
 #define VD_MIPI_1920_1080M_60(_mode, args...)	VDF_1920_1080M_60(_mode, "dsi-1920x1080M@60", RGB24, FBF_MIPI_TO_HDMI, args)
 #define VD_MIPI_1024_768M_60(_mode, args...)	VDF_1024_768M_60(_mode, "dsi-1024x768M@60", RGB24, FBF_MIPI_TO_HDMI, args)
