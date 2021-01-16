@@ -1,7 +1,6 @@
 /*
  * SPDX-License-Identifier:	GPL-2.0+
  */
-
 #include <common.h>
 #include <command.h>
 #include <errno.h>
@@ -15,11 +14,14 @@
 #include <asm/mach-imx/fbpanel.h>
 #include <asm/io.h>
 #include <div64.h>
+#include <dm/device.h>
+#include <dm/lists.h>
 #include <dm/uclass.h>
 #include <dt-bindings/gpio/gpio.h>
 #include <env.h>
 #include <i2c.h>
 #include <linux/delay.h>
+#include <log.h>
 #include <malloc.h>
 #include <video_fb.h>
 /*
@@ -209,6 +211,8 @@ static const char *const aliases[] = {
 [FBTS_ST1633I] = "ts_st1633i",
 [FBTS_TSC2004] = "ts_tsc2004",
 [FBP_MIPI_TO_LVDS] = "mipi_to_lvds",
+[FBP_LT8912] = "lt8912",
+[FBP_LT8912_2] = "lt8912_2",
 [FBP_SPI_LCD] = "spi_lcd",
 [FBP_PCA9540] = "pca9540",
 [FBP_PCA9546] = "pca9546",
@@ -345,6 +349,257 @@ static const char *get_alias(const struct display_info_t *di, unsigned fb, int i
 	return new_aliases[fb][i];
 }
 
+#ifdef CONFIG_DM_VIDEO
+void *heap;
+int heap_remaining;
+
+static void *get_space(int len)
+{
+	void *p = heap;
+
+	len = (len + 3) & ~0x3;
+	if (heap_remaining < len) {
+		p = malloc(len * 256);
+		if (!p)
+			return p;
+		heap_remaining = len * 256;
+	}
+	heap_remaining -= len;
+	heap = p + len;
+	return p;
+}
+
+ofnode ofnode_path_err(const char *path)
+{
+	ofnode node = ofnode_path(path);
+
+	if (!ofnode_valid(node))
+		printf("missing node %s\n", path);
+	return node;
+}
+#endif
+
+
+static int set_property_u32(char *buf, int size, const char *path,
+		const char *propname, u32 val)
+{
+	int sz = snprintf(buf, size, "fdt set %s %s <%u>;", path,
+			propname, val);
+#ifdef CONFIG_DM_VIDEO
+	u32 old_val = 0;
+	int ret;
+	ofnode node = ofnode_path_err(path);
+	__be32 *pvalue;
+
+	if (!ofnode_valid(node))
+		return sz;
+	ret = ofnode_read_u32(node, propname, &old_val);
+	if (!ret && (old_val == val))
+		return sz;
+
+	debug("%s:old %u, new %u\n", __func__, old_val, val);
+	pvalue = get_space(sizeof(u32));;
+	if (!pvalue)
+		return sz;
+	*pvalue = cpu_to_be32(val);
+
+	ofnode_write_prop(node, propname, sizeof(u32), pvalue);
+#endif
+	return sz;
+}
+
+static int set_property_joined_u32(char *buf, int size, const char *path1, const char *path2,
+		const char *propname, u32 val)
+{
+	char cpath[80];
+
+	snprintf(cpath, sizeof(cpath), "%s%s", path1, path2);
+	return set_property_u32(buf, size, cpath, propname, val);
+}
+
+static int set_property_u32_env(char *buf, int size, const char *path,
+		const char *propname, u32 val, const char *env)
+{
+	int sz = snprintf(buf, size, "fdt set %s %s <${%s}>;", path,
+			propname, env);
+#ifdef CONFIG_DM_VIDEO
+	u32 old_val = 0;
+	int ret;
+	ofnode node = ofnode_path_err(path);
+	__be32 *pvalue;
+
+	if (!ofnode_valid(node))
+		return sz;
+	ret = ofnode_read_u32(node, propname, &old_val);
+	if (!ret && (old_val == val))
+		return sz;
+
+	debug("%s:old %u, new %u\n", __func__, old_val, val);
+	pvalue = get_space(sizeof(u32));;
+	if (!pvalue)
+		return sz;
+	*pvalue = cpu_to_be32(val);
+
+	ofnode_write_prop(node, propname, sizeof(u32), pvalue);
+#endif
+	return sz;
+}
+
+static int set_property_u32_env_2parms(char *buf, int size, const char *path,
+		const char *propname, u32 val, const char *env, u32 p1, u32 p2)
+{
+	int sz = snprintf(buf, size, "fdt set %s %s <${%s} %u %u>;", path,
+			propname, env, p1, p2);
+#ifdef CONFIG_DM_VIDEO
+	u32 old[] = {0, 0, 0};
+	int ret;
+	ofnode node = ofnode_path_err(path);
+	__be32 *pvalue;
+
+	if (!ofnode_valid(node))
+		return sz;
+	ret = ofnode_read_u32_array(node, propname, old, 3);
+	if (!ret && (old[0] == val) && (old[1] == p1) && (old[2] == p2))
+		return sz;
+
+	debug("%s:old %u %u %u, new %u %u %u\n", __func__, old[0], old[1], old[2], val, p1, p2);
+	pvalue = get_space(sizeof(u32) * 3);;
+	if (!pvalue)
+		return sz;
+	pvalue[0] = cpu_to_be32(val);
+	pvalue[1] = cpu_to_be32(p1);
+	pvalue[2] = cpu_to_be32(p2);
+
+	ofnode_write_prop(node, propname, sizeof(u32) * 3, pvalue);
+#endif
+	return sz;
+}
+
+static int set_property_str(char *buf, int size, const char *path,
+		const char *propname, const char *val)
+{
+	int sz = snprintf(buf, size, "fdt set %s %s %s;", path, propname, val);
+#ifdef CONFIG_DM_VIDEO
+	ofnode node = ofnode_path_err(path);
+
+	if (!ofnode_valid(node))
+		return sz;
+	ofnode_write_string(node, propname, val);
+#endif
+	return sz;
+}
+
+static int set_property(char *buf, int size, const char *path, const char *propname)
+{
+	int sz = snprintf(buf, size, "fdt set %s %s;", path, propname);
+#ifdef CONFIG_DM_VIDEO
+	ofnode node = ofnode_path_err(path);
+
+	if (!ofnode_valid(node))
+		return sz;
+	ofnode_write_prop(node, propname, 0, NULL);
+#endif
+	return sz;
+}
+
+static int set_property_set_rm(char *buf, int size, const char *path, const char *propname, bool set)
+{
+	int sz;
+
+	if (set)
+		return set_property(buf, size, path, propname);
+	sz = snprintf(buf, size, "fdt rm %s %s;", path, propname);
+#ifdef CONFIG_DM_VIDEO
+	ofnode node = ofnode_path_err(path);
+
+	if (!ofnode_valid(node))
+		return sz;
+	ofnode_remove_prop(node, propname);
+#endif
+	return sz;
+}
+
+static int set_status(char *buf, int size, const char *path, bool enable)
+{
+	int sz = snprintf(buf, size, "fdt set %s status %s;", path,
+			enable ? "okay" : "disabled");
+#ifdef CONFIG_DM_VIDEO
+	ofnode node = ofnode_path_err(path);
+	int ret;
+
+	if (!ofnode_valid(node))
+		return sz;
+	ret = ofnode_set_enabled(node, enable);
+	if (ret) {
+		printf("status change failed for %s\n", path);
+	} else if (enable) {
+		ofnode pnode = ofnode_get_parent(node);
+		struct udevice *parent;
+		struct udevice *dev;
+
+		ret = device_find_by_ofnode(node, &dev);
+		if (ret) {
+			/* not device yet */
+			ret = device_find_by_ofnode(pnode, &parent);
+			if (!ret)
+				lists_bind_fdt(parent, node, NULL, false);
+		}
+	}
+#endif
+	return sz;
+}
+
+static int set_status_indexed(char *buf, int size, const char *path, int index, bool enable)
+{
+	char cpath[80];
+
+	snprintf(cpath, sizeof(cpath), "%s%d", path, index);
+	return set_status(buf, size, cpath, enable);
+}
+
+static int get_value_joined_str(char *buf, int size, u32* pval,
+		const char *env, const char *path1, const char *path2,
+		const char* propname)
+{
+	int sz = snprintf(buf, size, "fdt get value %s %s%s %s;", env,
+			path1, path2, propname);
+#ifdef CONFIG_DM_VIDEO
+	char cpath[80];
+	ofnode node;
+
+	snprintf(cpath, sizeof(cpath), "%s%s", path1, path2);
+	node = ofnode_path_err(cpath);
+	if (!ofnode_valid(node))
+		return sz;
+
+	ofnode_read_u32(node, propname, pval);
+#endif
+	return sz;
+}
+
+static int get_value_path_indexed(char *buf, int size, u32* pval,
+		const char *env, const char *path1, u32 index,
+		const char* propname)
+{
+	char path2[16];
+
+	snprintf(path2, sizeof(path2), "%u", index);
+	return get_value_joined_str(buf, size, pval, env,
+			path1, path2, propname);
+}
+
+static int set_property_gpio(char *buf, int size, const char *path, const char *propname, int i, int flags)
+{
+	u32 gp = 0;
+	int sz = get_value_path_indexed(buf, size, &gp, "gp", "gpio",
+			(i >> 5), "phandle");
+	buf += sz;
+	size -= sz;
+	sz += set_property_u32_env_2parms(buf, size, path,
+			propname, gp, "gp", i & 0x1f, flags);
+	return sz;
+}
+
 static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf, int size)
 {
 	const char *mode_str = NULL;
@@ -376,19 +631,22 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 			}
 		}
 		if (!mode_str) {
-			sz = snprintf(buf, size, "fdt set %s status disabled", fbnames[fb1]);
+			sz = set_status(buf, size, fbnames[fb1], false);
 			buf += sz;
 			size -= sz;
-			if (fb == FB_LCD) {
-				sz = snprintf(buf, size, ";fdt set lcd status disabled");
+			if (fb == FB_MIPI) {
+				sz = set_status(buf, size, "lcdif", false);
+			} else if (fb == FB_LCD) {
+				sz = set_status(buf, size, "lcd", 0);
 			} else if ((fb == FB_LVDS) || (fb == FB_LVDS2)) {
-				sz = snprintf(buf, size, ";fdt set ldb/lvds-channel@%d status disabled", fb - FB_LVDS);
+				sz = set_status_indexed(buf, size, "ldb/lvds-channel@", fb - FB_LVDS, 0);
 			}
 #if defined(CONFIG_VIDEO_IMX8M_DCSS)
 			else if (fb == FB_HDMI) {
-				sz = snprintf(buf, size,
-					";fdt set dcss status disabled"
-					";fdt set sound_hdmi status disabled");
+				sz = set_status(buf, size, "dcss", false);
+				buf += sz;
+				size -= sz;
+				sz = set_status(buf, size, "sound_hdmi", false);
 			}
 #endif
 			env_set(cmd_fbnames[fb], buf_start);
@@ -402,11 +660,11 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 
 	if (fb == FB_LVDS)
 		lvds_enabled = 1;
-	sz = snprintf(buf, size, "fdt set %s status okay;", fbnames[fb1]);
+	sz = set_status(buf, size, fbnames[fb1], true);
 	buf += sz;
 	size -= sz;
 	if ((fb == FB_LVDS2) && !lvds_enabled) {
-		sz = snprintf(buf, size, "fdt set ldb/lvds-channel@1 primary;");
+		sz = set_property(buf, size, "ldb/lvds-channel@1", "primary");
 		buf += sz;
 		size -= sz;
 	}
@@ -418,7 +676,7 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		const char *s = get_alias(di, fb, i);
 
 		if (s) {
-			sz = snprintf(buf, size, "fdt set %s status okay;", s);
+			sz = set_status(buf, size, s, true);
 			buf += sz;
 			size -= sz;
 		}
@@ -441,70 +699,71 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 
 	if ((fb >= FB_LCD) && (fb != FB_MIPI)) {
 #if defined(CONFIG_MX6SX) || defined(CONFIG_MX7D)
-		sz = snprintf(buf, size, "fdt set %s bus-width <%u>;", short_names[fb],
+		sz = set_property_u32(buf, size, short_names[fb], "bus-width",
 				interface_width);
 #else
-		sz = snprintf(buf, size, "fdt set %s interface_pix_fmt %s;",
-				fbnames[fb], fmt);
+		sz = set_property_str(buf, size, fbnames[fb],
+				"interface_pix_fmt", fmt);
 #endif
 		buf += sz;
 		size -= sz;
 	}
 
 	if ((fb == FB_LCD) || (fb == FB_LCD2)) {
-		sz = snprintf(buf, size, "fdt set %s default_ifmt %s;",
-				short_names[fb], fmt);
+		sz = set_property_str(buf, size, short_names[fb],
+				"default_ifmt", fmt);
 		buf += sz;
 		size -= sz;
 
-		sz = snprintf(buf, size, "fdt set %s status okay;",
-				short_names[fb]);
+		sz = set_status(buf, size, short_names[fb], true);
 		buf += sz;
 		size -= sz;
 	}
 
 	if ((fb == FB_LVDS) || (fb == FB_LVDS2)) {
 
-		sz = snprintf(buf, size, "fdt set ldb status okay;");
+		sz = set_status(buf, size, "ldb", true);
 		buf += sz;
 		size -= sz;
 
-		sz = snprintf(buf, size, "fdt set %s status okay;", ch_names[fb]);
+		sz = set_status(buf, size, ch_names[fb], true);
 		buf += sz;
 		size -= sz;
 
-		sz = snprintf(buf, size, "fdt set %s fsl,data-width <%u>;",
-				ch_names[fb],
-				interface_width);
+		sz = set_property_u32(buf, size, ch_names[fb],
+				"fsl,data-width", interface_width);
 		buf += sz;
 		size -= sz;
 
-		sz = snprintf(buf, size, "fdt set %s fsl,data-mapping %s;",
-				ch_names[fb],
+		sz = set_property_str(buf, size, ch_names[fb],
+				"fsl,data-mapping",
 				(di->fbflags & FBF_JEIDA) ? "jeida" : "spwg");
 		buf += sz;
 		size -= sz;
 
 		if (di->fbflags & FBF_SPLITMODE) {
-			sz = snprintf(buf, size, "fdt set ldb split-mode 1;");
+			sz = set_property_str(buf, size, "ldb",
+					"split-mode", "1");
 			buf += sz;
 			size -= sz;
 		}
 	} else if (fb == FB_MIPI) {
-		sz = snprintf(buf, size,
-			"fdt set %s dsi-format %s;", fbnames[fb], (interface_width == 24) ? "rgb888" : "rgb666");
+		sz = set_property_str(buf, size, fbnames[fb], "dsi-format",
+			(interface_width == 24) ? "rgb888" : "rgb666");
 		buf += sz;
 		size -= sz;
 
 		if ((di->addr_num == 0x2c) || (di->fbflags & (FBF_JEIDA | FBF_SPLITMODE))) {
 			if (interface_width == 24) {
-				sz = snprintf(buf, size,
-					"fdt set mipi_to_lvds %s;", (di->fbflags & FBF_JEIDA) ? "jeida" : "spwg");
+				sz = set_property(buf, size, "mipi_to_lvds",
+					(di->fbflags & FBF_JEIDA) ? "jeida" :
+					"spwg");
 				buf += sz;
 				size -= sz;
 			}
 			if (di->fbflags & FBF_SPLITMODE) {
-				sz = snprintf(buf, size, "fdt set mipi_to_lvds split-mode;");
+				sz = set_property(buf, size, "mipi_to_lvds",
+						"split-mode");
 				buf += sz;
 				size -= sz;
 			}
@@ -512,21 +771,32 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 	}
 
 	if (di->fbflags & FBF_PINCTRL) {
-		sz = snprintf(buf, size,
-			"fdt get value pin pinctrl_%s phandle;"
-			"fdt set %s pinctrl-0 <${pin}>;"
-			"fdt set %s pinctrl-names default;",
-			di->mode.name, fbnames[fb1], fbnames[fb1]);
+		u32 pin = 0;
+
+		sz = get_value_joined_str(buf, size, &pin, "pin", "pinctrl_",
+				di->mode.name, "phandle");
+		buf += sz;
+		size -= sz;
+		sz = set_property_u32_env(buf, size, fbnames[fb1],
+			"pinctrl-0", pin, "pin");
+		buf += sz;
+		size -= sz;
+		sz = set_property_str(buf, size, fbnames[fb1],
+			"pinctrl-names", "default");
 		buf += sz;
 		size -= sz;
 	}
 
 	if (di->fbflags & FBF_ENABLE_GPIOS_DTB) {
+		u32 gp = 0;
+
 		i = di->enable_gp;
-		sz = snprintf(buf, size,
-			"fdt get value gp gpio%u phandle;"
-			"fdt set %s enable-gpios <${gp} %u %u>;",
-			(i >> 5), fbnames[fb], i & 0x1f,
+		sz = get_value_path_indexed(buf, size, &gp, "gp", "gpio",
+				(i >> 5), "phandle");
+		buf += sz;
+		size -= sz;
+		sz = set_property_u32_env_2parms(buf, size, fbnames[fb],
+			"enable-gpios", gp, "gp", i & 0x1f,
 			(di->fbflags & FBF_ENABLE_GPIOS_ACTIVE_LOW) ?
 				GPIO_ACTIVE_LOW : GPIO_ACTIVE_HIGH);
 		buf += sz;
@@ -535,107 +805,118 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 
 	i = di->reset_gp;
 	if (i) {
-		sz = snprintf(buf, size,
-			"fdt get value gp gpio%u phandle;"
-			"fdt set %s reset-gpios <${gp} %u %u>;",
-			(i >> 5), fbnames[fb], i & 0x1f,
-			GPIO_ACTIVE_LOW);
+		sz = set_property_gpio(buf, size, fbnames[fb], "reset-gpios", i, GPIO_ACTIVE_LOW);
 		buf += sz;
 		size -= sz;
 	}
 
 	if ((fb == FB_MIPI) || (di->fbflags & FBF_MODE_VIDEO)) {
-		sz = snprintf(buf, size, "fdt %s mipi mode-skip-eot;",
-			(di->fbflags & FBF_MODE_SKIP_EOT) ? "set" : "rm");
+		sz = set_property_set_rm(buf, size, "mipi", "mode-skip-eot",
+				(di->fbflags & FBF_MODE_SKIP_EOT));
 		buf += sz;
 		size -= sz;
 
 		if (di->fbflags & FBF_DSI_HBP_DISABLE) {
-			sz = snprintf(buf, size, "fdt set mipi mode-video-hbp-disable;");
+			sz = set_property(buf, size, "mipi",
+					"mode-video-hbp-disable");
 			buf += sz;
 			size -= sz;
 		}
 
 		if (di->fbflags & FBF_DSI_HFP_DISABLE) {
-			sz = snprintf(buf, size, "fdt set mipi mode-video-hfp-disable;");
+			sz = set_property(buf, size, "mipi",
+					"mode-video-hfp-disable");
 			buf += sz;
 			size -= sz;
 		}
 
 		if (di->fbflags & FBF_DSI_HSA_DISABLE) {
-			sz = snprintf(buf, size, "fdt set mipi mode-video-hsa-disable;");
+			sz = set_property(buf, size, "mipi",
+					"mode-video-hsa-disable");
 			buf += sz;
 			size -= sz;
 		}
 
-		sz = snprintf(buf, size, "fdt %s mipi mode-video;",
-			(di->fbflags & FBF_MODE_VIDEO) ? "set" : "rm");
+		sz = set_property_set_rm(buf, size, "mipi", "mode-video",
+				(di->fbflags & FBF_MODE_VIDEO));
 		buf += sz;
 		size -= sz;
 
-		sz = snprintf(buf, size, "fdt %s mipi mode-video-burst;",
-			(di->fbflags & FBF_MODE_VIDEO_BURST) ? "set" : "rm");
+		sz = set_property_set_rm(buf, size, "mipi", "mode-video-burst",
+				(di->fbflags & FBF_MODE_VIDEO_BURST));
 		buf += sz;
 		size -= sz;
 
 		if (di->fbflags & FBF_MODE_VIDEO_MBC) {
-			sz = snprintf(buf, size, "fdt set mipi mode-video-mbc;");
+			sz = set_property(buf, size, "mipi", "mode-video-mbc");
 			buf += sz;
 			size -= sz;
 		}
 		if (di->fbflags & FBF_MODE_VIDEO_SYNC_PULSE) {
-			sz = snprintf(buf, size, "fdt set mipi mode-video-sync-pulse;");
+			sz = set_property(buf, size, "mipi",
+					"mode-video-sync-pulse");
 			buf += sz;
 			size -= sz;
 		}
 		if (di->fbflags & FBF_MIPI_CMDS) {
-			sz = snprintf(buf, size,
-				"fdt get value cmds mipi_cmds_%s phandle;"
-				"fdt set mipi mipi-cmds <${cmds}>;",
-				di->mode.name);
+			u32 cmds;
+
+			sz = get_value_joined_str(buf, size, &cmds, "cmds", "mipi_cmds_",
+					di->mode.name, "phandle");
+			buf += sz;
+			size -= sz;
+			sz = set_property_u32_env(buf, size, "mipi",
+				"mipi-cmds", cmds, "cmds");
 			buf += sz;
 			size -= sz;
 		}
 
-		sz = snprintf(buf, size, "fdt set mipi dsi-lanes <%u>;",
-			(di->fbflags >> FBF_DSI_LANE_SHIFT) & 7);
+		sz = set_property_u32(buf, size, "mipi", "dsi-lanes",
+				(di->fbflags >> FBF_DSI_LANE_SHIFT) & 7);
 		buf += sz;
 		size -= sz;
 	}
 	if (fb == FB_MIPI) {
-		sz = snprintf(buf, size,
-				"fdt set backlight_mipi status okay;"
-				"fdt set mipi_dsi status okay;"
-#if defined(CONFIG_IMX8M)
-				"fdt set lcdif status okay;"
-#if defined(CONFIG_IMX8MQ)
-				"fdt set mipi_dsi_phy status okay;"
-#endif
-#endif
-				);
+		sz = set_status(buf, size, "backlight_mipi", true);
 		buf += sz;
 		size -= sz;
+		sz = set_status(buf, size, "mipi_dsi", true);
+		buf += sz;
+		size -= sz;
+#if defined(CONFIG_IMX8M)
+		sz = set_status(buf, size, "lcdif", true);
+		buf += sz;
+		size -= sz;
+#if defined(CONFIG_IMX8MQ)
+		sz = set_status(buf, size, "mipi_dsi_phy", true);
+		buf += sz;
+		size -= sz;
+#endif
+#endif
 		if ((di->addr_num == 0x2c) && (di->enable_alias[0] != FBP_MIPI_TO_LVDS)) {
-			sz = snprintf(buf, size,
-				"fdt set mipi_to_lvds status okay;");
+			sz = set_status(buf, size, "mipi_to_lvds", true);
 			buf += sz;
 			size -= sz;
 		}
 	}
 
 	if (di->pwm_period) {
-		sz = snprintf(buf, size, "fdt get value pwm %s phandle; fdt set %s pwms <${pwm} 0x%x 0x%x>;",
-				pwm_names[fb], backlight_names[fb], 0, di->pwm_period);
+		u32 pwm = 0;
+
+		i = di->enable_gp;
+		sz = get_value_joined_str(buf, size, &pwm, "pwm", pwm_names[fb],
+				"", "phandle");
+		buf += sz;
+		size -= sz;
+		sz = set_property_u32_env_2parms(buf, size, backlight_names[fb],
+			"pwms", pwm, "pwm", 0, di->pwm_period);
 		buf += sz;
 		size -= sz;
 	}
 	if ((di->fbflags & FBF_BKLIT_EN_DTB) && di->backlight_en_gp) {
-		i = di->backlight_en_gp;
-		sz = snprintf(buf, size,
-			"fdt get value gp gpio%u phandle;"
-			"fdt set %s enable-gpios <${gp} %u %u>;",
-			(i >> 5), backlight_names[fb], i & 0x1f,
-			(di->fbflags & FBF_BKLIT_EN_LOW_ACTIVE) ?
+		sz = set_property_gpio(buf, size, backlight_names[fb],
+				"enable-gpios", di->backlight_en_gp,
+				(di->fbflags & FBF_BKLIT_EN_LOW_ACTIVE) ?
 				GPIO_ACTIVE_LOW : GPIO_ACTIVE_HIGH);
 		buf += sz;
 		size -= sz;
@@ -643,19 +924,18 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 	if (di->min_hs_clock_multiple) {
 		i = di->min_hs_clock_multiple;
 		if (di->fbflags & FBF_MIPI_CMDS) {
-			sz = snprintf(buf, size,
-			   "fdt set mipi_cmds_%s min-hs-clock-multiple <%u>;",
-				di->mode.name, i);
+			sz = set_property_joined_u32(buf, size,
+					"mipi_cmds_", di->mode.name,
+					"min-hs-clock-multiple", i);
 		} else {
-			sz = snprintf(buf, size,
-				"fdt set mipi min-hs-clock-multiple <%u>;", i);
+			sz = set_property_u32(buf, size, "mipi",
+					"min-hs-clock-multiple", i);
 		}
 		buf += sz;
 		size -= sz;
 	}
 	if (di->fbflags & FBF_BKLIT_DTB) {
-		sz = snprintf(buf, size, "fdt set %s brightness-levels %s;",
-			backlight_names[fb],
+		sz = set_property_str(buf, size, backlight_names[fb], "brightness-levels",
 			(di->fbflags & FBF_BKLIT_LOW_ACTIVE) ?
 				brightness_levels_low_active :
 				brightness_levels_high_active);
@@ -676,13 +956,13 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		} else {
 			val = *p;
 		}
-		sz = snprintf(buf, size, "fdt set %s %s <%u>;", timings_names[fb], timings_properties[i], val);
+		sz = set_property_u32(buf, size, timings_names[fb], timings_properties[i], val);
 		buf += sz;
 		size -= sz;
 	}
 set_variables:
 	if (mode_str)
-		snprintf(buf, size, "fdt set %s mode_str %s;", fbnames[fb], mode_str);
+		set_property_str(buf, size, fbnames[fb], "mode_str", mode_str);
 	env_set(cmd_fbnames[fb], buf_start);
 	env_set(fbnames_name[fb], di ? di->mode.name : mode_str);
 }
@@ -705,27 +985,39 @@ int fbp_detect_i2c(struct display_info_t const *di)
 {
 	int ret;
 #ifdef CONFIG_DM_I2C
-	struct udevice *dev, *chip;
+	struct udevice *bus;
+#endif
+#ifdef CONFIG_DM_VIDEO
+	int ret_request;
 #endif
 
+#ifdef CONFIG_DM_VIDEO
 	if (di->bus_gp) {
-		gpio_set_value(di->bus_gp, 1);
+		ret_request = gpio_request(di->bus_gp, "bus_gp");
+	}
+#endif
+	if (di->bus_gp) {
+		gpio_direction_output(di->bus_gp, 1);
 		if (di->bus_gp_delay_ms)
 			mdelay(di->bus_gp_delay_ms);
 	}
 #ifdef CONFIG_DM_I2C
-	ret = uclass_get_device(UCLASS_I2C, di->bus_num, &dev);
-	if (ret)
-		return 0;
-
-	ret = dm_i2c_probe(dev, di->addr_num, 0x0, &chip);
+	ret = uclass_get_device_by_seq(UCLASS_I2C, di->bus_num, &bus);
+	if (!ret)
+		ret = i2c_probe_chip(bus, di->addr_num, 0);
 #else
 	ret = i2c_set_bus_num(di->bus_num);
 	if (ret == 0)
 		ret = i2c_probe(di->addr_num);
 #endif
+
 	if (di->bus_gp)
 		gpio_set_value(di->bus_gp, 0);
+#ifdef CONFIG_DM_VIDEO
+	if (di->bus_gp && !ret_request) {
+		gpio_free(di->bus_gp);
+	}
+#endif
 	return (ret == 0);
 }
 
@@ -1829,6 +2121,8 @@ void setup_env_cmds(const struct display_info_t *gdi, int cnt,
 		const struct display_info_t **displays)
 {
 	char *buf = malloc(4096);
+
+	debug("%s: enter\n", __func__);
 	if (buf) {
 		unsigned mask = get_fb_available_mask(gdi, cnt);
 		unsigned fb;
@@ -1912,6 +2206,7 @@ static int init_display(const struct display_info_t *di)
 		printf("LCD %s cannot be configured: %d\n", di->mode.name, ret);
 		return -EINVAL;
 	}
+	env_set("video_link", di->fbtype == FB_HDMI ? "1" : NULL);
 	printf("Display: %s:%s (%ux%u)\n", short_names[di->fbtype],
 			di->mode.name, di->mode.xres, di->mode.yres);
 	g_di_active = di;
@@ -2009,8 +2304,10 @@ int board_video_skip(void)
 	if (!di)
 		return -EINVAL;
 	ret = init_display(di);
+#ifndef CONFIG_DM_VIDEO
 	if (di->fbtype == FB_MIPI)
 		ret = -EINVAL;
+#endif
 	return ret;
 }
 
@@ -2023,5 +2320,6 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt)
 
 void fbp_setup_env_cmds(void)
 {
+	debug("%s: %u\n", __func__, g_display_cnt);
 	setup_env_cmds(g_displays, g_display_cnt, g_disp);
 }
