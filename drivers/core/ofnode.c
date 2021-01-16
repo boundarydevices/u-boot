@@ -925,6 +925,31 @@ ofnode ofnode_by_prop_value(ofnode from, const char *propname,
 	}
 }
 
+int ofnode_remove_prop(ofnode node, const char *propname)
+{
+	const struct device_node *np = ofnode_to_np(node);
+	const struct property *pp;
+	struct property *const *link;
+
+	if (!of_live_active())
+		return -ENOSYS;
+
+	if (!np)
+		return -EINVAL;
+
+	link = &np->properties;
+	while (*link) {
+		pp = *link;
+		if (strcmp(pp->name, propname) == 0) {
+			/* Property exists -> remove it */
+			*(struct property **)link = pp->next;
+			return 0;
+		}
+		link = &pp->next;
+	}
+	return 0;
+}
+
 int ofnode_write_prop(ofnode node, const char *propname, int len,
 		      const void *value)
 {

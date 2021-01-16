@@ -927,6 +927,15 @@ u64 ofnode_translate_dma_address(ofnode node, const fdt32_t *in_addr);
 int ofnode_device_is_compatible(ofnode node, const char *compat);
 
 /**
+ * ofnode_remove_prop() - Remove a property of a ofnode
+ *
+ * @node:	The node for whose property should be set
+ * @propname:	The name of the property to set
+ * @return 0 if successful, -ve on error
+ */
+int ofnode_remove_prop(ofnode node, const char *propname);
+
+/**
  * ofnode_write_prop() - Set a property of a ofnode
  *
  * Note that the value passed to the function is *not* allocated by the
