@@ -1097,6 +1097,9 @@ int ofnode_write_prop(ofnode node, const char *propname, int len,
 	if (!np)
 		return -EINVAL;
 
+	if (!len && !value)
+		value = (void *)1;	/* bool will find this true now */
+
 	for (pp = np->properties; pp; pp = pp->next) {
 		if (strcmp(pp->name, propname) == 0) {
 			/* Property exists -> change value */
