@@ -147,6 +147,8 @@ struct mipi_dsi_host {
 #define MIPI_DSI_CLOCK_NON_CONTINUOUS	BIT(10)
 /* transmit data in low power */
 #define MIPI_DSI_MODE_LPM		BIT(11)
+/* Make mipi byte clock a multiple of the pixel clock */
+#define MIPI_DSI_MODE_VIDEO_MBC		BIT(12)
 
 enum mipi_dsi_pixel_format {
 	MIPI_DSI_FMT_RGB888,
@@ -191,6 +193,9 @@ struct mipi_dsi_device {
 	unsigned int lanes;
 	enum mipi_dsi_pixel_format format;
 	unsigned long mode_flags;
+	unsigned long def_pix_clk;
+	uint32_t hsmult;
+	uint32_t mipi_dsi_multiple;
 };
 
 /**
