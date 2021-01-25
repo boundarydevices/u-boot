@@ -7,6 +7,7 @@
  */
 
 #include <common.h>
+#include <clk.h>
 #include <div64.h>
 #include <dm.h>
 #include <log.h>
@@ -52,8 +53,8 @@ int pwm_config(int pwm_id, int duty_ns, int period_ns)
 	if (!pwm)
 		return -1;
 
-	pwm_imx_get_parms(period_ns, duty_ns, &period_cycles, &duty_cycles,
-			  &prescale);
+	pwm_imx_get_parms(CONFIG_IMX6_PWM_PER_CLK, period_ns, duty_ns,
+			&period_cycles, &duty_cycles, &prescale);
 
 	return pwm_config_internal(pwm, period_cycles, duty_cycles, prescale);
 }
@@ -83,6 +84,10 @@ void pwm_disable(int pwm_id)
 struct imx_pwm_priv {
 	struct pwm_regs *regs;
 	bool invert;
+	struct clk *ipg_clk;
+	struct clk *per_clk;
+	unsigned long per_rate;
+	int enabled;
 };
 
 static int imx_pwm_set_invert(struct udevice *dev, uint channel,
@@ -104,8 +109,15 @@ static int imx_pwm_set_config(struct udevice *dev, uint channel,
 	unsigned long period_cycles, duty_cycles, prescale;
 
 	debug("%s: Config '%s' channel: %d\n", __func__, dev->name, channel);
+	if (!priv->enabled) {
+		priv->enabled = 1;
+		if (priv->ipg_clk)
+			clk_prepare_enable(priv->ipg_clk);
+		if (priv->per_clk)
+			clk_prepare_enable(priv->per_clk);
+	}
 
-	pwm_imx_get_parms(period_ns, duty_ns, &period_cycles, &duty_cycles,
+	pwm_imx_get_parms(priv->per_rate, period_ns, duty_ns, &period_cycles, &duty_cycles,
 			  &prescale);
 
 	return pwm_config_internal(regs, period_cycles, duty_cycles, prescale);
@@ -131,6 +143,21 @@ static int imx_pwm_ofdata_to_platdata(struct udevice *dev)
 	struct imx_pwm_priv *priv = dev_get_priv(dev);
 
 	priv->regs = dev_read_addr_ptr(dev);
+#if CONFIG_IS_ENABLED(CLK)
+	priv->ipg_clk = devm_clk_get_optional(dev, "ipg");
+	if (IS_ERR(priv->ipg_clk)) {
+		dev_err(dev, "Unable to get ipg clock: %ld\n",
+				PTR_ERR(priv->ipg_clk));
+		return PTR_ERR(priv->ipg_clk);
+	}
+	priv->per_clk = devm_clk_get_optional(dev, "per");
+	if (IS_ERR(priv->per_clk)) {
+		dev_err(dev, "Unable to get per clock: %ld\n",
+				PTR_ERR(priv->per_clk));
+		return PTR_ERR(priv->per_clk);
+	}
+#endif
+	priv->per_rate = clk_get_rate(priv->per_clk);
 
 	return 0;
 }
