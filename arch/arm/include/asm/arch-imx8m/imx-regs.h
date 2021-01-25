@@ -31,6 +31,10 @@
 #define SRC_BASE_ADDR		0x30390000
 #define GPC_BASE_ADDR		0x303A0000
 
+#define PWM1_BASE_ADDR		0x30660000
+#define PWM2_BASE_ADDR		0x30670000
+#define PWM3_BASE_ADDR		0x30680000
+#define PWM4_BASE_ADDR		0x30690000
 #define SYSCNT_RD_BASE_ADDR	0x306A0000
 #define SYSCNT_CMP_BASE_ADDR	0x306B0000
 #define SCTR_BASE_ADDR		0x306C0000
@@ -535,6 +539,23 @@ struct pgc_reg {
 	u32 pgsr;
 	u32 pgauxsw;
 	u32 pgdr;
+};
+
+#define PWMCR_PRESCALER(x)	(((x - 1) & 0xFFF) << 4)
+#define PWMCR_DOZEEN		(1 << 24)
+#define PWMCR_WAITEN		(1 << 23)
+#define PWMCR_DBGEN		(1 << 22)
+#define PWMCR_CLKSRC_IPG_HIGH	(2 << 16)
+#define PWMCR_CLKSRC_IPG	(1 << 16)
+#define PWMCR_EN		(1 << 0)
+
+struct pwm_regs {
+	u32	cr;
+	u32	sr;
+	u32	ir;
+	u32	sar;
+	u32	pr;
+	u32	cnr;
 };
 #endif
 #endif
