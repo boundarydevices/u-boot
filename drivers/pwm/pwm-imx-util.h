@@ -10,6 +10,6 @@
 #define _pwm_imx_util_h_
 
 struct pwm_regs *pwm_id_to_reg(int pwm_id);
-int pwm_imx_get_parms(int period_ns, int duty_ns, unsigned long *period_c,
+int pwm_imx_get_parms(unsigned long per_freq, int period_ns, int duty_ns, unsigned long *period_c,
 		      unsigned long *duty_c, unsigned long *prescale);
 #endif

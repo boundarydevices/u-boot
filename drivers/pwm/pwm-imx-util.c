@@ -45,7 +45,7 @@ struct pwm_regs *pwm_id_to_reg(int pwm_id)
 	return NULL;
 }
 
-int pwm_imx_get_parms(int period_ns, int duty_ns, unsigned long *period_c,
+int pwm_imx_get_parms(unsigned long per_freq, int period_ns, int duty_ns, unsigned long *period_c,
 		      unsigned long *duty_c, unsigned long *prescale)
 {
 	unsigned long long c;
@@ -55,7 +55,7 @@ int pwm_imx_get_parms(int period_ns, int duty_ns, unsigned long *period_c,
 	 * value here as a define. Replace it when we have the clock
 	 * framework.
 	 */
-	c = CONFIG_IMX6_PWM_PER_CLK;
+	c = per_freq;
 	c = c * period_ns;
 	do_div(c, 1000000000);
 	*period_c = c;
