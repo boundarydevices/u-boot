@@ -601,6 +601,8 @@ int dm_gpio_set_value(const struct gpio_desc *desc, int value)
 	const struct dm_gpio_ops *ops;
 	int ret;
 
+	if (!desc)
+		return 0;
 	ret = check_reserved(desc, "set_value");
 	if (ret)
 		return ret;
