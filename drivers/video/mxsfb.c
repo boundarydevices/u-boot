@@ -709,7 +709,7 @@ U_BOOT_DRIVER(mxs_video) = {
 	.probe	= mxs_video_probe,
 	.remove = mxs_video_remove,
 	.flags	= DM_FLAG_PRE_RELOC | DM_FLAG_OS_PREPARE,
-	.priv_auto_alloc_size   = sizeof(struct mxsfb_priv),
+	.priv_auto_alloc_size	= sizeof(struct mxsfb_priv),
 };
 #endif /* ifndef CONFIG_DM_VIDEO */
 
@@ -730,6 +730,7 @@ void cvt_fb_videomode_to_ctfb_res_modes(const struct fb_videomode *fb, struct ct
 	ct->vmode = fb->vmode;
 }
 
+#ifndef CONFIG_DM_VIDEO
 static struct fb_videomode const *gmode;
 static uint32_t gpixfmt;
 
@@ -813,3 +814,4 @@ void *video_hw_init(void)
 
 	return mxsfb_probe(bpp, &mode);
 }
+#endif
