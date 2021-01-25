@@ -1,0 +1,6 @@
+MT8365 Pumpkin
+M:	Fabien Parent <fparent@baylibre.com>
+S:	Maintained
+F:	board/mediatek/mt8365
+F:	include/configs/mt8365.h
+F:	configs/mt8365_pumpkin_defconfig
