@@ -99,6 +99,7 @@ static void mxs_lcd_init(struct udevice *dev, phys_addr_t reg_base, u32 fb_addr,
 		return;
 	}
 
+	debug("%s: rate %u, bpp=%u\n", __func__, timings->pixelclock.typ, bpp);
 	ret = clk_set_rate(&per_clk, timings->pixelclock.typ);
 	if (ret < 0) {
 		dev_err(dev, "Failed to set mxs clk: %d\n", ret);
@@ -207,9 +208,6 @@ static void mxs_lcd_init(struct udevice *dev, phys_addr_t reg_base, u32 fb_addr,
 
 	/* FIFO cleared */
 	writel(LCDIF_CTRL1_FIFO_CLEAR, &regs->hw_lcdif_ctrl1_clr);
-
-	/* RUN! */
-	writel(LCDIF_CTRL_RUN, &regs->hw_lcdif_ctrl_set);
 }
 
 static int mxs_probe_common(struct udevice *dev, phys_addr_t reg_base, struct display_timing *timings,
@@ -217,6 +215,15 @@ static int mxs_probe_common(struct udevice *dev, phys_addr_t reg_base, struct di
 {
 	/* Start framebuffer */
 	mxs_lcd_init(dev, reg_base, fb, timings, bpp, bridge, enable_pol);
+	return 0;
+}
+
+static void mxs_lcd_run(void)
+{
+	struct mxs_lcdif_regs *regs = (struct mxs_lcdif_regs *)MXS_LCDIF_BASE;
+
+	/* RUN! */
+	writel(LCDIF_CTRL_RUN, &regs->hw_lcdif_ctrl_set);
 
 #ifdef CONFIG_VIDEO_MXS_MODE_SYSTEM
 	/*
@@ -240,8 +247,6 @@ static int mxs_probe_common(struct udevice *dev, phys_addr_t reg_base, struct di
 	/* Execute the DMA chain. */
 	mxs_dma_circ_start(MXS_DMA_CHANNEL_AHB_APBH_LCDIF, &desc);
 #endif
-
-	return 0;
 }
 
 static int mxs_remove_common(phys_addr_t reg_base, u32 fb)
@@ -376,6 +381,7 @@ static struct graphic_device *mxsfb_probe(int bpp, struct ctfb_res_modes *mode)
 #endif
 
 	board_video_enable();
+	mxs_lcd_run();
 	return (void *)&panel;
 
 dealloc_fb:
@@ -580,39 +586,18 @@ static int mxs_video_probe(struct udevice *dev)
 	}
 #endif
 
-	if (priv->disp_dev) {
 #if IS_ENABLED(CONFIG_VIDEO_BRIDGE)
+	if (priv->disp_dev) {
 		if (device_get_uclass_id(priv->disp_dev) == UCLASS_VIDEO_BRIDGE) {
-			ret = video_bridge_attach(priv->disp_dev);
-			if (ret) {
-				dev_err(dev, "fail to attach bridge\n");
-				return ret;
-			}
-
-			ret = video_bridge_set_backlight(priv->disp_dev, 80);
-			if (ret) {
-				dev_err(dev, "fail to set backlight\n");
-				return ret;
-			}
-
 			enable_bridge = true;
-
-			/* sec dsim needs enable ploarity at low, default we set to high */
-			if (dev_read_bool(dev, "enable_polarity_low"))
-				enable_pol = false;
-
 		}
-#endif
-
-		if (device_get_uclass_id(priv->disp_dev) == UCLASS_PANEL) {
-			ret = panel_enable_backlight(priv->disp_dev);
-			if (ret) {
-				dev_err(dev, "panel %s enable backlight error %d\n",
-					priv->disp_dev->name, ret);
-				return ret;
-			}
+		/* sec dsim needs enable ploarity at low, default we set to high */
+		if (dev_read_bool(dev, "enable_polarity_low")) {
+			enable_pol = false;
+			timings.flags &= ~DISPLAY_FLAGS_DE_HIGH;
 		}
 	}
+#endif
 
 #if CONFIG_IS_ENABLED(CLK) && IS_ENABLED(CONFIG_IMX8)
 	ret = clk_set_rate(&priv->lcdif_pix, timings.pixelclock.typ);
@@ -660,6 +645,34 @@ static int mxs_video_probe(struct udevice *dev)
 					DCACHE_WRITEBACK);
 	video_set_flush_dcache(dev, true);
 	gd->fb_base = plat->base;
+
+#if IS_ENABLED(CONFIG_VIDEO_BRIDGE)
+	if (enable_bridge) {
+		ret = video_bridge_attach(priv->disp_dev);
+		if (ret) {
+			dev_err(dev, "fail to attach bridge\n");
+			return ret;
+		}
+
+		ret = video_bridge_set_backlight(priv->disp_dev, 80);
+		if (ret) {
+			dev_err(dev, "fail to set backlight\n");
+			return ret;
+		}
+	}
+#endif
+
+	if (priv->disp_dev) {
+		if (device_get_uclass_id(priv->disp_dev) == UCLASS_PANEL) {
+			ret = panel_enable_backlight(priv->disp_dev);
+			if (ret) {
+				dev_err(dev, "panel %s enable backlight error %d\n",
+					priv->disp_dev->name, ret);
+				return ret;
+			}
+		}
+	}
+	mxs_lcd_run();
 
 	return ret;
 }
