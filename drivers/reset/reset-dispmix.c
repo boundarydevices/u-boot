@@ -7,6 +7,8 @@
 #include <common.h>
 #include <clk.h>
 #include <dm.h>
+#include <imx_sip.h>
+#include <linux/arm-smccc.h>
 #include <regmap.h>
 #include <reset.h>
 #include <reset-uclass.h>
@@ -263,10 +265,16 @@ static const struct reset_ops dispmix_reset_ops = {
 	.rst_deassert = dispmix_reset_deassert,
 };
 
+#define DISPMIX				9
+#define MIPI				10
+
 static int dispmix_reset_probe(struct udevice *dev)
 {
 	struct dispmix_reset_priv *priv = (struct dispmix_reset_priv *)dev_get_priv(dev);
 	int ret;
+
+	arm_smccc_smc(IMX_SIP_GPC, IMX_SIP_GPC_PM_DOMAIN, DISPMIX, 1, 0, 0, 0, 0, NULL);
+	arm_smccc_smc(IMX_SIP_GPC, IMX_SIP_GPC_PM_DOMAIN, MIPI, 1, 0, 0, 0, 0, NULL);
 
 	priv->active_low = dev_read_bool(dev, "active_low");
 
