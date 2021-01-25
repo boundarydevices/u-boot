@@ -509,14 +509,22 @@ ulong clk_get_rate(struct clk *clk)
 
 struct clk *clk_get_parent(struct clk *clk)
 {
-	struct udevice *pdev;
+	struct udevice *pdev = NULL;
 	struct clk *pclk;
+	struct clk *c;
+	int ret;
 
 	debug("%s(clk=%p)\n", __func__, clk);
 	if (!clk_valid(clk))
 		return NULL;
 
-	pdev = dev_get_parent(clk->dev);
+	if (clk->id) {
+		ret = clk_get_by_id(clk->id, &c);
+		if (!ret)
+			pdev = 	c->dev->parent;
+	}
+	if (!pdev)
+		pdev = dev_get_parent(clk->dev);
 	if (!pdev)
 		return ERR_PTR(-ENODEV);
 	pclk = dev_get_clk_ptr(pdev);
