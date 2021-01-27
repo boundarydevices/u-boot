@@ -1,0 +1,19 @@
+if TARGET_NITROGEN8MM_TAB || TARGET_NITROGEN8MN_TAB
+
+config BOARD_TYPE
+	string
+	depends on IMX8MN
+	default "nitrogen8mn_tab" if IMX8MN
+
+config SYS_BOARD
+	default "nitrogen8mm_tab"
+
+config SYS_VENDOR
+	default "boundary"
+
+config SYS_CONFIG_NAME
+	default "nitrogen8mm_tab"
+
+source "board/boundary/common/Kconfig"
+
+endif
