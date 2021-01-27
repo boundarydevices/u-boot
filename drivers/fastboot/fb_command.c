@@ -42,7 +42,9 @@ static void reboot_recovery(char *, char *);
 #if CONFIG_IS_ENABLED(FASTBOOT_CMD_OEM_FORMAT)
 static void oem_format(char *, char *);
 #endif
-
+#if CONFIG_IS_ENABLED(FASTBOOT_CMD_OEM_PARTCONF)
+static void oem_partconf(char *, char *);
+#endif
 #if CONFIG_IS_ENABLED(FASTBOOT_UUU_SUPPORT)
 static void run_ucmd(char *, char *);
 static void run_acmd(char *, char *);
@@ -102,6 +104,12 @@ static const struct {
 	[FASTBOOT_COMMAND_OEM_FORMAT] = {
 		.command = "oem format",
 		.dispatch = oem_format,
+	},
+#endif
+#if CONFIG_IS_ENABLED(FASTBOOT_CMD_OEM_PARTCONF)
+	[FASTBOOT_COMMAND_OEM_PARTCONF] = {
+		.command = "oem partconf",
+		.dispatch = oem_partconf,
 	},
 #endif
 #if CONFIG_IS_ENABLED(FASTBOOT_UUU_SUPPORT)
@@ -440,5 +448,32 @@ static void oem_format(char *cmd_parameter, char *response)
 		else
 			fastboot_okay(NULL, response);
 	}
+}
+#endif
+
+#if CONFIG_IS_ENABLED(FASTBOOT_CMD_OEM_PARTCONF)
+/**
+ * oem_partconf() - Execute the OEM partconf command
+ *
+ * @cmd_parameter: Pointer to command parameter
+ * @response: Pointer to fastboot response buffer
+ */
+static void oem_partconf(char *cmd_parameter, char *response)
+{
+	char cmdbuf[32];
+
+	if (!cmd_parameter) {
+		fastboot_fail("Expected command parameter", response);
+		return;
+	}
+
+	/* execute 'mmc partconfg' command with cmd_parameter arguments*/
+	snprintf(cmdbuf, sizeof(cmdbuf), "mmc partconf %x %s 0",
+		 CONFIG_FASTBOOT_FLASH_MMC_DEV, cmd_parameter);
+	printf("Execute: %s\n", cmdbuf);
+	if (run_command(cmdbuf, 0))
+		fastboot_fail("Cannot set oem partconf", response);
+	else
+		fastboot_okay(NULL, response);
 }
 #endif
