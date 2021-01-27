@@ -1,6 +1,7 @@
 #!/bin/bash
 
-BL32="tee.bin"
+source .config
+BL32=$CONFIG_OPTEE_FIRMWARE
 
 let fit_off=0x60000
 
@@ -68,7 +69,6 @@ echo ${uboot_load_addr} ${uboot_sign_off} ${uboot_size}
 if [ $# -ge 1 ]; then
 	DTBS="$*"
 else
-	source .config
 	for i in $CONFIG_OF_LIST; do
 		DTBS="arch/arm/dts/$i.dtb $DTBS"
 	done
@@ -102,11 +102,11 @@ let atf_sign_off=$((last_sign_off))
 let atf_load_addr=$ATF_LOAD_ADDR
 let atf_size=$(ls -lct $BL31 | awk '{print $5}')
 
-if [ ! -f $BL32 ]; then
+if [ ! -f "$BL32" ]; then
 	let tee_size=0x0
 	let tee_sign_off=$((atf_sign_off + atf_size))
 else
-	let tee_size=$(ls -lct tee.bin | awk '{print $5}')
+	let tee_size=$(ls -lct $BL32 | awk '{print $5}')
 
 	let tee_sign_off=$(((atf_sign_off + atf_size + 3) & ~3))
 	let tee_load_addr=$TEE_LOAD_ADDR
