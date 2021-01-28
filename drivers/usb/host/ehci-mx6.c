@@ -608,8 +608,8 @@ static int ehci_usb_phy_mode(struct udevice *dev)
 	struct usb_platdata *plat = dev_get_platdata(dev);
 	void *__iomem addr = dev_read_addr_ptr(dev);
 	void *__iomem phy_ctrl, *__iomem phy_status;
-	const void *blob = gd->fdt_blob;
-	int offset = dev_of_offset(dev), phy_off;
+	struct ofnode_phandle_args arg;
+	int ret;
 	u32 val;
 
 	/*
@@ -617,14 +617,12 @@ static int ehci_usb_phy_mode(struct udevice *dev)
 	 * Documentation/devicetree/bindings/usb/ci-hdrc-usb2.txt.
 	 */
 	if (is_mx6() || is_mx7ulp() || is_imx8()) {
-		phy_off = fdtdec_lookup_phandle(blob,
-						offset,
-						"fsl,usbphy");
-		if (phy_off < 0)
+		ret = dev_read_phandle_with_args(dev, "fsl,usbphy",
+				NULL, 0, 0, &arg);
+		if (ret)
 			return -EINVAL;
 
-		addr = (void __iomem *)fdtdec_get_addr(blob, phy_off,
-						       "reg");
+		addr = (void __iomem *)ofnode_get_addr(arg.node);
 		if ((fdt_addr_t)addr == FDT_ADDR_T_NONE)
 			return -EINVAL;
 
@@ -668,7 +666,6 @@ static int ehci_usb_ofdata_to_platdata(struct udevice *dev)
 	struct ehci_mx6_priv_data *priv = dev_get_priv(dev);
 	struct usb_platdata *plat = dev_get_platdata(dev);
 	enum usb_dr_mode dr_mode;
-	const struct fdt_property *extcon;
 	int ret;
 
 	dr_mode = usb_get_dr_mode(dev->node);
@@ -682,9 +679,7 @@ static int ehci_usb_ofdata_to_platdata(struct udevice *dev)
 		break;
 	case USB_DR_MODE_OTG:
 	case USB_DR_MODE_UNKNOWN:
-		extcon = fdt_get_property(gd->fdt_blob, dev_of_offset(dev),
-			"extcon", NULL);
-		if (extcon) {
+		if (dev_read_bool(dev, "extcon")) {
 			plat->init_type = board_ehci_usb_phy_mode(dev);
 			return 0;
 		}
