@@ -734,7 +734,7 @@ static int ehci_usb_bind(struct udevice *dev)
 	 * the driver is fully converted to DT probing.
 	 */
 	u32 controller_spacing = (is_mx7() || is_imx8m()) ? 0x10000 : 0x200;
-	fdt_addr_t addr = devfdt_get_addr_index(dev, 0);
+	fdt_addr_t addr = dev_read_addr_index(dev, 0);
 
 	dev->req_seq = (addr - USB_BASE_ADDR) / controller_spacing;
 
