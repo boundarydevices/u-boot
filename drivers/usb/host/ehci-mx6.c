@@ -340,7 +340,8 @@ static int ehci_usb_phy_mode(struct udevice *dev)
 	struct ehci_mx6_priv_data *priv = dev_get_priv(dev);
 	void *__iomem addr = (void *__iomem)devfdt_get_addr(dev);
 	void *__iomem phy_ctrl, *__iomem phy_status;
-	const void *blob = gd->fdt_blob;
+	struct ofnode_phandle_args arg;
+	int ret;
 	u32 val;
 
 	/*
@@ -348,8 +349,12 @@ static int ehci_usb_phy_mode(struct udevice *dev)
 	 * Documentation/devicetree/bindings/usb/ci-hdrc-usb2.txt.
 	 */
 	if (is_mx6() || is_mx7ulp() || is_imxrt() || is_imx8() || is_imx8ulp()) {
-		addr = (void __iomem *)fdtdec_get_addr_size_auto_noparent(blob, priv->phy_node_off,
-						       "reg", 0, NULL, false);
+		ret = dev_read_phandle_with_args(dev, "fsl,usbphy",
+				NULL, 0, 0, &arg);
+		if (ret)
+			return -EINVAL;
+
+		addr = (void __iomem *)ofnode_get_addr(arg.node);
 		if ((fdt_addr_t)addr == FDT_ADDR_T_NONE)
 			return -EINVAL;
 
