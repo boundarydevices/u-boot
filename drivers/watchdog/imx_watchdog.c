@@ -92,11 +92,26 @@ static void imx_watchdog_init(struct watchdog_regs *wdog, bool ext_reset,
 }
 
 #if !CONFIG_IS_ENABLED(WDT)
+poll_rtn_t g_poll_rtn = (poll_rtn_t)1;
+poll_rtn_t g_poll_rtn_backup = (poll_rtn_t)1;
+
+void set_poll_rtn(poll_rtn_t poll_rtn)
+{
+	g_poll_rtn_backup = g_poll_rtn = poll_rtn;
+}
+
 void hw_watchdog_reset(void)
 {
 	struct watchdog_regs *wdog = (struct watchdog_regs *)WDOG1_BASE_ADDR;
+	poll_rtn_t poll_rtn = g_poll_rtn;
 
 	imx_watchdog_reset(wdog);
+
+	if ((unsigned long)poll_rtn > 1) {
+		g_poll_rtn = NULL;
+		poll_rtn();
+		g_poll_rtn = g_poll_rtn_backup;
+	}
 }
 
 void hw_watchdog_init(void)
