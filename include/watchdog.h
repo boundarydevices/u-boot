@@ -40,6 +40,8 @@ int init_func_watchdog_reset(void);
 		#define WATCHDOG_RESET bl hw_watchdog_reset
 	#else
 		extern void hw_watchdog_reset(void);
+		typedef void (*poll_rtn_t)(void);
+		void set_poll_rtn(poll_rtn_t poll_rtn);
 
 		#define WATCHDOG_RESET hw_watchdog_reset
 	#endif /* __ASSEMBLY__ */
