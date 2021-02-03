@@ -212,6 +212,10 @@ config SIMPLE_PANEL
 	  This turns on a simple panel driver that enables a compatible
 	  video panel.
 
+config VIDEO_SN65DSI83
+	bool "sn65dsi83 mipi to lvds bridge support"
+	depends on DM_VIDEO
+
 source "drivers/video/fonts/Kconfig"
 
 config VIDCONSOLE_AS_LCD
