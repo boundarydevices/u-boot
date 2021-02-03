@@ -83,14 +83,20 @@ ofnode ofnode_graph_get_next_endpoint(ofnode parent,
 
 		endpoint = ofnode_first_subnode(port);
 		if (ofnode_valid(endpoint)) {
-			debug("get next endpoint %s\n", ofnode_get_name(endpoint));
+			debug("get next endpoint %s %s %s\n",
+				ofnode_get_name(ofnode_get_parent(ofnode_get_parent(ofnode_get_parent(endpoint)))),
+				ofnode_get_name(ofnode_get_parent(ofnode_get_parent(endpoint))),
+				ofnode_get_name(ofnode_get_parent(endpoint)));
 			return endpoint;
 		}
 	} else {
 		port = ofnode_get_parent(prev);
 		endpoint = ofnode_next_subnode(prev);
 		if (ofnode_valid(endpoint)) {
-			debug("get next endpoint %s\n", ofnode_get_name(endpoint));
+			debug("get next endpoint %s %s %s\n",
+				ofnode_get_name(ofnode_get_parent(ofnode_get_parent(ofnode_get_parent(endpoint)))),
+				ofnode_get_name(ofnode_get_parent(ofnode_get_parent(endpoint))),
+				ofnode_get_name(ofnode_get_parent(endpoint)));
 			return endpoint;
 		}
 	}
@@ -113,7 +119,10 @@ ofnode ofnode_graph_get_next_endpoint(ofnode parent,
 		 */
 		endpoint = ofnode_first_subnode(port);
 		if (ofnode_valid(endpoint)) {
-			debug("get next endpoint %s\n", ofnode_get_name(endpoint));
+			debug("get next endpoint %s %s %s\n",
+				ofnode_get_name(ofnode_get_parent(ofnode_get_parent(ofnode_get_parent(endpoint)))),
+				ofnode_get_name(ofnode_get_parent(ofnode_get_parent(endpoint))),
+				ofnode_get_name(ofnode_get_parent(endpoint)));
 			return endpoint;
 		}
 	}
@@ -163,6 +172,7 @@ ofnode ofnode_graph_get_endpoint_by_regs(
 
 	for_each_endpoint_of_node(parent, node) {
 		ofnode_graph_parse_endpoint(node, &endpoint);
+		debug("%s: %d %d, %d %d\n", __func__, endpoint.port, port_reg, endpoint.id, reg);
 		if (((port_reg == -1) || (endpoint.port == port_reg)) &&
 			((reg == -1) || (endpoint.id == reg))) {
 			debug("get node %s\n", ofnode_get_name(node));
@@ -229,35 +239,70 @@ ofnode ofnode_graph_get_remote_port_parent(ofnode node)
 	return pp;
 }
 
+ofnode ofnode_graph_get_remote_node(ofnode np)
+{
+	ofnode endpoint;
+	ofnode port;
+	ofnode node;
+
+	node = ofnode_find_subnode(np, "ports");
+	if (ofnode_valid(node))
+		np = node;
+
+	port = ofnode_get_child_by_name(np, "port");
+	if (!ofnode_valid(port)) {
+		debug("no port node found in %s\n", ofnode_get_name(np));
+		return ofnode_null();
+	}
+
+	endpoint = ofnode_first_subnode(port);
+	if (ofnode_valid(endpoint)) {
+		debug("get next endpoint %s\n", ofnode_get_name(endpoint));
+		return ofnode_graph_get_remote_port_parent(endpoint);
+	}
+	return ofnode_null();
+}
+
 int find_device_by_ofnode(ofnode node, struct udevice **pdev)
 {
 	int ret;
 
-	if (!ofnode_is_available(node))
+	if (!ofnode_is_available(node)) {
+		debug("-- -2 %s\n", ofnode_get_name(node));
 		return -2;
+	}
 
 	ret = uclass_find_device_by_ofnode(UCLASS_DISPLAY, node, pdev);
-	if (!ret)
+	if (!ret) {
+		debug("--display %s\n", ofnode_get_name(node));
 		return 0;
+	}
 
 	ret = uclass_find_device_by_ofnode(UCLASS_DSI_HOST, node, pdev);
-	if (!ret)
+	if (!ret) {
+		debug("--host %s\n", ofnode_get_name(node));
 		return 0;
+	}
 
 	ret = uclass_find_device_by_ofnode(UCLASS_VIDEO_BRIDGE, node, pdev);
-	if (!ret)
+	if (!ret) {
+		debug("--bridge %s\n", ofnode_get_name(node));
 		return 0;
+	}
 
 	ret = uclass_find_device_by_ofnode(UCLASS_PANEL, node, pdev);
-	if (!ret)
+	if (!ret) {
+		debug("--panel %s\n", ofnode_get_name(node));
 		return 0;
-
+	}
+	debug("-- -1 device of %s\n", ofnode_get_name(node));
 	return -1;
 }
 
 static void video_link_stack_push(struct udevice *dev)
 {
 	if (temp_stack.dev_num < MAX_LINK_DEVICES) {
+		debug("!!!! add [%d] = dev %s\n", temp_stack.dev_num, dev->name);
 		temp_stack.link_devs[temp_stack.dev_num] = dev;
 		temp_stack.dev_num++;
 	}
@@ -292,14 +337,16 @@ static void video_link_add_node(struct udevice *peer_dev, struct udevice *dev, o
 	struct udevice *remote_dev;
 	bool find = false;
 
-	debug("endpoint cnt %d\n", ofnode_graph_get_endpoint_count(dev_node));
+	debug("endpoint cnt %s, %d\n",  ofnode_get_name(dev_node), ofnode_graph_get_endpoint_count(dev_node));
 
 	video_link_stack_push(dev);
 
 	for_each_endpoint_of_node(dev_node, endpoint_node) {
 		remote = ofnode_graph_get_remote_port_parent(endpoint_node);
-		if (!ofnode_valid(remote))
+		if (!ofnode_valid(remote)) {
+			debug("no parent of %s\n", ofnode_get_name(endpoint_node));
 			continue;
+		}
 
 		debug("remote %s\n", ofnode_get_name(remote));
 		ret = find_device_by_ofnode(remote, &remote_dev);
@@ -372,7 +419,8 @@ struct udevice *video_link_get_video_device(void)
 
 	ret = device_probe(video_links[curr_video_link].link_devs[0]);
 	if (ret) {
-		printf("probe video device failed, ret %d\n", ret);
+		printf("probe video device failed, %s ret %d\n",
+			video_links[curr_video_link].link_devs[0]->name, ret);
 		return NULL;
 	}
 

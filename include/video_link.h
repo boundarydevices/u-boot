@@ -15,5 +15,6 @@ struct udevice *video_link_get_next_device(struct udevice *curr_dev);
 struct udevice *video_link_get_video_device(void);
 
 int video_link_get_display_timings(struct display_timing *timings);
+ofnode ofnode_graph_get_remote_node(ofnode np);
 
 #endif
