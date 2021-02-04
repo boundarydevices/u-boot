@@ -9,14 +9,14 @@
 #define TC358867_I2C_BUS	<&TOUCHSCREEN_I2C_BUS>
 #endif
 #include "panel-dmt050wvnxcmi.dtsi"
+#include "panel-lcd133-070.dtsi"
+#include "panel-lcm-jm430.dtsi"
 #include "panel-ltk0680ytmdb.dtsi"
 #include "panel-ltk080a60a004t.dtsi"
 &mipi_cmds_ltk0680ytmdb {
 	min-hs-clock-multiple = <8>;
 };
 
-#include "panel-lcd133-070.dtsi"
-#include "panel-lcm-jm430.dtsi"
 #include "panel-m101nwwb.dtsi"
 #include "panel-com50h5n03ulc.dtsi"
 
@@ -129,6 +129,7 @@
 
 	pinctrl_sn65dsi83: sn65dsi83grp {
 		fsl,pins = <
+#define GP_SN65DSI83_IRQ <&gpio1 1 GPIO_ACTIVE_HIGH>
 #define GPIRQ_SN65DSI83	<&gpio1 1 IRQ_TYPE_LEVEL_HIGH>
 			MX8MMN(IOMUXC_GPIO1_IO01_GPIO1_IO1, 0x04)
 #define GP_SN65DSI83_EN	<&gpio1 9 GPIO_ACTIVE_HIGH>
@@ -243,11 +244,11 @@
 		>;
 	};
 
-	pinctrl_lt8912: lt8912grp {
+	pinctrl_lt8912_2: lt8912_2grp {
 		fsl,pins = <
-#define GP_LT8912_RESET	<&gpio1 9 GPIO_ACTIVE_LOW>
+#define GP_LT8912_2_RESET	<&gpio1 9 GPIO_ACTIVE_LOW>
 			MX8MMN(IOMUXC_GPIO1_IO09_GPIO1_IO9, 0x16)
-#define GPIRQ_LT8912	<&gpio1 1 IRQ_TYPE_LEVEL_LOW>
+#define GPIRQ_LT8912_2	<&gpio1 1 IRQ_TYPE_LEVEL_LOW>
 			MX8MMN(IOMUXC_GPIO1_IO01_GPIO1_IO1, 0x1c0)
 		>;
 	};
@@ -836,7 +837,7 @@
 &TOUCHSCREEN_I2C_BUS {
 	mipi_to_lvds: mipi-to-lvds@2c {
 		alias = <&mipi_to_lvds>;
-		clocks = <&mipi_dsi 0>,
+		clocks = <&dsim_clk 0>,
 			<&clk IMX8MMN(CLK_LCDIF_PIXEL)>;
 		clock-names = "mipi_clk", "pixel_clock";
 		compatible = "ti,sn65dsi83";
@@ -844,10 +845,17 @@
 		display-dsi = <&fb_mipi>;
 		enable-gpios = GP_SN65DSI83_EN;
 		interrupts-extended = GPIRQ_SN65DSI83;
+		interrupts-gpios = GP_SN65DSI83_IRQ;
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_sn65dsi83>;
 		reg = <0x2c>;
 		status = "disabled";
+
+		port@0 {
+			lvds_from_panel: endpoint {
+				remote-endpoint = <&panel_to_lvds>;
+			};
+		};
 	};
 
 	spi_lcd: spi@2f {
@@ -945,7 +953,7 @@
 	};
 
 	pca9540: i2cmux9540@70 {
-		compatible = "pca9540";
+		compatible = "nxp,pca9540";
 		reg = <0x70>;
 		status = "disabled";
 		#address-cells = <1>;
@@ -966,20 +974,26 @@
 			#address-cells = <1>;
 			#size-cells = <0>;
 
-			lt8912: lt8912@48 {
-				pinctrl-names = "default";
-				pinctrl-0 = <&pinctrl_lt8912>;
+			lt8912_2: lt8912_2@48 {
 				compatible = "lontium,lt8912" ;
-				interrupts-extended = GPIRQ_LT8912;
-				reg = <0x48> ;
-				reset-gpios = GP_LT8912_RESET;
 				display-dsi = <&fb_mipi>;
+				interrupts-extended = GPIRQ_LT8912_2;
+				pinctrl-names = "default";
+				pinctrl-0 = <&pinctrl_lt8912_2>;
+				reg = <0x48> ;
+				reset-gpios = GP_LT8912_2_RESET;
+
+				port@0 {
+					lt8912_2_from_panel: endpoint {
+						remote-endpoint = <&panel_to_lt8912_2>;
+					};
+				};
 			};
 		};
 	};
 
 	pca9546: i2cmux9546@70 {
-		compatible = "pca9546";
+		compatible = "nxp,pca9546";
 		reg = <0x70>;
 		status = "disabled";
 		#address-cells = <1>;
@@ -992,11 +1006,17 @@
 			#size-cells = <0>;
 
 			lt8912@48 {
-				compatible = "lontium,lt8912" ;
+				compatible = "lontium,lt8912";
 				ddc-i2c-bus = <&ddc_i2c_bus>;
-				reg = <0x48> ;
-				reset-gpios = <&max7323 0 GPIO_ACTIVE_LOW>;
 				display-dsi = <&fb_mipi>;
+				reg = <0x48>;
+				reset-gpios = <&max7323 0 GPIO_ACTIVE_LOW>;
+
+				port@0 {
+					lt8912_from_panel: endpoint {
+						remote-endpoint = <&panel_to_lt8912>;
+					};
+				};
 			};
 		};
 
@@ -1121,6 +1141,7 @@
 };
 
 &lcdif {
+	display = <&fb_mipi>;
 	status = "okay";
 };
 
@@ -1151,8 +1172,7 @@
 			  <&clk IMX8MMN(VIDEO_PLL1_REF_SEL)>,
 			  <&clk IMX8MMN(CLK_LCDIF_PIXEL)>;
 	assigned-clock-parents = <&clk IMX8MMN(SYS_PLL1_266M)>,
-				 <&clk IMX8MMN(VIDEO_PLL1_OUT)>,
-				 <&clk IMX8MMN(CLK_24M)>;
+				 <&clk IMX8MMN(VIDEO_PLL1_OUT)>;
 	assigned-clock-rates = <266000000>, <0>, <0>, <66000000>;
 
 	clocks = <&clk IMX8MMN(CLK_DSI_CORE)>,
@@ -1162,9 +1182,12 @@
 	status = "okay";
 
 	fb_mipi: panel@0 {
+		backlight= <&backlight_mipi>;
 		bits-per-color = <8>;
+		bits-per-pixel = <24>;
 		bridge-de-active = <0>;
 		bus-format = "rgb888";
+		bus-width = <24>;
 		compatible = "panel,simple";
 		dsi-format = "rgb888";
 		dsi-lanes = <4>;
@@ -1203,6 +1226,55 @@
 				de-active = <1>;
 			};
 		};
+
+		port@1 {
+			panel_from_dsim: endpoint {
+				remote-endpoint = <&dsim_to_panel>;
+			};
+		};
+
+		port@2 {
+			panel_to_lvds: endpoint {
+				remote-endpoint = <&lvds_from_panel>;
+			};
+		};
+
+		port@3 {
+			panel_to_lt8912: endpoint {
+				remote-endpoint = <&lt8912_from_panel>;
+			};
+		};
+
+		port@4 {
+			panel_to_lt8912_2: endpoint {
+				remote-endpoint = <&lt8912_2_from_panel>;
+			};
+		};
+	};
+
+	dsim_clk: dsim-clk {
+		#clock-cells = <1>;
+		#size-cells = <0>;
+		compatible = "generic,clk";
+		clocks = <&clk IMX8MMN(CLK_DSI_PHY_REF)>;
+		clock-names = "parent";
+		clock-output-names = "dsim-clk";
+		status = "okay";
+	};
+
+	dsi_host: dsi-host {
+		compatible = "samsung,sec-mipi-dsi";
+		clocks = <&dsim_clk 0>,
+			 <&clk IMX8MMN(CLK_DSI_PHY_REF)>,
+			 <&clk IMX8MMN(CLK_LCDIF_PIXEL)>;
+		clock-names = "dsim-clk", "pll-ref", "pixel_clock";
+		status = "okay";
+	};
+
+	port@1 {
+		dsim_to_panel: endpoint {
+			remote-endpoint = <&panel_from_dsim>;
+		};
 	};
 };
 
@@ -1210,7 +1282,6 @@
 	status = "okay";
 };
 
-#if 0
 &pwm1 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_pwm1>;
@@ -1238,6 +1309,7 @@
 	status = "okay";
 };
 
+#if 0
 &sai2 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_sai2>;
