@@ -20,6 +20,7 @@ obj-$(CONFIG_DM_PANEL_HX8238D) += hx8238d.o
 obj-$(CONFIG_SIMPLE_PANEL) += simple_panel.o
 
 obj-$(CONFIG_VIDEO_LOGO) += u_boot_logo.o
+obj-$(CONFIG_VIDEO_LT8912) += lt8912.o
 obj-$(CONFIG_VIDEO_LINK) += video_link.o
 endif
 

@@ -226,6 +226,10 @@ config SIMPLE_PANEL
 	  This turns on a simple panel driver that enables a compatible
 	  video panel.
 
+config VIDEO_LT8912
+	bool "lt8912 mipi to lvds/hdmi bridge support"
+	depends on DM_VIDEO
+
 source "drivers/video/fonts/Kconfig"
 
 config VIDCONSOLE_AS_LCD
