@@ -13,6 +13,7 @@
 #include <linux/compiler.h>
 #include <linux/delay.h>
 #include <usb/ehci-ci.h>
+#include <asm/gpio.h>
 #include <asm/io.h>
 #include <asm/arch/imx-regs.h>
 #include <asm/arch/clock.h>
@@ -528,6 +529,8 @@ struct ehci_mx6_priv_data {
 	struct udevice *vbus_supply;
 	enum usb_init_type init_type;
 	int portnr;
+	struct gpio_desc *gd_reset;
+	struct gpio_desc gds_reset;
 };
 
 static int mx6_init_after_reset(struct ehci_ctrl *dev)
@@ -537,6 +540,11 @@ static int mx6_init_after_reset(struct ehci_ctrl *dev)
 	struct usb_ehci *ehci = priv->ehci;
 	int ret;
 
+	if (priv->gd_reset) {
+		dm_gpio_set_value(priv->gd_reset, 1);	/* activate reset */
+		mdelay(2);
+		dm_gpio_set_value(priv->gd_reset, 0);
+	}
 	ret = board_usb_init(priv->portnr, priv->init_type);
 	if (ret) {
 		printf("Failed to initialize board for USB\n");
@@ -657,9 +665,11 @@ static int ehci_usb_phy_mode(struct udevice *dev)
 
 static int ehci_usb_ofdata_to_platdata(struct udevice *dev)
 {
+	struct ehci_mx6_priv_data *priv = dev_get_priv(dev);
 	struct usb_platdata *plat = dev_get_platdata(dev);
 	enum usb_dr_mode dr_mode;
 	const struct fdt_property *extcon;
+	int ret;
 
 	dr_mode = usb_get_dr_mode(dev->node);
 
@@ -681,6 +691,16 @@ static int ehci_usb_ofdata_to_platdata(struct udevice *dev)
 		plat->init_type = USB_INIT_UNKNOWN;
 	};
 
+	ret = gpio_request_by_name(dev, "reset-gpios", 0, &priv->gds_reset,
+				   GPIOD_IS_OUT);
+	if (ret) {
+		debug("%s: Warning: cannot get reset-gpios: ret=%d\n",
+		      __func__, ret);
+		if (ret != -ENOENT)
+			return ret;
+	} else {
+		priv->gd_reset = &priv->gds_reset;
+	}
 	return 0;
 }
 
