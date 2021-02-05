@@ -153,11 +153,16 @@
 #endif
 
 /* Framebuffer and LCD */
-#ifdef CONFIG_VIDEO
+#if defined(CONFIG_VIDEO) || defined(CONFIG_DM_VIDEO)
 #define CONFIG_VIDEO_BMP_RLE8
 #define CONFIG_VIDEO_BMP_GZIP
 #define CONFIG_SYS_VIDEO_LOGO_MAX_SIZE (6 * 1024 * 1024)
 #define CONFIG_BMP_16BPP
+#define CONFIG_BMP_24BPP
+#define CONFIG_BMP_32BPP
+#define CONFIG_VIDEO_BMP_RLE8
+#define CONFIG_VIDEO_BMP_LOGO
+
 #define CONFIG_CMD_FBPANEL
 #if defined(CONFIG_MX6SX)
 #define CONFIG_VIDEO_MXS
@@ -165,10 +170,13 @@
 #elif defined(CONFIG_MX7D)
 #define CONFIG_VIDEO_MXS
 #endif
-#endif
 
-#ifndef CONFIG_PREBOOT
-#define CONFIG_PREBOOT                 ""
+#if defined(CONFIG_DM_VIDEO)
+#define SPLASHIMAGE	"splashimage=" __stringify(CONFIG_LOADADDR) "\0"
+#define CONFIG_VIDEO_LOGO
+#else
+#define SPLASHIMAGE
+#endif
 #endif
 
 #ifdef CONFIG_CMD_SATA
@@ -366,6 +374,7 @@
 	"otg_upgradeu=run usbnetwork; tftp " BD_RAM_SCRIPT " net_upgradeu.scr && source " BD_RAM_SCRIPT "\0" \
 	"program=next=prog_fuses.scr; run upgradeu\0" \
 	"scriptaddr=" BD_RAM_SCRIPT "\0" \
+	SPLASHIMAGE \
 	"splashflash=" BD_SPLASH_FLASH "\0" \
 	"uboot_defconfig=" CONFIG_DEFCONFIG "\0" \
 	"upgradeu=setenv boot_scripts upgrade.scr; boot\0" \
