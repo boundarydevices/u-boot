@@ -103,6 +103,7 @@ struct display_info_t {
 
 #define FBF_DMT050WVNXCMI	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4)
 #define FBF_LCM_JM430		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MODE_VIDEO_MBC | FBF_MIPI_CMDS | FBF_DSI_LANES_1 | FBF_BKLIT_EN_DTB | FBF_ENABLE_GPIOS_DTB)
+#define FBF_LS050T1SX12		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_PINCTRL | FBF_ENABLE_GPIOS_DTB)
 #define FBF_LTK0680YTMDB	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_PINCTRL | FBF_ENABLE_GPIOS_DTB)
 #define FBF_LTK0680YTMDB_LCD	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_MODESTR)
 
@@ -213,9 +214,9 @@ void fbp_setup_env_cmds(void);
 #define VD_SHARP_LQ101K1LY04(_mode, args...)	VDF_SHARP_LQ101K1LY04(_mode, "sharp-LQ101K1LY04", RGB24, FBF_JEIDA, args)
 #define VD_WXGA(_mode, args...)			VDF_WXGA(_mode, "wxga", RGB24, 0, args)
 #define VD_WXGA_J(_mode, args...)		VDF_WXGA(_mode, "wxga_j", RGB24, FBF_JEIDA, args)
+#define VD_LS050T1SX12(_mode, args...)		VDF_LS050T1SX12(_mode, "ls050t1sx12", RGB24, FBF_LS050T1SX12, args)
 #define VD_LTK080A60A004T(_mode, args...)	VDF_LTK080A60A004T(_mode, "ltk080a60a004t", RGB24, FBF_LTK080A60A004T, args)
 #define VD_LTK0680YTMDB(_mode, args...)		VDF_LTK0680YTMDB(_mode, "ltk0680ytmdb", RGB24, FB_##_mode == FB_LCD ? FBF_LTK0680YTMDB_LCD : FBF_LTK0680YTMDB, args)
-
 
 #define VD_MIPI_G156HCE_L01(_mode, args...)	VDF_MIPI_G156HCE_L01(_mode, "G156HCE-L01", RGB24, FBF_G156HCE_L01, args)
 #define VD_MIPI_COM50H5N03ULC(_mode, args...)	VDF_MIPI_COM50H5N03ULC(_mode, "com50h5n03ulc", RGB24, FBF_COM50H5N03ULC, args)
@@ -1298,6 +1299,25 @@ void fbp_setup_env_cmds(void);
 	}\
 }
 
+#define VDF_LS050T1SX12(_mode, _name, _fmt, _flags, args...) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, args),\
+	.mode	= {\
+		.name           = _name,\
+		.refresh        = 60,\
+		.xres           = 1080,\
+		.yres           = 1920,\
+		.pixclock       = 1000000000000ULL/((1080+50+102+10)*(1920+4+4+2)*60), \
+		.left_margin    = 50,\
+		.right_margin   = 102,\
+		.upper_margin   = 4,\
+		.lower_margin   = 4,\
+		.hsync_len      = 10,\
+		.vsync_len      = 2,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
 
 #define VDF_LTK0680YTMDB(_mode, _name, _fmt, _flags, args...) \
 {\
