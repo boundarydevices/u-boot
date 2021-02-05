@@ -137,7 +137,7 @@ static int ahci_host_init(struct ahci_uc_priv *uc_priv)
 
 	if (timeout <= 0) {
 		debug("controller reset failed (0x%x)\n", tmp);
-		return -1;
+		return -ENODEV;
 	}
 
 	/* Set timer 1ms */
@@ -200,7 +200,7 @@ static int ahci_host_init(struct ahci_uc_priv *uc_priv)
 
 			if (timeout <= 0) {
 				debug("port reset failed (0x%x)\n", tmp);
-				return -1;
+				return -ENODEV;
 			}
 		}
 
@@ -215,7 +215,7 @@ static int ahci_host_init(struct ahci_uc_priv *uc_priv)
 			;
 		if (timeout <= 0) {
 			debug("Spin-Up can't finish!\n");
-			return -1;
+			return -ENODEV;
 		}
 
 		for (j = 0; j < 100; ++j) {
@@ -233,7 +233,7 @@ static int ahci_host_init(struct ahci_uc_priv *uc_priv)
 			;
 		if (timeout <= 0) {
 			debug("Can't find DIAG_X set!\n");
-			return -1;
+			return -ENODEV;
 		}
 
 		/*
