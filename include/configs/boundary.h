@@ -171,12 +171,12 @@
 #define CONFIG_VIDEO_MXS
 #endif
 
+#endif
 #if defined(CONFIG_DM_VIDEO)
 #define SPLASHIMAGE	"splashimage=" __stringify(CONFIG_LOADADDR) "\0"
 #define CONFIG_VIDEO_LOGO
 #else
 #define SPLASHIMAGE
-#endif
 #endif
 
 #ifdef CONFIG_CMD_SATA
