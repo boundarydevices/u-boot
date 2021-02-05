@@ -501,6 +501,7 @@ void board_env_init(void) {
 int board_init(void) {
 	gpio_request(GP_BACKLIGHT_RGB, "rgb backlight");
 	gpio_request(GP_BACKLIGHT_LVDS, "lvds backlight");
+	gpio_request(GP_LVDS_BKL_EN, "lvds bkl n");
 	gpio_request(GP_REG_USBOTG, "usbotg power");
 	gpio_request(GP_USB_HUB_RESET, "usbh1 hub reset");
 	gpio_request(GP_GPIOKEY_BACK, "back");
