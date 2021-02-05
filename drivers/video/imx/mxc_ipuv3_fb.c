@@ -691,7 +691,7 @@ static int ipuv3_video_probe(struct udevice *dev)
 	if (ret)
 		return ret;
 
-#if !CONFIG_IS_ENABLED(DM_VIDEO)
+#if !CONFIG_IS_ENABLED(CFB_CONSOLE)
 	ret = board_video_skip();
 	if (ret < 0)
 		return ret;
@@ -730,6 +730,7 @@ static int ipuv3_video_probe(struct udevice *dev)
 					DCACHE_WRITEBACK);
 	video_set_flush_dcache(dev, true);
 	gd->fb_base = fb_start;
+	board_video_enable();
 
 	return 0;
 }
