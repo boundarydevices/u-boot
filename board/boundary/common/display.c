@@ -9,6 +9,7 @@
 #include <asm/mach-imx/fbpanel.h>
 #include <asm/gpio.h>
 #include <dm.h>
+#include <dm/device-internal.h>
 #include <i2c.h>
 #include <linux/delay.h>
 #include "bd_common.h"
@@ -16,13 +17,21 @@
 /* pca9546 mux */
 static int detect_pca9546(struct display_info_t const *di, int sub_bus, int sub_bus2, int reg1, u8 val1, int reg2, u8 val2)
 {
-	int ret;
+	int ret = 0;
 #ifdef CONFIG_DM_I2C
-	struct udevice *bus, *mux, *i2c_dev;
+	struct udevice *bus;
+	struct i2c_msg msg;
+	struct dm_i2c_ops *ops;
+	u8 buf[4];
 #else
 	u8 orig_i2c_bus;
 #endif
 
+#ifdef CONFIG_DM_VIDEO
+	if (di->bus_gp) {
+		ret = gpio_request(di->bus_gp, "bus_gp");
+	}
+#endif
 	if (di->bus_gp)
 		gpio_direction_output(di->bus_gp, 1);
 	if (di->enable_gp)
@@ -30,32 +39,46 @@ static int detect_pca9546(struct display_info_t const *di, int sub_bus, int sub_
 	if (di->bus_gp_delay_ms)
 		mdelay(di->bus_gp_delay_ms);
 #ifdef CONFIG_DM_I2C
-	ret = uclass_get_device(UCLASS_I2C, di->bus_num & 0xf, &bus);
+	ret = uclass_get_device_by_seq(UCLASS_I2C, di->bus_num & 0xf, &bus);
 	if (ret) {
 		printf("%s: Can't find bus\n", __func__);
-		return 0;
-	}
-	ret = dm_i2c_probe(bus, 0x70, 0x0, &mux);
-	if (!ret) {
-		/* write control register, select sub bus */
-		if (sub_bus >= 0)
-			dm_i2c_write(mux, 1 << sub_bus, NULL, 0);
-		if (sub_bus2 >= 0)
-			dm_i2c_write(mux, 1 << sub_bus2, NULL, 0);
-		ret = dm_i2c_probe(bus, di->addr_num, 0x0, &i2c_dev);
-	}
-	if (!ret && (reg1 >= 0)) {
-		ret = dm_i2c_reg_write(i2c_dev, reg1, val1);
-		if (ret < 0) {
-			printf("%s: i2c write reg=0x%x failed(%d)\n",
-				__func__, reg1, ret);
+	} else {
+		ops = i2c_get_ops(bus);
+		msg.addr = 0x70;
+		msg.flags = 0;
+		msg.len = 1;
+		msg.buf = buf;
+		if (sub_bus >= 0) {
+			buf[0] = 1 << sub_bus;
+			ret = ops->xfer(bus, &msg, 1);
 		}
-	}
-	if (!ret && (reg2 >= 0)) {
-		ret = dm_i2c_reg_write(i2c_dev, reg2, val2);
-		if (ret < 0) {
-			printf("%s: i2c write reg=0x%x failed(%d)\n",
-				__func__, reg2, ret);
+		/* write control register, select sub bus */
+		if (!ret && (sub_bus2 >= 0)) {
+			buf[0] = 1 << sub_bus2;
+			ret = ops->xfer(bus, &msg, 1);
+		}
+		msg.addr = di->addr_num;
+		if (!ret && (reg1 < 0))
+			ret = i2c_probe_chip(bus, di->addr_num, 0);
+		if (!ret && (reg1 >= 0)) {
+			buf[0] = reg1;
+			buf[1] = val1;
+			msg.len = 2;
+			ret = ops->xfer(bus, &msg, 1);
+			if (ret < 0) {
+				printf("%s: i2c write reg=0x%x failed(%d)\n",
+					__func__, reg1, ret);
+			}
+		}
+		if (!ret && (reg2 >= 0)) {
+			buf[0] = reg2;
+			buf[1] = val2;
+			msg.len = 2;
+			ret = ops->xfer(bus, &msg, 1);
+			if (ret < 0) {
+				printf("%s: i2c write reg=0x%x failed(%d)\n",
+					__func__, reg2, ret);
+			}
 		}
 	}
 #else
@@ -91,6 +114,12 @@ static int detect_pca9546(struct display_info_t const *di, int sub_bus, int sub_
 		if (di->enable_gp)
 			gpio_direction_input(di->enable_gp);
 	}
+#ifdef CONFIG_DM_VIDEO
+	if (di->bus_gp) {
+		gpio_free(di->bus_gp);
+	}
+
+#endif
 	return (ret == 0);
 }
 
