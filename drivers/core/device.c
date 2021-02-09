@@ -696,7 +696,7 @@ static int device_get_device_tail(struct udevice *dev, int ret,
  * @devp: Pointer to structure to hold the found device
  * Return: 0 if OK, -ve on error
  */
-static int device_find_by_ofnode(ofnode node, struct udevice **devp)
+int device_find_by_ofnode(ofnode node, struct udevice **devp)
 {
 	struct uclass *uc;
 	struct udevice *dev;
