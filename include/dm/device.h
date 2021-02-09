@@ -418,6 +418,7 @@ enum uclass_id device_get_uclass_id(const struct udevice *dev);
  */
 const char *dev_get_uclass_name(const struct udevice *dev);
 
+int device_find_by_ofnode(ofnode node, struct udevice **devp);
 /**
  * device_get_child() - Get the child of a device by index
  *
