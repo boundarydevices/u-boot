@@ -133,6 +133,7 @@ struct video_bridge_ops nw_dsi_imx_ops = {
 
 static const struct udevice_id nw_dsi_imx_ids[] = {
 	{ .compatible = "fsl,imx7ulp-mipi-dsi" },
+	{ .compatible = "fsl,imx8mq-nwl-dsi" },
 	{ }
 };
 
