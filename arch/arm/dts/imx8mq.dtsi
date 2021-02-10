@@ -526,7 +526,7 @@
 				assigned-clock-rates = <0>, <0>, <0>, <594000000>;
 				status = "disabled";
 
-				port@0 {
+				port {
 					lcdif_mipi_dsi: endpoint {
 						remote-endpoint = <&mipi_dsi_lcdif_in>;
 					};
@@ -991,14 +991,17 @@
 					 <&clk IMX8MQ_CLK_DSI_AHB>,
 					 <&clk IMX8MQ_CLK_DSI_IPG_DIV>,
 					 <&clk IMX8MQ_CLK_DSI_PHY_REF>,
+					 <&clk IMX8MQ_VIDEO_PLL1>,
 					 <&clk IMX8MQ_CLK_LCDIF_PIXEL>;
-				clock-names = "core", "rx_esc", "tx_esc", "phy_ref", "lcdif";
+				clock-names = "core", "rx_esc", "tx_esc", "phy_ref", "video_pll", "lcdif";
 				assigned-clocks = <&clk IMX8MQ_CLK_DSI_AHB>,
 						  <&clk IMX8MQ_CLK_DSI_CORE>,
+						  <&clk IMX8MQ_CLK_DSI_PHY_REF>,
 						  <&clk IMX8MQ_CLK_DSI_IPG_DIV>;
 				assigned-clock-parents = <&clk IMX8MQ_SYS1_PLL_80M>,
-							 <&clk IMX8MQ_SYS1_PLL_266M>;
-				assigned-clock-rates = <80000000>, <266000000>, <20000000>;
+							 <&clk IMX8MQ_SYS1_PLL_266M>,
+							 <&clk IMX8MQ_VIDEO_PLL1_OUT>;
+				assigned-clock-rates = <80000000>, <266000000>, <27000000>, <20000000>;
 				interrupts = <GIC_SPI 34 IRQ_TYPE_LEVEL_HIGH>;
 				mux-controls = <&mux 0>;
 				power-domains = <&pgc_mipi>;
@@ -1017,10 +1020,8 @@
 
 					port@0 {
 						reg = <0>;
-						#address-cells = <1>;
-						#size-cells = <0>;
-						mipi_dsi_lcdif_in: endpoint@0 {
-							reg = <0>;
+
+						mipi_dsi_lcdif_in: endpoint {
 							remote-endpoint = <&lcdif_mipi_dsi>;
 						};
 					};
