@@ -37,6 +37,7 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IMX8MQ_PAD_GPIO1_IO02__WDOG1_WDOG_B | MUX_PAD_CTRL(WDOG_PAD_CTRL),
 	IMX8MQ_PAD_UART1_RXD__UART1_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
 	IMX8MQ_PAD_UART1_TXD__UART1_TX | MUX_PAD_CTRL(UART_PAD_CTRL),
+#define GP_I2C4_SN65DSI83_IRQ		IMX_GPIO_NR(1, 1)
 #define GP_LCM_JM430_BKL_EN		IMX_GPIO_NR(1, 1)
 /* This enables 5V power on LTK080A60A004T mipi display */
 #define GP_LTK08_MIPI_EN		IMX_GPIO_NR(1, 1)
@@ -114,6 +115,20 @@ int board_early_init_f(void)
 	imx_iomux_v3_setup_multiple_pads(init_pads, ARRAY_SIZE(init_pads));
 	set_wdog_reset(wdog);
 
+	gpio_request(GP_BACKLIGHT_MIPI, "backlight_mipi");
+	gpio_request(GP_ARM_DRAM_VSEL, "arm_vsel");
+	gpio_request(GP_DRAM_1P1_VSEL, "dram_vsel");
+	gpio_request(GP_SOC_GPU_VPU_VSEL, "soc_vsel");
+	gpio_request(GP_EMMC_RESET, "emmc_reset");
+	gpio_request(GP_I2C1_PCA9546_RESET, "pca9546_reset");
+#ifndef CONFIG_DM_VIDEO
+	gpio_request(GP_I2C4_SN65DSI83_EN, "sn65dsi83_enable");
+#endif
+	gpio_request(GPIRQ_CSI1_TC3587, "csi1_tc3587");
+	gpio_request(GP_CSI1_OV5640_MIPI_RESET, "csi1_ov5640_reset");
+	gpio_request(GPIRQ_CSI2_TC3587, "csi2_tc3587");
+	gpio_request(GP_CSI2_OV5640_MIPI_RESET, "csi2_ov5640_reset");
+
 	gpio_direction_output(GP_BACKLIGHT_MIPI, 0);
 	gpio_direction_output(GP_ARM_DRAM_VSEL, 0);
 	gpio_direction_output(GP_DRAM_1P1_VSEL, 0);
@@ -141,16 +156,24 @@ int board_usb_hub_gpio_init(void)
 
 #ifdef CONFIG_CMD_FBPANEL
 
+#ifdef CONFIG_VIDEO_IMX8M_HDMI
 int board_detect_hdmi(struct display_info_t const *di)
 {
 	return hdmi_hpd_status() ? 1 : 0;
 }
+#endif
 
 int board_detect_gt911(struct display_info_t const *di)
 {
 	int ret;
 	struct udevice *dev, *chip;
 
+#ifdef CONFIG_DM_VIDEO
+	int ret_request;
+	if (di->bus_gp) {
+		ret_request = gpio_request(di->bus_gp, "bus_gp");
+	}
+#endif
 	if (di->bus_gp)
 		gpio_direction_output(di->bus_gp, 1);
 	gpio_set_value(GP_GT911_RESET, 0);
@@ -169,13 +192,20 @@ int board_detect_gt911(struct display_info_t const *di)
 	ret = dm_i2c_probe(dev, di->addr_num, 0x0, &chip);
 	if (ret && di->bus_gp)
 		gpio_direction_input(di->bus_gp);
+#ifdef CONFIG_DM_VIDEO
+	if (di->bus_gp && !ret_request) {
+		gpio_free(di->bus_gp);
+	}
+#endif
 	return (ret == 0);
 }
 
 static const struct display_info_t displays[] = {
+#ifdef CONFIG_VIDEO_IMX8M_HDMI
 	/* hdmi */
 	VD_1920_1080M_60(HDMI, board_detect_hdmi, 0, 0x50),
 	VD_1280_720M_60(HDMI, NULL, 0, 0x50),
+#endif
 	VD_MIPI_M101NWWB(MIPI, fbp_detect_i2c, fbp_bus_gp(3, GP_I2C4_SN65DSI83_EN, 0, 0), 0x2c, FBP_MIPI_TO_LVDS, FBTS_FT5X06),
 	VD_DMT050WVNXCMI(MIPI, fbp_detect_i2c, fbp_bus_gp(3, GP_SC18IS602B_RESET, 0, 30), fbp_addr_gp(0x2f, 0, 6, 0), FBP_SPI_LCD, FBTS_GOODIX),
 	VD_LTK080A60A004T(MIPI, board_detect_gt911, fbp_bus_gp(3, GP_LTK08_MIPI_EN, GP_LTK08_MIPI_EN, 0), 0x5d, FBTS_GOODIX),	/* Goodix touchscreen */
@@ -201,10 +231,12 @@ static const struct display_info_t displays[] = {
 
 int board_init(void)
 {
+#ifndef CONFIG_DM_VIDEO
 	gpio_request(GP_I2C4_SN65DSI83_EN, "sn65dsi83_enable");
+	gpio_request(GP_LTK08_MIPI_EN, "lkt08_mipi_en");
+#endif
 	gpio_request(GP_GT911_RESET, "gt911_reset");
 	gpio_request(GPIRQ_GT911, "gt911_irq");
-	gpio_request(GP_LTK08_MIPI_EN, "lkt08_mipi_en");
 	gpio_direction_output(GP_GT911_RESET, 0);
 #ifdef CONFIG_DM_ETH
 	board_eth_init(gd->bd);
@@ -226,11 +258,25 @@ int board_fastboot_key_pressed(void)
 
 void board_env_init(void)
 {
+#ifdef CONFIG_DM_VIDEO
+	int ret = gpio_request(GP_LCD133_070_RESET, "bus_gp");
+
+	if (!ret) {
+		/*
+		 * A mipi panel may have requested, only modify if not owned by
+		 * sn65/ltk08
+		 */
+		/* An unmodified panel has reset connected directly to 1.8V, so make input */
+		gpio_direction_input(GP_LCD133_070_RESET);
+		gpio_free(GP_LCD133_070_RESET);
+	}
+#else
 	/* An unmodified panel has reset connected directly to 1.8V, so make input */
 	gpio_direction_input(GP_LCD133_070_RESET);
+#endif
 	/*
 	 * If touchscreen reset is low, display will not initialize, but runs fine
 	 * after init independent of gpio level
 	 */
-	gpio_direction_output(GP_I2C2_FT7250_RESET, 1);
+	gpio_direction_output(GP_I2C2_FT7250_RESET, 1); /* GP_GT911_RESET */
 }
