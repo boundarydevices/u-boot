@@ -39,49 +39,63 @@
 		spi2 = &ecspi3;
 	};
 
-	ckil: clock-ckil {
+	ckil: ckil {
 		compatible = "fixed-clock";
 		#clock-cells = <0>;
 		clock-frequency = <32768>;
 		clock-output-names = "ckil";
 	};
 
-	osc_25m: clock-osc-25m {
+	dummy: dummy {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <0>;
+		clock-output-names = "dummy";
+	};
+
+	osc_25m: osc_25m {
 		compatible = "fixed-clock";
 		#clock-cells = <0>;
 		clock-frequency = <25000000>;
 		clock-output-names = "osc_25m";
 	};
 
-	osc_27m: clock-osc-27m {
+	osc_27m: osc_27m {
 		compatible = "fixed-clock";
 		#clock-cells = <0>;
 		clock-frequency = <27000000>;
 		clock-output-names = "osc_27m";
 	};
 
-	clk_ext1: clock-ext1 {
+	phy_27m: phy_27m {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <27000000>;
+		clock-output-names = "phy_27m";
+	};
+
+	clk_ext1: clk_ext1 {
 		compatible = "fixed-clock";
 		#clock-cells = <0>;
 		clock-frequency = <133000000>;
 		clock-output-names = "clk_ext1";
 	};
 
-	clk_ext2: clock-ext2 {
+	clk_ext2: clk_ext2 {
 		compatible = "fixed-clock";
 		#clock-cells = <0>;
 		clock-frequency = <133000000>;
 		clock-output-names = "clk_ext2";
 	};
 
-	clk_ext3: clock-ext3 {
+	clk_ext3: clk_ext3 {
 		compatible = "fixed-clock";
 		#clock-cells = <0>;
 		clock-frequency = <133000000>;
 		clock-output-names = "clk_ext3";
 	};
 
-	clk_ext4: clock-ext4 {
+	clk_ext4: clk_ext4 {
 		compatible = "fixed-clock";
 		#clock-cells = <0>;
 		clock-frequency= <133000000>;
@@ -436,15 +450,25 @@
 			};
 
 			lcdif: lcdif@30320000 {
+				#address-cells = <1>;
+				#size-cells = <0>;
 				compatible = "fsl,imx8mq-lcdif", "fsl,imx28-lcdif";
 				reg = <0x30320000 0x10000>;
 				clocks = <&clk IMX8MQ_CLK_LCDIF_PIXEL>,
 					<&clk IMX8MQ_CLK_DUMMY>,
-					<&clk IMX8MQ_CLK_DUMMY>;
-				clock-names = "pix", "axi", "disp_axi";
-				assigned-clocks = <&clk IMX8MQ_CLK_LCDIF_PIXEL>;
-				assigned-clock-parents = <&clk IMX8MQ_VIDEO_PLL1_OUT>;
-				assigned-clock-rate = <594000000>;
+					<&clk IMX8MQ_CLK_DUMMY>,
+					<&clk IMX8MQ_VIDEO_PLL1>;
+				clock-names = "pix", "axi", "disp_axi", "video_pll";
+				assigned-clocks = <&clk IMX8MQ_VIDEO_PLL1_REF_SEL>,
+						  <&clk IMX8MQ_VIDEO_PLL1_REF_DIV>,
+						  <&clk IMX8MQ_VIDEO_PLL1_BYPASS>,
+						  <&clk IMX8MQ_CLK_LCDIF_PIXEL>;
+				assigned-clock-parents = <&clk IMX8MQ_CLK_25M>,
+							 <0 0>,
+							 <&clk IMX8MQ_VIDEO_PLL1>,
+							 <&clk IMX8MQ_VIDEO_PLL1_OUT>;
+				assigned-clock-rate = <0>,<5000000>,<0>,<594000000>;
+				enable_polarity_low;
 				interrupts = <GIC_SPI 5 IRQ_TYPE_LEVEL_HIGH>;
 				status = "disabled";
 			};
@@ -514,12 +538,12 @@
 				interrupts = <GIC_SPI 85 IRQ_TYPE_LEVEL_HIGH>,
 				             <GIC_SPI 86 IRQ_TYPE_LEVEL_HIGH>;
 				#clock-cells = <1>;
-				clocks = <&ckil>, <&osc_25m>, <&osc_27m>,
-				         <&clk_ext1>, <&clk_ext2>,
-				         <&clk_ext3>, <&clk_ext4>;
-				clock-names = "ckil", "osc_25m", "osc_27m",
-				              "clk_ext1", "clk_ext2",
-				              "clk_ext3", "clk_ext4";
+				clocks = <&dummy>, <&ckil>, <&osc_25m>,
+					 <&osc_27m>, <&phy_27m>, <&clk_ext1>,
+					 <&clk_ext2>, <&clk_ext3>, <&clk_ext4>;
+				clock-names = "dummy", "ckil", "osc_25m",
+					"osc_27m", "phy_27m", "clk_ext1",
+					"clk_ext2", "clk_ext3", "clk_ext4";
 			};
 
 			src: reset-controller@30390000 {
@@ -797,15 +821,32 @@
 			};
 
 			dphy: dphy@30a00300 {
+				#clock-cells = <1>;
 				compatible = "fsl,imx8mq-mipi-dphy";
 				reg = <0x30a00300 0x100>;
-				clocks = <&clk IMX8MQ_CLK_DSI_PHY_REF>;
-				clock-names = "phy_ref";
+				clocks = <&clk IMX8MQ_CLK_DSI_PHY_REF>,
+					<&dsim_clk 0>;
+				clock-names = "phy_ref", "result";
 				assigned-clocks = <&clk IMX8MQ_CLK_DSI_PHY_REF>;
 				assigned-clock-parents = <&clk IMX8MQ_VIDEO_PLL1_OUT>;
 				assigned-clock-rates = <24000000>;
 				#phy-cells = <0>;
 				power-domains = <&pgc_mipi>;
+				status = "disabled";
+			};
+
+			dsim_clk: dsim-clk {
+				#clock-cells = <1>;
+				#size-cells = <0>;
+				compatible = "generic,clk";
+				clocks = <&clk IMX8MQ_CLK_DSI_PHY_REF>;
+				clock-names = "parent";
+				clock-output-names = "dsim-clk";
+				status = "okay";
+			};
+
+			mipi_dsi_bridge: mipi-dsi-bridge {
+				compatible = "fsl,imx8mq-mipi-dsi";
 				status = "disabled";
 			};
 
