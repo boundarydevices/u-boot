@@ -69,6 +69,24 @@ config CLK_IMX8MP
 	help
 	  This enables support clock driver for i.MX8MP platforms.
 
+config SPL_CLK_IMX8MQ
+        tristate "SPL IMX8MQ CCM Clock Driver"
+        depends on ARCH_IMX8M && SPL
+	select SPL_CLK
+	select SPL_CLK_CCF
+	select SPL_CLK_COMPOSITE_CCF
+        help
+            Build the SPL driver for i.MX8MQ CCM Clock Driver
+
+config CLK_IMX8MQ
+        tristate "IMX8MQ CCM Clock Driver"
+        depends on ARCH_IMX8M
+	select CLK
+	select CLK_CCF
+	select CLK_COMPOSITE_CCF
+        help
+            Build the driver for i.MX8MQ CCM Clock Driver
+
 config SPL_CLK_IMXRT1020
 	bool "SPL clock support for i.MXRT1020"
 	depends on ARCH_IMXRT && SPL
