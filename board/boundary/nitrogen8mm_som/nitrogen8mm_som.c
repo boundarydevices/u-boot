@@ -192,7 +192,8 @@ int board_init(void)
 	gpio_request(GP_CSI1_MIPI_PWDN, "csi1_mipi_pwdn");
 	gpio_request(GP_CSI1_MIPI_RESET, "csi1_mipi_reset");
 	gpio_direction_output(GP_GT911_RESET, 0);
-	gpio_direction_output(GP_CSI1_MIPI_PWDN, 1);
+	/* Rely on pull up only, the toshiba hdmi input uses as IRQ */
+//	gpio_direction_output(GP_CSI1_MIPI_PWDN, 1);
 	gpio_direction_output(GP_CSI1_MIPI_RESET, 0);
 #ifdef CONFIG_MXC_SPI
 	setup_spi();
