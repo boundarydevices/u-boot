@@ -146,6 +146,13 @@
 		};
 	};
 
+	dummy: dummy {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <0>;
+		clock-output-names = "dummy";
+	};
+
 	osc_32k: clock-osc-32k {
 		compatible = "fixed-clock";
 		#clock-cells = <0>;
@@ -641,10 +648,12 @@
 				compatible = "fsl,imx8mm-ccm";
 				reg = <0x30380000 0x10000>;
 				#clock-cells = <1>;
-				clocks = <&osc_32k>, <&osc_24m>, <&clk_ext1>, <&clk_ext2>,
-					 <&clk_ext3>, <&clk_ext4>;
-				clock-names = "osc_32k", "osc_24m", "clk_ext1", "clk_ext2",
-					      "clk_ext3", "clk_ext4";
+				clocks = <&dummy>, <&osc_32k>, <&osc_24m>,
+					<&clk_ext1>, <&clk_ext2>, <&clk_ext3>,
+					<&clk_ext4>;
+				clock-names = "dummy", "osc_32k", "osc_24m",
+					"clk_ext1", "clk_ext2", "clk_ext3",
+					"clk_ext4";
 				assigned-clocks = <&clk IMX8MM_CLK_NOC>,
 						<&clk IMX8MM_CLK_AUDIO_AHB>,
 						<&clk IMX8MM_CLK_IPG_AUDIO_ROOT>,
