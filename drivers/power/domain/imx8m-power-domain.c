@@ -72,19 +72,25 @@ static int imx8m_power_domain_of_xlate(struct power_domain *power_domain,
 
 static int imx8m_power_domain_bind(struct udevice *dev)
 {
-	int offset;
+	ofnode node = dev_ofnode(dev);
+	ofnode pgc;
+	ofnode subnode;
 	const char *name;
 	int ret = 0;
 
-	offset = dev_of_offset(dev);
-	for (offset = fdt_first_subnode(gd->fdt_blob, offset); offset > 0;
-	     offset = fdt_next_subnode(gd->fdt_blob, offset)) {
+	if (!ofnode_valid(node))
+		return -EINVAL;
+	pgc = ofnode_find_subnode(node, "pgc");
+	if (!ofnode_valid(pgc))
+		return 0;
+
+	ofnode_for_each_subnode(subnode, pgc) {
 		/* Bind the subnode to this driver */
-		name = fdt_get_name(gd->fdt_blob, offset, NULL);
+		name = ofnode_get_name(subnode);
 
 		ret = device_bind_with_driver_data(dev, dev->driver, name,
 						   dev->driver_data,
-						   offset_to_ofnode(offset),
+						   subnode,
 						   NULL);
 
 		if (ret == -ENODEV)
@@ -107,9 +113,11 @@ static int imx8m_power_domain_probe(struct udevice *dev)
 static int imx8m_power_domain_ofdata_to_platdata(struct udevice *dev)
 {
 	struct imx8m_power_domain_platdata *pdata = dev_get_platdata(dev);
+	u32 val;
+	int ret;
 
-	pdata->resource_id = fdtdec_get_int(gd->fdt_blob, dev_of_offset(dev),
-					    "reg", -1);
+	ret = dev_read_u32(dev, "reg", &val);
+	pdata->resource_id = ret ? -1 : val;
 
 	if (!power_domain_get(dev, &pdata->pd))
 		pdata->has_pd = 1;
