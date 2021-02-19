@@ -1,0 +1,24 @@
+#
+# MUX subsystem configuration
+#
+
+menu "mux support"
+
+config DM_MUX
+	bool "Enable Driver Model for mux drivers"
+	depends on DM
+	help
+	  Enable driver model for MUX.
+
+config MUX_MMIO
+	tristate "MMIO/Regmap register bitfield-controlled Multiplexer"
+	depends on OF_CONTROL
+	select DM_MUX
+	help
+	  MMIO/Regmap register bitfield-controlled Multiplexer controller.
+
+	  The driver builds multiplexer controllers for bitfields in either
+	  a syscon register or a driver regmap register. For N bit wide
+	  bitfields, there will be 2^N possible multiplexer states.
+
+endmenu
