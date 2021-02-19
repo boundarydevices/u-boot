@@ -28,6 +28,29 @@ struct phy {
 	unsigned long id;
 };
 
+enum phy_mode {
+	PHY_MODE_INVALID,
+	PHY_MODE_USB_HOST,
+	PHY_MODE_USB_HOST_LS,
+	PHY_MODE_USB_HOST_FS,
+	PHY_MODE_USB_HOST_HS,
+	PHY_MODE_USB_HOST_SS,
+	PHY_MODE_USB_DEVICE,
+	PHY_MODE_USB_DEVICE_LS,
+	PHY_MODE_USB_DEVICE_FS,
+	PHY_MODE_USB_DEVICE_HS,
+	PHY_MODE_USB_DEVICE_SS,
+	PHY_MODE_USB_OTG,
+	PHY_MODE_UFS_HS_A,
+	PHY_MODE_UFS_HS_B,
+	PHY_MODE_PCIE,
+	PHY_MODE_ETHERNET,
+	PHY_MODE_MIPI_DPHY,
+	PHY_MODE_SATA
+};
+
+union phy_configure_opts;
+
 /*
  * struct udevice_ops - set of function pointers for phy operations
  * @init: operation to be performed for initializing phy (optional)
@@ -122,6 +145,9 @@ struct phy_ops {
 	* @return 0 if OK, or a negative error code
 	*/
 	int	(*power_off)(struct phy *phy);
+	int	(*configure)(struct phy *phy, union phy_configure_opts *opts);
+	int	(*validate)(struct phy *phy, enum phy_mode mode, int submode,
+			    union phy_configure_opts *opts);
 };
 
 /**
@@ -319,6 +345,10 @@ int generic_phy_power_on_bulk(struct phy_bulk *bulk);
  */
 int generic_phy_power_off_bulk(struct phy_bulk *bulk);
 
+int generic_phy_validate(struct phy *phy, enum phy_mode mode, int submode,
+		 union phy_configure_opts *opts);
+int generic_phy_configure(struct phy *phy, union phy_configure_opts *opts);
+
 #else /* CONFIG_PHY */
 
 static inline int generic_phy_init(struct phy *phy)
@@ -352,6 +382,11 @@ static inline int generic_phy_get_by_index(struct udevice *user, int index,
 	return 0;
 }
 
+static inline int generic_phy_get_by_index_nodev(ofnode node, int index, struct phy *phy)
+{
+	return 0;
+}
+
 static inline int generic_phy_get_by_name(struct udevice *user, const char *phy_name,
 			    struct phy *phy)
 {
@@ -380,6 +415,17 @@ static inline int generic_phy_power_on_bulk(struct phy_bulk *bulk)
 }
 
 static inline int generic_phy_power_off_bulk(struct phy_bulk *bulk)
+{
+	return 0;
+}
+
+static inline int generic_phy_validate(struct phy *phy, enum phy_mode mode, int submode,
+		 union phy_configure_opts *opts)
+{
+	return 0;
+}
+
+static inline int generic_phy_configure(struct phy *phy, union phy_configure_opts *opts)
 {
 	return 0;
 }
