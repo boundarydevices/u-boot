@@ -288,6 +288,14 @@ config PHY_XILINX_ZYNQMP
 	  Enable this to support ZynqMP High Speed Gigabit Transceiver
 	  that is part of ZynqMP SoC.
 
+config PHY_MIXEL_MIPI_DPHY
+	bool "Mixel MIPI DSI PHY support"
+	depends on PHY
+	select MIPI_DPHY_HELPERS
+	help
+	  Enable this to add support for the Mixel DSI PHY as found
+	  on NXP's i.MX8 family of SOCs.
+
 source "drivers/phy/rockchip/Kconfig"
 source "drivers/phy/cadence/Kconfig"
 source "drivers/phy/ti/Kconfig"
