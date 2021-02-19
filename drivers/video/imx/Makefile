@@ -12,3 +12,4 @@ obj-$(CONFIG_VIDEO_IMX_SEC_DSI) += sec_dsim_imx.o
 obj-$(CONFIG_VIDEO_IMX_LCDIFV3) += imx_lcdifv3.o
 obj-y += hdmi/
 obj-$(CONFIG_VIDEO_IMX_NW_DSI) += nw_dsi_imx.o
+obj-$(CONFIG_VIDEO_NWL_MIPI_DSI) += nwl-drv.o nwl-dsi.o
