@@ -8,6 +8,8 @@
 #define _PANEL_H
 
 struct panel_ops {
+	int (*init)(struct udevice *dev);
+	void (*uninit)(struct udevice *dev);
 	/**
 	 * enable_backlight() - Enable the panel backlight
 	 *
@@ -37,6 +39,9 @@ struct panel_ops {
 };
 
 #define panel_get_ops(dev)	((struct panel_ops *)(dev)->driver->ops)
+
+int panel_init(struct udevice *dev);
+void panel_uninit(struct udevice *dev);
 
 /**
  * panel_enable_backlight() - Enable/disable the panel backlight
