@@ -27,7 +27,6 @@ struct nw_dsi_imx_priv {
 	struct mipi_dsi_device device;
 	struct udevice *panel;
 	struct udevice *dsi_host;
-	unsigned int data_lanes;
 };
 
 static int nw_dsi_imx_attach(struct udevice *dev)
@@ -60,14 +59,19 @@ static int nw_dsi_imx_attach(struct udevice *dev)
 		return ret;
 	}
 
-	ret = dsi_host_init(priv->dsi_host, device, &timings,
-			priv->data_lanes,
+	ret = dsi_host_init(priv->dsi_host, device, &timings, 4,
 			NULL);
 	if (ret) {
 		dev_err(dev, "failed to initialize mipi dsi host\n");
 		return ret;
 	}
 
+	ret = panel_init(priv->panel);
+	if (ret) {
+		dev_err(dev, "panel %s enable backlight error %d\n",
+			priv->panel->name, ret);
+		return ret;
+	}
 	return 0;
 }
 
@@ -76,16 +80,16 @@ static int nw_dsi_imx_set_backlight(struct udevice *dev, int percent)
 	struct nw_dsi_imx_priv *priv = dev_get_priv(dev);
 	int ret;
 
+	ret = dsi_host_enable(priv->dsi_host);
+	if (ret) {
+		dev_err(dev, "failed to enable mipi dsi host\n");
+		return ret;
+	}
+
 	ret = panel_enable_backlight(priv->panel);
 	if (ret) {
 		dev_err(dev, "panel %s enable backlight error %d\n",
 			priv->panel->name, ret);
-		return ret;
-	}
-
-	ret = dsi_host_enable(priv->dsi_host);
-	if (ret) {
-		dev_err(dev, "failed to enable mipi dsi host\n");
 		return ret;
 	}
 
@@ -96,17 +100,10 @@ static int nw_dsi_imx_probe(struct udevice *dev)
 {
 	struct nw_dsi_imx_priv *priv = dev_get_priv(dev);
 	struct mipi_dsi_device *device = &priv->device;
-	int ret;
 
 	device->dev = dev;
 
-	ret = dev_read_u32(dev, "data-lanes-num", &priv->data_lanes);
-	if (ret) {
-		printf("fail to get data lanes property %d\n", ret);
-		return -EINVAL;
-	}
-
-	return ret;
+	return 0;
 }
 
 static int nw_dsi_imx_remove(struct udevice *dev)
@@ -133,7 +130,7 @@ struct video_bridge_ops nw_dsi_imx_ops = {
 
 static const struct udevice_id nw_dsi_imx_ids[] = {
 	{ .compatible = "fsl,imx7ulp-mipi-dsi" },
-	{ .compatible = "fsl,imx8mq-nwl-dsi" },
+	{ .compatible = "fsl,imx8mq-mipi-dsi" },
 	{ }
 };
 
