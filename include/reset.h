@@ -155,6 +155,8 @@ int reset_get_bulk_nodev(ofnode node, struct reset_ctl_bulk *bulk);
 int reset_get_by_name(struct udevice *dev, const char *name,
 		      struct reset_ctl *reset_ctl);
 
+struct reset_ctl *devm_reset_control_get(struct udevice *dev, const char *name);
+
 /**
  * reset_request - Request a reset signal.
  *
