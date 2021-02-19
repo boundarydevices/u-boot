@@ -14,10 +14,13 @@
 #include <dm/device.h>
 #include <dm/device-internal.h>
 #include <dm/device_compat.h>
+#include <dm/ofnode.h>
 #include <dm/read.h>
 #include <dm/devres.h>
 #include <dt-bindings/mux/mux.h>
 #include <linux/bitops.h>
+#include <linux/err.h>
+#include <linux/mux/driver.h>
 
 static int mux_mmio_set(struct mux_control *mux, int state)
 {
@@ -32,6 +35,7 @@ static const struct mux_control_ops mux_mmio_ops = {
 
 static const struct udevice_id mmio_mux_of_match[] = {
 	{ .compatible = "mmio-mux" },
+	{ .compatible = "reg-mux", },
 	{ /* sentinel */ },
 };
 

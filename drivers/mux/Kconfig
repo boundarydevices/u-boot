@@ -12,7 +12,7 @@ if MULTIPLEXER
 
 config MUX_MMIO
 	bool "MMIO register bitfield-controlled Multiplexer"
-	depends on MULTIPLEXER && SYSCON
+	depends on MULTIPLEXER && SYSCON && OF_CONTROL
 	help
 	  MMIO register bitfield-controlled Multiplexer controller.
 
