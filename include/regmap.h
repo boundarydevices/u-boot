@@ -87,6 +87,15 @@ struct regmap {
 	struct regmap_range ranges[0];
 };
 
+struct regmap_field;
+
+int regmap_field_update_bits_base(struct regmap_field *field,
+				  unsigned int mask, unsigned int val,
+				  bool *change, bool async, bool force);
+
+#define	regmap_field_write(field, val) \
+	regmap_field_update_bits_base(field, ~0, val, NULL, false, false)
+
 /*
  * Interface to provide access to registers either through a direct memory
  * bus or through a peripheral bus like I2C, SPI.
@@ -351,5 +360,36 @@ void *regmap_get_range(struct regmap *map, unsigned int range_num);
  * Return: 0 if OK, -ve on error
  */
 int regmap_uninit(struct regmap *map);
+
+/**
+ * struct reg_field - Description of an register field
+ *
+ * @reg: Offset of the register within the regmap bank
+ * @lsb: lsb of the register field.
+ * @msb: msb of the register field.
+ * @id_size: port size if it has some ports
+ * @id_offset: address offset for each ports
+ */
+struct reg_field {
+	unsigned int reg;
+	unsigned int lsb;
+	unsigned int msb;
+	unsigned int id_size;
+	unsigned int id_offset;
+};
+
+#define REG_FIELD(_reg, _lsb, _msb) {		\
+				.reg = _reg,	\
+				.lsb = _lsb,	\
+				.msb = _msb,	\
+				}
+
+struct regmap_field *regmap_field_alloc(struct regmap *regmap,
+		struct reg_field reg_field);
+void regmap_field_free(struct regmap_field *field);
+
+struct regmap_field *devm_regmap_field_alloc(struct udevice *dev,
+		struct regmap *regmap, struct reg_field reg_field);
+void devm_regmap_field_free(struct udevice *dev,	struct regmap_field *field);
 
 #endif

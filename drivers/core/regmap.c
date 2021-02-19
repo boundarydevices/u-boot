@@ -13,6 +13,7 @@
 #include <mapmem.h>
 #include <regmap.h>
 #include <asm/io.h>
+#include <dm/devres.h>
 #include <dm/of_addr.h>
 #include <linux/ioport.h>
 
@@ -472,4 +473,104 @@ int regmap_update_bits(struct regmap *map, uint offset, uint mask, uint val)
 	reg &= ~mask;
 
 	return regmap_write(map, offset, reg | (val & mask));
+}
+
+struct regmap_field {
+	struct regmap *regmap;
+	unsigned int mask;
+	/* lsb */
+	unsigned int shift;
+	unsigned int reg;
+
+	unsigned int id_size;
+	unsigned int id_offset;
+};
+
+static void regmap_field_init(struct regmap_field *rm_field,
+	struct regmap *regmap, struct reg_field reg_field)
+{
+	rm_field->regmap = regmap;
+	rm_field->reg = reg_field.reg;
+	rm_field->shift = reg_field.lsb;
+	rm_field->mask = GENMASK(reg_field.msb, reg_field.lsb);
+	rm_field->id_size = reg_field.id_size;
+	rm_field->id_offset = reg_field.id_offset;
+}
+
+/**
+ * devm_regmap_field_alloc() - Allocate and initialise a register field.
+ *
+ * @dev: Device that will be interacted with
+ * @regmap: regmap bank in which this register field is located.
+ * @reg_field: Register field with in the bank.
+ *
+ * The return value will be an ERR_PTR() on error or a valid pointer
+ * to a struct regmap_field. The regmap_field will be automatically freed
+ * by the device management code.
+ */
+struct regmap_field *devm_regmap_field_alloc(struct udevice *dev,
+		struct regmap *regmap, struct reg_field reg_field)
+{
+	struct regmap_field *rm_field = devm_kzalloc(dev,
+					sizeof(*rm_field), GFP_KERNEL);
+	if (!rm_field)
+		return ERR_PTR(-ENOMEM);
+
+	regmap_field_init(rm_field, regmap, reg_field);
+
+	return rm_field;
+
+}
+
+static int _regmap_update_bits(struct regmap *map, unsigned int reg,
+			       unsigned int mask, unsigned int val,
+			       bool *change, bool force_write)
+{
+	int ret;
+	unsigned int tmp, orig;
+
+	if (change)
+		*change = false;
+
+	ret = regmap_read(map, reg, &orig);
+	if (ret != 0)
+		return ret;
+
+	tmp = orig & ~mask;
+	tmp |= val & mask;
+
+	if (force_write || (tmp != orig)) {
+		ret = regmap_write(map, reg, tmp);
+		if (ret == 0 && change)
+			*change = true;
+	}
+	return ret;
+}
+
+/**
+ * regmap_field_update_bits_base() - Perform a read/modify/write cycle a
+ *                                   register field.
+ *
+ * @field: Register field to write to
+ * @mask: Bitmask to change
+ * @val: Value to be written
+ * @change: Boolean indicating if a write was done
+ * @async: Boolean indicating asynchronously
+ * @force: Boolean indicating use force update
+ *
+ * Perform a read/modify/write cycle on the register field with change,
+ * async, force option.
+ *
+ * A value of zero will be returned on success, a negative errno will
+ * be returned in error cases.
+ */
+int regmap_field_update_bits_base(struct regmap_field *field,
+				  unsigned int mask, unsigned int val,
+				  bool *change, bool async, bool force)
+{
+	mask = (mask << field->shift) & field->mask;
+
+	return _regmap_update_bits(field->regmap, field->reg,
+				       mask, val << field->shift,
+				       change, force);
 }
