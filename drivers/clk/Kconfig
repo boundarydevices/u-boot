@@ -88,6 +88,10 @@ config CLK_ICS8N3QV01
 	  Crystal Oscillator). The output frequency can be programmed via an
 	  I2C interface.
 
+config CLK_GENERIC
+	bool "generic clock "
+	depends on CLK_CCF
+
 config CLK_INTEL
 	bool "Enable clock driver for Intel x86"
 	depends on CLK && X86
