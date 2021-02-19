@@ -266,11 +266,32 @@ static struct clk_ops imx8mm_clk_ops = {
 	.set_parent = imx8mm_clk_set_parent,
 };
 
+static inline void clk_dm2(ulong id, ofnode np, const char *name)
+{
+	struct clk clk_tmp;
+	struct clk *pclk;
+	int ret = clk_get_by_name_nodev(np, name, &clk_tmp);
+
+	if (!ret) {
+		pclk = dev_get_clk_ptr(clk_tmp.dev);
+		pclk->id = id;
+	}
+}
+
 static int imx8mm_clk_probe(struct udevice *dev)
 {
+	ofnode np = dev_ofnode(dev);
 	void __iomem *base;
 
 	base = (void *)ANATOP_BASE_ADDR;
+
+	clk_dm2(IMX8MM_CLK_DUMMY, np, "dummy");
+	clk_dm2(IMX8MM_CLK_32K, np, "osc_32k");
+	clk_dm2(IMX8MM_CLK_24M, np, "osc_24m");
+	clk_dm2(IMX8MM_CLK_EXT1, np, "clk_ext1");
+	clk_dm2(IMX8MM_CLK_EXT2, np, "clk_ext2");
+	clk_dm2(IMX8MM_CLK_EXT3, np, "clk_ext3");
+	clk_dm2(IMX8MM_CLK_EXT4, np, "clk_ext4");
 
 	clk_dm(IMX8MM_VIDEO_PLL1_REF_SEL,
 	       imx_clk_mux("video_pll1_ref_sel", base + 0x28, 0, 2,
