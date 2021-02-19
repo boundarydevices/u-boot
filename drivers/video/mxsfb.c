@@ -68,6 +68,39 @@ __weak void mxsfb_system_setup(void)
 {
 }
 
+#if CONFIG_IS_ENABLED(CLK)
+static u32 get_pixclock(struct clk *pll, unsigned long pixclock)
+{
+	u32 video_pll, n;
+	int ret;
+
+	video_pll = pixclock;
+	/* Video pll must be from 500MHz to 2000 MHz */
+	if (video_pll < 500000000) {
+		int n = (500000000 + video_pll - 1) / video_pll;
+		int bit;
+
+		do {
+			bit = __ffs(n);
+			if ((n >> bit) <= 7)
+				break;
+			n += (1 << bit);
+		} while (1);
+		video_pll *= n;
+		debug("%s: %d = %ld * %d\n", __func__, video_pll, pixclock, n);
+	}
+	ret = clk_set_rate(pll, video_pll);
+	if (ret < 0) {
+		debug("clk_set_rate %d failed(%d)\n", video_pll, ret);
+		video_pll = clk_get_rate(pll);
+		debug("rate is %d\n", video_pll);
+	}
+	n = (video_pll + (pixclock >> 1)) / pixclock;
+	pixclock = video_pll / n;
+	return pixclock;
+}
+#endif
+
 /*
  * ARIES M28EVK:
  * setenv videomode
@@ -92,16 +125,23 @@ static void mxs_lcd_init(struct udevice *dev, phys_addr_t reg_base, u32 fb_addr,
 
 #if CONFIG_IS_ENABLED(CLK)
 	struct clk clk;
+	struct clk pll;
 	int ret;
+	u32 pixclock = timings->pixelclock.typ;
 
+
+	ret = clk_get_by_name(dev, "video_pll", &pll);
+	if (!ret) {
+		pixclock = get_pixclock(&pll, pixclock);
+	}
 	ret = clk_get_by_name(dev, "pix", &clk);
 	if (ret) {
 		dev_err(dev, "Failed to get mxs pix clk: %d\n", ret);
 		return;
 	}
 
-	debug("%s: rate %u, bpp=%u\n", __func__, timings->pixelclock.typ, bpp);
-	ret = clk_set_rate(&clk, timings->pixelclock.typ);
+	debug("%s: rate %u, bpp=%u\n", __func__, pixclock, bpp);
+	ret = clk_set_rate(&clk, pixclock);
 	if (ret < 0) {
 		dev_err(dev, "Failed to set mxs pix clk: %d\n", ret);
 		return;
