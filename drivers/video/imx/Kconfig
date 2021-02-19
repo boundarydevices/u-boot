@@ -52,6 +52,7 @@ config VIDEO_IMX8M_HDMI
 config VIDEO_SEC_MIPI_DSI
 	bool
 	select VIDEO_MIPI_DSI
+	select CLK_GENERIC
 	help
 	  Enables the common driver code for the Samsung
 	  MIPI DSI block found in SoCs from various vendors.
@@ -78,8 +79,17 @@ config VIDEO_IMX_LCDIFV3
 config VIDEO_IMX_NW_DSI
 	bool "Enable IMX Northwest DSI video support"
 	select VIDEO_BRIDGE
-	select VIDEO_NW_MIPI_DSI
 	select VIDEO_LINK
+	help
+	  This option enables support DSI internal bridge which can be used on
+	  devices which have DSI devices connected.
+
+config VIDEO_NWL_MIPI_DSI
+	bool "Enable IMX8 Northwest DSI video support"
+	select VIDEO_MIPI_DSI
+	select VIDEO_IMX_NW_DSI
+	select CLK_GENERIC
+	select PHY_MIXEL_MIPI_DPHY
 	help
 	  This option enables support DSI internal bridge which can be used on
 	  devices which have DSI devices connected.
