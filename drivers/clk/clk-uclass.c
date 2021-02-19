@@ -495,7 +495,7 @@ long long clk_get_parent_rate(struct clk *clk)
 		return -ENOSYS;
 
 	/* Read the 'rate' if not already set or if proper flag set*/
-	if (!pclk->rate || pclk->flags & CLK_GET_RATE_NOCACHE)
+//	if (!pclk->rate || pclk->flags & CLK_GET_RATE_NOCACHE)
 		pclk->rate = clk_get_rate(pclk);
 
 	return pclk->rate;
