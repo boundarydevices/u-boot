@@ -187,6 +187,27 @@ int reset_get_by_name(struct udevice *dev, const char *name,
 	return reset_get_by_index(dev, index, reset_ctl);
 }
 
+static void devm_reset_control_release(struct udevice *dev, void *res)
+{
+}
+
+struct reset_ctl *devm_reset_control_get(struct udevice *dev, const char *name)
+{
+	struct reset_ctl *rst_ctl;
+	int ret;
+
+	rst_ctl = devres_alloc(devm_reset_control_release, sizeof(struct reset_ctl), __GFP_ZERO);
+	if (unlikely(!rst_ctl))
+		return ERR_PTR(-ENOMEM);
+	ret = reset_get_by_name(dev, name, rst_ctl);
+	if (ret) {
+		devres_free(rst_ctl);
+		return ERR_PTR(ret);
+	}
+	devres_add(dev, rst_ctl);
+	return rst_ctl;
+}
+
 int reset_request(struct reset_ctl *reset_ctl)
 {
 	struct reset_ops *ops = reset_dev_ops(reset_ctl->dev);
