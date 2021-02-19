@@ -14,6 +14,7 @@
 #include <mapmem.h>
 #include <regmap.h>
 #include <asm/io.h>
+#include <dm/devres.h>
 #include <dm/of_addr.h>
 #include <dm/devres.h>
 #include <linux/ioport.h>
@@ -657,6 +658,7 @@ struct regmap_field *devm_regmap_field_alloc(struct udevice *dev,
 {
 	struct regmap_field *rm_field = devm_kzalloc(dev, sizeof(*rm_field),
 						     GFP_KERNEL);
+
 	if (!rm_field)
 		return ERR_PTR(-ENOMEM);
 
@@ -686,4 +688,57 @@ struct regmap_field *regmap_field_alloc(struct regmap *regmap,
 void regmap_field_free(struct regmap_field *field)
 {
 	kfree(field);
+}
+
+static int _regmap_update_bits(struct regmap *map, unsigned int reg,
+			       unsigned int mask, unsigned int val,
+			       bool *change, bool force_write)
+{
+	int ret;
+	unsigned int tmp, orig;
+
+	if (change)
+		*change = false;
+
+	ret = regmap_read(map, reg, &orig);
+	if (ret != 0)
+		return ret;
+
+	tmp = orig & ~mask;
+	tmp |= val & mask;
+
+	if (force_write || (tmp != orig)) {
+		ret = regmap_write(map, reg, tmp);
+		if (ret == 0 && change)
+			*change = true;
+	}
+	return ret;
+}
+
+/**
+ * regmap_field_update_bits_base() - Perform a read/modify/write cycle a
+ *                                   register field.
+ *
+ * @field: Register field to write to
+ * @mask: Bitmask to change
+ * @val: Value to be written
+ * @change: Boolean indicating if a write was done
+ * @async: Boolean indicating asynchronously
+ * @force: Boolean indicating use force update
+ *
+ * Perform a read/modify/write cycle on the register field with change,
+ * async, force option.
+ *
+ * A value of zero will be returned on success, a negative errno will
+ * be returned in error cases.
+ */
+int regmap_field_update_bits_base(struct regmap_field *field,
+				  unsigned int mask, unsigned int val,
+				  bool *change, bool async, bool force)
+{
+	mask = (mask << field->shift) & field->mask;
+
+	return _regmap_update_bits(field->regmap, field->reg,
+				       mask, val << field->shift,
+				       change, force);
 }

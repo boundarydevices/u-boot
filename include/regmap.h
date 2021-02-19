@@ -114,6 +114,11 @@ struct regmap {
 	struct regmap_range ranges[0];
 };
 
+struct regmap_field;
+
+int regmap_field_update_bits_base(struct regmap_field *field,
+				  unsigned int mask, unsigned int val,
+				  bool *change, bool async, bool force);
 /*
  * Interface to provide access to registers either through a direct memory
  * bus or through a peripheral bus like I2C, SPI.
@@ -450,11 +455,15 @@ int regmap_uninit(struct regmap *map);
  * @reg: Offset of the register within the regmap bank
  * @lsb: lsb of the register field.
  * @msb: msb of the register field.
+ * @id_size: port size if it has some ports
+ * @id_offset: address offset for each ports
  */
 struct reg_field {
 	unsigned int reg;
 	unsigned int lsb;
 	unsigned int msb;
+	unsigned int id_size;
+	unsigned int id_offset;
 };
 
 struct regmap_field;
@@ -528,5 +537,8 @@ int regmap_field_write(struct regmap_field *field, unsigned int val);
  * Return: 0 if OK, -ve on error
  */
 int regmap_field_read(struct regmap_field *field, unsigned int *val);
+struct regmap_field *regmap_field_alloc(struct regmap *regmap,
+		struct reg_field reg_field);
+void regmap_field_free(struct regmap_field *field);
 
 #endif
