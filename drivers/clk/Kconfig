@@ -73,6 +73,10 @@ config CLK_COMPOSITE_CCF
 	  Enable this option if you want to (re-)use the Linux kernel's Common
 	  Clock Framework [CCF] composite code in U-Boot's clock driver.
 
+config CLK_GENERIC
+	bool "generic clock "
+	depends on CLK_CCF
+
 config CLK_INTEL
 	bool "Enable clock driver for Intel x86"
 	depends on CLK && X86
