@@ -106,6 +106,7 @@ obj-$(CONFIG_U_QE) += qe/
 obj-y += mailbox/
 obj-y += memory/
 obj-y += mtd/
+obj-y += mux/
 obj-y += pwm/
 obj-y += reset/
 obj-y += input/
