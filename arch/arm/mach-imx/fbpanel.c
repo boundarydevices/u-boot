@@ -660,9 +660,38 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 
 	if (fb == FB_LVDS)
 		lvds_enabled = 1;
+
+	if (fb == FB_MIPI) {
+		sz = set_status(buf, size, "backlight_mipi", true);
+		buf += sz;
+		size -= sz;
+		sz = set_status(buf, size, "mipi_dsi", true);
+		buf += sz;
+		size -= sz;
+#if defined(CONFIG_IMX8M)
+		sz = set_status(buf, size, "lcdif", true);
+		buf += sz;
+		size -= sz;
+#if defined(CONFIG_IMX8MQ)
+		sz = set_status(buf, size, "mipi_dsi_phy", true);
+		buf += sz;
+		size -= sz;
+#endif
+#endif
+		if ((di->addr_num == 0x2c) && (di->enable_alias[0] != FBP_MIPI_TO_LVDS)) {
+			sz = set_status(buf, size, "mipi_to_lvds", true);
+			buf += sz;
+			size -= sz;
+		}
+	}
 	sz = set_status(buf, size, fbnames[fb1], true);
 	buf += sz;
 	size -= sz;
+	if (fb != fb1) {
+		sz = set_status(buf, size, fbnames[fb], true);
+		buf += sz;
+		size -= sz;
+	}
 	if ((fb == FB_LVDS2) && !lvds_enabled) {
 		sz = set_property(buf, size, "ldb/lvds-channel@1", "primary");
 		buf += sz;
@@ -875,29 +904,6 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 				(di->fbflags >> FBF_DSI_LANE_SHIFT) & 7);
 		buf += sz;
 		size -= sz;
-	}
-	if (fb == FB_MIPI) {
-		sz = set_status(buf, size, "backlight_mipi", true);
-		buf += sz;
-		size -= sz;
-		sz = set_status(buf, size, "mipi_dsi", true);
-		buf += sz;
-		size -= sz;
-#if defined(CONFIG_IMX8M)
-		sz = set_status(buf, size, "lcdif", true);
-		buf += sz;
-		size -= sz;
-#if defined(CONFIG_IMX8MQ)
-		sz = set_status(buf, size, "mipi_dsi_phy", true);
-		buf += sz;
-		size -= sz;
-#endif
-#endif
-		if ((di->addr_num == 0x2c) && (di->enable_alias[0] != FBP_MIPI_TO_LVDS)) {
-			sz = set_status(buf, size, "mipi_to_lvds", true);
-			buf += sz;
-			size -= sz;
-		}
 	}
 
 	if (di->pwm_period) {
