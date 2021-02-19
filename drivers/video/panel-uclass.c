@@ -8,6 +8,24 @@
 #include <dm.h>
 #include <panel.h>
 
+int panel_init(struct udevice *dev)
+{
+	struct panel_ops *ops = panel_get_ops(dev);
+
+	if (!ops->init)
+		return -ENOSYS;
+
+	return ops->init(dev);
+}
+
+void panel_uninit(struct udevice *dev)
+{
+	struct panel_ops *ops = panel_get_ops(dev);
+
+	if (ops->uninit)
+		ops->uninit(dev);
+}
+
 int panel_enable_backlight(struct udevice *dev)
 {
 	struct panel_ops *ops = panel_get_ops(dev);
