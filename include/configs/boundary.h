@@ -161,7 +161,9 @@
 #define CONFIG_BMP_24BPP
 #define CONFIG_BMP_32BPP
 #define CONFIG_VIDEO_BMP_RLE8
+#ifdef CONFIG_CMD_BMP
 #define CONFIG_VIDEO_BMP_LOGO
+#endif
 
 #define CONFIG_CMD_FBPANEL
 #if defined(CONFIG_MX6SX)
