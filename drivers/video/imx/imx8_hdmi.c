@@ -166,11 +166,8 @@ static int imx8_hdmi_init(int vic,
 	cdn_api_init();
 	pr_debug("CDN_API_Init completed\n");
 
-	ret = cdn_api_checkalive();
+	ret = cdn_api_checkalive_blocking();
 	pr_debug("CDN_API_CheckAlive returned ret = %d\n", ret);
-
-	if (ret)
-		return -EPERM;
 
 	ret = cdn_api_general_test_echo_ext_blocking(echo_msg,
 						     echo_resp,
@@ -247,7 +244,7 @@ static int imx8_hdmi_init(int vic,
 	return 0;
 }
 
-int imx8_hdmi_enable(int encoding,
+void imx8_hdmi_enable(int encoding,
 		      struct video_mode_settings *vms)
 {
 	int vic = 0;
@@ -264,7 +261,7 @@ int imx8_hdmi_enable(int encoding,
 		vic = 0; /* 480p60 */
 
 	imx8_hdmi_set_vic_mode(vic, vms);
-	return imx8_hdmi_init(vic, encoding, g_color_depth, use_phy_pixel_clk);
+	imx8_hdmi_init(vic, encoding, g_color_depth, use_phy_pixel_clk);
 }
 
 void imx8_hdmi_disable(void)
