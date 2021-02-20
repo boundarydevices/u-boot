@@ -135,6 +135,12 @@ static int imx_sec_dsim_attach(struct udevice *dev)
 		return ret;
 	}
 
+	ret = panel_init(priv->panel);
+	if (ret) {
+		dev_err(dev, "panel %s enable backlight error %d\n",
+			priv->panel->name, ret);
+		return ret;
+	}
 	return 0;
 }
 
@@ -143,16 +149,16 @@ static int imx_sec_dsim_set_backlight(struct udevice *dev, int percent)
 	struct imx_sec_dsim_priv *priv = dev_get_priv(dev);
 	int ret;
 
+	ret = dsi_host_enable(priv->dsi_host);
+	if (ret) {
+		dev_err(dev, "failed to enable mipi dsi host\n");
+		return ret;
+	}
+
 	ret = panel_enable_backlight(priv->panel);
 	if (ret) {
 		dev_err(dev, "panel %s enable backlight error %d\n",
 			priv->panel->name, ret);
-		return ret;
-	}
-
-	ret = dsi_host_enable(priv->dsi_host);
-	if (ret) {
-		dev_err(dev, "failed to enable mipi dsi host\n");
 		return ret;
 	}
 
