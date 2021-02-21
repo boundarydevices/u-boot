@@ -17,6 +17,7 @@
 #include <asm/arch/imx-regs.h>
 #include <asm/arch/sys_proto.h>
 #include <asm/io.h>
+#include <asm/system.h>
 #include <video_bridge.h>
 #include <clk.h>
 #include <video_link.h>

@@ -51,6 +51,7 @@
 #else
 #include <common.h>
 #include <asm/io.h>
+#include <linux/delay.h>
 
 #ifdef CONFIG_ARCH_IMX8M
 /* mscale */

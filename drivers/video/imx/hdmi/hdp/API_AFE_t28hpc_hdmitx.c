@@ -47,6 +47,8 @@
 #include "API_AFE_t28hpc_hdmitx.h"
 #include "API_AFE.h"
 #include "externs.h"
+#include <asm/system.h>
+#include <linux/compat.h>
 
 #ifndef DEBUG
 static inline void write16(uint32_t addr, uint16_t val)
