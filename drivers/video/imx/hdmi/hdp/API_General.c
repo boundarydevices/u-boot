@@ -57,6 +57,7 @@
 #ifndef __UBOOT__
 #include <stdio.h>
 #endif
+#include <linux/delay.h>
 
 extern state_struct state;
 
