@@ -11,9 +11,6 @@
 #include <asm/arch/mxc_hdmi.h>
 #endif
 #include <asm/arch/sys_proto.h>
-#if defined(CONFIG_IMX8M)
-#include <asm/arch/video_common.h>
-#endif
 #include <asm/gpio.h>
 #include <asm/mach-imx/fbpanel.h>
 #include <asm/io.h>
@@ -387,7 +384,7 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 			} else if ((fb == FB_LVDS) || (fb == FB_LVDS2)) {
 				sz = snprintf(buf, size, ";fdt set ldb/lvds-channel@%d status disabled", fb - FB_LVDS);
 			}
-#if defined(CONFIG_VIDEO_IMXDCSS)
+#if defined(CONFIG_VIDEO_IMX8M_DCSS)
 			else if (fb == FB_HDMI) {
 				sz = snprintf(buf, size,
 					";fdt set dcss status disabled"
@@ -1903,11 +1900,7 @@ static int init_display(const struct display_info_t *di)
 	setup_clock(di);
 #if defined(CONFIG_MX6SX) || defined(CONFIG_MX7D)
 	ret = mxsfb_init(&di->mode, di->pixfmt);
-#elif defined(CONFIG_VIDEO_IMXDCSS)
-	ret = 0;
-	if (di->fbtype == FB_HDMI)
-		imx8m_fb_init(&di->mode, 0, di->pixfmt);
-#elif defined(CONFIG_IMX8MM) || defined(CONFIG_IMX8MN) || defined(CONFIG_IMX8MP)
+#elif defined(CONFIG_IMX8MM) || defined(CONFIG_IMX8MN) || defined(CONFIG_IMX8MP) || defined(CONFIG_IMX8MQ)
 	ret = 0;
 #else
 	ret = 0;
@@ -1978,14 +1971,7 @@ static int do_fbpanel(struct cmd_tbl *cmdtp, int flag, int argc, char * const ar
 			g_di_active = NULL;
 		}
 	}
-#if defined(CONFIG_VIDEO_IMXDCSS)
-       imx8m_fb_disable();
-	if (!di)
-		return 0;
-	ret = init_display(di);
-	if (ret)
-		return ret;
-#elif defined(CONFIG_IMX8MM) || defined(CONFIG_IMX8MN) || defined(CONFIG_IMX8MP)
+#if defined(CONFIG_IMX8MM) || defined(CONFIG_IMX8MN) || defined(CONFIG_IMX8MP) || defined(CONFIG_IMX8MQ)
 	return 0;
 #elif !defined(CONFIG_MX6SX) && !defined(CONFIG_MX7D)
 	ipuv3_fb_shutdown();
