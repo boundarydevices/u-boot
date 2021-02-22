@@ -17,6 +17,9 @@
 #include <log.h>
 #include <video.h>
 #include <panel.h>
+#ifdef CONFIG_CMD_FBPANEL
+#include <linux/fb.h>
+#endif
 
 struct of_endpoint {
 	unsigned int port;
@@ -485,6 +488,9 @@ int video_link_init(void)
 	memset(&video_links, 0, sizeof(video_links));
 	memset(&temp_stack, 0, sizeof(temp_stack));
 
+#ifdef CONFIG_CMD_FBPANEL
+	board_video_skip();
+#endif
 	for (uclass_find_first_device(UCLASS_VIDEO, &dev);
 	     dev;
 	     uclass_find_next_device(&dev)) {
