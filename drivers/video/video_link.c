@@ -533,9 +533,16 @@ int video_link_init(void)
 	struct udevice *dev;
 	ulong env_id;
 	int off;
+	int ret;
+
 	memset(&video_links, 0, sizeof(video_links));
 	memset(&temp_stack, 0, sizeof(temp_stack));
 
+#ifdef CONFIG_CMD_FBPANEL
+	ret = board_video_skip();
+	if (ret)
+		return -ENODEV;
+#endif
 	for (uclass_find_first_device(UCLASS_VIDEO, &dev);
 	     dev;
 	     uclass_find_next_device(&dev)) {
