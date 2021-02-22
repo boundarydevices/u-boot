@@ -284,9 +284,13 @@ ifeq ($(CONFIG_DM_VIDEO),y)
 $(LOGO_DATA_H):	$(obj)/bmp_logo $(LOGO_BMP)
 	$(obj)/bmp_logo --gen-bmp $(LOGO_BMP) > $@
 else
+ifeq ($(CONFIG_CMD_BMP), y)
+$(LOGO_DATA_H):	$(obj)/bmp_logo $(LOGO_BMP)
+	$(obj)/bmp_logo --gen-bmp $(LOGO_BMP) > $@
+else
 $(LOGO_DATA_H):	$(obj)/bmp_logo $(LOGO_BMP)
 	$(obj)/bmp_logo --gen-data $(LOGO_BMP) > $@
-#endif
+endif
 endif
 
 # Let clean descend into subdirs
