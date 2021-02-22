@@ -437,7 +437,7 @@
 
 			lcdif: lcdif@30320000 {
 				compatible = "fsl,imx8mq-lcdif", "fsl,imx28-lcdif";
-				reg = <0x0 0x30320000 0x0 0x10000>;
+				reg = <0x30320000 0x10000>;
 				clocks = <&clk IMX8MQ_CLK_LCDIF_PIXEL>,
 					<&clk IMX8MQ_CLK_DUMMY>,
 					<&clk IMX8MQ_CLK_DUMMY>;
