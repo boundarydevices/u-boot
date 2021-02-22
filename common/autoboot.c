@@ -334,7 +334,7 @@ const char *bootdelay_process(void)
 	s = env_get("bootdelay");
 	bootdelay = s ? (int)simple_strtol(s, NULL, 10) : CONFIG_BOOTDELAY;
 	if (is_usb_boot()) {
-		bootdelay = 1;
+		bootdelay = 4;
 		env_set_default("!Started from usb", 0);
 	}
 
