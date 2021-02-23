@@ -97,7 +97,7 @@ enum hab_status hab_rvt_report_event(enum hab_status status, uint32_t index,
 	if (current_el() != 3) {
 		struct arm_smccc_res res;
 		arm_smccc_smc(FSL_SIP_HAB, FSL_SIP_HAB_REPORT_EVENT,
-			      index, event, bytes, 0, 0, 0, &res);
+			      index, (ulong)event, (ulong)bytes, 0, 0, 0, &res);
 		return res.a0;
 	}
 #endif
@@ -121,7 +121,7 @@ enum hab_status hab_rvt_report_status(enum hab_config *config,
 	if (current_el() != 3) {
 		struct arm_smccc_res res;
 		arm_smccc_smc(FSL_SIP_HAB, FSL_SIP_HAB_REPORT_STATUS,
-			      config, state, 0, 0, 0, 0, &res);
+			      (ulong)config, (ulong)state, 0, 0, 0, 0, &res);
 		return res.a0;
 	}
 #endif
@@ -187,7 +187,7 @@ void hab_rvt_failsafe(void)
 		struct arm_smccc_res res;
 		arm_smccc_smc(FSL_SIP_HAB, FSL_SIP_HAB_FAILSAFE,
 			      0, 0, 0, 0, 0, 0, &res);
-		return res.a0;
+		return;
 	}
 #endif
 
@@ -207,7 +207,7 @@ enum hab_status hab_rvt_check_target(enum hab_target type, const void *start,
 	if (current_el() != 3) {
 		struct arm_smccc_res res;
 		arm_smccc_smc(FSL_SIP_HAB, FSL_SIP_HAB_CHECK_TARGET,
-			      type, start, bytes, 0, 0, 0, &res);
+			      type, (ulong)start, bytes, 0, 0, 0, &res);
 		return res.a0;
 	}
 #endif
@@ -230,8 +230,8 @@ void *hab_rvt_authenticate_image(uint8_t cid, ptrdiff_t ivt_offset,
 	if (current_el() != 3) {
 		struct arm_smccc_res res;
 		arm_smccc_smc(FSL_SIP_HAB, FSL_SIP_HAB_AUTHENTICATE,
-			      ivt_offset, start, bytes, 0, 0, 0, &res);
-		return res.a0;
+			      ivt_offset, (ulong)start, (ulong)bytes, 0, 0, 0, &res);
+		return (void*)res.a0;
 	}
 #endif
 
