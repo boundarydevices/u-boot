@@ -606,6 +606,7 @@ int video_link_init(void)
 	for (uclass_find_first_device(UCLASS_VIDEO, &dev);
 	     dev;
 	     uclass_find_next_device(&dev)) {
+		ofnode node = dev_ofnode(dev);
 
 		if (ofnode_is_enabled(node))
 			video_link_add_node(NULL, dev, node, ofnode_null());
