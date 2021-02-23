@@ -9,6 +9,7 @@
 /memreserve/ 0x40000000 0x00020000;
 
 #include "imx8mq.dtsi"
+#include "panel-m101nwwb.dtsi"
 
 &iomuxc {
 	pinctrl-names = "default";
@@ -199,6 +200,7 @@
 
 	pinctrl_i2c2a_sn65dsi83: i2c2a-sn65dsi83grp {
 		fsl,pins = <
+#define GP_I2C2A_SN65DSI83_IRQ <&gpio3 19 GPIO_ACTIVE_HIGH>
 #define GPIRQ_I2C2A_SN65DSI83	<&gpio3 19 IRQ_TYPE_LEVEL_HIGH>
 			MX8MQ_IOMUXC_SAI5_RXFS_GPIO3_IO19	0x04
 #define GP_I2C2A_SN65DSI83_EN	<&gpio3 15 GPIO_ACTIVE_HIGH>
@@ -496,13 +498,11 @@
 		lcdif = &lcdif;
 		mipi = &fb_mipi;
 		mipi_dsi = &mipi_dsi;
-		mipi_dsi_bridge = &mipi_dsi;
+		mipi_dsi_bridge = &mipi_dsi_bridge;
 		mipi_dsi_phy = &dphy;
 		mipi_to_lvds = &mipi_to_lvds;
 		pwm_mipi = &pwm1;
-#if 0
 		sound_hdmi = &sound_hdmi;
-#endif
 		t_mipi = &t_mipi;
 	};
 
@@ -797,17 +797,21 @@
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_sound_wm8960>;
 	};
+#endif
 
 	sound_hdmi: sound-hdmi {
 		compatible = "fsl,imx-audio-cdnhdmi";
 		model = "imx-audio-hdmi";
+#if 0
 		audio-cpu = <&sai4>;
+#endif
 		constraint-rate = <32000 44100 48000 96000 192000>;
 		protocol = <1>;
 		hdmi-out;
 		status = "okay";
 	};
 
+#if 0
 	power-domains {
 		#address-cells = <1>;
 		#size-cells = <0>;
@@ -1096,7 +1100,7 @@
 	status = "okay";
 
 	i2cmux@70 {
-		compatible = "pca9546";
+		compatible = "nxp,pca9546";
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_i2c2_pca9546>;
 		reg = <0x70>;
@@ -1132,18 +1136,30 @@
 
 &i2c2a {
 	mipi_to_lvds: mipi-to-lvds@2c {
+		#address-cells = <1>;
+		#size-cells = <0>;
 		alias = <&mipi_to_lvds>;
-		clocks = <&dphy 0>;
-		clock-names = "mipi_clk";
+		clocks = <&dsim_clk 0>,
+			<&clk IMX8MQ_CLK_LCDIF_PIXEL>;
+		clock-names = "mipi_clk", "pixel_clock";
 		compatible = "ti,sn65dsi83";
 		display = <&lcdif>;
 		display-dsi = <&fb_mipi>;
 		enable-gpios = GP_I2C2A_SN65DSI83_EN;
 		interrupts-extended = GPIRQ_I2C2A_SN65DSI83;
+		interrupts-gpios = GP_I2C2A_SN65DSI83_IRQ;
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_i2c2a_sn65dsi83>;
 		reg = <0x2c>;
 		status = "disabled";
+
+		port@0 {
+			reg = <0>;
+
+			lvds_from_panel: endpoint {
+				remote-endpoint = <&panel_to_lvds>;
+			};
+		};
 	};
 };
 
@@ -1210,15 +1226,39 @@
 };
 
 &lcdif {
-	status = "disabled";
+	display = <&fb_mipi>;
+	status = "okay";
 	assigned-clocks = <&clk IMX8MQ_CLK_LCDIF_PIXEL>,
 			  <&clk IMX8MQ_VIDEO_PLL1_REF_SEL>;
 	assigned-clock-parents = <&clk IMX8MQ_VIDEO_PLL1_OUT>,
 				 <&clk IMX8MQ_CLK_25M>;
 
 	port@0 {
-		lcdif_mipi_dsi_out: endpoint {
-			remote-endpoint = <&mipi_dsi_in>;
+		lcdif_out: endpoint {
+			remote-endpoint = <&mipi_dsi_bridge_in>;
+		};
+	};
+};
+
+&mipi_dsi_bridge {
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		port@0 {
+			reg = <0>;
+
+			mipi_dsi_bridge_in: endpoint {
+				remote-endpoint = <&lcdif_out>;
+			};
+		};
+
+		port@1 {
+			reg = <1>;
+
+			mipi_dsi_bridge_out: endpoint {
+				remote-endpoint = <&panel1_in>;
+			};
 		};
 	};
 };
@@ -1226,21 +1266,35 @@
 &mipi_dsi {
 	/delete-property/ no_clk_reset;
 	status = "disabled";
-	assigned-clocks = <&clk IMX8MQ_CLK_DSI_CORE>,
-			  <&clk IMX8MQ_CLK_DSI_PHY_REF>,
-			  <&clk IMX8MQ_VIDEO_PLL1_REF_SEL>;
-	assigned-clock-parents = <&clk IMX8MQ_SYS1_PLL_266M>,
-				 <&clk IMX8MQ_VIDEO_PLL1_OUT>,
+	assigned-clocks = <&clk IMX8MQ_CLK_DSI_PHY_REF>,
+			  <&clk IMX8MQ_CLK_DSI_CORE>,
+			  <&clk IMX8MQ_CLK_DSI_AHB>,
+			  <&clk IMX8MQ_VIDEO_PLL1_REF_SEL>,
+			  <&clk IMX8MQ_CLK_DSI_IPG_DIV>;
+	assigned-clock-parents = <&clk IMX8MQ_VIDEO_PLL1_OUT>,
+				 <&clk IMX8MQ_SYS1_PLL_266M>,
+				 <&clk IMX8MQ_SYS1_PLL_80M>,
 				 <&clk IMX8MQ_CLK_25M>;
-	assigned-clock-rates = <266000000>;
+	assigned-clock-rates = <27000000>,
+			       <266000000>,
+			       <80000000>,
+			       <0>,
+			       <20000000>;
+	input-source = "lcdif";
 
 	fb_mipi: panel@0 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		backlight= <&backlight_mipi>;
 		bits-per-color = <8>;
+		bits-per-pixel = <24>;
 		bridge-de-active = <0>;
 #if 0
 		bridge-sync-active = <1>;
 #endif
 		bus-format = "rgb888";
+		bus-width = <24>;
 		compatible = "panel,simple";
 		delay-power-up = <2>;
 		dsi-format = "rgb888";
@@ -1271,30 +1325,19 @@
 			};
 		};
 
-		port {
-			panel1_in: endpoint {
-				remote-endpoint = <&mipi_dsi_out>;
-			};
-		};
-	};
-
-	ports {
-		#address-cells = <1>;
-		#size-cells = <0>;
-
-		port@0 {
-			reg = <0>;
-
-			mipi_dsi_in: endpoint {
-				remote-endpoint = <&lcdif_mipi_dsi_out>;
-			};
-		};
-
 		port@1 {
 			reg = <1>;
 
-			mipi_dsi_out: endpoint {
-				remote-endpoint = <&panel1_in>;
+			panel1_in: endpoint {
+				remote-endpoint = <&mipi_dsi_bridge_out>;
+			};
+		};
+
+		port@2 {
+			reg = <2>;
+
+			panel_to_lvds: endpoint {
+				remote-endpoint = <&lvds_from_panel>;
 			};
 		};
 	};

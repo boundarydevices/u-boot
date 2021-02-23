@@ -65,7 +65,47 @@
 	u-boot,dm-spl;
 };
 
+&ckil {
+	u-boot,dm-spl;
+	u-boot,dm-pre-reloc;
+};
+
+&dummy {
+	u-boot,dm-spl;
+	u-boot,dm-pre-reloc;
+};
+
 &osc_25m {
+	u-boot,dm-spl;
+	u-boot,dm-pre-reloc;
+};
+
+&osc_27m {
+	u-boot,dm-spl;
+	u-boot,dm-pre-reloc;
+};
+
+&phy_27m {
+	u-boot,dm-spl;
+	u-boot,dm-pre-reloc;
+};
+
+&clk_ext1 {
+	u-boot,dm-spl;
+	u-boot,dm-pre-reloc;
+};
+
+&clk_ext2 {
+	u-boot,dm-spl;
+	u-boot,dm-pre-reloc;
+};
+
+&clk_ext3 {
+	u-boot,dm-spl;
+	u-boot,dm-pre-reloc;
+};
+
+&clk_ext4 {
 	u-boot,dm-spl;
 	u-boot,dm-pre-reloc;
 };
@@ -78,11 +118,11 @@
 	u-boot,dm-spl;
 };
 
-&pinctrl_usb_dwc3_0 {
+&pinctrl_usb3_0 {
 	u-boot,dm-spl;
 };
 
-&pinctrl_usb_dwc3_1 {
+&pinctrl_usb3_1 {
 	u-boot,dm-spl;
 };
 

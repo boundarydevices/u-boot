@@ -75,10 +75,14 @@ int board_early_init_f(void)
 
 	imx_iomux_v3_setup_multiple_pads(init_pads, ARRAY_SIZE(init_pads));
 	set_wdog_reset(wdog);
+	gpio_request(GP_I2C2_PCA9546_RESET, "pca9546-reset");
 
 	gpio_direction_output(GP_EMMC_RESET, 1);
 	gpio_direction_output(GP_I2C2_PCA9546_RESET, 0);
 	gpio_direction_output(GP_I2C2A_SN65DSI83_EN, 0);
+
+	gpio_direction_output(GP_I2C2_PCA9546_RESET, 1);
+	gpio_free(GP_I2C2_PCA9546_RESET);
 
 	return 0;
 }
@@ -101,8 +105,8 @@ int board_detect_hdmi(struct display_info_t const *di)
 }
 
 static const struct display_info_t displays[] = {
-	VD_MIPI_G156HCE_L01(MIPI, NULL, fbp_bus_gp(3, GP_I2C2A_SN65DSI83_EN, 0, 0), 0x2c, FBP_MIPI_TO_LVDS, FBTS_FT5X06),
-	VD_MIPI_M101NWWB(MIPI, NULL, fbp_bus_gp(3, GP_I2C2A_SN65DSI83_EN, 0, 0), 0x2c, FBP_MIPI_TO_LVDS, FBTS_FT5X06),
+	VD_MIPI_G156HCE_L01(MIPI, board_detect_pca9546, fbp_bus_gp(1 | (0 << 4), GP_I2C2A_SN65DSI83_EN, 0, 0), 0x2c, FBP_MIPI_TO_LVDS),
+	VD_MIPI_M101NWWB(MIPI, NULL, fbp_bus_gp(1 | (0 << 4), GP_I2C2A_SN65DSI83_EN, 0, 0), 0x2c, FBP_MIPI_TO_LVDS, FBTS_FT5X06),
 
 	/* hdmi */
 	VD_1920_1080M_60(HDMI, board_detect_hdmi, 0, 0x50),
@@ -118,7 +122,9 @@ static const struct display_info_t displays[] = {
 
 int board_init(void)
 {
+#ifndef CONFIG_DM_VIDEO
 	gpio_request(GP_I2C2A_SN65DSI83_EN, "sn65dsi83_enable");
+#endif
 #ifdef CONFIG_DM_ETH
 	board_eth_init(gd->bd);
 #endif
