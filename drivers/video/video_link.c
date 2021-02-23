@@ -546,8 +546,13 @@ int video_link_init(void)
 	for (uclass_find_first_device(UCLASS_VIDEO, &dev);
 	     dev;
 	     uclass_find_next_device(&dev)) {
+		ofnode node = dev_ofnode(dev);
 
-		video_link_add_node(NULL, dev, dev_ofnode(dev));
+		if (ofnode_is_available(node))
+			video_link_add_node(NULL, dev, node);
+		else
+			debug("%s: %s not available\n", __func__,
+				ofnode_get_name(node));
 	}
 
 	if (video_links_num == 0) {
