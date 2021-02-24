@@ -251,8 +251,8 @@ int dm_i2c_reg_write(struct udevice *dev, uint offset, uint value)
  * @return 0 if found, -ENOSYS if the driver is invalid, -EREMOTEIO if the chip
  * does not respond to probe
  */
-static int i2c_probe_chip(struct udevice *bus, uint chip_addr,
-			  enum dm_i2c_chip_flags chip_flags)
+int i2c_probe_chip(struct udevice *bus, uint chip_addr,
+		   enum dm_i2c_chip_flags chip_flags)
 {
 	struct dm_i2c_ops *ops = i2c_get_ops(bus);
 	struct i2c_msg msg[1];
