@@ -11,9 +11,9 @@
 
 	aliases {
 		console = &uart0;
-		eth0 = "/eth@10002000";
-		eth3 = &eth_3;
-		eth5 = &eth_5;
+		ethernet0 = "/eth@10002000";
+		ethernet3 = &eth_3;
+		ethernet5 = &eth_5;
 		gpio1 = &gpio_a;
 		gpio2 = &gpio_b;
 		gpio3 = &gpio_c;
