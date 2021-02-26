@@ -1,0 +1,18 @@
+if TARGET_C2_IMX8MM
+
+config SYS_BOARD
+	default "c2-imx8mm"
+
+config SYS_VENDOR
+	default "boundary"
+
+config SYS_CONFIG_NAME
+	default "c2-imx8mm"
+
+config BOARD_TYPE
+	string
+	default "c2"
+
+source "board/boundary/common/Kconfig"
+
+endif

@@ -7,6 +7,11 @@ config TARGET_BIO
 	select IMX8MQ
 	select SUPPORT_SPL
 
+config TARGET_C2_IMX8MM
+	bool "c2-imx8mm"
+	select IMX8MM
+	select SUPPORT_SPL
+
 config TARGET_DS
 	bool "ds"
 	select IMX8MQ
@@ -88,6 +93,7 @@ config TARGET_SPAN
 endchoice
 
 source "board/boundary/bio/Kconfig"
+source "board/boundary/c2-imx8mm/Kconfig"
 source "board/boundary/ds/Kconfig"
 source "board/boundary/dwe/Kconfig"
 source "board/boundary/hl8mm/Kconfig"
