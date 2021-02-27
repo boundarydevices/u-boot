@@ -7,6 +7,7 @@
 #include <common.h>
 #include <dm.h>
 #include <asm/io.h>
+#include <linux/bug.h>
 #include <linux/err.h>
 #include <asm/unaligned.h>
 #include <asm/arch/clock.h>
