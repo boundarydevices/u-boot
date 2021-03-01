@@ -36,7 +36,10 @@ setexpr a_uImage1 ${a_qspi1} + 0x400
 setexpr a_uImage2 ${a_qspi2} + 0x400
 setexpr a_script ${a_base}
 
-setenv stdout serial,vga
+if itest.s "x${vidconsole}" == "x" ; then
+	vidconsole=vga
+fi
+setenv stdout serial,${vidconsole}
 
 if itest.s "x${sfname}" == "x" ; then
 # U-Boot resides in (e)MMC
