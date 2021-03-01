@@ -605,6 +605,10 @@ int bdcommon_env_init(void)
 	env_set("uboot_defconfig", CONFIG_DEFCONFIG);
 #endif
 
+#ifdef CONFIG_DM_VIDEO
+	if (!env_get("vidconsole"))
+		env_set("vidconsole", "vidconsole");
+#endif
 #ifdef CONFIG_ENV_WLMAC
 	addmac_env("wlmac");
 #endif
