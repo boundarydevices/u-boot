@@ -349,7 +349,7 @@ static const char *get_alias(const struct display_info_t *di, unsigned fb, int i
 	return new_aliases[fb][i];
 }
 
-#ifdef CONFIG_DM_VIDEO
+#if CONFIG_IS_ENABLED(DM_VIDEO) && CONFIG_IS_ENABLED(OF_LIVE)
 void *heap;
 int heap_remaining;
 
@@ -385,7 +385,7 @@ static int set_property_u32(char *buf, int size, const char *path,
 {
 	int sz = snprintf(buf, size, "fdt set %s %s <%u>;", path,
 			propname, val);
-#ifdef CONFIG_DM_VIDEO
+#if CONFIG_IS_ENABLED(DM_VIDEO) && CONFIG_IS_ENABLED(OF_LIVE)
 	u32 old_val = 0;
 	int ret;
 	ofnode node = ofnode_path_err(path);
@@ -422,7 +422,7 @@ static int set_property_u32_env(char *buf, int size, const char *path,
 {
 	int sz = snprintf(buf, size, "fdt set %s %s <${%s}>;", path,
 			propname, env);
-#ifdef CONFIG_DM_VIDEO
+#if CONFIG_IS_ENABLED(DM_VIDEO) && CONFIG_IS_ENABLED(OF_LIVE)
 	u32 old_val = 0;
 	int ret;
 	ofnode node = ofnode_path_err(path);
@@ -450,7 +450,7 @@ static int set_property_u32_env_2parms(char *buf, int size, const char *path,
 {
 	int sz = snprintf(buf, size, "fdt set %s %s <${%s} %u %u>;", path,
 			propname, env, p1, p2);
-#ifdef CONFIG_DM_VIDEO
+#if CONFIG_IS_ENABLED(DM_VIDEO) && CONFIG_IS_ENABLED(OF_LIVE)
 	u32 old[] = {0, 0, 0};
 	int ret;
 	ofnode node = ofnode_path_err(path);
@@ -479,7 +479,7 @@ static int set_property_str(char *buf, int size, const char *path,
 		const char *propname, const char *val)
 {
 	int sz = snprintf(buf, size, "fdt set %s %s %s;", path, propname, val);
-#ifdef CONFIG_DM_VIDEO
+#if CONFIG_IS_ENABLED(DM_VIDEO) && CONFIG_IS_ENABLED(OF_LIVE)
 	ofnode node = ofnode_path_err(path);
 
 	if (!ofnode_valid(node))
@@ -492,7 +492,7 @@ static int set_property_str(char *buf, int size, const char *path,
 static int set_property(char *buf, int size, const char *path, const char *propname)
 {
 	int sz = snprintf(buf, size, "fdt set %s %s;", path, propname);
-#ifdef CONFIG_DM_VIDEO
+#if CONFIG_IS_ENABLED(DM_VIDEO) && CONFIG_IS_ENABLED(OF_LIVE)
 	ofnode node = ofnode_path_err(path);
 
 	if (!ofnode_valid(node))
@@ -509,7 +509,7 @@ static int set_property_set_rm(char *buf, int size, const char *path, const char
 	if (set)
 		return set_property(buf, size, path, propname);
 	sz = snprintf(buf, size, "fdt rm %s %s;", path, propname);
-#ifdef CONFIG_DM_VIDEO
+#if CONFIG_IS_ENABLED(DM_VIDEO) && CONFIG_IS_ENABLED(OF_LIVE)
 	ofnode node = ofnode_path_err(path);
 
 	if (!ofnode_valid(node))
@@ -523,7 +523,7 @@ static int set_status(char *buf, int size, const char *path, bool enable)
 {
 	int sz = snprintf(buf, size, "fdt set %s status %s;", path,
 			enable ? "okay" : "disabled");
-#ifdef CONFIG_DM_VIDEO
+#if CONFIG_IS_ENABLED(DM_VIDEO) && CONFIG_IS_ENABLED(OF_LIVE)
 	ofnode node = ofnode_path_err(path);
 	int ret;
 
@@ -563,7 +563,7 @@ static int get_value_joined_str(char *buf, int size, u32* pval,
 {
 	int sz = snprintf(buf, size, "fdt get value %s %s%s %s;", env,
 			path1, path2, propname);
-#ifdef CONFIG_DM_VIDEO
+#if CONFIG_IS_ENABLED(DM_VIDEO) && CONFIG_IS_ENABLED(OF_LIVE)
 	char cpath[80];
 	ofnode node;
 
