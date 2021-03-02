@@ -8,7 +8,6 @@
 #include <dt-bindings/usb/pd.h>
 #include "imx8mp.dtsi"
 #define TC358867_I2C_BUS	<&i2c2d>
-#if 0
 #include "panel-dmt050wvnxcmi.dtsi"
 #include "panel-ltk0680ytmdb.dtsi"
 #include "panel-ltk080a60a004t.dtsi"
@@ -16,7 +15,6 @@
 #include "panel-lcm-jm430.dtsi"
 #include "panel-m101nwwb.dtsi"
 #include "panel-com50h5n03ulc.dtsi"
-#endif
 
 &iomuxc {
 	pinctrl-names = "default";
@@ -32,17 +30,20 @@
 	pinctrl_ecspi2: ecspi2grp {
 		fsl,pins = <
 			/* J31 */
-			MX8MP_IOMUXC_ECSPI2_SCLK__ECSPI2_SCLK		0x82
-			MX8MP_IOMUXC_ECSPI2_MOSI__ECSPI2_MOSI		0x82
-			MX8MP_IOMUXC_ECSPI2_MISO__ECSPI2_MISO		0x82
+			MX8MP_IOMUXC_ECSPI2_SCLK__ECSPI2_SCLK		0x82	/* Pin 20 */
+			MX8MP_IOMUXC_ECSPI2_MOSI__ECSPI2_MOSI		0x82	/* Pin 10 */
+			MX8MP_IOMUXC_ECSPI2_MISO__ECSPI2_MISO		0x82	/* Pin 8 */
 #define GP_ECSPI2_CS	<&gpio5 13 GPIO_ACTIVE_LOW>
-			MX8MP_IOMUXC_ECSPI2_SS0__GPIO5_IO13		0x143
-			MX8MP_IOMUXC_GPIO1_IO08__GPIO1_IO08		0x16
-			MX8MP_IOMUXC_SD1_DATA4__GPIO2_IO06		0x41
-			MX8MP_IOMUXC_SD1_DATA5__GPIO2_IO07		0x41
-			MX8MP_IOMUXC_SAI1_TXD7__GPIO4_IO19		0x1c4
-			MX8MP_IOMUXC_SAI1_MCLK__GPIO4_IO20		0x16
-			MX8MP_IOMUXC_GPIO1_IO14__GPIO1_IO14		0x19
+			MX8MP_IOMUXC_ECSPI2_SS0__GPIO5_IO13		0x143	/* Pin 6 */
+			MX8MP_IOMUXC_SPDIF_RX__GPIO5_IO04		0x41	/* Pin 17 */
+			MX8MP_IOMUXC_SPDIF_EXT_CLK__GPIO5_IO05		0x41	/* Pin 19 */
+			MX8MP_IOMUXC_SPDIF_TX__GPIO5_IO03		0x41	/* Pin 21 */
+			MX8MP_IOMUXC_SD1_RESET_B__GPIO2_IO10		0x41	/* Pin 23 */
+			MX8MP_IOMUXC_SD1_DATA6__GPIO2_IO08		0x41	/* Pin 25 */
+			MX8MP_IOMUXC_SD1_DATA5__GPIO2_IO07		0x41	/* Pin 29 */
+			MX8MP_IOMUXC_SD1_DATA4__GPIO2_IO06		0x41	/* Pin 31 */
+			MX8MP_IOMUXC_SAI1_MCLK__GPIO4_IO20		0x16	/* Pin 2 */
+			MX8MP_IOMUXC_SAI1_TXD7__GPIO4_IO19		0x1c4	/* Pin 4 */
 		>;
 	};
 
@@ -138,8 +139,8 @@
 
 	pinctrl_gpio_keys: gpio-keysgrp {
 		fsl,pins = <
-#define GP_CAN1_DETECT		<&gpio1 12 GPIO_ACTIVE_HIGH>
-			MX8MP_IOMUXC_GPIO1_IO12__GPIO1_IO12	0x180
+#define GP_CAN1_DETECT		<&gpio1 11 GPIO_ACTIVE_HIGH>
+			MX8MP_IOMUXC_GPIO1_IO11__GPIO1_IO11	0x16
 #define GP_CAN2_DETECT		<&gpio4 23 GPIO_ACTIVE_HIGH>
 			MX8MP_IOMUXC_SAI2_RXD0__GPIO4_IO23	0x180
 		>;
@@ -233,6 +234,14 @@
 		>;
 	};
 
+	pinctrl_i2c4_hd3ss3220: i2c4-hd3ss3220grp {
+		fsl,pins = <
+#define GPIRQ_HD3SS3220	<&gpio1 8 IRQ_TYPE_LEVEL_LOW>
+			MX8MP_IOMUXC_GPIO1_IO08__GPIO1_IO08		0x16
+			MX8MP_IOMUXC_SAI1_RXD0__GPIO4_IO02		0x03
+		>;
+	};
+
 	pinctrl_mipi_com50h5n03ulc: mipi-com50h5n03ulcgrp {
 		fsl,pins = <
 #define GP_MIPI_RESET	<&gpio4 27 GPIO_ACTIVE_LOW>
@@ -318,8 +327,8 @@
 
 	pinctrl_reg_usbotg_vbus: reg-usbotg-vbusgrp {
 		fsl,pins = <
-#define GP_REG_USB_OTG_VBUS	<&gpio1 11 GPIO_ACTIVE_HIGH>
-			MX8MP_IOMUXC_GPIO1_IO11__GPIO1_IO11	0x16
+#define GP_REG_USB_OTG_VBUS	<&gpio1 12 GPIO_ACTIVE_HIGH>
+			MX8MP_IOMUXC_GPIO1_IO12__GPIO1_IO12	0x16
 		>;
 	};
 
@@ -361,6 +370,8 @@
 		fsl,pins = <
 #define GP_WM8960_MIC_DET	<&gpio4 18 GPIO_ACTIVE_LOW>
 			MX8MP_IOMUXC_SAI1_TXD6__GPIO4_IO18	0x80
+#define GP_WM8960_HP_DET	<&gpio1 14 GPIO_ACTIVE_HIGH>
+			MX8MP_IOMUXC_GPIO1_IO14__GPIO1_IO14	0x80
 		>;
 	};
 
@@ -424,11 +435,7 @@
 
 	pinctrl_usb3_0: usb3-0grp {
 		fsl,pins = <
-#if 1
 			MX8MP_IOMUXC_GPIO1_IO13__HSIOMIX_usb1_OTG_OC	0x116
-#else
-			MX8MP_IOMUXC_GPIO1_IO13__GPIO1_IO13	0x116
-#endif
 		>;
 	};
 
@@ -447,6 +454,7 @@
 			MX8MP_IOMUXC_SD1_DATA1__USDHC1_DATA1	0x1d0
 			MX8MP_IOMUXC_SD1_DATA2__USDHC1_DATA2	0x1d0
 			MX8MP_IOMUXC_SD1_DATA3__USDHC1_DATA3	0x1d0
+			MX8MP_IOMUXC_GPIO1_IO03__USDHC1_VSELECT	0x116
 		>;
 	};
 
@@ -476,7 +484,6 @@
 		fsl,pins = <
 #define GP_USDHC1_CD	<&gpio2 11 GPIO_ACTIVE_LOW>
 			MX8MP_IOMUXC_SD1_STROBE__GPIO2_IO11	0x1c4
-			MX8MP_IOMUXC_GPIO1_IO03__USDHC1_VSELECT	0x116
 		>;
 	};
 
@@ -571,9 +578,9 @@
 	model = "Boundary i.MX8MPlus nitrogen8mp board";
 	compatible = "boundary,imx8mp-nitrogen8mp", "fsl,imx8mp";
 
-#if 0
 	aliases {
 		backlight_mipi = &backlight_mipi;
+#if 0
 		fb_lvds = &lcdif2;
 		fb_lvds2 = &lcdif2;
 		fb_mipi = &fb_mipi;
@@ -583,47 +590,29 @@
 		ldb_chan = &ldb_chan;
 		ldb_chan2 = &ldb_chan2;
 		mipi = &fb_mipi;
-		mipi_cmds_com50h5n03ulc = &mipi_cmds_com50h5n03ulc;
-		mipi_cmds_lcd133_070 = &mipi_cmds_lcd133_070;
-		mipi_cmds_lcm_jm430 = &mipi_cmds_lcm_jm430;
-		mipi_cmds_ltk0680ytmdb = &mipi_cmds_ltk0680ytmdb;
-		mipi_cmds_ltk080a60a004t = &mipi_cmds_ltk080a60a004t;
-		mipi_cmds_m101nwwb = &mipi_cmds_m101nwwb;
 		mipi_dsi = &mipi_dsi;
 		mipi_dsi_bridge = &mipi_dsi;
 		mipi_to_lvds = &mipi_to_lvds;
-		pinctrl_com50h5n03ulc = &pinctrl_mipi_com50h5n03ulc;
-		pinctrl_lcd133_070 = &pinctrl_mipi_lcd133_070;
-		pinctrl_lcm_jm430 = &pinctrl_mipi_lcm_jm430;
-		pinctrl_ltk0680ytmdb = &pinctrl_mipi_ltk0680ytmdb;
-		pinctrl_ltk080a60a004t = &pinctrl_mipi_ltk080a60a004t;
+#endif
 		pwm_mipi = &pwm1;
+		pwm_lvds = &pwm2;
+#if 0
 		t_lvds = &t_lvds;
 		t_lvds2 = &t_lvds2;
 		t_mipi = &t_mipi;
+#endif
 		ts_ft5x06 = &ts_ft5x06;
+		ts_ft5x06_2 = &ts_ft5x06_lvds;
 		ts_goodix = &ts_goodix;
-	};
-
-	alias_create_phandles {
-		p1 = <&mipi_cmds_com50h5n03ulc>;
-		p2 = <&mipi_cmds_lcd133_070>;
-		p3 = <&mipi_cmds_lcm_jm430>;
-		p4 = <&mipi_cmds_ltk0680ytmdb>;
-		p5 = <&mipi_cmds_ltk080a60a004t>;
-		p6 = <&mipi_cmds_m101nwwb>;
-		p7 = <&mipi_to_lvds>;
-		p8 = <&pinctrl_mipi_com50h5n03ulc>;
-		p9 = <&pinctrl_mipi_lcd133_070>;
-		p10 = <&pinctrl_mipi_lcm_jm430>;
-		p11 = <&pinctrl_mipi_ltk0680ytmdb>;
-		p12 = <&pinctrl_mipi_ltk080a60a004t>;
+		usb_mux = &usb_mux;
 	};
 
 	backlight_lvds: backlight-lvds {
 		brightness-levels = <0 1 2 3 4 5 6 7 8 9 10>;
 		compatible = "pwm-backlight";
+#if 0
 		display = <&lcdif2>;
+#endif
 		default-brightness-level = <8>;
 		pwms = <&pwm2 0 100000>;
 		status = "okay";
@@ -634,7 +623,9 @@
 		brightness-levels = <0 1 2 3 4 5 6 7 8 9 10>;
 		compatible = "pwm-backlight";
 		default-brightness-level = <8>;
+#if 0
 		display = <&lcdif1>;
+#endif
 		pwms = <&pwm1 0 30000>;		/* 33.3 Khz */
 		status = "okay";
 	};
@@ -648,10 +639,34 @@
 		reset-gpios = GP_BT_RFKILL_RESET;
 		status = "okay";
 	};
-#endif
 
 	chosen {
 		stdout-path = &uart2;
+	};
+
+	connector {
+		compatible = "usb-c-connector";
+		label = "USB-C";
+		data-role = "dual";
+
+		ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			port@0 {
+				reg = <0>;
+				hs_ep: endpoint {
+					remote-endpoint = <&usb3_hs_ep>;
+				};
+			};
+
+			port@1 {
+				reg = <1>;
+				ss_ep: endpoint {
+					remote-endpoint = <&hd3ss3220_in_ep>;
+				};
+			};
+		};
 	};
 
 	gpio-keys {
@@ -753,11 +768,12 @@
 		};
 	};
 
-#if 0
 	sound-hdmi {
 		compatible = "fsl,imx-audio-cdnhdmi";
 		model = "audio-hdmi";
+#if 0
 		audio-cpu = <&aud2htx>;
+#endif
 		hdmi-out;
 		constraint-rate = <44100>,
 				<88200>,
@@ -770,17 +786,10 @@
 	};
 
 	sound-wm8960 {
-		compatible = "fsl,imx-audio-wm8960";
-		model = "wm8960-audio";
-		cpu-dai = <&sai3>;
-		audio-codec = <&wm8960>;
 #if 0
 		asrc-controller = <&easrc>;
 #endif
-		mic-det-gpios = GP_WM8960_MIC_DET;
-		codec-master;
-		/* JD2: hp detect high for headphone*/
-		hp-det = <2 0>;
+		audio-codec = <&wm8960>;
 		audio-routing =
 			"Headphone Jack", "HP_L",
 			"Headphone Jack", "HP_R",
@@ -798,10 +807,22 @@
 			"ASRC-Capture", "CPU-Capture",
 			"CPU-Capture", "Capture";
 #endif
+		codec-master;
+		compatible = "fsl,imx-audio-wm8960";
+#if 0
+		cpu-dai = <&sai3>;
+#endif
+		/* JD2: hp detect high for headphone*/
+		hp-det = <2 0>;
+		hp-det-gpios = GP_WM8960_HP_DET;
+		/* Jack is not stuffed */
+		mic-det-gpios = GP_WM8960_MIC_DET;
+		model = "wm8960-audio";
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_sound_wm8960>;
 	};
 
+#if 0
 	sound-micfil {
 		compatible = "fsl,imx-audio-micfil";
 		model = "imx-audio-micfil";
@@ -888,6 +909,7 @@
 
 		ethphy0: ethernet-phy@4 {
 			compatible = "ethernet-phy-ieee802.3-c22";
+			at803x,hib-disabled;
 			eee-broken-1000t;
 			interrupts-extended = GPIRQ_EQOS_PHY;
 #if 0
@@ -1097,7 +1119,7 @@
 	pca9546: i2cmux9546@70 {
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_i2c2_pca9546>;
-		compatible = "pca9546";
+		compatible = "nxp,pca9546";
 		reg = <0x70>;
 		reset-gpios = GP_PCA9546_RESET;
 		#address-cells = <1>;
@@ -1176,14 +1198,18 @@
 #endif
 
 &i2c2d {
-#if 0
 	mipi_to_lvds: mipi-to-lvds@2c {
+		alias = <&mipi_to_lvds>;
+#if 0
 		clocks = <&mipi_dsi 0>,
 			<&clk IMX8MP_CLK_MEDIA_DISP1_PIX_ROOT>;
 		clock-names = "mipi_clk", "pixel_clock";
+#endif
 		compatible = "ti,sn65dsi83";
+#if 0
 		display = <&display_subsystem>;
 		display-dsi = <&fb_mipi>;
+#endif
 		enable-gpios = GP_SN65DSI83_EN;
 		interrupts-extended = GPIRQ_SN65DSI83;
 		pinctrl-names = "default";
@@ -1191,7 +1217,7 @@
 		reg = <0x2c>;
 		status = "disabled";
 	};
-#endif
+
 	rtc@52 {
 		backup-switchover-dsm;
 		compatible = "microcrystal,rv3028";
@@ -1254,15 +1280,15 @@
 	sda-gpios = GP_I2C3_SDA;
 	status = "okay";
 
-#if 0
 	wm8960: codec@1a {
 		compatible = "wlf,wm8960";
 		reg = <0x1a>;
+#if 0
 		clocks = <&audiomix_clk IMX8MP_CLK_AUDIOMIX_SAI3_MCLK1>;
+#endif
 		clock-names = "mclk";
 		wlf,shared-lrclk;
 	};
-#endif
 };
 
 &i2c4 {
@@ -1281,6 +1307,34 @@
 		pinctrl-0 = <&pinctrl_ts_ft5x06_lvds>;
 		reg = <0x38>;
 		wakeup-gpios = GP_TS_FT5X06_LVDS_WAKE;
+	};
+
+	usb_mux: hd3ss3220@47 {
+		/* tusb320 is compatible with hd3ss3220 */
+		compatible = "ti,hd3ss3220";
+		interrupts-extended = GPIRQ_HD3SS3220;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_i2c4_hd3ss3220>;
+		reg = <0x47>;
+
+		ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			port@0 {
+				reg = <0>;
+				hd3ss3220_in_ep: endpoint {
+					remote-endpoint = <&ss_ep>;
+				};
+			};
+
+			port@1 {
+				reg = <1>;
+				hd3ss3220_out_ep: endpoint {
+					remote-endpoint = <&usb3_role_switch>;
+				};
+			};
+		};
 	};
 };
 
@@ -1328,7 +1382,9 @@
 &lcdif3 {
 	status = "disabled";
 };
+#endif
 
+#if 0
 &ldb {
 	lvds-channel@0 {
 		fsl,data-mapping = "spwg";
@@ -1374,7 +1430,9 @@
 &ldb_phy {
 	status = "okay";
 };
+#endif
 
+#if 0
 &micfil {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_pdm>;
@@ -1419,7 +1477,9 @@
 		};
 	};
 };
+#endif
 
+#if 0
 &mipi_dsi {
 	clocks = <&clk IMX8MP_CLK_MEDIA_APB_ROOT>,
 		 <&clk IMX8MP_CLK_MEDIA_MIPI_PHY1_REF>,
@@ -1467,7 +1527,9 @@
 		};
 	};
 };
+#endif
 
+#if 0
 &mix_gpu_ml {
 	status = "okay";
 };
@@ -1475,7 +1537,9 @@
 &ml_vipsi {
 	status = "okay";
 };
+#endif
 
+#if 0
 &pcie {
 	assigned-clocks = <&clk IMX8MP_CLK_HSIO_AXI_SRC>,
 			  <&clk IMX8MP_CLK_PCIE_AUX>;
@@ -1577,6 +1641,25 @@
 	pinctrl-0 = <&pinctrl_usb3_0>;
 	status = "okay";
 	vbus-supply = <&reg_usb_otg_vbus>;
+
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		port@0 {
+			reg = <0>;
+			usb3_hs_ep: endpoint {
+				remote-endpoint = <&hs_ep>;
+			};
+		};
+
+		port@1 {
+			reg = <1>;
+			usb3_role_switch: endpoint {
+				remote-endpoint = <&hd3ss3220_out_ep>;
+			};
+		};
+	};
 };
 
 &usb_dwc3_1 {
