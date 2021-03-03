@@ -635,10 +635,6 @@ int bdcommon_env_init(void)
 	board_eth_addresses();
 #if defined(CONFIG_CMD_FASTBOOT) || defined(CONFIG_CMD_DFU)
 	addserial_env("serial#");
-	if (board_fastboot_key_pressed()) {
-		printf("Starting fastboot...\n");
-		env_set("preboot", "fastboot 0");
-	}
 #endif
 	return 0;
 }
@@ -665,6 +661,14 @@ int board_late_init(void)
 #ifndef CONFIG_DM_VIDEO
 	board_video_skip();
 #endif
+#endif
+#if defined(CONFIG_CMD_FASTBOOT) || defined(CONFIG_CMD_DFU)
+	if (board_fastboot_key_pressed()) {
+#if defined(CONFIG_PREBOOT)
+		printf("Starting fastboot...\n");
+		env_set("preboot", "fastboot 0");
+#endif
+	}
 #endif
 	return bdcommon_env_init();
 }
