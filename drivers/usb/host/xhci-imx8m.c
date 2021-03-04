@@ -232,7 +232,7 @@ static int imx8m_xhci_probe(struct udevice *dev)
 	/*
 	 * Get the base address for XHCI controller from the device node
 	 */
-	hcd_base = devfdt_get_addr(dev);
+	hcd_base = dev_read_addr_index(dev, 0);
 	if (hcd_base == FDT_ADDR_T_NONE) {
 		printf("Can't get the XHCI register base address\n");
 		return -ENXIO;
