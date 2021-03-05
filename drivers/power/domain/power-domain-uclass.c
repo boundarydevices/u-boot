@@ -10,6 +10,7 @@
 #include <power-domain.h>
 #include <power-domain-uclass.h>
 #include <dm/device-internal.h>
+#include <dm/lists.h>
 
 static inline struct power_domain_ops *power_domain_dev_ops(struct udevice *dev)
 {
@@ -31,13 +32,62 @@ static int power_domain_of_xlate_default(struct power_domain *power_domain,
 	return 0;
 }
 
+static int power_domain_request(struct power_domain *power_domain,
+		struct udevice *dev_power_domain,
+		struct ofnode_phandle_args *args)
+{
+	struct power_domain_ops *ops = power_domain_dev_ops(dev_power_domain);
+	int ret;
+
+	power_domain->dev = dev_power_domain;
+	if (ops->of_xlate)
+		ret = ops->of_xlate(power_domain, args);
+	else
+		ret = power_domain_of_xlate_default(power_domain, args);
+	if (ret) {
+		debug("of_xlate() failed: %d\n", ret);
+		return ret;
+	}
+
+	ret = ops->request(power_domain);
+	if (ret) {
+		debug("ops->request() failed: %d\n", ret);
+		return ret;
+	}
+
+	return 0;
+}
+
+int power_domain_get_by_args(struct power_domain *power_domain,
+		struct ofnode_phandle_args *args)
+{
+	struct udevice *pdev;
+	struct udevice *dev = NULL;
+	int ret;
+
+	ret = uclass_get_device_by_ofnode(UCLASS_POWER_DOMAIN, args->node, &dev);
+	if (ret) {
+		/* not device yet */
+		ofnode pnode = ofnode_get_parent(args->node);
+
+		ret = device_find_by_ofnode(pnode, &pdev);
+		if (!ret) {
+			lists_bind_fdt(pdev, args->node, NULL, false);
+			ret = uclass_get_device_by_ofnode(UCLASS_POWER_DOMAIN,
+					args->node, &dev);
+		}
+	}
+	if (ret)
+		return ret;
+	return power_domain_request(power_domain, dev, args);
+}
+
 int power_domain_get_by_index(struct udevice *dev,
 			      struct power_domain *power_domain, int index)
 {
 	struct ofnode_phandle_args args;
 	int ret;
 	struct udevice *dev_power_domain;
-	struct power_domain_ops *ops;
 
 	debug("%s(dev=%p, power_domain=%p)\n", __func__, dev, power_domain);
 
@@ -57,25 +107,7 @@ int power_domain_get_by_index(struct udevice *dev,
 		      __func__, ret);
 		return ret;
 	}
-	ops = power_domain_dev_ops(dev_power_domain);
-
-	power_domain->dev = dev_power_domain;
-	if (ops->of_xlate)
-		ret = ops->of_xlate(power_domain, &args);
-	else
-		ret = power_domain_of_xlate_default(power_domain, &args);
-	if (ret) {
-		debug("of_xlate() failed: %d\n", ret);
-		return ret;
-	}
-
-	ret = ops->request(power_domain);
-	if (ret) {
-		debug("ops->request() failed: %d\n", ret);
-		return ret;
-	}
-
-	return 0;
+	return power_domain_request(power_domain, dev_power_domain, &args);
 }
 
 int power_domain_get(struct udevice *dev, struct power_domain *power_domain)
