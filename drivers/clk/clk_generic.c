@@ -22,7 +22,7 @@ static unsigned long gen_clk_recalc_rate(struct clk *clk)
 {
 	struct gen_clk_priv *clk_priv = dev_get_priv(clk->dev);
 
-	debug("%s: %p: %lu\n", __func__, clk_priv, clk_priv->frequency);
+	debug("%s: %p(%s) %p: %lu\n", __func__, clk->dev, clk->dev->name, clk_priv, clk_priv->frequency);
 	return clk_priv->frequency;
 }
 
@@ -58,10 +58,15 @@ static int gen_clk_probe(struct udevice *dev)
 		if (!ret)
 			clk_parent_name = c->dev->name;
 	}
-	debug("%s: %s %s\n", __func__, clk_name, clk_parent_name);
-
-	/* register the clock */
-	return clk_register(&clk_priv->clk, "generic-clk", clk_name, clk_parent_name);
+	dev->uclass_priv = &clk_priv->clk;
+	clk_priv->clk.dev = dev;
+	if (!ret) {
+		debug("%s: %s %s\n", __func__, clk_name, clk_parent_name);
+		list_del(&dev->sibling_node);
+		list_add_tail(&dev->sibling_node, &c->dev->child_head);
+		dev->parent = c->dev;
+	}
+	return 0;
 }
 
 static struct clk_ops gen_clk_ops = {
@@ -74,7 +79,7 @@ static const struct udevice_id gen_clk_ids[] = {
 	{ }
 };
 
-U_BOOT_DRIVER(imx8mp_clk) = {
+U_BOOT_DRIVER(clk_generic) = {
 	.name = "generic-clk",
 	.id = UCLASS_CLK,
 	.of_match = gen_clk_ids,
