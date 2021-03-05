@@ -652,7 +652,7 @@ int clk_enable(struct clk *clk)
 			    device_get_uclass_id(clkp->dev->parent) == UCLASS_CLK) {
 				ret = clk_enable(dev_get_clk_ptr(clkp->dev->parent));
 				if (ret) {
-					printf("Enable %s failed\n",
+					printf("Enable parent %s failed\n",
 					       clkp->dev->parent->name);
 					return ret;
 				}
@@ -662,7 +662,7 @@ int clk_enable(struct clk *clk)
 		if (ops->enable) {
 			ret = ops->enable(clk);
 			if (ret) {
-				printf("Enable %s failed\n", clk->dev->name);
+				printf("Enable %s(%ld) failed\n", clk->dev->name, clk->id);
 				return ret;
 			}
 		}
