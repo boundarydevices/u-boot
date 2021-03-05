@@ -77,6 +77,11 @@ struct power_domain {
  * Return: 0 if OK, or a negative error code.
  */
 #if CONFIG_IS_ENABLED(POWER_DOMAIN)
+struct ofnode_phandle_args;
+
+int power_domain_get_by_args(struct power_domain *power_domain,
+		struct ofnode_phandle_args *args);
+
 int power_domain_get(struct udevice *dev, struct power_domain *power_domain);
 #else
 static inline
