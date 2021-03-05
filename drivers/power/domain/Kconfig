@@ -30,6 +30,13 @@ config IMX8M_POWER_DOMAIN
 	  Enable support for manipulating NXP i.MX8M on-SoC power domains via
 	  requests to the ATF.
 
+config IMX8M_PM_DOMAINS
+	bool "Enable i.MX8M pm domains driver"
+	depends on POWER_DOMAIN && ARCH_IMX8M
+	help
+	  Enable support for manipulating NXP i.MX8MM/MN/MP on-SoC power domains via
+	  requests to the ATF.
+
 config MTK_POWER_DOMAIN
 	bool "Enable the MediaTek power domain driver"
 	depends on POWER_DOMAIN && ARCH_MEDIATEK
