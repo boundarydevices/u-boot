@@ -1437,8 +1437,11 @@ static int _sec_mipi_dsim_check_pll_out(struct sec_mipi_dsim *dsim)
 	ret = sec_mipi_dsim_get_pms(dsim, bit_clk, dsim->ref_clk);
 	if (ret < 0)
 		return ret;
-	if (dsim->dsi_clk)
+	if (dsim->dsi_clk) {
+		debug("%s: %d = %ld * %d / %d, freq=%ld\n", __func__, bit_clk, pix_clk,
+				bpp, dsim->lanes, dsim->frequency);
 		clk_set_rate(dsim->dsi_clk, dsim->frequency);
+	}
 
 	return 0;
 }
