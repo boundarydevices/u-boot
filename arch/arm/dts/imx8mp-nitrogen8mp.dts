@@ -345,6 +345,7 @@
 
 	pinctrl_sn65dsi83: sn65dsi83grp {
 		fsl,pins = <
+#define GP_SN65DSI83_IRQ <&gpio4 0 GPIO_ACTIVE_HIGH>
 #define GPIRQ_SN65DSI83	<&gpio4 0 IRQ_TYPE_LEVEL_HIGH>
 			MX8MP_IOMUXC_SAI1_RXFS__GPIO4_IO00	0x04
 #define GP_SN65DSI83_EN	<&gpio4 27 GPIO_ACTIVE_HIGH>
@@ -566,7 +567,6 @@
 
 	aliases {
 		backlight_mipi = &backlight_mipi;
-#if 0
 		fb_lvds = &lcdif2;
 		fb_lvds2 = &lcdif2;
 		fb_mipi = &fb_mipi;
@@ -579,14 +579,11 @@
 		mipi_dsi = &mipi_dsi;
 		mipi_dsi_bridge = &mipi_dsi;
 		mipi_to_lvds = &mipi_to_lvds;
-#endif
 		pwm_mipi = &pwm1;
 		pwm_lvds = &pwm2;
-#if 0
 		t_lvds = &t_lvds;
 		t_lvds2 = &t_lvds2;
 		t_mipi = &t_mipi;
-#endif
 		ts_ft5x06 = &ts_ft5x06;
 		ts_ft5x06_2 = &ts_ft5x06_lvds;
 		ts_goodix = &ts_goodix;
@@ -596,9 +593,7 @@
 	backlight_lvds: backlight-lvds {
 		brightness-levels = <0 1 2 3 4 5 6 7 8 9 10>;
 		compatible = "pwm-backlight";
-#if 0
 		display = <&lcdif2>;
-#endif
 		default-brightness-level = <8>;
 		pwms = <&pwm2 0 100000>;
 		status = "okay";
@@ -609,9 +604,7 @@
 		brightness-levels = <0 1 2 3 4 5 6 7 8 9 10>;
 		compatible = "pwm-backlight";
 		default-brightness-level = <8>;
-#if 0
 		display = <&lcdif1>;
-#endif
 		pwms = <&pwm1 0 30000>;		/* 33.3 Khz */
 		status = "okay";
 	};
@@ -1180,22 +1173,25 @@
 &i2c2d {
 	mipi_to_lvds: mipi-to-lvds@2c {
 		alias = <&mipi_to_lvds>;
-#if 0
-		clocks = <&mipi_dsi 0>,
+		clocks = <&dsim_clk 0>,
 			<&clk IMX8MP_CLK_MEDIA_DISP1_PIX_ROOT>;
 		clock-names = "mipi_clk", "pixel_clock";
-#endif
 		compatible = "ti,sn65dsi83";
-#if 0
 		display = <&display_subsystem>;
 		display-dsi = <&fb_mipi>;
-#endif
 		enable-gpios = GP_SN65DSI83_EN;
 		interrupts-extended = GPIRQ_SN65DSI83;
+		interrupts-gpios = GP_SN65DSI83_IRQ;
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_sn65dsi83>;
 		reg = <0x2c>;
 		status = "disabled";
+
+		port@0 {
+			lvds_from_panel: endpoint {
+				remote-endpoint = <&panel_to_lvds>;
+			};
+		};
 	};
 
 	rtc@52 {
@@ -1350,23 +1346,24 @@
 &isp_1 {
 	status = "disabled";
 };
+#endif
 
 &lcdif1 {
-	status = "disabled";
+	display = <&fb_mipi>;
+	status = "okay";
 };
 
 &lcdif2 {
-	status = "disabled";
+	status = "okay";
 };
 
 &lcdif3 {
 	status = "disabled";
 };
-#endif
 
-#if 0
 &ldb {
 	lvds-channel@0 {
+		backlight = <&backlight_lvds>;
 		fsl,data-mapping = "spwg";
 		fsl,data-width = <24>;
 
@@ -1387,6 +1384,7 @@
 	};
 
 	lvds-channel@1 {
+		backlight = <&backlight_lvds>;
 		fsl,data-mapping = "spwg";
 		fsl,data-width = <24>;
 
@@ -1410,7 +1408,6 @@
 &ldb_phy {
 	status = "okay";
 };
-#endif
 
 #if 0
 &micfil {
@@ -1459,7 +1456,6 @@
 };
 #endif
 
-#if 0
 &mipi_dsi {
 	clocks = <&clk IMX8MP_CLK_MEDIA_APB_ROOT>,
 		 <&clk IMX8MP_CLK_MEDIA_MIPI_PHY1_REF>,
@@ -1468,9 +1464,12 @@
 	status = "disabled";
 
 	fb_mipi: panel@0 {
+		backlight= <&backlight_mipi>;
 		bits-per-color = <8>;
+		bits-per-pixel = <24>;
 		bridge-de-active = <0>;
 		bus-format = "rgb888";
+		bus-width = <24>;
 		compatible = "panel,simple";
 		dsi-format = "rgb888";
 		dsi-lanes = <4>;
@@ -1505,9 +1504,45 @@
 				de-active = <1>;
 			};
 		};
+
+		port@1 {
+			panel_from_dsim: endpoint {
+				remote-endpoint = <&dsim_to_panel>;
+			};
+		};
+
+		port@2 {
+			panel_to_lvds: endpoint {
+				remote-endpoint = <&lvds_from_panel>;
+			};
+		};
+	};
+
+	dsim_clk: dsim-clk {
+		#clock-cells = <1>;
+		#size-cells = <0>;
+		compatible = "generic,clk";
+		clocks = <&clk IMX8MP_CLK_MEDIA_MIPI_PHY1_REF>;
+		clock-names = "parent";
+		clock-output-names = "dsim-clk";
+		status = "okay";
+	};
+
+	dsi_host: dsi-host {
+		compatible = "samsung,sec-mipi-dsi";
+		clocks = <&dsim_clk 0>,
+			<&clk IMX8MP_CLK_MEDIA_MIPI_PHY1_REF>,
+			<&clk IMX8MP_CLK_MEDIA_DISP1_PIX_ROOT>;
+		clock-names = "dsim-clk", "pll-ref", "pixel_clock";
+		status = "okay";
+	};
+
+	port@1 {
+		dsim_to_panel: endpoint {
+			remote-endpoint = <&panel_from_dsim>;
+		};
 	};
 };
-#endif
 
 #if 0
 &mix_gpu_ml {

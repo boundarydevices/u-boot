@@ -95,6 +95,7 @@ int board_early_init_f(void)
 
 	gpio_request(GP_SN65DSI83_EN, "sn65en");
 	gpio_direction_output(GP_SN65DSI83_EN, 0);
+	gpio_free(GP_SN65DSI83_EN);
 
 	imx_iomux_v3_setup_multiple_pads(init_pads, ARRAY_SIZE(init_pads));
 	set_wdog_reset(wdog);
@@ -114,9 +115,16 @@ int board_usb_hub_gpio_init(void)
 int board_detect_gt911(struct display_info_t const *di)
 {
 	int ret;
-	struct udevice *bus, *mux, *chip;
+	struct udevice *bus;
+	struct i2c_msg msg;
+	struct dm_i2c_ops *ops;
+	u8 buf[4];
 	int sub_bus;
 
+#ifdef CONFIG_DM_VIDEO
+	if (di->bus_gp)
+		gpio_request(di->bus_gp, "lkt08_mipi_en");
+#endif
 	if (di->bus_gp)
 		gpio_direction_output(di->bus_gp, 1);
 	gpio_set_value(GP_TS_GT911_RESET, 0);
@@ -128,21 +136,28 @@ int board_detect_gt911(struct display_info_t const *di)
 	gpio_set_value(GPIRQ_TS_GT911, 0);
 	mdelay(50);
 	gpio_direction_input(GPIRQ_TS_GT911);
-	ret = uclass_get_device(UCLASS_I2C, di->bus_num & 0x0f, &bus);
-	if (ret)
-		return 0;
-
-	sub_bus = di->bus_num >> 4;
-	if (sub_bus) {
-		ret = dm_i2c_probe(bus, 0x70, 0x0, &mux);
-		if (!ret) {
-			/* write control register, select sub bus */
-			dm_i2c_write(mux, 1 << sub_bus, NULL, 0);
+	ret = uclass_get_device_by_seq(UCLASS_I2C, di->bus_num & 0x0f, &bus);
+	if (!ret) {
+		ops = i2c_get_ops(bus);
+		msg.addr = 0x70;
+		msg.flags = 0;
+		msg.len = 1;
+		msg.buf = buf;
+		sub_bus = di->bus_num >> 4;
+		if (sub_bus) {
+			buf[0] = 1 << sub_bus;
+			ret = ops->xfer(bus, &msg, 1);
 		}
+		msg.addr = di->addr_num;
+		if (!ret)
+			ret = i2c_probe_chip(bus, di->addr_num, 0);
+		if (ret && di->bus_gp)
+			gpio_direction_input(di->bus_gp);
 	}
-	ret = dm_i2c_probe(bus, di->addr_num, 0x0, &chip);
-	if (ret && di->bus_gp)
-		gpio_direction_input(di->bus_gp);
+#ifdef CONFIG_DM_VIDEO
+	if (di->bus_gp)
+		gpio_free(di->bus_gp);
+#endif
 	return (ret == 0);
 }
 
@@ -164,10 +179,13 @@ static const struct display_info_t displays[] = {
 	VD_MIPI_640_480M_60(MIPI, NULL, fbp_bus_gp((1 | (3 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
 	VD_MIPI_1280_800M_60(MIPI, NULL, fbp_bus_gp((1 | (3 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
 	VD_MIPI_1280_720M_60(MIPI, NULL, fbp_bus_gp((1 | (3 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
+
+	/* Looking for the max7323 gpio chip on the Lontium daughter board */
 	VD_MIPI_1920_1080M_60(MIPI, board_detect_pca9546_2, fbp_bus_gp((1 | (3 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
 	VD_MIPI_1024_768M_60(MIPI, NULL, fbp_bus_gp((1 | (3 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
 	VD_MIPI_800_600MR_60(MIPI, NULL, fbp_bus_gp((1 | (3 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
 	VD_MIPI_720_480M_60(MIPI, NULL, fbp_bus_gp((1 | (3 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
+
 	VD_MIPI_VTFT101RPFT20(MIPI, NULL, (1 | (3 << 4)), 0x70, FBP_PCA9540),
 
 	/* lvds */
@@ -199,8 +217,8 @@ int board_init(void)
 {
 	gpio_request(GP_TS_GT911_RESET, "gt11_reset");
 	gpio_request(GPIRQ_TS_GT911, "gt11_irq");
-	gpio_request(GP_SN65DSI83_EN, "sn65en");
-	gpio_request(GP_LTK08_MIPI_EN, "ltk08_mipi_en");
+//	gpio_request(GP_SN65DSI83_EN, "sn65en");
+//	gpio_request(GP_LTK08_MIPI_EN, "ltk08_mipi_en");
 	gpio_request(GP_EQOS_MII_MDC, "eqos_mdc");
 	gpio_request(GP_EQOS_MII_MDIO, "eqos_mdio");
 	gpio_request(GP_FEC_MII_MDC, "fec_mdc");
