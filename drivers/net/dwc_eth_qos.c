@@ -1893,8 +1893,7 @@ static phy_interface_t eqos_get_interface_stm32(struct udevice *dev)
 
 	debug("%s(dev=%p):\n", __func__, dev);
 
-	phy_mode = fdt_getprop(gd->fdt_blob, dev_of_offset(dev), "phy-mode",
-			       NULL);
+	phy_mode = ofnode_read_string(dev_ofnode(dev), "phy-mode");
 	if (phy_mode)
 		interface = phy_get_interface_by_name(phy_mode);
 
@@ -1931,8 +1930,7 @@ static phy_interface_t eqos_get_interface_imx(struct udevice *dev)
 
 	debug("%s(dev=%p):\n", __func__, dev);
 
-	phy_mode = fdt_getprop(gd->fdt_blob, dev_of_offset(dev), "phy-mode",
-			       NULL);
+	phy_mode = ofnode_read_string(dev_ofnode(dev), "phy-mode");
 	if (phy_mode)
 		interface = phy_get_interface_by_name(phy_mode);
 
