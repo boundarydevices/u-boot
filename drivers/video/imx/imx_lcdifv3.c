@@ -4,6 +4,7 @@
  */
 
 #include <common.h>
+#include <clk.h>
 #include <malloc.h>
 #include <video.h>
 #include <video_fb.h>
@@ -15,8 +16,11 @@
 #include <asm/arch/sys_proto.h>
 #include <linux/err.h>
 #include <asm/io.h>
+#include <asm/system.h>
 
 #include "../videomodes.h"
+#include <linux/bug.h>
+#include <linux/delay.h>
 #include <linux/string.h>
 #include <linux/list.h>
 #include <linux/fb.h>
@@ -30,6 +34,9 @@
 struct lcdifv3_priv {
 	fdt_addr_t reg_base;
 	struct udevice *disp_dev;
+#if CONFIG_IS_ENABLED(CLK) && IS_ENABLED(CONFIG_IMX8M)
+	struct clk lcdif_pix;
+#endif
 };
 
 static int lcdifv3_set_pix_fmt(struct lcdifv3_priv *priv, unsigned int format)
@@ -224,6 +231,54 @@ static int lcdifv3_of_get_timings(struct udevice *dev,
 	return ret;
 }
 
+#if CONFIG_IS_ENABLED(CLK)
+u32 pll_rates[] = {
+	 519750000U,
+	 594000000U,
+	 650000000U,
+	1039500000U,
+};
+
+static u32 get_pixclock(struct clk *pll, unsigned long pixclock)
+{
+	unsigned long rate;
+	unsigned long best = 0, best_n = 1, best_diff = ~0;
+	unsigned long cur, cur_n, cur_diff;
+	int i;
+	int ret;
+
+
+	for (i = 0; i < ARRAY_SIZE(pll_rates); i++) {
+		rate = pll_rates[i];
+		cur_n = (rate + (pixclock >> 1)) / pixclock;
+		cur = rate / cur_n;
+		if (cur >= pixclock)
+			cur_diff = cur - pixclock;
+		else
+			cur_diff = pixclock - cur;
+		if (best_diff > cur_diff) {
+			best_diff = cur_diff;
+			best = cur;
+			best_n = cur_n;
+		}
+		if (!cur_diff)
+			break;
+	}
+	cur = best * best_n;
+	debug("%s: %ld = %ld * %ld\n", __func__, cur, best, best_n);
+	ret = clk_set_rate(pll, cur);
+	if (ret < 0) {
+		debug("clk_set_rate %ld failed(%d)\n", cur, ret);
+		cur = clk_get_rate(pll);
+		debug("rate is %ld\n", cur);
+	}
+	best_n = (cur + (pixclock >> 1)) / pixclock;
+	pixclock = cur / best_n;
+	debug("%s: pixclock = %ld\n", __func__, pixclock);
+	return pixclock;
+}
+#endif
+
 static int lcdifv3_video_probe(struct udevice *dev)
 {
 	struct video_uc_platdata *plat = dev_get_uclass_platdata(dev);
@@ -234,6 +289,10 @@ static int lcdifv3_video_probe(struct udevice *dev)
 	struct display_timing timings;
 
 	u32 fb_start, fb_end;
+#if CONFIG_IS_ENABLED(CLK)
+	struct clk pll;
+	u32 pixclock;
+#endif
 	int ret;
 
 	debug("%s() plat: base 0x%lx, size 0x%x\n",
@@ -249,6 +308,22 @@ static int lcdifv3_video_probe(struct udevice *dev)
 	if (ret)
 		return ret;
 
+#if CONFIG_IS_ENABLED(CLK)
+	ret = clk_get_by_name(dev, "video_pll", &pll);
+	if (!ret) {
+		pixclock = get_pixclock(&pll, timings.pixelclock.typ);
+	}
+	ret = clk_get_by_name(dev, "pix", &priv->lcdif_pix);
+	if (ret) {
+		printf("Failed to get pix clk\n");
+		return ret;
+	}
+	ret = clk_set_rate(&priv->lcdif_pix, pixclock);
+	if (ret < 0) {
+		printf("Failed to set pix clk rate\n");
+		return ret;
+	}
+#endif
 	if (priv->disp_dev) {
 #if IS_ENABLED(CONFIG_VIDEO_BRIDGE)
 		if (device_get_uclass_id(priv->disp_dev) == UCLASS_VIDEO_BRIDGE) {
