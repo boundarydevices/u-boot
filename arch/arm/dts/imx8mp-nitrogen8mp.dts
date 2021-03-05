@@ -49,15 +49,8 @@
 
 	pinctrl_eqos: eqosgrp {
 		fsl,pins = <
-#if 1
-			MX8MP_IOMUXC_ENET_MDC__ENET_QOS_MDC	0x3
-			MX8MP_IOMUXC_ENET_MDIO__ENET_QOS_MDIO	0x3
-#else
-#define GP_EQOS_MII_MDC	<&gpio1 16 GPIO_PULSE_HIGH>
-			MX8MP_IOMUXC_ENET_MDC__GPIO1_IO16	0x3
-#define GP_EQOS_MII_MDIO	<&gpio1 17 GPIO_ACTIVE_HIGH>
-			MX8MP_IOMUXC_ENET_MDIO__GPIO1_IO17	0x3
-#endif
+			MX8MP_IOMUXC_ENET_MDC__ENET_QOS_MDC		0x20
+			MX8MP_IOMUXC_ENET_MDIO__ENET_QOS_MDIO		0xa0
 			MX8MP_IOMUXC_ENET_TX_CTL__ENET_QOS_RGMII_TX_CTL	0x1f
 			MX8MP_IOMUXC_ENET_TXC__CCM_ENET_QOS_CLOCK_GENERATE_TX_CLK	0x1f
 			MX8MP_IOMUXC_ENET_TD0__ENET_QOS_RGMII_TD0		0x1f
@@ -80,15 +73,8 @@
 
 	pinctrl_fec: fecgrp {
 		fsl,pins = <
-#if 0
-			MX8MP_IOMUXC_SAI1_RXD2__ENET1_MDC		0x3
-			MX8MP_IOMUXC_SAI1_RXD3__ENET1_MDIO		0x3
-#else
-#define GP_FEC_MII_MDC		<&gpio4 4 GPIO_ACTIVE_HIGH>
-			MX8MP_IOMUXC_SAI1_RXD2__GPIO4_IO04		0x3
-#define GP_FEC_MII_MDIO	<&gpio4 5 GPIO_ACTIVE_HIGH>
-			MX8MP_IOMUXC_SAI1_RXD3__GPIO4_IO05		0x3
-#endif
+			MX8MP_IOMUXC_SAI1_RXD2__ENET1_MDC		0x0
+			MX8MP_IOMUXC_SAI1_RXD3__ENET1_MDIO		0xa0
 			MX8MP_IOMUXC_SAI1_TXD4__ENET1_RGMII_TX_CTL	0x1f
 			MX8MP_IOMUXC_SAI1_TXD5__ENET1_RGMII_TXC		0x1f
 			MX8MP_IOMUXC_SAI1_TXD0__ENET1_RGMII_TD0		0x1f
@@ -892,10 +878,6 @@
 	/delete-property/ assigned-clock-parents;
 	/delete-property/ assigned-clock-rates;
 
-#ifdef GP_EQOS_MII_MDC
-	mdc-gpios = GP_EQOS_MII_MDC;
-	mdio-gpios = GP_EQOS_MII_MDIO;
-#endif
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_eqos>;
 	phy-mode = "rgmii-id";
@@ -921,8 +903,6 @@
 };
 
 &fec {
-	mdc-gpios = GP_FEC_MII_MDC;
-	mdio-gpios = GP_FEC_MII_MDIO;
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_fec>;
 #if 0
