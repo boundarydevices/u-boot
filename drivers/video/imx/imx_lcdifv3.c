@@ -27,15 +27,23 @@
 #include "lcdifv3-regs.h"
 #include <dm.h>
 #include <dm/device-internal.h>
+#include <dm/device-internal.h>
+#include <reset.h>
 
-#define	PS2KHZ(ps)	(1000000000UL / (ps))
-#define HZ2PS(hz)	(1000000000UL / ((hz) / 1000))
+struct lcdifv3_soc_pdata {
+	bool hsync_invert;
+	bool vsync_invert;
+	bool de_invert;
+	bool hdmimix;
+	bool hvsync_high;	/* mipi needs it high */
+};
 
 struct lcdifv3_priv {
 	fdt_addr_t reg_base;
 	struct udevice *disp_dev;
 #if CONFIG_IS_ENABLED(CLK) && IS_ENABLED(CONFIG_IMX8M)
 	struct clk lcdif_pix;
+	struct clk *mix_clks;
 #endif
 };
 
@@ -68,36 +76,44 @@ static int lcdifv3_set_pix_fmt(struct lcdifv3_priv *priv, unsigned int format)
 
 
 static void lcdifv3_set_mode(struct lcdifv3_priv *priv,
-			struct ctfb_res_modes *mode)
+		struct display_timing *timings)
 {
 	u32 disp_size, hsyn_para, vsyn_para, vsyn_hsyn_width, ctrldescl0_1;
+	u32 set = 0;
 
 	/* config display timings */
-	disp_size = DISP_SIZE_DELTA_Y(mode->yres) |
-		    DISP_SIZE_DELTA_X(mode->xres);
+	disp_size = DISP_SIZE_DELTA_Y(timings->vactive.typ) |
+		    DISP_SIZE_DELTA_X(timings->hactive.typ);
 	writel(disp_size, (ulong)(priv->reg_base + LCDIFV3_DISP_SIZE));
 
-	hsyn_para = HSYN_PARA_BP_H(mode->left_margin) |
-		    HSYN_PARA_FP_H(mode->right_margin);
+	hsyn_para = HSYN_PARA_BP_H(timings->hback_porch.typ) |
+		    HSYN_PARA_FP_H(timings->hfront_porch.typ);
 	writel(hsyn_para, (ulong)(priv->reg_base + LCDIFV3_HSYN_PARA));
 
-	vsyn_para = VSYN_PARA_BP_V(mode->upper_margin) |
-		    VSYN_PARA_FP_V(mode->lower_margin);
+	vsyn_para = VSYN_PARA_BP_V(timings->vback_porch.typ) |
+		    VSYN_PARA_FP_V(timings->vfront_porch.typ);
 	writel(vsyn_para, (ulong)(priv->reg_base + LCDIFV3_VSYN_PARA));
 
-	vsyn_hsyn_width = VSYN_HSYN_WIDTH_PW_V(mode->vsync_len) |
-			  VSYN_HSYN_WIDTH_PW_H(mode->hsync_len);
+	vsyn_hsyn_width = VSYN_HSYN_WIDTH_PW_V(timings->vsync_len.typ) |
+			  VSYN_HSYN_WIDTH_PW_H(timings->hsync_len.typ);
 	writel(vsyn_hsyn_width, (ulong)(priv->reg_base + LCDIFV3_VSYN_HSYN_WIDTH));
 
 	/* config layer size */
 	/* TODO: 32bits alignment for width */
-	ctrldescl0_1 = CTRLDESCL0_1_HEIGHT(mode->yres) |
-		       CTRLDESCL0_1_WIDTH(mode->xres);
+	ctrldescl0_1 = CTRLDESCL0_1_HEIGHT(timings->vactive.typ) |
+		       CTRLDESCL0_1_WIDTH(timings->hactive.typ);
 	writel(ctrldescl0_1, (ulong)(priv->reg_base + LCDIFV3_CTRLDESCL0_1));
 
 	/* Polarities */
-	writel(CTRL_INV_HS, (ulong)(priv->reg_base + LCDIFV3_CTRL_CLR));
-	writel(CTRL_INV_VS, (ulong)(priv->reg_base + LCDIFV3_CTRL_CLR));
+	if (timings->flags & DISPLAY_FLAGS_HSYNC_LOW)
+		set |= CTRL_INV_HS;
+	if (timings->flags & DISPLAY_FLAGS_VSYNC_LOW)
+		set |= CTRL_INV_VS;
+	if (timings->flags & DISPLAY_FLAGS_DE_LOW)
+		set |= CTRL_INV_DE;
+	writel(set, (ulong)(priv->reg_base + LCDIFV3_CTRL_SET));
+	writel(set ^ (CTRL_INV_HS | CTRL_INV_VS | CTRL_INV_DE),
+			(ulong)(priv->reg_base + LCDIFV3_CTRL_CLR));
 
 	/* SEC MIPI DSI specific */
 	writel(CTRL_INV_PXCK, (ulong)(priv->reg_base + LCDIFV3_CTRL_CLR));
@@ -158,18 +174,20 @@ static void lcdifv3_disable_controller(struct lcdifv3_priv *priv)
 }
 
 static void lcdifv3_init(struct udevice *dev,
-			struct ctfb_res_modes *mode, unsigned int format)
+		struct display_timing *timings, unsigned int format)
 {
 	struct video_uc_platdata *plat = dev_get_uclass_platdata(dev);
 	struct lcdifv3_priv *priv = dev_get_priv(dev);
 	int ret;
 
 	/* Kick in the LCDIF clock */
-	mxs_set_lcdclk(priv->reg_base, PS2KHZ(mode->pixclock));
+#if !CONFIG_IS_ENABLED(CLK)
+	mxs_set_lcdclk(priv->reg_base, timings->pixelclock.typ / 1000);
+#endif
 
 	writel(CTRL_SW_RESET, (ulong)(priv->reg_base + LCDIFV3_CTRL_CLR));
 
-	lcdifv3_set_mode(priv, mode);
+	lcdifv3_set_mode(priv, timings);
 
 	lcdifv3_set_bus_fmt(priv);
 
@@ -182,7 +200,7 @@ static void lcdifv3_init(struct udevice *dev,
 	/* Set fb address to primary layer */
 	writel(plat->base, (ulong)(priv->reg_base + LCDIFV3_CTRLDESCL_LOW0_4));
 
-	writel(CTRLDESCL0_3_P_SIZE(1) |CTRLDESCL0_3_T_SIZE(1) | CTRLDESCL0_3_PITCH(mode->xres * 4),
+	writel(CTRLDESCL0_3_P_SIZE(1) |CTRLDESCL0_3_T_SIZE(1) | CTRLDESCL0_3_PITCH(timings->hactive.typ * 4),
 		(ulong)(priv->reg_base + LCDIFV3_CTRLDESCL0_3));
 
 	lcdifv3_enable_controller(priv);
@@ -279,13 +297,44 @@ static u32 get_pixclock(struct clk *pll, unsigned long pixclock)
 }
 #endif
 
+const char* const mix_clocks[] = {
+	"mix_apb",
+	"mix_axi",
+	"xtl_24m",
+	"mix_pix",
+	"lcdif_apb",
+	"lcdif_axi",
+	"lcdif_pdi",
+	"lcdif_pix",
+	"lcdif_spu",
+	"noc_hdmi",
+};
+
+static int hdmimix_lcdif3_setup(struct lcdifv3_priv *priv, struct udevice *dev)
+{
+	int ret;
+
+	debug("%s:\n", __func__);
+#if CONFIG_IS_ENABLED(DM_RESET)
+	device_reset(dev);
+#endif
+	/* enable lpcg of hdmimix lcdif and nor */
+#if CONFIG_IS_ENABLED(CLK) && IS_ENABLED(CONFIG_IMX8M)
+	ret = devm_clk_get_enable_bulk(dev, mix_clocks, ARRAY_SIZE(mix_clocks), 0, &priv->mix_clks);
+	if (ret) {
+		debug("%s: ret=%d\n", __func__, ret);
+		return ret;
+	}
+#endif
+	return 0;
+}
+
 static int lcdifv3_video_probe(struct udevice *dev)
 {
+	struct lcdifv3_soc_pdata *pdata = (struct lcdifv3_soc_pdata *)dev_get_driver_data(dev);
 	struct video_uc_platdata *plat = dev_get_uclass_platdata(dev);
 	struct video_priv *uc_priv = dev_get_uclass_priv(dev);
 	struct lcdifv3_priv *priv = dev_get_priv(dev);
-
-	struct ctfb_res_modes mode;
 	struct display_timing timings;
 
 	u32 fb_start, fb_end;
@@ -312,6 +361,8 @@ static int lcdifv3_video_probe(struct udevice *dev)
 	ret = clk_get_by_name(dev, "video_pll", &pll);
 	if (!ret) {
 		pixclock = get_pixclock(&pll, timings.pixelclock.typ);
+	} else {
+		pixclock = timings.pixelclock.typ;
 	}
 	ret = clk_get_by_name(dev, "pix", &priv->lcdif_pix);
 	if (ret) {
@@ -320,7 +371,7 @@ static int lcdifv3_video_probe(struct udevice *dev)
 	}
 	ret = clk_set_rate(&priv->lcdif_pix, pixclock);
 	if (ret < 0) {
-		printf("Failed to set pix clk rate\n");
+		printf("Failed to set pix clk rate(%d) %d\n", pixclock, ret);
 		return ret;
 	}
 #endif
@@ -342,21 +393,30 @@ static int lcdifv3_video_probe(struct udevice *dev)
 #endif
 	}
 
-	mode.xres = timings.hactive.typ;
-	mode.yres = timings.vactive.typ;
-	mode.left_margin = timings.hback_porch.typ;
-	mode.right_margin = timings.hfront_porch.typ;
-	mode.upper_margin = timings.vback_porch.typ;
-	mode.lower_margin = timings.vfront_porch.typ;
-	mode.hsync_len = timings.hsync_len.typ;
-	mode.vsync_len = timings.vsync_len.typ;
-	mode.pixclock = HZ2PS(timings.pixelclock.typ);
+	if (pdata->hvsync_high) {
+		/* mipi needs high */
+		timings.flags |= (DISPLAY_FLAGS_HSYNC_HIGH | DISPLAY_FLAGS_VSYNC_HIGH);
+		timings.flags &= ~(DISPLAY_FLAGS_HSYNC_LOW | DISPLAY_FLAGS_VSYNC_LOW);
+	}
+	if (pdata->hsync_invert)
+		timings.flags ^= (DISPLAY_FLAGS_HSYNC_LOW | DISPLAY_FLAGS_HSYNC_HIGH);
+	if (pdata->vsync_invert)
+		timings.flags ^= (DISPLAY_FLAGS_VSYNC_LOW | DISPLAY_FLAGS_VSYNC_HIGH);
+	if (pdata->de_invert)
+		timings.flags ^= (DISPLAY_FLAGS_DE_LOW | DISPLAY_FLAGS_DE_HIGH);
+	if (pdata->hdmimix) {
+		ret = hdmimix_lcdif3_setup(priv, dev);
+		if (ret < 0) {
+			debug("hdmimix lcdif3 setup failed\n");
+			return ret;
+		}
+	}
 
-	lcdifv3_init(dev, &mode, GDF_32BIT_X888RGB);
+	lcdifv3_init(dev, &timings, GDF_32BIT_X888RGB);
 
 	uc_priv->bpix = VIDEO_BPP32; /* only support 32 BPP now */
-	uc_priv->xsize = mode.xres;
-	uc_priv->ysize = mode.yres;
+	uc_priv->xsize = timings.hactive.typ;
+	uc_priv->ysize = timings.vactive.typ;
 
 	/* Enable dcache for the frame buffer */
 	fb_start = plat->base & ~(MMU_SECTION_SIZE - 1);
@@ -394,8 +454,32 @@ static int lcdifv3_video_remove(struct udevice *dev)
 	return 0;
 }
 
+static const struct lcdifv3_soc_pdata imx8mp_lcdif1_pdata = {
+	.hsync_invert = false,
+	.vsync_invert = false,
+	.de_invert    = false,
+	.hdmimix     = false,
+	.hvsync_high = true,
+};
+
+static const struct lcdifv3_soc_pdata imx8mp_lcdif2_pdata = {
+	.hsync_invert = false,
+	.vsync_invert = false,
+	.de_invert    = true,
+	.hdmimix      = false,
+};
+
+static const struct lcdifv3_soc_pdata imx8mp_lcdif3_pdata = {
+	.hsync_invert = false,
+	.vsync_invert = false,
+	.de_invert    = false,
+	.hdmimix     = true,
+};
+
 static const struct udevice_id lcdifv3_video_ids[] = {
-	{ .compatible = "fsl,imx8mp-lcdif1" },
+	{ .compatible = "fsl,imx8mp-lcdif1", .data = (ulong)&imx8mp_lcdif1_pdata,},
+	{ .compatible = "fsl,imx8mp-lcdif2", .data = (ulong)&imx8mp_lcdif2_pdata,},
+	{ .compatible = "fsl,imx8mp-lcdif3", .data = (ulong)&imx8mp_lcdif3_pdata,},
 	{ /* sentinel */ }
 };
 
