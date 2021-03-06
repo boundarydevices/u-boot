@@ -98,20 +98,26 @@ int generic_phy_get_by_index(struct udevice *dev, int index,
 	return generic_phy_get_by_index_nodev(dev_ofnode(dev), index, phy);
 }
 
-int generic_phy_get_by_name(struct udevice *dev, const char *phy_name,
+int ofnode_generic_phy_get_by_name(ofnode np, const char *phy_name,
 			    struct phy *phy)
 {
 	int index;
 
-	debug("%s(dev=%p, name=%s, phy=%p)\n", __func__, dev, phy_name, phy);
-
-	index = dev_read_stringlist_search(dev, "phy-names", phy_name);
+	debug("%s:%s, name=%s, phy=%p)\n", __func__, ofnode_get_name(np),
+			phy_name, phy);
+	index = ofnode_stringlist_search(np, "phy-names", phy_name);
 	if (index < 0) {
 		debug("dev_read_stringlist_search() failed: %d\n", index);
 		return index;
 	}
 
-	return generic_phy_get_by_index(dev, index, phy);
+	return generic_phy_get_by_index_nodev(np, index, phy);
+}
+
+int generic_phy_get_by_name(struct udevice *dev, const char *phy_name,
+			    struct phy *phy)
+{
+	return ofnode_generic_phy_get_by_name(dev_ofnode(dev), phy_name, phy);
 }
 
 int generic_phy_init(struct phy *phy)

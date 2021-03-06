@@ -295,6 +295,8 @@ int generic_phy_get_by_index_nodev(ofnode node, int index, struct phy *phy);
  */
 int generic_phy_get_by_name(struct udevice *user, const char *phy_name,
 			    struct phy *phy);
+int ofnode_generic_phy_get_by_name(ofnode np, const char *phy_name,
+			    struct phy *phy);
 
 /**
  * generic_phy_get_bulk - Get all phys of a device.
