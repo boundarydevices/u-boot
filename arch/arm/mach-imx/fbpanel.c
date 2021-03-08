@@ -2138,8 +2138,16 @@ void setup_env_cmds(const struct display_info_t *gdi, int cnt,
 		unsigned fb;
 
 		for (fb = 0; fb < FB_COUNT; fb++) {
-			if (mask & (1 << fb))
+			if (mask & (1 << fb)) {
+				if (!displays[fb]) {
+					unsigned prefer = 0;
+					const char *name = env_get(fbnames[fb]);
+
+					if (name)
+						displays[fb] = parse_mode(gdi, cnt, name, fb, &prefer);
+				}
 				setup_cmd_fb(fb, displays[fb], buf, 4096);
+			}
 		}
 		free(buf);
 	}
