@@ -678,10 +678,13 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		size -= sz;
 #endif
 #endif
-		if ((di->addr_num == 0x2c) && (di->enable_alias[0] != FBP_MIPI_TO_LVDS)) {
-			sz = set_status(buf, size, "mipi_to_lvds", true);
-			buf += sz;
-			size -= sz;
+		if (di) {
+			if ((di->addr_num == 0x2c) &&
+				(di->enable_alias[0] != FBP_MIPI_TO_LVDS)) {
+				sz = set_status(buf, size, "mipi_to_lvds", true);
+				buf += sz;
+				size -= sz;
+			}
 		}
 	}
 	sz = set_status(buf, size, fbnames[fb1], true);
@@ -692,6 +695,16 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		buf += sz;
 		size -= sz;
 	}
+	if ((fb == FB_LVDS) || (fb == FB_LVDS2)) {
+		sz = set_status(buf, size, "ldb", true);
+		buf += sz;
+		size -= sz;
+
+		sz = set_status(buf, size, ch_names[fb], true);
+		buf += sz;
+		size -= sz;
+	}
+
 	if ((fb == FB_LVDS2) && !lvds_enabled) {
 		sz = set_property(buf, size, "ldb/lvds-channel@1", "primary");
 		buf += sz;
@@ -750,15 +763,6 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 	}
 
 	if ((fb == FB_LVDS) || (fb == FB_LVDS2)) {
-
-		sz = set_status(buf, size, "ldb", true);
-		buf += sz;
-		size -= sz;
-
-		sz = set_status(buf, size, ch_names[fb], true);
-		buf += sz;
-		size -= sz;
-
 		sz = set_property_u32(buf, size, ch_names[fb],
 				"fsl,data-width", interface_width);
 		buf += sz;
