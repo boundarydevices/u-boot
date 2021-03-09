@@ -76,6 +76,13 @@ config VIDEO_IMX_LCDIFV3
 	help
 	  Support for i.MX8MP LCDIFv3 controller.
 
+config VIDEO_IMX8MP_LVDS
+	bool "i.MX8MP LVDS support"
+	depends on DM_VIDEO && IMX8MP
+	select PHY_IMX8MP_LVDS
+	help
+	  Support for i.MX8MP LVDS controller.
+
 config VIDEO_IMX_NW_DSI
 	bool "Enable IMX Northwest DSI video support"
 	select VIDEO_BRIDGE
