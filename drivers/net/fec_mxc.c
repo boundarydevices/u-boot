@@ -1657,8 +1657,7 @@ static int fecmxc_ofdata_to_platdata(struct udevice *dev)
 	priv->eth = (struct ethernet_regs *)pdata->iobase;
 
 	pdata->phy_interface = -1;
-	phy_mode = fdt_getprop(gd->fdt_blob, dev_of_offset(dev), "phy-mode",
-			       NULL);
+	phy_mode = ofnode_read_string(dev_ofnode(dev), "phy-mode");
 	if (phy_mode)
 		pdata->phy_interface = phy_get_interface_by_name(phy_mode);
 	if (pdata->phy_interface == -1) {
