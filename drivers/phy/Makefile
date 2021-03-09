@@ -40,5 +40,6 @@ obj-$(CONFIG_PHY_MTK_TPHY) += phy-mtk-tphy.o
 obj-$(CONFIG_PHY_IMX8MQ_USB) += phy-imx8mq-usb.o
 obj-$(CONFIG_PHY_XILINX_ZYNQMP) += phy-zynqmp.o
 obj-$(CONFIG_PHY_MIXEL_MIPI_DPHY) += phy-fsl-imx8-mipi-dphy.o
+obj-$(CONFIG_$(SPL_)PHY_IMX8MP_LVDS) += phy-fsl-imx8mp-lvds.o
 obj-y += cadence/
 obj-y += ti/
