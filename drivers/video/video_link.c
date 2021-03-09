@@ -272,6 +272,10 @@ int find_device_by_ofnode(ofnode node, struct udevice **pdev)
 		return -2;
 	}
 
+	if (!ofnode_read_string(node, "compatible")) {
+		/* go up a level if no compatible */
+		node = ofnode_get_parent(node);
+	}
 	ret = uclass_find_device_by_ofnode(UCLASS_DISPLAY, node, pdev);
 	if (!ret) {
 		debug("--display %s\n", ofnode_get_name(node));
@@ -417,13 +421,16 @@ struct udevice *video_link_get_next_device(struct udevice *curr_dev)
 	for (i = 0; i < video_links[curr_video_link].dev_num; i++) {
 		if (video_links[curr_video_link].link_devs[i] == curr_dev) {
 			if ((i + 1) < video_links[curr_video_link].dev_num) {
-				ret = device_probe(video_links[curr_video_link].link_devs[i + 1]);
+				struct udevice *dev = video_links[curr_video_link].link_devs[i + 1];
+
+				debug("%s: probing %s %s\n", __func__, dev->name, dev->driver->name);
+				ret = device_probe(dev);
 				if (ret) {
 					printf("probe device is failed, ret %d\n", ret);
 					return NULL;
 				}
 
-				return video_links[curr_video_link].link_devs[i + 1];
+				return dev;
 			} else {
 				debug("fail to find next device, already last one\n");
 				return NULL;
@@ -513,17 +520,11 @@ int video_link_get_display_timings(struct display_timing *timings)
 
 			return 0;
 		} else if (device_get_uclass_id(dev) == UCLASS_DISPLAY ||
-<<<<<<< HEAD
-			device_get_uclass_id(dev) == UCLASS_VIDEO) {
-
-			ret = ofnode_decode_display_timing(dev_ofnode(dev), 0, timings);
-=======
 			device_get_uclass_id(dev) == UCLASS_VIDEO ||
 			device_get_uclass_id(dev) == UCLASS_VIDEO_BRIDGE) {
 			ofnode eps = video_links[curr_video_link].link_eps[i];
 
 			ret = ofnode_decode_display_timing(eps, 0, timings);
->>>>>>> 8bc8b85c8a2 ( merge with 009c675e8f861fecebb59ab7d126d4eb1b5ef06a)
 			if (!ret)
 				return 0;
 		}
