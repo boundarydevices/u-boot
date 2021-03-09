@@ -12,6 +12,7 @@
 #include <dm/device-internal.h>
 #include <i2c.h>
 #include <linux/delay.h>
+#include <log.h>
 #include "bd_common.h"
 
 /* pca9546 mux */
@@ -28,9 +29,14 @@ static int detect_pca9546(struct display_info_t const *di, int sub_bus, int sub_
 #endif
 
 #ifdef CONFIG_DM_VIDEO
+	int req_bus;
+	int req_en;
+
 	if (di->bus_gp) {
-		ret = gpio_request(di->bus_gp, "bus_gp");
+		req_bus = gpio_request(di->bus_gp, "bus_gp");
 	}
+	if (di->enable_gp)
+		req_en = gpio_request(di->enable_gp, "enable_gp");
 #endif
 	if (di->bus_gp)
 		gpio_direction_output(di->bus_gp, 1);
@@ -66,8 +72,8 @@ static int detect_pca9546(struct display_info_t const *di, int sub_bus, int sub_
 			msg.len = 2;
 			ret = ops->xfer(bus, &msg, 1);
 			if (ret < 0) {
-				printf("%s: i2c write reg=0x%x failed(%d)\n",
-					__func__, reg1, ret);
+				debug("%s: i2c write1 addr=0x%x reg=0x%x failed(%d)\n",
+					__func__, msg.addr, reg1, ret);
 			}
 		}
 		if (!ret && (reg2 >= 0)) {
@@ -76,8 +82,8 @@ static int detect_pca9546(struct display_info_t const *di, int sub_bus, int sub_
 			msg.len = 2;
 			ret = ops->xfer(bus, &msg, 1);
 			if (ret < 0) {
-				printf("%s: i2c write reg=0x%x failed(%d)\n",
-					__func__, reg2, ret);
+				debug("%s: i2c write2 addr=0x%x reg=0x%x failed(%d)\n",
+					__func__, msg.addr, reg2, ret);
 			}
 		}
 	}
@@ -115,10 +121,12 @@ static int detect_pca9546(struct display_info_t const *di, int sub_bus, int sub_
 			gpio_direction_input(di->enable_gp);
 	}
 #ifdef CONFIG_DM_VIDEO
-	if (di->bus_gp) {
+	if (di->bus_gp && !req_bus) {
 		gpio_free(di->bus_gp);
 	}
-
+	if (di->enable_gp && !req_en) {
+		gpio_free(di->enable_gp);
+	}
 #endif
 	return (ret == 0);
 }
