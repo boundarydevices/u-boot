@@ -380,16 +380,14 @@ done:
 }
 
 #if CONFIG_IS_ENABLED(OF_CONTROL)
-int uclass_find_device_by_phandle(enum uclass_id id, struct udevice *parent,
-				  const char *name, struct udevice **devp)
+static int uclass_by_phandle(enum uclass_id id, int find_phandle,
+				  struct udevice **devp)
 {
 	struct udevice *dev;
 	struct uclass *uc;
-	int find_phandle;
 	int ret;
 
 	*devp = NULL;
-	find_phandle = dev_read_u32_default(parent, name, -1);
 	if (find_phandle <= 0)
 		return -ENOENT;
 	ret = uclass_get(id, &uc);
@@ -408,6 +406,22 @@ int uclass_find_device_by_phandle(enum uclass_id id, struct udevice *parent,
 	}
 
 	return -ENODEV;
+}
+
+int uclass_find_device_by_phandle(enum uclass_id id, struct udevice *parent,
+				  const char *name, struct udevice **devp)
+{
+	int find_phandle = dev_read_u32_default(parent, name, -1);
+
+	return uclass_by_phandle(id, find_phandle, devp);
+}
+
+static int uclass_find_by_phandle(enum uclass_id id, ofnode np,
+				  const char *name, struct udevice **devp)
+{
+	int find_phandle = ofnode_read_u32_default(np, name, -1);
+
+	return uclass_by_phandle(id, find_phandle, devp);
 }
 #endif
 
@@ -535,6 +549,17 @@ int uclass_get_device_by_phandle_id(enum uclass_id id, uint phandle_id,
 	}
 
 	return -ENODEV;
+}
+
+int uclass_device_by_phandle(enum uclass_id id, ofnode np,
+				 const char *name, struct udevice **devp)
+{
+	struct udevice *dev;
+	int ret;
+
+	*devp = NULL;
+	ret = uclass_find_by_phandle(id, np, name, &dev);
+	return uclass_get_device_tail(dev, ret, devp);
 }
 
 int uclass_get_device_by_phandle(enum uclass_id id, struct udevice *parent,
