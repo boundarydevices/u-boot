@@ -32,6 +32,7 @@ struct of_endpoint {
 
 struct video_link {
 	struct udevice *link_devs[MAX_LINK_DEVICES];
+	ofnode link_np[MAX_LINK_DEVICES];
 	int dev_num;
 };
 
@@ -272,6 +273,10 @@ int find_device_by_ofnode(ofnode node, struct udevice **pdev)
 		return -2;
 	}
 
+	if (!ofnode_read_string(node, "compatible")) {
+		/* go up a level if no compatible */
+		node = ofnode_get_parent(node);
+	}
 	ret = uclass_find_device_by_ofnode(UCLASS_DISPLAY, node, pdev);
 	if (!ret) {
 		debug("--display %s\n", ofnode_get_name(node));
@@ -299,11 +304,12 @@ int find_device_by_ofnode(ofnode node, struct udevice **pdev)
 	return -1;
 }
 
-static void video_link_stack_push(struct udevice *dev)
+static void video_link_stack_push(struct udevice *dev, ofnode np)
 {
 	if (temp_stack.dev_num < MAX_LINK_DEVICES) {
 		debug("!!!! add [%d] = dev %s\n", temp_stack.dev_num, dev->name);
 		temp_stack.link_devs[temp_stack.dev_num] = dev;
+		temp_stack.link_np[temp_stack.dev_num] = np;
 		temp_stack.dev_num++;
 	}
 }
@@ -339,7 +345,7 @@ static void video_link_add_node(struct udevice *peer_dev, struct udevice *dev, o
 
 	debug("endpoint cnt %s, %d\n",  ofnode_get_name(dev_node), ofnode_graph_get_endpoint_count(dev_node));
 
-	video_link_stack_push(dev);
+	video_link_stack_push(dev, dev_node);
 
 	for_each_endpoint_of_node(dev_node, endpoint_node) {
 		remote = ofnode_graph_get_remote_port_parent(endpoint_node);
@@ -388,13 +394,16 @@ struct udevice *video_link_get_next_device(struct udevice *curr_dev)
 	for (i = 0; i < video_links[curr_video_link].dev_num; i++) {
 		if (video_links[curr_video_link].link_devs[i] == curr_dev) {
 			if ((i + 1) < video_links[curr_video_link].dev_num) {
-				ret = device_probe(video_links[curr_video_link].link_devs[i + 1]);
+				struct udevice *dev = video_links[curr_video_link].link_devs[i + 1];
+
+				debug("%s: probing %s %s\n", __func__, dev->name, dev->driver->name);
+				ret = device_probe(dev);
 				if (ret) {
 					printf("probe device is failed, ret %d\n", ret);
 					return NULL;
 				}
 
-				return video_links[curr_video_link].link_devs[i + 1];
+				return dev;
 			} else {
 				debug("fail to find next device, already last one\n");
 				return NULL;
@@ -486,9 +495,11 @@ int video_link_get_display_timings(struct display_timing *timings)
 
 			return 0;
 		} else if (device_get_uclass_id(dev) == UCLASS_DISPLAY ||
-			device_get_uclass_id(dev) == UCLASS_VIDEO) {
+			device_get_uclass_id(dev) == UCLASS_VIDEO ||
+			device_get_uclass_id(dev) == UCLASS_VIDEO_BRIDGE) {
+			ofnode np = video_links[curr_video_link].link_np[i];
 
-			ret = ofnode_decode_display_timing(dev_ofnode(dev), 0, timings);
+			ret = ofnode_decode_display_timing(np, 0, timings);
 			if (!ret) {
 				if (strstr(dev->name, "hdmi"))
 					check_hdmi_resolution_override(timings);
