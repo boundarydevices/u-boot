@@ -232,5 +232,12 @@ config PHY_MIXEL_MIPI_DPHY
 	  Enable this to add support for the Mixel DSI PHY as found
 	  on NXP's i.MX8 family of SOCs.
 
+config PHY_IMX8MP_LVDS
+	bool "iMX8MP LVDS PHY support"
+	depends on PHY
+	help
+	  Enable this to add support for the imx8mp LVDS PHY as found
+	  on NXP's i.MX8MP family of SOCs.
+
 source "drivers/phy/rockchip/Kconfig"
 endmenu
