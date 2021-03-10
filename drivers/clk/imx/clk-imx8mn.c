@@ -207,7 +207,16 @@ static int imx8mn_clk_set_parent(struct clk *clk, struct clk *parent)
 		return ret;
 
 	ret = clk_set_parent(c, cp);
-	c->dev->parent = cp->dev;
+	if (!ret) {
+		list_del(&c->dev->sibling_node);
+		list_add_tail(&c->dev->sibling_node, &cp->dev->child_head);
+		c->dev->parent = cp->dev;
+	} else {
+		printf("%s: %s %s: %d failed\n", __func__,
+				c->dev->name, cp->dev->name, ret);
+	}
+	debug("%s(#%lu)%s, parent: (%lu)%s\n", __func__, clk->id, c->dev->name,
+			parent->id, cp->dev->name);
 
 	return ret;
 }
