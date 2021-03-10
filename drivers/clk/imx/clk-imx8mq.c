@@ -103,11 +103,16 @@ static int imx8mq_clk_set_parent(struct clk *clk, struct clk *parent)
 		return PTR_ERR(cp);
 
 	ret = clk_set_parent(c, cp);
-	if (!ret)
+	if (!ret) {
+		list_del(&c->dev->sibling_node);
+		list_add_tail(&c->dev->sibling_node, &cp->dev->child_head);
 		c->dev->parent = cp->dev;
-	else
+	} else {
 		printf("%s: %s %s: %d failed\n", __func__,
 				c->dev->name, cp->dev->name, ret);
+	}
+	debug("%s(#%lu)%s, parent: (%lu)%s\n", __func__, clk->id, c->dev->name,
+			parent->id, cp->dev->name);
 
 	return ret;
 }
