@@ -141,6 +141,39 @@ int power_init_boundary(void)
 
 	buf[0] = 0x40;	/* (.80-.4)*160=.40*160=64=0x40  64/160+.4=.80 vpu */
 	ret = i2c_write(PF8100, SW5_VOLT, 1, buf, 1);
+	if (ret)
+		return ret;
+
+	/* Enable MAX77976 charger */
+#define MAX77976 (0x6b)
+#define CHG_CNFG_00 (0x16)
+#define CHG_CNFG_02 (0x18)
+#define CHG_CNFG_04 (0x1A)
+#define CHG_CNFG_06 (0x1C)
+#define CHG_CNFG_09 (0x1F)
+	buf[0] = 0x0c;	/* Unlock write capability */
+	ret = i2c_write(MAX77976, CHG_CNFG_06, 1, buf, 1);
+	if (ret)
+		return ret;
+
+	buf[0] = 0x3c;	/* 3A Fast Charge setting */
+	ret = i2c_write(MAX77976, CHG_CNFG_02, 1, buf, 1);
+	if (ret)
+		return ret;
+
+	buf[0] = 0x3b;	/* 3A Charge In setting */
+	ret = i2c_write(MAX77976, CHG_CNFG_09, 1, buf, 1);
+	if (ret)
+		return ret;
+
+	buf[0] = 0x14;	/* 4.35V max voltage */
+	ret = i2c_write(MAX77976, CHG_CNFG_04, 1, buf, 1);
+	if (ret)
+		return ret;
+
+	buf[0] = 0x05;	/* Charger ON, OTG OFF, buck ON, boost OFF */
+	ret = i2c_write(MAX77976, CHG_CNFG_00, 1, buf, 1);
+
 	return ret;
 }
 
