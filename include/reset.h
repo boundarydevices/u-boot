@@ -360,6 +360,8 @@ static inline int reset_release_bulk(struct reset_ctl_bulk *bulk)
 	return reset_release_all(bulk->resets, bulk->count);
 }
 
+int device_reset(struct udevice *dev);
+
 #else
 static inline struct reset_ctl *devm_reset_control_get(struct udevice *dev,
 						       const char *id)
