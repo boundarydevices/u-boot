@@ -16,14 +16,18 @@ struct dram_cfg_param_change {
 
 #ifdef LPDDR4_CS_NEW
 struct dram_cfg_param_change ddrc_cfg_tbl[] = {
+#if (CONFIG_DDR_CHANNEL_CNT == 1) && !defined(CONFIG_IMX8MN)
+	{ DDRC_MSTR(0), 0xa0081020 | (LPDDR4_CS << 24), 0xa0081020 | (LPDDR4_CS_NEW << 24) },
+#else
 	{ DDRC_MSTR(0), 0xa0080020 | (LPDDR4_CS << 24), 0xa0080020 | (LPDDR4_CS_NEW << 24) },
+#endif
 	{ DDRC_ADDRMAP0(0), VAL_DDRC_ADDRMAP0, VAL_DDRC_ADDRMAP0_NEW },
 	{ DDRC_ADDRMAP6(0), VAL_DDRC_ADDRMAP6, VAL_DDRC_ADDRMAP6_NEW },
 };
 
 struct dram_cfg_param_change ddrc_fsp_cfg_tbl[] = {
 	{ 0x54012, (LPDDR4_CS << 8) | (0x0110 & 0xff), (LPDDR4_CS_NEW << 8) | (0x0110 & 0xff) },
-#ifndef CONFIG_IMX8MN
+#if (CONFIG_DDR_CHANNEL_CNT == 2)
 	{ 0x5402c, LPDDR4_CS, LPDDR4_CS_NEW },
 #endif
 };
@@ -122,14 +126,18 @@ void spl_dram_init(void)
 		int cnt = dt->fsp_msg_num;
 
 		printf("trying rank %d\n", (LPDDR4_CS_NEW == 3) ? 1 : 0);
-		if (fix_tbl(dt->ddrc_cfg, dt->ddrc_cfg_num, ddrc_cfg_tbl, ARRAY_SIZE(ddrc_cfg_tbl))) {
+		ret = fix_tbl(dt->ddrc_cfg, dt->ddrc_cfg_num, ddrc_cfg_tbl,
+				ARRAY_SIZE(ddrc_cfg_tbl));
+		if (ret) {
 			printf("%s:error fixing ddrc_cfg\n", __func__);
-			return;
+			goto exit;
 		}
 		while (cnt) {
-			if (fix_tbl(msg->fsp_cfg, msg->fsp_cfg_num, ddrc_fsp_cfg_tbl, ARRAY_SIZE(ddrc_fsp_cfg_tbl))) {
+			ret = fix_tbl(msg->fsp_cfg, msg->fsp_cfg_num,
+				ddrc_fsp_cfg_tbl, ARRAY_SIZE(ddrc_fsp_cfg_tbl));
+			if (ret) {
 				printf("%s:error fixing fsp_cfg\n", __func__);
-				return;
+				goto exit;
 			}
 			msg++;
 			cnt--;
@@ -138,6 +146,7 @@ void spl_dram_init(void)
 		if (!ret)
 			ret = test_ram(1);
 	}
+exit:
 #endif
 	if (ret) {
 		printf("%s:error\n", __func__);
