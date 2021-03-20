@@ -997,9 +997,28 @@
 &gpu_3d {
 	status = "okay";
 };
+#endif
 
 &hdmi {
 	status = "okay";
+
+	display-timings {
+		t_hdmi: t-hdmi-default {
+			/* m101nwwb by default */
+			clock-frequency = <148500000>;
+			hactive = <1920>;
+			vactive = <1080>;
+			hback-porch = <148>;
+			hfront-porch = <88>;
+			vback-porch = <36>;
+			vfront-porch = <4>;
+			hsync-len = <44>;
+			vsync-len = <5>;
+			hsync-active = <1>;
+			vsync-active = <1>;
+			de-active = <1>;
+		};
+	};
 };
 
 &hdmimix_clk {
@@ -1014,10 +1033,13 @@
 	status = "okay";
 };
 
+&hdmiphy_clk {
+	status = "okay";
+};
+
 &hdmi_pavi {
 	status = "okay";
 };
-#endif
 
 &i2c1 {
 	clock-frequency = <400000>;
@@ -1436,8 +1458,7 @@
 };
 
 &lcdif3 {
-	/delete-property/ compatible;
-	status = "disabled";
+	status = "okay";
 };
 
 &ldb {
