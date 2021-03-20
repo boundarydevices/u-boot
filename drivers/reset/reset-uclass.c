@@ -11,6 +11,7 @@
 #include <reset.h>
 #include <reset-uclass.h>
 #include <dm/devres.h>
+#include <linux/delay.h>
 
 static inline struct reset_ops *reset_dev_ops(struct udevice *dev)
 {
@@ -300,6 +301,25 @@ int reset_release_all(struct reset_ctl *reset_ctl, int count)
 	}
 
 	return 0;
+}
+
+int device_reset(struct udevice *dev)
+{
+	int ret = 0;
+	struct reset_ctl_bulk bulk;
+
+	ret = reset_get_bulk(dev, &bulk);
+	if (ret) {
+		debug("%s: reset_get_bulk %d\n", __func__, ret);
+		return ret;
+	}
+	ret = reset_assert_bulk(&bulk);
+	if (ret)
+		debug("%s: reset_assert_bulk %d\n", __func__, ret);
+	ret = reset_deassert_bulk(&bulk);
+	if (ret)
+		debug("%s: reset_deassert_bulk %d\n", __func__, ret);
+	return ret;
 }
 
 UCLASS_DRIVER(reset) = {

@@ -269,6 +269,9 @@ static inline int reset_release_bulk(struct reset_ctl_bulk *bulk)
 {
 	return reset_release_all(bulk->resets, bulk->count);
 }
+
+int device_reset(struct udevice *dev);
+
 #else
 static inline int reset_get_by_index(struct udevice *dev, int index,
 				     struct reset_ctl *reset_ctl)
