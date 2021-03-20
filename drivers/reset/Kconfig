@@ -180,4 +180,8 @@ config RESET_DISPMIX
 	default n
 	help
 	  Support for reset controller on i.MX8M SoCs.
+
+config RESET_IMX_HDMIMIX
+	bool
+
 endmenu

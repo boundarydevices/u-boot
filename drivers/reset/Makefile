@@ -27,3 +27,4 @@ obj-$(CONFIG_RESET_SIFIVE) += reset-sifive.o
 obj-$(CONFIG_RESET_SYSCON) += reset-syscon.o
 obj-$(CONFIG_RESET_RASPBERRYPI) += reset-raspberrypi.o
 obj-$(CONFIG_RESET_DISPMIX) += reset-dispmix.o
+obj-$(CONFIG_RESET_IMX_HDMIMIX) += reset-imx-hdmimix.o
