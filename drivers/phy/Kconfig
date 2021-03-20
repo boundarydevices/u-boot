@@ -310,6 +310,12 @@ config SPL_PHY_IMX8MP_LVDS
 	  Enable this to add support for the imx8mp LVDS PHY as found
 	  on NXP's i.MX8MP family of SOCs in SPL.
 
+config PHY_SAMSUNG_HDMI
+	bool
+
+config SPL_PHY_SAMSUNG_HDMI
+	bool
+
 source "drivers/phy/rockchip/Kconfig"
 source "drivers/phy/cadence/Kconfig"
 source "drivers/phy/ti/Kconfig"
