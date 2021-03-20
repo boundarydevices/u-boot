@@ -239,5 +239,8 @@ config PHY_IMX8MP_LVDS
 	  Enable this to add support for the imx8mp LVDS PHY as found
 	  on NXP's i.MX8MP family of SOCs.
 
+config PHY_SAMSUNG_HDMI
+	bool
+
 source "drivers/phy/rockchip/Kconfig"
 endmenu
