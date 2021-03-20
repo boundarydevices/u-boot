@@ -545,6 +545,8 @@ int ofnode_parse_phandle_with_args(ofnode node, const char *list_name,
 				   int index,
 				   struct ofnode_phandle_args *out_args);
 
+int ofnode_parse_phandle(ofnode np, const char *propname, ofnode *ph);
+
 /**
  * ofnode_count_phandle_with_args() - Count number of phandle in a list
  *

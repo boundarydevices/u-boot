@@ -430,6 +430,20 @@ int ofnode_parse_phandle_with_args(ofnode node, const char *list_name,
 	return 0;
 }
 
+int ofnode_parse_phandle(ofnode np, const char *propname, ofnode *ph)
+{
+	struct ofnode_phandle_args phandle;
+	int ret;
+
+	ret = ofnode_parse_phandle_with_args(np, propname, NULL, 0, 0, &phandle);
+	if (ret) {
+		debug("Can't find %s property (%d)\n", propname, ret);
+		return ret;
+	}
+	*ph = phandle.node;
+	return 0;
+}
+
 int ofnode_count_phandle_with_args(ofnode node, const char *list_name,
 				   const char *cells_name)
 {
