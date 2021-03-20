@@ -21,6 +21,7 @@ obj-$(CONFIG_VIDEO_LT8912) += lt8912.o
 obj-$(CONFIG_VIDEO_SN65DSI83) += sn65dsi83.o
 obj-$(CONFIG_VIDEO_LINK) += video_link.o
 endif
+obj-$(CONFIG_DRM_SCDC_HELPER) += drm_scdc_helper.o
 
 obj-${CONFIG_EXYNOS_FB} += exynos/
 obj-${CONFIG_VIDEO_ROCKCHIP} += rockchip/

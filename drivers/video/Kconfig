@@ -1005,4 +1005,7 @@ config VIDEO_LINK
 	   This option enables a video link framework basing on port-endpoint graph
 	   to connect video components.
 
+config DRM_SCDC_HELPER
+	bool "Enable scdc helper library"
+
 endmenu
