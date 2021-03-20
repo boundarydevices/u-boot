@@ -739,6 +739,50 @@ void devm_clk_put(struct udevice *dev, struct clk *clk)
 	WARN_ON(rc);
 }
 
+int devm_clk_get_enable_bulk(struct udevice *dev, const char * const *names,
+		int cnt, int optional_mask, struct clk **clkp)
+{
+	struct clk *clk;
+	int ret;
+	int i = 0;
+
+	*clkp = NULL;
+	clk = devres_alloc(devm_clk_release, sizeof(struct clk) * cnt, __GFP_ZERO);
+	if (unlikely(!clk)) {
+		ret = -ENOMEM;
+		goto release;
+	}
+
+	for (i = 0; i < cnt; i++, optional_mask >>= 1) {
+		ret = clk_get_by_name(dev, names[i], &clk[i]);
+		if (ret) {
+			debug("Unable to get %s clk: %d\n", names[i], ret);
+			if ((ret == -ENODATA) && (optional_mask & 1))
+				continue;
+			goto release;
+		}
+
+		ret = clk_prepare_enable(&clk[i]);
+		if (ret) {
+			debug("Cannot enable %s clock: %d\n", names[i], ret);
+			goto release;
+		}
+	}
+	devres_add(dev, clk);
+	*clkp = clk;
+	return 0;
+
+release:
+	while (i > 0) {
+		i--;
+		if (clk[i].dev) {
+			clk_disable_unprepare(&clk[i]);
+		}
+	}
+	devres_free(clk);
+	return ret;
+}
+
 int clk_uclass_post_probe(struct udevice *dev)
 {
 	/*
