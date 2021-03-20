@@ -766,40 +766,6 @@ static int simple_panel_get_display_timing(struct udevice *dev,
 	return 0;
 }
 
-static int of_parse_phandle(ofnode np, const char *propname, ofnode *ph)
-{
-	struct ofnode_phandle_args phandle;
-	int ret;
-
-	ret = ofnode_parse_phandle_with_args(np, propname, NULL, 0, 0, &phandle);
-	if (ret) {
-		debug("Can't find %s property (%d)\n", propname, ret);
-		return ret;
-	}
-	*ph = phandle.node;
-	return 0;
-}
-
-static int uclass_get_device_by_ofnode_prop(enum uclass_id id, ofnode node,
-		const char *prop, struct udevice **devp)
-{
-	ofnode base;
-	int ret;
-
-	ret = of_parse_phandle(node, prop, &base);
-	if (ret) {
-		debug("%s: Warning: cannot get %s: ret=%d\n", __func__,
-				prop, ret);
-		return ret;
-	}
-	ret = uclass_get_device_by_ofnode(id, base, devp);
-	if (ret) {
-		debug("%s: Error: cannot get %s: ret=%d\n", __func__,
-				prop, ret);
-	}
-	return ret;
-}
-
 void check_for_cmds(ofnode np, const char *dt_name, struct cmds *mc)
 {
 	const void *data;
@@ -933,7 +899,7 @@ static int simple_panel_ofdata_to_platdata(struct udevice *dev)
 	}
 	init_common(np, panel);
 	ofnode_read_u32(np, "bits-per-color", &panel->bpc);
-	ret = of_parse_phandle(np, "mipi-cmds", &cmds_np);
+	ret = ofnode_parse_phandle(np, "mipi-cmds", &cmds_np);
 	if (!ret) {
 		ret = uclass_get_device_by_ofnode_prop(UCLASS_I2C, cmds_np,
 				"i2c-bus", &panel->i2c);
