@@ -299,6 +299,8 @@ int uclass_get_device_by_phandle_id(enum uclass_id id, uint phandle_id,
 int uclass_get_device_by_phandle(enum uclass_id id, struct udevice *parent,
 				 const char *name, struct udevice **devp);
 
+int uclass_get_device_by_ofnode_prop(enum uclass_id id, ofnode node,
+		const char *prop, struct udevice **devp);
 /**
  * uclass_get_device_by_driver() - Get a uclass device for a driver
  *
