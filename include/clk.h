@@ -230,6 +230,9 @@ static inline struct clk *devm_clk_get_optional(struct udevice *dev,
 	return clk;
 }
 
+int devm_clk_get_enable_bulk(struct udevice *dev, const char * const *names,
+		int cnt, int optional_mask, struct clk **clkp);
+
 /**
  * clk_release_all() - Disable (turn off)/Free an array of previously
  * requested clocks.
