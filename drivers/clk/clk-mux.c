@@ -179,7 +179,7 @@ const struct clk_ops clk_mux_ops = {
 	.set_parent = clk_mux_set_parent,
 };
 
-struct clk *clk_hw_register_mux_table(struct device *dev, const char *name,
+struct clk *clk_hw_register_mux_table(struct udevice *dev, const char *name,
 		const char * const *parent_names, u8 num_parents,
 		unsigned long flags,
 		void __iomem *reg, u8 shift, u32 mask,
@@ -236,7 +236,7 @@ struct clk *clk_hw_register_mux_table(struct device *dev, const char *name,
 	return clk;
 }
 
-struct clk *clk_register_mux_table(struct device *dev, const char *name,
+struct clk *clk_register_mux_table(struct udevice *dev, const char *name,
 		const char * const *parent_names, u8 num_parents,
 		unsigned long flags,
 		void __iomem *reg, u8 shift, u32 mask,
@@ -252,7 +252,7 @@ struct clk *clk_register_mux_table(struct device *dev, const char *name,
 	return clk;
 }
 
-struct clk *clk_register_mux(struct device *dev, const char *name,
+struct clk *clk_register_mux(struct udevice *dev, const char *name,
 		const char * const *parent_names, u8 num_parents,
 		unsigned long flags,
 		void __iomem *reg, u8 shift, u8 width,
