@@ -76,6 +76,28 @@ config VIDEO_IMX_LCDIFV3
 	help
 	  Support for i.MX8MP LCDIFv3 controller.
 
+config VIDEO_DW_HDMI
+	bool "DW HDMI library"
+
+config VIDEO_DW_HDMI_I2C
+	bool "DW HDMI i2c ddc device"
+
+config IMX8MP_HDMI_PAVI
+	bool
+
+config VIDEO_IMX8MP_HDMI
+	bool "i.MX8MP HDMI support"
+	depends on DM_VIDEO && IMX8MP
+	select DRM_SCDC_HELPER
+	select VIDEO_DW_HDMI
+	select VIDEO_DW_HDMI_I2C
+	select PHY_SAMSUNG_HDMI
+	select IMX8MP_HDMI_PAVI
+	select RESET_IMX_HDMIMIX
+	select DISPLAY
+	help
+	  Support for i.MX8MP HDMI controller.
+
 config VIDEO_IMX8MP_LVDS
 	bool "i.MX8MP LVDS support"
 	depends on DM_VIDEO && IMX8MP
