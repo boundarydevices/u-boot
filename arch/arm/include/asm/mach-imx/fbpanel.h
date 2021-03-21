@@ -64,7 +64,7 @@ struct display_info_t {
 	void	(*enable)(struct display_info_t const *dev, int enable);
 	void	(*pre_enable)(struct display_info_t const *dev);
 	int	pwm_period;
-#define FB_HDMI		0
+#define FB_HDMI		0	/* 0-5 also in linux/fb.h */
 #define FB_LCD		1
 #define FB_LCD2		2
 #define FB_LVDS		3

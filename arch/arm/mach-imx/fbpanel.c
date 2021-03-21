@@ -20,6 +20,7 @@
 #include <dt-bindings/gpio/gpio.h>
 #include <env.h>
 #include <i2c.h>
+#include <linux/fb.h>
 #include <linux/delay.h>
 #include <log.h>
 #include <malloc.h>
@@ -2224,11 +2225,10 @@ static int init_display(const struct display_info_t *di)
 		printf("LCD %s cannot be configured: %d\n", di->mode.name, ret);
 		return -EINVAL;
 	}
-	env_set("video_link", di->fbtype == FB_HDMI ? "1" : NULL);
 	printf("Display: %s:%s (%ux%u)\n", short_names[di->fbtype],
 			di->mode.name, di->mode.xres, di->mode.yres);
 	g_di_active = di;
-	return 0;
+	return di->fbtype;
 }
 
 static int do_fbpanel(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[])
@@ -2239,7 +2239,10 @@ static int do_fbpanel(struct cmd_tbl *cmdtp, int flag, int argc, char * const ar
 	const char *p;
 	char *buf;
 	unsigned prefer;
+#if defined(CONFIG_IMX8MM) || defined(CONFIG_IMX8MN) || defined(CONFIG_IMX8MP) || defined(CONFIG_IMX8MQ)
+#else
 	int ret = 0;
+#endif
 	const struct display_info_t* di = g_displays;
 	int cnt = g_display_cnt;
 
@@ -2291,7 +2294,7 @@ static int do_fbpanel(struct cmd_tbl *cmdtp, int flag, int argc, char * const ar
 	if (!di)
 		return 0;
 	ret = init_display(di);
-	if (ret)
+	if (ret < 0)
 		return ret;
 	ipuv3_fb_init2();
 #else
@@ -2299,11 +2302,11 @@ static int do_fbpanel(struct cmd_tbl *cmdtp, int flag, int argc, char * const ar
 	if (!di)
 		return 0;
 	ret = init_display(di);
-	if (ret)
+	if (ret < 0)
 		return ret;
 	mxsfb_init2();
 #endif
-	return ret;
+	return 0;
 }
 
 U_BOOT_CMD(fbpanel, 3, 0, do_fbpanel,
