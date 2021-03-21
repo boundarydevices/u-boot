@@ -550,8 +550,8 @@ int video_link_init(void)
 	memset(&temp_stack, 0, sizeof(temp_stack));
 
 #ifdef CONFIG_CMD_FBPANEL
-	ret = board_video_skip();
-	if (ret)
+	ret = fbpanel_video_init();
+	if (ret < 0)
 		return -ENODEV;
 #endif
 	for (uclass_find_first_device(UCLASS_VIDEO, &dev);
@@ -578,9 +578,15 @@ int video_link_init(void)
 		return 0;
 	}
 
-	env_id = env_get_ulong("video_link", 10, 0);
+	env_id = env_get_ulong("video_link", 10, 10);
 	if (env_id < video_links_num)
 		curr_video_link = env_id;
+	else if (ret == FB_MIPI)
+		curr_video_link = 0;
+	else if (ret == FB_HDMI)
+		curr_video_link = video_links_num - 1;
+	else
+		curr_video_link = (video_links_num > 1) ? 1 : 0;
 
 	list_videolink(true);
 
