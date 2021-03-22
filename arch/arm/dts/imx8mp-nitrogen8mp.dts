@@ -1358,6 +1358,7 @@
 };
 
 &lcdif3 {
+	/delete-property/ compatible;
 	status = "disabled";
 };
 
