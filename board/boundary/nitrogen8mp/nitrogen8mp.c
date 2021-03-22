@@ -190,6 +190,14 @@ static const struct display_info_t displays[] = {
 
 	/* lvds */
 	VD_M101NWWB(LVDS, fbp_detect_i2c, fbp_bus_gp(3, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06_2),
+	VD_HANNSTAR7(	LVDS, NULL, fbp_bus_gp(3, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06_2),
+	VD_PM9598(	LVDS, NULL, fbp_bus_gp(3, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06_2),
+	VD_AUO_B101EW05(LVDS, NULL, fbp_bus_gp(3, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06_2),
+	VD_LG1280_800(	LVDS, NULL, fbp_bus_gp(3, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06_2),
+	VD_DT070BTFT(	LVDS, NULL, fbp_bus_gp(3, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06_2),
+	VD_WSVGA(	LVDS, NULL, fbp_bus_gp(3, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06_2),
+	VD_TM070JDHG30(	LVDS, NULL, fbp_bus_gp(3, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06_2),
+	VD_ND1024_600(	LVDS, NULL, fbp_bus_gp(3, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06_2),
 };
 #define display_cnt	ARRAY_SIZE(displays)
 #else
