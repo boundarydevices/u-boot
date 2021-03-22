@@ -51,7 +51,6 @@ static iomux_v3_cfg_t const init_pads[] = {
 #define GP_GT911_RESET			IMX_GPIO_NR(3, 7)
 	IOMUX_PAD_CTRL(NAND_DATA01__GPIO3_IO7, 0x149),
 
-
 #define GP_CSI1_1MIPI_PWDN	IMX_GPIO_NR(3, 9)
 	IOMUX_PAD_CTRL(NAND_DATA03__GPIO3_IO9, 0x141),
 #define GP_CSI1_1MIPI_RESET	IMX_GPIO_NR(3, 1)
@@ -70,6 +69,30 @@ static iomux_v3_cfg_t const init_pads[] = {
 
 #define GP_EMMC_RESET	IMX_GPIO_NR(2, 10)
 	IOMUX_PAD_CTRL(SD1_RESET_B__GPIO2_IO10, 0x41),
+
+	/* EC2x Modem control */
+#define GP_EC21_RESET		IMX_GPIO_NR(4, 10)
+	IOMUX_PAD_CTRL(SAI1_TXFS__GPIO4_IO10, 0x1c0),
+#define GP_EC21_USB_BOOT	IMX_GPIO_NR(4, 11)
+	IOMUX_PAD_CTRL(SAI1_TXC__GPIO4_IO11 , 0x1c0),
+#define GP_EC21_NET_STAT	IMX_GPIO_NR(4, 12)
+	IOMUX_PAD_CTRL(SAI1_TXD0__GPIO4_IO12, 0x1c0),
+#define GP_EC21_NET_MODE	IMX_GPIO_NR(4, 13)
+	IOMUX_PAD_CTRL(SAI1_TXD1__GPIO4_IO13, 0x1c0),
+#define GP_EC21_AP_READY	IMX_GPIO_NR(4, 14)
+	IOMUX_PAD_CTRL(SAI1_TXD2__GPIO4_IO14, 0x1c0),
+#define GP_EC21_WAKE_UP		IMX_GPIO_NR(4, 15)
+	IOMUX_PAD_CTRL(SAI1_TXD3__GPIO4_IO15, 0x1c0),
+#define GP_EC21_RI		IMX_GPIO_NR(4, 16)
+	IOMUX_PAD_CTRL(SAI1_TXD4__GPIO4_IO16, 0x1c0),
+#define GP_EC21_USIM_DETECT	IMX_GPIO_NR(4, 17)
+	IOMUX_PAD_CTRL(SAI1_TXD5__GPIO4_IO17, 0x1c0),
+#define GP_EC21_POWER_KEY	IMX_GPIO_NR(4, 18)
+	IOMUX_PAD_CTRL(SAI1_TXD6__GPIO4_IO18, 0x1c0),
+#define GP_EC21_STAT		IMX_GPIO_NR(4, 19)
+	IOMUX_PAD_CTRL(SAI1_TXD7__GPIO4_IO19, 0x1c0),
+#define GP_REG_3P7V		IMX_GPIO_NR(4, 20)
+	IOMUX_PAD_CTRL(NAND_RE_B__GPIO3_IO15, 0x116),
 };
 
 int board_early_init_f(void)
@@ -142,6 +165,28 @@ int board_init(void)
 	gpio_direction_output(GP_CSI1_1MIPI_RESET, 0);
 	gpio_direction_output(GP_CSI1_2MIPI_PWDN, 1);
 	gpio_direction_output(GP_CSI1_2MIPI_RESET, 0);
+	gpio_request(GP_EC21_RESET, "ec2x_reset");
+	gpio_request(GP_EC21_USB_BOOT, "ec2x_usb_boot");
+	gpio_request(GP_EC21_NET_STAT, "ec2x_net_stat");
+	gpio_request(GP_EC21_NET_MODE, "ec2x_net_mode");
+	gpio_request(GP_EC21_AP_READY, "ec2x_ap_ready");
+	gpio_request(GP_EC21_WAKE_UP, "ec2x_wake_up");
+	gpio_request(GP_EC21_RI, "ec2x_ri");
+	gpio_request(GP_EC21_USIM_DETECT, "ec2x_usim_detect");
+	gpio_request(GP_EC21_POWER_KEY, "ec2x_power_key");
+	gpio_request(GP_EC21_STAT, "ec2x_stat");
+	gpio_request(GP_REG_3P7V, "ec2x_reg_3p7v");
+	gpio_direction_output(GP_EC21_RESET, 1);
+	gpio_direction_output(GP_EC21_USB_BOOT, 0);
+	gpio_direction_output(GP_EC21_NET_STAT, 0);
+	gpio_direction_output(GP_EC21_NET_MODE, 0);
+	gpio_direction_output(GP_EC21_AP_READY, 0);
+	gpio_direction_output(GP_EC21_WAKE_UP, 0);
+	gpio_direction_output(GP_EC21_RI, 0);
+	gpio_direction_output(GP_EC21_USIM_DETECT, 0);
+	gpio_direction_output(GP_EC21_POWER_KEY, 0);
+	gpio_direction_input(GP_EC21_STAT);
+	gpio_direction_output(GP_REG_3P7V, 0);
 #if defined(CONFIG_MXC_SPI) && !defined(CONFIG_DM_SPI)
 	setup_spi();
 #endif
