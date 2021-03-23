@@ -58,9 +58,13 @@ static const struct imx_pll14xx_rate_table *imx_get_pll_settings(
 	const struct imx_pll14xx_rate_table *rate_table = pll->rate_table;
 	int i;
 
-	for (i = 0; i < pll->rate_count; i++)
-		if (rate == rate_table[i].rate)
+	for (i = 0; i < pll->rate_count; i++) {
+		ulong diff = (rate >= rate_table[i].rate) ?
+			(rate - rate_table[i].rate) :
+			(rate_table[i].rate - rate);
+		if (diff <= 10)
 			return &rate_table[i];
+	}
 
 	return NULL;
 }
