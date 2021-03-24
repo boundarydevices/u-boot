@@ -1227,63 +1227,94 @@ static int ci_udc_gadget_handle_interrupts(struct udevice *dev)
 	return ci_udc_handle_interrupts();
 }
 
-static int ci_udc_phy_setup(struct udevice *dev, struct ci_udc_priv_data *priv)
+static int ci_udc_get_phy_base(struct udevice *dev, void ** __iomem p, ofnode *phy)
 {
 	void *__iomem addr;
-	int misc_off;
+	int ret;
 
-	struct udevice __maybe_unused phy_dev;
-	priv->phy_off = fdtdec_lookup_phandle(gd->fdt_blob,
-					      dev_of_offset(dev),
-					      "fsl,usbphy");
-	if (priv->phy_off < 0) {
-		priv->phy_off = fdtdec_lookup_phandle(gd->fdt_blob,
-					      dev_of_offset(dev), "phys");
-		if (priv->phy_off < 0)
-			return -EINVAL;
+	ret = ofnode_parse_phandle(dev_ofnode(dev), "fsl,usbphy", phy);
+	if (ret < 0) {
+		ret = ofnode_parse_phandle(dev_ofnode(dev), "phys", phy);
+		if (ret < 0)
+			return ret;
 	}
 
-	addr = (void __iomem *)fdtdec_get_addr_size_auto_noparent(gd->fdt_blob,
-		priv->phy_off, "reg", 0, NULL, false);
+	addr = (void __iomem *)ofnode_get_addr(*phy);
 	if ((fdt_addr_t)addr == FDT_ADDR_T_NONE)
 		addr = NULL;
+	*p = addr;
+	return 0;
+}
 
-	priv->phy_data.phy_addr = addr;
+static int ci_udc_get_misc_base(struct udevice *dev, void ** __iomem p)
+{
+	void *__iomem addr;
+	ofnode misc;
+	int ret;
 
-	misc_off = fdtdec_lookup_phandle(gd->fdt_blob, dev_of_offset(dev), "fsl,usbmisc");
-	if (misc_off < 0)
-		return -EINVAL;
+	ret = ofnode_parse_phandle(dev_ofnode(dev), "fsl,usbmisc", &misc);
+	if (ret < 0)
+		return ret;
 
-	addr = (void __iomem *)fdtdec_get_addr_size_auto_noparent(gd->fdt_blob,
-		misc_off, "reg", 0, NULL, false);
+	addr = (void __iomem *)ofnode_get_addr(misc);
 	if ((fdt_addr_t)addr == FDT_ADDR_T_NONE)
-		return -EINVAL;
-
-	priv->phy_data.misc_addr = addr;
+		addr = NULL;
+	*p = addr;
+	return 0;
+}
 
 #if defined(CONFIG_MX6)
-	int anatop_off;
+static int ci_udc_get_anatop_base(ofnode phy, void ** __iomem p)
+{
+	void *__iomem addr;
+	ofnode anatop;
+	int ret;
 
-	/* Resolve ANATOP offset through USB PHY node */
-	anatop_off = fdtdec_lookup_phandle(gd->fdt_blob, priv->phy_off, "fsl,anatop");
-	if (anatop_off < 0)
-		return -EINVAL;
+	ret = ofnode_parse_phandle(phy, "fsl,anatop", &anatop);
+	if (ret < 0)
+		return ret;
 
-	addr = (void __iomem *)fdtdec_get_addr_size_auto_noparent(gd->fdt_blob,
-		anatop_off, "reg", 0, NULL, false);
+	addr = (void __iomem *)ofnode_get_addr(anatop);
 	if ((fdt_addr_t)addr == FDT_ADDR_T_NONE)
-		return -EINVAL;
-
-	priv->phy_data.anatop_addr = addr;
+		addr = NULL;
+	*p = addr;
+	return 0;
+}
 #endif
 
-	dev_set_ofnode(&phy_dev, offset_to_ofnode(priv->phy_off));
+static int ci_udc_phy_setup(struct udevice *dev, struct ci_udc_priv_data *priv)
+{
+	ofnode phy;
+	int ret;
+
+	ret = ci_udc_get_phy_base(dev, &priv->phy_data.phy_addr, &phy);
+	if (ret < 0)
+		return ret;
+	ret = ci_udc_get_misc_base(dev, &priv->phy_data.misc_addr);
+	if (ret < 0)
+		return ret;
+	if (!priv->phy_data.misc_addr)
+		return -EINVAL;
+
+#if defined(CONFIG_MX6)
+	/* Resolve ANATOP offset through USB PHY node */
+	ret = ci_udc_get_anatop_base(phy, &priv->phy_data.anatop_addr);
+	if (ret < 0)
+		return ret;
+	if (!priv->phy_data.anatop_addr)
+		return -EINVAL;
+#endif
 
 #if CONFIG_IS_ENABLED(POWER_DOMAIN)
-	/* Need to power on the PHY before access it */
-	if (!power_domain_get(&phy_dev, &priv->phy_pd)) {
-		if (power_domain_on(&priv->phy_pd))
-			return -EINVAL;
+	{
+		struct udevice phy_dev;
+
+		dev_set_ofnode(&phy_dev, phy);
+		/* Need to power on the PHY before access it */
+		if (!power_domain_get(&phy_dev, &priv->phy_pd)) {
+			if (power_domain_on(&priv->phy_pd))
+				return -EINVAL;
+		}
 	}
 #endif
 
@@ -1359,18 +1390,19 @@ static int ci_udc_otg_clk_init(struct udevice *dev,
 
 static int ci_udc_otg_phy_mode(struct udevice *dev)
 {
-	struct ci_udc_priv_data *priv = dev_get_priv(dev);
+	void *__iomem phy_base;
+	ofnode phy;
+	int ret;
 
-	void *__iomem phy_ctrl, *__iomem phy_status;
-	void *__iomem phy_base = (void *__iomem)devfdt_get_addr(&priv->otgdev);
-	u32 val;
+	ret = ci_udc_get_phy_base(dev, &phy_base, &phy);
+	if (ret < 0)
+		return ret;
+	if (!phy_base)
+		return -EINVAL;
 
 	if (is_mx6() || is_mx7ulp() || is_imx8() || is_imx8ulp()) {
-		phy_base = (void __iomem *)fdtdec_get_addr_size_auto_noparent(gd->fdt_blob,
-							   priv->phy_off,
-							   "reg", 0, NULL, false);
-		if ((fdt_addr_t)phy_base == FDT_ADDR_T_NONE)
-			return -EINVAL;
+		void *__iomem phy_ctrl;
+		u32 val;
 
 		phy_ctrl = (void __iomem *)(phy_base + USBPHY_CTRL);
 		val = readl(phy_ctrl);
@@ -1379,6 +1411,9 @@ static int ci_udc_otg_phy_mode(struct udevice *dev)
 		else
 			return USB_INIT_HOST;
 	} else if (is_mx7() || is_imx8mm() || is_imx8mn()) {
+		void *__iomem phy_status;
+		u32 val;
+
 		phy_status = (void __iomem *)(phy_base +
 					      USBNC_PHY_STATUS_OFFSET);
 		val = readl(phy_status);
@@ -1394,20 +1429,19 @@ static int ci_udc_otg_phy_mode(struct udevice *dev)
 static int ci_udc_otg_ofdata_to_platdata(struct udevice *dev)
 {
 	struct ci_udc_priv_data *priv = dev_get_priv(dev);
-	int node = dev_of_offset(dev);
-	int usbotg_off;
+	ofnode node;
+	int ret;
 
 	if (usb_get_dr_mode(dev_ofnode(dev)) != USB_DR_MODE_PERIPHERAL) {
 		dev_dbg(dev, "Invalid mode\n");
 		return -ENODEV;
 	}
 
-	usbotg_off = fdtdec_lookup_phandle(gd->fdt_blob,
-					   node,
-					   "chipidea,usb");
-	if (usbotg_off < 0)
-		return -EINVAL;
-	dev_set_ofnode(&priv->otgdev, offset_to_ofnode(usbotg_off));
+	ret = ofnode_parse_phandle(dev_ofnode(dev), "chipidea,usb", &node);
+	if (ret < 0)
+		return ret;
+
+	dev_set_ofnode(&priv->otgdev, node);
 	priv->otgdev.parent = dev->parent;
 
 	return 0;
@@ -1455,7 +1489,7 @@ static int ci_udc_otg_probe(struct udevice *dev)
 
 	ehci_mx6_phy_init(ehci, &priv->phy_data, dev_seq(dev));
 
-	if (ci_udc_otg_phy_mode(dev) != USB_INIT_DEVICE)
+	if (ci_udc_otg_phy_mode(&priv->otgdev) != USB_INIT_DEVICE)
 		return -ENODEV;
 
 	priv->ctrl.hccr = (struct ehci_hccr *)((ulong)&ehci->caplength);
