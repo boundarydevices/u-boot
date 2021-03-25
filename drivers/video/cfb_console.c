@@ -397,27 +397,39 @@ static void video_drawchars(int xx, int yy, unsigned char *s, int count)
 			for (rows = VIDEO_FONT_HEIGHT, dest = dest0;
 			     rows--; dest += VIDEO_LINE_LEN) {
 				u8 bits = *cdat++;
+				u32 v1, v2;
 
-				((u32 *) dest)[0] =
-					SHORTSWAP32((video_font_draw_table16
-						     [bits >> 6] & eorx) ^
-						    bgx);
-				((u32 *) dest)[1] =
-					SHORTSWAP32((video_font_draw_table16
-						     [bits >> 4 & 3] & eorx) ^
-						    bgx);
+				v1 = SHORTSWAP32((video_font_draw_table16
+					[bits >> 6] & eorx) ^ bgx);
+				v2 = SHORTSWAP32((video_font_draw_table16
+					[bits >> 4 & 3] & eorx) ^ bgx);
+
+				if (((ulong)dest) & 2) {
+					((u16 *) dest)[0] = v1;
+					((u16 *) dest)[1] = v1 >> 16;
+					((u16 *) dest)[2] = v2;
+					((u16 *) dest)[3] = v2 >> 16;
+				} else {
+					((u32 *) dest)[0] = v1;
+					((u32 *) dest)[1] = v2;
+				}
 
 				if (VIDEO_FONT_WIDTH == 4)
 					continue;
 
-				((u32 *) dest)[2] =
-					SHORTSWAP32((video_font_draw_table16
-						     [bits >> 2 & 3] & eorx) ^
-						    bgx);
-				((u32 *) dest)[3] =
-					SHORTSWAP32((video_font_draw_table16
-						     [bits & 3] & eorx) ^
-						    bgx);
+				v1 = SHORTSWAP32((video_font_draw_table16
+					[bits >> 2 & 3] & eorx) ^ bgx);
+				v2 = SHORTSWAP32((video_font_draw_table16
+					[bits & 3] & eorx) ^ bgx);
+				if (((ulong)dest) & 2) {
+					((u16 *) dest)[4] = v1;
+					((u16 *) dest)[5] = v1 >> 16;
+					((u16 *) dest)[6] = v2;
+					((u16 *) dest)[7] = v2 >> 16;
+				} else {
+					((u32 *) dest)[2] = v1;
+					((u32 *) dest)[3] = v2;
+				}
 			}
 			dest0 += VIDEO_FONT_WIDTH * VIDEO_PIXEL_SIZE;
 			s++;
