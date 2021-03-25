@@ -159,21 +159,26 @@ int splash_display(void)
 	int x = 0, y = 0, ret;
 
 	s = env_get("splashimage");
-	if (!s)
-		return -EINVAL;
+	if (s) {
+		addr = hextoul(s, NULL);
+		ret = splash_screen_prepare();
+		if (ret)
+			addr = 0;
+	} else {
+#if defined(CONFIG_DM_VIDEO) && defined(CONFIG_VIDEO_LOGO)
+		addr = (ulong)bmp_logo_bitmap;
+#else
+		addr = 0;
+#endif
+	}
+	if (addr) {
+		splash_get_pos(&x, &y);
+		ret = bmp_display(addr, x, y);
 
-	addr = hextoul(s, NULL);
-	ret = splash_screen_prepare();
-	if (ret)
-		return ret;
-
-	splash_get_pos(&x, &y);
-
-	ret = bmp_display(addr, x, y);
-
-	/* Skip banner output on video console if the logo is not at 0,0 */
-	if (x || y)
-		goto end;
+		/* Skip banner output on video console if the logo is not at 0,0 */
+		if (x || y)
+			goto end;
+	}
 
 #if defined(CONFIG_DM_VIDEO) && !defined(CONFIG_HIDE_LOGO_VERSION)
 	splash_display_banner();
