@@ -166,9 +166,9 @@ int splash_display(void)
 			addr = 0;
 	} else {
 #if defined(CONFIG_DM_VIDEO) && defined(CONFIG_VIDEO_LOGO)
-		addr = bmp_logo_bitmap;
+		addr = (ulong)bmp_logo_bitmap;
 #else
-		return -EINVAL;
+		addr = 0;
 #endif
 	}
 	if (addr) {
