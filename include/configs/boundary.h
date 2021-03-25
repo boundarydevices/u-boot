@@ -175,10 +175,7 @@
 
 #endif
 #if defined(CONFIG_DM_VIDEO)
-#define SPLASHIMAGE	"splashimage=" __stringify(CONFIG_LOADADDR) "\0"
 #define CONFIG_VIDEO_LOGO
-#else
-#define SPLASHIMAGE
 #endif
 
 #ifdef CONFIG_CMD_SATA
@@ -376,7 +373,6 @@
 	"otg_upgradeu=run usbnetwork; tftp " BD_RAM_SCRIPT " net_upgradeu.scr && source " BD_RAM_SCRIPT "\0" \
 	"program=next=prog_fuses.scr; run upgradeu\0" \
 	"scriptaddr=" BD_RAM_SCRIPT "\0" \
-	SPLASHIMAGE \
 	"splashflash=" BD_SPLASH_FLASH "\0" \
 	"uboot_defconfig=" CONFIG_DEFCONFIG "\0" \
 	"upgradeu=setenv boot_scripts upgrade.scr; boot\0" \
