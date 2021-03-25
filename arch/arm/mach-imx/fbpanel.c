@@ -2317,7 +2317,7 @@ U_BOOT_CMD(fbpanel, 3, 0, do_fbpanel,
 
 static const struct display_info_t *g_disp[FB_COUNT];
 
-int board_video_skip(void)
+int fbpanel_video_init(void)
 {
 	const struct display_info_t *di = select_display(g_displays, g_display_cnt, g_disp);
 	int ret;
@@ -2330,6 +2330,13 @@ int board_video_skip(void)
 		ret = -EINVAL;
 #endif
 	return ret;
+}
+
+int board_video_skip(void)
+{
+	int ret = fbpanel_video_init();
+
+	return (ret < 0) ? ret : 0;
 }
 
 void fbp_setup_display(const struct display_info_t *displays, int cnt)
