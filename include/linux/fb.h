@@ -614,13 +614,14 @@ struct fb_videomode {
 };
 
 int board_video_skip(void);
-/* board_video_skip return type of panel wanted */
+/* fbpanel_video_init return type of panel wanted */
 #define FB_HDMI		0
 #define FB_LCD		1
 #define FB_LCD2		2
 #define FB_LVDS		3
 #define FB_LVDS2	4
 #define FB_MIPI		5
+int fbpanel_video_init(void);
 
 #endif /* __KERNEL__ */
 

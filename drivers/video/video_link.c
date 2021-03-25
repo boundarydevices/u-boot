@@ -577,7 +577,7 @@ int video_link_init(void)
 	memset(&temp_stack, 0, sizeof(temp_stack));
 
 #ifdef CONFIG_CMD_FBPANEL
-	ret = board_video_skip();
+	ret = fbpanel_video_init();
 	if (ret < 0)
 		return -ENODEV;
 #endif
