@@ -58,5 +58,7 @@ void spl_dram_init(void);
 int board_detect_lcd133(struct display_info_t const *di);
 int board_detect_pca9546(struct display_info_t const *di);
 int board_detect_pca9546_2(struct display_info_t const *di);
+int board_detect_gt911_common(struct display_info_t const *di,
+	int sub_bus, int sub_bus2, int gp_reset, int gp_irq);
 
 #endif
