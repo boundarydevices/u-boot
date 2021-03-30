@@ -1340,7 +1340,9 @@ static int sec_mipi_dsim_set_pref_rate(struct sec_mipi_dsim *dsim, unsigned long
 		} else {
 			ret = clk_set_rate(dsim->clk_pllref, ref_clk);
 		}
-		if (ret != ref_clk)
+		rate = ret;
+		diff = (rate > ref_clk) ? rate - ref_clk : ref_clk - rate;
+		if (diff > 500)
 			dev_err(dev, "failed to set pll ref clock(%ld) rate %d %d\n", dsim->clk_pllref->id, ref_clk, ret);
 
 		rate = clk_get_rate(dsim->clk_pllref);
