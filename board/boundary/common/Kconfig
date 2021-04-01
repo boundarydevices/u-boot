@@ -87,3 +87,6 @@ config DDR_CHANNEL_CNT
 	depends on ARCH_IMX8M
 	default 1 if IMX8MN
 	default 2
+
+config DDR_CHANNEL_CNT_1_OR_2
+	bool "Try other channel count if ddr setup fails"

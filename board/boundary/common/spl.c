@@ -6,7 +6,12 @@
 #include <common.h>
 #include <hang.h>
 #include "bd_common.h"
-#include "lpddr4_timing.h"
+#if (CONFIG_DDR_CHANNEL_CNT == 1) || defined(CONFIG_DDR_CHANNEL_CNT_1_OR_2)
+#include "lpddr4_timing_ch1.h"
+#endif
+#if (CONFIG_DDR_CHANNEL_CNT == 2) || defined(CONFIG_DDR_CHANNEL_CNT_1_OR_2)
+#include "lpddr4_timing_ch2.h"
+#endif
 
 struct dram_cfg_param_change {
 	unsigned int reg;
@@ -14,24 +19,59 @@ struct dram_cfg_param_change {
 	unsigned int new_val;
 };
 
-#ifdef LPDDR4_CS_NEW
-struct dram_cfg_param_change ddrc_cfg_tbl[] = {
-#if (CONFIG_DDR_CHANNEL_CNT == 1) && !defined(CONFIG_IMX8MN)
-	{ DDRC_MSTR(0), 0xa0081020 | (LPDDR4_CS << 24), 0xa0081020 | (LPDDR4_CS_NEW << 24) },
+struct change_rank {
+	int channels;
+	int rank;
+	struct dram_cfg_param_change *cfg_tbl;
+	int cfg_tbl_cnt;
+	struct dram_cfg_param_change *fsp_cfg_tbl;
+	int fsp_cfg_tbl_cnt;
+};
+
+#ifdef CH1_LPDDR4_CS_NEW
+#if (CONFIG_DDR_CHANNEL_CNT == 1) || defined(CONFIG_DDR_CHANNEL_CNT_1_OR_2)
+static struct dram_cfg_param_change ddrc_cfg_tbl_ch1[] = {
+#if !defined(CONFIG_IMX8MN)
+	{ DDRC_MSTR(0), 0xa0081020 | (CH1_LPDDR4_CS << 24), 0xa0081020 | (CH1_LPDDR4_CS_NEW << 24) },
 #else
-	{ DDRC_MSTR(0), 0xa0080020 | (LPDDR4_CS << 24), 0xa0080020 | (LPDDR4_CS_NEW << 24) },
+	{ DDRC_MSTR(0), 0xa0080020 | (CH1_LPDDR4_CS << 24), 0xa0080020 | (CH1_LPDDR4_CS_NEW << 24) },
 #endif
-	{ DDRC_ADDRMAP0(0), VAL_DDRC_ADDRMAP0, VAL_DDRC_ADDRMAP0_NEW },
-	{ DDRC_ADDRMAP6(0), VAL_DDRC_ADDRMAP6, VAL_DDRC_ADDRMAP6_NEW },
+	{ DDRC_ADDRMAP0(0), CH1_VAL_DDRC_ADDRMAP0, CH1_VAL_DDRC_ADDRMAP0_NEW },
+	{ DDRC_ADDRMAP6(0), CH1_VAL_DDRC_ADDRMAP6, CH1_VAL_DDRC_ADDRMAP6_NEW },
 };
 
-struct dram_cfg_param_change ddrc_fsp_cfg_tbl[] = {
-	{ 0x54012, (LPDDR4_CS << 8) | (0x0110 & 0xff), (LPDDR4_CS_NEW << 8) | (0x0110 & 0xff) },
-#if (CONFIG_DDR_CHANNEL_CNT == 2)
-	{ 0x5402c, LPDDR4_CS, LPDDR4_CS_NEW },
+static struct dram_cfg_param_change ddrc_fsp_cfg_tbl_ch1[] = {
+	{ 0x54012, (CH1_LPDDR4_CS << 8) | (0x0110 & 0xff), (CH1_LPDDR4_CS_NEW << 8) | (0x0110 & 0xff) },
+};
+static struct change_rank change_rank_ch1 = {
+	1, (CH1_LPDDR4_CS_NEW == 3) ? 1 : 0,
+	ddrc_cfg_tbl_ch1, ARRAY_SIZE(ddrc_cfg_tbl_ch1),
+	ddrc_fsp_cfg_tbl_ch1, ARRAY_SIZE(ddrc_fsp_cfg_tbl_ch1)
+};
 #endif
+#endif
+
+#ifdef CH2_LPDDR4_CS_NEW
+#if (CONFIG_DDR_CHANNEL_CNT == 2) || defined(CONFIG_DDR_CHANNEL_CNT_1_OR_2)
+static struct dram_cfg_param_change ddrc_cfg_tbl_ch2[] = {
+	{ DDRC_MSTR(0), 0xa0080020 | (CH2_LPDDR4_CS << 24), 0xa0080020 | (CH2_LPDDR4_CS_NEW << 24) },
+	{ DDRC_ADDRMAP0(0), CH2_VAL_DDRC_ADDRMAP0, CH2_VAL_DDRC_ADDRMAP0_NEW },
+	{ DDRC_ADDRMAP6(0), CH2_VAL_DDRC_ADDRMAP6, CH2_VAL_DDRC_ADDRMAP6_NEW },
 };
 
+static struct dram_cfg_param_change ddrc_fsp_cfg_tbl_ch2[] = {
+	{ 0x54012, (CH2_LPDDR4_CS << 8) | (0x0110 & 0xff), (CH2_LPDDR4_CS_NEW << 8) | (0x0110 & 0xff) },
+	{ 0x5402c, CH2_LPDDR4_CS, CH2_LPDDR4_CS_NEW },
+};
+static struct change_rank change_rank_ch2 = {
+	2, (CH2_LPDDR4_CS_NEW == 3) ? 1 : 0,
+	ddrc_cfg_tbl_ch2, ARRAY_SIZE(ddrc_cfg_tbl_ch2),
+	ddrc_fsp_cfg_tbl_ch2, ARRAY_SIZE(ddrc_fsp_cfg_tbl_ch2)
+};
+#endif
+#endif
+
+#if defined(CH1_LPDDR4_CS_NEW) || defined(CH2_LPDDR4_CS_NEW)
 int fix_tbl(struct dram_cfg_param *cfg, int cfg_num, struct dram_cfg_param_change *fix, int fix_num)
 {
 	while (1) {
@@ -56,6 +96,7 @@ int fix_tbl(struct dram_cfg_param *cfg, int cfg_num, struct dram_cfg_param_chang
 	}
 	return -EINVAL;
 }
+#endif
 
 #define SDRAM_SIZE	((1ULL * CONFIG_DDR_MB) << 20)
 #define CNT 8
@@ -109,44 +150,98 @@ int test_ram(int show)
 	}
 	return ret;
 }
+
+int ddr_init_test(struct dram_timing_info *dt, int show)
+{
+	int ret = ddr_init(dt);
+
+	if (!ret) {
+		ret = test_ram(show);
+	}
+	return ret;
+}
+
+#if defined(CH1_LPDDR4_CS_NEW) || defined(CH2_LPDDR4_CS_NEW)
+int other_rank_ddr_init(struct dram_timing_info *dt, struct change_rank *cr, int show)
+{
+	struct dram_fsp_msg *msg = dt->fsp_msg;
+	int cnt = dt->fsp_msg_num;
+	int ret;
+
+	printf("trying channels %d, rank %d\n", cr->channels, cr->rank);
+	ret = fix_tbl(dt->ddrc_cfg, dt->ddrc_cfg_num,
+			cr->cfg_tbl, cr->cfg_tbl_cnt);
+	if (ret) {
+		printf("%s:error fixing ddrc_cfg\n", __func__);
+		return -ENODEV;
+	}
+	while (cnt) {
+		ret = fix_tbl(msg->fsp_cfg, msg->fsp_cfg_num,
+			cr->fsp_cfg_tbl, cr->fsp_cfg_tbl_cnt);
+		if (ret) {
+			printf("%s:error fixing fsp_cfg\n", __func__);
+			return -ENODEV;
+		}
+		msg++;
+		cnt--;
+	}
+	return ddr_init_test(dt, show);
+}
 #endif
 
 void spl_dram_init(void)
 {
-	struct dram_timing_info *dt = &dram_timing;
+#if (CONFIG_DDR_CHANNEL_CNT == 1)
+	struct dram_timing_info *dt = &dram_timing_ch1;
+#ifdef CH1_LPDDR4_CS_NEW
+	struct change_rank *cr = &change_rank_ch1;
+#define CR
+#endif
+#else
+	struct dram_timing_info *dt = &dram_timing_ch2;
+#ifdef CH2_LPDDR4_CS_NEW
+	struct change_rank *cr = &change_rank_ch2;
+#define CR
+#endif
+#endif
+
+#if defined(CONFIG_DDR_CHANNEL_CNT_1_OR_2)
+#if (CONFIG_DDR_CHANNEL_CNT == 1)
+	struct dram_timing_info *dt2 = &dram_timing_ch2;
+#ifdef CH2_LPDDR4_CS_NEW
+	struct change_rank *cr2 = &change_rank_ch2;
+#define CR2
+#endif
+#else
+	struct dram_timing_info *dt2 = &dram_timing_ch1;
+#ifdef CH1_LPDDR4_CS_NEW
+	struct change_rank *cr2 = &change_rank_ch1;
+#define CR2
+#endif
+#endif
+#endif
 	/* ddr train */
-	int ret = ddr_init(dt);
+	int ret = ddr_init_test(dt, 0);
 
-#ifdef LPDDR4_CS_NEW
-	if (!ret) {
-		ret = test_ram(0);
-	}
+#if defined(CONFIG_DDR_CHANNEL_CNT_1_OR_2)
 	if (ret == -ENODEV) {
-		struct dram_fsp_msg *msg = dt->fsp_msg;
-		int cnt = dt->fsp_msg_num;
-
-		printf("trying rank %d\n", (LPDDR4_CS_NEW == 3) ? 1 : 0);
-		ret = fix_tbl(dt->ddrc_cfg, dt->ddrc_cfg_num, ddrc_cfg_tbl,
-				ARRAY_SIZE(ddrc_cfg_tbl));
-		if (ret) {
-			printf("%s:error fixing ddrc_cfg\n", __func__);
-			goto exit;
-		}
-		while (cnt) {
-			ret = fix_tbl(msg->fsp_cfg, msg->fsp_cfg_num,
-				ddrc_fsp_cfg_tbl, ARRAY_SIZE(ddrc_fsp_cfg_tbl));
-			if (ret) {
-				printf("%s:error fixing fsp_cfg\n", __func__);
-				goto exit;
-			}
-			msg++;
-			cnt--;
-		}
-		ret = ddr_init(dt);
-		if (!ret)
-			ret = test_ram(1);
+#if (CONFIG_DDR_CHANNEL_CNT == 1)
+		printf("trying channels 2, rank %d\n", (CH2_LPDDR4_CS == 3) ? 1 : 0);
+#else
+		printf("trying channels 1, rank %d\n", (CH1_LPDDR4_CS == 3) ? 1 : 0);
+#endif
+		ret = ddr_init_test(dt2, 0);
 	}
-exit:
+#endif
+#ifdef CR
+	if (ret == -ENODEV) {
+		ret = other_rank_ddr_init(dt, cr, 1);
+	}
+#endif
+#ifdef CR2
+	if (ret == -ENODEV) {
+		ret = other_rank_ddr_init(dt2, cr2, 1);
+	}
 #endif
 	if (ret) {
 		printf("%s:error\n", __func__);
