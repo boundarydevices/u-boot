@@ -409,6 +409,10 @@ static const struct display_info_t displays[] = {
 	VD_DT035BTFT(LCD, NULL, 2, 0x48, FBTS_TSC2004),
 	VD_AT035GT_07ET3(LCD, NULL, 2, 0x48, FBTS_TSC2004),
 
+	/* goodix */
+	VD_TM070JDHG30_14(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x14, FBTS_GOODIX),
+	VD_TM070JDHG30_5D(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x5d, FBTS_GOODIX2),
+
 	VD_LSA40AT9001(LCD, NULL, 0, 0x00),
 #ifdef CONFIG_MXC_SPI_DISPLAY
 	VD_AUO_G050(LCD, NULL, 1, 0),
