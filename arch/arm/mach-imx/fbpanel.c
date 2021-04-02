@@ -27,7 +27,7 @@
 #include <video_fb.h>
 /*
  * The format of the string is
- * [*][off|mode_str_name[:["dtb_alias",["dtb_alias",]][18|24][m][j][s][b][:][S|D|b|P|l|d|s|h|f|a|v|B|M|U|c|L|E|4|3|2|1][Gn][Rn][e][x[x_vals][p[pwm_period]]]:timings]]
+ * [*][off|mode_str_name[:["dtb_alias",["dtb_alias",]][18|24][m][j][s][b][:][S|D|b|P|l|o|d|s|h|f|a|v|B|M|U|c|L|E|4|3|2|1][Gn][Rn][e][x[x_vals][p[pwm_period]]]:timings]]
  *
  * * means select this display for u-boot to initialize.
  * "dtb_alias" : dtb alias to set status to okay, use to enable touch screen drivers, panel drivers(sn65)
@@ -42,6 +42,7 @@
  * b : Change dtb backlight level, low active, fdt set backlight_lvds brightness-levels <10 9 8 7 6 5 4 3 2 1 0>
  * P : Set pinctrl, fdt get value pin pinctrl_##[mode_str_name] phandle; fdt set fb_mipi pinctrl-0 <${pin}>; fdt set fb_mipi pinctrl-names default
  * l : Set low active enable gpio, fdt get value gp gpio##[gpio/32] phandle;fdt set fb_mipi enable-gpios <${gp} [gpio&0x1f] 1>
+ * o : set open drain gpio, fdt get value gp gpio##[gpio/32] phandle;fdt set fb_mipi enable-gpios <${gp} [gpio&0x1f] 6>
  * d : Set enable gpio, fdt get value gp gpio##[gpio/32] phandle;fdt set fb_mipi enable-gpios <${gp} [gpio&0x1f] 0>
  * s : mipi skip_eot, fdt set mipi mode-skip-eot
  * h : fdt set mipi mode-video-hbp-disable
@@ -831,8 +832,10 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		size -= sz;
 		sz = set_property_u32_env_2parms(buf, size, fbnames[fb],
 			"enable-gpios", gp, "gp", i & 0x1f,
-			(di->fbflags & FBF_ENABLE_GPIOS_ACTIVE_LOW) ?
-				GPIO_ACTIVE_LOW : GPIO_ACTIVE_HIGH);
+			((di->fbflags & FBF_ENABLE_GPIOS_ACTIVE_LOW) ?
+				GPIO_ACTIVE_LOW : GPIO_ACTIVE_HIGH) |
+			((di->fbflags & FBF_ENABLE_GPIOS_OPEN_DRAIN) ?
+				GPIO_OPEN_DRAIN : 0));
 		buf += sz;
 		size -= sz;
 	}
@@ -1606,6 +1609,7 @@ static struct flags_check fc2[] = {
 	{ 'b', FBF_BKLIT_LOW_ACTIVE},
 	{ 'P', FBF_PINCTRL},
 	{ 'l', FBF_ENABLE_GPIOS_ACTIVE_LOW},
+	{ 'o', FBF_ENABLE_GPIOS_OPEN_DRAIN},
 	{ 'd', FBF_ENABLE_GPIOS_DTB},
 	{ 's', FBF_MODE_SKIP_EOT},
 	{ 'h', FBF_DSI_HBP_DISABLE},
