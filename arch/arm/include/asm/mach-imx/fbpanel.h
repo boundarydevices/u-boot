@@ -196,6 +196,8 @@ void fbp_setup_env_cmds(void);
 
 #define VD_AM_1280800P2TZQW(_mode, args...)	VDF_AM_1280800P2TZQW(_mode, "AM-1280800P2TZQW", RGB24, FBF_BKLIT_DTB, args)
 #define VD_TM070JDHG30(_mode, args...)		VDF_TM070JDHG30(_mode, "tm070jdhg30", RGB24, 0, args)
+#define VD_TM070JDHG30_14(_mode, args...)	VDF_TM070JDHG30(_mode, "tm070jdhg30-14", RGB24, 0, args)
+#define VD_TM070JDHG30_5D(_mode, args...)	VDF_TM070JDHG30(_mode, "tm070jdhg30-5d", RGB24, 0, args)
 #define VD_AUO_B101EW05(_mode, args...)		VDF_AUO_B101EW05(_mode, "auo_b101ew05", RGB666, 0, args)
 #define VD_HANNSTAR7(_mode, args...)		VDF_HANNSTAR7(_mode, "hannstar7", RGB666, 0, args)
 #define VD_LG1280_800(_mode, args...)		VDF_HANNSTAR7(_mode, "lg1280x800", RGB666, 0, args)
