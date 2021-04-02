@@ -231,6 +231,8 @@ void spl_dram_init(void)
 		printf("trying channels 1, rank %d\n", (CH1_LPDDR4_CS == 3) ? 1 : 0);
 #endif
 		ret = ddr_init_test(dt2, 0);
+		if (!ret)
+			dt = dt2;
 	}
 #endif
 #ifdef CR
@@ -241,10 +243,19 @@ void spl_dram_init(void)
 #ifdef CR2
 	if (ret == -ENODEV) {
 		ret = other_rank_ddr_init(dt2, cr2, 1);
+		if (!ret)
+			dt = dt2;
 	}
 #endif
 	if (ret) {
 		printf("%s:error\n", __func__);
 		hang();
 	}
+#if CONFIG_SAVED_DRAM_TIMING_BASE >= CONFIG_SYS_SDRAM_BASE
+	/*
+	 * save the dram timing config into memory again,
+	 * in case it had trouble the 1st time with changing ranks
+	 */
+	dram_config_save(dt, CONFIG_SAVED_DRAM_TIMING_BASE);
+#endif
 }
