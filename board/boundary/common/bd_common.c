@@ -6,6 +6,9 @@
 #include <common.h>
 #include <command.h>
 #include <asm/arch/clock.h>
+#if defined(CONFIG_IMX8M)
+#include <asm/arch/ddr.h>
+#endif
 #if !defined(CONFIG_MX7D) && !defined(CONFIG_MX51) && !defined(CONFIG_MX6ULL) && !defined(CONFIG_IMX8M)
 #include <asm/arch/iomux.h>
 #endif
@@ -581,8 +584,15 @@ int is_recovery_key_pressing(void)
 }
 #endif
 
+static const char uboot_defconfig[] = CONFIG_DEFCONFIG;
+
 int bdcommon_env_init(void)
 {
+#if defined(CONFIG_IMX8M)
+	char buf[sizeof(uboot_defconfig) + 12];
+	u32 tmp;
+	int i, j;
+#endif
 	char *uboot_release;
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	int cpurev = get_cpu_rev();
@@ -602,7 +612,37 @@ int bdcommon_env_init(void)
 	 */
 	if (!env_get("board"))
 		env_set("board", board_type);
-	env_set("uboot_defconfig", CONFIG_DEFCONFIG);
+#endif
+
+#if defined(CONFIG_IMX8M)
+	i = sizeof(uboot_defconfig);
+	memcpy(buf, uboot_defconfig, i);
+	i--;
+	j = i;
+	tmp = reg32_read(DDRC_MSTR(0));
+	if ((i > 2) && (buf[i - 2] == 'r') && (buf[i - 1] == '0'))
+		i -= 2;
+#if !defined(CONFIG_IMX8MN)
+	if ((i > 3) && (buf[i - 3] == 'c') && (buf[i - 2] == 'h') && (buf[i - 1] == '1'))
+		i -= 3;
+	if ((tmp >> 12) & 1) {
+		buf[i++] = 'c';
+		buf[i++] = 'h';
+		buf[i++] = '1';
+	}
+#endif
+	if (((tmp >> 24) & 0x3) != 3) {
+		buf[i++] = 'r';
+		buf[i++] = '0';
+	}
+	buf[i] = 0;
+	env_set("uboot_defconfig", buf);
+	if (i != j) {
+		/* There is a better version to load */
+		printf("uboot_defconfig=%s\n", buf);
+	}
+#else
+	env_set("uboot_defconfig", uboot_defconfig);
 #endif
 
 #ifdef CONFIG_DM_VIDEO
