@@ -1213,12 +1213,12 @@
 			lt8912_2: lt8912_2@48 {
 				#address-cells = <1>;
 				#size-cells = <0>;
-				compatible = "lontium,lt8912" ;
+				compatible = "lontium,lt8912";
 				display-dsi = <&fb_mipi>;
 				interrupts-extended = GPIRQ_LT8912_2;
 				pinctrl-names = "default";
 				pinctrl-0 = <&pinctrl_lt8912_2>;
-				reg = <0x48> ;
+				reg = <0x48>;
 				reset-gpios = GP_LT8912_2_RESET;
 
 				port@0 {
