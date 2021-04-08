@@ -11,6 +11,7 @@
 #include "panel-dmt050wvnxcmi.dtsi"
 #include "panel-lcd133-070.dtsi"
 #include "panel-lcm-jm430.dtsi"
+#include "panel-ls050t1sx12.dtsi"
 #include "panel-ltk0680ytmdb.dtsi"
 #include "panel-ltk080a60a004t.dtsi"
 &mipi_cmds_ltk0680ytmdb {
@@ -272,6 +273,13 @@
 	pinctrl_mipi_lcm_jm430: mipi-lcm-jm430grp {
 		fsl,pins = <
 #define GP_TC358762_EN	<&gpio1 9 GPIO_ACTIVE_HIGH>
+			MX8MMN(IOMUXC_GPIO1_IO09_GPIO1_IO9, 0x16)
+		>;
+	};
+
+	pinctrl_mipi_ls050t1sx12: mipi-ls050t1sx12grp {
+		fsl,pins = <
+#define GP_MIPI_RESET	<&gpio1 9 GPIO_ACTIVE_LOW>
 			MX8MMN(IOMUXC_GPIO1_IO09_GPIO1_IO9, 0x16)
 		>;
 	};
@@ -935,7 +943,6 @@
 		reg = <0x41>;
 		reset-gpios = GP_TS_ILI251X_RESET;
 		status = "disabled";
-		touchscreen-inverted-x;
 		touchscreen-size-x = <0x3fff>;
 		touchscreen-size-y = <0x3fff>;
 	};
@@ -975,7 +982,7 @@
 			#size-cells = <0>;
 
 			lt8912_2: lt8912_2@48 {
-				compatible = "lontium,lt8912" ;
+				compatible = "lontium,lt8912";
 				display-dsi = <&fb_mipi>;
 				interrupts-extended = GPIRQ_LT8912_2;
 				pinctrl-names = "default";
