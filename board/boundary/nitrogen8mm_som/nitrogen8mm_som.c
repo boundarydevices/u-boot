@@ -46,6 +46,7 @@ static iomux_v3_cfg_t const init_pads[] = {
 #define GP_LCM_JM430_BKL_EN		IMX_GPIO_NR(1, 1)
 /* This enables 5V power on LTK080A60A004T mipi display */
 #define GP_LTK08_MIPI_EN		IMX_GPIO_NR(1, 1)
+#define GP_LS050T1SX12_EN		IMX_GPIO_NR(1, 1)
 	IOMUX_PAD_CTRL(GPIO1_IO01__GPIO1_IO1, 0x116),
 
 #define GPIRQ_GT911 			IMX_GPIO_NR(1, 6)
@@ -68,6 +69,7 @@ static iomux_v3_cfg_t const init_pads[] = {
 
 #define GP_CSI1_MIPI_PWDN	IMX_GPIO_NR(1, 11)
 	IOMUX_PAD_CTRL(GPIO1_IO11__GPIO1_IO11, 0x141),
+#define GPIRQ_TC358743		IMX_GPIO_NR(1, 9)	/* TG carrier board */
 #define GP_CSI1_MIPI_RESET	IMX_GPIO_NR(1, 9)
 	IOMUX_PAD_CTRL(GPIO1_IO09__GPIO1_IO9, 0x101),
 
@@ -167,6 +169,8 @@ static const struct display_info_t displays[] = {
 	VD_LCM_JM430_MINI(MIPI, fbp_detect_i2c, fbp_bus_gp(3, GP_ST1633_RESET, GP_TC358762_EN, 30), fbp_addr_gp(0x55, GP_LCM_JM430_BKL_EN, 0, 0), FBTS_ST1633I),		/* Sitronix touch */
 
 	VD_LTK0680YTMDB(MIPI, NULL, fbp_bus_gp(3, GP_MIPI_RESET, GP_MIPI_RESET, 0), 0x5d, FBTS_GOODIX),
+	/* 0x3e is TPS65132 power chip on TG board */
+	VD_LS050T1SX12(MIPI, fbp_detect_i2c, fbp_bus_gp(1, 0, GP_LS050T1SX12_EN, 0), 0x3e),
 	VD_LS050T1SX12(MIPI, NULL, fbp_bus_gp(3, GP_MIPI_RESET, GP_MIPI_RESET, 0), 0x00),
 	VD_MIPI_COM50H5N03ULC(MIPI, NULL, fbp_bus_gp(3, GP_MIPI_RESET, GP_MIPI_RESET, 0), 0x00),
 	/* 0x3e is the TPS65132 power chip on our adapter board */
@@ -207,7 +211,8 @@ int board_init(void)
 	gpio_direction_output(GP_GT911_RESET, 0);
 	/* Rely on pull up only, the toshiba hdmi input uses as IRQ */
 //	gpio_direction_output(GP_CSI1_MIPI_PWDN, 1);
-	gpio_direction_output(GP_CSI1_MIPI_RESET, 0);
+	/* Rely on pull down only, the TG carrier toshiba hdmi input uses as IRQ */
+//	gpio_direction_output(GP_CSI1_MIPI_RESET, 0);
 #if defined(CONFIG_MXC_SPI) && !defined(CONFIG_DM_SPI)
 	setup_spi();
 #endif
