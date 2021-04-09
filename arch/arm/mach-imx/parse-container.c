@@ -4,6 +4,7 @@
  */
 
 #include <common.h>
+#include <stdlib.h>
 #include <errno.h>
 #include <log.h>
 #include <spl.h>
@@ -72,21 +73,27 @@ static int read_auth_container(struct spl_image_info *spl_image,
 	 * It will not override the ATF code, so safe to use it here,
 	 * no need malloc
 	 */
-	container = (struct container_hdr *)spl_get_load_buffer(-size, size);
+	container = malloc(size);
+	if (!container)
+		return -ENOMEM;
 
 	debug("%s: container: %p sector: %lu sectors: %u\n", __func__,
 	      container, sector, sectors);
-	if (info->read(info, sector, sectors, container) != sectors)
-		return -EIO;
+	if (info->read(info, sector, sectors, container) != sectors) {
+		ret = -EIO;
+		goto end;
+	}
 
 	if (container->tag != 0x87 && container->version != 0x0) {
 		printf("Wrong container header");
-		return -ENOENT;
+		ret = -ENOENT;
+		goto end;
 	}
 
 	if (!container->num_images) {
 		printf("Wrong container, no image found");
-		return -ENOENT;
+		ret = -ENOENT;
+		goto end;
 	}
 
 	length = container->length_lsb + (container->length_msb << 8);
@@ -96,19 +103,26 @@ static int read_auth_container(struct spl_image_info *spl_image,
 		size = roundup(length, info->bl_len);
 		sectors = size / info->bl_len;
 
-		container = (struct container_hdr *)spl_get_load_buffer(-size, size);
+		free(container);
+		container = malloc(size);
+		if (!container)
+			return -ENOMEM;
 
 		debug("%s: container: %p sector: %lu sectors: %u\n",
 		      __func__, container, sector, sectors);
 		if (info->read(info, sector, sectors, container) !=
-		    sectors)
-			return -EIO;
+		    sectors) {
+			ret = -EIO;
+			goto end;
+		}
 	}
 
 #ifdef CONFIG_AHAB_BOOT
 	ret = ahab_auth_cntr_hdr(container, length);
-	if (ret)
-		return ret;
+	if (ret) {
+		printf("authenticate container hdr failed, return %d\n", ret);
+		goto end_auth;
+	}
 #endif
 
 	for (i = 0; i < container->num_images; i++) {
@@ -131,6 +145,10 @@ end_auth:
 #ifdef CONFIG_AHAB_BOOT
 	ahab_auth_release();
 #endif
+
+end:
+	free(container);
+
 	return ret;
 }
 
