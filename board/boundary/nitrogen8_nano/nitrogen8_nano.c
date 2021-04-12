@@ -54,6 +54,7 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IOMUX_PAD_CTRL(GPIO1_IO07__GPIO1_IO7, 0x49),
 
 #define GP_TC358762_EN		IMX_GPIO_NR(1, 9)
+#define GP_SC18IS602B_RESET	IMX_GPIO_NR(1, 9)
 #define GP_I2C2_SN65DSI83_EN	IMX_GPIO_NR(1, 9)
 #define GP_MIPI_RESET		IMX_GPIO_NR(1, 9)
 	IOMUX_PAD_CTRL(GPIO1_IO09__GPIO1_IO9, 0x06),
@@ -112,42 +113,28 @@ int board_early_init_f(void)
 #ifdef CONFIG_CMD_FBPANEL
 int board_detect_gt911(struct display_info_t const *di)
 {
-	int ret;
-	struct udevice *dev, *chip;
-
-	if (di->bus_gp)
-		gpio_direction_output(di->bus_gp, 1);
-	gpio_set_value(GP_GT911_RESET, 0);
-	mdelay(20);
-	gpio_direction_output(GPIRQ_GT911, di->addr_num == 0x14 ? 1 : 0);
-	udelay(100);
-	gpio_set_value(GP_GT911_RESET, 1);
-	mdelay(6);
-	gpio_set_value(GPIRQ_GT911, 0);
-	mdelay(50);
-	gpio_direction_input(GPIRQ_GT911);
-	ret = uclass_get_device(UCLASS_I2C, di->bus_num, &dev);
-	if (ret)
-		return 0;
-
-	ret = dm_i2c_probe(dev, di->addr_num, 0x0, &chip);
-	if (ret && di->bus_gp)
-		gpio_direction_input(di->bus_gp);
-	return (ret == 0);
+	return board_detect_gt911_common(di, (di->bus_num >> 4) | 4, 0, GP_GT911_RESET, GPIRQ_GT911);
 }
 
 static const struct display_info_t displays[] = {
 	VD_MIPI_M101NWWB(MIPI, fbp_detect_i2c, fbp_bus_gp(1, GP_I2C2_SN65DSI83_EN, 0, 0), 0x2c, FBP_MIPI_TO_LVDS, FBTS_FT5X06),
+	VD_DMT050WVNXCMI(MIPI, fbp_detect_i2c, fbp_bus_gp(1, GP_SC18IS602B_RESET, 0, 30), fbp_addr_gp(0x2f, 0, 6, 0), FBP_SPI_LCD, FBTS_GOODIX),
 	VD_LTK080A60A004T(MIPI, board_detect_gt911, fbp_bus_gp(1, GP_LTK08_MIPI_EN, GP_LTK08_MIPI_EN, 0), 0x5d, FBTS_GOODIX),	/* Goodix touchscreen */
 	VD_LCM_JM430_MINI(MIPI, fbp_detect_i2c, fbp_bus_gp(1, GP_ST1633_RESET, GP_TC358762_EN, 30), fbp_addr_gp(0x55, GP_LCM_JM430_BKL_EN, 0, 0), FBTS_ST1633I),	/* Sitronix touch */
+
 	VD_LTK0680YTMDB(MIPI, NULL, fbp_bus_gp(1, GP_MIPI_RESET, GP_MIPI_RESET, 0), 0x5d, FBTS_GOODIX),
 	VD_MIPI_COM50H5N03ULC(MIPI, NULL, fbp_bus_gp(1, GP_MIPI_RESET, GP_MIPI_RESET, 0), 0x00),
-	VD_MIPI_640_480M_60(MIPI, NULL, fbp_bus_gp((1 | (3 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
-	VD_MIPI_1280_720M_60(MIPI, NULL, fbp_bus_gp((1 | (3 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
+
+	/* Looking for the max7323 gpio chip on the Lontium daughter board */
 	VD_MIPI_1920_1080M_60(MIPI, board_detect_pca9546, fbp_bus_gp((1 | (3 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
 	VD_MIPI_1024_768M_60(MIPI, NULL, fbp_bus_gp((1 | (3 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
 	VD_MIPI_800_600MR_60(MIPI, NULL, fbp_bus_gp((1 | (3 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
 	VD_MIPI_720_480M_60(MIPI, NULL, fbp_bus_gp((1 | (3 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
+	VD_MIPI_1280_800M_60(MIPI, NULL, fbp_bus_gp((1 | (3 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
+	VD_MIPI_1280_720M_60(MIPI, NULL, fbp_bus_gp((1 | (3 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
+	VD_MIPI_640_480M_60(MIPI, NULL, fbp_bus_gp((1 | (3 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
+	VD_TM070JDHG30_LT8912(MIPI, NULL, fbp_bus_gp((1 | (3 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
+
 	VD_MIPI_VTFT101RPFT20(MIPI, fbp_detect_i2c, 1, 0x70, FBP_PCA9540),
 };
 #define display_cnt	ARRAY_SIZE(displays)
@@ -162,16 +149,18 @@ int board_init(void)
 	gpio_request(GP_MII_MDC, "mii_mdc");
 	gpio_request(GP_MII_MDIO, "mii_mdio");
 #endif
-	gpio_request(GP_I2C2_SN65DSI83_EN, "sn65dsi83_enable");
 	gpio_request(GP_GT911_RESET, "gt911_reset");
 	gpio_request(GPIRQ_GT911, "gt911_irq");
+#ifndef CONFIG_DM_VIDEO
+	gpio_request(GP_I2C2_SN65DSI83_EN, "sn65dsi83_enable");
 	gpio_request(GP_LTK08_MIPI_EN, "lkt08_mipi_en");
+#endif
 	gpio_request(GP_CSI1_MIPI_PWDN, "csi1_mipi_pwdn");
 	gpio_request(GP_CSI1_MIPI_RESET, "csi1_mipi_reset");
 	gpio_direction_output(GP_GT911_RESET, 0);
 	gpio_direction_output(GP_CSI1_MIPI_PWDN, 1);
 	gpio_direction_output(GP_CSI1_MIPI_RESET, 0);
-#ifdef CONFIG_MXC_SPI
+#if defined(CONFIG_MXC_SPI) && !defined(CONFIG_DM_SPI)
 	setup_spi();
 #endif
 
