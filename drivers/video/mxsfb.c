@@ -262,6 +262,7 @@ static void mxs_lcd_run(void)
 
 	/* RUN! */
 	writel(LCDIF_CTRL_RUN, &regs->hw_lcdif_ctrl_set);
+	debug("%s: running\n", __func__);
 
 #ifdef CONFIG_VIDEO_MXS_MODE_SYSTEM
 	/*
