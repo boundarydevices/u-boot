@@ -885,8 +885,9 @@
 				reg = <0x32e00000 0x10000>;
 				clocks = <&clk IMX8MN_CLK_DISP_PIXEL_ROOT>,
 					 <&clk IMX8MN_CLK_DISP_AXI_ROOT>,
-					 <&clk IMX8MN_CLK_DISP_APB_ROOT>;
-				clock-names = "pix", "disp-axi", "disp-apb";
+					 <&clk IMX8MN_CLK_DISP_APB_ROOT>,
+					 <&clk IMX8MN_VIDEO_PLL1_OUT>;
+				clock-names = "pix", "disp-axi", "disp-apb", "video1-pll";
 				assigned-clocks = <&clk IMX8MN_CLK_DISP_PIXEL>,
 						  <&clk IMX8MN_CLK_DISP_AXI>,
 						  <&clk IMX8MN_CLK_DISP_APB>;
@@ -897,6 +898,7 @@
 						      <500000000>,
 						      <200000000>;
 				interrupts = <GIC_SPI 5 IRQ_TYPE_LEVEL_HIGH>;
+				enable_polarity_low;
 				resets = <&lcdif_resets>;
 				power-domains = <&dispmix_pd>;
 				status = "disabled";
