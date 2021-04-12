@@ -65,6 +65,17 @@ int mipi_dsi_attach(struct mipi_dsi_device *dsi)
 }
 EXPORT_SYMBOL(mipi_dsi_attach);
 
+int mipi_dsi_enable_frame(struct mipi_dsi_device *dsi)
+{
+	const struct mipi_dsi_host_ops *ops = dsi->host->ops;
+
+	if (!ops || !ops->enable_frame)
+		return -ENOSYS;
+
+	return ops->enable_frame(dsi->host);
+}
+EXPORT_SYMBOL(mipi_dsi_enable_frame);
+
 /**
  * mipi_dsi_detach - detach a DSI device from its DSI host
  * @dsi: DSI peripheral
