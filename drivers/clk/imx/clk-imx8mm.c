@@ -165,6 +165,9 @@ static const char *imx8mm_dsi_core_sels[] = {"clock-osc-24m", "sys_pll1_266m", "
 static const char *imx8mm_dsi_phy_sels[] = {"clock-osc-24m", "sys_pll2_125m", "sys_pll2_100m", "sys_pll1_800m",
 					    "sys_pll2_1000m", "clk_ext2", "audio_pll2_out", "video_pll1_out", };
 
+static const char *imx8mm_dsi_dbi_sels[] = {"clock-osc-24m", "sys_pll1_266m", "sys_pll2_100m", "sys_pll1_800m",
+					    "sys_pll2_1000m", "sys_pll3_out", "audio_pll2_out", "video_pll1_out", };
+
 static const char *imx8mm_usdhc3_sels[] = {"clock-osc-24m", "sys_pll1_400m", "sys_pll1_800m", "sys_pll2_500m",
 					   "sys_pll3_out", "sys_pll1_266m", "audio_pll2_clk", "sys_pll1_100m", };
 
@@ -505,6 +508,8 @@ static int imx8mm_clk_probe(struct udevice *dev)
 	       imx8m_clk_composite("dsi_core", imx8mm_dsi_core_sels, base + 0xbb00));
 	clk_dm(IMX8MM_CLK_DSI_PHY_REF,
 	       imx8m_clk_composite("dsi_phy_ref", imx8mm_dsi_phy_sels, base + 0xbb80));
+	clk_dm(IMX8MM_CLK_DSI_DBI,
+	       imx8m_clk_composite("dsi_dbi", imx8mm_dsi_dbi_sels, base + 0xbc00));
 	clk_dm(IMX8MM_CLK_USDHC3,
 	       imx8m_clk_composite("usdhc3", imx8mm_usdhc3_sels,
 				   base + 0xbc80));
