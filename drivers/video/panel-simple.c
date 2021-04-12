@@ -718,12 +718,17 @@ static int simple_panel_init(struct udevice *dev)
 
 static int simple_panel_enable_backlight(struct udevice *dev)
 {
+	struct mipi_dsi_panel_plat *plat = dev_get_platdata(dev);
+	struct mipi_dsi_device *dsi = plat->device;
 	struct panel_simple *p = dev_get_priv(dev);
 	int ret;
 
 	debug("%s: start, backlight = '%s'\n", __func__, p->backlight->name);
 	ret = simple_enable(dev);
 	if (ret)
+		return ret;
+	ret = mipi_dsi_enable_frame(dsi);
+	if (ret && (ret != ENOSYS))
 		return ret;
 	if (p->gd_enable)
 		dm_gpio_set_value(p->gd_enable, true);
