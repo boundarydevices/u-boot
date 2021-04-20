@@ -728,7 +728,7 @@ static int simple_panel_enable_backlight(struct udevice *dev)
 	if (ret)
 		return ret;
 	ret = mipi_dsi_enable_frame(dsi);
-	if (ret && (ret != ENOSYS))
+	if (ret && (ret != -ENOSYS))
 		return ret;
 	if (p->gd_enable)
 		dm_gpio_set_value(p->gd_enable, true);
