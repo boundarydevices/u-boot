@@ -68,7 +68,7 @@ static int nw_dsi_imx_attach(struct udevice *dev)
 
 	ret = panel_init(priv->panel);
 	if (ret) {
-		dev_err(dev, "panel %s enable backlight error %d\n",
+		dev_err(dev, "panel %s panel_init error %d\n",
 			priv->panel->name, ret);
 		return ret;
 	}
