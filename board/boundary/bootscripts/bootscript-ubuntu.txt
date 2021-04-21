@@ -29,7 +29,8 @@ fi
 setexpr a_script  ${a_base} + 0x00800000
 setexpr a_zImage  ${a_base} + 0x00800000
 setexpr a_fdt     ${a_base} + 0x03000000
-setexpr a_initrd  ${a_base} + 0x03100000
+# i.mx8MP uses address 0x43200000 as its optee dtb overlay address
+setexpr a_initrd  ${a_base} + 0x03300000
 setexpr a_reset_cause_marker ${a_base} + 0x80
 setexpr a_reset_cause	     ${a_base} + 0x84
 
