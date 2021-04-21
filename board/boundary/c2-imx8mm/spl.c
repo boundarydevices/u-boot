@@ -118,6 +118,7 @@ int power_init_boundary(void)
 #define SW4_CONFIG2	0x66
 #define SW4_VOLT	0x69
 #define SW5_VOLT	0x71
+#define LDO3_VOLT	0x94
 
 	buf[0] = 0x50;	/* (.90-.4)*160=.50*160=80=0x50  80/160+.4=.90 gpu/dram/arm */
 	ret = i2c_write(PF8100, SW2_VOLT, 1, buf, 1);
@@ -141,6 +142,11 @@ int power_init_boundary(void)
 
 	buf[0] = 0x40;	/* (.80-.4)*160=.40*160=64=0x40  64/160+.4=.80 vpu */
 	ret = i2c_write(PF8100, SW5_VOLT, 1, buf, 1);
+	if (ret)
+		return ret;
+
+	buf[0] = 0x06;	/* 2.8V */
+	ret = i2c_write(PF8100, LDO3_VOLT, 1, buf, 1);
 	if (ret)
 		return ret;
 
