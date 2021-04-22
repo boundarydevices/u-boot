@@ -48,6 +48,9 @@ struct panel_simple {
 		unsigned int disable;
 		unsigned int unprepare;
 	} delay;
+	unsigned enable_high_duration_us;
+	unsigned enable_low_duration_us;
+	unsigned power_delay_ms;
 	u32 bpc;
 
 	struct udevice *backlight;
@@ -55,6 +58,7 @@ struct panel_simple {
 	struct udevice *linked_panel;
 
 	struct gpio_desc *gpd_prepare_enable;
+	struct gpio_desc *gpd_power;
 	struct gpio_desc *reset;
 	struct display_timing timings;
 
@@ -67,6 +71,7 @@ struct panel_simple {
 	unsigned spi_bits;
 	struct interface_cmds cmds_init;
 	struct interface_cmds cmds_enable;
+	struct interface_cmds cmds_enable2;
 	struct interface_cmds cmds_disable;
 	/* Keep a mulitple of 9 */
 	unsigned char tx_buf[63] __attribute__((aligned(64)));
@@ -74,6 +79,7 @@ struct panel_simple {
 
 	struct gpio_desc gds_prepare_enable;
 	struct gpio_desc gds_reset;
+	struct gpio_desc gds_power;
 	struct gpio_desc gds_enable;
 };
 
@@ -316,7 +322,6 @@ static int send_cmd_list(struct panel_simple *panel, struct cmds *mc, int type, 
 
 	panel->spi_bits = 0;
 	dsi = panel->dsi;
-	dsi->mode_flags |= MIPI_DSI_MODE_LPM;
 	while (1) {
 		len = *cmd++;
 		length--;
@@ -584,6 +589,8 @@ static int send_all_cmd_lists(struct panel_simple *panel, struct interface_cmds 
 
 static int panel_simple_disable(struct panel_simple *p)
 {
+	struct mipi_dsi_device *dsi;
+
 	if (!p->enabled)
 		return 0;
 
@@ -592,6 +599,9 @@ static int panel_simple_disable(struct panel_simple *p)
 
 	if (p->delay.disable)
 		mdelay(p->delay.disable);
+
+	dsi = p->dsi;
+	dsi->mode_flags |= MIPI_DSI_MODE_LPM;
 	send_all_cmd_lists(p, &p->cmds_disable);
 
 	p->enabled = false;
@@ -618,6 +628,7 @@ static int panel_simple_unprepare(struct panel_simple *p)
 
 static int panel_simple_prepare(struct panel_simple *p)
 {
+	struct mipi_dsi_device *dsi;
 	unsigned int delay;
 	int ret;
 
@@ -631,8 +642,21 @@ static int panel_simple_prepare(struct panel_simple *p)
 			return ret;
 	}
 
-	if (p->gpd_prepare_enable)
+	if (p->gpd_power) {
+		dm_gpio_set_value(p->gpd_power, true);
+		mdelay(p->power_delay_ms);
+	}
+	if (p->gpd_prepare_enable) {
+		if (p->enable_high_duration_us) {
+			dm_gpio_set_value(p->gpd_prepare_enable, true);
+			udelay(p->enable_high_duration_us);
+		}
+		if (p->enable_low_duration_us) {
+			dm_gpio_set_value(p->gpd_prepare_enable, false);
+			udelay(p->enable_low_duration_us);
+		}
 		dm_gpio_set_value(p->gpd_prepare_enable, true);
+	}
 	if (p->reset)
 		dm_gpio_set_value(p->reset, false);
 
@@ -642,6 +666,8 @@ static int panel_simple_prepare(struct panel_simple *p)
 	if (delay)
 		mdelay(delay);
 
+	dsi = p->dsi;
+	dsi->mode_flags |= MIPI_DSI_MODE_LPM;
 	ret = send_all_cmd_lists(p, &p->cmds_init);
 	if (ret) {
 		regulator_set_enable(p->supply, false);
@@ -654,11 +680,14 @@ static int panel_simple_prepare(struct panel_simple *p)
 
 static int panel_simple_enable(struct panel_simple *p)
 {
+	struct mipi_dsi_device *dsi;
 	int ret;
 
 	if (p->enabled)
 		return 0;
 
+	dsi = p->dsi;
+	dsi->mode_flags |= MIPI_DSI_MODE_LPM;
 	ret = send_all_cmd_lists(p, &p->cmds_enable);
 	if (ret < 0)
 		goto fail;
@@ -674,6 +703,25 @@ fail:
 	if (p->gpd_prepare_enable)
 		dm_gpio_set_value(p->gpd_prepare_enable, false);
 	return ret;
+}
+
+static int panel_simple_enable2(struct panel_simple *p)
+{
+	struct mipi_dsi_device *dsi;
+	int ret;
+
+	dsi = p->dsi;
+	dsi->mode_flags &= ~MIPI_DSI_MODE_LPM;
+	ret = send_all_cmd_lists(p, &p->cmds_enable2);
+	if (ret < 0) {
+		p->enabled = false;
+		if (p->reset)
+			dm_gpio_set_value(p->reset, true);
+		if (p->gpd_prepare_enable)
+			dm_gpio_set_value(p->gpd_prepare_enable, false);
+		return ret;
+	}
+	return 0;
 }
 
 static int simple_enable(struct udevice *dev)
@@ -729,6 +777,9 @@ static int simple_panel_enable_backlight(struct udevice *dev)
 		return ret;
 	ret = mipi_dsi_enable_frame(dsi);
 	if (ret && (ret != -ENOSYS))
+		return ret;
+	ret = panel_simple_enable2(p);
+	if (ret)
 		return ret;
 	if (p->gd_enable)
 		dm_gpio_set_value(p->gd_enable, true);
@@ -798,6 +849,9 @@ static void init_common(ofnode np, struct panel_simple *panel)
 	ofnode_read_u32(np, "delay-unprepare", &panel->delay.unprepare);
 	ofnode_read_u32(np, "min-hs-clock-multiple", &panel->min_hs_clock_multiple);
 	ofnode_read_u32(np, "mipi-dsi-multiple", &panel->mipi_dsi_multiple);
+	ofnode_read_u32(np, "enable-high-duration-us", &panel->enable_high_duration_us);
+	ofnode_read_u32(np, "enable-low-duration-us", &panel->enable_low_duration_us);
+	ofnode_read_u32(np, "power-delay-ms", &panel->power_delay_ms);
 	if (ofnode_read_bool(np, "mode-clock-non-contiguous"))
 		mode_flags |= MIPI_DSI_CLOCK_NON_CONTINUOUS;
 	if (ofnode_read_bool(np, "mode-skip-eot"))
@@ -920,6 +974,8 @@ static int simple_panel_ofdata_to_platdata(struct udevice *dev)
 				       &panel->cmds_init.i2c);
 			check_for_cmds(cmds_np, "i2c-cmds-enable",
 				       &panel->cmds_enable.i2c);
+			check_for_cmds(cmds_np, "i2c-cmds-enable2",
+				       &panel->cmds_enable2.i2c);
 			check_for_cmds(cmds_np, "i2c-cmds-disable",
 				       &panel->cmds_disable.i2c);
 			ofnode_read_u32(cmds_np, "i2c-address", &panel->i2c_address);
@@ -929,6 +985,9 @@ static int simple_panel_ofdata_to_platdata(struct udevice *dev)
 			       &panel->cmds_init.mipi);
 		check_for_cmds(cmds_np, "mipi-cmds-enable",
 			       &panel->cmds_enable.mipi);
+		/* enable 2 is after frame data transfer has started */
+		check_for_cmds(cmds_np, "mipi-cmds-enable2",
+			       &panel->cmds_enable2.mipi);
 		check_for_cmds(cmds_np, "mipi-cmds-disable",
 			       &panel->cmds_disable.mipi);
 
@@ -939,6 +998,8 @@ static int simple_panel_ofdata_to_platdata(struct udevice *dev)
 			       &panel->cmds_init.spi);
 			check_for_cmds(cmds_np, "spi-cmds-enable",
 			       &panel->cmds_enable.spi);
+			check_for_cmds(cmds_np, "spi-cmds-enable2",
+			       &panel->cmds_enable2.spi);
 			check_for_cmds(cmds_np, "spi-cmds-disable",
 			       &panel->cmds_disable.spi);
 			ofnode_read_u32(cmds_np, "spi-max-frequency", &panel->spi_max_frequency);
@@ -962,7 +1023,7 @@ static int simple_panel_ofdata_to_platdata(struct udevice *dev)
 		}
 	}
 
-	ret = gpio_request_by_name(dev, "reset-gpio", 0, &panel->gds_reset,
+	ret = gpio_request_by_name(dev, "reset-gpios", 0, &panel->gds_reset,
 				   GPIOD_IS_OUT | GPIOD_IS_OUT_ACTIVE);
 	if (ret) {
 		debug("Warning: cannot get reset GPIO\n");
@@ -970,6 +1031,17 @@ static int simple_panel_ofdata_to_platdata(struct udevice *dev)
 			return ret;
 	} else {
 		panel->reset = &panel->gds_reset;
+	}
+
+	ret = gpio_request_by_name(dev, "power-gpios", 0, &panel->gds_power,
+				   GPIOD_IS_OUT);
+	if (ret) {
+		debug("Warning: cannot get power GPIO\n");
+		if (ret != -ENOENT)
+			return ret;
+	} else {
+		panel->gpd_power = &panel->gds_power;
+		dm_gpio_set_value(panel->gpd_power, false);
 	}
 
 	ret = gpio_request_by_name(dev, "enable-gpios", 0, &panel->gds_prepare_enable,
@@ -981,6 +1053,7 @@ static int simple_panel_ofdata_to_platdata(struct udevice *dev)
 			return ret;
 	} else {
 		panel->gpd_prepare_enable = &panel->gds_prepare_enable;
+		dm_gpio_set_value(panel->gpd_prepare_enable, false);
 	}
 
 	ret = gpio_request_by_name(dev, "on-gpios", 0, &panel->gds_enable,
