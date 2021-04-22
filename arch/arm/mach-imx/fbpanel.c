@@ -70,6 +70,10 @@
  *      bus_gp_delay_ms, delay after enable before probe
  *      bkgpio, backlight enable gpio
  *      min_hs_clock_multiple, mipi hs clk * 2(because of ddr) >= pixel clk * min_hs_clock_multiple
+ *      enable_high_duration_us - high time of short pulse before leaving enable high
+ *      enable_low_duration_us - low time of short pulse before leaving enable high
+ *      power_gp, power enable gpio
+ *      power_delay_ms, delay needed after turning on power
  * p : pwm_period, fdt get value pwm pwm_lvds phandle; fdt set backlight_lvds pwms <${pwm} 0 [pwm_period]>
  * timings : clock-frequency,hactive,vactive,hback-porch,hfront-porch,vback-porch,vfront-porch,hsync-len,vsync-len,
  *
@@ -417,6 +421,19 @@ static int set_property_joined_u32(char *buf, int size, const char *path1, const
 
 	snprintf(cpath, sizeof(cpath), "%s%s", path1, path2);
 	return set_property_u32(buf, size, cpath, propname, val);
+}
+
+static int set_cmd_property(const struct display_info_t *di, char *buf, int size,
+		const char *propname, u32 val)
+{
+	if (di->fbflags & FBF_MIPI_CMDS) {
+		return set_property_joined_u32(buf, size,
+				"mipi_cmds_", di->mode.name,
+				propname, val);
+	} else {
+		return set_property_u32(buf, size, "mipi",
+				propname, val);
+	}
 }
 
 static int set_property_u32_env(char *buf, int size, const char *path,
@@ -936,15 +953,32 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		size -= sz;
 	}
 	if (di->min_hs_clock_multiple) {
-		i = di->min_hs_clock_multiple;
-		if (di->fbflags & FBF_MIPI_CMDS) {
-			sz = set_property_joined_u32(buf, size,
-					"mipi_cmds_", di->mode.name,
-					"min-hs-clock-multiple", i);
-		} else {
-			sz = set_property_u32(buf, size, "mipi",
-					"min-hs-clock-multiple", i);
-		}
+		sz = set_cmd_property(di, buf, size,
+			"min-hs-clock-multiple", di->min_hs_clock_multiple);
+		buf += sz;
+		size -= sz;
+	}
+	if (di->enable_high_duration_us) {
+		sz = set_cmd_property(di, buf, size,
+			"enable-high-duration-us", di->enable_high_duration_us);
+		buf += sz;
+		size -= sz;
+	}
+	if (di->enable_low_duration_us) {
+		sz = set_cmd_property(di, buf, size,
+			"enable-low-duration-us", di->enable_low_duration_us);
+		buf += sz;
+		size -= sz;
+	}
+	if (di->power_gp) {
+		sz = set_property_gpio(buf, size, fbnames[fb], "power-gpios",
+			di->power_gp, GPIO_ACTIVE_HIGH);
+		buf += sz;
+		size -= sz;
+	}
+	if (di->power_delay_ms) {
+		sz = set_cmd_property(di, buf, size,
+			"power-delay-ms", di->power_delay_ms);
 		buf += sz;
 		size -= sz;
 	}
@@ -1642,6 +1676,10 @@ static const struct di_parse di_parsing[] = {
 	{ offsetof(struct display_info_t, bus_gp_delay_ms), 10 },
 	{ offsetof(struct display_info_t, backlight_en_gp), 10 },
 	{ offsetof(struct display_info_t, min_hs_clock_multiple), 10 },
+	{ offsetof(struct display_info_t, enable_high_duration_us), 10 },
+	{ offsetof(struct display_info_t, enable_low_duration_us), 10 },
+	{ offsetof(struct display_info_t, power_gp), 10 },
+	{ offsetof(struct display_info_t, power_delay_ms), 10 },
 };
 
 static void check_flags(struct display_info_t *di, const char **pp, struct flags_check *fc_base)

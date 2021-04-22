@@ -11,6 +11,14 @@
 #define fbp_bus_gp(bus_num, bus_gp, enable_gp, bus_delay) ((bus_num) | \
 		((bus_gp) << 8) | ((enable_gp) << 16) | ((bus_delay) << 24))
 
+#define fbp_bus_gp2(bus_num, bus_gp, enable_gp, bus_gp_delay_ms, \
+		enable_high_duration_us, enable_low_duration_us, power_gp, \
+		power_delay_ms) \
+		((bus_num) | ((bus_gp) << 8) | \
+		 ((u64)(enable_gp) << 16) | ((u64)(bus_gp_delay_ms) << 24) | \
+		 ((u64)(enable_high_duration_us) << 32) | ((u64)(enable_low_duration_us) << 40) | \
+		 (((u64)power_gp) << 48) | (((u64)power_delay_ms) << 56))
+
 #define fbp_addr_gp(addr_num, backlight_en_gp, min_hs_clock_multiple, reset_gp) ((addr_num) | \
 		((backlight_en_gp) << 8) | ((min_hs_clock_multiple) << 16) | ((reset_gp) << 24))
 
@@ -43,16 +51,20 @@ enum alias_names {
 
 struct display_info_t {
 	union {
-		int	bus;	/* (bus >> 8) is gpio to enable bus if <>0 */
+		u64	bus;
 		struct {
 			unsigned char bus_num;
 			unsigned char bus_gp;
 			unsigned char enable_gp;
 			unsigned char bus_gp_delay_ms;
+			unsigned char enable_high_duration_us;
+			unsigned char enable_low_duration_us;
+			unsigned char power_gp;
+			unsigned char power_delay_ms;
 		};
 	};
 	union {
-		int	addr;
+		u32	addr;
 		struct {
 			unsigned char addr_num;
 			unsigned char backlight_en_gp;
