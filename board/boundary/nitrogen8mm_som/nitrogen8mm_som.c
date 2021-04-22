@@ -68,6 +68,7 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IOMUX_PAD_CTRL(GPIO1_IO03__GPIO1_IO3, 0x1c0),
 
 #define GP_CSI1_MIPI_PWDN	IMX_GPIO_NR(1, 11)
+#define GP_5P5_EN		IMX_GPIO_NR(1, 11)
 	IOMUX_PAD_CTRL(GPIO1_IO11__GPIO1_IO11, 0x141),
 #define GPIRQ_TC358743		IMX_GPIO_NR(1, 9)	/* TG carrier board */
 #define GP_CSI1_MIPI_RESET	IMX_GPIO_NR(1, 9)
@@ -170,7 +171,7 @@ static const struct display_info_t displays[] = {
 
 	VD_LTK0680YTMDB(MIPI, NULL, fbp_bus_gp(3, GP_MIPI_RESET, GP_MIPI_RESET, 0), 0x5d, FBTS_GOODIX),
 	/* 0x3e is TPS65132 power chip on TG board */
-	VD_LS050T1SX12(MIPI, fbp_detect_i2c, fbp_bus_gp(1, 0, GP_LS050T1SX12_EN, 0), 0x3e),
+	VD_LS050T1SX12(MIPI, fbp_detect_i2c, fbp_bus_gp2(1, 0, GP_LS050T1SX12_EN, 0, 15, 15, GP_5P5_EN, 20), 0x3e),
 	VD_LS050T1SX12(MIPI, NULL, fbp_bus_gp(3, GP_MIPI_RESET, GP_MIPI_RESET, 0), 0x00),
 	VD_MIPI_COM50H5N03ULC(MIPI, NULL, fbp_bus_gp(3, GP_MIPI_RESET, GP_MIPI_RESET, 0), 0x00),
 	/* 0x3e is the TPS65132 power chip on our adapter board */
@@ -206,7 +207,7 @@ int board_init(void)
 	gpio_request(GP_I2C2_SN65DSI83_EN, "sn65dsi83_enable");
 	gpio_request(GP_LTK08_MIPI_EN, "lkt08_mipi_en");
 #endif
-	gpio_request(GP_CSI1_MIPI_PWDN, "csi1_mipi_pwdn");
+//	gpio_request(GP_CSI1_MIPI_PWDN, "csi1_mipi_pwdn");
 	gpio_request(GP_CSI1_MIPI_RESET, "csi1_mipi_reset");
 	gpio_direction_output(GP_GT911_RESET, 0);
 	/* Rely on pull up only, the toshiba hdmi input uses as IRQ */
