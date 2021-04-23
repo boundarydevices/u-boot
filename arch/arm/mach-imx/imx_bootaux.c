@@ -87,7 +87,7 @@ int arch_auxiliary_core_up(u32 core_id, ulong addr)
 	if (!addr)
 		return -EINVAL;
 
-#ifdef CONFIG_IMX8M
+#if defined(CONFIG_IMX8M)
 	stack = *(u32 *)addr;
 	pc = *(u32 *)(addr + 4);
 #else
@@ -114,6 +114,9 @@ int arch_auxiliary_core_up(u32 core_id, ulong addr)
 	printf("## Starting auxiliary core stack = 0x%08X, pc = 0x%08X...\n",
 	       stack, pc);
 
+#ifdef CONFIG_MX7ULP
+	writel(pc, SIM0_RBASE + 0x70); /* GP7 */
+#else
 	/* Set the stack and pc to MCU bootROM */
 	writel(stack, MCU_BOOTROM_BASE_ADDR);
 	writel(pc, MCU_BOOTROM_BASE_ADDR + 4);
@@ -127,7 +130,8 @@ int arch_auxiliary_core_up(u32 core_id, ulong addr)
 #else
 	clrsetbits_le32(SRC_BASE_ADDR + SRC_M4_REG_OFFSET,
 			SRC_M4C_NON_SCLR_RST_MASK, SRC_M4_ENABLE_MASK);
-#endif
+#endif /*CONFIG_IMX8M */
+#endif /* CONFIG_MX7ULP */
 
 	return 0;
 }
@@ -141,6 +145,10 @@ int arch_auxiliary_core_check_up(u32 core_id)
 		      0, 0, 0, 0, &res);
 
 	return res.a0;
+#elif defined(CONFIG_MX7ULP)
+	/* Only one core need to be considered */
+	/* As this is the master core, it can't do reset from A7 side */
+	return (0 == core_id) ? 0 : 1;
 #else
 	unsigned int val;
 
