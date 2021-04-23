@@ -1328,9 +1328,9 @@ void fbp_setup_env_cmds(void);
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
-		.xres           = 1080,\
+		.xres           = 1088,\
 		.yres           = 1920,\
-		.pixclock       = 1000000000000ULL/((1080+50+102+10)*(1920+4+4+2)*60), \
+		.pixclock       = 1000000000000ULL/((1088+50+102+10)*(1920+4+4+2)*60), \
 		.left_margin    = 50,\
 		.right_margin   = 102,\
 		.upper_margin   = 4,\
