@@ -29,15 +29,19 @@ int ft_add_optee_node(void *fdt, struct bd_info *bd)
 		void *fdto = (void *)rom_pointer[2];
 		if (fdt_magic(fdto) == FDT_MAGIC) {
 			debug("OP-TEE: applying overlay on 0x%p\n", fdto);
-			ret = fdt_overlay_apply_verbose(fdt, fdto);
+			ret = fdt_check_header(fdto);
 			if (ret == 0) {
-				debug("Overlay applied with success");
-				fdt_pack(fdt);
-				return 0;
+				/* Copy the fdt overlay to next 1M and use copied overlay */
+				memcpy((void *)(fdto + SZ_1M), fdto, fdt_totalsize(fdto));
+				ret = fdt_overlay_apply_verbose(fdt, (void*)(fdto + SZ_1M));
+				if (ret == 0) {
+					debug("Overlay applied with success");
+					fdt_pack(fdt);
+					return 0;
+				}
 			}
-		} else {
-			printf("%s: optee dtb overlay(0x%p) is invalid\n", __func__, fdto);
 		}
+		printf("%s: optee dtb overlay(0x%p) is invalid\n", __func__, fdto);
 	}
 	/* Fallback to previous implementation */
 #endif
