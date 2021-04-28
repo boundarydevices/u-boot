@@ -785,6 +785,18 @@ static int sec_mipi_dsim_host_attach(struct mipi_dsi_host *host,
 	return 0;
 }
 
+static void sec_mipi_dsim_config_clkctrl(struct sec_mipi_dsim *dsim);
+
+static int sec_mipi_dsim_host_enable_lpm(struct mipi_dsi_host *host)
+{
+	struct sec_mipi_dsim *dsim = to_sec_mipi_dsim(host);
+
+	/* config esc clock, byte clock and etc */
+	sec_mipi_dsim_config_clkctrl(dsim);
+
+	return 0;
+}
+
 static void sec_mipi_dsim_set_standby(struct sec_mipi_dsim *dsim, bool standby);
 
 static int sec_mipi_dsim_host_enable_frame(struct mipi_dsi_host *host)
@@ -1043,6 +1055,7 @@ static ssize_t sec_mipi_dsim_host_transfer(struct mipi_dsi_host *host,
 
 static const struct mipi_dsi_host_ops sec_mipi_dsim_host_ops = {
 	.attach = sec_mipi_dsim_host_attach,
+	.enable_lpm = sec_mipi_dsim_host_enable_lpm,
 	.enable_frame = sec_mipi_dsim_host_enable_frame,
 	.transfer = sec_mipi_dsim_host_transfer,
 };
@@ -1652,9 +1665,6 @@ static int sec_mipi_dsim_bridge_enable(struct sec_mipi_dsim *dsim)
 
 	/* initialize FIFO pointers */
 	sec_mipi_dsim_init_fifo_pointers(dsim);
-
-	/* config esc clock, byte clock and etc */
-	sec_mipi_dsim_config_clkctrl(dsim);
 
 	return 0;
 }
