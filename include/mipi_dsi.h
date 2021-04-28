@@ -90,6 +90,7 @@ int mipi_dsi_create_packet(struct mipi_dsi_packet *packet,
 struct mipi_dsi_host_ops {
 	int (*attach)(struct mipi_dsi_host *host,
 		      struct mipi_dsi_device *dsi);
+	int (*enable_lpm)(struct mipi_dsi_host *host);
 	int (*enable_frame)(struct mipi_dsi_host *host);
 	int (*detach)(struct mipi_dsi_host *host,
 		      struct mipi_dsi_device *dsi);
@@ -243,6 +244,7 @@ struct mipi_dsi_panel_plat {
  * @dsi: DSI peripheral
  */
 int mipi_dsi_attach(struct mipi_dsi_device *dsi);
+int mipi_dsi_enable_lpm(struct mipi_dsi_device *dsi);
 int mipi_dsi_enable_frame(struct mipi_dsi_device *dsi);
 
 /**
