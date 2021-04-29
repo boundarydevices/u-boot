@@ -58,7 +58,7 @@ DECLARE_GLOBAL_DATA_PTR;
 
 static const iomux_v3_cfg_t init_pads[] = {
 	/* Buzzer */
-#define GP_GPIO3_CLKO2	IMX_GPIO_NR(1, 6)
+#define GP_GPIO3_CLKO2	IMX_GPIO_NR(1, 3)
 	IOMUX_PAD_CTRL(GPIO_3__GPIO1_IO03, WEAK_PULLDN),
 
 	/* ECSPI1 */
