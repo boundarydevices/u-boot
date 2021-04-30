@@ -1,0 +1,14 @@
+if TARGET_KEA
+
+config SYS_BOARD
+	default "kea"
+
+config SYS_VENDOR
+	default "boundary"
+
+config SYS_CONFIG_NAME
+	default "kea"
+
+source "board/boundary/common/Kconfig"
+
+endif
