@@ -27,6 +27,11 @@ config TARGET_HL8MM
 	select IMX8MM
 	select SUPPORT_SPL
 
+config TARGET_KEA
+	bool "KEA"
+	select IMX8MM
+	select SUPPORT_SPL
+
 config TARGET_MOO
 	bool "moo"
 	select IMX8MM
@@ -97,6 +102,7 @@ source "board/boundary/c2-imx8mm/Kconfig"
 source "board/boundary/ds/Kconfig"
 source "board/boundary/dwe/Kconfig"
 source "board/boundary/hl8mm/Kconfig"
+source "board/boundary/kea/Kconfig"
 source "board/boundary/moo/Kconfig"
 source "board/boundary/nitrogen8_lite/Kconfig"
 source "board/boundary/nitrogen8_nano/Kconfig"
