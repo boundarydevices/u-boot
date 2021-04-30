@@ -181,6 +181,8 @@ int board_init(void)
 #ifndef CONFIG_DM_VIDEO
 	gpio_request(GP_SN65DSI83_EN, "sn65dsi83_enable");
 	gpio_request(GP_LTK08_MIPI_EN, "lkt08_mipi_en");
+#else
+	gpio_request(GP_LCD133_070_RESET, "lcd133_070_reset");
 #endif
 	gpio_request(GPIRQ_CSI1_TC3587, "csi1_mipi_pwdn");
 	gpio_request(GP_CSI1_OV5640_MIPI_RESET, "csi1_mipi_reset");
@@ -189,6 +191,9 @@ int board_init(void)
 	gpio_direction_output(GP_CSI1_OV5640_MIPI_RESET, 0);
 	/* An unmodified panel has reset connected directly to 1.8V, so make input */
 	gpio_direction_input(GP_LCD133_070_RESET);
+#ifdef CONFIG_DM_VIDEO
+	gpio_free(GP_LCD133_070_RESET);
+#endif
 #if defined(CONFIG_MXC_SPI) && !defined(CONFIG_DM_SPI)
 	setup_spi();
 #endif
