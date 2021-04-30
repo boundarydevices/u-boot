@@ -48,6 +48,7 @@
 #define I2C3_BASE_ADDR		0x30A40000
 #define I2C4_BASE_ADDR		0x30A50000
 #define UART4_BASE_ADDR		0x30A60000
+#define CAAM_BASE_ADDR		0x30900000
 #define USDHC1_BASE_ADDR	0x30B40000
 #define USDHC2_BASE_ADDR	0x30B50000
 #if defined(CONFIG_IMX8MM) || defined(CONFIG_IMX8MN) || defined(CONFIG_IMX8MP)
@@ -81,6 +82,16 @@
 #define DDRC_IPS_BASE_ADDR(X)	(0x3d400000 + ((X) * 0x2000000))
 #define DDR_CSD1_BASE_ADDR	0x40000000
 
+#define CAAM_ARB_BASE_ADDR              (0x00100000)
+#define CAAM_ARB_END_ADDR               (0x00107FFF)
+#define CAAM_IPS_BASE_ADDR              (0x30900000)
+#define CONFIG_SYS_FSL_SEC_OFFSET       (0)
+#define CONFIG_SYS_FSL_SEC_ADDR         (CAAM_IPS_BASE_ADDR + \
+					 CONFIG_SYS_FSL_SEC_OFFSET)
+#define CONFIG_SYS_FSL_JR0_OFFSET       (0x1000)
+#define CONFIG_SYS_FSL_JR0_ADDR         (CONFIG_SYS_FSL_SEC_ADDR + \
+					 CONFIG_SYS_FSL_JR0_OFFSET)
+#define CONFIG_SYS_FSL_MAX_NUM_OF_SEC   1
 #if !defined(__ASSEMBLY__)
 #include <asm/types.h>
 #include <linux/bitops.h>
