@@ -209,7 +209,8 @@ static const iomux_v3_cfg_t init_pads[] = {
 
 		/* wl1271 */
 #define GPIRQ_WL1271_WL		IMX_GPIO_NR(6, 14)
-		IOMUX_PAD_CTRL(NANDF_CS1__GPIO6_IO14, WEAK_PULLDN), };
+		IOMUX_PAD_CTRL(NANDF_CS1__GPIO6_IO14, WEAK_PULLDN),
+};
 
 #ifdef CONFIG_CMD_FBPANEL
 static const iomux_v3_cfg_t rgb666_pads[] = {
@@ -523,8 +524,18 @@ int board_init(void) {
 }
 
 #ifndef CONFIG_SYS_BOARD
-const char* board_get_board_type(void) {
-	if (gpio_get_value(GPIRQ_WL1271_WL))
+const char* board_get_board_type(void)
+{
+	int ret = gpio_get_value(GPIRQ_WL1271_WL);
+
+	if (ret < 0) {
+		/* The gpios have not been probed yet. Read it myself */
+		struct gpio_regs *regs = (struct gpio_regs *)GPIO6_BASE_ADDR;
+		int gpio = GPIRQ_WL1271_WL & 0x1f;
+
+		ret = (readl(&regs->gpio_psr) >> gpio) & 0x01;
+	}
+	if (ret)
 		return "nitrogen6x";
 	return "sabrelite";
 }
