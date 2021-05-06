@@ -67,6 +67,10 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IOMUX_PAD_CTRL(GPIO1_IO09__GPIO1_IO9, WEAK_PULLUP),
 #define GPIRQ_ENET_PHY		IMX_GPIO_NR(1, 11)
 	IOMUX_PAD_CTRL(GPIO1_IO11__GPIO1_IO11, WEAK_PULLUP),
+#define GP_PCIE0_RESET		IMX_GPIO_NR(3, 14)
+	IOMUX_PAD_CTRL(NAND_DQS__GPIO3_IO14, 0x16),
+#define GP_PCIE0_CLKREQ		IMX_GPIO_NR(1, 10)
+	IOMUX_PAD_CTRL(GPIO1_IO10__GPIO1_IO10, 0xe6),
 };
 
 int board_early_init_f(void)
@@ -76,7 +80,11 @@ int board_early_init_f(void)
 	imx_iomux_v3_setup_multiple_pads(init_pads, ARRAY_SIZE(init_pads));
 	set_wdog_reset(wdog);
 	gpio_request(GP_I2C2_PCA9546_RESET, "pca9546-reset");
+	gpio_request(GP_PCIE0_RESET, "pcie0-reset");
+	gpio_request(GP_PCIE0_CLKREQ, "pcie0-clkreq");
 
+	gpio_direction_input(GP_PCIE0_CLKREQ);
+	gpio_direction_output(GP_PCIE0_RESET, 0);
 	gpio_direction_output(GP_EMMC_RESET, 1);
 	gpio_direction_output(GP_I2C2_PCA9546_RESET, 0);
 	gpio_direction_output(GP_I2C2A_SN65DSI83_EN, 0);
