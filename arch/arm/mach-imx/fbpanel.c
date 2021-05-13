@@ -680,13 +680,17 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 	if (fb == FB_LVDS)
 		lvds_enabled = 1;
 
-	if (fb == FB_MIPI) {
-		sz = set_status(buf, size, "backlight_mipi", true);
+	if (fb != FB_HDMI) {
+		sz = set_status(buf, size, backlight_names[fb], true);
 		buf += sz;
 		size -= sz;
+	}
+	if (fb == FB_MIPI) {
+#if defined(CONFIG_IMX8MQ)
 		sz = set_status(buf, size, "mipi_dsi", true);
 		buf += sz;
 		size -= sz;
+#endif
 #if defined(CONFIG_IMX8M)
 		sz = set_status(buf, size, "lcdif", true);
 		buf += sz;
