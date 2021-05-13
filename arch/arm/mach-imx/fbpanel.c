@@ -650,9 +650,18 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 			}
 		}
 		if (!mode_str) {
-			sz = set_status(buf, size, fbnames[fb1], false);
-			buf += sz;
-			size -= sz;
+#ifdef CONFIG_IMX8MP
+			/*
+			 * for 8MP fb_lvds == fb_lvds2, so skip for lvds2
+			 * so that lvds can be on
+			 */
+			if (fb != FB_LVDS2)
+#endif
+			{
+				sz = set_status(buf, size, fbnames[fb1], false);
+				buf += sz;
+				size -= sz;
+			}
 			if (fb == FB_MIPI) {
 				sz = set_status(buf, size, "lcdif", false);
 			} else if (fb == FB_LCD) {
