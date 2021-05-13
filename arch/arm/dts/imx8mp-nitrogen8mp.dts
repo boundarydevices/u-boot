@@ -624,7 +624,7 @@
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_backlight_lvds>;
 		pwms = <&pwm2 0 100000>;
-		status = "okay";
+		status = "disabled";
 
 	};
 
@@ -637,7 +637,7 @@
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_backlight_lvds2>;
 		pwms = <&pwm2 0 100000>;
-		status = "okay";
+		status = "disabled";
 
 	};
 
@@ -647,7 +647,7 @@
 		default-brightness-level = <8>;
 		display = <&lcdif1>;
 		pwms = <&pwm1 0 30000>;		/* 33.3 Khz */
-		status = "okay";
+		status = "disabled";
 	};
 
 	bt-rfkill {
@@ -1437,7 +1437,7 @@
 	};
 
 	lvds-channel@1 {
-		backlight = <&backlight_lvds>;
+		backlight = <&backlight_lvds2>;
 		fsl,data-mapping = "spwg";
 		fsl,data-width = <24>;
 
