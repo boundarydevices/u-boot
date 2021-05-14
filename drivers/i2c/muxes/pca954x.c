@@ -17,6 +17,7 @@
 DECLARE_GLOBAL_DATA_PTR;
 
 enum pca_type {
+	PCA9540,
 	PCA9543,
 	PCA9544,
 	PCA9546,
@@ -41,6 +42,11 @@ struct pca954x_priv {
 };
 
 static const struct chip_desc chips[] = {
+	[PCA9540] = {
+		.enable = 0x4,
+		.muxtype = pca954x_ismux,
+		.width = 2,
+	},
 	[PCA9543] = {
 		.muxtype = pca954x_isswi,
 		.width = 2,
@@ -99,6 +105,7 @@ static const struct i2c_mux_ops pca954x_ops = {
 };
 
 static const struct udevice_id pca954x_ids[] = {
+	{ .compatible = "nxp,pca9540", .data = PCA9540 },
 	{ .compatible = "nxp,pca9543", .data = PCA9543 },
 	{ .compatible = "nxp,pca9544", .data = PCA9544 },
 	{ .compatible = "nxp,pca9546", .data = PCA9546 },
