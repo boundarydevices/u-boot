@@ -71,15 +71,19 @@ static int detect_common(struct display_info_t const *di, int sub_bus,
 		if (sub_bus) {
 			buf[0] = sub_bus;
 			ret = ops->xfer(bus, &msg, 1);
+			debug("%s: sub_bus=0x%x ret=%d\n", __func__, sub_bus, ret);
 		}
 		/* write control register, select sub bus */
 		if (!ret && sub_bus2) {
 			buf[0] = sub_bus2;
 			ret = ops->xfer(bus, &msg, 1);
+			debug("%s: sub_bus2=0x%x ret=%d\n", __func__, sub_bus2, ret);
 		}
 		msg.addr = di->addr_num;
-		if (!ret && (reg1 < 0))
+		if (!ret && (reg1 < 0)) {
 			ret = i2c_probe_chip(bus, di->addr_num, 0);
+			debug("%s: probe 0x%x ret=%d\n", __func__, di->addr_num, ret);
+		}
 		if (!ret && (reg1 >= 0)) {
 			buf[0] = reg1;
 			buf[1] = val1;
@@ -152,6 +156,12 @@ int board_detect_lcd133(struct display_info_t const *di)
 	/* 0 - 0xf : VPOS 5.5V output */
 	/* 1 - 0xf : VNEG -5.5V output */
 	return detect_common(di, 1 << (di->bus_num >> 4), 0, 0, 0xf, 1, 0xf, 0, 0);
+}
+
+/* pca9540 mux */
+int board_detect_pca9540(struct display_info_t const *di)
+{
+	return detect_common(di, (di->bus_num >> 4) ? 5 : 4, 0, -1, 0x0, -1, 0x0, 0, 0);
 }
 
 /* pca9546 mux */
