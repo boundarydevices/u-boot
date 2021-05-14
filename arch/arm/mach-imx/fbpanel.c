@@ -557,9 +557,13 @@ static int set_status(char *buf, int size, const char *path, bool enable)
 		struct udevice *dev;
 
 		ret = device_find_by_ofnode(node, &dev);
+		debug("%s: %s: device_find_by_ofnode=%d\n", __func__,
+				ofnode_get_name(node), ret);
 		if (ret) {
 			/* not device yet */
 			ret = device_find_by_ofnode(pnode, &parent);
+			debug("%s: parent - %s: device_find_by_ofnode=%d\n",
+				__func__, ofnode_get_name(pnode), ret);
 			if (!ret)
 				lists_bind_fdt(parent, node, NULL, false);
 		}
