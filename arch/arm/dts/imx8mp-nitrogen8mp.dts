@@ -49,15 +49,6 @@
 			MX8MP_IOMUXC_ECSPI2_MISO__ECSPI2_MISO		0x82	/* Pin 8 */
 #define GP_ECSPI2_CS	<&gpio5 13 GPIO_ACTIVE_LOW>
 			MX8MP_IOMUXC_ECSPI2_SS0__GPIO5_IO13		0x143	/* Pin 6 */
-			MX8MP_IOMUXC_SPDIF_RX__GPIO5_IO04		0x41	/* Pin 17 */
-			MX8MP_IOMUXC_SPDIF_EXT_CLK__GPIO5_IO05		0x41	/* Pin 19 */
-			MX8MP_IOMUXC_SPDIF_TX__GPIO5_IO03		0x41	/* Pin 21 */
-			MX8MP_IOMUXC_SD1_RESET_B__GPIO2_IO10		0x41	/* Pin 23 */
-			MX8MP_IOMUXC_SD1_DATA6__GPIO2_IO08		0x41	/* Pin 25 */
-			MX8MP_IOMUXC_SD1_DATA5__GPIO2_IO07		0x41	/* Pin 29 */
-			MX8MP_IOMUXC_SD1_DATA4__GPIO2_IO06		0x41	/* Pin 31 */
-			MX8MP_IOMUXC_SAI1_MCLK__GPIO4_IO20		0x16	/* Pin 2 */
-			MX8MP_IOMUXC_SAI1_TXD7__GPIO4_IO19		0x1c4	/* Pin 4 */
 		>;
 	};
 
@@ -137,10 +128,15 @@
 		>;
 	};
 
-	pinctrl_gpio_keys: gpio-keysgrp {
+	pinctrl_key_can1: key-can1grp {
 		fsl,pins = <
 #define GP_CAN1_DETECT		<&gpio1 11 GPIO_ACTIVE_HIGH>
 			MX8MP_IOMUXC_GPIO1_IO11__GPIO1_IO11	0x16
+		>;
+	};
+
+	pinctrl_key_can2: key-can2grp {
+		fsl,pins = <
 #define GP_CAN2_DETECT		<&gpio4 23 GPIO_ACTIVE_HIGH>
 			MX8MP_IOMUXC_SAI2_RXD0__GPIO4_IO23	0x180
 		>;
@@ -153,6 +149,16 @@
 			MX8MP_IOMUXC_HDMI_HPD__HDMIMIX_EARC_DC_HPD	0x40000019
 			MX8MP_IOMUXC_HDMI_CEC__HDMIMIX_EARC_CEC		0x40000019
 			MX8MP_IOMUXC_NAND_DATA01__GPIO3_IO07		0x119
+			/* J31 */
+			MX8MP_IOMUXC_SPDIF_RX__GPIO5_IO04		0x41	/* Pin 17 */
+			MX8MP_IOMUXC_SPDIF_EXT_CLK__GPIO5_IO05		0x41	/* Pin 19 */
+			MX8MP_IOMUXC_SPDIF_TX__GPIO5_IO03		0x41	/* Pin 21 */
+			MX8MP_IOMUXC_SD1_RESET_B__GPIO2_IO10		0x41	/* Pin 23 */
+			MX8MP_IOMUXC_SD1_DATA6__GPIO2_IO08		0x41	/* Pin 25 */
+			MX8MP_IOMUXC_SD1_DATA5__GPIO2_IO07		0x41	/* Pin 29 */
+			MX8MP_IOMUXC_SD1_DATA4__GPIO2_IO06		0x41	/* Pin 31 */
+			MX8MP_IOMUXC_SAI1_MCLK__GPIO4_IO20		0x16	/* Pin 2 */
+			MX8MP_IOMUXC_SAI1_TXD7__GPIO4_IO19		0x1c4	/* Pin 4 */
 		>;
 	};
 
@@ -406,9 +412,16 @@
 		fsl,pins = <
 #define GPIRQ_TS_GT911	<&gpio4 25 IRQ_TYPE_LEVEL_HIGH>
 #define GP_TS_GT911_IRQ	<&gpio4 25 GPIO_ACTIVE_HIGH>
-			MX8MP_IOMUXC_SAI2_TXC__GPIO4_IO25	0x106
+			MX8MP_IOMUXC_SAI2_TXC__GPIO4_IO25	0x1c0
 #define GP_TS_GT911_RESET	<&gpio4 24 GPIO_ACTIVE_HIGH>
 			MX8MP_IOMUXC_SAI2_TXFS__GPIO4_IO24	0x109
+		>;
+	};
+
+	pinctrl_ts_ili251x_lvds: ts-ili251x-lvdsgrp {
+		fsl,pins = <
+#define GPIRQ_TS_ILI251X_LVDS	<&gpio1 10 IRQ_TYPE_EDGE_FALLING>
+			MX8MP_IOMUXC_GPIO1_IO10__GPIO1_IO10	0x149
 		>;
 	};
 
@@ -605,6 +618,7 @@
 		mipi_to_lvds = &mipi_to_lvds;
 		pwm_mipi = &pwm1;
 		pwm_lvds = &pwm2;
+		pwm_lvds2 = &pwm2;
 		t_lvds = &t_lvds;
 		t_lvds2 = &t_lvds2;
 		t_mipi = &t_mipi;
@@ -612,6 +626,7 @@
 		ts_ft5x06 = &ts_ft5x06;
 		ts_ft5x06_2 = &ts_ft5x06_lvds;
 		ts_goodix = &ts_goodix;
+		ts_ili251x = &ts_ili251x_lvds;
 		usb_mux = &usb_mux;
 	};
 
@@ -689,10 +704,10 @@
 		};
 	};
 
-	gpio-keys {
+	gpio_keys: gpio-keys {
 		compatible = "gpio-keys";
 		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_gpio_keys>;
+		pinctrl-0 = <&pinctrl_key_can1>, <&pinctrl_key_can2>;
 
 		can1 {
 			label = "can1 detect";
@@ -1043,6 +1058,7 @@
 				regulator-compatible = "buck2";
 				regulator-min-microvolt = <600000>;
 				regulator-max-microvolt = <2187500>;
+				regulator-limit-microvolt = <1025000>;
 				regulator-boot-on;
 				regulator-always-on;
 				regulator-ramp-delay = <3125>;
@@ -1194,10 +1210,10 @@
 
 &i2c2c {
 	basler_camera@36 {
-		compatible = "basler,basler-camera-vvcam", "basler-camera-vvcam";
+		compatible = "basler,basler-camera", "basler-camera";
 		reg = <0x36>;
 		csi_id = <0x01>;
-		status = "disabled";
+		status = "okay";
 
 		port {
 			basler_ep_1: endpoint {
@@ -1333,8 +1349,18 @@
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_ts_ft5x06_lvds>;
 		reg = <0x38>;
-		status = "disabled";
 		wakeup-gpios = GP_TS_FT5X06_LVDS_WAKE;
+	};
+
+	ts_ili251x_lvds: touchscreen@41 {
+		compatible = "ilitek,ili251x";
+		interrupts-extended = GPIRQ_TS_ILI251X_LVDS;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_ts_ili251x_lvds>;
+		reg = <0x41>;
+		status = "disabled";
+		touchscreen-size-x = <0x3fff>;
+		touchscreen-size-y = <0x3fff>;
 	};
 
 	usb_mux: hd3ss3220@47 {
@@ -1375,16 +1401,16 @@
 	status = "disabled";
 
 	cap_device {
-		status = "okay";
+		status = "disabled";
 	};
 
 	m2m_device {
-		status = "okay";
+		status = "disabled";
 	};
 };
 
 &isi_1 {
-	status = "disabled";
+	status = "okay";
 
 	cap_device {
 		status = "okay";
@@ -1493,7 +1519,7 @@
 &mipi_csi_1 {
 	#address-cells = <1>;
 	#size-cells = <0>;
-	status = "disabled";
+	status = "okay";
 
 	port@1 {
 		reg = <1>;
@@ -1517,7 +1543,7 @@
 	status = "disabled";
 
 	fb_mipi: panel@0 {
-		backlight= <&backlight_mipi>;
+		backlight = <&backlight_mipi>;
 		bits-per-color = <8>;
 		bits-per-pixel = <24>;
 		bridge-de-active = <0>;

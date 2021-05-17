@@ -65,10 +65,11 @@ static iomux_v3_cfg_t const init_pads[] = {
 #define GP_LCD133_070_ENABLE	IMX_GPIO_NR(4, 27)
 	IOMUX_PAD_CTRL(SAI2_MCLK__GPIO4_IO27, 0x106),
 
-#define GP_LVDS_BKL_EN		IMX_GPIO_NR(4, 22)
+#define GP_BACKLIGHT_LVDS	IMX_GPIO_NR(4, 22)
 	IOMUX_PAD_CTRL(SAI2_RXC__GPIO4_IO22, 0x106),	/* enable */
-#define GP_LVDS2_BKL_EN		IMX_GPIO_NR(4, 22)
-	IOMUX_PAD_CTRL(SAI2_RXC__GPIO4_IO22, 0x106),	/* enable */
+
+#define GP_BACKLIGHT_LVDS2	IMX_GPIO_NR(4, 21)
+	IOMUX_PAD_CTRL(SAI2_RXFS__GPIO4_IO21, 0x106),	/* enable */
 
 #define GP_LVDS_PWM		IMX_GPIO_NR(4, 22)
 	IOMUX_PAD_CTRL(GPIO1_IO09__GPIO1_IO09, 0x106),	/* PWM */
@@ -214,10 +215,15 @@ static const struct display_info_t displays[] = {
 	VD_TM070JDHG30(	LVDS2, NULL, fbp_bus_gp(3, 0, 0, 0), 0x38, FBTS_FT5X06_2),
 	VD_ND1024_600(	LVDS2, NULL, fbp_bus_gp(3, 0, 0, 0), 0x38, FBTS_FT5X06_2),
 
-	/* egalax_ts */
-	VD_HANNSTAR(LVDS, fbp_detect_i2c, fbp_bus_gp(3, 0, GP_LVDS_BKL_EN, 0), 0x04, FBTS_EGALAX),
+	/* ili251x */
+	VD_HDA800XPT(LVDS, fbp_detect_i2c, fbp_bus_gp(3, 0, 0, 0), fbp_addr_gp(0x41, GP_BACKLIGHT_LVDS, 0, 0), FBTS_ILI251X),
 
-	VD_HANNSTAR(LVDS2, NULL, fbp_bus_gp(3, 0, GP_LVDS_BKL_EN, 0), 0x04, FBTS_EGALAX),
+	VD_HDA800XPT(LVDS2, NULL, fbp_bus_gp(3, 0, 0, 0), fbp_addr_gp(0x41, GP_BACKLIGHT_LVDS2, 0, 0), FBTS_ILI251X),
+
+	/* egalax_ts */
+	VD_HANNSTAR(LVDS, fbp_detect_i2c, fbp_bus_gp(3, 0, 0, 0), 0x04, FBTS_EGALAX),
+
+	VD_HANNSTAR(LVDS2, NULL, fbp_bus_gp(3, 0, 0, 0), 0x04, FBTS_EGALAX),
 };
 #define display_cnt	ARRAY_SIZE(displays)
 #else
