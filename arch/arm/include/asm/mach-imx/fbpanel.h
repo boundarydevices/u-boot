@@ -213,6 +213,7 @@ void fbp_setup_env_cmds(void);
 #define VD_AUO_B101EW05(_mode, args...)		VDF_AUO_B101EW05(_mode, "auo_b101ew05", RGB666, 0, args)
 #define VD_HANNSTAR7(_mode, args...)		VDF_HANNSTAR7(_mode, "hannstar7", RGB666, 0, args)
 #define VD_LG1280_800(_mode, args...)		VDF_HANNSTAR7(_mode, "lg1280x800", RGB666, 0, args)
+#define VD_HDA800XPT(_mode, args...)		VDF_HDA800XPT(_mode, "hda800xpt", RGB24, FBF_BKLIT_DTB | FBF_BKLIT_LOW_ACTIVE | FBF_BKLIT_EN_LOW_ACTIVE | FBF_BKLIT_EN_DTB, args)
 #define VD_M101NWWB(_mode, args...)		VDF_M101NWWB(_mode, "M101NWWB", RGB24, 0, args)
 #define VD_LD101WX1(_mode, args...)		VDF_HANNSTAR7(_mode, "ld101wx1", RGB24, 0, args)
 #define VD_DT070BTFT(_mode, args...)		VDF_DT070BTFT(_mode, "dt070btft", RGB24, FBF_JEIDA, args)
@@ -1156,6 +1157,27 @@ void fbp_setup_env_cmds(void);
 		.lower_margin   = 7,\
 		.hsync_len      = 60,\
 		.vsync_len      = 10,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
+#define VDF_HDA800XPT(_mode, _name, _fmt, _flags, args...) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, args),\
+	.pwm_period = 32000, 	/* 31.25 KHz, 1000000000/32000 ns */ \
+	.mode	= {\
+		.name           = _name,\
+		.refresh        = 60,\
+		.xres           = 1024,\
+		.yres           = 768,\
+		.pixclock       = 1000000000000ULL/((1024+160+80+80)*(768+22+8+8)*60),\
+		.left_margin    = 160,\
+		.right_margin   = 80,\
+		.upper_margin   = 22,\
+		.lower_margin   = 8,\
+		.hsync_len      = 80,\
+		.vsync_len      = 8,\
 		.sync           = FB_SYNC_EXT,\
 		.vmode          = FB_VMODE_NONINTERLACED\
 	}\
