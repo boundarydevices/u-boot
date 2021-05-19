@@ -42,6 +42,32 @@ struct i2c_pads_info i2c_pad_info1 = {
 	},
 };
 
+struct i2c_pads_info i2c_pad_info2 = {
+	.scl = {
+		.i2c_mode = IMX8MQ_PAD_I2C2_SCL__I2C2_SCL | PC,
+		.gpio_mode = IMX8MQ_PAD_I2C2_SCL__GPIO5_IO16 | PC,
+		.gp = IMX_GPIO_NR(5, 16),
+	},
+	.sda = {
+		.i2c_mode = IMX8MQ_PAD_I2C2_SDA__I2C2_SDA | PC,
+		.gpio_mode = IMX8MQ_PAD_I2C2_SDA__GPIO5_IO17 | PC,
+		.gp = IMX_GPIO_NR(5, 17),
+	},
+};
+
+struct i2c_pads_info i2c_pad_info3 = {
+	.scl = {
+		.i2c_mode = IMX8MQ_PAD_I2C3_SCL__I2C3_SCL | PC,
+		.gpio_mode = IMX8MQ_PAD_I2C3_SCL__GPIO5_IO18 | PC,
+		.gp = IMX_GPIO_NR(5, 18),
+	},
+	.sda = {
+		.i2c_mode = IMX8MQ_PAD_I2C3_SDA__I2C3_SDA | PC,
+		.gpio_mode = IMX8MQ_PAD_I2C3_SDA__GPIO5_IO19 | PC,
+		.gp = IMX_GPIO_NR(5, 19),
+	},
+};
+
 #define USDHC_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_HYS | PAD_CTL_PUE | \
 			 PAD_CTL_FSEL2)
 #define USDHC_GPIO_PAD_CTRL (PAD_CTL_PUE | PAD_CTL_DSE1)
@@ -144,6 +170,7 @@ int power_init_board(void)
 {
 	/* Nitrogen8M I2C write */
 	ddr_voltage_init();
+	bq25898_init(2, 0x6b);
 	return 0;
 }
 
@@ -197,6 +224,8 @@ void board_init_f(ulong dummy)
 
 	/* Adjust pmic voltage to 1.0V for 800M */
 	setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info1);
+	setup_i2c(1, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info2);
+	setup_i2c(2, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info3);
 
 	power_init_board();
 
