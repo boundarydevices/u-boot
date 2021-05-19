@@ -11,6 +11,10 @@ config MAX77823
 	default y if TARGET_NITROGEN6_SCM
 	default y if TARGET_VP
 
+config BQ25898
+	bool
+	default y if TARGET_DS
+
 config FEC_RESET_PULLUP
 	bool "fec pullup on reset"
 	default y if IMX8MM
