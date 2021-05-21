@@ -155,8 +155,9 @@ int fbp_detect_i2c(struct display_info_t const *di);
 void fbp_setup_display(const struct display_info_t *displays, int cnt);
 void fbp_setup_env_cmds(void);
 
-#define VD_1280_720M_60(_mode, args...)		VDF_1280_720M_60(_mode, "1280x720M@60", RGB24, FBF_MODESTR, args)
 #define VD_1920_1080M_60(_mode, args...)	VDF_1920_1080M_60(_mode, "1920x1080M@60", RGB24, FBF_MODESTR, args)
+#define VD_1280_800M_60(_mode, args...)		VDF_1280_800M_60(_mode, "1280x800M@60", RGB24, FBF_MODESTR, args)
+#define VD_1280_720M_60(_mode, args...)		VDF_1280_720M_60(_mode, "1280x720M@60", RGB24, FBF_MODESTR, args)
 #define VD_1024_768M_60(_mode, args...)		VDF_1024_768M_60(_mode, "1024x768M@60", RGB24, FBF_MODESTR, args)
 #define VD_800_600MR_60(_mode, args...)		VDF_800_600MR_60(_mode, "800x600MR@60", RGB24, FBF_MODESTR, args)
 #define VD_640_480M_60(_mode, args...)		VDF_640_480M_60(_mode, "640x480M@60", RGB24, FBF_MODESTR, args)
