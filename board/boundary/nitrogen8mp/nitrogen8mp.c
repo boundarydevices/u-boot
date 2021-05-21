@@ -170,7 +170,10 @@ int board_detect_gt911(struct display_info_t const *di)
 static const struct display_info_t displays[] = {
 	/* hdmi */
 	VD_1920_1080M_60(HDMI, NULL, 0, 0x50),
+	VD_1280_800M_60(HDMI, NULL, 0, 0x50),
 	VD_1280_720M_60(HDMI, NULL, 0, 0x50),
+	VD_1024_768M_60(HDMI, NULL, 0, 0x50),
+	VD_640_480M_60(HDMI, NULL, 0, 0x50),
 
 	/* mipi */
 	VD_MIPI_M101NWWB(MIPI, board_detect_pca9546, fbp_bus_gp((1 | (3 << 4)), GP_SN65DSI83_EN, 0, 0), 0x2c, FBP_MIPI_TO_LVDS, FBTS_FT5X06),
