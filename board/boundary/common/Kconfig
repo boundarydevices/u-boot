@@ -2,6 +2,23 @@ config CMD_KBD
 	bool "Enable KBD cmd"
 	default y
 
+config LOGO_BMP
+	string "Select logo bmp to display"
+	default "boundarydevices" if TARGET_NITROGEN6_MAX
+	default "boundarydevices" if TARGET_NITROGEN6_SCM
+	default "boundarydevices" if TARGET_NITROGEN6_VM
+	default "boundarydevices" if TARGET_NITROGEN6SX
+	default "boundarydevices" if TARGET_NITROGEN6X
+	default "boundarydevices" if TARGET_NITROGEN7
+	default "boundarydevices" if TARGET_NITROGEN8_LITE
+	default "boundarydevices" if TARGET_NITROGEN8_NANO
+	default "boundarydevices" if TARGET_NITROGEN8M
+	default "boundarydevices" if TARGET_NITROGEN8MM
+	default "boundarydevices" if TARGET_NITROGEN8MN
+	default "boundarydevices" if TARGET_NITROGEN8MM_TAB
+	default "boundarydevices" if TARGET_NITROGEN8MP
+	default "boundary"
+
 config MAX77823
 	bool
 	default y if TARGET_CID
