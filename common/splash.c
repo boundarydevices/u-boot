@@ -121,7 +121,7 @@ void splash_get_pos(int *x, int *y)
 #include <video_console.h>
 #include <video_font.h>
 
-void splash_display_banner(void)
+void splash_display_banner(ulong addr)
 {
 	struct udevice *dev;
 	char buf[DISPLAY_OPTIONS_BANNER_LENGTH];
@@ -132,11 +132,16 @@ void splash_display_banner(void)
 		return;
 
 #ifdef CONFIG_VIDEO_LOGO
-	col = BMP_LOGO_WIDTH / VIDEO_FONT_WIDTH + 1;
-	row = BMP_LOGO_HEIGHT / VIDEO_FONT_HEIGHT + 1;
+	if (addr) {
+		col = BMP_LOGO_WIDTH / VIDEO_FONT_WIDTH + 1;
+		row = BMP_LOGO_HEIGHT / VIDEO_FONT_HEIGHT + 1;
+	} else {
+		col = 0;
+		row = 2;
+	}
 #else
 	col = 0;
-	row = 0;
+	row = 2;
 #endif
 
 	display_options_get_banner(false, buf, sizeof(buf));
@@ -181,7 +186,7 @@ int splash_display(void)
 	}
 
 #if defined(CONFIG_DM_VIDEO) && !defined(CONFIG_HIDE_LOGO_VERSION)
-	splash_display_banner();
+	splash_display_banner(addr);
 #endif
 end:
 	return ret;
