@@ -24,6 +24,7 @@
 #include <env.h>
 #include <mmc.h>
 #include <fsl_esdhc_imx.h>
+#include <linux/delay.h>
 #include <linux/fb.h>
 #include <ipu_pixfmt.h>
 #include <asm/arch/crm_regs.h>
@@ -373,6 +374,14 @@ int board_early_init_f(void)
 	return 0;
 }
 
+void board_poweroff(void)
+{
+	struct snvs_regs *snvs = (struct snvs_regs *)(SNVS_BASE_ADDR);
+
+	writel(0x60, &snvs->lpcr);
+	mdelay(500);
+}
+
 int board_init(void)
 {
 	common_board_init(i2c_pads, I2C_BUS_CNT, IOMUXC_GPR1_OTG_ID_GPIO1,
@@ -441,4 +450,16 @@ U_BOOT_CMD(
 	board_rev, 1, 1, do_board_rev,
 	"Determine board revision #",
 	"Prints revision."
+);
+
+static int _do_poweroff(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[])
+{
+	board_poweroff();
+	return 0;
+}
+
+U_BOOT_CMD(
+	poweroff, 70, 0, _do_poweroff,
+	"power down board",
+	""
 );
