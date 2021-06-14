@@ -407,6 +407,7 @@
 	};
 
 	backlight_mipi: backlight-mipi {
+		alias = <&backlight_mipi>;
 		brightness-levels = <0 1 2 3 4 5 6 7 8 9 10>;
 		compatible = "pwm-backlight";
 		default-brightness-level = <8>;
@@ -416,6 +417,7 @@
 	};
 
 	backlight_mipi2: backlight-mipi2 {
+		alias = <&backlight_mipi2>;
 		brightness-levels = <0 1 2 3 4 5 6 7 8 9 10>;
 		compatible = "pwm-backlight";
 		default-brightness-level = <8>;
@@ -1097,7 +1099,7 @@
 	status = "okay";
 
 	fb_mipi: panel@0 {
-		backlight= <&backlight_mipi>;
+		backlight = <&backlight_mipi>;
 		bits-per-color = <8>;
 		bits-per-pixel = <24>;
 		bridge-de-active = <0>;
