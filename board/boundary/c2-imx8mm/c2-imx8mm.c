@@ -113,9 +113,11 @@ int board_detect_gt911(struct display_info_t const *di)
 
 void board_enable_mipi(const struct display_info_t *di, int enable)
 {
+#ifndef CONFIG_DM_VIDEO
 	if (di->enable_alias[0] == FBP_BACKLIGHT_MIPI2) {
 		gpio_direction_output(GP_BACKLIGHT_MIPI2, enable);
 	}
+#endif
 }
 
 static const struct display_info_t displays[] = {
@@ -136,9 +138,9 @@ int board_init(void)
 #ifndef CONFIG_DM_VIDEO
 	gpio_request(GP_SN65DSI83_EN, "sn65dsi83_enable");
 	gpio_request(GP_LTK08_MIPI_EN, "lkt08_mipi_en");
+	gpio_request(GP_BACKLIGHT_MIPI2, "backlight_pwm2");
 #endif
 	gpio_request(GP_DLC0350_ENABLE, "dlc0350 reset");
-	gpio_request(GP_BACKLIGHT_MIPI2, "backlight_pwm2");
 	gpio_request(GP_GT911_RESET, "gt911_reset");
 	gpio_request(GPIRQ_GT911, "gt911_irq");
 	gpio_request(GP_CSI1_OV5640_MIPI_RESET, "csi1_mipi_reset");
