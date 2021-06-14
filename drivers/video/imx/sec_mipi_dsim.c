@@ -1048,7 +1048,6 @@ static ssize_t sec_mipi_dsim_host_transfer(struct mipi_dsi_host *host,
 	} else {
 		nb_bytes = packet.size;
 	}
-	mdelay(1);
 
 	return nb_bytes;
 
