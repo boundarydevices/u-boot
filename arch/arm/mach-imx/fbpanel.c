@@ -592,8 +592,10 @@ static int get_value_joined_str(char *buf, int size, u32* pval,
 
 	snprintf(cpath, sizeof(cpath), "%s%s", path1, path2);
 	node = ofnode_path_err(cpath);
-	if (!ofnode_valid(node))
+	if (!ofnode_valid(node)) {
+		debug("%s: not found %s\n", __func__, cpath);
 		return sz;
+	}
 
 	ofnode_read_u32(node, propname, pval);
 #endif
@@ -753,8 +755,23 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 	for (i = 0; i < ARRAY_SIZE(di->enable_alias); i++) {
 		const char *s = get_alias(di, fb, i);
 
-		if (s) {
-			sz = set_status(buf, size, s, true);
+		if (!s)
+			continue;
+		sz = set_status(buf, size, s, true);
+		buf += sz;
+		size -= sz;
+
+		if (s == aliases[FBP_BACKLIGHT_MIPI2]) {
+			/* point fb_mipi to backligh_mipi2 */
+			/* fdt get value blm2 backlight_mipi2 phandle;fdt set fb_mipi backlight <${blm2}> */
+			u32 blm2 = 0;
+
+			sz = get_value_joined_str(buf, size, &blm2, "blm2", s,
+					"", "phandle");
+			buf += sz;
+			size -= sz;
+			sz = set_property_u32_env(buf, size, fbnames[fb],
+				"backlight", blm2, "blm2");
 			buf += sz;
 			size -= sz;
 		}
