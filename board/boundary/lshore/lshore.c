@@ -112,6 +112,9 @@ static const iomux_v3_cfg_t init_pads[] = {
 #define GP_SW5	IMX_GPIO_NR(3, 13)
 	IOMUX_PAD_CTRL(EIM_DA13__GPIO3_IO13, WEAK_PULLUP),
 
+#define GP_ON_OFF_BUTTON	IMX_GPIO_NR(4, 11)
+	IOMUX_PAD_CTRL(KEY_ROW2__GPIO4_IO11, WEAK_PULLUP),
+
 #define GP_TP71			IMX_GPIO_NR(1, 30)
 	IOMUX_PAD_CTRL(ENET_TXD0__GPIO1_IO30, WEAK_PULLUP),
 
@@ -361,18 +364,9 @@ static const unsigned short gpios_in[] = {
 	GP_SW3,
 	GP_SW4,
 	GP_SW5,
+	GP_ON_OFF_BUTTON,
 	GP_TP71,
 };
-
-int board_early_init_f(void)
-{
-	set_gpios_in(gpios_in, ARRAY_SIZE(gpios_in));
-	set_gpios(gpios_out_high, ARRAY_SIZE(gpios_out_high), 1);
-	set_gpios(gpios_out_low, ARRAY_SIZE(gpios_out_low), 0);
-	SETUP_IOMUX_PADS(init_pads);
-	SETUP_IOMUX_PADS(rgb_gpio_pads);
-	return 0;
-}
 
 void board_poweroff(void)
 {
@@ -380,6 +374,26 @@ void board_poweroff(void)
 
 	writel(0x60, &snvs->lpcr);
 	mdelay(500);
+}
+
+int board_early_init_f(void)
+{
+	int val;
+
+	set_gpios_in(gpios_in, ARRAY_SIZE(gpios_in));
+	set_gpios(gpios_out_high, ARRAY_SIZE(gpios_out_high), 1);
+	set_gpios(gpios_out_low, ARRAY_SIZE(gpios_out_low), 0);
+	SETUP_IOMUX_PADS(init_pads);
+	SETUP_IOMUX_PADS(rgb_gpio_pads);
+	if (get_imx_reset_cause() & 1) {
+		/* Power on reset */
+		val = gpio_get_value(GP_ON_OFF_BUTTON);
+		if (val > 0) {
+			/* ON_OFF Button not pressed */
+			board_poweroff();
+		}
+	}
+	return 0;
 }
 
 int board_init(void)
