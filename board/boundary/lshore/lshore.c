@@ -378,6 +378,7 @@ void board_poweroff(void)
 
 int board_early_init_f(void)
 {
+	struct snvs_regs *snvs = (struct snvs_regs *)(SNVS_BASE_ADDR);
 	int val;
 
 	set_gpios_in(gpios_in, ARRAY_SIZE(gpios_in));
@@ -390,7 +391,15 @@ int board_early_init_f(void)
 		val = gpio_get_value(GP_ON_OFF_BUTTON);
 		if (val > 0) {
 			/* ON_OFF Button not pressed */
-			board_poweroff();
+			val = readl(&snvs->lpgpr);
+			if (!val) {
+				/*
+				 * Battery backed register is zero,
+				 * must have just gotten power
+				 */
+				writel(1, &snvs->lpgpr);
+				board_poweroff();
+			}
 		}
 	}
 	return 0;
