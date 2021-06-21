@@ -14,6 +14,10 @@ config TARGET_IMX8ULP_EVK
 	bool "imx8ulp_evk"
 	select IMX8ULP
 	select SUPPORT_SPL
+	select FSL_CAAM
+	select FSL_BLOB
+	select ARCH_MISC_INIT
+	select SPL_CRYPTO if SPL
 
 endchoice
 
