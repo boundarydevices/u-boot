@@ -437,7 +437,7 @@
 	status = "okay";
 
 	i2cmux@70 {
-		compatible = "pca9546";
+		compatible = "nxp,pca9546";
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_i2c1_pca9546>;
 		reg = <0x70>;
@@ -546,8 +546,10 @@
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_i2c3_bq25898>;
 		interrupts-extended = GPIRQ_BQ25898;
+		skip-reset;
 	        ti,battery-regulation-voltage = <4200000>;
-	        ti,charge-current = <1000000>;
+	        ti,charge-current = <2000000>;
+		ti,iilim-current = <3150000>;
 	        ti,termination-current = <50000>;
 	        ti,precharge-current = <128000>;
 	        ti,minimum-sys-voltage = <3600000>;
@@ -583,12 +585,12 @@
 		<&clk IMX8MQ_CLK_PCIE1_AUX>,
 		<&clk IMX8MQ_CLK_PCIE1_PHY>,
 		<&pcie0_refclk>;
-	clock-names = "pcie", "pcie_bus", "pcie_phy", "pcie_ext_src";
+	clock-names = "pcie", "pcie_aux", "pcie_phy", "pcie_bus";
+	ext_osc = <1>;
+	hard-wired;
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_pcie0>;
-	ext_osc = <0>;
 	reset-gpio = GP_PCIE0_RESET;
-	hard-wired = <1>;
 	status = "okay";
 };
 
@@ -597,10 +599,11 @@
 		<&clk IMX8MQ_CLK_PCIE2_AUX>,
 		<&clk IMX8MQ_CLK_PCIE2_PHY>,
 		<&pcie1_refclk>;
-	clock-names = "pcie", "pcie_bus", "pcie_phy", "pcie_ext_src";
+	clock-names = "pcie", "pcie_aux", "pcie_phy", "pcie_bus";
+	ext_osc = <1>;
+	hard-wired;
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_pcie1>;
-	ext_osc = <0>;
 	reset-gpio = GP_PCIE1_RESET;
 	status = "okay";
 };
