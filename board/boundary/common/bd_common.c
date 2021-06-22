@@ -373,7 +373,7 @@ int board_mmc_init(struct bd_info *bis)
 }
 #endif
 
-#if defined(CONFIG_SPLASH_SCREEN) && !defined(CONFIG_DM_VIDEO)
+#if defined(CONFIG_SPLASH_SCREEN)
 int splash_screen_prepare(void)
 {
 	char *env_loadsplash;
