@@ -19,6 +19,7 @@
 #include <asm/arch/sys_proto.h>
 #include <usb/xhci.h>
 #include <dm.h>
+#include <power/regulator.h>
 
 /* Declare global data pointer */
 DECLARE_GLOBAL_DATA_PTR;
@@ -63,6 +64,7 @@ struct xhci_imx8m_priv {
 #ifdef CONFIG_DM_GPIO
 	struct gpio_desc reset_gpio;
 #endif
+	struct udevice *vbus_supply;
 };
 #else
 static struct imx8m_usbctrl_data ctr_data[] = {
@@ -244,6 +246,19 @@ static int imx8m_xhci_probe(struct udevice *dev)
 		puts("Failed to initialize board for imx8m USB\n");
 		return ret;
 	}
+#if CONFIG_IS_ENABLED(DM_REGULATOR)
+	ret = device_get_supply_regulator(dev, "vbus-supply",
+					  &priv->vbus_supply);
+	if (ret)
+		debug("%s: No vbus supply\n", dev->name);
+	if (priv->vbus_supply) {
+		ret = regulator_set_enable(priv->vbus_supply, true);
+		if (ret && ret != -ENOSYS) {
+			printf("Error enabling VBUS supply (ret=%i)\n", ret);
+			return ret;
+		}
+	}
+#endif
 
 	imx8_of_clk_init(dev, priv);
 	imx8_of_reset_gpio_init(dev, priv);
