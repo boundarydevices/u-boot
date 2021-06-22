@@ -118,6 +118,15 @@ static iomux_v3_cfg_t const init_pads[] = {
 
 #define GP_EMMC_RESET	IMX_GPIO_NR(2, 10)
 	IOMUX_PAD_CTRL(SD1_RESET_B__GPIO2_IO10, 0x41),
+
+#define GP_GPIOLEDS_RED		IMX_GPIO_NR(3, 22)
+	IOMUX_PAD_CTRL(SAI5_RXD1__GPIO3_IO22, WEAK_PULLUP_OUTPUT),
+#define GP_GPIOLEDS_GREEN	IMX_GPIO_NR(3, 21)
+	IOMUX_PAD_CTRL(SAI5_RXD0__GPIO3_IO21, WEAK_PULLUP_OUTPUT),
+#define GP_GPIOLEDS_YELLOW	IMX_GPIO_NR(4, 23)
+	IOMUX_PAD_CTRL(SAI2_RXD0__GPIO4_IO23, WEAK_PULLUP_OUTPUT),
+#define GP_GPIOLEDS_DRY		IMX_GPIO_NR(4, 29)
+	IOMUX_PAD_CTRL(SAI3_RXC__GPIO4_IO29, WEAK_PULLDN_OUTPUT),
 };
 
 int board_early_init_f(void)
@@ -127,6 +136,11 @@ int board_early_init_f(void)
 	gpio_direction_output(GP_BACKLIGHT_MIPI, 0);
 	gpio_request(GP_SN65DSI83_EN, "sn65en");
 	gpio_direction_output(GP_SN65DSI83_EN, 0);
+
+	gpio_direction_output(GP_GPIOLEDS_RED, 1);
+	gpio_direction_output(GP_GPIOLEDS_GREEN, 1);
+	gpio_direction_output(GP_GPIOLEDS_YELLOW, 1);
+	gpio_direction_output(GP_GPIOLEDS_DRY, 0);
 	imx_iomux_v3_setup_multiple_pads(init_pads, ARRAY_SIZE(init_pads));
 
 	gpio_direction_output(GP_EMMC_RESET, 1);
