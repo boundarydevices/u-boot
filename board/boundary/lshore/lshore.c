@@ -386,18 +386,18 @@ int board_early_init_f(void)
 	set_gpios(gpios_out_low, ARRAY_SIZE(gpios_out_low), 0);
 	SETUP_IOMUX_PADS(init_pads);
 	SETUP_IOMUX_PADS(rgb_gpio_pads);
-	if (get_imx_reset_cause() & 1) {
-		/* Power on reset */
-		val = gpio_get_value(GP_ON_OFF_BUTTON);
-		if (val > 0) {
-			/* ON_OFF Button not pressed */
-			val = readl(&snvs->lpgpr);
-			if (!val) {
-				/*
-				 * Battery backed register is zero,
-				 * must have just gotten power
-				 */
-				writel(1, &snvs->lpgpr);
+	val = readl(&snvs->lpgpr);
+	if (!val) {
+		/*
+		 * Battery backed register is zero,
+		 * must have just gotten power
+		 */
+		writel(1, &snvs->lpgpr);
+		if (get_imx_reset_cause() & 1) {
+			/* Power on reset */
+			val = gpio_get_value(GP_ON_OFF_BUTTON);
+			if (val > 0) {
+				/* ON_OFF Button not pressed */
 				board_poweroff();
 			}
 		}
