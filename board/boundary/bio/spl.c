@@ -81,6 +81,9 @@ int power_init_boundary(void)
 #define SW5_VOLT	0x71
 #define SW6_VOLT	0x79
 
+#define LDO2_VOLT	0x8e
+#define LDO2_STBY	0x8f
+
 	buf[0] = 0x50;	/* (.90-.4)*160=.50*160=80=0x50  80/160+.4=.90 */
 	/* dram */
 	ret = i2c_write(PF8100, SW2_VOLT, 1, buf, 1);
@@ -115,6 +118,11 @@ int power_init_boundary(void)
 	/* DRAM_1P1V */
 	buf[0] = 0x70;	/* (1.10-.4)*160=.70*160=112=0x70  112/160+.4=1.10 */
 	ret = i2c_write(PF8100, SW6_VOLT, 1, buf, 1);
+
+	/* LDO2 */
+	buf[0] = 0x2;	/* 1.8V */
+	ret = i2c_write(PF8100, LDO2_VOLT, 1, buf, 1);
+	ret = i2c_write(PF8100, LDO2_STBY, 1, buf, 1);
 	return ret;
 }
 
