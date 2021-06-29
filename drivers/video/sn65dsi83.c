@@ -56,8 +56,8 @@ struct sn65dsi83_priv
 	ofnode	disp_node;
 	ofnode	disp_dsi;
 
-	struct gpio_desc	*gd_enable;
-	struct gpio_desc	*gd_irq;
+	struct gpio_desc	*gd_enable[2];
+	struct gpio_desc	*gd_irq[2];
 	struct clk		*mipi_clk;
 	struct clk		*pixel_clk;
 	struct display_timing	timings;
@@ -79,8 +79,8 @@ struct sn65dsi83_priv
 #define SN_STATE_STANDBY	1
 #define SN_STATE_ON		2
 	u8			state;
-	struct gpio_desc	gds_enable;
-	struct gpio_desc	gds_irq;
+	struct gpio_desc	gds_enable[2];
+	struct gpio_desc	gds_irq[2];
 };
 
 /**
@@ -139,18 +139,30 @@ static int sn_i2c_write_byte(struct sn65dsi83_priv *sn, u8 reg, u8 val)
 
 static void sn_disable(struct sn65dsi83_priv *sn, int skip_irq)
 {
+	int i;
+
 	if (sn->irq_enabled && !skip_irq) {
 		sn->irq_enabled = 0;
 		sn->int_cnt = 0;
 	}
 	sn->chip_enabled = 0;
-	dm_gpio_set_value(sn->gd_enable, 0);
+	for (i = 0; i < ARRAY_SIZE(sn->gd_enable); i++) {
+		if (!sn->gd_enable[i])
+			break;
+		dm_gpio_set_value(sn->gd_enable[i], 0);
+	}
 }
 
-static void sn_enable_gp(struct gpio_desc *gd_enable)
+static void sn_enable_gp(struct sn65dsi83_priv *sn)
 {
+	int i;
+
 	mdelay(15);	/* disabled for at least 10 ms */
-	dm_gpio_set_value(gd_enable, 1);
+	for (i = 0; i < ARRAY_SIZE(sn->gd_enable); i++) {
+		if (!sn->gd_enable[i])
+			break;
+		dm_gpio_set_value(sn->gd_enable[i], 1);
+	}
 	mdelay(2);
 }
 
@@ -372,7 +384,7 @@ static void sn_init(struct sn65dsi83_priv *sn)
 static void sn_standby(struct sn65dsi83_priv *sn)
 {
 	if (sn->state < SN_STATE_STANDBY) {
-		sn_enable_gp(sn->gd_enable);
+		sn_enable_gp(sn);
 		sn_init(sn);
 		if (!sn->irq_enabled) {
 			sn->irq_enabled = 1;
@@ -495,14 +507,20 @@ struct sn65dsi83_priv *g_sn;
 void sn65dsi83_poll(void)
 {
 	struct sn65dsi83_priv *sn = g_sn;
-	int ret;
+	int ret, i;
 
 	if (!sn->irq_enabled)
 		return;
-	ret = dm_gpio_get_value(sn->gd_irq);
-	if (ret) {
-		debug("%s: %d %s: %d\n", __func__, ret, sn->gd_irq->dev->name, sn->gd_irq->offset);
-		sn_irq_handler(sn);
+	for (i = 0; i < ARRAY_SIZE(sn->gd_irq); i++) {
+		struct gpio_desc *gd_irq = sn->gd_irq[i];
+
+		if (!gd_irq)
+			break;
+		ret = dm_gpio_get_value(gd_irq);
+		if (ret) {
+			debug("%s: %d %s: %d\n", __func__, ret, gd_irq->dev->name, gd_irq->offset);
+			sn_irq_handler(sn);
+		}
 	}
 }
 
@@ -526,7 +544,7 @@ static int sn65dsi83_enable_backlight(struct udevice *dev)
 	set_poll_rtn(NULL);
 	sn_powerup(sn);
 	g_sn = sn;
-	if (sn->gd_irq)
+	if (sn->gd_irq[0])
 		set_poll_rtn(sn65dsi83_poll);
 	return 0;
 }
@@ -577,6 +595,7 @@ static int sn65dsi83_ofdata_to_platdata(struct udevice *dev)
 	u32 sync_delay, hbp;
 	u32 dsi_lanes;
 	struct clk *pixel_clk = NULL;
+	int i, j;
 
 #if CONFIG_IS_ENABLED(CLK)
 	pixel_clk = devm_clk_get(dev, "pixel_clock");
@@ -586,32 +605,41 @@ static int sn65dsi83_ofdata_to_platdata(struct udevice *dev)
 	}
 #endif
 
-	ret = gpio_request_by_name(dev, "enable-gpios", 0, &sn->gds_enable,
-				   GPIOD_IS_OUT);
-	if (ret) {
-		debug("%s: Warning: cannot get enable-gpios: ret=%d\n",
-		      __func__, ret);
-		if (ret != -ENOENT) {
-			debug("enable-gpios %d\n", ret);
-			return log_ret(ret);
+	for (i = 0; i < ARRAY_SIZE(sn->gds_enable); i++) {
+		ret = gpio_request_by_name(dev, "enable-gpios", i, &sn->gds_enable[i],
+					   GPIOD_IS_OUT);
+		if (ret) {
+			debug("%s: Warning: cannot get enable-gpios: ret=%d\n",
+			      __func__, ret);
+			if (ret != -ENOENT) {
+				debug("enable-gpios %d\n", ret);
+				return log_ret(ret);
+			}
+		} else {
+			debug("%s: Success, enable-gpios\n", __func__);
+			sn->gd_enable[i] = &sn->gds_enable[i];
 		}
-	} else {
-		debug("%s: Success, enable-gpios\n", __func__);
-		sn->gd_enable = &sn->gds_enable;
-		sn_enable_gp(sn->gd_enable);
 	}
+	sn_enable_gp(sn);
 
-	ret = gpio_request_by_name(dev, "interrupts-gpios", 0, &sn->gds_irq,
+	for (i = 0, j = 0; i < ARRAY_SIZE(sn->gds_irq); i++) {
+		ret = gpio_request_by_name(dev, "interrupts-gpios", i, &sn->gds_irq[i],
 				   GPIOD_IS_IN);
-	if (ret) {
-		debug("%s: Warning: cannot get interrupts-gpios: ret=%d\n",
-		      __func__, ret);
-		if (ret != -ENOENT) {
-			debug("interrupts-gpios %d\n", ret);
-			return log_ret(ret);
+		if (ret) {
+			debug("%s: Warning: cannot get interrupts-gpios: ret=%d\n",
+					__func__, ret);
+			if (ret != -ENOENT) {
+				debug("interrupts-gpios %d\n", ret);
+				return log_ret(ret);
+			}
+		} else {
+			sn->gd_irq[j] = &sn->gds_irq[i];
+			ret = dm_gpio_get_value(sn->gd_irq[j]);
+			if (!ret) {
+				/* An interrupt is not pending, valid interrupt pin*/
+				j++;
+			}
 		}
-	} else {
-		sn->gd_irq = &sn->gds_irq;
 	}
 
 	sn->dev = dev;
@@ -677,15 +705,19 @@ static int sn65dsi83_ofdata_to_platdata(struct udevice *dev)
 static int sn65dsi83_probe(struct udevice *dev)
 {
 	struct sn65dsi83_priv *sn = dev_get_priv(dev);
-	int ret;
+	int ret, i;
 
 	if (device_get_uclass_id(dev->parent) != UCLASS_I2C)
 		return -EPROTONOSUPPORT;
 
 	ret = sn_i2c_read_byte(sn, SN_CLK_SRC);
 	if (ret < 0) {
-		/* enable might be used for something else, change to input */
-		dm_gpio_set_dir_flags(sn->gd_enable, GPIOD_IS_IN);
+		for (i = 0; i < ARRAY_SIZE(sn->gd_enable); i++) {
+			if (!sn->gd_enable[i])
+				break;
+			/* enable might be used for something else, change to input */
+			dm_gpio_set_dir_flags(sn->gd_enable[i], GPIOD_IS_IN);
+		}
 		debug("i2c read failed\n");
 		return -ENODEV;
 	}
