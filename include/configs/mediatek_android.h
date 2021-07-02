@@ -29,6 +29,12 @@
 #define EXTRA_ANDROID_ENV_SETTINGS ""
 #endif
 
+#ifdef CONFIG_SYS_MALLOC_LEN
+#undef CONFIG_SYS_MALLOC_LEN
+#endif
+
+#define CONFIG_SYS_MALLOC_LEN		SZ_128M
+
 #if CONFIG_IS_ENABLED(CMD_AB_SELECT)
 #define ANDROIDBOOT_GET_CURRENT_SLOT_CMD "get_current_slot=" \
 	"if part number mmc ${mmcdev} " CONTROL_PARTITION " control_part_number; " \
