@@ -78,6 +78,7 @@
 	"scriptaddr=0x83500000\0" \
 	"kernel_addr_r=" __stringify(CONFIG_SYS_LOAD_ADDR) "\0" \
 	"image=Image\0" \
+	"splashimage=0x90000000\0" \
 	"console=ttyLP1,115200 earlycon\0" \
 	"fastboot_raw_partition_bootloader=0x0 0x1ff0 mmcpart 1\0" \
 	"fastboot_raw_partition_bootloader-env=0x1ff0 0x10 mmcpart 1\0" \
