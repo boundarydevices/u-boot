@@ -162,6 +162,11 @@ int board_early_init_f(void)
 
 int board_late_init(void)
 {
+	env_set("sec_boot", "no");
+#ifdef CONFIG_AHAB_BOOT
+	env_set("sec_boot", "yes");
+#endif
+
 	return 0;
 }
 #define PAD_CTRL_ENET_MDC	(0)
