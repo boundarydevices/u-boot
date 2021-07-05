@@ -356,6 +356,7 @@ config TARGET_MX6SABREAUTO
 	imply CMD_DM
 	select FSL_CAAM
 	select ARCH_MISC_INIT
+	select RNG_SELF_TEST
 
 config TARGET_MX6SABRESD
 	bool "mx6sabresd"
@@ -368,6 +369,7 @@ config TARGET_MX6SABRESD
 	imply CMD_DM
 	select FSL_CAAM
 	select ARCH_MISC_INIT
+	select RNG_SELF_TEST
 
 config TARGET_MX6SLEVK
 	bool "mx6slevk"
@@ -392,6 +394,7 @@ config TARGET_MX6SXSABRESD
 	select SUPPORT_SPL
 	select FSL_CAAM
 	select ARCH_MISC_INIT
+	select RNG_SELF_TEST
 
 config TARGET_MX6SXSABREAUTO
 	bool "mx6sxsabreauto"
