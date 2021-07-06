@@ -816,6 +816,10 @@
 #endif
 
 &hdmi {
+	assigned-clocks = <&clk IMX8MQ_CLK_CLK2>;
+	assigned-clock-parents = <&clk IMX8MQ_CLK_27M>;
+	clocks = <&clk IMX8MQ_CLK_CLK2_CG>;
+	clock-names = "refclk";
 	compatible = "fsl,imx8mq-hdmi";
 	status = "okay";
 
