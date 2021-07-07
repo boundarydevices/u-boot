@@ -15,6 +15,9 @@
 #elif CONFIG_TARGET_MT8516
 #include <configs/mt8516.h>
 #define SERIAL_ANDROID "i300aPumpkin"
+#elif CONFIG_TARGET_MT8365
+#include <configs/mt8365.h>
+#define SERIAL_ANDROID "i350pumpkin"
 #endif
 
 #ifndef CONTROL_PARTITION
