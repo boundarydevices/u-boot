@@ -13,6 +13,9 @@ config ENV_WLMAC
 	bool
 	default	y
 
+config REV_AG
+	bool "AG rev of board"
+
 source "board/boundary/common/Kconfig"
 
 endif
