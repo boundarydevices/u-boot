@@ -68,6 +68,8 @@ void fbp_setup_display(const struct display_info_t *displays, int cnt);
 #define VD_AMP1024_600(_mode, _detect, _bus, _addr)	VDF_AMP1024_600(_mode, "amp1024x600", RGB666, 0, _detect, _bus, _addr)
 #define VD_ND1024_600(_mode, _detect, _bus, _addr)	VDF_ND1024_600(_mode, "ND-070PCAP-1024x600", RGB24, 0, _detect, _bus, _addr)
 #define VD_TM070JDHG30(_mode, _detect, _bus, _addr)	VDF_TM070JDHG30(_mode, "tm070jdhg30", RGB24, 0, _detect, _bus, _addr)
+#define VD_TM070JDHG30_14(_mode, _detect, _bus, _addr)	VDF_TM070JDHG30(_mode, "tm070jdhg30-14", RGB24, 0, _detect, _bus, _addr)
+#define VD_TM070JDHG30_5D(_mode, _detect, _bus, _addr)	VDF_TM070JDHG30(_mode, "tm070jdhg30-5d", RGB24, 0, _detect, _bus, _addr)
 #define VD_AUO_B101EW05(_mode, _detect, _bus, _addr)	VDF_AUO_B101EW05(_mode, "auo_b101ew05", RGB666, 0, _detect, _bus, _addr)
 #define VD_HANNSTAR7(_mode, _detect, _bus, _addr)	VDF_HANNSTAR7(_mode, "hannstar7", RGB666, 0, _detect, _bus, _addr)
 #define VD_LG1280_800(_mode, _detect, _bus, _addr)	VDF_HANNSTAR7(_mode, "lg1280x800", RGB666, 0, _detect, _bus, _addr)
