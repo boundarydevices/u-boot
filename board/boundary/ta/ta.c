@@ -146,7 +146,7 @@ static const iomux_v3_cfg_t init_pads[] = {
 	IOMUX_PAD_CTRL(GPIO_9__GPIO1_IO09, WEAK_PULLUP),
 
 	/* LVDS */
-#define GP_LVDS_CONTRAST	IMX_GPIO_NR(4, 20)
+#define GP_LVDS_BKL_EN	IMX_GPIO_NR(4, 20)
 	IOMUX_PAD_CTRL(DI0_PIN4__GPIO4_IO20, WEAK_PULLUP),
 #define GP_LVDS_BACKLIGHT	IMX_GPIO_NR(1, 18)
 	IOMUX_PAD_CTRL(SD1_CMD__GPIO1_IO18, OUTPUT_40OHM),
@@ -328,6 +328,7 @@ int splash_screen_prepare(void)
 void board_enable_lvds(const struct display_info_t *di, int enable)
 {
 	gpio_direction_output(GP_LVDS_BACKLIGHT, enable);
+	gpio_direction_output(GP_LVDS_BKL_EN, enable);
 }
 
 static const struct display_info_t displays[] = {
@@ -335,6 +336,10 @@ static const struct display_info_t displays[] = {
 	VD_HANNSTAR7(LVDS, fbp_detect_i2c, 2, 0x38),
 	VD_WSVGA(LVDS, NULL, 2, 0x38),
 	VD_TM070JDHG30(LVDS, NULL, 2, 0x38),
+
+	/* goodix */
+	VD_TM070JDHG30_14(LVDS, fbp_detect_i2c, 2, 0x14),
+	VD_TM070JDHG30_5D(LVDS, fbp_detect_i2c, 2, 0x5d),
 
 	VD_WXGA_J(LVDS, NULL, 0, 0x00),
 	VD_WXGA(LVDS, NULL, 0, 0x00),
@@ -354,7 +359,7 @@ static const unsigned short gpios_out_low[] = {
 	GP_RGMII_PHY_RESET,
 	GP_RELAY_EVENT,
 	GP_RELAY_GAS,
-	GP_LVDS_CONTRAST,
+	GP_LVDS_BKL_EN,
 	GP_LVDS_BACKLIGHT,
 	GP_USBH1_PWR,
 	GP_USB_OTG_PWR,
