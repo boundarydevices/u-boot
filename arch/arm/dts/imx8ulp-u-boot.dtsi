@@ -6,8 +6,8 @@
 
 / {
 	aliases {
-		usbgadget0 = &usbg0;
-		usbgadget1 = &usbg1;
+		usbgadget0 = &usbg1;
+		usbgadget1 = &usbg2;
 	};
 
 #ifdef CONFIG_BINMAN
@@ -15,14 +15,14 @@
 		multiple-images;
 	};
 #endif
-	usbg0: usbg0 {
+	usbg1: usbg1 {
 		compatible = "fsl,imx27-usb-gadget";
 		dr_mode = "peripheral";
 		chipidea,usb = <&usbotg1>;
 		status = "okay";
 	};
 
-	usbg1: usbg1 {
+	usbg2: usbg2 {
 		compatible = "fsl,imx27-usb-gadget";
 		dr_mode = "peripheral";
 		chipidea,usb = <&usbotg2>;
@@ -182,6 +182,10 @@
 	u-boot,dm-spl;
 };
 
+&crypto {
+	u-boot,dm-spl;
+};
+
 &dummy {
 	u-boot,dm-pre-reloc;
 	u-boot,dm-spl;
@@ -199,6 +203,7 @@
 
 &iomuxc1 {
 	u-boot,dm-spl;
+	fsl,mux_mask = <0xf00>;
 };
 
 &lposc {
@@ -221,16 +226,6 @@
 	u-boot,dm-spl;
 };
 
-&rosc {
-	u-boot,dm-pre-reloc;
-	u-boot,dm-spl;
-};
-
-&sosc {
-	u-boot,dm-pre-reloc;
-	u-boot,dm-spl;
-};
-
 &per_bridge3 {
 	u-boot,dm-spl;
 };
@@ -239,6 +234,46 @@
 	u-boot,dm-spl;
 };
 
+&rosc {
+	u-boot,dm-pre-reloc;
+	u-boot,dm-spl;
+};
+
 &s400_mu {
 	u-boot,dm-spl;
+};
+
+&scmi_buf {
+	reg = <0x0 0x1000>; /* Align page size */
+};
+
+&sec_jr0 {
+	u-boot,dm-spl;
+};
+
+&sec_jr1 {
+	u-boot,dm-spl;
+};
+
+&sec_jr2 {
+	u-boot,dm-spl;
+};
+
+&sec_jr3 {
+	u-boot,dm-spl;
+};
+
+&sosc {
+	u-boot,dm-pre-reloc;
+	u-boot,dm-spl;
+};
+
+&usbotg1 {
+	compatible = "fsl,imx8ulp-usb", "fsl,imx7ulp-usb", "fsl,imx27-usb";
+	fsl,usbphy = <&usbphy1>;
+};
+
+&usbotg2 {
+	compatible = "fsl,imx8ulp-usb", "fsl,imx7ulp-usb", "fsl,imx27-usb";
+	fsl,usbphy = <&usbphy2>;
 };

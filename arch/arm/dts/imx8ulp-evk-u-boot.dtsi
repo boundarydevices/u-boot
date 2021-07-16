@@ -2,54 +2,16 @@
 /*
  * Copyright 2021 NXP
  */
+#include "imx8ulp-u-boot.dtsi"
 
 / {
-	aliases {
-		usbgadget0 = &usbg0;
-		usbgadget1 = &usbg1;
-	};
-
-	usbg0: usbg0 {
-		compatible = "fsl,imx27-usb-gadget";
-		dr_mode = "peripheral";
-		chipidea,usb = <&usbotg1>;
-		status = "okay";
-	};
-
-	usbg1: usbg1 {
-		compatible = "fsl,imx27-usb-gadget";
-		dr_mode = "peripheral";
-		chipidea,usb = <&usbotg2>;
-		status = "okay";
-	};
-
 	dsi_host: dsi-host {
 		compatible = "northwest,mipi-dsi";
 		status = "okay";
 	};
 };
 
-&{/soc@0} {
-	u-boot,dm-spl;
-};
-
-&per_bridge3 {
-	u-boot,dm-spl;
-};
-
-&per_bridge4 {
-	u-boot,dm-spl;
-};
-
-&iomuxc1 {
-	u-boot,dm-spl;
-};
-
 &pinctrl_lpuart5 {
-	u-boot,dm-spl;
-};
-
-&s400_mu {
 	u-boot,dm-spl;
 };
 
@@ -79,22 +41,6 @@
 	};
 };
 
-&crypto {
-	u-boot,dm-spl;
-};
-
-&sec_jr0 {
-	u-boot,dm-spl;
-};
-
-&sec_jr1 {
-	u-boot,dm-spl;
-};
-
-&sec_jr2 {
-	u-boot,dm-spl;
-};
-
-&sec_jr3 {
-	u-boot,dm-spl;
+&dsi {
+	data-lanes-num = <4>;
 };
