@@ -27,6 +27,7 @@
 #define IOMUXC_GPR_BASE_ADDR	0x30340000
 #define OCOTP_BASE_ADDR		0x30350000
 #define ANATOP_BASE_ADDR	0x30360000
+#define SNVS_BASE_ADDR	0x30370000
 #define CCM_BASE_ADDR		0x30380000
 #define SRC_BASE_ADDR		0x30390000
 #define GPC_BASE_ADDR		0x303A0000
@@ -249,6 +250,44 @@ struct fuse_bank38_regs {
 struct fuse_bank39_regs {
 	u32 ana_trim5;
 	u32 rsvd[15];
+};
+
+struct snvs_regs {
+	u32 spare1;	/* 0x00 */
+	u32 hpcomr;	/* 0x04, command reg */
+	u32 hpcr;	/* 0x08, control reg */
+	u32 spare2;	/* 0x0c */
+	u32 spare3;	/* 0x10 */
+	u32 hpsr;	/* 0x14, status reg */
+	u32 spare4;	/* 0x18 */
+	u32 spare5;	/* 0x1c */
+	u32 spare6;	/* 0x20 */
+	u32 hprtcmr;	/* 0x24, real time counter MSB */
+	u32 hprtclr;	/* 0x28, real time counter LSB */
+	u32 hptamr;	/* 0x2c, time alarm MSB */
+	u32 hptalr;	/* 0x30, time alarm LSB */
+	u32 lplr;	/* 0x34, lock register */
+	u32 lpcr;	/* 0x38, control reg */
+	u32 spare7;	/* 0x3c */
+	u32 spare8;	/* 0x40 */
+	u32 spare9;	/* 0x44 */
+	u32 spare10;	/* 0x48 */
+	u32 lpsr;	/* 0x4c, status reg */
+	u32 spare11;	/* 0x50 */
+	u32 spare12;	/* 0x54 */
+	u32 spare13;	/* 0x58 */
+	u32 lpsmcmr;	/* 0x5c, secure monotonic counter MSB */
+	u32 lpsmclr;	/* 0x60, secure monotonic counter LSB */
+	u32 lppgdr;	/* 0x64, power glitch detector */
+	u32 lpgpr;	/* 0x68, general purpose reg */
+	u8 spare_block1[0x90 - 0x6c];	/* 0x6c */
+	u32 lpgpr0;	/* 0x90 */
+	u32 lpgpr1;	/* 0x94 */
+	u32 lpgpr2;	/* 0x98 */
+	u32 lpgpr3;	/* 0x9c */
+	u8 spare_block2[0xbf8 - 0xa0];	/* 0xa0 */
+	u32 hpvidr1;	/* 0xbf8 */
+	u32 hpvidr2;	/* 0xbfc */
 };
 
 #ifdef CONFIG_IMX8MQ
