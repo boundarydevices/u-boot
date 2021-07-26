@@ -21,6 +21,7 @@ config LOGO_BMP
 
 config MAX77823
 	bool
+	default y if TARGET_C2_IMX8MM
 	default y if TARGET_CID
 	default y if TARGET_CID_TAB
 	default y if TARGET_H4
@@ -41,11 +42,13 @@ config FEC_RESET_PULLUP
 config OTG_CHARGER
 	bool "otg_charger"
 	depends on MAX77823
+	default y if TARGET_C2_IMX8MM
 	default y if TARGET_CID
 
 config I2C_BUS_MAX77823
 	int
 	depends on MAX77823
+	default 1 if TARGET_C2_IMX8MM
 	default 3 if TARGET_NITROGEN6_SCM
 	default 2
 
