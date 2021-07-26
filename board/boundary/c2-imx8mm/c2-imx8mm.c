@@ -5,6 +5,7 @@
  */
 
 #include <common.h>
+#include <command.h>
 #include <errno.h>
 #include <asm/io.h>
 #include <miiphy.h>
@@ -149,6 +150,11 @@ int board_init(void)
 	gpio_direction_output(GP_GT911_RESET, 0);
 	gpio_free(GP_DLC0350_ENABLE);
 
+#ifdef CONFIG_MAX77823
+	max77823_init();
+	max77823_boost_power(1);
+#endif
+
 #if defined(CONFIG_MXC_SPI) && !defined(CONFIG_DM_SPI)
 	setup_spi();
 #endif
@@ -158,3 +164,27 @@ int board_init(void)
 #endif
 	return 0;
 }
+
+void board_poweroff(void)
+{
+	struct snvs_regs *snvs = (struct snvs_regs *)(SNVS_BASE_ADDR);
+
+#ifdef CONFIG_MAX77823
+	max77823_otg_power(0);
+	max77823_boost_power(0);
+#endif
+	writel(0x60, &snvs->lpcr);
+	mdelay(500);
+}
+
+static int _do_poweroff(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[])
+{
+	board_poweroff();
+	return 0;
+}
+
+U_BOOT_CMD(
+	poweroff, 70, 0, _do_poweroff,
+	"power down board",
+	""
+);
