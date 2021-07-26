@@ -109,13 +109,23 @@ int ft_board_setup(void *blob, struct bd_info *bd)
 #endif
 
 #if defined(CONFIG_IMX8MM)
-int board_usb_init(int index, enum usb_init_type init)
+int board_usb_init(int port, enum usb_init_type init)
 {
+#ifdef CONFIG_MAX77823
+	if (port)
+		return 0;
+	if (init == USB_INIT_HOST)
+		max77823_otg_power(1);
+#endif
 	return 0;
 }
 
 int board_usb_cleanup(int index, enum usb_init_type init)
 {
+#ifdef CONFIG_MAX77823
+	if (init == USB_INIT_HOST)
+		max77823_otg_power(0);
+#endif
 	imx8m_usb_power(index, false);
 	return 0;
 }
