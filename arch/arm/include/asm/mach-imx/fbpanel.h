@@ -130,6 +130,8 @@ struct display_info_t {
 #define FBF_M101NWWB		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4)
 #define FBF_DLC0350GEV06	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_PINCTRL | FBF_ENABLE_GPIOS_DTB | FBF_ENABLE_GPIOS_OPEN_DRAIN)
 #define FBF_LCD133_070		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_PINCTRL | FBF_ENABLE_GPIOS_DTB)
+#define FBF_TCXD070		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_PINCTRL | FBF_BKLIT_EN_DTB | FBF_ENABLE_GPIOS_DTB)
+#define FBF_ZWT055AZH		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_PINCTRL | FBF_BKLIT_EN_DTB | FBF_ENABLE_GPIOS_DTB)
 #define FBF_MIPI_TO_HDMI	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_DSI_LANES_4)
 #define FBF_VTFT101		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_DSI_LANES_4)
 #define FBF_MQ_VTFT101		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_SYNC_PULSE | FBF_DSI_LANES_4)
@@ -175,6 +177,8 @@ void fbp_setup_env_cmds(void);
 #define VD_MIPI_720_480M_60(_mode, args...)	VDF_720_480M_60(_mode, "dsi-720x480M@60", RGB24, FBF_MIPI_TO_HDMI, args)
 #define VD_MIPI_VTFT101RPFT20(_mode, args...)	VDF_MIPI_VTFT101RPFT20(_mode, "vtft101rpft20", RGB24, FBF_VTFT101, args)
 #define VD_MIPI_MQ_VTFT101RPFT20(_mode, args...) VDF_MIPI_VTFT101RPFT20(_mode, "vtft101rpft20", RGB24, FBF_MQ_VTFT101, args)
+#define VD_MIPI_TCXD070IBLMAT77(_mode, args...) VDF_MIPI_TCXD070IBLMAT77(_mode, "tcxd070iblmat77", RGB24, FBF_TCXD070, args)
+#define VD_MIPI_ZWT055AZH(_mode, args...)	VDF_MIPI_ZWT055AZH(_mode, "zwt055azh", RGB24, FBF_ZWT055AZH, args)
 
 #define VD_MIPI_MQ_1920_1080M_60(_mode, args...) VDF_1920_1080M_60(_mode, "dsi-mq1920x1080M@60", RGB24, FBF_MIPI_MQ_TO_HDMI, args)
 #define VD_MIPI_MQ_1280_800M_60(_mode, args...) VDF_1280_800M_60(_mode, "dsi-mq1280x800M@60", RGB24, FBF_MIPI_MQ_TO_HDMI, args)
@@ -359,6 +363,47 @@ void fbp_setup_env_cmds(void);
 		.lower_margin   = 2,\
 		.hsync_len      = 16,\
 		.vsync_len      = 2,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
+/* HX8399C mipi controller */
+#define VDF_MIPI_ZWT055AZH(_mode, _name, _fmt, _flags, args...) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, args),\
+	.mode	= {\
+		.name           = _name,\
+		.refresh        = 60,\
+		.xres           = 1088,\
+		.yres           = 1920,\
+		.pixclock       = 1000000000000ULL/((1088+60+90+20)*(1920+3+9+4)*60), \
+		.left_margin    = 60,\
+		.right_margin   = 90,\
+		.upper_margin   = 3,\
+		.lower_margin   = 9,\
+		.hsync_len      = 20,\
+		.vsync_len      = 4,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
+#define VDF_MIPI_TCXD070IBLMAT77(_mode, _name, _fmt, _flags, args...) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, args),\
+	.mode	= {\
+		.name           = _name,\
+		.refresh        = 60,\
+		.xres           = 800,\
+		.yres           = 1280,\
+		.pixclock       = 1000000000000ULL/((800+100+20+33)*(1280+30+20+2)*60),\
+		.left_margin	= 100,\
+		.right_margin	= 20,\
+		.upper_margin	= 30,\
+		.lower_margin	= 20,\
+		.hsync_len	= 33,\
+		.vsync_len	= 2,\
 		.sync           = FB_SYNC_EXT,\
 		.vmode          = FB_VMODE_NONINTERLACED\
 	}\
