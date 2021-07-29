@@ -528,12 +528,12 @@ static bool nwl_dsi_finish_transmission(struct nwl_dsi *dsi, u32 status)
 		return false;
 
 	if (status & NWL_DSI_TX_FIFO_OVFLW) {
-		debug("tx fifo overflow\n");
+		printf("%s: tx fifo overflow\n", __func__);
 		return false;
 	}
 
 	if (status & NWL_DSI_HS_TX_TIMEOUT) {
-		debug("HS tx timeout\n");
+		printf("%s: HS tx timeout\n", __func__);
 		return false;
 	}
 
@@ -611,7 +611,7 @@ static void nwl_dsi_begin_transmission(struct nwl_dsi *dsi)
 	nwl_dsi_write(dsi, NWL_DSI_SEND_PACKET, 0x1);
 }
 
-int nwl_dsi_poll_for_completeion(struct nwl_dsi *dsi)
+int nwl_dsi_poll_for_completion(struct nwl_dsi *dsi)
 {
 	u32 irq_status;
 	bool done = false;
@@ -619,23 +619,27 @@ int nwl_dsi_poll_for_completeion(struct nwl_dsi *dsi)
 	ulong start;
 	ulong elapsed;
 
-	start = get_timer(0);
+	now = start = get_timer(0);
 	while (1) {
 		irq_status = nwl_dsi_read(dsi, NWL_DSI_IRQ_STATUS);
 
 		if (irq_status & NWL_DSI_TX_PKT_DONE ||
 		    irq_status & NWL_DSI_RX_PKT_HDR_RCVD ||
-		    irq_status & NWL_DSI_RX_PKT_PAYLOAD_DATA_RCVD)
+		    irq_status & NWL_DSI_RX_PKT_PAYLOAD_DATA_RCVD) {
 			done = nwl_dsi_finish_transmission(dsi, irq_status);
+			if (!done)
+				debug("%s: irq_status=0x%x cmd=0x%02x\n", __func__, irq_status, dsi->xfer->cmd);
+
+		}
 		if (done)
 			break;
-		now = get_timer(0);
 		elapsed = now - start;
 		if (elapsed >= CONFIG_SYS_HZ/2) {
-			printf("%s: timed out\n", __func__);
+			printf("%s: timed out, irq_status=0x%x cmd=%02x\n", __func__, irq_status, dsi->xfer->cmd);
 			break;
 		}
-
+		udelay(10);
+		now = get_timer(0);
 	}
 	return 0;
 }
@@ -679,12 +683,12 @@ static ssize_t nwl_dsi_host_transfer(struct mipi_dsi_host *dsi_host,
 		debug("Failed to enable rx_esc clk: %zd\n", ret);
 		return ret;
 	}
-	debug("Enabled rx_esc clk @%lu Hz\n", clk_get_rate(dsi->rx_esc_clk));
+	//debug("Enabled rx_esc clk @%lu Hz\n", clk_get_rate(dsi->rx_esc_clk));
 
 	/* Initiate the DSI packet transmision */
 	nwl_dsi_begin_transmission(dsi);
 
-	nwl_dsi_poll_for_completeion(dsi);
+	nwl_dsi_poll_for_completion(dsi);
 
 	clk_disable_unprepare(dsi->rx_esc_clk);
 	dsi->xfer = NULL;
