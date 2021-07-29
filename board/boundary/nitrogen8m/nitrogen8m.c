@@ -42,6 +42,7 @@ static iomux_v3_cfg_t const init_pads[] = {
 /* This enables 5V power on LTK080A60A004T mipi display */
 #define GP_LTK08_MIPI_EN		IMX_GPIO_NR(1, 1)
 #define GP_LCD133_070_RESET		IMX_GPIO_NR(1, 1)
+#define GP_TCXD070_BKL_EN		IMX_GPIO_NR(1, 1)
 	IMX8MQ_PAD_GPIO1_IO01__GPIO1_IO1 | MUX_PAD_CTRL(0x16),
 
 #define GPIRQ_GT911 			IMX_GPIO_NR(3, 12)
@@ -50,6 +51,7 @@ static iomux_v3_cfg_t const init_pads[] = {
 #define GP_GT911_RESET			IMX_GPIO_NR(3, 13)
 #define GP_ST1633_RESET			IMX_GPIO_NR(3, 13)
 #define GP_I2C2_FT7250_RESET		IMX_GPIO_NR(3, 13)
+#define GP_TS_ILI251X_RESET		IMX_GPIO_NR(3, 13)
 	IMX8MQ_PAD_NAND_DATA07__GPIO3_IO13 | MUX_PAD_CTRL(0x49),
 
 #define GP_ARM_DRAM_VSEL		IMX_GPIO_NR(3, 24)
@@ -212,6 +214,7 @@ static const struct display_info_t displays[] = {
 	VD_LCM_JM430(MIPI, fbp_detect_i2c, fbp_bus_gp(3, GP_ST1633_RESET, GP_TC358762_EN, 30), fbp_addr_gp(0x55, GP_LCM_JM430_BKL_EN, 0, 0), FBTS_ST1633I),		/* Sitronix touch */
 	VD_LTK0680YTMDB(MIPI, NULL, fbp_bus_gp(3, GP_MIPI_RESET, GP_MIPI_RESET, 0), 0x5d, FBTS_GOODIX),
 	VD_MIPI_COM50H5N03ULC(MIPI, NULL, fbp_bus_gp(3, GP_MIPI_RESET, GP_MIPI_RESET, 0), 0x00),
+	VD_MIPI_TCXD070IBLMAT77(MIPI, fbp_detect_i2c, fbp_bus_gp(3, GP_TS_ILI251X_RESET, GP_MIPI_RESET, 0), fbp_addr_gp(0x41, GP_TCXD070_BKL_EN, 0, 0), FBTS_ILI251X),
 	/* 0x3e is the TPS65132 power chip on our adapter board */
 	VD_MIPI_LCD133_070(MIPI, board_detect_lcd133, fbp_bus_gp(3, GP_LCD133_070_ENABLE, GP_LCD133_070_ENABLE, 1), fbp_addr_gp(0x3e, 0, 0, 0), FBTS_FT7250),
 	VD_MIPI_MQ_1920_1080M_60(MIPI, board_detect_pca9546, fbp_bus_gp((3 | (3 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
