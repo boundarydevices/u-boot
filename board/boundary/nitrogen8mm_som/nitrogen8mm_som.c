@@ -53,6 +53,7 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IOMUX_PAD_CTRL(GPIO1_IO06__GPIO1_IO6, 0xd6),
 #define GP_GT911_RESET			IMX_GPIO_NR(1, 7)
 #define GP_ST1633_RESET			IMX_GPIO_NR(1, 7)
+#define GP_TS_ILI251X_RESET		IMX_GPIO_NR(1, 7)
 	IOMUX_PAD_CTRL(GPIO1_IO07__GPIO1_IO7, 0x49),
 
 #define GP_TC358762_EN		IMX_GPIO_NR(5, 0)
@@ -176,6 +177,7 @@ static const struct display_info_t displays[] = {
 	VD_MIPI_COM50H5N03ULC(MIPI, NULL, fbp_bus_gp(3, GP_MIPI_RESET, GP_MIPI_RESET, 0), 0x00),
 	/* 0x3e is the TPS65132 power chip on our adapter board */
 	VD_MIPI_LCD133_070(MIPI, board_detect_lcd133, fbp_bus_gp(3, GP_LCD133_070_ENABLE, GP_LCD133_070_ENABLE, 1), fbp_addr_gp(0x3e, 0, 0, 0), FBTS_FT7250),
+	VD_MIPI_ZWT055AZH(MIPI, fbp_detect_i2c, fbp_bus_gp(3, GP_TS_ILI251X_RESET, GP_MIPI_RESET, 1), fbp_addr_gp(0x41, 0, 0, 0), FBTS_ILI251X),
 
 	/* Looking for the max7323 gpio chip on the Lontium daughter board */
 	VD_MIPI_1920_1080M_60(MIPI, board_detect_pca9546, fbp_bus_gp((3 | (3 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
