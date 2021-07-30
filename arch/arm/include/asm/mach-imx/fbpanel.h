@@ -392,6 +392,7 @@ void fbp_setup_env_cmds(void);
 #define VDF_MIPI_TCXD070IBLMAT77(_mode, _name, _fmt, _flags, args...) \
 {\
 	VD_HEADER(_mode, _fmt, _flags, args),\
+	.pwm_period = 500000, \
 	.mode	= {\
 		.name           = _name,\
 		.refresh        = 60,\
