@@ -21,6 +21,8 @@
 
 &usdhc0 {
 	u-boot,dm-spl;
+	mmc-hs400-1_8v;
+	mmc-hs400-enhanced-strobe;
 };
 
 &pinctrl_usdhc0 {
