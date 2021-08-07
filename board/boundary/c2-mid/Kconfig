@@ -1,0 +1,14 @@
+if TARGET_C2_MID
+
+config SYS_BOARD
+	default "c2-mid"
+
+config SYS_VENDOR
+	default "boundary"
+
+config SYS_CONFIG_NAME
+	default "c2-mid"
+
+source "board/boundary/common/Kconfig"
+
+endif

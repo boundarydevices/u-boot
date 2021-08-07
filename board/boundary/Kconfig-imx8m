@@ -20,8 +20,15 @@ config TARGET_C2_IMX8MM
 	select IMX8MM
 	select SUPPORT_SPL
 
+config TARGET_C2_MID
+	bool "c2-mid"
+	select BINMAN
+	select IMX8MM
+	select SUPPORT_SPL
+
 endchoice
 
 source "board/boundary/ash8mm/Kconfig"
 source "board/boundary/bio/Kconfig"
 source "board/boundary/c2-imx8mm/Kconfig"
+source "board/boundary/c2-mid/Kconfig"
