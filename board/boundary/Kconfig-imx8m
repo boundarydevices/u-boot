@@ -12,6 +12,11 @@ config TARGET_C2_IMX8MM
 	select IMX8MM
 	select SUPPORT_SPL
 
+config TARGET_C2_MID
+	bool "c2-mid"
+	select IMX8MM
+	select SUPPORT_SPL
+
 config TARGET_DS
 	bool "ds"
 	select IMX8MQ
@@ -99,6 +104,7 @@ endchoice
 
 source "board/boundary/bio/Kconfig"
 source "board/boundary/c2-imx8mm/Kconfig"
+source "board/boundary/c2-mid/Kconfig"
 source "board/boundary/ds/Kconfig"
 source "board/boundary/dwe/Kconfig"
 source "board/boundary/hl8mm/Kconfig"

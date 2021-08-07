@@ -762,6 +762,7 @@ dtb-$(CONFIG_ARCH_IMX8) += \
 
 dtb-$(CONFIG_ARCH_IMX8M) += \
 	imx8mm-c2.dtb \
+	imx8mm-c2-mid.dtb \
 	imx8mm-dwe.dtb \
 	imx8mm-geno.dtb \
 	imx8mm-hl8mm.dtb \
