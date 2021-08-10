@@ -91,7 +91,7 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IOMUX_PAD_CTRL(SAI1_TXD6__GPIO4_IO18, 0x1c0),
 #define GP_EC21_STAT		IMX_GPIO_NR(4, 19)
 	IOMUX_PAD_CTRL(SAI1_TXD7__GPIO4_IO19, 0x1c0),
-#define GP_REG_3P7V		IMX_GPIO_NR(4, 20)
+#define GP_REG_5V_EN		IMX_GPIO_NR(3, 15)
 	IOMUX_PAD_CTRL(NAND_RE_B__GPIO3_IO15, 0x116),
 };
 
@@ -175,7 +175,7 @@ int board_init(void)
 	gpio_request(GP_EC21_USIM_DETECT, "ec2x_usim_detect");
 	gpio_request(GP_EC21_POWER_KEY, "ec2x_power_key");
 	gpio_request(GP_EC21_STAT, "ec2x_stat");
-	gpio_request(GP_REG_3P7V, "ec2x_reg_3p7v");
+	gpio_request(GP_REG_5V_EN, "reg_5v");
 	gpio_direction_output(GP_EC21_RESET, 1);
 	gpio_direction_output(GP_EC21_USB_BOOT, 0);
 	gpio_direction_output(GP_EC21_NET_STAT, 0);
@@ -186,7 +186,7 @@ int board_init(void)
 	gpio_direction_output(GP_EC21_USIM_DETECT, 0);
 	gpio_direction_output(GP_EC21_POWER_KEY, 0);
 	gpio_direction_input(GP_EC21_STAT);
-	gpio_direction_output(GP_REG_3P7V, 0);
+	gpio_direction_output(GP_REG_5V_EN, 1);
 #if defined(CONFIG_MXC_SPI) && !defined(CONFIG_DM_SPI)
 	setup_spi();
 #endif
