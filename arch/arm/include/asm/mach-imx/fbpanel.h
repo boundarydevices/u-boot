@@ -140,6 +140,7 @@ struct display_info_t {
 #define FBF_M101NWWB_NO_CMDS	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_DSI_LANES_4)
 #define FBF_MTD0900DCP27KF	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_DSI_LANES_4 | FBF_DSI_HBP_DISABLE | FBF_DSI_HFP_DISABLE | FBF_DSI_HSA_DISABLE)
 #define FBF_AM_TFT1280X800	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_DSI_LANES_4 | FBF_DSI_HBP_DISABLE | FBF_DSI_HFP_DISABLE | FBF_DSI_HSA_DISABLE)
+#define FBF_AM_TFT1280X800W	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_SYNC_PULSE | FBF_DSI_LANES_4)
 #define FBF_OSD050T		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_2)
 
 	int	fbflags;
@@ -252,6 +253,7 @@ void fbp_setup_env_cmds(void);
 #define VD_MIPI_M101NWWB_NO_CMDS(_mode, args...) VDF_MIPI_M101NWWB(_mode, "m101nwwb", RGB24, FBF_M101NWWB_NO_CMDS, args)
 #define VD_MIPI_M101NWWB(_mode, args...)	VDF_MIPI_M101NWWB(_mode, "m101nwwb", RGB24, FBF_M101NWWB, args)
 #define VD_MIPI_AM_TFT1280X800(_mode, args...)	VDF_HANNSTAR7(_mode, "am-tft1280x800", RGB24, FBF_AM_TFT1280X800, args)
+#define VD_MIPI_AM_TFT1280X800W(_mode, args...)	VDF_AM_TFT1280X800W(_mode, "am-tft1280x800w", RGB24, FBF_AM_TFT1280X800W, args)
 #define VD_MIPI_MTD0900DCP27KF(_mode, args...)	VDF_MIPI_MTD0900DCP27KF(_mode, "mtd0900dcp27kf", RGB24, FBF_MTD0900DCP27KF, args)
 #define VD_MIPI_DLC0350GEV06(_mode, args...)	VDF_MIPI_DLC0350GEV06(_mode, "dlc0350gev06", RGB24, FBF_DLC0350GEV06, args)
 #define VD_MIPI_LCD133_070(_mode, args...)	VDF_MIPI_LCD133_070(_mode, "lcd133_070", RGB24, FBF_LCD133_070, args)
@@ -1057,6 +1059,26 @@ void fbp_setup_env_cmds(void);
 		.lower_margin   = 2,\
 		.hsync_len      = 32,\
 		.vsync_len      = 6,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
+#define VDF_AM_TFT1280X800W(_mode, _name, _fmt, _flags, args...) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, args),\
+	.mode	= {\
+		.name           = _name,\
+		.refresh        = 60,\
+		.xres           = 1280,\
+		.yres           = 800,\
+		.pixclock       = 1000000000000ULL/((1280+80+48+32)*(800+24+4+4)*60),\
+		.left_margin    = 80,\
+		.right_margin   = 48,\
+		.upper_margin   = 24,\
+		.lower_margin   = 4,\
+		.hsync_len      = 32,\
+		.vsync_len      = 4,\
 		.sync           = FB_SYNC_EXT,\
 		.vmode          = FB_VMODE_NONINTERLACED\
 	}\
