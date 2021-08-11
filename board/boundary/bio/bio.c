@@ -114,7 +114,8 @@ static const struct display_info_t displays[] = {
 	/* hdmi */
 	VD_1920_1080M_60(HDMI, board_detect_hdmi, 0, 0x50),
 	VD_1280_720M_60(HDMI, NULL, 0, 0x50),
-	VD_MIPI_AM_TFT1280X800(MIPI, board_detect_pca9540, fbp_bus_gp(3 | (0 << 4), GP_EXC3000_RESET, 0, 80), 0x2a, FBP_MIPI_TO_LVDS, FBTS_EXC3000),
+	VD_MIPI_AM_TFT1280X800W(MIPI, board_detect_pca9540, fbp_bus_gp(3 | (0 << 4), GP_EXC3000_RESET, 0, 100), 0x2a, FBP_MIPI_TO_LVDS, FBTS_EXC3000),
+	VD_MIPI_AM_TFT1280X800(MIPI, NULL, fbp_bus_gp(3 | (0 << 4), GP_EXC3000_RESET, 0, 80), 0x2a, FBP_MIPI_TO_LVDS, FBTS_EXC3000),
 #if 0
 	VD_LTK0680YTMDB(MIPI, board_detect_gt911, fbp_bus_gp(3 | (0 << 4), GP_MIPI_RESET, GP_MIPI_RESET, 0), 0x5d, FBTS_GOODIX),
 	VD_MIPI_COM50H5N03ULC(MIPI, NULL, fbp_bus_gp(3, GP_MIPI_RESET, GP_MIPI_RESET, 0), 0x00),
