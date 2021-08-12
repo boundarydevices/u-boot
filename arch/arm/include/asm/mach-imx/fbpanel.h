@@ -252,6 +252,7 @@ void fbp_setup_env_cmds(void);
 #define VD_MIPI_COM50H5N03ULC(_mode, args...)	VDF_MIPI_COM50H5N03ULC(_mode, "com50h5n03ulc", RGB24, FBF_COM50H5N03ULC, args)
 #define VD_MIPI_M101NWWB_NO_CMDS(_mode, args...) VDF_MIPI_M101NWWB(_mode, "m101nwwb", RGB24, FBF_M101NWWB_NO_CMDS, args)
 #define VD_MIPI_M101NWWB(_mode, args...)	VDF_MIPI_M101NWWB(_mode, "m101nwwb", RGB24, FBF_M101NWWB, args)
+#define VD_MIPI_M101NWWB_2(_mode, args...)	VDF_MIPI_M101NWWB(_mode, "m101nwwb-2", RGB24, FBF_M101NWWB, args)
 #define VD_MIPI_AM_TFT1280X800(_mode, args...)	VDF_HANNSTAR7(_mode, "am-tft1280x800", RGB24, FBF_AM_TFT1280X800, args)
 #define VD_MIPI_AM_TFT1280X800W(_mode, args...)	VDF_AM_TFT1280X800W(_mode, "am-tft1280x800w", RGB24, FBF_AM_TFT1280X800W, args)
 #define VD_MIPI_MTD0900DCP27KF(_mode, args...)	VDF_MIPI_MTD0900DCP27KF(_mode, "mtd0900dcp27kf", RGB24, FBF_MTD0900DCP27KF, args)
