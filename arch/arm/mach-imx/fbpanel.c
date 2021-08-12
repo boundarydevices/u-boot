@@ -424,11 +424,11 @@ static int set_property_joined_u32(char *buf, int size, const char *path1, const
 }
 
 static int set_cmd_property(const struct display_info_t *di, char *buf, int size,
-		const char *propname, u32 val)
+		const char *mode_name, const char *propname, u32 val)
 {
 	if (di->fbflags & FBF_MIPI_CMDS) {
 		return set_property_joined_u32(buf, size,
-				"mipi_cmds_", di->mode.name,
+				"mipi_cmds_", mode_name,
 				propname, val);
 	} else {
 		return set_property_u32(buf, size, "mipi",
@@ -634,6 +634,7 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 	const char *buf_start = buf;
 	const struct fb_videomode *mode;
 	const char * fmt;
+	char mode_name[80];
 #if defined(CONFIG_IMX8M)
 	unsigned fb1 = (fb == FB_MIPI) ? FB_MIPI_BRIDGE : fb;
 #else
@@ -688,8 +689,24 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 			return;
 		}
 	} else {
+		i = 0;
+		while (i < sizeof(mode_name) - 1) {
+			mode_name[i] = di->mode.name[i];
+			if (!mode_name[i])
+				break;
+			i++;
+		}
+		mode_name[i] = 0;
+		while (i) {
+			i--;
+			if ((mode_name[i] < '0') || (mode_name[i] > '9')) {
+				if (mode_name[i] == '-')
+					mode_name[i] = 0;
+				break;
+			}
+		}
 		if (di->fbflags & FBF_MODESTR)
-			mode_str = di->mode.name;
+			mode_str = mode_name;
 	}
 
 	if (fb == FB_LVDS)
@@ -860,7 +877,7 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		u32 pin = 0;
 
 		sz = get_value_joined_str(buf, size, &pin, "pin", "pinctrl_",
-				di->mode.name, "phandle");
+				mode_name, "phandle");
 		buf += sz;
 		size -= sz;
 		sz = set_property_u32_env(buf, size, fbnames[fb1],
@@ -950,7 +967,7 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 			u32 cmds;
 
 			sz = get_value_joined_str(buf, size, &cmds, "cmds", "mipi_cmds_",
-					di->mode.name, "phandle");
+					mode_name, "phandle");
 			buf += sz;
 			size -= sz;
 			sz = set_property_u32_env(buf, size, "mipi",
@@ -987,19 +1004,19 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		size -= sz;
 	}
 	if (di->min_hs_clock_multiple) {
-		sz = set_cmd_property(di, buf, size,
+		sz = set_cmd_property(di, buf, size, mode_name,
 			"min-hs-clock-multiple", di->min_hs_clock_multiple);
 		buf += sz;
 		size -= sz;
 	}
 	if (di->enable_high_duration_us) {
-		sz = set_cmd_property(di, buf, size,
+		sz = set_cmd_property(di, buf, size, mode_name,
 			"enable-high-duration-us", di->enable_high_duration_us);
 		buf += sz;
 		size -= sz;
 	}
 	if (di->enable_low_duration_us) {
-		sz = set_cmd_property(di, buf, size,
+		sz = set_cmd_property(di, buf, size, mode_name,
 			"enable-low-duration-us", di->enable_low_duration_us);
 		buf += sz;
 		size -= sz;
@@ -1011,7 +1028,7 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		size -= sz;
 	}
 	if (di->power_delay_ms) {
-		sz = set_cmd_property(di, buf, size,
+		sz = set_cmd_property(di, buf, size, mode_name,
 			"power-delay-ms", di->power_delay_ms);
 		buf += sz;
 		size -= sz;
