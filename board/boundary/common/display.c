@@ -18,7 +18,7 @@
 /* pca9546 mux */
 static int detect_common(struct display_info_t const *di, int sub_bus,
 		int sub_bus2, int reg1, u8 val1, int reg2, u8 val2,
-		int gp_reset, int gp_irq)
+		int gp_reset, int gp_irq, int probe2)
 {
 	int ret = 0;
 #ifdef CONFIG_DM_I2C
@@ -104,6 +104,10 @@ static int detect_common(struct display_info_t const *di, int sub_bus,
 					__func__, msg.addr, reg2, ret);
 			}
 		}
+		if (!ret && (probe2 > 0)) {
+			ret = i2c_probe_chip(bus, probe2, 0);
+			debug("%s: probe2 0x%x ret=%d\n", __func__, probe2, ret);
+		}
 	}
 #else
 	orig_i2c_bus = i2c_get_bus_num();
@@ -155,27 +159,37 @@ int board_detect_lcd133(struct display_info_t const *di)
 {
 	/* 0 - 0xf : VPOS 5.5V output */
 	/* 1 - 0xf : VNEG -5.5V output */
-	return detect_common(di, 1 << (di->bus_num >> 4), 0, 0, 0xf, 1, 0xf, 0, 0);
+	return detect_common(di, 1 << (di->bus_num >> 4), 0, 0, 0xf, 1, 0xf, 0, 0, 0);
 }
 
 /* pca9540 mux */
 int board_detect_pca9540(struct display_info_t const *di)
 {
-	return detect_common(di, (di->bus_num >> 4) ? 5 : 4, 0, -1, 0x0, -1, 0x0, 0, 0);
+	return detect_common(di, (di->bus_num >> 4) ? 5 : 4, 0, -1, 0x0, -1, 0x0, 0, 0, 0);
 }
 
 /* pca9546 mux */
 int board_detect_pca9546(struct display_info_t const *di)
 {
-	return detect_common(di, 1 << (di->bus_num >> 4), 0, -1, 0x0, -1, 0x0, 0, 0);
+	return detect_common(di, 1 << (di->bus_num >> 4), 0, -1, 0x0, -1, 0x0, 0, 0, 0);
+}
+
+int board_detect_pca9546_sn65(struct display_info_t const *di)
+{
+	return detect_common(di, 1 << (di->bus_num >> 4), 0, -1, 0x0, -1, 0x0, 0, 0, 0x2c);
 }
 
 int board_detect_pca9546_2(struct display_info_t const *di)
 {
-	return detect_common(di, 1 << (di->bus_num >> 4), 8, -1, 0x0, -1, 0x0, 0, 0);
+	return detect_common(di, 1 << (di->bus_num >> 4), 8, -1, 0x0, -1, 0x0, 0, 0, 0);
 }
 
 int board_detect_gt911_common(struct display_info_t const *di, int sub_bus, int sub_bus2, int gp_reset, int gp_irq)
 {
-	return detect_common(di, sub_bus, sub_bus2, -1, 0x0, -1, 0x0, gp_reset, gp_irq);
+	return detect_common(di, sub_bus, sub_bus2, -1, 0x0, -1, 0x0, gp_reset, gp_irq, 0);
+}
+
+int board_detect_gt911_sn65_common(struct display_info_t const *di, int sub_bus, int sub_bus2, int gp_reset, int gp_irq)
+{
+	return detect_common(di, sub_bus, sub_bus2, -1, 0x0, -1, 0x0, gp_reset, gp_irq, 0x2c);
 }
