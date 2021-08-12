@@ -50,12 +50,12 @@ static iomux_v3_cfg_t const init_pads[] = {
 #define GP_TS_GT911_IRQ		IMX_GPIO_NR(4, 25)
 #define GPIRQ_TS_FT5X06		IMX_GPIO_NR(4, 25)
 #define GP_TS_FT5X06_WAKE	IMX_GPIO_NR(4, 25)
-	IOMUX_PAD_CTRL(SAI2_TXC__GPIO4_IO25, 0x106),
+	IOMUX_PAD_CTRL(SAI2_TXC__GPIO4_IO25, 0x180),
 
 #define GP_TS_GT911_RESET	IMX_GPIO_NR(4, 24)
 #define GP_ST1633_RESET		IMX_GPIO_NR(4, 24)
 #define GP_TS_FT5X06_RESET	IMX_GPIO_NR(4, 24)
-	IOMUX_PAD_CTRL(SAI2_TXFS__GPIO4_IO24, 0x109),
+	IOMUX_PAD_CTRL(SAI2_TXFS__GPIO4_IO24, 0x100),
 
 #define GP_TC358762_EN		IMX_GPIO_NR(4, 27)
 #define GP_SC18IS602B_RESET	IMX_GPIO_NR(4, 27)
@@ -120,51 +120,12 @@ int board_usb_hub_gpio_init(void)
 #ifdef CONFIG_CMD_FBPANEL
 int board_detect_gt911(struct display_info_t const *di)
 {
-	int ret;
-	struct udevice *bus;
-	struct i2c_msg msg;
-	struct dm_i2c_ops *ops;
-	u8 buf[4];
-	int sub_bus;
+	return board_detect_gt911_common(di, 1 << (di->bus_num >> 4), 0, GP_TS_GT911_RESET, GPIRQ_TS_GT911);
+}
 
-#ifdef CONFIG_DM_VIDEO
-	if (di->bus_gp)
-		gpio_request(di->bus_gp, "lkt08_mipi_en");
-#endif
-	if (di->bus_gp)
-		gpio_direction_output(di->bus_gp, 1);
-	gpio_set_value(GP_TS_GT911_RESET, 0);
-	mdelay(20);
-	gpio_direction_output(GPIRQ_TS_GT911, di->addr_num == 0x14 ? 1 : 0);
-	udelay(100);
-	gpio_set_value(GP_TS_GT911_RESET, 1);
-	mdelay(6);
-	gpio_set_value(GPIRQ_TS_GT911, 0);
-	mdelay(50);
-	gpio_direction_input(GPIRQ_TS_GT911);
-	ret = uclass_get_device_by_seq(UCLASS_I2C, di->bus_num & 0x0f, &bus);
-	if (!ret) {
-		ops = i2c_get_ops(bus);
-		msg.addr = 0x70;
-		msg.flags = 0;
-		msg.len = 1;
-		msg.buf = buf;
-		sub_bus = di->bus_num >> 4;
-		if (sub_bus) {
-			buf[0] = 1 << sub_bus;
-			ret = ops->xfer(bus, &msg, 1);
-		}
-		msg.addr = di->addr_num;
-		if (!ret)
-			ret = i2c_probe_chip(bus, di->addr_num, 0);
-		if (ret && di->bus_gp)
-			gpio_direction_input(di->bus_gp);
-	}
-#ifdef CONFIG_DM_VIDEO
-	if (di->bus_gp)
-		gpio_free(di->bus_gp);
-#endif
-	return (ret == 0);
+int board_detect_gt911_sn65(struct display_info_t const *di)
+{
+	return board_detect_gt911_sn65_common(di, 1 << (di->bus_num >> 4), 0, GP_TS_GT911_RESET, GPIRQ_TS_GT911);
 }
 
 static const struct display_info_t displays[] = {
@@ -176,7 +137,8 @@ static const struct display_info_t displays[] = {
 	VD_640_480M_60(HDMI, NULL, 0, 0x50),
 
 	/* mipi */
-	VD_MIPI_M101NWWB(MIPI, board_detect_pca9546, fbp_bus_gp((1 | (3 << 4)), GP_SN65DSI83_EN, 0, 0), 0x2c, FBP_MIPI_TO_LVDS, FBTS_FT5X06),
+	VD_MIPI_M101NWWB_2(MIPI, board_detect_gt911_sn65, fbp_bus_gp((1 | (3 << 4)), GP_SN65DSI83_EN, 0, 0), 0x5d, FBP_MIPI_TO_LVDS, FBTS_GOODIX),
+	VD_MIPI_M101NWWB(MIPI, board_detect_pca9546_sn65, fbp_bus_gp((1 | (3 << 4)), GP_SN65DSI83_EN, GP_TS_FT5X06_RESET, 0), 0x38, FBP_MIPI_TO_LVDS, FBTS_FT5X06),
 	VD_MIPI_MTD0900DCP27KF(MIPI, board_detect_pca9546, fbp_bus_gp((1 | (3 << 4)), 0, 0, 0), 0x41, FBP_MIPI_TO_LVDS, FBTS_ILI251X),
 	VD_DMT050WVNXCMI(MIPI, board_detect_pca9546, fbp_bus_gp((1 | (3 << 4)), GP_SC18IS602B_RESET, 0, 30), fbp_addr_gp(0x2f, 0, 6, 0), FBP_SPI_LCD, FBTS_GOODIX),
 	VD_LTK080A60A004T(MIPI, board_detect_gt911, fbp_bus_gp((1 | (3 << 4)), GP_LTK08_MIPI_EN, GP_LTK08_MIPI_EN, 0), 0x5d, FBTS_GOODIX),	/* Goodix touchscreen */
