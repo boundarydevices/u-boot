@@ -45,14 +45,15 @@ static iomux_v3_cfg_t const init_pads[] = {
 #define GP_TCXD070_BKL_EN		IMX_GPIO_NR(1, 1)
 	IMX8MQ_PAD_GPIO1_IO01__GPIO1_IO1 | MUX_PAD_CTRL(0x16),
 
-#define GPIRQ_GT911 			IMX_GPIO_NR(3, 12)
+#define GPIRQ_TS_GT911 			IMX_GPIO_NR(3, 12)
 #define GPIRQ_LCD133_TOUCH		IMX_GPIO_NR(3, 12)
-	IMX8MQ_PAD_NAND_DATA06__GPIO3_IO12 | MUX_PAD_CTRL(0xd6),
-#define GP_GT911_RESET			IMX_GPIO_NR(3, 13)
+	IMX8MQ_PAD_NAND_DATA06__GPIO3_IO12 | MUX_PAD_CTRL(0xc3),
+#define GP_TS_GT911_RESET		IMX_GPIO_NR(3, 13)
 #define GP_ST1633_RESET			IMX_GPIO_NR(3, 13)
-#define GP_I2C2_FT7250_RESET		IMX_GPIO_NR(3, 13)
+#define GP_TS_FT5X06_RESET		IMX_GPIO_NR(3, 13)
+#define GP_TS_FT7250_RESET		IMX_GPIO_NR(3, 13)
 #define GP_TS_ILI251X_RESET		IMX_GPIO_NR(3, 13)
-	IMX8MQ_PAD_NAND_DATA07__GPIO3_IO13 | MUX_PAD_CTRL(0x49),
+	IMX8MQ_PAD_NAND_DATA07__GPIO3_IO13 | MUX_PAD_CTRL(0x43),
 
 #define GP_ARM_DRAM_VSEL		IMX_GPIO_NR(3, 24)
 	IMX8MQ_PAD_SAI5_RXD3__GPIO3_IO24 | MUX_PAD_CTRL(0x16),
@@ -72,7 +73,7 @@ static iomux_v3_cfg_t const init_pads[] = {
 
 #define GP_TC358762_EN			IMX_GPIO_NR(3, 15)
 #define GP_SC18IS602B_RESET		IMX_GPIO_NR(3, 15)
-#define GP_I2C4_SN65DSI83_EN		IMX_GPIO_NR(3, 15)
+#define GP_SN65DSI83_EN		IMX_GPIO_NR(3, 15)
 #define GP_MIPI_RESET			IMX_GPIO_NR(3, 15)
 /* enable for TPS65132 Single Inductor - Dual Output Power Supply */
 #define GP_LCD133_070_ENABLE		IMX_GPIO_NR(3, 15)
@@ -124,7 +125,7 @@ int board_early_init_f(void)
 	gpio_request(GP_EMMC_RESET, "emmc_reset");
 	gpio_request(GP_I2C1_PCA9546_RESET, "pca9546_reset");
 #ifndef CONFIG_DM_VIDEO
-	gpio_request(GP_I2C4_SN65DSI83_EN, "sn65dsi83_enable");
+	gpio_request(GP_SN65DSI83_EN, "sn65dsi83_enable");
 #endif
 	gpio_request(GPIRQ_CSI1_TC3587, "csi1_tc3587");
 	gpio_request(GP_CSI1_OV5640_MIPI_RESET, "csi1_ov5640_reset");
@@ -137,7 +138,7 @@ int board_early_init_f(void)
 	gpio_direction_output(GP_SOC_GPU_VPU_VSEL, 0);
 	gpio_direction_output(GP_EMMC_RESET, 1);
 	gpio_direction_output(GP_I2C1_PCA9546_RESET, 0);
-	gpio_direction_output(GP_I2C4_SN65DSI83_EN, 0);
+	gpio_direction_output(GP_SN65DSI83_EN, 0);
 	gpio_direction_input(GPIRQ_CSI1_TC3587);
 	gpio_direction_output(GP_CSI1_OV5640_MIPI_RESET, 0);
 	gpio_direction_input(GPIRQ_CSI2_TC3587);
@@ -167,39 +168,12 @@ int board_detect_hdmi(struct display_info_t const *di)
 
 int board_detect_gt911(struct display_info_t const *di)
 {
-	int ret;
-	struct udevice *dev, *chip;
+	return board_detect_gt911_common(di, 0, 0, GP_TS_GT911_RESET, GPIRQ_TS_GT911);
+}
 
-#ifdef CONFIG_DM_VIDEO
-	int ret_request;
-	if (di->bus_gp) {
-		ret_request = gpio_request(di->bus_gp, "bus_gp");
-	}
-#endif
-	if (di->bus_gp)
-		gpio_direction_output(di->bus_gp, 1);
-	gpio_set_value(GP_GT911_RESET, 0);
-	mdelay(20);
-	gpio_direction_output(GPIRQ_GT911, di->addr_num == 0x14 ? 1 : 0);
-	udelay(100);
-	gpio_set_value(GP_GT911_RESET, 1);
-	mdelay(6);
-	gpio_set_value(GPIRQ_GT911, 0);
-	mdelay(50);
-	gpio_direction_input(GPIRQ_GT911);
-	ret = uclass_get_device(UCLASS_I2C, di->bus_num, &dev);
-	if (ret)
-		return 0;
-
-	ret = dm_i2c_probe(dev, di->addr_num, 0x0, &chip);
-	if (ret && di->bus_gp)
-		gpio_direction_input(di->bus_gp);
-#ifdef CONFIG_DM_VIDEO
-	if (di->bus_gp && !ret_request) {
-		gpio_free(di->bus_gp);
-	}
-#endif
-	return (ret == 0);
+int board_detect_gt911_sn65(struct display_info_t const *di)
+{
+	return board_detect_gt911_sn65_common(di, 0, 0, GP_TS_GT911_RESET, GPIRQ_TS_GT911);
 }
 
 static const struct display_info_t displays[] = {
@@ -208,7 +182,8 @@ static const struct display_info_t displays[] = {
 	VD_1920_1080M_60(HDMI, board_detect_hdmi, 0, 0x50),
 	VD_1280_720M_60(HDMI, NULL, 0, 0x50),
 #endif
-	VD_MIPI_M101NWWB(MIPI, fbp_detect_i2c, fbp_bus_gp(3, GP_I2C4_SN65DSI83_EN, 0, 0), 0x2c, FBP_MIPI_TO_LVDS, FBTS_FT5X06),
+	VD_MIPI_M101NWWB_2(MIPI, board_detect_gt911_sn65, fbp_bus_gp(3, GP_SN65DSI83_EN, 0, 0), 0x5d, FBP_MIPI_TO_LVDS, FBTS_GOODIX),
+	VD_MIPI_M101NWWB(MIPI, board_detect_sn65_and_ts, fbp_bus_gp(3, GP_SN65DSI83_EN, GP_TS_FT5X06_RESET, 0), 0x38, FBP_MIPI_TO_LVDS, FBTS_FT5X06),
 	VD_DMT050WVNXCMI(MIPI, fbp_detect_i2c, fbp_bus_gp(3, GP_SC18IS602B_RESET, 0, 30), fbp_addr_gp(0x2f, 0, 6, 0), FBP_SPI_LCD, FBTS_GOODIX),
 	VD_LTK080A60A004T(MIPI, board_detect_gt911, fbp_bus_gp(3, GP_LTK08_MIPI_EN, GP_LTK08_MIPI_EN, 0), 0x5d, FBTS_GOODIX),	/* Goodix touchscreen */
 	VD_LCM_JM430(MIPI, fbp_detect_i2c, fbp_bus_gp(3, GP_ST1633_RESET, GP_TC358762_EN, 30), fbp_addr_gp(0x55, GP_LCM_JM430_BKL_EN, 0, 0), FBTS_ST1633I),		/* Sitronix touch */
@@ -235,12 +210,12 @@ static const struct display_info_t displays[] = {
 int board_init(void)
 {
 #ifndef CONFIG_DM_VIDEO
-	gpio_request(GP_I2C4_SN65DSI83_EN, "sn65dsi83_enable");
+	gpio_request(GP_SN65DSI83_EN, "sn65dsi83_enable");
 	gpio_request(GP_LTK08_MIPI_EN, "lkt08_mipi_en");
 #endif
-	gpio_request(GP_GT911_RESET, "gt911_reset");
-	gpio_request(GPIRQ_GT911, "gt911_irq");
-	gpio_direction_output(GP_GT911_RESET, 0);
+	gpio_request(GP_TS_GT911_RESET, "gt911_reset");
+	gpio_request(GPIRQ_TS_GT911, "gt911_irq");
+	gpio_direction_output(GP_TS_GT911_RESET, 0);
 #ifdef CONFIG_DM_ETH
 	board_eth_init(gd->bd);
 #endif
@@ -281,5 +256,5 @@ void board_env_init(void)
 	 * If touchscreen reset is low, display will not initialize, but runs fine
 	 * after init independent of gpio level
 	 */
-	gpio_direction_output(GP_I2C2_FT7250_RESET, 1); /* GP_GT911_RESET */
+	gpio_direction_output(GP_TS_FT7250_RESET, 1); /* GP_TS_GT911_RESET */
 }
