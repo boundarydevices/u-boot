@@ -101,6 +101,10 @@ config CONFIG_LPDDR4_AB
 	bool "Channel A to A, B to B"
 	default y if TARGET_DWE
 
+config DDR_DRIVE_STRENGTH
+	int "ddr drive strength(5, 6 or 7)"
+	default 6
+
 config DDR_RANK_BITS
 	int "ddr rank bits"
 	depends on ARCH_IMX8M
