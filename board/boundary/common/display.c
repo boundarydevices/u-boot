@@ -34,29 +34,39 @@ static int detect_common(struct display_info_t const *di, int sub_bus,
 	int req_bus;
 	int req_en;
 
-	if (di->bus_gp) {
+	if (di->bus_gp)
 		req_bus = gpio_request(di->bus_gp, "bus_gp");
-	}
 	if (di->enable_gp)
 		req_en = gpio_request(di->enable_gp, "enable_gp");
 #endif
-	if (di->bus_gp)
+	if (gp_reset) {
+		gpio_direction_output(gp_reset, 0);
+		debug("%s: assert reset gpio%d\n", __func__, gp_reset);
+	}
+	if (di->bus_gp) {
 		gpio_direction_output(di->bus_gp, 1);
-	if (di->enable_gp && !(di->fbflags & FBF_ENABLE_GPIOS_OPEN_DRAIN))
+		debug("%s: set gpio%d\n", __func__, di->bus_gp);
+	}
+	if (di->enable_gp && !(di->fbflags & FBF_ENABLE_GPIOS_OPEN_DRAIN)) {
 		gpio_direction_output(di->enable_gp, 1);
+		debug("%s: set gpio%d, delay %d\n", __func__, di->enable_gp,
+			di->bus_gp_delay_ms);
+	}
 	if (di->bus_gp_delay_ms)
-		mdelay(di->bus_gp_delay_ms);
+		mdelay(di->bus_gp_delay_ms + (gp_reset ? 20 : 0));
 	if (gp_reset) {
 		/* for gt911 */
-		gpio_set_value(gp_reset, 0);
-		mdelay(20);
 		gpio_direction_output(gp_irq, di->addr_num == 0x14 ? 1 : 0);
+		debug("%s: 0x%x irq gpio%d level %d\n", __func__, di->addr_num,
+			gp_irq,	di->addr_num == 0x14 ? 1 : 0);
 		udelay(100);
 		gpio_set_value(gp_reset, 1);
+		debug("%s: release reset gpio%d\n", __func__, gp_reset);
 		mdelay(6);
 		gpio_set_value(gp_irq, 0);
 		mdelay(50);
 		gpio_direction_input(gp_irq);
+		debug("%s: irq gpio%d input\n", __func__, gp_irq);
 	}
 #ifdef CONFIG_DM_I2C
 	ret = uclass_get_device_by_seq(UCLASS_I2C, di->bus_num & 0xf, &bus);
@@ -83,6 +93,16 @@ static int detect_common(struct display_info_t const *di, int sub_bus,
 		if (!ret && (reg1 < 0)) {
 			ret = i2c_probe_chip(bus, di->addr_num, 0);
 			debug("%s: probe 0x%x ret=%d\n", __func__, di->addr_num, ret);
+#ifdef DEBUG
+			if (ret && di->addr_num == 0x5d) {
+				ret = i2c_probe_chip(bus, 0x14, 0);
+				debug("%s: probe 0x%x ret=%d\n", __func__, 0x14, ret);
+				if (ret) {
+					ret = i2c_probe_chip(bus, di->addr_num, 0);
+					debug("%s: probe 0x%x ret=%d\n", __func__, di->addr_num, ret);
+				}
+			}
+#endif
 		}
 		if (!ret && (reg1 >= 0)) {
 			buf[0] = reg1;
