@@ -35,6 +35,7 @@ config BQ25898
 
 config FEC_RESET_PULLUP
 	bool "fec pullup on reset"
+	default y if IMX8MP
 	default y if IMX8MM
 	default y if IMX8MN
 	default y if TARGET_NITROGEN7
