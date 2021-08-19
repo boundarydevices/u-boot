@@ -71,7 +71,7 @@ static iomux_v3_cfg_t const init_pads[] = {
 #define GP_BACKLIGHT_LVDS2	IMX_GPIO_NR(4, 21)
 	IOMUX_PAD_CTRL(SAI2_RXFS__GPIO4_IO21, 0x106),	/* enable */
 
-#define GP_LVDS_PWM		IMX_GPIO_NR(4, 22)
+#define GP_LVDS_PWM		IMX_GPIO_NR(1, 9)
 	IOMUX_PAD_CTRL(GPIO1_IO09__GPIO1_IO09, 0x106),	/* PWM */
 #define GP_LVDS2_PWM		IMX_GPIO_NR(3, 21)
 	IOMUX_PAD_CTRL(SAI5_RXD0__GPIO3_IO21, 0x106),	/* PWM */
@@ -196,22 +196,6 @@ static const struct display_info_t displays[] = {
 #define display_cnt	0
 #endif
 
-static void reset_tusb320(void)
-{
-	struct udevice *dev, *chip;
-	int ret;
-
-	ret = uclass_get_device(UCLASS_I2C, 3, &dev);
-	if (ret)
-		return;
-	ret = dm_i2c_probe(dev, 0x60, 0x0, &chip);
-	if (ret)
-		return;
-	ret = dm_i2c_reg_write(chip, 0x0a, 0x08);
-	if (ret < 0)
-		printf("tusb320 reset failed(%d)\n", ret);
-}
-
 int board_init(void)
 {
 	gpio_request(GP_TS_GT911_RESET, "gt11_reset");
@@ -226,7 +210,6 @@ int board_init(void)
 	gpio_direction_output(GP_TS_GT911_RESET, 0);
 	gpio_direction_output(GP_USB1_HUB_RESET, 0);
 
-	reset_tusb320();
 #ifdef CONFIG_DM_ETH
 	board_eth_init(gd->bd);
 #endif
@@ -250,7 +233,9 @@ int board_fastboot_key_pressed(void)
 static void check_usb_mux(void)
 {
 	struct udevice *bus;
-	struct udevice *i2c_dev;
+	struct i2c_msg msg;
+	struct dm_i2c_ops *ops;
+	u8 buf[4];
 	int ret;
 
 	ret = uclass_get_device_by_seq(UCLASS_I2C, 3, &bus);
@@ -259,9 +244,20 @@ static void check_usb_mux(void)
 		return;
 	}
 
-	ret = dm_i2c_probe(bus, 0x60, 0, &i2c_dev);
+	ret = i2c_probe_chip(bus, 0x60, 0);
 	if (ret)
 		return;
+
+	buf[0] = 0x0a;
+	buf[1] = 0x08;
+	ops = i2c_get_ops(bus);
+	msg.addr = 0x60;
+	msg.flags = 0;
+	msg.len = 2;
+	msg.buf = buf;
+	ret = ops->xfer(bus, &msg, 1);
+	if (ret < 0)
+		printf("tusb320 reset failed(%d)\n", ret);
 
 	/*
 	 * The 1st few boards used a TUSB320 instead of hd3ss3220
