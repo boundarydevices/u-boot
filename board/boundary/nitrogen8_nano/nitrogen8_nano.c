@@ -41,21 +41,22 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IOMUX_PAD_CTRL(UART2_RXD__UART2_DCE_RX, UART_PAD_CTRL),
 	IOMUX_PAD_CTRL(UART2_TXD__UART2_DCE_TX, UART_PAD_CTRL),
 
-#define GPIRQ_I2C2_SN65DSI83		IMX_GPIO_NR(1, 1)
+#define GPIRQ_SN65DSI83			IMX_GPIO_NR(1, 1)
 #define GP_LCM_JM430_BKL_EN		IMX_GPIO_NR(1, 1)
 /* This enables 5V power on LTK080A60A004T mipi display */
 #define GP_LTK08_MIPI_EN		IMX_GPIO_NR(1, 1)
 	IOMUX_PAD_CTRL(GPIO1_IO01__GPIO1_IO1, 0x116),
 
-#define GPIRQ_GT911 			IMX_GPIO_NR(1, 6)
-	IOMUX_PAD_CTRL(GPIO1_IO06__GPIO1_IO6, 0xd6),
-#define GP_GT911_RESET			IMX_GPIO_NR(1, 7)
+#define GPIRQ_TS_GT911 			IMX_GPIO_NR(1, 6)
+	IOMUX_PAD_CTRL(GPIO1_IO06__GPIO1_IO6, 0x180),
+#define GP_TS_GT911_RESET			IMX_GPIO_NR(1, 7)
 #define GP_ST1633_RESET			IMX_GPIO_NR(1, 7)
-	IOMUX_PAD_CTRL(GPIO1_IO07__GPIO1_IO7, 0x49),
+#define GP_TS_FT5X06_RESET		IMX_GPIO_NR(1, 7)
+	IOMUX_PAD_CTRL(GPIO1_IO07__GPIO1_IO7, 0x100),
 
 #define GP_TC358762_EN		IMX_GPIO_NR(1, 9)
 #define GP_SC18IS602B_RESET	IMX_GPIO_NR(1, 9)
-#define GP_I2C2_SN65DSI83_EN	IMX_GPIO_NR(1, 9)
+#define GP_SN65DSI83_EN		IMX_GPIO_NR(1, 9)
 #define GP_MIPI_RESET		IMX_GPIO_NR(1, 9)
 	IOMUX_PAD_CTRL(GPIO1_IO09__GPIO1_IO9, 0x06),
 
@@ -100,26 +101,32 @@ int board_early_init_f(void)
 {
 	struct wdog_regs *wdog = (struct wdog_regs *)WDOG1_BASE_ADDR;
 
-	gpio_request(GP_I2C2_SN65DSI83_EN, "sn65en");
-	gpio_direction_output(GP_I2C2_SN65DSI83_EN, 0);
+	gpio_request(GP_SN65DSI83_EN, "sn65en");
+	gpio_direction_output(GP_SN65DSI83_EN, 0);
 	imx_iomux_v3_setup_multiple_pads(init_pads, ARRAY_SIZE(init_pads));
 
 	gpio_direction_output(GP_EMMC_RESET, 1);
 	set_wdog_reset(wdog);
-	gpio_direction_output(GP_I2C2_SN65DSI83_EN, 0);
+	gpio_direction_output(GP_SN65DSI83_EN, 0);
 	return 0;
 }
 
 #ifdef CONFIG_CMD_FBPANEL
 int board_detect_gt911(struct display_info_t const *di)
 {
-	return board_detect_gt911_common(di, (di->bus_num >> 4) | 4, 0, GP_GT911_RESET, GPIRQ_GT911);
+	return board_detect_gt911_common(di, 0, 0, GP_TS_GT911_RESET, GPIRQ_TS_GT911);
+}
+
+int board_detect_gt911_sn65(struct display_info_t const *di)
+{
+	return board_detect_gt911_sn65_common(di, 0, 0, GP_TS_GT911_RESET, GPIRQ_TS_GT911);
 }
 
 static const struct display_info_t displays[] = {
-	VD_MIPI_M101NWWB(MIPI, fbp_detect_i2c, fbp_bus_gp(1, GP_I2C2_SN65DSI83_EN, 0, 0), 0x2c, FBP_MIPI_TO_LVDS, FBTS_FT5X06),
+	VD_MIPI_M101NWWB_2(MIPI, board_detect_gt911_sn65, fbp_bus_gp(1, GP_SN65DSI83_EN, 0, 0), 0x5d, FBP_MIPI_TO_LVDS, FBTS_GOODIX),
+	VD_MIPI_M101NWWB(MIPI, board_detect_sn65_and_ts, fbp_bus_gp(1, GP_SN65DSI83_EN, GP_TS_FT5X06_RESET, 0), 0x38, FBP_MIPI_TO_LVDS, FBTS_FT5X06),
 	VD_DMT050WVNXCMI(MIPI, fbp_detect_i2c, fbp_bus_gp(1, GP_SC18IS602B_RESET, 0, 30), fbp_addr_gp(0x2f, 0, 6, 0), FBP_SPI_LCD, FBTS_GOODIX),
-	VD_LTK080A60A004T(MIPI, board_detect_gt911, fbp_bus_gp(1, GP_LTK08_MIPI_EN, GP_LTK08_MIPI_EN, 0), 0x5d, FBTS_GOODIX),	/* Goodix touchscreen */
+	VD_LTK080A60A004T(MIPI, board_detect_gt911, fbp_bus_gp(1, 0, GP_LTK08_MIPI_EN, 0), 0x5d, FBTS_GOODIX),	/* Goodix touchscreen */
 	VD_LCM_JM430_MINI(MIPI, fbp_detect_i2c, fbp_bus_gp(1, GP_ST1633_RESET, GP_TC358762_EN, 30), fbp_addr_gp(0x55, GP_LCM_JM430_BKL_EN, 0, 0), FBTS_ST1633I),	/* Sitronix touch */
 
 	VD_LTK0680YTMDB(MIPI, NULL, fbp_bus_gp(1, GP_MIPI_RESET, GP_MIPI_RESET, 0), 0x5d, FBTS_GOODIX),
@@ -149,15 +156,15 @@ int board_init(void)
 	gpio_request(GP_MII_MDC, "mii_mdc");
 	gpio_request(GP_MII_MDIO, "mii_mdio");
 #endif
-	gpio_request(GP_GT911_RESET, "gt911_reset");
-	gpio_request(GPIRQ_GT911, "gt911_irq");
+	gpio_request(GP_TS_GT911_RESET, "gt911_reset");
+	gpio_request(GPIRQ_TS_GT911, "gt911_irq");
 #ifndef CONFIG_DM_VIDEO
-	gpio_request(GP_I2C2_SN65DSI83_EN, "sn65dsi83_enable");
+	gpio_request(GP_SN65DSI83_EN, "sn65dsi83_enable");
 	gpio_request(GP_LTK08_MIPI_EN, "lkt08_mipi_en");
 #endif
 	gpio_request(GP_CSI1_MIPI_PWDN, "csi1_mipi_pwdn");
 	gpio_request(GP_CSI1_MIPI_RESET, "csi1_mipi_reset");
-	gpio_direction_output(GP_GT911_RESET, 0);
+	gpio_direction_output(GP_TS_GT911_RESET, 0);
 	gpio_direction_output(GP_CSI1_MIPI_PWDN, 1);
 	gpio_direction_output(GP_CSI1_MIPI_RESET, 0);
 #if defined(CONFIG_MXC_SPI) && !defined(CONFIG_DM_SPI)
