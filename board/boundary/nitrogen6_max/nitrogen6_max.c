@@ -512,9 +512,11 @@ static const struct display_info_t displays[] = {
 	/* ft5x06 */
 #ifdef CONFIG_DEFAULT_DISPLAY_PM9598
 	VD_PM9598(LVDS2, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
+	VD_TM070JDHG30(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
 	VD_HANNSTAR7(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
 #else
-	VD_HANNSTAR7(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
+	VD_TM070JDHG30(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
+	VD_HANNSTAR7(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
 	VD_PM9598(LVDS2, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
 	VD_HANNSTAR7(LVDS2, NULL, fbp_bus_gp(2, 0, GP_LVDS2_BKL_EN, 0), 0x38, FBTS_FT5X06),
 	VD_PM9598(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
@@ -527,7 +529,6 @@ static const struct display_info_t displays[] = {
 	VD_DT070BTFT(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
 	VD_DT070BTFT(LVDS2, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
 	VD_WSVGA(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
-	VD_TM070JDHG30(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
 	VD_ND1024_600(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
 
 	/* ili210x */
