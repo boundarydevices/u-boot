@@ -1361,10 +1361,10 @@ void fbp_setup_env_cmds(void);
 	VD_HEADER(_mode, _fmt, _flags, args),\
 	.mode	= {\
 		.name           = _name,\
-		.refresh        = 60,\
+		.refresh        = 50,\
 		.xres           = 1920,\
 		.yres           = 1080, \
-		.pixclock       = 1000000000000ULL/((1920+16+192+16)*(1080+3+26+1)*60),\
+		.pixclock       = 1000000000000ULL/((1920+16+192+16)*(1080+3+26+1)*50),\
 		.left_margin    = 16,\
 		.right_margin   = 192,\
 		.upper_margin   = 3,\
