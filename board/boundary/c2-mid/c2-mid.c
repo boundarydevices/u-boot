@@ -115,6 +115,7 @@ void board_enable_mipi(const struct display_info_t *di, int enable)
 }
 
 static const struct display_info_t displays[] = {
+	VD_LTK080A60A004T_2(MIPI, NULL, fbp_bus_gp(2 | (2 << 4), GP_LTK08_MIPI_EN, GP_LTK08_MIPI_EN, 0), 0),
 	VD_MIPI_M101NWWB(MIPI, board_detect_pca9546, fbp_bus_gp(2 | (2 << 4), GP_SN65DSI83_EN, 0, 0), 0x2c, FBP_MIPI_TO_LVDS, FBTS_FT5X06),
 	VD_LTK080A60A004T(MIPI, board_detect_gt911, fbp_bus_gp(2 | (2 << 4), GP_LTK08_MIPI_EN, GP_LTK08_MIPI_EN, 0), 0x5d, FBTS_GOODIX),
 };
