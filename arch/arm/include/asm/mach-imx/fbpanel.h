@@ -246,6 +246,7 @@ void fbp_setup_env_cmds(void);
 #define VD_WXGA_J(_mode, args...)		VDF_WXGA(_mode, "wxga_j", RGB24, FBF_JEIDA, args)
 #define VD_LS050T1SX12(_mode, args...)		VDF_LS050T1SX12(_mode, "ls050t1sx12", RGB24, FBF_LS050T1SX12, args)
 #define VD_LTK080A60A004T(_mode, args...)	VDF_LTK080A60A004T(_mode, "ltk080a60a004t", RGB24, FBF_LTK080A60A004T, args)
+#define VD_LTK080A60A004T_2(_mode, args...)	VDF_LTK080A60A004T(_mode, "ltk080a60a004t-2", RGB24, FBF_LTK080A60A004T, args)
 #define VD_LTK0680YTMDB(_mode, args...)		VDF_LTK0680YTMDB(_mode, "ltk0680ytmdb", RGB24, FB_##_mode == FB_LCD ? FBF_LTK0680YTMDB_LCD : FBF_LTK0680YTMDB, args)
 
 #define VD_MIPI_G156HCE_L01(_mode, args...)	VDF_MIPI_G156HCE_L01(_mode, "G156HCE-L01", RGB24, FBF_G156HCE_L01, args)
