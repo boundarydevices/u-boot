@@ -45,6 +45,7 @@ static iomux_v3_cfg_t const init_pads[] = {
 #define GP_LCM_JM430_BKL_EN		IMX_GPIO_NR(1, 1)
 /* This enables 5V power on LTK080A60A004T mipi display */
 #define GP_LTK08_MIPI_EN		IMX_GPIO_NR(1, 1)
+#define GP_LT8912_DISPLAY_EN		IMX_GPIO_NR(1, 1)
 	IOMUX_PAD_CTRL(GPIO1_IO01__GPIO1_IO1, 0x116),
 
 #define GPIRQ_TS_GT911 			IMX_GPIO_NR(1, 6)
@@ -140,7 +141,7 @@ static const struct display_info_t displays[] = {
 	VD_MIPI_800_600MR_60(MIPI, NULL, fbp_bus_gp((1 | (3 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
 	VD_MIPI_720_480M_60(MIPI, NULL, fbp_bus_gp((1 | (3 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
 	VD_MIPI_640_480M_60(MIPI, NULL, fbp_bus_gp((1 | (3 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
-	VD_TM070JDHG30_LT8912(MIPI, NULL, fbp_bus_gp((1 | (3 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
+	VD_TM070JDHG30_LT8912(MIPI, NULL, fbp_bus_gp((1 | (3 << 4)), 0, 0, 0), fbp_addr_gp(0x68, GP_LT8912_DISPLAY_EN, 0, 0), FBP_PCA9546),
 
 	VD_MIPI_VTFT101RPFT20(MIPI, fbp_detect_i2c, 1, 0x70, FBP_PCA9540),
 };
