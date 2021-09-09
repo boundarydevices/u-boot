@@ -1,0 +1,6 @@
+MT8195 Pumpkin
+M:	Fabien Parent <fparent@baylibre.com>
+S:	Maintained
+F:	board/mediatek/mt8195
+F:	include/configs/mt8195.h
+F:	configs/mt8195_demo_defconfig
