@@ -5,6 +5,7 @@
  */
 
 #include <common.h>
+#include <linux/delay.h>
 #include <linux/errno.h>
 
 #include <dm.h>
@@ -621,8 +622,13 @@ int video_link_shut_down(void)
 {
 	struct udevice *video_dev = video_link_get_video_device();
 
-	if (video_dev)
+	if (video_dev) {
+#ifdef CONFIG_VIDEO_BLANK_BEFORE_OFF
+		video_clear(video_dev);
+		mdelay(1);
+#endif
 		device_remove(video_dev, DM_REMOVE_NORMAL);
+	}
 
 	return 0;
 }

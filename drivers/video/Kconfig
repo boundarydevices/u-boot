@@ -182,6 +182,11 @@ config SYS_WHITE_ON_BLACK
 	 better in low-light situations or to reduce eye strain in some
 	 cases.
 
+config VIDEO_BLANK_BEFORE_OFF
+	bool "Blank display before powering off"
+	depends on DM_VIDEO
+	default n
+
 config NO_FB_CLEAR
 	bool "Skip framebuffer clear"
 	help
