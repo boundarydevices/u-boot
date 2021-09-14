@@ -5,6 +5,7 @@
  */
 
 #include <common.h>
+#include <command.h>
 #include <errno.h>
 #include <asm/io.h>
 #include <miiphy.h>
@@ -70,6 +71,9 @@ static iomux_v3_cfg_t const init_pads[] = {
 #define GP_EMMC_RESET	IMX_GPIO_NR(2, 10)
 	IOMUX_PAD_CTRL(SD1_RESET_B__GPIO2_IO10, 0x41),
 
+#define GP_I2C2_MUX_RESET	IMX_GPIO_NR(5, 11)
+	IOMUX_PAD_CTRL(ECSPI2_MOSI__GPIO5_IO11, 0x100),
+
 	/* EC2x Modem control */
 #define GP_EC21_RESET		IMX_GPIO_NR(4, 10)
 	IOMUX_PAD_CTRL(SAI1_TXFS__GPIO4_IO10, 0x1c0),
@@ -94,6 +98,214 @@ static iomux_v3_cfg_t const init_pads[] = {
 #define GP_REG_5V_EN		IMX_GPIO_NR(3, 15)
 	IOMUX_PAD_CTRL(NAND_RE_B__GPIO3_IO15, 0x116),
 };
+
+void release_i2c2_mux_reset(void)
+{
+	int gp_mux_reset = GP_I2C2_MUX_RESET;
+	int req_mux_reset;
+
+	req_mux_reset = gpio_request(gp_mux_reset, "i2c2_mux_reset");
+	gpio_direction_output(gp_mux_reset, 1);
+	if (!req_mux_reset)
+		gpio_free(gp_mux_reset);
+}
+
+static int limit_table[] = { 500, 500, 1500, 3000 };
+
+struct udevice *select_i2c2d(void)
+{
+	struct udevice *bus;
+	struct i2c_msg msg[1];
+	struct dm_i2c_ops *ops;
+	unsigned char txbuf[4];
+	int ret;
+
+	release_i2c2_mux_reset();
+	ret = uclass_get_device_by_seq(UCLASS_I2C, 1, &bus);
+	if (ret) {
+		printf("%s: Can't find bus\n", __func__);
+		return NULL;
+	}
+
+	ops = i2c_get_ops(bus);
+	/* Select last bus on tca9546, i2c2d */
+	txbuf[0] = 0x08;
+	msg[0].addr = 0x70;
+	msg[0].flags = 0;
+	msg[0].len = 1;
+	msg[0].buf = txbuf;
+	ret = ops->xfer(bus, msg, 1);
+	if (ret < 0)
+		printf("tca9546 bus select failed(%d)\n", ret);
+	udelay(10);
+	return bus;
+}
+
+void board_init_charger_limit(void)
+{
+	struct udevice *bus;
+	struct i2c_msg msg[2];
+	struct dm_i2c_ops *ops;
+	unsigned char txbuf[8];
+	unsigned char rxbuf[4];
+	unsigned char cc_status0;
+	int ret;
+	int i;
+
+	bus = select_i2c2d();
+	if (!bus)
+		return;
+
+	ops = i2c_get_ops(bus);
+	msg[0].addr = 0x25;
+	msg[0].flags = 0;
+	msg[0].buf = txbuf;
+
+	txbuf[0] = 0x0c;
+	msg[0].len = 1;
+	msg[1].addr = 0x25;
+	msg[1].flags = I2C_M_RD;
+	msg[1].len = 1;
+	msg[1].buf = rxbuf;
+
+	/* read status */
+	ret = ops->xfer(bus, msg, 2);
+	if (ret < 0) {
+		printf("max77958 cc_status0 read failed(%d)\n", ret);
+		return;
+	}
+	if (!(rxbuf[0] & 0x07))
+		return;
+	cc_status0 = rxbuf[0];
+
+	/* Read role */
+	txbuf[0] = 0x0f;
+	ret = ops->xfer(bus, msg, 2);
+	if (ret < 0) {
+		printf("max77958 pd_status1 read failed(%d)\n", ret);
+		rxbuf[0] = 0;
+	}
+
+	if (rxbuf[0] & 0x40)
+		return;
+	/* We are a sink, Set the limit */
+	i = (cc_status0 >> 4) & 0x03;
+	max77975_set_chrgin_limit(limit_table[i]);
+}
+
+int board_usb_otg_mode(struct udevice *dev)
+{
+	struct udevice *bus;
+	struct i2c_msg msg[2];
+	struct dm_i2c_ops *ops;
+	unsigned char txbuf[8];
+	unsigned char rxbuf[4];
+	unsigned char cc_status0;
+	int ret;
+	int i;
+
+	bus = select_i2c2d();
+	if (!bus)
+		return USB_INIT_UNKNOWN;
+
+	ops = i2c_get_ops(bus);
+	msg[0].addr = 0x25;
+	msg[0].flags = 0;
+	msg[0].buf = txbuf;
+#if 0
+	/*
+	 * cc control1 write
+	 * Enable SOURCE mode for DRP
+	 * i2c mw 25 21.1 0c;i2c mw 25 22.1 c3;i2c mw 25 41.1 00;
+	 */
+	txbuf[0] = 0x21;
+	txbuf[1] = 0x0c;
+	txbuf[2] = 0xc3;
+	msg[0].len = 3;
+	ret = ops->xfer(bus, msg, 1);
+	if (ret < 0)
+		printf("cc control1 write(%d)\n", ret);
+	mdelay(1);
+
+	txbuf[0] = 0x41;
+	txbuf[1] = 0x00;
+	msg[0].len = 2;
+	ret = ops->xfer(bus, msg, 1);
+	if (ret < 0)
+		printf("cc control1 write41(%d)\n", ret);
+	mdelay(1);
+#endif
+
+	/* Wait for attachment */
+	txbuf[0] = 0x0c;
+	msg[0].len = 1;
+	msg[1].addr = 0x25;
+	msg[1].flags = I2C_M_RD;
+	msg[1].len = 1;
+	msg[1].buf = rxbuf;
+	i = 0;
+	while (1) {
+		/* read status */
+		ret = ops->xfer(bus, msg, 2);
+		if (ret < 0) {
+			printf("max77958 cc_status0 read failed(%d)\n", ret);
+			rxbuf[0] = 0;
+		}
+		if (rxbuf[0] & 0x07) {
+			cc_status0 = rxbuf[0];
+			break;
+		}
+		i++;
+		if (i >= 5) {
+			debug("%s: %0x, unknown\n", __func__, rxbuf[0]);
+			return USB_INIT_UNKNOWN;
+		}
+		mdelay(10);
+	}
+	/* Read role */
+	txbuf[0] = 0x0f;
+	ret = ops->xfer(bus, msg, 2);
+	if (ret < 0) {
+		printf("max77958 pd_status1 read failed(%d)\n", ret);
+		rxbuf[0] = 0;
+	}
+
+	/* Turn on power if source */
+	max77975_otg_power((rxbuf[0] & 0x40) ? 1 : 0);
+
+	if (!(rxbuf[0] & 0x40)) {
+		/* We can charge. Set the limit */
+		i = (cc_status0 >> 4) & 0x03;
+		max77975_set_chrgin_limit(limit_table[i]);
+	}
+
+	/*
+	 * enable switches DP/DP2, DN/DN1
+	 * i2c mw 25 21.1 06;i2c mw 25 22.1 09;i2c mw 25 41.1 00;
+	 */
+	txbuf[0] = 0x21;
+	txbuf[1] = 0x06;
+	txbuf[2] = 0x09;
+	msg[0].len = 3;
+	ret = ops->xfer(bus, msg, 1);
+	if (ret < 0)
+		printf("control1 write(%d)\n", ret);
+	mdelay(1);
+
+	txbuf[0] = 0x41;
+	txbuf[1] = 0x00;
+	msg[0].len = 2;
+	ret = ops->xfer(bus, msg, 1);
+	if (ret < 0)
+		printf("control1 write41(%d)\n", ret);
+
+	if (rxbuf[0] & 0x80) {
+		debug("%s: host %02x\n", __func__, rxbuf[0]);
+		return USB_INIT_HOST;
+	}
+	debug("%s: peripheral %02x\n", __func__, rxbuf[0]);
+	return USB_INIT_DEVICE;
+}
 
 int board_early_init_f(void)
 {
@@ -195,6 +407,11 @@ int board_init(void)
 	board_qspi_init();
 #endif
 
+#ifdef CONFIG_MAX77975
+	release_i2c2_mux_reset();
+	max77975_init();
+	board_init_charger_limit();
+#endif
 #ifdef CONFIG_DM_ETH
 	board_eth_init(gd->bd);
 #endif
@@ -203,3 +420,23 @@ int board_init(void)
 #endif
 	return 0;
 }
+
+void board_poweroff(void)
+{
+	struct snvs_regs *snvs = (struct snvs_regs *)(SNVS_BASE_ADDR);
+
+	writel(0x60, &snvs->lpcr);
+	mdelay(500);
+}
+
+static int _do_poweroff(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[])
+{
+	board_poweroff();
+	return 0;
+}
+
+U_BOOT_CMD(
+	poweroff, 70, 0, _do_poweroff,
+	"power down board",
+	""
+);
