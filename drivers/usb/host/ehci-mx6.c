@@ -599,6 +599,11 @@ int __weak board_ehci_usb_phy_mode(struct udevice *dev)
 	return USB_INIT_HOST;
 }
 
+int __weak board_usb_otg_mode(struct udevice *dev)
+{
+	return -ENODEV;
+}
+
 static int ehci_usb_phy_mode(struct udevice *dev)
 {
 	struct usb_platdata *plat = dev_get_platdata(dev);
@@ -608,6 +613,11 @@ static int ehci_usb_phy_mode(struct udevice *dev)
 	int ret;
 	u32 val;
 
+	ret = board_usb_otg_mode(dev);
+	if (ret >= 0) {
+		plat->init_type = ret;
+		return 0;
+	}
 	/*
 	 * About fsl,usbphy, Refer to
 	 * Documentation/devicetree/bindings/usb/ci-hdrc-usb2.txt.
@@ -802,7 +812,10 @@ int ehci_usb_remove(struct udevice *dev)
 	struct ehci_mx6_priv_data *priv = dev_get_priv(dev);
 
 	ehci_deregister(dev);
-
+	if (priv->gd_reset) {
+		dm_gpio_free(dev, priv->gd_reset);
+		priv->gd_reset = NULL;
+	}
 	return board_usb_cleanup(dev->seq, priv->init_type);
 }
 
