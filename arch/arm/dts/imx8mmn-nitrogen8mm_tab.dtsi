@@ -94,7 +94,7 @@
 	pinctrl_i2c2_tca9546: i2c2-tca9546grp {
 		fsl,pins = <
 #define GP_I2C2_MUX_RESET	<&gpio5 11 GPIO_ACTIVE_LOW>
-			MX8MMN(IOMUXC_ECSPI2_MOSI_GPIO5_IO11, 0x1c3)
+			MX8MMN(IOMUXC_ECSPI2_MOSI_GPIO5_IO11, 0x100)
 		>;
 	};
 
