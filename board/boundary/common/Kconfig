@@ -29,6 +29,14 @@ config MAX77823
 	default y if TARGET_NITROGEN6_SCM
 	default y if TARGET_VP
 
+config MAX77975
+	bool
+	default y if TARGET_NITROGEN8MM_TAB
+
+config MAX17260
+	bool
+	default y if TARGET_NITROGEN8MM_TAB
+
 config BQ25898
 	bool
 	default y if TARGET_DS
@@ -52,6 +60,16 @@ config I2C_BUS_MAX77823
 	default 1 if TARGET_C2_IMX8MM
 	default 3 if TARGET_NITROGEN6_SCM
 	default 2
+
+config I2C_BUS_MAX77975
+	int
+	depends on MAX77975
+	default 0 if TARGET_NITROGEN8MM_TAB
+
+config I2C_BUS_MAX17260
+	hex
+	depends on MAX17260
+	default 0x41 if TARGET_NITROGEN8MM_TAB
 
 config FAN53526
 	bool

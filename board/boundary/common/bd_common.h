@@ -50,6 +50,11 @@ void max77823_otg_power(int enable);
 void max77823_boost_power(int enable);
 int max77823_is_charging(void);
 void max77834_power_check(void);
+
+void max77975_init(void);
+void max77975_otg_power(int enable);
+int max77975_set_chrgin_limit(int ma);
+
 void bq25898_init(int i2c_bus, int i2c_address);
 
 void fan53526_init(void);

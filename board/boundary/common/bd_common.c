@@ -126,6 +126,10 @@ int board_usb_cleanup(int index, enum usb_init_type init)
 	if (init == USB_INIT_HOST)
 		max77823_otg_power(0);
 #endif
+#ifdef CONFIG_MAX77975
+	if (init == USB_INIT_HOST)
+		max77975_otg_power(0);
+#endif
 	imx8m_usb_power(index, false);
 	return 0;
 }
@@ -438,6 +442,9 @@ void common_board_init(const struct i2c_pads_info *p, int i2c_bus_cnt, int otg_i
 #endif
 #ifdef CONFIG_MAX77823
 	max77823_init();
+#endif
+#ifdef CONFIG_MAX77975
+	max77975_init();
 #endif
 #ifdef CONFIG_TAMPER
 	check_tamper();

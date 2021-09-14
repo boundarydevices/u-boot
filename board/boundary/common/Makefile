@@ -28,5 +28,6 @@ endif
 obj-$(CONFIG_CMD_FBPANEL) += display.o
 obj-$(CONFIG_BQ25898) += bq25898.o
 obj-$(CONFIG_MAX77823)  += max77823.o
+obj-$(CONFIG_MAX77975)  += max77975.o
 obj-$(CONFIG_FAN53526)  += fan53526.o
 obj-$(CONFIG_CMD_OTG_CABLE)  += cmd_otg_cable.o
