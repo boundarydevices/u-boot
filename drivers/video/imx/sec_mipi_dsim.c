@@ -1773,6 +1773,8 @@ static int sec_mipi_dsim_disable(struct udevice *dev)
 	uint32_t intsrc;
 	struct sec_mipi_dsim *dsim = dev_get_priv(dev);
 
+	if (!dsim)
+		return 0;
 	/* disable data transfer of dsim */
 	sec_mipi_dsim_set_standby(dsim, false);
 
