@@ -49,6 +49,9 @@ for board in $boards ; do
 	fi
 	numboards=`expr $numboards + 1`;
     fi
+    if [ $board == "nitrogen8m_2g" ] ; then
+	cp -fv flash.bin ${savedir}/u-boot.nitrogen8m ;
+    fi
 done
 make distclean;
 echo -e "\n\n\nbuilt for ${numboards} boards. ${numsuccess} succeeded and ${numfailures} failed";
