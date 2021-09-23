@@ -171,8 +171,10 @@ static const iomux_v3_cfg_t init_pads[] = {
 
 
 	/* i2c3 J7 */
+#define GP_TS_GT911_RESET	IMX_GPIO_NR(4, 10)
 #define GP_I2C3_J7_RESET	IMX_GPIO_NR(4, 10)
-	IOMUX_PAD_CTRL(KEY_COL2__GPIO4_IO10, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(KEY_COL2__GPIO4_IO10, WEAK_PULLDN),
+#define GPIRQ_TS_GT911		IMX_GPIO_NR(1, 9)
 #define GPIRQ_I2C3_J7		IMX_GPIO_NR(1, 9)
 	IOMUX_PAD_CTRL(GPIO_9__GPIO1_IO09, WEAK_PULLUP),
 
@@ -277,6 +279,11 @@ int board_spi_cs_gpio(unsigned bus, unsigned cs)
 #endif
 
 #ifdef CONFIG_CMD_FBPANEL
+int board_detect_gt911(struct display_info_t const *di)
+{
+	return board_detect_gt911_common(di, 0, 0, GP_TS_GT911_RESET, GPIRQ_TS_GT911);
+}
+
 void board_enable_lvds(const struct display_info_t *di, int enable)
 {
 	gpio_set_value(GP_BACKLIGHT_LVDS, enable);
@@ -300,8 +307,10 @@ static const struct display_info_t displays[] = {
 	VD_TM070JDHG30(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
 
 	/* goodix */
-	VD_TM070JDHG30_14(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x14, FBTS_GOODIX),
-	VD_TM070JDHG30_5D(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x5d, FBTS_GOODIX2),
+	VD_M101NWWB_14(LVDS, board_detect_gt911, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x14, FBTS_GOODIX),
+	VD_M101NWWB_5D(LVDS, board_detect_gt911, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x5d, FBTS_GOODIX2),
+	VD_TM070JDHG30_14(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x14, FBTS_GOODIX),
+	VD_TM070JDHG30_5D(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x5d, FBTS_GOODIX2),
 
 	/* ili210x */
 	VD_AMP1024_600(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x41, FBTS_ILI210X),
@@ -384,17 +393,9 @@ int board_early_init_f(void)
 
 int board_init(void)
 {
-#ifdef CONFIG_CMD_FBPANEL
-	gpio_set_value(GP_I2C3_J7_RESET, 1);
-#endif
 	common_board_init(i2c_pads, I2C_BUS_CNT, IOMUXC_GPR1_OTG_ID_GPIO1,
 			displays, display_cnt, 0);
 	return 0;
-}
-
-void board_late_specific_init(void)
-{
-	gpio_set_value(GP_I2C3_J7_RESET, 0);
 }
 
 const struct button_key board_buttons[] = {
