@@ -222,6 +222,8 @@ void fbp_setup_env_cmds(void);
 #define VD_LG1280_800(_mode, args...)		VDF_HANNSTAR7(_mode, "lg1280x800", RGB666, 0, args)
 #define VD_HDA800XPT(_mode, args...)		VDF_HDA800XPT(_mode, "hda800xpt", RGB24, FBF_BKLIT_DTB | FBF_BKLIT_LOW_ACTIVE | FBF_BKLIT_EN_LOW_ACTIVE | FBF_BKLIT_EN_DTB, args)
 #define VD_M101NWWB(_mode, args...)		VDF_M101NWWB(_mode, "M101NWWB", RGB24, 0, args)
+#define VD_M101NWWB_14(_mode, args...)		VDF_M101NWWB(_mode, "M101NWWB-14", RGB24, 0, args)
+#define VD_M101NWWB_5D(_mode, args...)		VDF_M101NWWB(_mode, "M101NWWB-5d", RGB24, 0, args)
 #define VD_LD101WX1(_mode, args...)		VDF_HANNSTAR7(_mode, "ld101wx1", RGB24, 0, args)
 #define VD_DT070BTFT(_mode, args...)		VDF_DT070BTFT(_mode, "dt070btft", RGB24, FBF_JEIDA, args)
 #define VD_DT070BTFT_18(_mode, args...)		VDF_DT070BTFT(_mode, "dt070btft_18", RGB666, 0, args)
