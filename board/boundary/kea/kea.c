@@ -103,20 +103,67 @@ static iomux_v3_cfg_t const init_pads[] = {
 
 #define GP_EMMC_RESET	IMX_GPIO_NR(2, 10)
 	IOMUX_PAD_CTRL(SD1_RESET_B__GPIO2_IO10, 0x41),
+
+#define GP_REG_3P7V    IMX_GPIO_NR(4, 20)
+	IOMUX_PAD_CTRL(SAI1_MCLK__GPIO4_IO20, 0x100),
+	/* EC21 - Modem pins */
+#define GP_EC21_RESET		IMX_GPIO_NR(4, 2)
+	IOMUX_PAD_CTRL(SAI1_RXD0__GPIO4_IO2, 0x100),	/*  98, LTE_RESET_N */
+#define GP_EC21_USB_BOOT	IMX_GPIO_NR(4, 27)
+	IOMUX_PAD_CTRL(SAI2_MCLK__GPIO4_IO27, 0x100),	/* 123, LTE_USB_BOOT */
+#define GP_EC21_POWER_KEY	IMX_GPIO_NR(4, 10)
+	IOMUX_PAD_CTRL(SAI1_TXFS__GPIO4_IO10, 0x140),	/* 106, LTE_ON_OFF */
+#define GP_EC21_USIM_DETECT	IMX_GPIO_NR(3, 20)
+	IOMUX_PAD_CTRL(SAI5_RXC__GPIO3_IO20, 0x100),	/*  84, LTE_USIM_DETECT */
+#define GP_EC21_WAKE_UP		IMX_GPIO_NR(4, 11)
+	IOMUX_PAD_CTRL(SAI1_TXC__GPIO4_IO11 , 0x100),	/* 107, LTE_WAKE_UP */
+#define GP_EC21_AP_READY	IMX_GPIO_NR(4, 19)
+	IOMUX_PAD_CTRL(SAI1_TXD7__GPIO4_IO19, 0x100),	/* 115, LTE_AP_READY */
+#define GP_EC21_ACTIVE_STATUS	IMX_GPIO_NR(4, 1)
+	IOMUX_PAD_CTRL(SAI1_RXC__GPIO4_IO1, 0x80),	/*  97, LTE_STAT */
+#define GP_EC21_NET_STAT	IMX_GPIO_NR(1, 0)
+	IOMUX_PAD_CTRL(GPIO1_IO00__GPIO1_IO0, 0x80),	/*   0, LTE_NET_STAT */
+#define GP_EC21_NET_MODE	IMX_GPIO_NR(4, 12)
+	IOMUX_PAD_CTRL(SAI1_TXD0__GPIO4_IO12, 0x80),	/* 108, LTE_NET_MODE */
+#define GP_EC21_RI		IMX_GPIO_NR(4, 0)
+	IOMUX_PAD_CTRL(SAI1_RXFS__GPIO4_IO0, 0x80),	/*  96, LTE_RI */
+};
+
+static const struct gpio_reserve gpios_to_reserve[] = {
+	{ GP_BACKLIGHT_MIPI, GPIOD_OUT_LOW, 0, "backlight_mipi", },
+	{ GP_SN65DSI83_EN, GPIOD_OUT_LOW, GRF_FREE, "sn65en", },
+	{ GP_REG_3P7V, GPIOD_OUT_LOW, 0, "3p7v", },
+	{ GP_EC21_RESET, GPIOD_OUT_LOW, 0, "ec21-reset", },
+	{ GP_EC21_USB_BOOT, GPIOD_OUT_LOW, 0, "ec21-usb-boot", },
+	{ GP_EC21_POWER_KEY, GPIOD_IN, 0, "ec21-power-key", },
+	{ GP_EC21_USIM_DETECT, GPIOD_OUT_LOW, 0, "ec21-usim-detect", },
+	{ GP_EC21_WAKE_UP, GPIOD_OUT_LOW, 0, "ec21-wake-up", },
+	{ GP_EC21_AP_READY, GPIOD_OUT_LOW, 0, "ec21-ap-ready", },
+	{ GP_EMMC_RESET, GPIOD_OUT_HIGH, 0, "emmc-reset", },
+	{ GP_EC21_ACTIVE_STATUS, GPIOD_IN, 0, "ec21-active-status", },
+	{ GP_EC21_NET_STAT, GPIOD_IN, 0, "ec21-net-stat", },
+	{ GP_EC21_NET_MODE, GPIOD_IN, 0, "ec21-net-mode", },
+	{ GP_EC21_RI, GPIOD_IN, 0, "ec21-ri", },
+#ifdef CONFIG_FEC_PHY_BITBANG
+	{ GP_MII_MDC, GPIOD_IN, 0, "mii_mdc", },
+	{ GP_MII_MDIO, GPIOD_IN, 0, "mii_mdio", },
+#endif
+	{ GP_GT911_RESET, GPIOD_OUT_LOW, 0, "gt911_reset", },
+	{ GPIRQ_GT911, GPIOD_IN, 0, "gt911_irq", },
+	/* An unmodified panel has reset connected directly to 1.8V, so make input */
+	{ GP_LCD133_070_RESET, GPIOD_IN, GRF_FREE, "lcd133_070_reset", },
+	{ GPIRQ_CSI1_TC3587, GPIOD_IN, 0, "tc3587_irq", },	/* also "csi1_mipi_pwdn" */
+	{ GP_OV5640_MIPI_RESET, GPIOD_OUT_LOW, 0, "csi1_mipi_reset", },
 };
 
 int board_early_init_f(void)
 {
 	struct wdog_regs *wdog = (struct wdog_regs *)WDOG1_BASE_ADDR;
 
-	gpio_direction_output(GP_BACKLIGHT_MIPI, 0);
-	gpio_request(GP_SN65DSI83_EN, "sn65en");
-	gpio_direction_output(GP_SN65DSI83_EN, 0);
+	gpios_reserve(gpios_to_reserve, ARRAY_SIZE(gpios_to_reserve));
 	imx_iomux_v3_setup_multiple_pads(init_pads, ARRAY_SIZE(init_pads));
 
-	gpio_direction_output(GP_EMMC_RESET, 1);
 	set_wdog_reset(wdog);
-	gpio_direction_output(GP_SN65DSI83_EN, 0);
 	return 0;
 }
 
@@ -162,28 +209,7 @@ static const struct display_info_t displays[] = {
 
 int board_init(void)
 {
-#ifdef CONFIG_FEC_PHY_BITBANG
-	gpio_request(GP_MII_MDC, "mii_mdc");
-	gpio_request(GP_MII_MDIO, "mii_mdio");
-#endif
-	gpio_request(GP_GT911_RESET, "gt911_reset");
-	gpio_request(GPIRQ_GT911, "gt911_irq");
-#ifndef CONFIG_DM_VIDEO
-	gpio_request(GP_SN65DSI83_EN, "sn65dsi83_enable");
-	gpio_request(GP_LTK08_MIPI_EN, "lkt08_mipi_en");
-#else
-	gpio_request(GP_LCD133_070_RESET, "lcd133_070_reset");
-#endif
-	gpio_request(GPIRQ_CSI1_TC3587, "csi1_mipi_pwdn");
-	gpio_request(GP_OV5640_MIPI_RESET, "csi1_mipi_reset");
-	gpio_direction_output(GP_GT911_RESET, 0);
-	gpio_direction_input(GPIRQ_CSI1_TC3587);
-	gpio_direction_output(GP_OV5640_MIPI_RESET, 0);
-	/* An unmodified panel has reset connected directly to 1.8V, so make input */
-	gpio_direction_input(GP_LCD133_070_RESET);
-#ifdef CONFIG_DM_VIDEO
-	gpio_free(GP_LCD133_070_RESET);
-#endif
+	gpios_reserve(gpios_to_reserve, ARRAY_SIZE(gpios_to_reserve));
 #if defined(CONFIG_MXC_SPI) && !defined(CONFIG_DM_SPI)
 	setup_spi();
 #endif
