@@ -299,6 +299,26 @@ void set_gpios(const unsigned short *p, int cnt, int val)
 		gpio_direction_output(*p++, val);
 }
 
+void gpios_reserve(const struct gpio_reserve *p, int cnt)
+{
+	int i;
+
+	for (i = 0; i < cnt; i++) {
+		gpio_request(p->gpio, p->name);
+		if (p->init_type == GPIOD_IN) {
+			gpio_direction_input(p->gpio);
+		} else if (p->init_type == GPIOD_OUT_LOW) {
+			gpio_direction_output(p->gpio, 0);
+		} else {
+			gpio_direction_output(p->gpio, 1);
+		}
+		if (p->flags & GRF_FREE)
+			gpio_free(p->gpio);
+		p++;
+	}
+}
+
+
 #if defined(CONFIG_FSL_ESDHC_IMX) && !CONFIG_IS_ENABLED(DM_MMC)
 int board_mmc_getcd(struct mmc *mmc)
 {

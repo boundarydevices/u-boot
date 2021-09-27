@@ -32,6 +32,19 @@ void board_usb_reset(int index, enum usb_init_type init);
 void set_gpios_in(const unsigned short *p, int cnt);
 void set_gpios(const unsigned short *p, int cnt, int val);
 
+struct gpio_reserve {
+	unsigned short gpio;
+#define GPIOD_OUT_LOW	0
+#define GPIOD_OUT_HIGH	1
+#define GPIOD_IN	2
+	unsigned char init_type;
+#define GRF_FREE	BIT(0)
+	unsigned char flags;
+	const char* name;
+};
+
+void gpios_reserve(const struct gpio_reserve *p, int cnt);
+
 struct display_info_t;
 struct i2c_pads_info;
 
