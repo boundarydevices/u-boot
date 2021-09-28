@@ -124,48 +124,75 @@ static iomux_v3_cfg_t const init_pads[] = {
 
 	IOMUX_PAD_CTRL(GPIO1_IO14__USB2_OTG_PWR, 0x16),
 	IOMUX_PAD_CTRL(GPIO1_IO15__USB2_OTG_OC, WEAK_PULLUP),
+	/* EC21 - Modem pins */
+#define GP_EC21_RESET		IMX_GPIO_NR(4, 13)
+	IOMUX_PAD_CTRL(SAI1_TXD1__GPIO4_IO13, 0x100),	/* RESET_N */
+#define GP_EC21_USB_BOOT	IMX_GPIO_NR(4, 15)
+	IOMUX_PAD_CTRL(SAI1_TXD3__GPIO4_IO15, 0x100),	/* USB_BOOT */
+#define GP_EC21_POWER_KEY	IMX_GPIO_NR(4, 11)
+	IOMUX_PAD_CTRL(SAI1_TXC__GPIO4_IO11, 0x140),	/* ON_OFF */
+#define GP_EC21_USIM_DETECT	IMX_GPIO_NR(4, 12)
+	IOMUX_PAD_CTRL(SAI1_TXD0__GPIO4_IO12, 0x100),	/* USIM_DETECT */
+#define GP_EC21_WAKE_UP		IMX_GPIO_NR(4, 14)
+	IOMUX_PAD_CTRL(SAI1_TXD2__GPIO4_IO14 , 0x100),	/* WAKE_UP */
+#define GP_EC21_AP_READY	IMX_GPIO_NR(4, 17)
+	IOMUX_PAD_CTRL(SAI1_TXD5__GPIO4_IO17, 0x100),	/* AP_READY */
+#define GP_EC21_ACTIVE_STATUS	IMX_GPIO_NR(4, 0)
+	IOMUX_PAD_CTRL(SAI1_RXFS__GPIO4_IO0, 0x80),	/* STAT */
+#define GP_EC21_NET_STAT	IMX_GPIO_NR(4, 20)
+	IOMUX_PAD_CTRL(SAI1_MCLK__GPIO4_IO20, 0x80),	/* NET_STAT */
+#define GP_EC21_NET_MODE	IMX_GPIO_NR(4, 10)
+	IOMUX_PAD_CTRL(SAI1_TXFS__GPIO4_IO10, 0x80),	/* NET_MODE */
+#define GP_EC21_RI		IMX_GPIO_NR(4, 16)
+	IOMUX_PAD_CTRL(SAI1_TXD4__GPIO4_IO16, 0x80),	/* RI */
 };
 
-static const unsigned short gpios_out_low[] = {
-	GP_BT_RFKILL_RESET,
-	GP_FEC1_RESET,
-	GP_PCIE0_RESET,
-	GP_PCIE0_DISABLE,
-	GP_REG_3P7V,
-	GP_USDHC2_VSEL,
-	GP_REG_WLAN_VMMC,
-	GP_EMMC_RESET,
-	GP_ZWAVE_RESET,
-};
-
-static const unsigned short gpios_out_high[] = {
-	GP_ECSPI2_CS0,
-	GP_GPIOLEDS_RED1,
-	GP_GPIOLEDS_GREEN1,
-	GP_GPIOLEDS_BLUE1,
-	GP_GPIOLEDS_RED2,
-	GP_GPIOLEDS_GREEN2,
-	GP_GPIOLEDS_BLUE2,
-	GP_GPIOLEDS_RED3,
-	GP_GPIOLEDS_GREEN3,
-	GP_GPIOLEDS_BLUE3,
-	GP_RV3028_EVI,
-};
-
-static const unsigned short gpios_in[] = {
-	GPIRQ_FEC1_PHY,
-	GP_GPIOKEY_POWER_FAIL,
-	GPIRQ_RV3028,
-	GP_USDHC2_CD,
+static const struct gpio_reserve gpios_to_reserve[] = {
+	{ GP_ECSPI2_CS0, GPIOD_OUT_HIGH, 0, "ecspi2-cs0", },
+	{ GP_GPIOLEDS_RED1, GPIOD_OUT_HIGH, 0, "red1", },
+	{ GP_GPIOLEDS_GREEN1, GPIOD_OUT_HIGH, 0, "green1", },
+	{ GP_GPIOLEDS_BLUE1, GPIOD_OUT_HIGH, 0, "blue1", },
+	{ GP_GPIOLEDS_RED2, GPIOD_OUT_HIGH, 0, "red2", },
+	{ GP_GPIOLEDS_GREEN2, GPIOD_OUT_HIGH, 0, "green2", },
+	{ GP_GPIOLEDS_BLUE2, GPIOD_OUT_HIGH, 0, "blue2", },
+	{ GP_GPIOLEDS_RED3, GPIOD_OUT_HIGH, 0, "red3", },
+	{ GP_GPIOLEDS_GREEN3, GPIOD_OUT_HIGH, 0, "green3", },
+	{ GP_GPIOLEDS_BLUE3, GPIOD_OUT_HIGH, 0, "blue3", },
+	{ GP_RV3028_EVI, GPIOD_OUT_HIGH, 0, "rv3028-evi", },
+	{ GPIRQ_FEC1_PHY, GPIOD_IN, 0, "irq-fec1-phy", },
+	{ GPIRQ_RV3028, GPIOD_IN, 0, "irq-rv3028", },
+	{ GP_GPIOKEY_POWER_FAIL, GPIOD_IN, 0, "power-fail", },
+	{ GP_USDHC2_CD, GPIOD_IN, GRF_FREE, "usdhc2-cd", },
+#ifdef CONFIG_FEC_PHY_BITBANG
+	{ GP_MII_MDC, GPIOD_IN, 0, "mii_mdc", },
+	{ GP_MII_MDIO, GPIOD_IN, 0, "mii_mdio", },
+#endif
+	{ GP_BT_RFKILL_RESET, GPIOD_OUT_LOW, 0, "bt-rfkill-reset", },
+	{ GP_FEC1_RESET, GPIOD_OUT_LOW, 0, "fec1-reset", },
+	{ GP_PCIE0_RESET, GPIOD_OUT_LOW, 0, "pcie0-reset", },
+	{ GP_PCIE0_DISABLE, GPIOD_OUT_LOW, 0, "pcie0-disable", },
+	{ GP_REG_3P7V, GPIOD_OUT_LOW, 0, "3p7v", },
+	{ GP_EC21_RESET, GPIOD_OUT_LOW, 0, "ec21-reset", },
+	{ GP_EC21_USB_BOOT, GPIOD_OUT_LOW, 0, "ec21-usb-boot", },
+	{ GP_EC21_POWER_KEY, GPIOD_IN, 0, "ec21-power-key", },
+	{ GP_EC21_USIM_DETECT, GPIOD_OUT_LOW, 0, "ec21-usim-detect", },
+	{ GP_EC21_WAKE_UP, GPIOD_OUT_LOW, 0, "ec21-wake-up", },
+	{ GP_EC21_AP_READY, GPIOD_OUT_LOW, 0, "ec21-ap-ready", },
+	{ GP_EC21_ACTIVE_STATUS, GPIOD_IN, 0, "ec21-active-status", },
+	{ GP_EC21_NET_STAT, GPIOD_IN, 0, "ec21-net-stat", },
+	{ GP_EC21_NET_MODE, GPIOD_IN, 0, "ec21-net-mode", },
+	{ GP_EC21_RI, GPIOD_IN, 0, "ec21-ri", },
+	{ GP_USDHC2_VSEL, GPIOD_OUT_LOW, GRF_FREE, "usdhc2-vsel", },
+	{ GP_REG_WLAN_VMMC, GPIOD_OUT_LOW, GRF_FREE, "reg-wlan-vmmc", },
+	{ GP_EMMC_RESET, GPIOD_OUT_LOW, GRF_FREE, "emmc-reset", },
+	{ GP_ZWAVE_RESET, GPIOD_OUT_LOW, 0, "zwave-reset", },
 };
 
 int board_early_init_f(void)
 {
 	struct wdog_regs *wdog = (struct wdog_regs *)WDOG1_BASE_ADDR;
 
-	set_gpios_in(gpios_in, ARRAY_SIZE(gpios_in));
-	set_gpios(gpios_out_high, ARRAY_SIZE(gpios_out_high), 1);
-	set_gpios(gpios_out_low, ARRAY_SIZE(gpios_out_low), 0);
+	gpios_reserve(gpios_to_reserve, ARRAY_SIZE(gpios_to_reserve));
 	imx_iomux_v3_setup_multiple_pads(init_pads, ARRAY_SIZE(init_pads));
 
 	gpio_direction_output(GP_EMMC_RESET, 1);
@@ -190,10 +217,7 @@ static const struct display_info_t displays[] = {
 
 int board_init(void)
 {
-#ifdef CONFIG_FEC_PHY_BITBANG
-	gpio_request(GP_MII_MDC, "mii_mdc");
-	gpio_request(GP_MII_MDIO, "mii_mdio");
-#endif
+	gpios_reserve(gpios_to_reserve, ARRAY_SIZE(gpios_to_reserve));
 #ifdef CONFIG_MXC_SPI
 	setup_spi();
 #endif
