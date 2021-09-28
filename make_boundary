@@ -45,7 +45,6 @@ for board in $boards ; do
 	defcfg=$(sed -n -e's/.\{1,\}DEFCONFIG=\\"\(.\{1,\}\)\\""/\1/p' configs/${board}_defconfig)
 	if [ "$defcfg" != "$board" ] ; then
 		echo -e "\n\n\n!!!!!!!! $board does not match $defcfg !!!!!!!!!!!!\n\n";
-		read line;
 	fi
 	numboards=`expr $numboards + 1`;
     fi
