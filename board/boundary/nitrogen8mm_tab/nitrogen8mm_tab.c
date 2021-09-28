@@ -74,29 +74,39 @@ static iomux_v3_cfg_t const init_pads[] = {
 #define GP_I2C2_MUX_RESET	IMX_GPIO_NR(5, 11)
 	IOMUX_PAD_CTRL(ECSPI2_MOSI__GPIO5_IO11, 0x100),
 
+#define GP_REG_3P7V		IMX_GPIO_NR(4, 20)
+	IOMUX_PAD_CTRL(SAI1_MCLK__GPIO4_IO20, 0x100),
+
 	/* EC2x Modem control */
 #define GP_EC21_RESET		IMX_GPIO_NR(4, 10)
-	IOMUX_PAD_CTRL(SAI1_TXFS__GPIO4_IO10, 0x1c0),
+	IOMUX_PAD_CTRL(SAI1_TXFS__GPIO4_IO10, 0x140),
 #define GP_EC21_USB_BOOT	IMX_GPIO_NR(4, 11)
-	IOMUX_PAD_CTRL(SAI1_TXC__GPIO4_IO11 , 0x1c0),
-#define GP_EC21_NET_STAT	IMX_GPIO_NR(4, 12)
-	IOMUX_PAD_CTRL(SAI1_TXD0__GPIO4_IO12, 0x1c0),
-#define GP_EC21_NET_MODE	IMX_GPIO_NR(4, 13)
-	IOMUX_PAD_CTRL(SAI1_TXD1__GPIO4_IO13, 0x1c0),
-#define GP_EC21_AP_READY	IMX_GPIO_NR(4, 14)
-	IOMUX_PAD_CTRL(SAI1_TXD2__GPIO4_IO14, 0x1c0),
-#define GP_EC21_WAKE_UP		IMX_GPIO_NR(4, 15)
-	IOMUX_PAD_CTRL(SAI1_TXD3__GPIO4_IO15, 0x1c0),
-#define GP_EC21_RI		IMX_GPIO_NR(4, 16)
-	IOMUX_PAD_CTRL(SAI1_TXD4__GPIO4_IO16, 0x1c0),
-#define GP_EC21_USIM_DETECT	IMX_GPIO_NR(4, 17)
-	IOMUX_PAD_CTRL(SAI1_TXD5__GPIO4_IO17, 0x1c0),
+	IOMUX_PAD_CTRL(SAI1_TXC__GPIO4_IO11 , 0x100),
 #define GP_EC21_POWER_KEY	IMX_GPIO_NR(4, 18)
-	IOMUX_PAD_CTRL(SAI1_TXD6__GPIO4_IO18, 0x1c0),
-#define GP_EC21_STAT		IMX_GPIO_NR(4, 19)
+	IOMUX_PAD_CTRL(SAI1_TXD6__GPIO4_IO18, 0x140),
+#define GP_EC21_USIM_DETECT	IMX_GPIO_NR(4, 17)
+	IOMUX_PAD_CTRL(SAI1_TXD5__GPIO4_IO17, 0x100),
+#define GP_EC21_WAKE_UP		IMX_GPIO_NR(4, 15)
+	IOMUX_PAD_CTRL(SAI1_TXD3__GPIO4_IO15, 0x100),
+#define GP_EC21_AP_READY	IMX_GPIO_NR(4, 14)
+	IOMUX_PAD_CTRL(SAI1_TXD2__GPIO4_IO14, 0x100),
+#define GP_EC21_ACTIVE_STATUS	IMX_GPIO_NR(4, 19)
 	IOMUX_PAD_CTRL(SAI1_TXD7__GPIO4_IO19, 0x1c0),
+#define GP_EC21_NET_STAT	IMX_GPIO_NR(4, 12)
+	IOMUX_PAD_CTRL(SAI1_TXD0__GPIO4_IO12, 0x80),
+#define GP_EC21_NET_MODE	IMX_GPIO_NR(4, 13)
+	IOMUX_PAD_CTRL(SAI1_TXD1__GPIO4_IO13, 0x80),
+#define GP_EC21_RI		IMX_GPIO_NR(4, 16)
+	IOMUX_PAD_CTRL(SAI1_TXD4__GPIO4_IO16, 0x80),
+
 #define GP_REG_5V_EN		IMX_GPIO_NR(3, 15)
-	IOMUX_PAD_CTRL(NAND_RE_B__GPIO3_IO15, 0x116),
+	IOMUX_PAD_CTRL(NAND_RE_B__GPIO3_IO15, 0x100),
+#define GP_FLASH_EN		IMX_GPIO_NR(1, 10)
+	IOMUX_PAD_CTRL(GPIO1_IO10__GPIO1_IO10, 0x100),
+#define GP_TORCH_EN		IMX_GPIO_NR(1, 5)
+	IOMUX_PAD_CTRL(GPIO1_IO05__GPIO1_IO5, 0x100),
+#define GPIRQ_PN7150		IMX_GPIO_NR(1, 8)
+	IOMUX_PAD_CTRL(GPIO1_IO08__GPIO1_IO8, 0x182),
 };
 
 void release_i2c2_mux_reset(void)
@@ -307,13 +317,38 @@ int board_usb_otg_mode(struct udevice *dev)
 	return USB_INIT_DEVICE;
 }
 
+static const struct gpio_reserve gpios_to_reserve[] = {
+	{ GP_REG_3P7V, GPIOD_OUT_LOW, GRF_FREE, "3p7v", },
+	{ GP_REG_5V_EN, GPIOD_OUT_HIGH, GRF_FREE, "reg-5v", },
+	{ GP_FLASH_EN, GPIOD_OUT_LOW, 0, "flash-en", },
+	{ GP_TORCH_EN, GPIOD_OUT_LOW, 0, "torch-en", },
+	{ GPIRQ_PN7150, GPIOD_IN, 0, "irq-pn7150", },
+	{ GP_EMMC_RESET, GPIOD_OUT_HIGH, GRF_FREE, "emmc-reset", },
+	{ GP_EC21_RESET, GPIOD_OUT_LOW, 0, "ec21-reset", },
+	{ GP_EC21_USB_BOOT, GPIOD_OUT_LOW, 0, "ec21-usb-boot", },
+	{ GP_EC21_POWER_KEY, GPIOD_IN, 0, "ec21-power-key", },
+	{ GP_EC21_USIM_DETECT, GPIOD_OUT_LOW, 0, "ec21-usim-detect", },
+	{ GP_EC21_WAKE_UP, GPIOD_OUT_LOW, 0, "ec21-wake-up", },
+	{ GP_EC21_AP_READY, GPIOD_OUT_LOW, 0, "ec21-ap-ready", },
+	{ GP_EC21_ACTIVE_STATUS, GPIOD_IN, 0, "ec21-active-status", },
+	{ GP_EC21_NET_STAT, GPIOD_IN, 0, "ec21-net-stat", },
+	{ GP_EC21_NET_MODE, GPIOD_IN, 0, "ec21-net-mode", },
+	{ GP_EC21_RI, GPIOD_IN, 0, "ec21-ri", },
+	{ GP_GT911_RESET, GPIOD_OUT_LOW, 0, "gt911_reset", },
+	{ GPIRQ_GT911, GPIOD_IN, 0, "gt911_irq", },
+	{ GP_CSI1_1MIPI_RESET, GPIOD_OUT_LOW, 0, "csi1_1mipi_reset", },
+	{ GP_CSI1_1MIPI_PWDN, GPIOD_OUT_HIGH, 0, "csi1_1mipi_pwdn", },
+	{ GP_CSI1_2MIPI_RESET, GPIOD_OUT_LOW, 0, "csi1_2mipi_reset", },
+	{ GP_CSI1_2MIPI_PWDN, GPIOD_OUT_HIGH, 0, "csi1_2mipi_pwdn", },
+};
+
 int board_early_init_f(void)
 {
 	struct wdog_regs *wdog = (struct wdog_regs *)WDOG1_BASE_ADDR;
 
+	gpios_reserve(gpios_to_reserve, ARRAY_SIZE(gpios_to_reserve));
 	imx_iomux_v3_setup_multiple_pads(init_pads, ARRAY_SIZE(init_pads));
 
-	gpio_direction_output(GP_EMMC_RESET, 1);
 	set_wdog_reset(wdog);
 	return 0;
 }
@@ -363,42 +398,7 @@ static const struct display_info_t displays[] = {
 
 int board_init(void)
 {
-	gpio_request(GP_GT911_RESET, "gt911_reset");
-	gpio_request(GPIRQ_GT911, "gt911_irq");
-#ifndef CONFIG_DM_VIDEO
-	gpio_request(GP_LTK08_MIPI_EN, "lkt08_mipi_en");
-#endif
-	gpio_request(GP_CSI1_1MIPI_PWDN, "csi1_1mipi_pwdn");
-	gpio_request(GP_CSI1_1MIPI_RESET, "csi1_1mipi_reset");
-	gpio_request(GP_CSI1_2MIPI_PWDN, "csi1_2mipi_pwdn");
-	gpio_request(GP_CSI1_2MIPI_RESET, "csi1_2mipi_reset");
-	gpio_direction_output(GP_GT911_RESET, 0);
-	gpio_direction_output(GP_CSI1_1MIPI_PWDN, 1);
-	gpio_direction_output(GP_CSI1_1MIPI_RESET, 0);
-	gpio_direction_output(GP_CSI1_2MIPI_PWDN, 1);
-	gpio_direction_output(GP_CSI1_2MIPI_RESET, 0);
-	gpio_request(GP_EC21_RESET, "ec2x_reset");
-	gpio_request(GP_EC21_USB_BOOT, "ec2x_usb_boot");
-	gpio_request(GP_EC21_NET_STAT, "ec2x_net_stat");
-	gpio_request(GP_EC21_NET_MODE, "ec2x_net_mode");
-	gpio_request(GP_EC21_AP_READY, "ec2x_ap_ready");
-	gpio_request(GP_EC21_WAKE_UP, "ec2x_wake_up");
-	gpio_request(GP_EC21_RI, "ec2x_ri");
-	gpio_request(GP_EC21_USIM_DETECT, "ec2x_usim_detect");
-	gpio_request(GP_EC21_POWER_KEY, "ec2x_power_key");
-	gpio_request(GP_EC21_STAT, "ec2x_stat");
-	gpio_request(GP_REG_5V_EN, "reg_5v");
-	gpio_direction_output(GP_EC21_RESET, 1);
-	gpio_direction_output(GP_EC21_USB_BOOT, 0);
-	gpio_direction_output(GP_EC21_NET_STAT, 0);
-	gpio_direction_output(GP_EC21_NET_MODE, 0);
-	gpio_direction_output(GP_EC21_AP_READY, 0);
-	gpio_direction_output(GP_EC21_WAKE_UP, 0);
-	gpio_direction_output(GP_EC21_RI, 0);
-	gpio_direction_output(GP_EC21_USIM_DETECT, 0);
-	gpio_direction_output(GP_EC21_POWER_KEY, 0);
-	gpio_direction_input(GP_EC21_STAT);
-	gpio_direction_output(GP_REG_5V_EN, 1);
+	gpios_reserve(gpios_to_reserve, ARRAY_SIZE(gpios_to_reserve));
 #if defined(CONFIG_MXC_SPI) && !defined(CONFIG_DM_SPI)
 	setup_spi();
 #endif
