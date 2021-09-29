@@ -2,6 +2,11 @@ choice
 	prompt	"Boundary i.MX8M board select"
 	optional
 
+config TARGET_ASH8MM
+	bool "ash8mm"
+	select IMX8MM
+	select SUPPORT_SPL
+
 config TARGET_BIO
 	bool "bio"
 	select IMX8MQ
@@ -102,6 +107,7 @@ config TARGET_SPAN
 
 endchoice
 
+source "board/boundary/ash8mm/Kconfig"
 source "board/boundary/bio/Kconfig"
 source "board/boundary/c2-imx8mm/Kconfig"
 source "board/boundary/c2-mid/Kconfig"
