@@ -4,5 +4,10 @@ choice
 
 config TARGET_ASH8MM
 	bool "ash8mm"
+	select BINMAN
+	select IMX8MM
+	select SUPPORT_SPL
 
 endchoice
+
+source "board/boundary/ash8mm/Kconfig"

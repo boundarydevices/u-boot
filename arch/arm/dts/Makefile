@@ -930,6 +930,9 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
 	imx8mq-pico-pi.dtb \
 	imx8mq-kontron-pitx-imx8m.dtb
 
+dtb-$(CONFIG_ARCH_IMX8M) += \
+	imx8mm-ash8mm.dtb \
+
 dtb-$(CONFIG_ARCH_IMXRT) += imxrt1050-evk.dtb \
 	imxrt1020-evk.dtb
 
