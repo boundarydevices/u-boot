@@ -17,6 +17,7 @@
 #include <linux/err.h>
 #include <asm/io.h>
 #include <asm/system.h>
+#include <display.h>
 
 #include "../videomodes.h"
 #include <linux/bug.h>
@@ -388,6 +389,14 @@ static int lcdifv3_video_probe(struct udevice *dev)
 			if (ret) {
 				dev_err(dev, "fail to set backlight\n");
 				return ret;
+			}
+		}
+#endif
+#ifdef CONFIG_DISPLAY
+		if (device_get_uclass_id(priv->disp_dev) == UCLASS_DISPLAY) {
+			display_enable(priv->disp_dev, 32, &timings);
+			if (ret) {
+				dev_err(dev, "display_enable failed %d\n", ret);
 			}
 		}
 #endif
