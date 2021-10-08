@@ -17,6 +17,7 @@
 #include <asm/mach-imx/mxc_i2c.h>
 #include <asm-generic/gpio.h>
 
+#include <display_detect.h>
 #include <dwc3-uboot.h>
 #include <errno.h>
 #include <linux/delay.h>
@@ -118,6 +119,14 @@ int board_usb_hub_gpio_init(void)
 #endif
 
 #ifdef CONFIG_CMD_FBPANEL
+#ifdef CONFIG_VIDEO_IMX8MP_HDMI
+int board_detect_hdmi(struct display_info_t const *di)
+{
+	int ret =  display_detect_by_node_name("hdmi_hpd");
+
+	return (ret > 0) ? 1 : 0;
+}
+#endif
 int board_detect_gt911(struct display_info_t const *di)
 {
 	return board_detect_gt911_common(di, 1 << (di->bus_num >> 4), 0, GP_TS_GT911_RESET, GPIRQ_TS_GT911);
@@ -130,7 +139,11 @@ int board_detect_gt911_sn65(struct display_info_t const *di)
 
 static const struct display_info_t displays[] = {
 	/* hdmi */
+#ifdef CONFIG_VIDEO_IMX8MP_HDMI
+	VD_1920_1080M_60(HDMI, board_detect_hdmi, 0, 0x50),
+#else
 	VD_1920_1080M_60(HDMI, NULL, 0, 0x50),
+#endif
 	VD_1280_800M_60(HDMI, NULL, 0, 0x50),
 	VD_1280_720M_60(HDMI, NULL, 0, 0x50),
 	VD_1024_768M_60(HDMI, NULL, 0, 0x50),

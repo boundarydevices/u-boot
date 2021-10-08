@@ -1037,6 +1037,10 @@
 	status = "okay";
 };
 
+&hdmi_hpd {
+	status = "okay";
+};
+
 &hdmi_pavi {
 	status = "okay";
 };
