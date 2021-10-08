@@ -457,6 +457,36 @@ static void check_hdmi_resolution_override(struct display_timing *t)
 			tentry(&t->vback_porch, 36);
 			tentry(&t->vfront_porch, 4);
 			tentry(&t->vsync_len, 5);
+		} else if (strstr(cmd_hdmi, "1280x800")) {
+			tentry(&t->pixelclock, ((1280+8+64+8)*(800+2+39+1)*60));
+			tentry(&t->hactive, 1280);
+			tentry(&t->hback_porch, 8);
+			tentry(&t->hfront_porch, 64);
+			tentry(&t->hsync_len, 8);
+			tentry(&t->vactive, 800);
+			tentry(&t->vback_porch, 2);
+			tentry(&t->vfront_porch, 39);
+			tentry(&t->vsync_len, 1);
+		} else if (strstr(cmd_hdmi, "1280x720")) {
+			tentry(&t->pixelclock, ((1280+220+110+40)*(720+20+5+5)*60));
+			tentry(&t->hactive, 1280);
+			tentry(&t->hback_porch, 220);
+			tentry(&t->hfront_porch, 110);
+			tentry(&t->hsync_len, 40);
+			tentry(&t->vactive, 720);
+			tentry(&t->vback_porch, 20);
+			tentry(&t->vfront_porch, 5);
+			tentry(&t->vsync_len, 5);
+		} else if (strstr(cmd_hdmi, "1024x768")) {
+			tentry(&t->pixelclock, ((1024+220+40+60)*(768+21+7+10)*60));
+			tentry(&t->hactive, 1024);
+			tentry(&t->hback_porch, 220);
+			tentry(&t->hfront_porch, 40);
+			tentry(&t->hsync_len, 60);
+			tentry(&t->vactive, 768);
+			tentry(&t->vback_porch, 21);
+			tentry(&t->vfront_porch, 7);
+			tentry(&t->vsync_len, 10);
 		}
 	}
 }
