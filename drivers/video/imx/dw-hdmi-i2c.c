@@ -156,6 +156,7 @@ static int i2c_wait(struct dw_hdmi_i2c *i2c, int jiffies)
 			break;
 		if (elapsed > jiffies)
 			return -ETIMEDOUT;
+		udelay(100);
 	} while (1);
 	return 0;
 }
