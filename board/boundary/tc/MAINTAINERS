@@ -1,0 +1,6 @@
+tc BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/tc/
+F:	include/configs/tc.h
+F:	configs/tc_512m_defconfig
