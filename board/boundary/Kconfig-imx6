@@ -196,6 +196,11 @@ config TARGET_TA
 	bool "ta"
 	depends on MX6DL || MX6Q || MX6QDL || MX6S
 
+config TARGET_TC
+	bool "tc"
+	depends on MX6ULL
+	select BOARD_LATE_INIT
+
 config TARGET_USD
 	bool "usd"
 	depends on MX6DL || MX6Q || MX6QDL || MX6S
@@ -265,6 +270,7 @@ source "board/boundary/ses/Kconfig"
 source "board/boundary/snap/Kconfig"
 source "board/boundary/sp/Kconfig"
 source "board/boundary/ta/Kconfig"
+source "board/boundary/tc/Kconfig"
 source "board/boundary/usd/Kconfig"
 source "board/boundary/usd_mr2/Kconfig"
 source "board/boundary/utc/Kconfig"
