@@ -87,6 +87,11 @@ config TARGET_IOC
 	bool "ioc"
 	depends on MX6DL || MX6Q || MX6QDL || MX6S
 
+config TARGET_JDE
+	bool "jde"
+	depends on MX6ULL
+	select BOARD_LATE_INIT
+
 config TARGET_JLM
 	bool "jlm"
 	depends on MX6DL || MX6Q || MX6QDL || MX6S
@@ -244,6 +249,7 @@ source "board/boundary/hl/Kconfig"
 source "board/boundary/hp/Kconfig"
 source "board/boundary/insp/Kconfig"
 source "board/boundary/ioc/Kconfig"
+source "board/boundary/jde/Kconfig"
 source "board/boundary/jlm/Kconfig"
 source "board/boundary/ls/Kconfig"
 source "board/boundary/lshore/Kconfig"
