@@ -1,0 +1,6 @@
+jde BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/jde/
+F:	include/configs/jde.h
+F:	configs/jde_512m_defconfig
