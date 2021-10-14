@@ -12,6 +12,7 @@
 #include <asm/arch/sys_proto.h>
 #include <asm/gpio.h>
 #include <asm/mach-imx/boot_mode.h>
+#include <asm/mach-imx/fbpanel.h>
 #include <asm/mach-imx/iomux-v3.h>
 #include <asm/mach-imx/mxc_i2c.h>
 #include <asm/io.h>
@@ -21,6 +22,7 @@
 #include <linux/sizes.h>
 #include <malloc.h>
 #include <mmc.h>
+#include <pwm.h>
 #include <usb.h>
 #include <usb/ehci-ci.h>
 #include "../common/bd_common.h"
@@ -85,7 +87,7 @@ static const iomux_v3_cfg_t init_pads[] = {
 
 	/* Lcdif */
 	IOMUX_PAD_CTRL(LCD_CLK__LCDIF_CLK, 0x79),
-	IOMUX_PAD_CTRL(LCD_ENABLE__LCDIF_ENABLE, 0x79),
+	IOMUX_PAD_CTRL(LCD_ENABLE__GPIO3_IO01, 0x30b0),
 	IOMUX_PAD_CTRL(LCD_HSYNC__LCDIF_HSYNC, 0x79),
 	IOMUX_PAD_CTRL(LCD_VSYNC__LCDIF_VSYNC, 0x79),
 	IOMUX_PAD_CTRL(LCD_RESET__LCDIF_RESET, 0x79),
@@ -248,6 +250,30 @@ struct fsl_esdhc_cfg board_usdhc_cfg[] = {
 };
 #endif
 
+#ifdef CONFIG_CMD_FBPANEL
+void board_enable_lcd(const struct display_info_t *di, int enable)
+{
+	if (enable) {
+		/* enable backlight PWM 7 */
+		pwm_init(6, 0, 0);
+
+		/* 300 Hz, duty cycle 2 ms, period: 3.3 ms */
+		pwm_config(6, 1666667, 3333333);
+		pwm_enable(6);
+	}
+}
+
+static const struct display_info_t displays[] = {
+
+	/* ft5446 */
+	VD_PV03505YP54D(LCD, NULL, 1, 0x38),
+};
+#define display_cnt	ARRAY_SIZE(displays)
+#else
+#define displays	NULL
+#define display_cnt	0
+#endif
+
 static const unsigned short gpios_out_low[] = {
 	GP_BACKLIGHT_LCD,
 	GP_BT_RFKILL_RESET,
@@ -295,7 +321,7 @@ int board_early_init_f(void)
 
 int board_init(void)
 {
-	common_board_init(i2c_pads, I2C_BUS_CNT, 0, NULL, 0, 0);
+	common_board_init(i2c_pads, I2C_BUS_CNT, 0, displays, display_cnt, 0);
 	return 0;
 }
 
