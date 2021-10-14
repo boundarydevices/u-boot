@@ -25,6 +25,11 @@
 #include <log.h>
 #include <malloc.h>
 #include <video_fb.h>
+
+#if !defined(CONFIG_MX51) && !defined(CONFIG_MX53) && !defined(CONFIG_MX6UL) && !defined(CONFIG_MX6ULL) && !defined(CONFIG_MX7D) && !defined(CONFIG_IMX8M)
+#define LVDS_SUPPORT
+#endif
+
 /*
  * The format of the string is
  * [*][off|mode_str_name[:["dtb_alias",["dtb_alias",]][18|24][m][j][s][b][:][S|D|b|P|l|o|d|s|h|f|a|v|B|M|U|c|L|E|4|3|2|1][Gn][Rn][e][x[x_vals][p[pwm_period]]]:timings]]
@@ -810,7 +815,7 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 	}
 
 	if ((fb >= FB_LCD) && (fb != FB_MIPI)) {
-#if defined(CONFIG_MX6SX) || defined(CONFIG_MX7D)
+#ifdef CONFIG_VIDEO_MXS
 		sz = set_property_u32(buf, size, short_names[fb], "bus-width",
 				interface_width);
 #else
@@ -1140,6 +1145,7 @@ static int calc_gcd(int a, int b)
 }
 #endif
 
+#ifdef LVDS_SUPPORT
 #ifdef CONFIG_MX6SX
 static void reparent_lvds(int fbtype, int new_parent)
 {
@@ -1153,8 +1159,7 @@ static void reparent_lvds(int fbtype, int new_parent)
 	writel(reg, &ccm->cs2cdr);
 	readl(&ccm->cs2cdr);	/* wait for write */
 }
-
-#elif !defined(CONFIG_MX51) && !defined(CONFIG_MX53) && !defined(CONFIG_MX7D) && !defined(CONFIG_IMX8M)
+#else
 static void reparent_lvds(int fbtype, int new_parent)
 {
 	struct mxc_ccm_reg *ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
@@ -1229,6 +1234,7 @@ static void reparent_lvds(int fbtype, int new_parent)
 	writel(reg, &ccm->ccdr);
 }
 #endif
+#endif
 
 #if defined(CONFIG_MX51) || defined(CONFIG_MX53)
 int get_pll3_clock(void);
@@ -1273,7 +1279,7 @@ static void setup_clock(struct display_info_t const *di)
 	reg |= (best - 1) << 6;
 	writel(reg, &ccm->cdcdr);
 
-#ifndef CONFIG_MX6SX
+#ifdef CONFIG_VIDEO_IPUV3
 	ipu_set_ldb_clock(pll3_freq / best);	/* used for all ext clocks */
 #endif
 }
@@ -1289,7 +1295,7 @@ static void setup_clock(struct display_info_t const *di)
 	struct mxc_ccm_reg *ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
 	u32 reg;
 	u32 pll_video;
-#if !defined(CONFIG_MX6SX)
+#ifdef CONFIG_VIDEO_IPUV3
 	u32 out_freq;
 #endif
 #endif
@@ -1311,6 +1317,10 @@ static void setup_clock(struct display_info_t const *di)
 	clrbits_le32(&ccm->CCGR2, MXC_CCM_CCGR2_LCD_MASK);
 	/* gate LCDIF2/LCDIF1/LDB_DI0 */
 	clrbits_le32(&ccm->CCGR3, 0x3f << 8);
+#elif defined(CONFIG_MX6ULL)
+	clrbits_le32(&ccm->CCGR2, MXC_CCM_CCGR2_LCD_MASK);
+	/* gate lcdif1 pix clock */
+	clrbits_le32(&ccm->CCGR3, 0x3 << 10);
 #elif defined(CONFIG_MX7D)
 	clock_enable(CCGR_LCDIF, 0);
 #else
@@ -1338,11 +1348,11 @@ static void setup_clock(struct display_info_t const *di)
 
 	desired_freq = period_to_freq(di->mode.pixclock);
 	pr_debug("desired_freq=%d\n", desired_freq);
-#if !defined(CONFIG_MX6SX) && !defined(CONFIG_MX7D)
+#ifdef CONFIG_VIDEO_IPUV3
 	out_freq = desired_freq;
 #endif
 
-#if !defined(CONFIG_MX7D)
+#ifdef LVDS_SUPPORT
 	if (lvds) {
 		reparent_lvds(di->fbtype, 0);
 		desired_freq *= 7;
@@ -1378,7 +1388,7 @@ static void setup_clock(struct display_info_t const *di)
 		x = (num + 7) / 8;
 		ipu_div =  (num - 1) / x + 1;
 		desired_freq *= ipu_div * x;
-#if defined(CONFIG_MX6SX)
+#if defined(CONFIG_MX6SX) || defined(CONFIG_MX6ULL)
 		if (x > 8) {
 			printf("div changed from %d to 64\n", num);
 			ipu_div = 8;
@@ -1389,7 +1399,7 @@ static void setup_clock(struct display_info_t const *di)
 	} else if (desired_freq < MIN_FREQ) {
 		printf("desired_freq=%d is too low\n", desired_freq);
 	}
-#if !defined(CONFIG_MX6SX) && !defined(CONFIG_MX7D)
+#ifdef CONFIG_VIDEO_IPUV3
 	ipu_set_ldb_clock(out_freq * x);	/* used for all ext clocks */
 #endif
 	pr_debug("desired_freq=%d ipu div=%d x=%d\n", desired_freq, ipu_div, x);
@@ -1459,7 +1469,7 @@ static void setup_clock(struct display_info_t const *di)
 	writel(pll_video, &ccm->analog_pll_video);
 #endif
 
-#if defined(CONFIG_MX6SX)
+#if defined(CONFIG_MX6SX) || defined(CONFIG_MX6ULL)
 	/* Select pll5 clock for ldb di0 */
 	clrbits_le32(&ccm->cs2cdr, MXC_CCM_CS2CDR_LDB_DI0_CLK_SEL_MASK);
 
@@ -1531,7 +1541,7 @@ static void setup_clock(struct display_info_t const *di)
 
 void fbp_enable_fb(struct display_info_t const *di, int enable)
 {
-#if !defined(CONFIG_MX51) && !defined(CONFIG_MX53) && !defined(CONFIG_MX7D) && !defined(CONFIG_IMX8M)
+#ifdef LVDS_SUPPORT
 	struct mxc_ccm_reg *mxc_ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
 	struct iomuxc *iomux = (struct iomuxc *)IOMUXC_BASE_ADDR;
 	u32 reg, cscmr2;
@@ -1551,7 +1561,7 @@ void fbp_enable_fb(struct display_info_t const *di, int enable)
 	case FB_LCD:
 		board_enable_lcd(di, enable);
 		break;
-#if !defined(CONFIG_MX51) && !defined(CONFIG_MX53) && !defined(CONFIG_MX7D) && !defined(CONFIG_IMX8M)
+#ifdef LVDS_SUPPORT
 	case FB_LVDS:
 #ifdef CONFIG_MX6SX
 #define GPR_LDB	6
@@ -1627,8 +1637,7 @@ void fbp_enable_fb(struct display_info_t const *di, int enable)
 
 static void imx_prepare_display(void)
 {
-#if !defined(CONFIG_MX51) && !defined(CONFIG_MX53) && \
-		!defined(CONFIG_MX7D) && !defined(CONFIG_IMX8M)
+#ifdef LVDS_SUPPORT
 	struct mxc_ccm_reg *mxc_ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
 	int reg;
 #if !defined(CONFIG_MX6SX)
@@ -2304,10 +2313,10 @@ static int init_display(const struct display_info_t *di)
 	if (di->pre_enable)
 		di->pre_enable(di);
 	setup_clock(di);
-#if defined(CONFIG_MX6SX) || defined(CONFIG_MX7D)
-	ret = mxsfb_init(&di->mode, di->pixfmt);
-#elif defined(CONFIG_IMX8MM) || defined(CONFIG_IMX8MN) || defined(CONFIG_IMX8MP) || defined(CONFIG_IMX8MQ)
+#if defined(CONFIG_IMX8MM) || defined(CONFIG_IMX8MN) || defined(CONFIG_IMX8MP) || defined(CONFIG_IMX8MQ)
 	ret = 0;
+#elif defined(CONFIG_VIDEO_MXS)
+	ret = mxsfb_init(&di->mode, di->pixfmt);
 #else
 	ret = 0;
 	if (di->fbtype != FB_MIPI)
@@ -2382,7 +2391,7 @@ static int do_fbpanel(struct cmd_tbl *cmdtp, int flag, int argc, char * const ar
 	}
 #if defined(CONFIG_IMX8MM) || defined(CONFIG_IMX8MN) || defined(CONFIG_IMX8MP) || defined(CONFIG_IMX8MQ)
 	return 0;
-#elif !defined(CONFIG_MX6SX) && !defined(CONFIG_MX7D)
+#elif defined(CONFIG_VIDEO_IPUV3)
 	ipuv3_fb_shutdown();
 	if (!di)
 		return 0;
@@ -2390,7 +2399,7 @@ static int do_fbpanel(struct cmd_tbl *cmdtp, int flag, int argc, char * const ar
 	if (ret < 0)
 		return ret;
 	ipuv3_fb_init2();
-#else
+#elif defined(CONFIG_VIDEO_MXS)
 	lcdif_power_down();
 	if (!di)
 		return 0;
