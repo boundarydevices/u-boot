@@ -166,11 +166,16 @@
 #endif
 
 #define CONFIG_CMD_FBPANEL
+
+#if defined(CONFIG_MX6SX) || defined(CONFIG_MX6UL) || defined(CONFIG_MX6ULL) || defined(CONFIG_MX7D)
+#define CONFIG_VIDEO_MXS
 #if defined(CONFIG_MX6SX)
-#define CONFIG_VIDEO_MXS
 #define MXS_LCDIF_BASE MX6SX_LCDIF1_BASE_ADDR
-#elif defined(CONFIG_MX7D)
-#define CONFIG_VIDEO_MXS
+#elif defined(CONFIG_MX6UL)
+#define MXS_LCDIF_BASE MX6UL_LCDIF1_BASE_ADDR
+#elif defined(CONFIG_MX6ULL)
+#define MXS_LCDIF_BASE MX6ULL_LCDIF1_BASE_ADDR
+#endif
 #endif
 
 #endif
