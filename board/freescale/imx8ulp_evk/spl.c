@@ -55,8 +55,18 @@ int power_init_board(void)
 	upower_pmic_i2c_read(0x21, &pmic_reg);
 	upower_pmic_i2c_read(0x2e, &pmic_reg);
 
-	/* Set buck3 to 1.1v OD */
-	upower_pmic_i2c_write(0x22, 0x28);
+	if (IS_ENABLED(CONFIG_IMX8ULP_LD_MODE)) {
+		/* Set buck3 to 0.9v LD */
+		upower_pmic_i2c_write(0x22, 0x18);
+	} else if (IS_ENABLED(CONFIG_IMX8ULP_ND_MODE)) {
+		/* Set buck3 to 1.0v ND */
+		upower_pmic_i2c_write(0x22, 0x20);
+	} else {
+		/* Set buck3 to 1.1v OD */
+		upower_pmic_i2c_write(0x22, 0x28);
+
+	}
+
 	return 0;
 }
 
@@ -90,6 +100,8 @@ void spl_board_init(void)
 	upower_init();
 
 	power_init_board();
+
+	clock_init_late();
 
 	/* DDR initialization */
 	spl_dram_init();
