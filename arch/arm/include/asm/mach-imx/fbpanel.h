@@ -210,6 +210,8 @@ void fbp_setup_env_cmds(void);
 #define VD_QVGA(_mode, args...)			VDF_QVGA(_mode, "qvga", RGB24, FBF_MODESTR, args)
 #define VD_DT035BTFT(_mode, args...)		VDF_DT035BTFT(_mode, "DT035BTFT", BGR24, FBF_MODESTR, args)
 #define VD_AT035GT_07ET3(_mode, args...)	VDF_AT035GT_07ET3(_mode, "AT035GT-07ET3", RGB24, FBF_MODESTR, args)
+#define VD_PV03505YP54D(_mode, args...)		VDF_PV03505YP54D(_mode, "pv03505yp54d", RGB24, 0, args)
+#define VD_AM320240UTMQW(_mode, args...)	VDF_AM320240UTMQW(_mode, "am320240utmqw", RGB24, 0, args)
 #define VD_AMP1024_600(_mode, args...)		VDF_AMP1024_600(_mode, "amp1024x600", RGB666, 0, args)
 #define VD_ND1024_600(_mode, args...)		VDF_ND1024_600(_mode, "ND-070PCAP-1024x600", RGB24, 0, args)
 
@@ -935,6 +937,47 @@ void fbp_setup_env_cmds(void);
 		.lower_margin   = 9,\
 		.hsync_len      = 30,\
 		.vsync_len      = 3,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
+/* ft5446 touch screen, Kingtech display */
+#define VDF_PV03505YP54D(_mode, _name, _fmt, _flags, args...) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, args),\
+	.mode	= {\
+		.name           = _name,\
+		.refresh        = 60,\
+		.xres           = 320,\
+		.yres           = 240,\
+		.pixclock       = 1000000000000ULL/((320+64+20+4)*(240+16+4+2)*60),\
+		.left_margin    = 64,\
+		.right_margin   = 20,\
+		.upper_margin   = 16,\
+		.lower_margin   = 4,\
+		.hsync_len      = 4,\
+		.vsync_len      = 2,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
+#define VDF_AM320240UTMQW(_mode, _name, _fmt, _flags, args...) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, args),\
+	.mode	= {\
+		.name           = _name,\
+		.refresh        = 60,\
+		.xres           = 320,\
+		.yres           = 240,\
+		.pixclock       = 1000000000000ULL/((320+16+71+1)*(240+12+10+1)*60),\
+		.left_margin    = 16,\
+		.right_margin   = 71,\
+		.upper_margin   = 12,\
+		.lower_margin   = 10,\
+		.hsync_len      = 1,\
+		.vsync_len      = 1,\
 		.sync           = FB_SYNC_EXT,\
 		.vmode          = FB_VMODE_NONINTERLACED\
 	}\
