@@ -437,30 +437,6 @@ struct udevice *video_link_get_video_device(void)
 	return video_links[curr_video_link].link_devs[0];
 }
 
-static void tentry(struct timing_entry *te, u32 val)
-{
-	te->min = te->typ = te->max = val;
-}
-
-static void check_hdmi_resolution_override(struct display_timing *t)
-{
-	char *cmd_hdmi = env_get("cmd_hdmi");
-
-	if (cmd_hdmi) {
-		if (strstr(cmd_hdmi, "1920")) {
-			tentry(&t->pixelclock, ((1920+148+88+44)*(1080+36+4+5)*60));
-			tentry(&t->hactive, 1920);
-			tentry(&t->hback_porch, 148);
-			tentry(&t->hfront_porch, 88);
-			tentry(&t->hsync_len, 44);
-			tentry(&t->vactive, 1080);
-			tentry(&t->vback_porch, 36);
-			tentry(&t->vfront_porch, 4);
-			tentry(&t->vsync_len, 5);
-		}
-	}
-}
-
 int video_link_get_display_timings(struct display_timing *timings)
 {
 	int i = 0;
@@ -501,11 +477,8 @@ int video_link_get_display_timings(struct display_timing *timings)
 			ofnode np = video_links[curr_video_link].link_np[i];
 
 			ret = ofnode_decode_display_timing(np, 0, timings);
-			if (!ret) {
-				if (strstr(dev->name, "hdmi"))
-					check_hdmi_resolution_override(timings);
+			if (!ret)
 				return 0;
-			}
 		}
 	}
 
