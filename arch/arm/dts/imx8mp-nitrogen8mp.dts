@@ -619,6 +619,7 @@
 		pwm_mipi = &pwm1;
 		pwm_lvds = &pwm2;
 		pwm_lvds2 = &pwm2;
+		t_hdmi = &t_hdmi;
 		t_lvds = &t_lvds;
 		t_lvds2 = &t_lvds2;
 		t_mipi = &t_mipi;
