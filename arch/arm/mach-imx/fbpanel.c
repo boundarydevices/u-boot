@@ -391,11 +391,9 @@ ofnode ofnode_path_err(const char *path)
 #endif
 
 
-static int set_property_u32(char *buf, int size, const char *path,
-		const char *propname, u32 val)
+static void set_local_property_u32(const char *path, const char *propname,
+		u32 val)
 {
-	int sz = snprintf(buf, size, "fdt set %s %s <%u>;", path,
-			propname, val);
 #if CONFIG_IS_ENABLED(DM_VIDEO) && CONFIG_IS_ENABLED(OF_LIVE)
 	u32 old_val = 0;
 	int ret;
@@ -403,19 +401,27 @@ static int set_property_u32(char *buf, int size, const char *path,
 	__be32 *pvalue;
 
 	if (!ofnode_valid(node))
-		return sz;
+		return;
 	ret = ofnode_read_u32(node, propname, &old_val);
 	if (!ret && (old_val == val))
-		return sz;
+		return;
 
 	debug("%s:old %u, new %u\n", __func__, old_val, val);
 	pvalue = get_space(sizeof(u32));;
 	if (!pvalue)
-		return sz;
+		return;
 	*pvalue = cpu_to_be32(val);
 
 	ofnode_write_prop(node, propname, sizeof(u32), pvalue);
 #endif
+}
+
+static int set_property_u32(char *buf, int size, const char *path,
+		const char *propname, u32 val)
+{
+	int sz = snprintf(buf, size, "fdt set %s %s <%u>;", path,
+			propname, val);
+	set_local_property_u32(path, propname, val);
 	return sz;
 }
 
@@ -1047,7 +1053,7 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		size -= sz;
 	}
 
-	if (mode_str)
+	if (mode_str && (fb != FB_HDMI))
 		goto set_variables;
 
 	mode = &di->mode;
@@ -1060,9 +1066,13 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		} else {
 			val = *p;
 		}
-		sz = set_property_u32(buf, size, timings_names[fb], timings_properties[i], val);
-		buf += sz;
-		size -= sz;
+		if (!mode_str) {
+			sz = set_property_u32(buf, size, timings_names[fb], timings_properties[i], val);
+			buf += sz;
+			size -= sz;
+		} else {
+			set_local_property_u32(timings_names[fb], timings_properties[i], val);
+		}
 	}
 set_variables:
 	if (mode_str)
