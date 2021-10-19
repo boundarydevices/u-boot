@@ -437,6 +437,7 @@
 		mipi_to_lvds = &mipi_to_lvds;
 		pwm_mipi = &pwm2;
 		sound_hdmi = &sound_hdmi;
+		t_hdmi = &t_hdmi;
 		t_mipi = &t_mipi;
 		ts_exc3000 = &ts_exc3000;
 		ts_ft5x06 = &ts_ft5x06;
@@ -782,9 +783,9 @@
 	status = "okay";
 
 	display-timings {
-		native-mode = <&timing1>;
+		native-mode = <&t_hdmi>;
 
-		timing1: timing1 {
+		t_hdmi: t-hdmi-default {
 			clock-frequency = <74250000>;
 			hactive = <1280>;
 			vactive = <720>;
