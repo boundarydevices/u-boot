@@ -65,11 +65,29 @@ static const iomux_v3_cfg_t init_pads[] = {
 	IOMUX_PAD_CTRL(CSI_DATA05__GPIO4_IO26, WEAK_PULLUP_OUTPUT),
 
 	/* Hog */
-	IOMUX_PAD_CTRL(GPIO1_IO04__GPIO1_IO04, 0x1b0b0),	/* software reset */
-	IOMUX_PAD_CTRL(GPIO1_IO07__GPIO1_IO07, 0x1b0b0),	/* Card sense */
+#define GP_COIN_C		IMX_GPIO_NR(2, 3)
+	IOMUX_PAD_CTRL(ENET1_TX_DATA0__GPIO2_IO03, 0x1b0b0),
+#define GP_COIN_A		IMX_GPIO_NR(2, 4)
+	IOMUX_PAD_CTRL(ENET1_TX_DATA1__GPIO2_IO04, 0x1b0b0),
+#define GP_COIN_IN		IMX_GPIO_NR(2, 5)
+	IOMUX_PAD_CTRL(ENET1_TX_EN__GPIO2_IO05, 0x1b0b0),
+#define GP_COIN_DROP_PWR	IMX_GPIO_NR(2, 6)
+	IOMUX_PAD_CTRL(ENET1_TX_CLK__GPIO2_IO06, 0x1b0b0),
+#define GP_GPIO_0		IMX_GPIO_NR(2, 0)
+	IOMUX_PAD_CTRL(ENET1_RX_DATA0__GPIO2_IO00, 0x1b0b0),
+#define GP_GPIO_1		IMX_GPIO_NR(2, 1)
+	IOMUX_PAD_CTRL(ENET1_RX_DATA1__GPIO2_IO01, 0x1b0b0),
+#define GP_GPIO_2		IMX_GPIO_NR(2, 2)
+	IOMUX_PAD_CTRL(ENET1_RX_EN__GPIO2_IO02, 0x1b0b0),
+#define GP_GPIO_3		IMX_GPIO_NR(2, 14)
+	IOMUX_PAD_CTRL(ENET2_TX_CLK__GPIO2_IO14, 0x1b0b0),
+#define GP_GPIO_4		IMX_GPIO_NR(2, 15)
+	IOMUX_PAD_CTRL(ENET2_RX_ER__GPIO2_IO15, 0x1b0b0),
+#define GP_PROX			IMX_GPIO_NR(2, 7)
+	IOMUX_PAD_CTRL(ENET1_RX_ER__GPIO2_IO07, 0x1b0b0),
+#define GP_CARD_SENSE		IMX_GPIO_NR(1, 7)
+	IOMUX_PAD_CTRL(GPIO1_IO07__GPIO1_IO07, 0x1b0b0),
 	/* Test points */
-#define GP_TP3		IMX_GPIO_NR(4, 20)
-	IOMUX_PAD_CTRL(CSI_HSYNC__GPIO4_IO20, 0x1b0b0),		/* tp3 */
 
 	/* i2c1 - mxc4005 irq */
 #define GPIRQ_ACC	IMX_GPIO_NR(4, 24)
@@ -81,8 +99,8 @@ static const iomux_v3_cfg_t init_pads[] = {
 #define GPIRQ_PN7150		IMX_GPIO_NR(1, 5)
 	IOMUX_PAD_CTRL(GPIO1_IO05__GPIO1_IO05, 0x1b0b0),
 
-	/* i2c4 - is31fl3236 */
-#define GP_I2C4_IS31_SHUTDOWN	IMX_GPIO_NR(1, 8)
+	/* i2c2 - is31fl3236 */
+#define GP_I2C2_IS31_SHUTDOWN	IMX_GPIO_NR(1, 8)
 	IOMUX_PAD_CTRL(GPIO1_IO08__GPIO1_IO08, 0x030b0),
 
 	/* Lcdif */
@@ -116,10 +134,8 @@ static const iomux_v3_cfg_t init_pads[] = {
 	IOMUX_PAD_CTRL(LCD_DATA22__LCDIF_DATA22, 0x79),
 	IOMUX_PAD_CTRL(LCD_DATA23__LCDIF_DATA23, 0x79),
 
-	/* pwm2 - tp1 */
-	IOMUX_PAD_CTRL(ENET1_RX_DATA1__PWM2_OUT, WEAK_PULLDN_OUTPUT),
-	/* pwm7 - backlight */
-	IOMUX_PAD_CTRL(CSI_VSYNC__PWM7_OUT, WEAK_PULLDN_OUTPUT),
+	/* pwm3 - backlight */
+	IOMUX_PAD_CTRL(GPIO1_IO04__PWM3_OUT, WEAK_PULLDN_OUTPUT),
 
 	/* Regulators */
 #define GP_REG_WLAN_VMMC	IMX_GPIO_NR(4, 22)
@@ -151,16 +167,10 @@ static const iomux_v3_cfg_t init_pads[] = {
 	/* uart5 */
 	IOMUX_PAD_CTRL(UART5_TX_DATA__UART5_DCE_TX, UART_PAD_CTRL),
 	IOMUX_PAD_CTRL(UART5_RX_DATA__UART5_DCE_RX, UART_PAD_CTRL),
-#define GP_RESERVED1		IMX_GPIO_NR(2, 3)
-	IOMUX_PAD_CTRL(ENET1_TX_DATA0__GPIO2_IO03, 0x1b0b0),
-#define GP_RESERVED2		IMX_GPIO_NR(2, 4)
-	IOMUX_PAD_CTRL(ENET1_TX_DATA1__GPIO2_IO04, 0x1b0b0),
-#define GP_RESERVED3		IMX_GPIO_NR(2, 5)
-	IOMUX_PAD_CTRL(ENET1_TX_EN__GPIO2_IO05, 0x1b0b0),
-#define GP_RESERVED4		IMX_GPIO_NR(2, 6)
-	IOMUX_PAD_CTRL(ENET1_TX_CLK__GPIO2_IO06, 0x1b0b0),
-#define GP_RESERVED5		IMX_GPIO_NR(2, 0)
-	IOMUX_PAD_CTRL(ENET1_RX_DATA0__GPIO2_IO00, 0x1b0b0),
+
+	/* uart7 */
+	IOMUX_PAD_CTRL(ENET2_RX_EN__UART7_DCE_TX, UART_PAD_CTRL),
+	IOMUX_PAD_CTRL(ENET2_TX_DATA0__UART7_DCE_RX, UART_PAD_CTRL),
 
 	/* USB OTG1 */
 	IOMUX_PAD_CTRL(GPIO1_IO00__ANATOP_OTG1_ID, WEAK_PULLUP),
@@ -202,7 +212,7 @@ static const iomux_v3_cfg_t init_pads[] = {
 
 static const struct i2c_pads_info i2c_pads[] = {
 	I2C_PADS_INFO_ENTRY(I2C1, CSI_PIXCLK, 4, 18, CSI_MCLK, 4, 17, I2C_PAD_CTRL),
-	I2C_PADS_INFO_ENTRY(I2C4, ENET2_RX_EN, 2, 10, ENET2_TX_DATA0, 2, 11, I2C_PAD_CTRL),
+	I2C_PADS_INFO_ENTRY(I2C2, CSI_HSYNC, 4, 20, CSI_VSYNC, 4, 19, I2C_PAD_CTRL),
 };
 #define I2C_BUS_CNT	2
 
@@ -254,12 +264,12 @@ struct fsl_esdhc_cfg board_usdhc_cfg[] = {
 void board_enable_lcd(const struct display_info_t *di, int enable)
 {
 	if (enable) {
-		/* enable backlight PWM 7 */
-		pwm_init(6, 0, 0);
+		/* enable backlight PWM3 */
+		pwm_init(2, 0, 0);
 
 		/* 300 Hz, duty cycle 2 ms, period: 3.3 ms */
-		pwm_config(6, 1666667, 3333333);
-		pwm_enable(6);
+		pwm_config(2, 1666667, 3333333);
+		pwm_enable(2);
 	}
 }
 
@@ -278,7 +288,7 @@ static const unsigned short gpios_out_low[] = {
 	GP_BACKLIGHT_LCD,
 	GP_BT_RFKILL_RESET,
 	GP_EN_PN7150,
-	GP_I2C4_IS31_SHUTDOWN,
+	GP_I2C2_IS31_SHUTDOWN,
 	GP_TS_FT5X06_RESET,
 	GP_REG_WLAN_VMMC,
 };
@@ -288,14 +298,19 @@ static const unsigned short gpios_out_high[] = {
 };
 
 static const unsigned short gpios_in[] = {
-	GP_RESERVED1,
-	GP_RESERVED2,
-	GP_RESERVED3,
-	GP_RESERVED4,
-	GP_RESERVED5,
+	GP_COIN_C,
+	GP_COIN_A,
+	GP_COIN_IN,
+	GP_COIN_DROP_PWR,
+	GP_GPIO_0,
+	GP_GPIO_1,
+	GP_GPIO_2,
+	GP_GPIO_3,
+	GP_GPIO_4,
+	GP_PROX,
+	GP_CARD_SENSE,
 	GP_BT_UART_WH,
 	GPIRQ_WLAN,
-	GP_TP3,
 	GPIRQ_ACC,
 	GPIRQ_PN7150,
 	GPIRQ_TS_FT5X06,
@@ -326,7 +341,7 @@ int board_init(void)
 }
 
 const struct button_key board_buttons[] = {
-	{"tp3",	GP_TP3,	'3', 1},
+	{"card", GP_CARD_SENSE,	'c', 1},
 	{NULL, 0, 0, 0},
 };
 
