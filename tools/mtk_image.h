@@ -11,7 +11,7 @@
 
 /* Device header definitions, all fields are little-endian */
 
-/* Header for NOR/SD/eMMC */
+/* Header for NOR/SD/eMMC/UFS */
 union gen_boot_header {
 	struct {
 		char name[12];
@@ -25,6 +25,7 @@ union gen_boot_header {
 #define EMMC_BOOT_NAME		"EMMC_BOOT"
 #define SF_BOOT_NAME		"SF_BOOT"
 #define SDMMC_BOOT_NAME		"SDMMC_BOOT"
+#define UFS_BOOT_NAME		"UFS_BOOT"
 
 /* Header for NAND */
 union nand_boot_header {
@@ -73,7 +74,8 @@ enum brlyt_img_type {
 	BRLYT_TYPE_EMMC = 0x10005,
 	BRLYT_TYPE_NOR = 0x10007,
 	BRLYT_TYPE_SDMMC = 0x10008,
-	BRLYT_TYPE_SNAND = 0x10009
+	BRLYT_TYPE_SNAND = 0x10009,
+	BRLYT_TYPE_UFS = 0x1000c
 };
 
 /* Combined device header for NOR/SD/eMMC */
@@ -83,6 +85,16 @@ struct gen_device_header {
 	union {
 		struct brom_layout_header brlyt;
 		uint8_t brlyt_pad[0x400];
+	};
+};
+
+/* Device header for UFS */
+struct ufs_device_header {
+	union gen_boot_header boot;
+
+	union {
+		struct brom_layout_header brlyt;
+		uint8_t brlyt_pad[0xE00];
 	};
 };
 

@@ -242,6 +242,9 @@ static const struct brom_img_type {
 	}, {
 		.name = "snand",
 		.type = BRLYT_TYPE_SNAND
+	}, {
+		.name = "ufs",
+		.type = BRLYT_TYPE_UFS
 	}
 };
 
@@ -469,6 +472,8 @@ static int mtk_image_vrec_header(struct image_tool_params *params,
 
 	if (hdr_media == BRLYT_TYPE_NAND || hdr_media == BRLYT_TYPE_SNAND)
 		tparams->header_size = 2 * le16_to_cpu(hdr_nand->pagesize);
+	else if (hdr_media == BRLYT_TYPE_UFS)
+		tparams->header_size = sizeof(struct ufs_device_header);
 	else
 		tparams->header_size = sizeof(struct gen_device_header);
 
@@ -516,6 +521,80 @@ static int mtk_image_verify_gen_header(const uint8_t *ptr, int print)
 		return -1;
 
 	devh_size = sizeof(struct gen_device_header);
+
+	if (img_gen) {
+		gfh_offset = devh_size;
+	} else {
+		gfh_offset = le32_to_cpu(bh->header_size);
+
+		if (gfh_offset + sizeof(struct gfh_header) > img_size) {
+			/*
+			 * This may happen if the hdr_offset used to generate
+			 * this image is not zero.
+			 * Since device header size is not fixed, we can't
+			 * cover all possible cases.
+			 * Assuming the image is valid only if the real
+			 * device header size equals to devh_size.
+			 */
+			total_size = le32_to_cpu(bh->total_size);
+
+			if (total_size - gfh_offset > img_size - devh_size)
+				return -1;
+
+			gfh_offset = devh_size;
+		}
+	}
+
+	gfh = (struct gfh_header *)(ptr + gfh_offset);
+
+	if (strcmp(gfh->file_info.name, GFH_FILE_INFO_NAME))
+		return -1;
+
+	if (le32_to_cpu(gfh->file_info.flash_type) != GFH_FLASH_TYPE_GEN)
+		return -1;
+
+	if (print)
+		printf("Load Address: %08x\n",
+		       le32_to_cpu(gfh->file_info.load_addr) +
+		       le32_to_cpu(gfh->file_info.jump_offset));
+
+	if (print)
+		printf("Architecture: %s\n", is_arm64_image ? "ARM64" : "ARM");
+
+	return 0;
+}
+
+static int mtk_image_verify_ufs_header(const uint8_t *ptr, int print)
+{
+	union gen_boot_header *gbh = (union gen_boot_header *)ptr;
+	uint32_t gfh_offset, total_size, devh_size;
+	struct brom_layout_header *bh;
+	struct gfh_header *gfh;
+	const char *bootmedia;
+
+	if (!strcmp(gbh->name, UFS_BOOT_NAME))
+		bootmedia = "UFS";
+	else
+		return -1;
+
+	if (print)
+		printf("Boot Media:   %s\n", bootmedia);
+
+	devh_size = sizeof(struct gen_device_header);
+
+	if (le32_to_cpu(gbh->version) != 1 ||
+	    le32_to_cpu(gbh->size) != devh_size)
+		return -1;
+
+	bh = (struct brom_layout_header *)(ptr + le32_to_cpu(gbh->size));
+
+	if (strcmp(bh->name, BRLYT_NAME))
+		return -1;
+
+	if (le32_to_cpu(bh->magic) != BRLYT_MAGIC ||
+	    le32_to_cpu(bh->type) != BRLYT_TYPE_UFS)
+		return -1;
+
 
 	if (img_gen) {
 		gfh_offset = devh_size;
@@ -724,6 +803,8 @@ static int mtk_image_verify_header(unsigned char *ptr, int image_size,
 
 	if (!strcmp((char *)ptr, NAND_BOOT_NAME))
 		return mtk_image_verify_nand_header(ptr, 0);
+	else if (!strcmp((char *)ptr, UFS_BOOT_NAME))
+		return mtk_image_verify_ufs_header(ptr, 0);
 	else
 		return mtk_image_verify_gen_header(ptr, 0);
 
@@ -750,6 +831,8 @@ static void mtk_image_print_header(const void *ptr)
 
 	if (!strcmp((char *)ptr, NAND_BOOT_NAME))
 		mtk_image_verify_nand_header(ptr, 1);
+	else if (!strcmp((char *)ptr, UFS_BOOT_NAME))
+		mtk_image_verify_ufs_header(ptr, 1);
 	else
 		mtk_image_verify_gen_header(ptr, 1);
 }
@@ -876,6 +959,33 @@ static void mtk_image_set_gen_header(void *ptr, off_t filesize,
 		 filesize - sizeof(struct gen_device_header) - SHA256_SUM_LEN);
 }
 
+static void mtk_image_set_ufs_header(void *ptr, off_t filesize,
+				     uint32_t loadaddr)
+{
+	struct ufs_device_header *hdr = (struct ufs_device_header *)ptr;
+	struct gfh_header *gfh;
+
+	/* Generic device header */
+	snprintf(hdr->boot.name, sizeof(hdr->boot.name), "%s", UFS_BOOT_NAME);
+	hdr->boot.version = cpu_to_le32(1);
+	hdr->boot.size = cpu_to_le32(sizeof(*hdr));
+
+	/* BRLYT header */
+	put_brom_layout_header(&hdr->brlyt, hdr_media);
+	hdr->brlyt.header_size = cpu_to_le32(hdr_offset + sizeof(*hdr));
+	hdr->brlyt.total_size = cpu_to_le32(hdr_offset + filesize);
+	hdr->brlyt.header_size_2 = hdr->brlyt.header_size;
+	hdr->brlyt.total_size_2 = hdr->brlyt.total_size;
+
+	/* GFH header */
+	gfh = (struct gfh_header *)(ptr + sizeof(*hdr));
+	put_ghf_header(gfh, filesize, sizeof(*hdr),
+		       loadaddr, GFH_FLASH_TYPE_GEN);
+
+	/* Generate SHA256 hash */
+	put_hash((uint8_t *)gfh, filesize - sizeof(*hdr) - SHA256_SUM_LEN);
+}
+
 static void mtk_image_set_nand_header(void *ptr, off_t filesize,
 				      uint32_t loadaddr)
 {
@@ -975,6 +1085,8 @@ static void mtk_image_set_header(void *ptr, struct stat *sbuf, int ifd,
 
 	if (hdr_media == BRLYT_TYPE_NAND || hdr_media == BRLYT_TYPE_SNAND)
 		mtk_image_set_nand_header(ptr, sbuf->st_size, params->addr);
+	else if (hdr_media == BRLYT_TYPE_UFS)
+		mtk_image_set_ufs_header(ptr, sbuf->st_size, params->addr);
 	else
 		mtk_image_set_gen_header(ptr, sbuf->st_size, params->addr);
 }
