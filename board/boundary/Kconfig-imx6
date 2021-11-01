@@ -6,6 +6,10 @@ config TARGET_A
 	bool "a"
 	depends on MX6DL || MX6Q || MX6QDL || MX6S
 
+config TARGET_A2
+	bool "a2"
+	depends on MX6DL || MX6Q || MX6QDL || MX6S
+
 config TARGET_ACL
 	bool "acl"
 	select HAS_CAAM
@@ -229,6 +233,7 @@ config TARGET_YS
 endchoice
 
 source "board/boundary/a/Kconfig"
+source "board/boundary/a2/Kconfig"
 source "board/boundary/acl/Kconfig"
 source "board/boundary/ap/Kconfig"
 source "board/boundary/ash/Kconfig"
