@@ -1,0 +1,7 @@
+A BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/a2/
+F:	include/configs/a2.h
+F:	configs/a2_s1g_defconfig
+
