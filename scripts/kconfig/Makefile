@@ -92,8 +92,15 @@ else
 endif
 endif
 
+%_defconfig: SHELL:=/bin/bash
 %_defconfig: $(obj)/conf
-	$(Q)$< $(silent) --defconfig=arch/$(SRCARCH)/configs/$@ $(Kconfig)
+	$(Q)readarray -d '' names < <(find configs board -type f -name $@ -print0); \
+	if (test $${#names[*]} -eq 1); then \
+		$< $(silent) --defconfig="$${names[0]}" $(Kconfig); \
+	else \
+		echo "$@" not found or ambiguous error; \
+		echo "$${names[@]}"; exit 1; \
+	fi
 
 # Added for U-Boot (backward compatibility)
 %_config: %_defconfig
