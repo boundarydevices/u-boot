@@ -375,7 +375,7 @@
 	"rundfu=dfu 0 sf 0:0:25000000:0\0" \
 	"otg_fuses=run usbnetwork; tftp " BD_RAM_SCRIPT " prog_fuses.scr && source " BD_RAM_SCRIPT "\0" \
 	"otg_program=next=prog_fuses.scr; run otg_upgradeu\0" \
-	"otg_upgradeu=run usbnetwork; tftp " BD_RAM_SCRIPT " net_upgradeu.scr && source " BD_RAM_SCRIPT "\0" \
+	"otg_upgradeu=run usbnetwork; tftp " BD_RAM_SCRIPT " net_upgradeu.scr && sleep 5 && source " BD_RAM_SCRIPT "\0" \
 	"program=next=prog_fuses.scr; run upgradeu\0" \
 	"scriptaddr=" BD_RAM_SCRIPT "\0" \
 	"splashflash=" BD_SPLASH_FLASH "\0" \
