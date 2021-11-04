@@ -739,13 +739,14 @@ int board_late_init(void)
 	board_video_skip();
 #endif
 #endif
+	bdcommon_env_init();
 #if defined(CONFIG_CMD_FASTBOOT) || defined(CONFIG_CMD_DFU)
-	if (board_fastboot_key_pressed() || is_usb_boot()) {
 #if defined(CONFIG_PREBOOT)
+	if (board_fastboot_key_pressed() || is_usb_boot()) {
 		printf("Starting fastboot...\n");
 		env_set("preboot", "fastboot 0");
-#endif
 	}
 #endif
-	return bdcommon_env_init();
+#endif
+	return 0;
 }
