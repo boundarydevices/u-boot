@@ -173,7 +173,10 @@ static const struct display_info_t displays[] = {
 	VD_MIPI_VTFT101RPFT20(MIPI, NULL, (1 | (3 << 4)), 0x70, FBP_PCA9540),
 
 	/* lvds */
+	/* goodix */
 	VD_M101NWWB(LVDS, fbp_detect_i2c, fbp_bus_gp(3, 0, 0, 0), 0x38, FBTS_FT5X06_2),
+	VD_M101NWWB_14(LVDS, fbp_detect_i2c, fbp_bus_gp(3, 0, 0, 0), 0x14, FBTS_GOODIX2),
+	VD_M101NWWB_5D(LVDS, fbp_detect_i2c, fbp_bus_gp(3, 0, 0, 0), 0x5d, FBTS_GOODIX3),
 	VD_HANNSTAR7(	LVDS, NULL, fbp_bus_gp(3, 0, 0, 0), 0x38, FBTS_FT5X06_2),
 	VD_PM9598(	LVDS, NULL, fbp_bus_gp(3, 0, 0, 0), 0x38, FBTS_FT5X06_2),
 	VD_AUO_B101EW05(LVDS, NULL, fbp_bus_gp(3, 0, 0, 0), 0x38, FBTS_FT5X06_2),
@@ -181,9 +184,13 @@ static const struct display_info_t displays[] = {
 	VD_DT070BTFT(	LVDS, NULL, fbp_bus_gp(3, 0, 0, 0), 0x38, FBTS_FT5X06_2),
 	VD_WSVGA(	LVDS, NULL, fbp_bus_gp(3, 0, 0, 0), 0x38, FBTS_FT5X06_2),
 	VD_TM070JDHG30(	LVDS, NULL, fbp_bus_gp(3, 0, 0, 0), 0x38, FBTS_FT5X06_2),
+	VD_TM070JDHG30_14(LVDS, NULL, fbp_bus_gp(3, 0, 0, 0), 0x14, FBTS_GOODIX2),
+	VD_TM070JDHG30_5D(LVDS, NULL, fbp_bus_gp(3, 0, 0, 0), 0x5d, FBTS_GOODIX3),
 	VD_ND1024_600(	LVDS, NULL, fbp_bus_gp(3, 0, 0, 0), 0x38, FBTS_FT5X06_2),
 
 	VD_M101NWWB(	LVDS2, NULL, fbp_bus_gp(3, 0, 0, 0), 0x38, FBTS_FT5X06_2),
+	VD_M101NWWB_14( LVDS2, NULL, fbp_bus_gp(3, 0, 0, 0), 0x14, FBTS_GOODIX2),
+	VD_M101NWWB_5D( LVDS2, NULL, fbp_bus_gp(3, 0, 0, 0), 0x5d, FBTS_GOODIX3),
 	VD_HANNSTAR7(	LVDS2, NULL, fbp_bus_gp(3, 0, 0, 0), 0x38, FBTS_FT5X06_2),
 	VD_PM9598(	LVDS2, NULL, fbp_bus_gp(3, 0, 0, 0), 0x38, FBTS_FT5X06_2),
 	VD_AUO_B101EW05(LVDS2, NULL, fbp_bus_gp(3, 0, 0, 0), 0x38, FBTS_FT5X06_2),
@@ -191,6 +198,8 @@ static const struct display_info_t displays[] = {
 	VD_DT070BTFT(	LVDS2, NULL, fbp_bus_gp(3, 0, 0, 0), 0x38, FBTS_FT5X06_2),
 	VD_WSVGA(	LVDS2, NULL, fbp_bus_gp(3, 0, 0, 0), 0x38, FBTS_FT5X06_2),
 	VD_TM070JDHG30(	LVDS2, NULL, fbp_bus_gp(3, 0, 0, 0), 0x38, FBTS_FT5X06_2),
+	VD_TM070JDHG30_14(LVDS2, NULL, fbp_bus_gp(3, 0, 0, 0), 0x14, FBTS_GOODIX2),
+	VD_TM070JDHG30_5D(LVDS2, NULL, fbp_bus_gp(3, 0, 0, 0), 0x5d, FBTS_GOODIX3),
 	VD_ND1024_600(	LVDS2, NULL, fbp_bus_gp(3, 0, 0, 0), 0x38, FBTS_FT5X06_2),
 
 	/* ili251x */
