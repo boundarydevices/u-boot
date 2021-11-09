@@ -216,6 +216,7 @@ static const char *const aliases[] = {
 [FBTS_FUSION7] = "ts_fusion7",
 [FBTS_GOODIX] = "ts_goodix",
 [FBTS_GOODIX2] = "ts_goodix2",
+[FBTS_GOODIX3] = "ts_goodix3",
 [FBTS_GSL1680] = "ts_gsl1680",
 [FBTS_ILI210X] = "ts_ili210x",
 [FBTS_ILI251X] = "ts_ili251x",
