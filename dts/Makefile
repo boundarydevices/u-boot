@@ -13,7 +13,9 @@ endif
 ifneq ($(EXT_DTB),)
 DTB := $(EXT_DTB)
 else
-DTB := arch/$(ARCH)/dts/$(DEVICE_TREE).dtb
+ifneq "$(ARCH)" "arm64"
+DTB := $(subst .dts,.dtb,$(shell find "board/$(BOARDDIR)" arch/$(ARCH)/dts/ -type f -name $(DEVICE_TREE).dts))
+endif
 endif
 
 $(obj)/dt-$(SPL_NAME).dtb: dts/dt.dtb $(objtree)/tools/fdtgrep FORCE
@@ -40,8 +42,13 @@ $(DTB): arch-dtbs
 	/bin/false)
 
 PHONY += arch-dtbs
+ifneq "$(patsubst board/$(BOARDDIR)/%,,$(DTB))" ""
 arch-dtbs:
-	$(Q)$(MAKE) $(build)=arch/$(ARCH)/dts dtbs
+	$(MAKE) $(build)=arch/$(ARCH)/dts dtbs
+else
+arch-dtbs:
+	$(MAKE) $(build)="board/$(BOARDDIR)" dtbs
+endif
 
 ifeq ($(CONFIG_SPL_BUILD),y)
 obj-$(CONFIG_OF_EMBED) := dt-spl.dtb.o
@@ -63,4 +70,4 @@ spl_dtbs: $(obj)/dt-$(SPL_NAME).dtb
 clean-files := dt.dtb.S
 
 # Let clean descend into dts directories
-subdir- += ../arch/arm/dts ../arch/microblaze/dts ../arch/mips/dts ../arch/sandbox/dts ../arch/x86/dts ../arch/powerpc/dts ../arch/riscv/dts
+subdir- += ../arch/arm/dts ../arch/microblaze/dts ../arch/mips/dts ../arch/sandbox/dts ../arch/x86/dts ../arch/powerpc/dts ../arch/riscv/dts ../$(patsubst %/,%,$(dir $(shell find board -type f -name "*.dtb")))
