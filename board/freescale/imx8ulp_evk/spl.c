@@ -11,7 +11,7 @@
 #include <asm/arch/sys_proto.h>
 #include <asm/arch/clock.h>
 #include <asm/arch/imx8ulp-pins.h>
-#include <asm/arch/s400_api.h>
+#include <asm/mach-imx/s400_api.h>
 #include <fsl_sec.h>
 #include <dm/uclass.h>
 #include <dm/device.h>
@@ -21,6 +21,7 @@
 #include <asm/arch/ddr.h>
 #include <asm/arch/rdc.h>
 #include <asm/arch/upower.h>
+#include <asm/mach-imx/s400_api.h>
 #include <asm/arch/clock.h>
 #include <asm/arch/pcc.h>
 

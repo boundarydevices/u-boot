@@ -8,7 +8,7 @@
 #include <errno.h>
 #include <asm/global_data.h>
 #include <asm/io.h>
-#include <asm/arch/s400_api.h>
+#include <asm/mach-imx/s400_api.h>
 #include <asm/mach-imx/sys_proto.h>
 #include <asm/arch-imx/cpu.h>
 #include <asm/arch/sys_proto.h>
