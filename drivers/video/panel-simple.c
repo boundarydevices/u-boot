@@ -954,12 +954,13 @@ static int simple_panel_ofdata_to_platdata(struct udevice *dev)
 	if (!ret) {
 		ret = uclass_get_device_by_ofnode_prop(UCLASS_I2C, cmds_np,
 				"i2c-bus", &panel->i2c);
-		if (ret != -ENOENT)
-			return ret;
+		if (ret && (ret != -ENOENT))
+			printf("!!!i2c-bus not found %d\n", ret);
+
 		ret = uclass_get_device_by_ofnode_prop(UCLASS_SPI, cmds_np,
 				"spi", &panel->spi);
-		if (ret != -ENOENT)
-			return ret;
+		if (ret && (ret != -ENOENT))
+			printf("!!!spi not found %d\n", ret);
 
 		if (panel->i2c) {
 			check_for_cmds(cmds_np, "i2c-cmds-init",
