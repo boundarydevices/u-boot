@@ -227,6 +227,7 @@ static const char *const aliases[] = {
 [FBP_LT8912_2] = "lt8912_2",
 [FBP_SPI_LCD] = "spi_lcd",
 [FBP_PCA9540] = "pca9540",
+[FBP_PCA9540_2] = "pca9540_2",
 [FBP_PCA9546] = "pca9546",
 [FBP_BACKLIGHT_MIPI2] = "backlight_mipi2",
 };

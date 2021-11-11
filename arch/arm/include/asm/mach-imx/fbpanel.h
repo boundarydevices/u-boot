@@ -46,6 +46,7 @@ enum alias_names {
 	FBP_LT8912_2,
 	FBP_SPI_LCD,
 	FBP_PCA9540,
+	FBP_PCA9540_2,
 	FBP_PCA9546,
 	FBP_BACKLIGHT_MIPI2,
 };
@@ -120,6 +121,7 @@ struct display_info_t {
 #define FBF_DSI_LANES_4		(0x4 << FBF_DSI_LANE_SHIFT)
 
 #define FBF_DMT050WVNXCMI	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4)
+#define FBF_ER_TFT050		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_ENABLE_GPIOS_DTB)
 #define FBF_LCM_JM430		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MODE_VIDEO_MBC | FBF_MIPI_CMDS | FBF_DSI_LANES_1 | FBF_BKLIT_EN_DTB | FBF_ENABLE_GPIOS_DTB)
 #define FBF_LS050T1SX12		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_PINCTRL | FBF_ENABLE_GPIOS_DTB)
 #define FBF_LTK0680YTMDB	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_PINCTRL | FBF_ENABLE_GPIOS_DTB)
@@ -206,6 +208,7 @@ void fbp_setup_env_cmds(void);
 #define VD_OKAYA_480_272(_mode, args...)	VDF_OKAYA_480_272(_mode, "okaya_480x272", RGB24, FBF_MODESTR, args)
 #define VD_OKAYA_480_272_IPU(_mode, args...)	VDF_OKAYA_480_272_IPU(_mode, "okaya_480x272ipu", RGB24, FBF_MODESTR_IPU, args)
 #define VD_DMT050WVNXCMI(_mode, args...)	VDF_DMT050WVNXCMI(_mode, "dmt050wvnxcmi", RGB24, FBF_DMT050WVNXCMI, args)
+#define VD_ER_TFT050_MINI(_mode, args...)	VDF_ER_TFT050_MINI(_mode, "er_tft050", RGB24, FBF_ER_TFT050, args)
 #define VD_LCM_JM430(_mode, args...)		VDF_LCM_JM430(_mode, "lcm_jm430", RGB24, FBF_LCM_JM430, args)
 #define VD_LCM_JM430_MINI(_mode, args...)	VDF_LCM_JM430_MINI(_mode, "lcm_jm430", RGB24, FBF_LCM_JM430, args)
 #define VD_QVGA(_mode, args...)			VDF_QVGA(_mode, "qvga", RGB24, FBF_MODESTR, args)
@@ -835,6 +838,26 @@ void fbp_setup_env_cmds(void);
 		.upper_margin	= 20,\
 		.lower_margin	= 20,\
 		.hsync_len	= 8,\
+		.vsync_len	= 1,\
+		.sync		= FB_SYNC_EXT | FB_SYNC_CLK_LAT_FALL,\
+		.vmode		= FB_VMODE_NONINTERLACED\
+	}\
+}
+
+#define VDF_ER_TFT050_MINI(_mode, _name, _fmt, _flags, args...) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, args),\
+	.mode	= {\
+		.name		= _name,\
+		.refresh	= 60,\
+		.xres		= 800,\
+		.yres		= 480,\
+		.pixclock	= 1000000000000ULL/((800+46+158+40)*(480+23+22+1)*60),\
+		.left_margin	= 46,\
+		.right_margin	= 158,\
+		.upper_margin	= 23,\
+		.lower_margin	= 22,\
+		.hsync_len	= 40,\
 		.vsync_len	= 1,\
 		.sync		= FB_SYNC_EXT | FB_SYNC_CLK_LAT_FALL,\
 		.vmode		= FB_VMODE_NONINTERLACED\
