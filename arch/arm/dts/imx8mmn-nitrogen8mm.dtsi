@@ -820,7 +820,6 @@
 			};
 
 			reg_sw5: sw5 {
-				regulator-always-on;
 				regulator-boot-on;
 				regulator-max-microvolt = <1800000>;
 				regulator-min-microvolt =  <400000>;
@@ -859,7 +858,6 @@
 	sda-gpios = GP_I2C2_SDA;
 	status = "okay";
 };
-
 
 #ifndef SKIP_MIPI_PANELS
 &TOUCHSCREEN_I2C_BUS {
@@ -1137,16 +1135,16 @@
 		DOVDD-supply = <&reg_vref_1v8>;
 		DVDD-supply = <&reg_vref_3v3>;
 		clocks = <&csi_mclk>;
-		clock-names = "csi_mclk";
+		clock-names = "xclk";
 		compatible = "ovti,ov5640_mipisubdev";
 		csi_id = <0>;
 		mclk = <20000000>;
 		mipi_csi;
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_i2c3b_ov5640_mipi>;
-		pwn-gpios = GP_OV5640_MIPI_POWER_DOWN;
+		powerdown-gpios = GP_OV5640_MIPI_POWER_DOWN;
 		reg = <0x3c>;
-		rst-gpios = GP_OV5640_MIPI_RESET;
+		reset-gpios = GP_OV5640_MIPI_RESET;
 		status = "okay";
 
 		port {
@@ -1213,7 +1211,7 @@
 	status = "okay";
 
 	fb_mipi: panel@0 {
-		backlight= <&backlight_mipi>;
+		backlight = <&backlight_mipi>;
 		bits-per-color = <8>;
 		bits-per-pixel = <24>;
 		bridge-de-active = <0>;
@@ -1368,7 +1366,7 @@
 	pinctrl-0 = <&pinctrl_uart1>;
 	assigned-clocks = <&clk IMX8MMN(CLK_UART1)>;
 	assigned-clock-parents = <&clk IMX8MMN(SYS_PLL1_80M)>;
-	fsl,uart-has-rtscts;
+	uart-has-rtscts;
 	status = "okay";
 };
 #endif
@@ -1387,7 +1385,7 @@
 	pinctrl-0 = <&pinctrl_uart3>;
 	assigned-clocks = <&clk IMX8MMN(CLK_UART3)>;
 	assigned-clock-parents = <&clk IMX8MMN(SYS_PLL1_80M)>;
-	fsl,uart-has-rtscts;
+	uart-has-rtscts;
 	status = "okay";
 };
 
@@ -1450,12 +1448,14 @@
 #if 0
 &usdhc3 {
 	bus-width = <4>;
+	keep-power-in-suspend;
 	no-sd-uhs-sdr104;
 	non-removable;
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
 	pinctrl-0 = <&pinctrl_usdhc3>;
 	pinctrl-1 = <&pinctrl_usdhc3_100mhz>;
 	pinctrl-2 = <&pinctrl_usdhc3_200mhz>;
+	pm-ignore-notify;
 	status = "okay";
 	vmmc-supply = <&reg_wlan_vmmc>;
 	vqmmc-1-8-v;
