@@ -288,14 +288,17 @@
 };
 
 &ext_mdio {
-	external_phy: ethernet-phy@0 {
+	external_phy: ethernet-phy@4 {
 		/* Realtek RTL8211F (0x001cc916) */
-		reg = <0>;
+		reg = <4>;
 		max-speed = <1000>;
 
 		interrupt-parent = <&gpio_intc>;
 		/* MAC_INTR on GPIOZ_14 */
 		interrupts = <26 IRQ_TYPE_LEVEL_LOW>;
+		reset-assert-us = <10000>;
+		reset-deassert-us = <30000>;
+		reset-gpios = <&gpio GPIOZ_15 (GPIO_ACTIVE_LOW | GPIO_OPEN_DRAIN)>;
 	};
 };
 

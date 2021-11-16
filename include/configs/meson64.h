@@ -92,19 +92,6 @@
 
 #define CONSOLE_FONT_COLOR 14
 
-#define PREBOOT_LOAD_LOGO \
-	"ll=0; test $boot_source = spi && sf probe && sf read $loadaddr 0x170000 0x10000 && ll=1; " \
-	"test $ll = 0 && ll=1 && " \
-	"load mmc 1 $loadaddr splash.bmp || " \
-	"load mmc 2 $loadaddr splash.bmp || " \
-	"load mmc 1:2 $loadaddr /usr/share/fenix/logo/logo.bmp || " \
-	"load mmc 2:2 $loadaddr /usr/share/fenix/logo/logo.bmp || " \
-	"ll=0; " \
-	"test $ll = 1 && bmp display $loadaddr m m || ll=0; " \
-	"test $ll = 0 && fdt addr $fdtcontroladdr && fdt get addr logoaddr /logo data && bmp display $logoaddr m m && echo [i] display embed logo; "
-
-#define PREBOOT_CMD "run load_logo; usb start; kbi init; sleep 1;"
-
 #define CONFIG_HOSTNAME CONFIG_DEFAULT_DEVICE_TREE
 #define CONFIG_BOOTP_SEND_HOSTNAME 1
 
@@ -112,8 +99,6 @@
 
 #ifndef CONFIG_EXTRA_ENV_SETTINGS
 #define CONFIG_EXTRA_ENV_SETTINGS \
-	"load_logo=" PREBOOT_LOAD_LOGO "\0" \
-	"preboot=" PREBOOT_CMD "\0" \
 	"stdin=" STDIN_CFG "\0" \
 	"stdout=" STDOUT_CFG "\0" \
 	"stderr=" STDOUT_CFG "\0" \
