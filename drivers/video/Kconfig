@@ -53,6 +53,10 @@ config VIDEO_COPY
 	  To use this, your video driver must set @copy_base in
 	  struct video_uc_platdata.
 
+config BACKLIGHT_BD2606
+	bool "BD2606 Backlight Driver"
+	depends on BACKLIGHT
+
 config BACKLIGHT_PWM
 	bool "Generic PWM based Backlight Driver"
 	depends on BACKLIGHT && DM_PWM
