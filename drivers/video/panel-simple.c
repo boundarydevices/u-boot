@@ -51,6 +51,7 @@ struct panel_simple {
 	unsigned enable_high_duration_us;
 	unsigned enable_low_duration_us;
 	unsigned power_delay_ms;
+	unsigned mipi_delay_between_cmds;
 	u32 bpc;
 
 	struct udevice *backlight;
@@ -379,10 +380,14 @@ static int send_cmd_list(struct panel_simple *panel, struct cmds *mc, int type, 
 						}
 					}
 #endif
-				} else if (generic) {
-					ret = mipi_dsi_generic_write(dsi, p, l);
 				} else {
-					ret = mipi_dsi_dcs_write_buffer(dsi, p, l);
+					if (generic) {
+						ret = mipi_dsi_generic_write(dsi, p, l);
+					} else {
+						ret = mipi_dsi_dcs_write_buffer(dsi, p, l);
+					}
+					if (panel->mipi_delay_between_cmds)
+						mdelay(panel->mipi_delay_between_cmds);
 				}
 			}
 		} else if (len == S_MRPS) {
@@ -841,6 +846,7 @@ static void init_common(ofnode np, struct panel_simple *panel)
 	ofnode_read_u32(np, "delay-unprepare", &panel->delay.unprepare);
 	ofnode_read_u32(np, "min-hs-clock-multiple", &panel->min_hs_clock_multiple);
 	ofnode_read_u32(np, "mipi-dsi-multiple", &panel->mipi_dsi_multiple);
+	ofnode_read_u32(np, "mipi-delay-between-cmds", &panel->mipi_delay_between_cmds);
 	ofnode_read_u32(np, "enable-high-duration-us", &panel->enable_high_duration_us);
 	ofnode_read_u32(np, "enable-low-duration-us", &panel->enable_low_duration_us);
 	ofnode_read_u32(np, "power-delay-ms", &panel->power_delay_ms);
