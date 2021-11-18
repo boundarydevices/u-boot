@@ -212,6 +212,7 @@ static const char *const aliases[] = {
 [FBTS_EXC3000] = "ts_exc3000",
 [FBTS_FT5X06] = "ts_ft5x06",
 [FBTS_FT5X06_2] = "ts_ft5x06_2",
+[FBTS_FT5X06_3] = "ts_ft5x06_3",
 [FBTS_FT7250] = "ts_ft7250",
 [FBTS_FUSION7] = "ts_fusion7",
 [FBTS_GOODIX] = "ts_goodix",
@@ -638,6 +639,17 @@ static int set_property_gpio(char *buf, int size, const char *path, const char *
 	return sz;
 }
 
+static int scan_for_alias(const struct display_info_t *di, int alias)
+{
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(di->enable_alias); i++) {
+		if (di->enable_alias[i] == alias)
+			return 0;
+	}
+	return -ENOENT;
+}
+
 static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf, int size)
 {
 	const char *mode_str = NULL;
@@ -726,9 +738,11 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		lvds_enabled = 1;
 
 	if (fb != FB_HDMI) {
-		sz = set_status(buf, size, backlight_names[fb], true);
-		buf += sz;
-		size -= sz;
+		if ((fb != FB_MIPI) || scan_for_alias(di, FBP_BACKLIGHT_MIPI2)) {
+			sz = set_status(buf, size, backlight_names[fb], true);
+			buf += sz;
+			size -= sz;
+		}
 	}
 	if (fb == FB_MIPI) {
 #if defined(CONFIG_IMX8MQ)
@@ -802,6 +816,10 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 			size -= sz;
 			sz = set_property_u32_env(buf, size, fbnames[fb],
 				"backlight", blm2, "blm2");
+			buf += sz;
+			size -= sz;
+
+			sz = set_status(buf, size, "pwm_mipi", false);
 			buf += sz;
 			size -= sz;
 		}

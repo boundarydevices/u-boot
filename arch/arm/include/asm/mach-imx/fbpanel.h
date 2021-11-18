@@ -31,6 +31,7 @@ enum alias_names {
 	FBTS_EXC3000,
 	FBTS_FT5X06,
 	FBTS_FT5X06_2,
+	FBTS_FT5X06_3,
 	FBTS_FT7250,
 	FBTS_FUSION7,
 	FBTS_GOODIX,
@@ -126,6 +127,7 @@ struct display_info_t {
 #define FBF_LS050T1SX12		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_PINCTRL | FBF_ENABLE_GPIOS_DTB)
 #define FBF_LTK0680YTMDB	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_PINCTRL | FBF_ENABLE_GPIOS_DTB)
 #define FBF_LTK0680YTMDB_LCD	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_MODESTR)
+#define FBF_LXD_M8509A		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_2)
 
 #define FBF_G156HCE_L01		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_DSI_LANES_4 | FBF_SPLITMODE)
 #define FBF_COM50H5N03ULC	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_PINCTRL | FBF_ENABLE_GPIOS_DTB)
@@ -254,6 +256,7 @@ void fbp_setup_env_cmds(void);
 #define VD_WXGA_J(_mode, args...)		VDF_WXGA(_mode, "wxga_j", RGB24, FBF_JEIDA, args)
 #define VD_LS050T1SX12(_mode, args...)		VDF_LS050T1SX12(_mode, "ls050t1sx12", RGB24, FBF_LS050T1SX12, args)
 #define VD_LTK080A60A004T(_mode, args...)	VDF_LTK080A60A004T(_mode, "ltk080a60a004t", RGB24, FBF_LTK080A60A004T, args)
+#define VD_LXD_M8509A(_mode, args...)		VDF_LXD_M8509A(_mode, "lxd_m8509a", RGB24, FBF_LXD_M8509A, args)
 #define VD_LTK080A60A004T_2(_mode, args...)	VDF_LTK080A60A004T(_mode, "ltk080a60a004t-2", RGB24, FBF_LTK080A60A004T, args)
 #define VD_LTK0680YTMDB(_mode, args...)		VDF_LTK0680YTMDB(_mode, "ltk0680ytmdb", RGB24, FB_##_mode == FB_LCD ? FBF_LTK0680YTMDB_LCD : FBF_LTK0680YTMDB, args)
 
@@ -762,6 +765,26 @@ void fbp_setup_env_cmds(void);
 		.sync           = FB_SYNC_EXT | FB_SYNC_CLK_LAT_FALL,\
 		.vmode          = FB_VMODE_NONINTERLACED\
 	},\
+}
+
+#define VDF_LXD_M8509A(_mode, _name, _fmt, _flags, args...) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, args),\
+	.mode	= {\
+		.name           = _name,\
+		.refresh        = 60,\
+		.xres           = 480,\
+		.yres           = 800,\
+		.pixclock       = 1000000000000ULL/28875000, /*((480+60+10+20)*(800+10+10+10)*60),*/\
+		.left_margin    = 40,\
+		.right_margin   = 60,\
+		.upper_margin   = 10,\
+		.lower_margin   = 10,\
+		.hsync_len      = 20,\
+		.vsync_len      = 10,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
 }
 
 #define VDF_OKAYA_480_272(_mode, _name, _fmt, _flags, args...) \
