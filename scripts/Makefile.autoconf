@@ -103,9 +103,14 @@ define filechk_config_h
 		echo \#define CONFIG_$$i				\
 		| sed '/=/ {s/=/	/;q; } ; { s/$$/	1/; }'; \
 	done;								\
-	echo \#define CONFIG_BOARDDIR board/$(if $(VENDOR),$(VENDOR)/)$(BOARD);\
+	config_boarddir=board/$(if $(VENDOR),$(VENDOR)/)$(BOARD);	\
+	echo \#define CONFIG_BOARDDIR $$config_boarddir;		\
 	echo \#include \<config_uncmd_spl.h\>;				\
-	echo \#include \<configs/$(CONFIG_SYS_CONFIG_NAME).h\>;		\
+	if [ -f $$config_boarddir/$(CONFIG_SYS_CONFIG_NAME).h ] ; then	\
+		echo \#include \"../$$config_boarddir/$(CONFIG_SYS_CONFIG_NAME).h\"; \
+	else								\
+		echo \#include \<configs/$(CONFIG_SYS_CONFIG_NAME).h\>;	\
+	fi;								\
 	echo \#include \<asm/config.h\>;				\
 	echo \#include \<linux/kconfig.h\>;				\
 	echo \#include \<config_fallbacks.h\>;)
