@@ -3,3 +3,6 @@
 # Denote all files that are truly binary and should not be modified
 *.bmp binary
 *.ttf binary
+*.fw binary
+*.bin binary
+*.img binary
