@@ -99,6 +99,7 @@
 
 #ifndef CONFIG_EXTRA_ENV_SETTINGS
 #define CONFIG_EXTRA_ENV_SETTINGS \
+	"console=ttyAML0\0" \
 	"fdt_addr_r=0x08008000\0" \
 	"fdtfile=" CONFIG_DEFAULT_DEVICE_TREE ".dtb\0" \
 	"fdtoverlay_addr_r=0x01000000\0" \
@@ -106,6 +107,23 @@
 	"kernel_comp_addr_r=0x0d080000\0" \
 	"kernel_comp_size=0x2000000\0" \
 	"loadaddr=0x01000000\0" \
+	"netargs=setenv bootargs console=${console},115200 root=/dev/nfs rw " \
+		"ip=dhcp nfsroot=${tftpserverip}:${nfsroot},v3,tcp\0" \
+	"netboot=run netargs; " \
+		"if test -z \"${fdtfile}\" -a -n \"${soc}\"; then " \
+			"setenv fdtfile ${soc}-${board}${boardver}.dtb; " \
+		"fi; " \
+		"if test ${ip_dyn} = yes; then " \
+			"setenv get_cmd dhcp; " \
+		"else " \
+			"setenv get_cmd tftp; " \
+		"fi; " \
+		"${get_cmd} ${loadaddr} ${tftpserverip}:Image; " \
+		"if ${get_cmd} ${fdt_addr_r} ${tftpserverip}:${fdtfile}; then " \
+			"booti ${loadaddr} - ${fdt_addr_r}; " \
+		"else " \
+			"echo WARN: Cannot load the DT; " \
+		"fi;\0" \
 	"pxefile_addr_r=0x01080000\0" \
 	"ramdisk_addr_r=0x13000000\0" \
 	"scriptaddr=0x08000000\0" \
