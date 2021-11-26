@@ -101,7 +101,7 @@
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	"console=ttyAML0\0" \
 	"fdt_addr_r=0x08008000\0" \
-	"fdtfile=" CONFIG_DEFAULT_DEVICE_TREE ".dtb\0" \
+	"fdtfile=boundary-a311d.dtb\0" \
 	"fdtoverlay_addr_r=0x01000000\0" \
 	"kernel_addr_r=0x08080000\0" \
 	"kernel_comp_addr_r=0x0d080000\0" \
