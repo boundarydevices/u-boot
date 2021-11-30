@@ -219,6 +219,19 @@
 			status = "disabled";
 		};
 
+		ufs: ufs@11270000 {
+			compatible = "mediatek,mt8195-ufshci",
+				     "mediatek,mt8183-ufshci";
+			reg = <0 0x11270000 0 0x1000>,
+			      <0 0x11f50000 0 0x1000>;
+			interrupts = <GIC_SPI 77 IRQ_TYPE_LEVEL_LOW>;
+			clocks = <&mmc_source_clk>,
+				 <&clk26m>,
+				 <&clk26m>;
+			clock-names = "source", "hclk", "source_cg";
+			status = "disabled";
+		};
+
 		u3phy: usb-phy@11f40000 {
 			compatible = "mediatek,generic-tphy-v2";
 			#address-cells = <2>;
