@@ -20,8 +20,21 @@
 /* Environment settings */
 #include <config_distro_bootcmd.h>
 
+#ifdef CONFIG_CMD_MMC
+#define BOOT_TARGET_MMC(func) func(MMC, mmc, 0)
+#else
+#define BOOT_TARGET_MMC(func)
+#endif
+
+#ifdef CONFIG_CMD_SCSI
+#define BOOT_TARGET_SCSI(func) func(SCSI, scsi, 2)
+#else
+#define BOOT_TARGET_SCSI(func)
+#endif
+
 #define BOOT_TARGET_DEVICES(func) \
-	func(MMC, mmc, 0)
+	BOOT_TARGET_MMC(func) \
+	BOOT_TARGET_SCSI(func)
 
 #if !defined(CONFIG_EXTRA_ENV_SETTINGS)
 #define CONFIG_EXTRA_ENV_SETTINGS \
