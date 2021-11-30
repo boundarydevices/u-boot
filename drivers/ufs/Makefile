@@ -4,5 +4,6 @@
 #
 
 obj-$(CONFIG_UFS) += ufs.o ufs-uclass.o
+obj-$(CONFIG_UFS_MEDIATEK) += ufs-mediatek.o
 obj-$(CONFIG_CADENCE_UFS) += cdns-platform.o
 obj-$(CONFIG_TI_J721E_UFS) += ti-j721e-ufs.o
