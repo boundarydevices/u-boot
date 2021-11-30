@@ -52,6 +52,7 @@ DECLARE_GLOBAL_DATA_PTR;
 	defined(CONFIG_ENV_IS_IN_NVRAM)		|| \
 	defined(CONFIG_ENV_IS_IN_ONENAND)	|| \
 	defined(CONFIG_ENV_IS_IN_SATA)		|| \
+	defined(CONFIG_ENV_IS_IN_SCSI)		|| \
 	defined(CONFIG_ENV_IS_IN_SPI_FLASH)	|| \
 	defined(CONFIG_ENV_IS_IN_REMOTE)	|| \
 	defined(CONFIG_ENV_IS_IN_UBI)
