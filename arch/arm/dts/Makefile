@@ -1235,6 +1235,7 @@ dtb-$(CONFIG_ARCH_MEDIATEK) += \
 	mt7629-rfb.dtb \
 	mt8183-pumpkin.dtb \
 	mt8195-demo.dtb \
+	mt8195-evb-ufs.dtb \
 	mt8365-pumpkin.dtb \
 	mt8512-bm1-emmc.dtb \
 	mt8516-pumpkin.dtb \
