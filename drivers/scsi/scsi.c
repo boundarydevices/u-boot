@@ -693,6 +693,15 @@ int scsi_scan(bool verbose)
 }
 #endif
 
+__weak int scsi_get_env_dev(void)
+{
+#ifdef CONFIG_SYS_SCSI_ENV_DEV
+	return CONFIG_SYS_SCSI_ENV_DEV;
+#else
+	return 0;
+#endif
+}
+
 #ifdef CONFIG_BLK
 static const struct blk_ops scsi_blk_ops = {
 	.read	= scsi_read,

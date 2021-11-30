@@ -53,7 +53,7 @@ config ENV_IS_NOWHERE
 		     !ENV_IS_IN_MMC && !ENV_IS_IN_NAND && \
 		     !ENV_IS_IN_NVRAM && !ENV_IS_IN_ONENAND && \
 		     !ENV_IS_IN_REMOTE && !ENV_IS_IN_SPI_FLASH && \
-		     !ENV_IS_IN_UBI
+		     !ENV_IS_IN_UBI && !ENV_IS_IN_SCSI
 	help
 	  Define this if you don't want to or can't have an environment stored
 	  on a storage medium. In this case the environment will still exist
@@ -241,6 +241,48 @@ config ENV_IS_IN_MMC
 
 	  This value is also in units of bytes, but must also be aligned to
 	  an MMC sector boundary.
+
+config ENV_IS_IN_SCSI
+	bool "Environment in an SCSI device"
+	depends on !CHAIN_OF_TRUST
+	depends on SCSI
+	help
+	  Define this if you have an SCSI device which you want to use for the
+	  environment.
+
+	  CONFIG_SYS_SCSI_ENV_DEV:
+
+	  Specifies which SCSI device the environment is stored in.
+
+	  CONFIG_ENV_OFFSET:
+	  CONFIG_ENV_SIZE:
+
+	  These two #defines specify the offset and size of the environment
+	  area within the specified SCSI device.
+
+	  If offset is positive (the usual case), it is treated as relative to
+	  the start of the SCSI partition. If offset is negative, it is treated
+	  as relative to the end of the SCSI partition. This can be useful if
+	  your board may be fitted with different SCSI devices, which have
+	  different sizes for the SCSI partitions, and you always want the
+	  environment placed at the very end of the partition, to leave the
+	  maximum possible space before it, to store other data.
+
+	  These two values are in units of bytes, but must be aligned to an
+	  SCSI sector boundary.
+
+	  CONFIG_ENV_OFFSET_REDUND (optional):
+
+	  Specifies a second storage area, of CONFIG_ENV_SIZE size, used to
+	  hold a redundant copy of the environment data. This provides a
+	  valid backup copy in case the other copy is corrupted, e.g. due
+	  to a power failure during a "saveenv" operation.
+
+	  This value may also be positive or negative; this is handled in the
+	  same way as CONFIG_ENV_OFFSET.
+
+	  This value is also in units of bytes, but must also be aligned to
+	  an SCSI sector boundary.
 
 config ENV_IS_IN_NAND
 	bool "Environment in a NAND device"
@@ -552,7 +594,7 @@ config ENV_ADDR_REDUND
 config ENV_OFFSET
 	hex "Environment offset"
 	depends on ENV_IS_IN_EEPROM || ENV_IS_IN_MMC || ENV_IS_IN_NAND || \
-		    ENV_IS_IN_SPI_FLASH
+		    ENV_IS_IN_SPI_FLASH || ENV_IS_IN_SCSI
 	default 0x3f8000 if ARCH_ROCKCHIP && ENV_IS_IN_MMC
 	default 0x140000 if ARCH_ROCKCHIP && ENV_IS_IN_SPI_FLASH
 	default 0xF0000 if ARCH_SUNXI
@@ -569,7 +611,7 @@ config ENV_OFFSET
 config ENV_OFFSET_REDUND
 	hex "Redundant environment offset"
 	depends on (ENV_IS_IN_EEPROM || ENV_IS_IN_MMC || ENV_IS_IN_NAND || \
-		    ENV_IS_IN_SPI_FLASH) && SYS_REDUNDAND_ENVIRONMENT
+		    ENV_IS_IN_SPI_FLASH || ENV_IS_IN_SCSI) && SYS_REDUNDAND_ENVIRONMENT
 	default 0
 	help
 	  Offset from the start of the device (or partition) of the redundant
@@ -629,6 +671,13 @@ config SYS_RELOC_GD_ENV_ADDR
 	help
 	  Relocate the early env_addr pointer so we know it is not inside
 	  the binary. Some systems need this and for the rest, it doesn't hurt.
+
+config SYS_SCSI_ENV_DEV
+	int "scsi device number"
+	depends on ENV_IS_IN_SCSI
+	default 0
+	help
+	  SCSI device number on the platform where the environment is stored.
 
 config SYS_MMC_ENV_DEV
 	int "mmc device number"
