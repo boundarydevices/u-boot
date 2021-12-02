@@ -817,6 +817,11 @@ static int ufshcd_send_command(struct ufs_hba *hba, unsigned int task_tag)
 	u32 intr_status;
 	u32 enabled_intr_status;
 
+	flush_dcache_range((unsigned long)hba->utrdl,
+			   (unsigned long)hba->utrdl + sizeof(*hba->utrdl));
+	flush_dcache_range((unsigned long)hba->ucdl,
+			   (unsigned long)hba->ucdl + sizeof(*hba->ucdl));
+
 	ufshcd_writel(hba, 1 << task_tag, REG_UTP_TRANSFER_REQ_DOOR_BELL);
 
 	start = get_timer(0);
@@ -839,6 +844,11 @@ static int ufshcd_send_command(struct ufs_hba *hba, unsigned int task_tag)
 			return -1;
 		}
 	} while (!(enabled_intr_status & UTP_TRANSFER_REQ_COMPL));
+
+	invalidate_dcache_range((unsigned long)hba->utrdl,
+				(unsigned long)hba->utrdl + sizeof(*hba->utrdl));
+	invalidate_dcache_range((unsigned long)hba->ucdl,
+				(unsigned long)hba->ucdl + sizeof(*hba->ucdl));
 
 	return 0;
 }
@@ -1414,6 +1424,7 @@ static inline void prepare_prdt_desc(struct ufshcd_sg_entry *entry,
 	entry->size = cpu_to_le32(len) | GENMASK(1, 0);
 	entry->base_addr = cpu_to_le32(lower_32_bits((unsigned long)buf));
 	entry->upper_addr = cpu_to_le32(upper_32_bits((unsigned long)buf));
+	flush_dcache_range((unsigned long) buf, (unsigned long)buf + len);
 }
 
 static void prepare_prdt_table(struct ufs_hba *hba, struct scsi_cmd *pccb)
