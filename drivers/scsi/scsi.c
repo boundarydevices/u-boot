@@ -39,7 +39,7 @@ const struct pci_device_id scsi_device_list[] = { SCSI_DEV_LIST };
 #endif
 static struct scsi_cmd tempccb;	/* temporary scsi command buffer */
 
-static unsigned char tempbuff[512]; /* temporary data buffer */
+static unsigned char tempbuff[512] __aligned(ARCH_DMA_MINALIGN); /* temporary data buffer */
 
 #if !defined(CONFIG_DM_SCSI)
 static int scsi_max_devs; /* number of highest available scsi device */
