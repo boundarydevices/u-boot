@@ -5,6 +5,7 @@
  */
 
 #include <common.h>
+#include <cpu_func.h>
 #include <blk.h>
 #include <bootstage.h>
 #include <dm.h>
@@ -210,6 +211,8 @@ static ulong scsi_read(struct udevice *dev, lbaint_t blknr, lbaint_t blkcnt,
 	} while (blks != 0);
 	debug("scsi_read_ext: end startblk " LBAF
 	      ", blccnt %x buffer %lX\n", start, smallblks, buf_addr);
+	invalidate_dcache_range((unsigned long)buffer,
+				(unsigned long)buffer + block_dev->blksz * blkcnt);
 	return blkcnt;
 }
 
