@@ -85,7 +85,12 @@ static int env_scsi_save(void)
 	if (ret)
 		return ret;
 
-	if (scsi_get_env_addr(desc, 0, &offset))
+#ifdef CONFIG_ENV_OFFSET_REDUND
+	if (gd->env_valid == ENV_VALID)
+		copy = 1;
+#endif
+
+	if (scsi_get_env_addr(desc, copy, &offset))
 		return -EIO;
 
 	printf("Writing to %sSCSI device(%d)... ", copy ? "redundant " : "", dev);
@@ -93,6 +98,10 @@ static int env_scsi_save(void)
 		puts("failed\n");
 		return -EIO;
 	}
+
+#ifdef CONFIG_ENV_OFFSET_REDUND
+	gd->env_valid = gd->env_valid == ENV_REDUND ? ENV_VALID : ENV_REDUND;
+#endif
 
 	return ret;
 }
@@ -131,7 +140,16 @@ static int env_scsi_erase(void)
 	if (scsi_get_env_addr(desc, 0, &offset))
 		return -EIO;
 
-	return erase_env(desc, CONFIG_ENV_SIZE, offset);
+	ret = erase_env(desc, CONFIG_ENV_SIZE, offset);
+
+#ifdef CONFIG_ENV_OFFSET_REDUND
+	if (scsi_get_env_addr(desc, 1, &offset))
+		return -EIO;
+
+	ret |= erase_env(desc, CONFIG_ENV_SIZE, offset);
+#endif
+
+	return ret;
 }
 #endif /* CONFIG_CMD_SAVEENV && !CONFIG_SPL_BUILD */
 
@@ -150,34 +168,67 @@ static inline int read_env(struct blk_desc *desc, unsigned long size,
 
 static int env_scsi_load(void)
 {
-	ALLOC_CACHE_ALIGN_BUFFER(char, buf, CONFIG_ENV_SIZE);
 	struct blk_desc *desc;
-	env_t *ep = NULL;
 	u32 offset;
 	int ret;
+#ifdef CONFIG_ENV_OFFSET_REDUND
+	u32 offset_redund;
+	int ret_env1, ret_env2;
+	ALLOC_CACHE_ALIGN_BUFFER(env_t, tmp_env1, 1);
+	ALLOC_CACHE_ALIGN_BUFFER(env_t, tmp_env2, 1);
+#else
+	ALLOC_CACHE_ALIGN_BUFFER(char, buf, CONFIG_ENV_SIZE);
+	env_t *ep = NULL;
+#endif
 
 #ifndef CONFIG_DM_SCSI
 	scsi_bus_reset(NULL);
 #endif
 	ret = scsi_scan(false);
 	if (ret)
-		return ret;
+		goto err;
 
 	desc = blk_get_devnum_by_type(IF_TYPE_SCSI, CONFIG_SYS_SCSI_ENV_DEV);
-	if (!desc)
-		return -ENODEV;
+	if (!desc) {
+		ret = -ENODEV;
+		goto err;
+	}
 
-	if (scsi_get_env_addr(desc, 0, &offset))
-		return -EIO;
+	if (scsi_get_env_addr(desc, 0, &offset)) {
+		ret = -EIO;
+		goto err;
+	}
 
-	if (read_env(desc, CONFIG_ENV_SIZE, offset, buf))
-		return -EIO;
+#ifdef CONFIG_ENV_OFFSET_REDUND
+	if (scsi_get_env_addr(desc, 1, &offset_redund)) {
+		ret = -EIO;
+		goto err;
+	}
+#endif
 
+#ifdef CONFIG_ENV_OFFSET_REDUND
+	ret_env1 = read_env(desc, CONFIG_ENV_SIZE, offset, tmp_env1);
+	ret_env2 = read_env(desc, CONFIG_ENV_SIZE, offset_redund, tmp_env2);
+#else
+	ret = read_env(desc, CONFIG_ENV_SIZE, offset, buf);
+	if (ret)
+		goto err;
+#endif
+
+#ifdef CONFIG_ENV_OFFSET_REDUND
+	ret = env_import_redund((char *)tmp_env1, ret_env1, (char *)tmp_env2,
+				ret_env2, H_EXTERNAL);
+#else
 	ret = env_import(buf, 1, H_EXTERNAL);
 	if (!ret) {
 		ep = (env_t *)buf;
 		gd->env_addr = (ulong)&ep->data;
 	}
+#endif
+
+err:
+	if (ret)
+		env_set_default("Failed to load environment", 0);
 
 	return ret;
 }
