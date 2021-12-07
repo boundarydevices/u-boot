@@ -4,15 +4,19 @@
  */
 
 #include <common.h>
+#include <asm/global_data.h>
 #include <env.h>
 #include <fastboot.h>
 #include <fastboot-internal.h>
 #include <fb_mmc.h>
 #include <fb_nand.h>
 #include <fs.h>
+#include <inttypes.h>
 #include <mmc.h>
 #include <part.h>
 #include <version.h>
+
+DECLARE_GLOBAL_DATA_PTR;
 
 static void getvar_version(char *var_parameter, char *response);
 static void getvar_version_bootloader(char *var_parameter, char *response);
@@ -33,6 +37,7 @@ static void getvar_partition_type(char *part_name, char *response);
 static void getvar_partition_size(char *part_name, char *response);
 #endif
 static void getvar_is_userspace(char *var_parameter, char *response);
+static void getvar_mem_size(char *part_name, char *response);
 
 static const struct {
 	const char *variable;
@@ -86,6 +91,9 @@ static const struct {
 	}, {
 		.variable = "is-userspace",
 		.dispatch = getvar_is_userspace
+	}, {
+		.variable = "mem-size",
+		.dispatch = getvar_mem_size
 	}
 };
 
@@ -264,6 +272,11 @@ static void getvar_partition_size(char *part_name, char *response)
 static void getvar_is_userspace(char *var_parameter, char *response)
 {
 	fastboot_okay("no", response);
+}
+
+static void getvar_mem_size(char *var_parameter, char *response)
+{
+	fastboot_response("OKAY", response, "0x%llx", (unsigned long long)gd->ram_size);
 }
 
 /**
