@@ -76,7 +76,7 @@ static const struct {
 #endif
 #if CONFIG_IS_ENABLED(FASTBOOT_FLASH_MMC)
 	}, {
-		.variable = "mmc_size",
+		.variable = "mmc-size",
 		.dispatch = getvar_mmc_size
 	}, {
 		.variable = "partition-type",
@@ -233,7 +233,7 @@ static void getvar_mmc_size(char *var_parameter, char *response)
 	struct mmc *mmc = find_mmc_device(CONFIG_FASTBOOT_FLASH_MMC_DEV);
 
 	if (mmc)
-		fastboot_response("OKAY", response, "%llu", mmc->capacity_user);
+		fastboot_response("OKAY", response, "0x%" PRIx64, mmc->capacity_user);
 	else
 		fastboot_fail("mmc device not found", response);
 }
