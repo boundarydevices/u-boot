@@ -179,7 +179,7 @@ vpath %.c $(VPATH_LIST)
 ASFLAGS			+= 	-nostdinc -ffreestanding -Wa,--fatal-warnings	\
 				-mgeneral-regs-only -D__ASSEMBLY__		\
 				${DEFINES} ${INCLUDES}
-CFLAGS			+= 	-nostdinc -pedantic -ffreestanding -Wall	\
+CFLAGS			+= 	-nostdinc -ffreestanding -Wall	\
 				-Werror -mgeneral-regs-only -std=c99 -c -Os	\
 				${DEFINES} ${INCLUDES} $(VPATH_LIST:%=-I%)
 CFLAGS			+=	-ffunction-sections -fdata-sections
