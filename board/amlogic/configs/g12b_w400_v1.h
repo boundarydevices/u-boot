@@ -427,6 +427,8 @@
 	#define	CONFIG_SYS_MMC_ENV_DEV 1
 	#define CONFIG_EMMC_DDR52_EN 0
 	#define CONFIG_EMMC_DDR52_CLK 35000000
+	#define CONFIG_SUPPORT_EMMC_BOOT 1
+	#define CONFIG_SUPPORT_EMMC_RPMB 1
 #endif
 #define		CONFIG_PARTITIONS 1
 #define 	CONFIG_SYS_NO_FLASH  1
@@ -487,12 +489,12 @@
 #define CONFIG_CMD_BMP 1
 
 #if defined(CONFIG_AML_VOUT)
-#define CONFIG_AML_CVBS 1
+//#define CONFIG_AML_CVBS 1
 #endif
 
-#define CONFIG_AML_LCD    1
-#define CONFIG_AML_LCD_TABLET 1
-#define CONFIG_AML_LCD_EXTERN 1
+//#define CONFIG_AML_LCD    1
+//#define CONFIG_AML_LCD_TABLET 1
+//#define CONFIG_AML_LCD_EXTERN 1
 
 
 /* USB
@@ -537,10 +539,10 @@
 #define CONFIG_DEVICE_PRODUCT	"galilei"
 
 //UBOOT Facotry usb/sdcard burning config
-#define CONFIG_AML_V2_FACTORY_BURN              1       //support facotry usb burning
-#define CONFIG_AML_FACTORY_BURN_LOCAL_UPGRADE   1       //support factory sdcard burning
-#define CONFIG_POWER_KEY_NOT_SUPPORTED_FOR_BURN 1       //There isn't power-key for factory sdcard burning
-#define CONFIG_SD_BURNING_SUPPORT_UI            1       //Displaying upgrading progress bar when sdcard/udisk burning
+//#define CONFIG_AML_V2_FACTORY_BURN              1       //support facotry usb burning
+//#define CONFIG_AML_FACTORY_BURN_LOCAL_UPGRADE   1       //support factory sdcard burning
+//#define CONFIG_POWER_KEY_NOT_SUPPORTED_FOR_BURN 1       //There isn't power-key for factory sdcard burning
+//#define CONFIG_SD_BURNING_SUPPORT_UI            1       //Displaying upgrading progress bar when sdcard/udisk burning
 
 #define CONFIG_AML_SECURITY_KEY                 1
 #define CONFIG_UNIFY_KEY_MANAGE                 1
@@ -574,8 +576,8 @@
 #endif
 
 /* PWM DM driver*/
-#define CONFIG_DM_PWM
-#define CONFIG_PWM_MESON
+//#define CONFIG_DM_PWM
+//#define CONFIG_PWM_MESON
 
 #define CONFIG_EFUSE 1
 
@@ -664,8 +666,13 @@
 
 /* Choose One of Ethernet Type */
 #undef CONFIG_ETHERNET_NONE
+#if 1
 #define ETHERNET_INTERNAL_PHY
 #undef ETHERNET_EXTERNAL_PHY
+#else
+#undef ETHERNET_INTERNAL_PHY
+#define ETHERNET_EXTERNAL_PHY
+#endif
 
 #define CONFIG_HIGH_TEMP_COOL 90
 #endif
