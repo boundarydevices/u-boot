@@ -97,6 +97,28 @@
 
 #include <config_distro_bootcmd.h>
 
+#define PARTS_DEFAULT \
+	"name=bootloader,start=0x000000000000,size=0x000000400000;" \
+	"name=reserved,start=0x000002400000,size=0x000004000000;" \
+	"name=cache,start=0x000006c00000,size=0x000046000000;" \
+	"name=env,start=0x00004d400000,size=0x000000800000;" \
+	"name=logo,start=0x00004e400000,size=0x000000800000;" \
+	"name=recovery,start=0x00004f400000,size=0x000001800000;" \
+	"name=misc,start=0x000051400000,size=0x000000800000;" \
+	"name=dtbo,start=0x000052400000,size=0x000000800000;" \
+	"name=cri_data,start=0x000053400000,size=0x000000800000;" \
+	"name=param,start=0x000054400000,size=0x000001000000;" \
+	"name=boot,start=0x000055c00000,size=0x000001000000;" \
+	"name=rsv,start=0x000057400000,size=0x000001000000;" \
+	"name=metadata,start=0x000058c00000,size=0x000001000000;" \
+	"name=vbmeta,start=0x00005a400000,size=0x000000200000;" \
+	"name=tee,start=0x00005ae00000,size=0x000002000000;" \
+	"name=vendor,start=0x00005d600000,size=0x000014000000;" \
+	"name=odm,start=0x000071e00000,size=0x000008000000;" \
+	"name=system,start=0x00007a600000,size=0x000050000000;" \
+	"name=product,start=0x0000cae00000,size=0x000008000000;" \
+	"name=data,start=0x0000d3600000,size=-;" \
+
 #ifndef CONFIG_EXTRA_ENV_SETTINGS
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	"console=ttyAML0\0" \
@@ -124,6 +146,7 @@
 		"else " \
 			"echo WARN: Cannot load the DT; " \
 		"fi;\0" \
+	"partitions=" PARTS_DEFAULT "\0" \
 	"pxefile_addr_r=0x01080000\0" \
 	"ramdisk_addr_r=0x13000000\0" \
 	"scriptaddr=0x08000000\0" \
