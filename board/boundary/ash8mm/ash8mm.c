@@ -301,8 +301,8 @@ static int read_keys_int(int cnt)
 
 int board_init(void)
 {
-	sw_vals = read_keys_int(6);
 	gpios_reserve(gpios_to_reserve, ARRAY_SIZE(gpios_to_reserve));
+	sw_vals = read_keys_int(6);
 #if defined(CONFIG_MXC_SPI) && !defined(CONFIG_DM_SPI)
 	setup_spi();
 #endif
