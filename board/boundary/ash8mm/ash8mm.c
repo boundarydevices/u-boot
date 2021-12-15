@@ -251,15 +251,15 @@ int board_detect_display(const struct display_info_t *di)
 
 static const struct display_info_t displays[] = {
 	/* lt8912 mipi to lvds */
-	VD_WVGA_TX23D200_18L(LVDS, board_detect_display, fbp_bus_gp(1, 0, 0, 0), 0x00),
-	VD_WVGA_TX23D200_18H(LVDS, NULL, fbp_bus_gp(1, 0, 0, 0), 0x00),
-	VD_WVGA_TX23D200_24L(LVDS, NULL, fbp_bus_gp(1, 0, 0, 0), 0x00),
-	VD_WVGA_TX23D200_24H(LVDS, NULL, fbp_bus_gp(1, 0, 0, 0), 0x00),
-	VD_AM_1280800P2TZQW(LVDS, board_detect_display, fbp_bus_gp(1, 0, 0, 0), 0x24, FBTS_CYTTSP5),
-	VD_DT070BTFT_24H(LVDS, board_detect_display, fbp_bus_gp(1, 0, 0, 0), 0x38, FBTS_FT5X06),
-	VD_DT070BTFT_24L(LVDS, NULL, fbp_bus_gp(1, 0, 0, 0), 0x38, FBTS_FT5X06),
-	VD_DT070BTFT_18H(LVDS, NULL, fbp_bus_gp(1, 0, 0, 0), 0x38, FBTS_FT5X06),
-	VD_DT070BTFT_18L(LVDS, NULL, fbp_bus_gp(1, 0, 0, 0), 0x38, FBTS_FT5X06),
+	VD_MIPI_WVGA_TX23D200_18L(MIPI, board_detect_display, fbp_bus_gp(1, 0, 0, 0), 0x00),
+	VD_MIPI_WVGA_TX23D200_18H(MIPI, NULL, fbp_bus_gp(1, 0, 0, 0), 0x00),
+	VD_MIPI_WVGA_TX23D200_24L(MIPI, NULL, fbp_bus_gp(1, 0, 0, 0), 0x00),
+	VD_MIPI_WVGA_TX23D200_24H(MIPI, NULL, fbp_bus_gp(1, 0, 0, 0), 0x00),
+	VD_MIPI_AM_1280800P2TZQW(MIPI, board_detect_display, fbp_bus_gp(1, 0, 0, 0), 0x24, FBTS_CYTTSP5),
+	VD_MIPI_DT070BTFT_24H(MIPI, board_detect_display, fbp_bus_gp(1, 0, 0, 0), 0x38, FBTS_FT5X06),
+	VD_MIPI_DT070BTFT_24L(MIPI, NULL, fbp_bus_gp(1, 0, 0, 0), 0x38, FBTS_FT5X06),
+	VD_MIPI_DT070BTFT_18H(MIPI, NULL, fbp_bus_gp(1, 0, 0, 0), 0x38, FBTS_FT5X06),
+	VD_MIPI_DT070BTFT_18L(MIPI, NULL, fbp_bus_gp(1, 0, 0, 0), 0x38, FBTS_FT5X06),
 };
 #define display_cnt	ARRAY_SIZE(displays)
 #else
