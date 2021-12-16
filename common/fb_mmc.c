@@ -191,9 +191,7 @@ void fb_mmc_flash_write(const char *cmd, void *download_buffer,
 			fastboot_okay("");
 			return;
 		} else if (get_partition_info_efi_by_name(dev_desc, cmd, &info)) {
-			error("cannot find partition: '%s'\n", cmd);
-			fastboot_fail("cannot find partition");
-			return;
+			printf("cannot find partition: '%s' in GPT, checking AML\n", cmd);
 		}
 	}
 #endif
@@ -282,6 +280,8 @@ void fb_mmc_erase_write(const char *cmd, void *download_buffer)
 #ifdef CONFIG_EFI_PARTITION
 	if (dev_desc->part_type == PART_TYPE_EFI)
 		ret = part_get_info_efi_by_name_or_alias(dev_desc, cmd, &info);
+		if (ret)
+			ret = get_partition_info_aml_by_name(dev_desc, cmd, &info);
 #endif
 #ifdef CONFIG_AML_PARTITION
 	if ((dev_desc->part_type == PART_TYPE_AML)
