@@ -129,7 +129,7 @@ int do_get_rebootmode (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]
 			break;
 		}
 		case AMLOGIC_BOOTLOADER_REBOOT: {
-			setenv("bootdelay","-1");
+			setenv("reboot_mode","fastboot");
 			break;
 		}
 	}
