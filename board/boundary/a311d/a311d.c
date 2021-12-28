@@ -19,19 +19,6 @@
 #include <net.h>
 #include <phy.h>
 
-int mmc_get_env_dev(void)
-{
-	switch (meson_get_boot_device()) {
-	case BOOT_DEVICE_EMMC:
-		return 2;
-	case BOOT_DEVICE_SD:
-		return 1;
-	default:
-		/* boot device is not EMMC|SD */
-		return -1;
-	}
-}
-
 int meson_ft_board_setup(void *blob, struct bd_info *bd)
 {
 	return 0;
