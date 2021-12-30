@@ -21,11 +21,16 @@
 #include <asm/io.h>
 #include <linux/usb/dwc3.h>
 #include <linux/usb/otg.h>
+#include <power/regulator.h>
 
 struct xhci_dwc3_plat {
 	struct clk_bulk clks;
 	struct phy_bulk phys;
 	struct reset_ctl_bulk resets;
+#if CONFIG_IS_ENABLED(DM_REGULATOR)
+	struct udevice		*vbus_supply;
+	int			vbus_en;
+#endif
 };
 
 void dwc3_set_mode(struct dwc3 *dwc3_reg, u32 mode)
@@ -33,6 +38,25 @@ void dwc3_set_mode(struct dwc3 *dwc3_reg, u32 mode)
 	clrsetbits_le32(&dwc3_reg->g_ctl,
 			DWC3_GCTL_PRTCAPDIR(DWC3_GCTL_PRTCAP_OTG),
 			DWC3_GCTL_PRTCAPDIR(mode));
+}
+
+void plat_dwc3_set_mode(struct xhci_dwc3_plat *plat, struct dwc3 *dwc3_reg, u32 mode)
+{
+	dwc3_set_mode(dwc3_reg, mode);
+#if CONFIG_IS_ENABLED(DM_REGULATOR)
+	if (plat->vbus_supply) {
+		int enable = (mode == DWC3_GCTL_PRTCAP_HOST) ? 1 : 0;
+
+		if (plat->vbus_en != enable) {
+			int ret = regulator_set_enable(plat->vbus_supply,
+					(mode == DWC3_GCTL_PRTCAP_HOST));
+			if (ret)
+				return;
+			plat->vbus_en = enable;
+		}
+
+	}
+#endif
 }
 
 static void dwc3_phy_reset(struct dwc3 *dwc3_reg)
@@ -167,6 +191,12 @@ static int xhci_dwc3_probe(struct udevice *dev)
 	u32 reg;
 	int ret;
 
+#if CONFIG_IS_ENABLED(DM_REGULATOR)
+	ret = device_get_supply_regulator(dev, "vbus-supply",
+					  &plat->vbus_supply);
+	if (ret && ret != -ENOENT)
+		pr_err("Failed to get vbus-supply regulator\n");
+#endif
 	ret = xhci_dwc3_reset_init(dev, plat);
 	if (ret)
 		return ret;
@@ -213,7 +243,7 @@ static int xhci_dwc3_probe(struct udevice *dev)
 		/* by default set dual role mode to HOST */
 		dr_mode = USB_DR_MODE_HOST;
 
-	dwc3_set_mode(dwc3_reg, dr_mode);
+	plat_dwc3_set_mode(plat, dwc3_reg, dr_mode);
 
 	return xhci_register(dev, hccr, hcor);
 }
