@@ -111,6 +111,8 @@
 #ifndef CONFIG_EXTRA_ENV_SETTINGS
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	"console=ttyAML0\0" \
+	"fastboot_raw_partition_bootloader=0x1 0xfff mmcpart 1\0" \
+	"fastboot_raw_partition_bootloader-env=0x1000 0x10 mmcpart 1\0" \
 	"fdt_addr_r=0x08008000\0" \
 	"fdtfile=boundary-a311d.dtb\0" \
 	"fdtoverlay_addr_r=0x01000000\0" \
