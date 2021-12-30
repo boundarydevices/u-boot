@@ -8,6 +8,7 @@
 
 #include <common.h>
 #include <log.h>
+#include <asm/gpio.h>
 #include <asm-generic/io.h>
 #include <dm.h>
 #include <dm/device-internal.h>
@@ -118,6 +119,9 @@ struct dwc3_meson_g12a {
 	unsigned int		usb3_ports;
 #if CONFIG_IS_ENABLED(DM_REGULATOR)
 	struct udevice		*vbus_supply;
+#endif
+#if CONFIG_IS_ENABLED(DM_GPIO)
+	struct gpio_desc	*ss_select;
 #endif
 };
 
@@ -277,7 +281,7 @@ int dwc3_meson_g12a_force_mode(struct udevice *dev, enum usb_dr_mode mode)
 #if CONFIG_IS_ENABLED(DM_REGULATOR)
 	if (priv->vbus_supply) {
 		int ret = regulator_set_enable(priv->vbus_supply,
-					(mode == USB_DR_MODE_PERIPHERAL));
+					(mode == USB_DR_MODE_HOST));
 		if (ret)
 			return ret;
 	}
@@ -312,6 +316,10 @@ static int dwc3_meson_g12a_get_phys(struct dwc3_meson_g12a *priv)
 
 	debug("%s: usb2 ports: %d\n", __func__, priv->usb2_ports);
 	debug("%s: usb3 ports: %d\n", __func__, priv->usb3_ports);
+#if CONFIG_IS_ENABLED(DM_GPIO)
+	if (priv->ss_select && priv->usb3_ports)
+		dm_gpio_set_value(priv->ss_select, 1);
+#endif
 
 	return 0;
 }
@@ -360,6 +368,14 @@ static int dwc3_meson_g12a_probe(struct udevice *dev)
 	int ret, i;
 
 	priv->dev = dev;
+#if CONFIG_IS_ENABLED(DM_GPIO)
+	priv->ss_select = devm_gpiod_get_optional(dev, "ss-select", GPIOD_IS_OUT);
+	if (IS_ERR(priv->ss_select)) {
+		if (PTR_ERR(priv->ss_select) == -EPROBE_DEFER)
+			return PTR_ERR(priv->ss_select);
+		priv->ss_select = NULL;
+	}
+#endif
 
 	ret = regmap_init_mem(dev_ofnode(dev), &priv->regmap);
 	if (ret)
