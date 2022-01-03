@@ -23,7 +23,7 @@
 
 static char lcd_cpu_gpio[LCD_CPU_GPIO_NUM_MAX][LCD_CPU_GPIO_NAME_MAX] = {
 	"GPIOZ_9", /* panel rst */
-	"GPIOZ_8", /* panel power */
+	"GPIOX_11", /* panel power */
 	"invalid", /* ending flag */
 };
 
@@ -55,7 +55,7 @@ static struct lcd_power_step_s lcd_power_off_step_P070ACB[] = {
 
 static char lcd_bl_gpio[BL_GPIO_NUM_MAX][LCD_CPU_GPIO_NAME_MAX] = {
 	"GPIOH_4", /* BL_EN */
-	"GPIOH_5", /* BL_PWM */
+	"GPIOA_11", /* BL_PWM */
 	"invalid", /* ending flag */
 };
 
@@ -98,6 +98,23 @@ struct ext_lcd_config_s ext_lcd_config[LCD_NUM_MAX] = {
 
 	{/* TL070HDV03CT*/
 	"lcd_2",LCD_MIPI,8,
+#if 1
+	/* basic timing */
+	1200,1920,1341,1981,1,60,0,1,25,0,
+	/* clk_attr */
+	0,0,1,159400000,Rsv_val,Rsv_val,Rsv_val,Rsv_val,Rsv_val,Rsv_val,
+	/* mipi_attr */
+	4,500,0,1,0,2,0,0,Rsv_val,2,
+	/* power step */
+	lcd_power_on_step, lcd_power_off_step,
+	/* backlight */
+	100,255,10,128,128,
+	BL_CTRL_PWM,0,1,0,200,200,
+	BL_PWM_NEGATIVE,BL_PWM_F,180,100,25,1,1,
+	Rsv_val,Rsv_val,Rsv_val,Rsv_val,Rsv_val,Rsv_val,Rsv_val,
+	Rsv_val,Rsv_val,Rsv_val,Rsv_val,
+	10,10,Rsv_val
+#else
 	/* basic timing */
 	720,1280,970,1364,10,120,0,4,40,0,
 	/* clk_attr */
@@ -112,7 +129,9 @@ struct ext_lcd_config_s ext_lcd_config[LCD_NUM_MAX] = {
 	BL_PWM_NEGATIVE,BL_PWM_F,180,100,25,1,1,
 	Rsv_val,Rsv_val,Rsv_val,Rsv_val,Rsv_val,Rsv_val,Rsv_val,
 	Rsv_val,Rsv_val,Rsv_val,Rsv_val,
-	10,10,Rsv_val},
+	10,10,Rsv_val
+#endif
+	},
 
 	{/* P070ACB_FT*/
 	"lcd_3",LCD_MIPI,8,
@@ -124,6 +143,24 @@ struct ext_lcd_config_s ext_lcd_config[LCD_NUM_MAX] = {
 	4,400,0,1,0,2,0,0,Rsv_val,3,
 	/* power step */
 	lcd_power_on_step_P070ACB, lcd_power_off_step_P070ACB,
+	/* backlight */
+	100,255,10,128,128,
+	BL_CTRL_PWM,0,1,0,200,200,
+	BL_PWM_NEGATIVE,BL_PWM_F,180,100,25,1,1,
+	Rsv_val,Rsv_val,Rsv_val,Rsv_val,Rsv_val,Rsv_val,Rsv_val,
+	Rsv_val,Rsv_val,Rsv_val,Rsv_val,
+	10,10,Rsv_val},
+
+	{/* ltk080a60a004t */
+	"lcd_4",LCD_MIPI,8,
+	/* basic timing */
+	1200,1920,1341,1981,1,60,0,1,25,0,
+	/* clk_attr */
+	0,0,1,159400000,Rsv_val,Rsv_val,Rsv_val,Rsv_val,Rsv_val,Rsv_val,
+	/* mipi_attr */
+	4,400,0,1,0,2,0,0,Rsv_val,3,
+	/* power step */
+	lcd_power_on_step, lcd_power_off_step,
 	/* backlight */
 	100,255,10,128,128,
 	BL_CTRL_PWM,0,1,0,200,200,
@@ -148,7 +185,7 @@ static struct lcd_pinmux_ctrl_s lcd_pinmux_ctrl[LCD_PINMX_MAX] = {
 
 static struct lcd_pinmux_ctrl_s bl_pinmux_ctrl[BL_PINMUX_MAX] = {
 	{
-		.name = "bl_pwm_on_pin", //GPIOH_5
+		.name = "bl_pwm_on_pin", //GPIOA_11
 		.pinmux_set = {{11, 0x00400000}, {LCD_PINMUX_END, 0x0}},
 		.pinmux_clr = {{11, 0x00f00000}, {LCD_PINMUX_END, 0x0}},
 	},
@@ -382,6 +419,17 @@ struct lcd_extern_config_s ext_config_dtf[LCD_EXTERN_NUM_MAX] = {
 		.table_init_on_cnt = sizeof(ext_init_on_table_P070ACB_FT),
 		.table_init_off = ext_init_off_table_P070ACB_FT,
 		.table_init_off_cnt = sizeof(ext_init_off_table_P070ACB_FT),
+	},
+	{
+		.index = 4,
+		.name = "mipi_default",
+		.type = LCD_EXTERN_MIPI, /* LCD_EXTERN_I2C, LCD_EXTERN_SPI, LCD_EXTERN_MIPI, LCD_EXTERN_MAX */
+		.status = 1, /* 0=disable, 1=enable */
+		.cmd_size = LCD_EXT_CMD_SIZE_DYNAMIC,
+		.table_init_on = ext_init_on_table,
+		.table_init_on_cnt = sizeof(ext_init_on_table),
+		.table_init_off = ext_init_off_table,
+		.table_init_off_cnt = sizeof(ext_init_off_table),
 	},
 	{
 		.index = LCD_EXTERN_INDEX_INVALID,
