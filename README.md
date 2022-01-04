@@ -1,7 +1,9 @@
-u-boot-imx
-==========
+u-boot
+======
 
-This repository is used to track U-Boot for our i.MX based boards:
+U-Boot tree for Boundary Devices platforms.
+
+The following platforms are supproted:
 
 * [BD-SL-i.MX6 (SABRE Lite)][sabrelite]
 * [Nitrogen6X][nitrogen6x]
@@ -30,7 +32,6 @@ Latest stable branch is:
 preserve the history for customers who base their efforts on ours.
 
 [denx]: http://git.denx.de "U-Boot Mainline Git repository"
-
 [sabrelite]:http://boundarydevices.com/sabre-lite-imx6-sbc "SABRE Lite product page"
 [nitrogen6x]:http://boundarydevices.com/nitrogen6x-board-imx6-arm-cortex-a9-sbc "Nitrogen6X product page"
 [nitrogen6x-som]:http://boundarydevices.com/products/nitrogen6x-som "Nitrogen6X SOM product page"
