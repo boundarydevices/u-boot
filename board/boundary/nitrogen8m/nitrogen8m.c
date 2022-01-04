@@ -176,6 +176,11 @@ int board_detect_gt911_sn65(struct display_info_t const *di)
 	return board_detect_gt911_sn65_common(di, 0, 0, GP_TS_GT911_RESET, GPIRQ_TS_GT911);
 }
 
+int board_detect_pca9546_gt911(struct display_info_t const *di)
+{
+	return board_detect_gt911_common(di, 1 << (di->bus_num >> 4), 0, GP_TS_GT911_RESET, GPIRQ_TS_GT911);
+}
+
 static const struct display_info_t displays[] = {
 #ifdef CONFIG_VIDEO_IMX8M_HDMI
 	/* hdmi */
@@ -192,6 +197,8 @@ static const struct display_info_t displays[] = {
 	VD_MIPI_TCXD070IBLMAT77(MIPI, fbp_detect_i2c, fbp_bus_gp(3, GP_TS_ILI251X_RESET, GP_MIPI_RESET, 0), fbp_addr_gp(0x41, GP_TCXD070_BKL_EN, 0, 0), FBTS_ILI251X),
 	/* 0x3e is the TPS65132 power chip on our adapter board */
 	VD_MIPI_LCD133_070(MIPI, board_detect_lcd133, fbp_bus_gp(3, GP_LCD133_070_ENABLE, GP_LCD133_070_ENABLE, 1), fbp_addr_gp(0x3e, 0, 0, 0), FBTS_FT7250),
+	VD_MIPI_MQ_VTFT101RPFT20(MIPI, board_detect_pca9546_gt911, fbp_bus_gp((3 | (2 << 4)), 0, 0, 0), 0x5d, FBP_PCA9546, FBTS_GOODIX2),
+	/* Looking for the max7323 gpio chip on the Lontium daughter board */
 	VD_MIPI_MQ_1920_1080M_60(MIPI, board_detect_pca9546, fbp_bus_gp((3 | (3 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
 	VD_MIPI_MQ_1280_800M_60(MIPI, NULL, fbp_bus_gp((3 | (3 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
 	VD_MIPI_MQ_1280_720M_60(MIPI, NULL, fbp_bus_gp((3 | (3 << 4)), 0, 0, 0), fbp_addr_gp(0x68,0,8,0), FBP_PCA9546),
@@ -199,7 +206,7 @@ static const struct display_info_t displays[] = {
 	VD_MIPI_MQ_800_600MR_60(MIPI, NULL, fbp_bus_gp((3 | (3 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
 	VD_MIPI_MQ_720_480M_60(MIPI, NULL, fbp_bus_gp((3 | (3 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
 	VD_MIPI_MQ_640_480M_60(MIPI, NULL, fbp_bus_gp((3 | (3 << 4)), 0, 0, 0), fbp_addr_gp(0x68,0,16,0), FBP_PCA9546),
-	VD_MIPI_MQ_VTFT101RPFT20(MIPI, fbp_detect_i2c, 3, 0x70, FBP_PCA9540),
+	VD_MIPI_MQ_VTFT101RPFT20_2(MIPI, fbp_detect_i2c, 3, 0x70, FBP_PCA9540),
 };
 #define display_cnt	ARRAY_SIZE(displays)
 #else
