@@ -184,6 +184,7 @@ void fbp_setup_env_cmds(void);
 #define VD_MIPI_720_480M_60(_mode, args...)	VDF_720_480M_60(_mode, "dsi-720x480M@60", RGB24, FBF_MIPI_TO_HDMI, args)
 #define VD_MIPI_VTFT101RPFT20(_mode, args...)	VDF_MIPI_VTFT101RPFT20(_mode, "vtft101rpft20", RGB24, FBF_VTFT101, args)
 #define VD_MIPI_MQ_VTFT101RPFT20(_mode, args...) VDF_MIPI_VTFT101RPFT20(_mode, "vtft101rpft20", RGB24, FBF_MQ_VTFT101, args)
+#define VD_MIPI_MQ_VTFT101RPFT20_2(_mode, args...) VDF_MIPI_VTFT101RPFT20(_mode, "vtft101rpft20-2", RGB24, FBF_MQ_VTFT101, args)
 #define VD_MIPI_TCXD070IBLMAT77(_mode, args...) VDF_MIPI_TCXD070IBLMAT77(_mode, "tcxd070iblmat77", RGB24, FBF_TCXD070, args)
 #define VD_MIPI_ZWT055AZH(_mode, args...)	VDF_MIPI_ZWT055AZH(_mode, "zwt055azh", RGB24, FBF_ZWT055AZH, args)
 
