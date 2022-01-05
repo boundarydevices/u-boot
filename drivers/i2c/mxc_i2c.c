@@ -894,8 +894,7 @@ static int mxc_i2c_set_bus_speed(struct udevice *bus, unsigned int speed)
 static int mxc_i2c_probe(struct udevice *bus)
 {
 	struct mxc_i2c_bus *i2c_bus = dev_get_priv(bus);
-	const void *fdt = gd->fdt_blob;
-	int node = dev_of_offset(bus);
+	ofnode np = dev_ofnode(bus);
 	fdt_addr_t addr;
 	int ret, ret2;
 
@@ -939,16 +938,14 @@ static int mxc_i2c_probe(struct udevice *bus)
 	 * See Documentation/devicetree/bindings/i2c/i2c-imx.txt
 	 * Use gpio to force bus idle when necessary.
 	 */
-	ret = fdt_stringlist_search(fdt, node, "pinctrl-names", "gpio");
+	ret = ofnode_stringlist_search(np, "pinctrl-names", "gpio");
 	if (ret < 0) {
 		debug("i2c bus %d at 0x%2lx, no gpio pinctrl state.\n", bus->seq, i2c_bus->base);
 	} else {
-		ret = gpio_request_by_name_nodev(offset_to_ofnode(node),
-				"scl-gpios", 0, &i2c_bus->scl_gpio,
-				GPIOD_IS_OUT);
-		ret2 = gpio_request_by_name_nodev(offset_to_ofnode(node),
-				"sda-gpios", 0, &i2c_bus->sda_gpio,
-				GPIOD_IS_OUT);
+		ret = gpio_request_by_name(bus, "scl-gpios", 0,
+				&i2c_bus->scl_gpio, GPIOD_IS_OUT);
+		ret2 = gpio_request_by_name(bus, "sda-gpios", 0,
+				&i2c_bus->sda_gpio, GPIOD_IS_OUT);
 		if (!dm_gpio_is_valid(&i2c_bus->sda_gpio) ||
 		    !dm_gpio_is_valid(&i2c_bus->scl_gpio) ||
 		    ret || ret2) {
