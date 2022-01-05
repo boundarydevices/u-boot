@@ -64,6 +64,7 @@ struct mxc_i2c_bus {
 	struct gpio_desc scl_gpio;
 	struct gpio_desc sda_gpio;
 #endif
+	int busy;
 };
 
 #define NI2C1	0
