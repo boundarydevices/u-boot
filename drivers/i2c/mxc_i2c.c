@@ -515,19 +515,14 @@ static int i2c_init_transfer(struct mxc_i2c_bus *i2c_bus, u8 chip,
 
 	if (!i2c_bus->base)
 		return -EINVAL;
-	if (i2c_bus->busy)
-		return -EAGAIN;
-	i2c_bus->busy = 1;
 
 	for (retry = 0; retry < 3; retry++) {
 		ret = i2c_init_transfer_(i2c_bus, chip, addr, alen);
-		if (ret >= 0) {
-			ret = 0;
-			goto exit;
-		}
+		if (ret >= 0)
+			return 0;
 		i2c_imx_stop(i2c_bus);
 		if (ret == -EREMOTEIO)
-			goto exit;
+			return ret;
 
 		printf("%s: failed for chip 0x%x retry=%d\n", __func__, chip,
 				retry);
@@ -539,8 +534,6 @@ static int i2c_init_transfer(struct mxc_i2c_bus *i2c_bus, u8 chip,
 			break;
 	}
 	printf("%s: give up i2c_regs=0x%lx\n", __func__, i2c_bus->base);
-exit:
-	i2c_bus->busy = 0;
 	return ret;
 }
 
