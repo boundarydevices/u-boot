@@ -218,3 +218,40 @@ int board_detect_gt911_sn65_common(struct display_info_t const *di, int sub_bus,
 {
 	return detect_common(di, sub_bus, sub_bus2, -1, 0x0, -1, 0x0, gp_reset, gp_irq, 0x2c);
 }
+
+int board_disable_i2c_mux(int bus_num)
+{
+	int ret = 0;
+#ifdef CONFIG_DM_I2C
+	struct udevice *bus;
+	struct i2c_msg msg;
+	struct dm_i2c_ops *ops;
+	u8 buf[4];
+#else
+	u8 orig_i2c_bus;
+#endif
+
+#ifdef CONFIG_DM_I2C
+	ret = uclass_get_device_by_seq(UCLASS_I2C, bus_num, &bus);
+	if (ret) {
+		printf("%s: Can't find bus\n", __func__);
+	} else {
+		ops = i2c_get_ops(bus);
+		msg.addr = 0x70;
+		msg.flags = 0;
+		msg.len = 1;
+		msg.buf = buf;
+		buf[0] = 0;
+		ret = ops->xfer(bus, &msg, 1);
+		debug("%s: ret=%d\n", __func__, ret);
+	}
+#else
+	orig_i2c_bus = i2c_get_bus_num();
+	ret = i2c_set_bus_num(bus_num);
+	/* write control register, disable sub bus */
+	if (!ret)
+		ret = i2c_write(0x70, 0, 1, NULL, 0);
+	i2c_set_bus_num(orig_i2c_bus);
+#endif
+	return (ret == 0);
+}

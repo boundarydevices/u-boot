@@ -84,5 +84,6 @@ int board_detect_gt911_common(struct display_info_t const *di,
 	int sub_bus, int sub_bus2, int gp_reset, int gp_irq);
 int board_detect_gt911_sn65_common(struct display_info_t const *di,
 	int sub_bus, int sub_bus2, int gp_reset, int gp_irq);
+int board_disable_i2c_mux(int bus_num);
 
 #endif
