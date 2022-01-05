@@ -115,6 +115,10 @@ struct dm_i2c_chip {
 struct dm_i2c_bus {
 	int speed_hz;
 	int max_transaction_bytes;
+	struct udevice *sub_bus_deselect;
+	int channel;
+	unsigned char busy_mux;
+	unsigned char busy;
 };
 
 /*
@@ -235,6 +239,7 @@ int dm_i2c_reg_write(struct udevice *dev, uint offset, unsigned int val);
 
 int i2c_probe_chip(struct udevice *bus, uint chip_addr,
 		   enum dm_i2c_chip_flags chip_flags);
+int i2c_mux_deselect(struct udevice *dev);
 
 /**
  * dm_i2c_xfer() - Transfer messages over I2C

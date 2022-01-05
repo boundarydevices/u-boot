@@ -124,16 +124,43 @@ static int i2c_mux_post_probe(struct udevice *mux)
 	return 0;
 }
 
-int i2c_mux_select(struct udevice *dev)
+static int i2c_mux_select(struct udevice *dev)
 {
 	struct i2c_mux_bus *plat = dev_get_parent_platdata(dev);
 	struct udevice *mux = dev->parent;
 	struct i2c_mux_ops *ops = i2c_mux_get_ops(mux);
+	struct i2c_mux *priv = dev_get_uclass_priv(mux);
+	struct dm_i2c_bus *i2c = dev_get_uclass_priv(priv->i2c_bus);
+	int ret;
 
 	if (!ops->select)
 		return -ENOSYS;
 
-	return ops->select(mux, dev, plat->channel);
+	if (i2c->busy || i2c->busy_mux)
+		return -EAGAIN;
+	i2c->busy_mux = 1;
+	if (i2c->sub_bus_deselect) {
+		if (i2c->sub_bus_deselect->parent == mux) {
+			i2c->sub_bus_deselect = NULL;
+			if (i2c->channel == plat->channel)
+				return 0;
+		}
+	}
+	ret = ops->select(mux, dev, plat->channel);
+	i2c->channel = (ret) ? -1 : plat->channel;
+	if (ret)
+		i2c->busy_mux = 0;
+	return ret;
+}
+
+static void i2c_mux_prepare_deselect(struct udevice *dev)
+{
+	struct udevice *mux = dev->parent;
+	struct i2c_mux *priv = dev_get_uclass_priv(mux);
+	struct dm_i2c_bus *i2c = dev_get_uclass_priv(priv->i2c_bus);
+
+	i2c->sub_bus_deselect = dev;
+	i2c->busy_mux = 0;
 }
 
 int i2c_mux_deselect(struct udevice *dev)
@@ -152,15 +179,14 @@ static int i2c_mux_bus_set_bus_speed(struct udevice *dev, unsigned int speed)
 {
 	struct udevice *mux = dev->parent;
 	struct i2c_mux *priv = dev_get_uclass_priv(mux);
-	int ret, ret2;
+	int ret;
 
 	ret = i2c_mux_select(dev);
 	if (ret)
 		return ret;
 	ret = dm_i2c_set_bus_speed(priv->i2c_bus, speed);
-	ret2 = i2c_mux_deselect(dev);
-
-	return ret ? ret : ret2;
+	i2c_mux_prepare_deselect(dev);
+	return ret;
 }
 
 static int i2c_mux_bus_probe(struct udevice *dev, uint chip_addr,
@@ -169,7 +195,7 @@ static int i2c_mux_bus_probe(struct udevice *dev, uint chip_addr,
 	struct udevice *mux = dev->parent;
 	struct i2c_mux *priv = dev_get_uclass_priv(mux);
 	struct dm_i2c_ops *ops = i2c_get_ops(priv->i2c_bus);
-	int ret, ret2;
+	int ret;
 
 	debug("%s: %s, bus %s\n", __func__, dev->name, priv->i2c_bus->name);
 	if (!ops->probe_chip)
@@ -178,9 +204,8 @@ static int i2c_mux_bus_probe(struct udevice *dev, uint chip_addr,
 	if (ret)
 		return ret;
 	ret = ops->probe_chip(priv->i2c_bus, chip_addr, chip_flags);
-	ret2 = i2c_mux_deselect(dev);
-
-	return ret ? ret : ret2;
+	i2c_mux_prepare_deselect(dev);
+	return ret;
 }
 
 static int i2c_mux_bus_xfer(struct udevice *dev, struct i2c_msg *msg,
@@ -189,7 +214,7 @@ static int i2c_mux_bus_xfer(struct udevice *dev, struct i2c_msg *msg,
 	struct udevice *mux = dev->parent;
 	struct i2c_mux *priv = dev_get_uclass_priv(mux);
 	struct dm_i2c_ops *ops = i2c_get_ops(priv->i2c_bus);
-	int ret, ret2;
+	int ret;
 
 	debug("%s: %s, bus %s\n", __func__, dev->name, priv->i2c_bus->name);
 	if (!ops->xfer)
@@ -198,9 +223,8 @@ static int i2c_mux_bus_xfer(struct udevice *dev, struct i2c_msg *msg,
 	if (ret)
 		return ret;
 	ret = ops->xfer(priv->i2c_bus, msg, nmsgs);
-	ret2 = i2c_mux_deselect(dev);
-
-	return ret ? ret : ret2;
+	i2c_mux_prepare_deselect(dev);
+	return ret;
 }
 
 static const struct dm_i2c_ops i2c_mux_bus_ops = {
