@@ -613,7 +613,9 @@ static void lt8912_check_hpd_work(struct lt *lt)
 	 * if cable is already connected by this time
 	 * it won't trigger HPD interrupt.
 	 */
-	lt8912_read(lt, I2C_ADDR_MAIN, 0xC1, &reg_val, 1);
+	ret = lt8912_read(lt, I2C_ADDR_MAIN, 0xC1, &reg_val, 1);
+	if (ret < 0)
+		return;
 
 	connected  = (reg_val & BIT(7));
 	if (lt->prev_connected != connected) {
