@@ -78,12 +78,62 @@ static int i2c_setup_offset(struct dm_i2c_chip *chip, uint offset,
 	return 0;
 }
 
+static int ops_probe(struct udevice *bus, uint chip_addr,
+		     enum dm_i2c_chip_flags chip_flags)
+{
+	struct dm_i2c_ops *ops = i2c_get_ops(bus);
+	struct dm_i2c_bus *i2c = dev_get_uclass_priv(bus);
+#ifdef CONFIG_I2C_MUX
+	struct udevice *mux = i2c->sub_bus_deselect;
+#endif
+	int ret;
+
+	if (!ops->xfer)
+		return -ENOSYS;
+	if (i2c->busy)
+		return -EAGAIN;
+#ifdef CONFIG_I2C_MUX
+	if (mux) {
+		i2c->sub_bus_deselect = NULL;
+		i2c_mux_deselect(mux);
+	}
+#endif
+	i2c->busy = 1;
+	ret = ops->probe_chip(bus, chip_addr, chip_flags);
+	i2c->busy = 0;
+	return ret;
+}
+
+static int ops_xfer(struct udevice *bus, struct i2c_msg *msg, int msg_cnt)
+{
+	struct dm_i2c_ops *ops = i2c_get_ops(bus);
+	struct dm_i2c_bus *i2c = dev_get_uclass_priv(bus);
+#ifdef CONFIG_I2C_MUX
+	struct udevice *mux = i2c->sub_bus_deselect;
+#endif
+	int ret;
+
+	if (!ops->xfer)
+		return -ENOSYS;
+	if (i2c->busy)
+		return -EAGAIN;
+#ifdef CONFIG_I2C_MUX
+	if (mux) {
+		i2c->sub_bus_deselect = NULL;
+		i2c_mux_deselect(mux);
+	}
+#endif
+	i2c->busy = 1;
+	ret = ops->xfer(bus, msg, msg_cnt);
+	i2c->busy = 0;
+	return ret;
+}
+
 static int i2c_read_bytewise(struct udevice *dev, uint offset,
 			     uint8_t *buffer, int len)
 {
 	struct dm_i2c_chip *chip = dev_get_parent_plat(dev);
 	struct udevice *bus = dev_get_parent(dev);
-	struct dm_i2c_ops *ops = i2c_get_ops(bus);
 	struct i2c_msg msg[2], *ptr;
 	uint8_t offset_buf[I2C_MAX_OFFSET_LEN];
 	int ret;
@@ -99,7 +149,7 @@ static int i2c_read_bytewise(struct udevice *dev, uint offset,
 		ptr->buf = &buffer[i];
 		ptr++;
 
-		ret = ops->xfer(bus, msg, ptr - msg);
+		ret = ops_xfer(bus, msg, ptr - msg);
 		if (ret)
 			return ret;
 	}
@@ -112,7 +162,6 @@ static int i2c_write_bytewise(struct udevice *dev, uint offset,
 {
 	struct dm_i2c_chip *chip = dev_get_parent_plat(dev);
 	struct udevice *bus = dev_get_parent(dev);
-	struct dm_i2c_ops *ops = i2c_get_ops(bus);
 	struct i2c_msg msg[1];
 	uint8_t buf[I2C_MAX_OFFSET_LEN + 1];
 	int ret;
@@ -123,7 +172,7 @@ static int i2c_write_bytewise(struct udevice *dev, uint offset,
 			return -EINVAL;
 		buf[msg->len++] = buffer[i];
 
-		ret = ops->xfer(bus, msg, 1);
+		ret = ops_xfer(bus, msg, 1);
 		if (ret)
 			return ret;
 	}
@@ -158,7 +207,7 @@ int dm_i2c_read(struct udevice *dev, uint offset, uint8_t *buffer, int len)
 	}
 	msg_count = ptr - msg;
 
-	return ops->xfer(bus, msg, msg_count);
+	return ops_xfer(bus, msg, msg_count);
 }
 
 int dm_i2c_write(struct udevice *dev, uint offset, const uint8_t *buffer,
@@ -199,7 +248,7 @@ int dm_i2c_write(struct udevice *dev, uint offset, const uint8_t *buffer,
 		msg->len += len;
 		memcpy(buf + chip->offset_len, buffer, len);
 
-		return ops->xfer(bus, msg, 1);
+		return ops_xfer(bus, msg, 1);
 	} else {
 		uint8_t *buf;
 		int ret;
@@ -211,7 +260,7 @@ int dm_i2c_write(struct udevice *dev, uint offset, const uint8_t *buffer,
 		msg->len += len;
 		memcpy(buf + chip->offset_len, buffer, len);
 
-		ret = ops->xfer(bus, msg, 1);
+		ret = ops_xfer(bus, msg, 1);
 		free(buf);
 		return ret;
 	}
@@ -220,12 +269,8 @@ int dm_i2c_write(struct udevice *dev, uint offset, const uint8_t *buffer,
 int dm_i2c_xfer(struct udevice *dev, struct i2c_msg *msg, int nmsgs)
 {
 	struct udevice *bus = dev_get_parent(dev);
-	struct dm_i2c_ops *ops = i2c_get_ops(bus);
 
-	if (!ops->xfer)
-		return -ENOSYS;
-
-	return ops->xfer(bus, msg, nmsgs);
+	return ops_xfer(bus, msg, nmsgs);
 }
 
 int dm_i2c_reg_read(struct udevice *dev, uint offset)
@@ -274,18 +319,12 @@ int dm_i2c_reg_clrset(struct udevice *dev, uint offset, u32 clr, u32 set)
 int i2c_probe_chip(struct udevice *bus, uint chip_addr,
 		   enum dm_i2c_chip_flags chip_flags)
 {
-	struct dm_i2c_ops *ops = i2c_get_ops(bus);
 	struct i2c_msg msg[1];
 	int ret;
 
-	if (ops->probe_chip) {
-		ret = ops->probe_chip(bus, chip_addr, chip_flags);
-		if (ret != -ENOSYS)
-			return ret;
-	}
-
-	if (!ops->xfer)
-		return -ENOSYS;
+	ret = ops_probe(bus, chip_addr, chip_flags);
+	if (ret != -ENOSYS)
+		return ret;
 
 	/* Probe with a zero-length message */
 	msg->addr = chip_addr;
@@ -293,7 +332,7 @@ int i2c_probe_chip(struct udevice *bus, uint chip_addr,
 	msg->len = 0;
 	msg->buf = NULL;
 
-	return ops->xfer(bus, msg, 1);
+	return ops_xfer(bus, msg, 1);
 }
 
 static int i2c_bind_driver(struct udevice *bus, uint chip_addr, uint offset_len,
