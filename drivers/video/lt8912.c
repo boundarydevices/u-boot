@@ -659,6 +659,7 @@ static int lt8912_enable_backlight(struct udevice *dev)
 	struct lt *lt = dev_get_priv(dev);
 	int ret;
 
+	set_poll_rtn(NULL);
 	debug("%s:\n", __func__);
 	ret = lt8912_gpio_configure(lt, true);
 	if (ret) {
