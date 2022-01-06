@@ -97,6 +97,8 @@
 
 #include <config_distro_bootcmd.h>
 
+#define BD_RAM_SCRIPT	"08020000"
+
 #define PARTS_DEFAULT \
 	"name=logo,start=512K,size=2M;" \
 	"name=misc,size=512K;" \
@@ -111,11 +113,15 @@
 #ifndef CONFIG_EXTRA_ENV_SETTINGS
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	"console=ttyAML0\0" \
+	"env_dev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
+	"env_part=" __stringify(CONFIG_SYS_MMC_ENV_PART) "\0" \
 	"fastboot_raw_partition_bootloader=0x1 0xfff mmcpart 1\0" \
 	"fastboot_raw_partition_bootloader-env=0x1000 0x10 mmcpart 1\0" \
 	"fdt_addr_r=0x08008000\0" \
+	"fdt_high=0xffffffffffffffff\0" \
 	"fdtfile=boundary-a311d.dtb\0" \
 	"fdtoverlay_addr_r=0x01000000\0" \
+	"initrd_high=0xffffffffffffffff\0" \
 	"kernel_addr_r=0x08080000\0" \
 	"kernel_comp_addr_r=0x0d080000\0" \
 	"kernel_comp_size=0x2000000\0" \
@@ -137,6 +143,8 @@
 		"else " \
 			"echo WARN: Cannot load the DT; " \
 		"fi;\0" \
+	"net_upgradeu=dhcp " BD_RAM_SCRIPT " net_upgradeu.scr && source " BD_RAM_SCRIPT "\0" \
+	"otg_upgradeu=run usbnetwork; tftp " BD_RAM_SCRIPT " net_upgradeu.scr && source " BD_RAM_SCRIPT "\0" \
 	"partitions=" PARTS_DEFAULT "\0" \
 	"pxefile_addr_r=0x01080000\0" \
 	"ramdisk_addr_r=0x13000000\0" \
@@ -144,6 +152,14 @@
 	"stderr=" STDOUT_CFG "\0" \
 	"stdin=" STDIN_CFG "\0" \
 	"stdout=" STDOUT_CFG "\0" \
+	"upgradeu=setenv boot_scripts upgrade.scr; boot;" \
+		"echo Upgrade failed!; setenv boot_scripts boot.scr\0" \
+	"usbnet_devaddr=00:19:b8:00:00:02\0" \
+	"usbnet_hostaddr=00:19:b8:00:00:01\0" \
+	"usbnetwork=setenv ethact usb_ether; " \
+		"setenv ipaddr 10.0.0.2; " \
+		"setenv netmask 255.255.255.0; " \
+		"setenv serverip 10.0.0.1;\0" \
 	BOOTENV
 #endif
 
