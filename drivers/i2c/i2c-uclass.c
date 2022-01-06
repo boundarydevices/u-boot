@@ -78,17 +78,21 @@ static int ops_probe(struct udevice *bus, uint chip_addr,
 {
 	struct dm_i2c_ops *ops = i2c_get_ops(bus);
 	struct dm_i2c_bus *i2c = dev_get_uclass_priv(bus);
+#ifdef CONFIG_I2C_MUX
 	struct udevice *mux = i2c->sub_bus_deselect;
+#endif
 	int ret;
 
 	if (!ops->xfer)
 		return -ENOSYS;
 	if (i2c->busy)
 		return -EAGAIN;
+#ifdef CONFIG_I2C_MUX
 	if (mux) {
 		i2c->sub_bus_deselect = NULL;
 		i2c_mux_deselect(mux);
 	}
+#endif
 	i2c->busy = 1;
 	ret = ops->probe_chip(bus, chip_addr, chip_flags);
 	i2c->busy = 0;
@@ -99,17 +103,21 @@ static int ops_xfer(struct udevice *bus, struct i2c_msg *msg, int msg_cnt)
 {
 	struct dm_i2c_ops *ops = i2c_get_ops(bus);
 	struct dm_i2c_bus *i2c = dev_get_uclass_priv(bus);
+#ifdef CONFIG_I2C_MUX
 	struct udevice *mux = i2c->sub_bus_deselect;
+#endif
 	int ret;
 
 	if (!ops->xfer)
 		return -ENOSYS;
 	if (i2c->busy)
 		return -EAGAIN;
+#ifdef CONFIG_I2C_MUX
 	if (mux) {
 		i2c->sub_bus_deselect = NULL;
 		i2c_mux_deselect(mux);
 	}
+#endif
 	i2c->busy = 1;
 	ret = ops->xfer(bus, msg, msg_cnt);
 	i2c->busy = 0;
