@@ -7,8 +7,13 @@ img_prefix=/
 a_base=0x10000000
 
 #grab 1st 2/3 characters of string
-setexpr cpu2 sub "^(..?).*" "\\1" "${imx_cpu}"
-setexpr cpu3 sub "^(..?.?).*" "\\1" "${imx_cpu}"
+if itest.s x == "x${imx_cpu}" ; then
+	cpu2="AM"
+	cpu3="AML"
+else
+	setexpr cpu2 sub "^(..?).*" "\\1" "${imx_cpu}"
+	setexpr cpu3 sub "^(..?.?).*" "\\1" "${imx_cpu}"
+fi
 if itest.s x51 == "x${cpu2}" ; then
 	a_base=0x90000000
 elif itest.s x53 == "x${cpu2}"; then
@@ -17,6 +22,11 @@ elif itest.s x6SX == "x${cpu3}" || itest.s x6U == "x${cpu2}" || itest.s x7D == "
 	a_base=0x80000000
 elif itest.s x8M == "x${cpu2}"; then
 	a_base=0x40000000
+	kernelimage=Image
+	bootcommand=booti
+	img_prefix=${prefix}
+elif itest.s xAM == "x${cpu2}"; then
+	a_base=0x08000000
 	kernelimage=Image
 	bootcommand=booti
 	img_prefix=${prefix}
