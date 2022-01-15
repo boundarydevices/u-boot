@@ -580,5 +580,11 @@ int board_late_init(void)
 	/* No display yet for mini/nano so need to setup cmd_... */
 	board_video_skip();
 #endif
-	return bdcommon_env_init();
+	bdcommon_env_init();
+	/*
+	 * Bash has started to turn on bracketed paste mode by default,
+	 * turn it back off
+	 */
+	printf("\e[?2004l");
+	return 0;
 }
