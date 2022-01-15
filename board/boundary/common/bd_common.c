@@ -748,5 +748,10 @@ int board_late_init(void)
 	}
 #endif
 #endif
+	/*
+	 * Bash has started to turn on bracketed paste mode by default,
+	 * turn it back off
+	 */
+	printf("\e[?2004l");
 	return 0;
 }
