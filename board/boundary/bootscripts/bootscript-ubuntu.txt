@@ -70,9 +70,9 @@ if itest.s "x" == "x${fdt_file}" ; then
 		fdt_file=imx8mn-${board}.dtb;
 	elif itest.s x8MP == "x${cpu3}" ; then
 		if itest *0x30360800 == 0x00824310 ; then
-			fdt_file=imx8mp-a0-${board}.dtb;
+			fdt_file=imx8mp-a0-${board}${m4}.dtb;
 		else
-			fdt_file=imx8mp-${board}.dtb;
+			fdt_file=imx8mp-${board}${m4}.dtb;
 		fi
 	elif itest.s x8MQ == "x${cpu3}" ; then
 		fdt_file=imx8mq-${board}${m4}.dtb;
