@@ -37,6 +37,14 @@ config OPTEE_TA_SCP03
 	help
 	  Enables support for controlling (enabling, provisioning) the
 	  Secure Channel Protocol 03 operation in the OP-TEE SCP03 TA.
+
+config OPTEE_TA_OTP
+	bool "Support OPT TA"
+	default y
+	help
+	  Enable support of OTP TA. This uses OP-TEE and RPMB to emulate OTP
+	  storage. A Linux userspace application could be used to write the
+	  data to the storage.
 endmenu
 
 endif
