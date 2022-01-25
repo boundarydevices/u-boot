@@ -511,13 +511,13 @@ static const struct display_info_t displays[] = {
 
 	/* ft5x06 */
 #ifdef CONFIG_DEFAULT_DISPLAY_PM9598
-	VD_PM9598(LVDS2, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
+	VD_PM9598(LVDS2, fbp_detect_i2c, fbp_bus_gp(1, GP_I2C2MUX_A, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06_2),
 	VD_TM070JDHG30(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
 	VD_HANNSTAR7(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
 #else
 	VD_TM070JDHG30(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
 	VD_HANNSTAR7(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
-	VD_PM9598(LVDS2, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
+	VD_PM9598(LVDS2, NULL, fbp_bus_gp(1, GP_I2C2MUX_A, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06_2),
 	VD_HANNSTAR7(LVDS2, NULL, fbp_bus_gp(2, 0, GP_LVDS2_BKL_EN, 0), 0x38, FBTS_FT5X06),
 	VD_PM9598(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
 	VD_AUO_B101EW05(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
