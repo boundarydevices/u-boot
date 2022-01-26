@@ -159,6 +159,7 @@ int board_detect_gt911(struct display_info_t const *di)
 
 int board_detect_gt911_sn65(struct display_info_t const *di)
 {
+	board_disable_i2c_mux(di->bus_num & 0x0f);
 	return board_detect_gt911_sn65_common(di, 0, 0, GP_GT911_RESET, GPIRQ_GT911);
 }
 
