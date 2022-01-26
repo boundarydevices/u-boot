@@ -54,6 +54,7 @@ static iomux_v3_cfg_t const init_pads[] = {
 #define GP_GT911_RESET			IMX_GPIO_NR(1, 7)
 #define GP_ST1633_RESET			IMX_GPIO_NR(1, 7)
 #define GP_TS_FT7250_RESET		IMX_GPIO_NR(1, 7)
+#define GP_TS_FT5X06_RESET		IMX_GPIO_NR(1, 7)
 	IOMUX_PAD_CTRL(GPIO1_IO07__GPIO1_IO7, 0x49),
 
 #define GP_TC358762_EN		IMX_GPIO_NR(1, 9)
@@ -161,6 +162,11 @@ int board_detect_gt911_sn65(struct display_info_t const *di)
 	return board_detect_gt911_sn65_common(di, 0, 0, GP_GT911_RESET, GPIRQ_GT911);
 }
 
+int board_detect_pca9546_gt911(struct display_info_t const *di)
+{
+	return board_detect_gt911_common(di, 1 << (di->bus_num >> 4), 0, GP_GT911_RESET, GPIRQ_GT911);
+}
+
 static const struct display_info_t displays[] = {
 	VD_MIPI_M101NWWB_2(MIPI, board_detect_gt911_sn65, fbp_bus_gp(1, GP_SN65DSI83_EN, 0, 0), 0x5d, FBP_MIPI_TO_LVDS, FBTS_GOODIX),
 	VD_MIPI_M101NWWB(MIPI, fbp_detect_i2c, fbp_bus_gp(1, GP_SN65DSI83_EN, 0, 0), 0x2c, FBP_MIPI_TO_LVDS, FBTS_FT5X06),
@@ -176,6 +182,10 @@ static const struct display_info_t displays[] = {
 	/* 0x3e is the TPS65132 power chip on our adapter board */
 	VD_MIPI_LCD133_070(MIPI, board_detect_lcd133, fbp_bus_gp(1, GP_LCD133_070_ENABLE, GP_LCD133_070_ENABLE, 1), fbp_addr_gp(0x3e, 0, 0, 0), FBTS_FT7250),
 
+	VD_MIPI_TM070JDHG30_LT8912(MIPI, board_detect_pca9546_gt911, fbp_bus_gp((1 | (2 << 4)), 0, 0, 0), 0x5d, FBP_PCA9546, FBTS_GOODIX2),
+	VD_MIPI_TM070JDHG30_LT8912_2(MIPI, board_detect_pca9546, fbp_bus_gp((1 | (2 << 4)), 0, GP_TS_FT5X06_RESET, 0), 0x38, FBP_PCA9546, FBTS_FT5X06_2),
+	VD_MIPI_VTFT101RPFT20(MIPI, NULL, fbp_bus_gp((1 | (2 << 4)), 0, 0, 0), 0x5d, FBP_PCA9546, FBTS_GOODIX2),
+	VD_MIPI_VTFT101RPFT20_2(MIPI, NULL, fbp_bus_gp((1 | (2 << 4)), 0, GP_TS_FT5X06_RESET, 0), 0x38, FBP_PCA9546, FBTS_FT5X06_2),
 	/* Looking for the max7323 gpio chip on the Lontium daughter board */
 	VD_MIPI_1920_1080M_60(MIPI, board_detect_pca9546, fbp_bus_gp((1 | (3 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
 	VD_MIPI_1280_800M_60(MIPI, NULL, fbp_bus_gp((1 | (3 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
@@ -185,7 +195,7 @@ static const struct display_info_t displays[] = {
 	VD_MIPI_720_480M_60(MIPI, NULL, fbp_bus_gp((1 | (3 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
 	VD_MIPI_640_480M_60(MIPI, NULL, fbp_bus_gp((1 | (3 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
 
-	VD_MIPI_VTFT101RPFT20(MIPI, board_detect_pca9540, fbp_bus_gp((1 | (1 << 4)), GP_LT8912_2_RESET, 0, 0), 0x48, FBP_PCA9540),
+	VD_MIPI_VTFT101RPFT20_3(MIPI, board_detect_pca9540, fbp_bus_gp((1 | (1 << 4)), GP_LT8912_2_RESET, 0, 0), 0x48, FBP_PCA9540),
 };
 #define display_cnt	ARRAY_SIZE(displays)
 #else
