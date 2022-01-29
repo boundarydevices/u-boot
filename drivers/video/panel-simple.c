@@ -850,7 +850,7 @@ static void init_common(ofnode np, struct panel_simple *panel)
 	ofnode_read_u32(np, "enable-high-duration-us", &panel->enable_high_duration_us);
 	ofnode_read_u32(np, "enable-low-duration-us", &panel->enable_low_duration_us);
 	ofnode_read_u32(np, "power-delay-ms", &panel->power_delay_ms);
-	if (ofnode_read_bool(np, "mode-clock-non-contiguous"))
+	if (ofnode_read_bool(np, "mode-clock-non-continuous"))
 		mode_flags |= MIPI_DSI_CLOCK_NON_CONTINUOUS;
 	if (ofnode_read_bool(np, "mode-skip-eot"))
 		mode_flags |= MIPI_DSI_MODE_EOT_PACKET;
