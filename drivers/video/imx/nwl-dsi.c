@@ -357,7 +357,6 @@ static int nwl_dsi_config_dpi(struct nwl_dsi *dsi)
 
 	nwl_dsi_write(dsi, NWL_DSI_ENABLE_MULT_PKTS, 0x0);
 	nwl_dsi_write(dsi, NWL_DSI_BLLP_MODE, 0x1);
-	nwl_dsi_write(dsi, NWL_DSI_ENABLE_MULT_PKTS, 0x0);
 	nwl_dsi_write(dsi, NWL_DSI_USE_NULL_PKT_BLLP, 0x0);
 	nwl_dsi_write(dsi, NWL_DSI_VC, 0x0);
 
@@ -696,8 +695,18 @@ static ssize_t nwl_dsi_host_transfer(struct mipi_dsi_host *dsi_host,
 	return ret;
 }
 
+static int nwl_dsi_host_enable_frame(struct mipi_dsi_host *dsi_host)
+{
+	struct nwl_dsi *dsi = container_of(dsi_host, struct nwl_dsi, dsi_host);
+
+	/* enable data transfer of dsim */
+	nwl_dsi_start_frame(dsi);
+	return 0;
+}
+
 const struct mipi_dsi_host_ops nwl_mipi_dsi_host_ops = {
 	.attach = nwl_dsi_host_attach,
+	.enable_frame = nwl_dsi_host_enable_frame,
 	.detach = nwl_dsi_host_detach,
 	.transfer = nwl_dsi_host_transfer,
 };
