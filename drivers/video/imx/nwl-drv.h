@@ -94,4 +94,6 @@ struct nwl_dsi {
 	struct phy phy;
 };
 
+void nwl_dsi_start_frame(struct nwl_dsi *dsi);
+
 #endif /* __NWL_DRV_H__ */

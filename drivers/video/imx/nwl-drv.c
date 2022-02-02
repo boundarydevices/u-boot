@@ -269,7 +269,7 @@ static void nwl_dsi_bridge_pre_enable(struct nwl_dsi *dsi)
 	}
 }
 
-static void nwl_dsi_bridge_enable(struct nwl_dsi *dsi)
+void nwl_dsi_start_frame(struct nwl_dsi *dsi)
 {
 	int ret;
 
@@ -485,7 +485,6 @@ static int nwl_enable(struct udevice *dev)
 		return ret;
 
 	nwl_dsi_bridge_pre_enable(dsi);
-	nwl_dsi_bridge_enable(dsi);
 	return 0;
 }
 
