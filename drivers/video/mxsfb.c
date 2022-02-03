@@ -260,6 +260,9 @@ static void mxs_lcd_run(void)
 {
 	struct mxs_lcdif_regs *regs = (struct mxs_lcdif_regs *)MXS_LCDIF_BASE;
 
+	/* De-assert LCD Reset bit */
+	writel(LCDIF_CTRL1_RESET, &regs->hw_lcdif_ctrl1_set);
+
 	/* RUN! */
 	writel(LCDIF_CTRL_RUN, &regs->hw_lcdif_ctrl_set);
 	debug("%s: running\n", __func__);
@@ -305,6 +308,9 @@ static int mxs_remove_common(phys_addr_t reg_base, u32 fb)
 			break;
 		udelay(1);
 	}
+	/* Assert LCD Reset bit */
+	writel(LCDIF_CTRL1_RESET, &regs->hw_lcdif_ctrl1_clr);
+
 	mxs_reset_block((struct mxs_register_32 *)&regs->hw_lcdif_ctrl_reg);
 
 	return 0;
