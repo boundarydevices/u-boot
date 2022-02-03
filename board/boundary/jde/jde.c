@@ -93,8 +93,7 @@ static const iomux_v3_cfg_t init_pads[] = {
 	IOMUX_PAD_CTRL(LCD_ENABLE__LCDIF_ENABLE, 0x79),
 	IOMUX_PAD_CTRL(LCD_HSYNC__LCDIF_HSYNC, 0x79),
 	IOMUX_PAD_CTRL(LCD_VSYNC__LCDIF_VSYNC, 0x79),
-#define GP_LCD_RESET		IMX_GPIO_NR(3, 4)
-	IOMUX_PAD_CTRL(LCD_RESET__GPIO3_IO04, 0x030b0),
+	IOMUX_PAD_CTRL(LCD_RESET__LCDIF_RESET, 0x030b0),
 	IOMUX_PAD_CTRL(LCD_DATA00__LCDIF_DATA00, 0x79),
 	IOMUX_PAD_CTRL(LCD_DATA01__LCDIF_DATA01, 0x79),
 	IOMUX_PAD_CTRL(LCD_DATA02__LCDIF_DATA02, 0x79),
@@ -257,7 +256,6 @@ static const struct display_info_t displays[] = {
 
 static const unsigned short gpios_out_low[] = {
 	GP_REG_VPP,
-	GP_LCD_RESET,
 };
 
 static const unsigned short gpios_out_high[] = {
