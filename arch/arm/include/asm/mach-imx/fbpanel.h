@@ -1039,9 +1039,9 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 320,\
 		.yres           = 240,\
-		.pixclock       = 1000000000000ULL/((320+16+71+1)*(240+12+10+1)*60),\
-		.left_margin    = 16,\
-		.right_margin   = 71,\
+		.pixclock       = 1000000000000ULL/((320+69+18+1)*(240+12+10+1)*60),\
+		.left_margin    = 69,\
+		.right_margin   = 18,\
 		.upper_margin   = 12,\
 		.lower_margin   = 10,\
 		.hsync_len      = 1,\
