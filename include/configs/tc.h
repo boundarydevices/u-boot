@@ -22,7 +22,6 @@
 #define BD_CONSOLE	"ttymxc1"
 #define BD_I2C_MASK	0x9
 #define BD_LOG_LEVEL	"7"
-#define BD_CMA		"2M"
 #define CONFIG_VIDEO_LOGO
 
 #include "boundary.h"
