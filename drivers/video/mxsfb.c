@@ -804,6 +804,10 @@ static struct graphic_device *mxsfb_probe2(void)
 		bpp = 16;
 		break;
 	}
+	if (setup != 1) {
+		panel.isaBase  = MXS_LCDIF_BASE;
+		depth  = bpp;
+	}
 
 	cvt_fb_videomode_to_ctfb_res_modes(gmode, &ct);
 	return mxsfb_probe(bpp, &ct);
