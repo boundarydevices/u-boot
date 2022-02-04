@@ -215,7 +215,7 @@ static const iomux_v3_cfg_t lcd_pwm_pads[] = {
 };
 
 static const iomux_v3_cfg_t lcd_pwm_gpio_pads[] = {
-#define GP_BACKLIGHT_LCD_PWM1	IMX_GPIO_NR(1, 4)
+#define GP_BACKLIGHT_LCD_PWM3	IMX_GPIO_NR(1, 4)
 	IOMUX_PAD_CTRL(GPIO1_IO04__GPIO1_IO04, WEAK_PULLDN_OUTPUT),
 };
 
@@ -276,15 +276,15 @@ void board_enable_lcd(const struct display_info_t *di, int enable)
 		/* enable backlight PWM3 */
 		pwm_init(2, 0, 0);
 
-		/* 500 Hz, duty cycle, period: 2 ms */
-		pwm_config(2, 1000000, 2000000);
+		/* 33.3 KHz, duty cycle, period: 30 usec */
+		pwm_config(2, 30000*8/10, 30000);
 		pwm_enable(2);
 		SETUP_IOMUX_PADS(lcd_pwm_pads);
 		gpio_set_value(GP_BACKLIGHT_LCD, 1);
 	} else {
 		gpio_set_value(GP_BACKLIGHT_LCD, 0);
 		SETUP_IOMUX_PADS(lcd_pwm_gpio_pads);
-		gpio_set_value(GP_BACKLIGHT_LCD_PWM1, 0);
+		gpio_set_value(GP_BACKLIGHT_LCD_PWM3, 0);
 	}
 }
 
