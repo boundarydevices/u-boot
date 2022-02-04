@@ -23,9 +23,9 @@
 #define BD_I2C_MASK	0x9
 #define BD_LOG_LEVEL	"7"
 #define BD_CMA		"2M"
+#define CONFIG_VIDEO_LOGO
 
 #include "boundary.h"
-#define CONFIG_EXTRA_ENV_SETTINGS BD_BOUNDARY_ENV_SETTINGS \
-	"cmd_custom= \0"
+#define CONFIG_EXTRA_ENV_SETTINGS BD_BOUNDARY_ENV_SETTINGS
 
 #endif	       /* __CONFIG_H */
