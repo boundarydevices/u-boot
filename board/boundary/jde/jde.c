@@ -174,6 +174,15 @@ static const iomux_v3_cfg_t init_pads[] = {
 	IOMUX_PAD_CTRL(NAND_ALE__USDHC2_RESET_B, USDHC2_PAD_CTRL),
 };
 
+static const iomux_v3_cfg_t lcd_pwm_pads[] = {
+	IOMUX_PAD_CTRL(CSI_VSYNC__PWM7_OUT, WEAK_PULLDN_OUTPUT),
+};
+
+static const iomux_v3_cfg_t lcd_pwm_gpio_pads[] = {
+#define GP_BACKLIGHT_LCD_PWM7	IMX_GPIO_NR(4, 19)
+	IOMUX_PAD_CTRL(CSI_VSYNC__GPIO4_IO19, WEAK_PULLDN_OUTPUT),
+};
+
 static const struct i2c_pads_info i2c_pads[] = {
 	I2C_PADS_INFO_ENTRY(I2C1, CSI_PIXCLK, 4, 18, CSI_MCLK, 4, 17, I2C_PAD_CTRL),
 };
@@ -232,9 +241,13 @@ void board_enable_lcd(const struct display_info_t *di, int enable)
 		/* enable backlight PWM 7 */
 		pwm_init(6, 0, 0);
 
-		/* 300 Hz, duty cycle 2 ms, period: 3.3 ms */
-		pwm_config(6, 1666667, 3333333);
+		/* 500 Hz, duty cycle, period: 2 ms */
+		pwm_config(6, 2000000*8/10, 2000000);
 		pwm_enable(6);
+		SETUP_IOMUX_PADS(lcd_pwm_pads);
+	} else {
+		SETUP_IOMUX_PADS(lcd_pwm_gpio_pads);
+		gpio_set_value(GP_BACKLIGHT_LCD_PWM7, 0);
 	}
 }
 
