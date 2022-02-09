@@ -556,7 +556,7 @@ int of_property_match_string(const struct device_node *np, const char *propname,
 	const char *p, *end;
 
 	if (!prop)
-		return -EINVAL;
+		return -ENODATA;
 	if (!prop->value)
 		return -ENODATA;
 
