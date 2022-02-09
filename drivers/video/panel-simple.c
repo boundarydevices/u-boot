@@ -6,6 +6,7 @@
 #include <common.h>
 #include <asm/gpio.h>
 #include <backlight.h>
+#include <clk.h>
 #include <dm.h>
 #include <dt-bindings/display/simple_panel_mipi_cmds.h>
 #include <i2c.h>
@@ -57,6 +58,7 @@ struct panel_simple {
 	struct udevice *backlight;
 	struct udevice *supply;
 	struct udevice *linked_panel;
+	struct clk *mipi_clk;
 
 	struct gpio_desc *gpd_prepare_enable;
 	struct gpio_desc *gpd_power;
@@ -297,6 +299,10 @@ int simple_i2c_read(struct panel_simple *panel, const u8 *tx, int tx_len, u8 *rx
 #define TYPE_I2C	1
 #define TYPE_SPI	2
 
+#define lptxtime_ns 75
+#define prepare_ns 100
+#define zero_ns 250
+
 static int send_cmd_list(struct panel_simple *panel, struct cmds *mc, int type, const char *id)
 {
 	struct display_timing *dm = &panel->timings;
@@ -309,6 +315,8 @@ static int send_cmd_list(struct panel_simple *panel, struct cmds *mc, int type, 
 	unsigned l;
 	unsigned len;
 	unsigned mask;
+	u32 mipi_clk_rate = 0;
+	unsigned long tmp;
 	int ret;
 	int generic;
 	int match = 0;
@@ -332,6 +340,14 @@ static int send_cmd_list(struct panel_simple *panel, struct cmds *mc, int type, 
 			int lane_match = 1 + len - S_IF_1_LANE;
 
 			if (lane_match != dsi->lanes)
+				skip = 1;
+			continue;
+		} else if (len == S_IF_BURST) {
+			if (!(dsi->mode_flags & MIPI_DSI_MODE_VIDEO_BURST))
+				skip = 1;
+			continue;
+		} else if (len == S_IF_NONBURST) {
+			if (dsi->mode_flags & MIPI_DSI_MODE_VIDEO_BURST)
 				skip = 1;
 			continue;
 		}
@@ -460,7 +476,7 @@ static int send_cmd_list(struct panel_simple *panel, struct cmds *mc, int type, 
 			cmd += len;
 			length -= len;
 			l = len = 0;
-		} else if ((len >= S_CONST) && (len <= S_VFP)) {
+		} else if (len >= S_CONST) {
 			int scmd, dest_start, dest_len, src_start;
 			unsigned val;
 
@@ -499,6 +515,42 @@ static int send_cmd_list(struct panel_simple *panel, struct cmds *mc, int type, 
 				case S_VFP:
 					val = dm->vfront_porch.typ;
 					break;
+				case S_LPTXTIME:
+					val = 3;
+					if (!mipi_clk_rate && panel->mipi_clk)
+						mipi_clk_rate = clk_get_rate(panel->mipi_clk);
+					if (!mipi_clk_rate) {
+						printf("Unknown mipi_clk_rate\n");
+						break;
+					}
+					/* val = ROUND(lptxtime_ns * mipi_clk_rate/4  /1000000000) */
+					tmp = lptxtime_ns;
+					tmp *= mipi_clk_rate;
+					tmp += 2000000000;
+					tmp /= 4000000000;
+					val = (unsigned)tmp;
+					pr_debug("%s:lptxtime=%d\n", __func__, val);
+					if (val > 2047)
+						val = 2047;
+					break;
+				case S_CLRSIPOCOUNT:
+					val = 5;
+					if (!mipi_clk_rate && panel->mipi_clk)
+						mipi_clk_rate = clk_get_rate(panel->mipi_clk);
+					if (!mipi_clk_rate) {
+						printf("Unknown mipi_clk_rate\n");
+						break;
+					}
+					/* clrsipocount = ROUNDUP((prepare_ns + zero_ns/2) * mipi_clk_rate/4 /1000000000) - 5 */
+					tmp = prepare_ns + (zero_ns >> 1) ;
+					tmp *= mipi_clk_rate;
+					tmp += 4000000000 - 1;
+					tmp /= 4000000000;
+					val = (unsigned)tmp - 5;
+					pr_debug("%s:clrsipocount=%d\n", __func__, val);
+					if (val > 63)
+						val = 63;
+					break;
 				default:
 					printf("Unknown scmd 0x%x0x\n", scmd);
 					val = 0;
@@ -520,10 +572,6 @@ static int send_cmd_list(struct panel_simple *panel, struct cmds *mc, int type, 
 					dest_len = 0;
 			}
 			l = 0;
-		} else {
-			printf("Unknown DCS command 0x%x 0x%x\n", cmd[-1], cmd[0]);
-			match = -EINVAL;
-			break;
 		}
 		if (ret < 0) {
 			if (l >= 6) {
@@ -903,6 +951,7 @@ static int simple_panel_ofdata_to_platdata(struct udevice *dev)
 	ofnode cmds_np;
 	u32 bridge_de_active;
 	u32 bridge_sync_active;
+	struct clk *mipi_clk;
 	int err;
 	int ret;
 
@@ -1008,6 +1057,14 @@ static int simple_panel_ofdata_to_platdata(struct udevice *dev)
 	pr_info("%s: delay %d %d, %d %d\n", __func__,
 		panel->delay.prepare, panel->delay.enable,
 		panel->delay.disable, panel->delay.unprepare);
+
+	mipi_clk = devm_clk_get_optional(dev, "mipi_clk");
+	if (IS_ERR(mipi_clk)) {
+		err = PTR_ERR(mipi_clk);
+		dev_dbg(dev, "%s:devm_clk_get mipi_clk  %d\n", __func__, err);
+		return err;
+	}
+	panel->mipi_clk = mipi_clk;
 
 	panel->no_hpd = ofnode_read_bool(np, "no-hpd");
 
