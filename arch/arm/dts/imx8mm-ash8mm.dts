@@ -142,6 +142,7 @@
 		fsl,pins = <
 			MX8MMN(IOMUXC_I2C2_SCL_I2C2_SCL, 0x400001c3)
 			MX8MMN(IOMUXC_I2C2_SDA_I2C2_SDA, 0x400001c3)
+			MX8MMN(IOMUXC_GPIO1_IO09_GPIO1_IO9, 0x1c0)
 		>;
 	};
 
@@ -157,7 +158,7 @@
 	pinctrl_ts_cyttsp5: ts-cyttsp5grp {
 		fsl,pins = <
 #define GPIRQ_CYTTSP5 		<&gpio1 6 IRQ_TYPE_EDGE_FALLING>
-#define GP_CYTTSP5_IRQ		<&gpio1 9 GPIO_ACTIVE_LOW>
+#define GP_CYTTSP5_IRQ		<&gpio1 6 GPIO_ACTIVE_LOW>
 			MX8MMN(IOMUXC_GPIO1_IO06_GPIO1_IO6, 0x1c0)
 			MX8MMN(IOMUXC_GPIO1_IO07_GPIO1_IO7, 0x140)
 		>;
@@ -256,8 +257,10 @@
 
 	pinctrl_sound_wm8960: sound-wm8960grp {
 		fsl,pins = <
-#define GP_WM8960_MIC_DET		<&gpio1 10 GPIO_ACTIVE_LOW>
+#define GP_WM8960_MIC_DET	<&gpio1 10 GPIO_ACTIVE_LOW>
 			MX8MMN(IOMUXC_GPIO1_IO10_GPIO1_IO10, 0x80)
+#define GP_TDA7991_STDBY	<&gpio4 16 GPIO_ACTIVE_LOW>	/* Low is standby */
+			MX8MMN(IOMUXC_SAI1_TXD4_GPIO4_IO16, 0x100)
 #define GP_TDA7991_MUTE		<&gpio4 13 GPIO_ACTIVE_LOW>
 			MX8MMN(IOMUXC_SAI1_TXD1_GPIO4_IO13, 0x100)
 #define GP_TDA7991_G0		<&gpio4 15 GPIO_ACTIVE_HIGH>
@@ -316,6 +319,7 @@
 			MX8MMN(IOMUXC_ECSPI2_SS0_GPIO5_IO13, 0x100)
 		>;
 	};
+
 	pinctrl_usdhc1: usdhc1grp {
 		fsl,pins = <
 			MX8MMN(IOMUXC_SD1_CLK_USDHC1_CLK, 0x190)
@@ -606,18 +610,24 @@
 
 #if 0
 	sound-wm8960 {
+		amp-gain-gpios = GP_TDA7991_G0, GP_TDA7991_G1;
+		/* amp-gain-seq = /bits/ 8 <0 1 2 3>; */ /* default */
+		amp-mute-gpios = GP_TDA7991_MUTE;
+		/* delay between mute and standby enter */
+		amp-standby-enter-wait-ms = <50>;
+		/* delay between standby exit and unmute */
+		amp-standby-exit-delay-ms = <100>;
+		amp-standby-gpios = GP_TDA7991_STDBY;
 		audio-codec = <&wm8960>;
 		audio-routing =
-			"Headphone Jack", "HP_L",
-			"Headphone Jack", "HP_R",
+			"Ext Spk", "HP_L",
+			"Ext Spk", "HP_R",
 			"LINPUT1", "Main MIC",
 			"Main MIC", "MICB";
 		codec-master;
 		compatible = "fsl,imx-audio-wm8960";
 		cpu-dai = <&sai1>;
-#if 0
 		mic-det-gpios = GP_WM8960_MIC_DET;
-#endif
 		model = "wm8960-audio";
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_sound_wm8960>;
@@ -627,23 +637,21 @@
 
 #if 0
 &A53_0 {
-	arm-supply = <&reg_sw3>;
+	cpu-supply = <&reg_sw3>;
 };
 #endif
 
 &fec1 {
-#if 0
-	mdc-gpios = GP_MII_MDC;
-	mdio-gpios = GP_MII_MDIO;
-#endif
+	fsl,magic-packet;
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_fec1>;
-#if 0
-	phy-reset-gpios = GP_FEC1_RESET;
-#endif
-	phy-mode = "rgmii-id";
 	phy-handle = <&ethphy0>;
-	fsl,magic-packet;
+	phy-mode = "rgmii-id";
+#if 0
+	phy-reset-duration = <10>;
+	phy-reset-gpios = GP_FEC1_RESET;
+	phy-reset-post-delay = <150>;
+#endif
 	status = "okay";
 
 	mdio {
@@ -654,6 +662,8 @@
 			compatible = "ethernet-phy-ieee802.3-c22";
 			reg = <7>;
 			interrupts-extended = GPIRQ_FEC1_PHY;
+			rxc-skew-ps = <1860>;
+			txc-skew-ps = <1860>;
 		};
 	};
 };
@@ -784,6 +794,8 @@
 		compatible = "lontium,lt8912" ;
 		display-dsi = <&fb_mipi>;
 		interrupts-extended = GPIRQ_LT8912;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_i2c1_lt8912>;
 		reg = <0x48> ;
 		reset-gpios = GP_LT8912_RESET;
 
@@ -823,13 +835,13 @@
 			cy,easy_wakeup_gesture = <0>;
 			cy,btn_keys = <172 /* KEY_HOMEPAGE */
 					   /* previously was KEY_HOME, new Android versions use KEY_HOMEPAGE */
-			               139 /* KEY_MENU */
-			               158 /* KEY_BACK */
-			               217 /* KEY_SEARCH */
-			               114 /* KEY_VOLUMEDOWN */
-			               115 /* KEY_VOLUMEUP */
-			               212 /* KEY_CAMERA */
-			               116>; /* KEY_POWER */
+				       139 /* KEY_MENU */
+				       158 /* KEY_BACK */
+				       217 /* KEY_SEARCH */
+				       114 /* KEY_VOLUMEDOWN */
+				       115 /* KEY_VOLUMEUP */
+				       212 /* KEY_CAMERA */
+				       116>; /* KEY_POWER */
 			cy,btn_keys-tag = <0>;
 
 			cy,mt {
@@ -975,7 +987,7 @@
 	status = "okay";
 
 	fb_mipi: panel@0 {
-		backlight= <&backlight_mipi>;
+		backlight = <&backlight_mipi>;
 		bits-per-color = <8>;
 		bits-per-pixel = <24>;
 		bridge-de-active = <0>;
@@ -1074,42 +1086,32 @@
 	status = "okay";
 };
 
-#if 0
-&sai2 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_sai2>;
+&snvs_pwrkey {
 	status = "okay";
 };
 
-&sai5 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_sai5>;
-	status = "disabled";
-};
-#endif
-
 #if 0
-&uart1 { /* RX485 */
+&uart1 { /* RS485 */
 	assigned-clocks = <&clk IMX8MMN(CLK_UART1)>;
 	assigned-clock-parents = <&clk IMX8MMN(SYS_PLL1_80M)>;
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_uart1>;
 	control-gpios = GP_UART1_TX_EN, GP_UART1_RXD_LED, GP_UART1_TXD_LED;
+	linux,rs485-enabled-at-boot-time;
 #define M_TX_EN		1
 #define M_TX_ACTIVE	2
 #define M_RX_ACTIVE	4
 	off_levels = <0>;
-	rxact_mask = <M_RX_ACTIVE>;
-	rxact_levels = <M_RX_ACTIVE>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart1>;
 	rs232_levels = <0>;
 	rs232_txen_mask = <0>;
 	rs232_txen_levels = <0>;
 	rs485_levels = <0>;
-	rs485_txen_mask = <0x3>;
 	rs485_txen_levels = <0x3>;
-	uart-has-rs485-half-duplex;
-	linux,rs485-enabled-at-boot-time;
+	rs485_txen_mask = <0x3>;
+	rxact_mask = <M_RX_ACTIVE>;
+	rxact_levels = <M_RX_ACTIVE>;
 	status = "okay";
+	uart-has-rs485-half-duplex;
 };
 #endif
 
@@ -1150,8 +1152,8 @@
 };
 
 &usbotg2 {
-	dr_mode = "host";
 	disable-over-current;
+	dr_mode = "host";
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usbotg2>;
 	power-active-high;
@@ -1200,12 +1202,14 @@
 #if 0
 &usdhc3 {
 	bus-width = <4>;
+	keep-power-in-suspend;
 	no-sd-uhs-sdr104;
 	non-removable;
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
 	pinctrl-0 = <&pinctrl_usdhc3>;
 	pinctrl-1 = <&pinctrl_usdhc3_100mhz>;
 	pinctrl-2 = <&pinctrl_usdhc3_200mhz>;
+	pm-ignore-notify;
 	status = "okay";
 	vmmc-supply = <&reg_wlan_vmmc>;
 	vqmmc-1-8-v;
