@@ -1460,6 +1460,8 @@
 #endif
 		bus-format = "rgb888";
 		bus-width = <24>;
+		clocks = <&dsim_clk 0>;
+		clock-names = "mipi_clk";
 		compatible = "panel,simple";
 		delay-power-up = <2>;
 		dsi-format = "rgb888";
