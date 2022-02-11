@@ -270,6 +270,7 @@ void fbp_setup_env_cmds(void);
 #define VD_LXD_M8509A(_mode, args...)		VDF_LXD_M8509A(_mode, "lxd_m8509a", RGB24, FBF_LXD_M8509A, args)
 #define VD_LTK080A60A004T_2(_mode, args...)	VDF_LTK080A60A004T(_mode, "ltk080a60a004t-2", RGB24, FBF_LTK080A60A004T, args)
 #define VD_LTK0680YTMDB(_mode, args...)		VDF_LTK0680YTMDB(_mode, "ltk0680ytmdb", RGB24, FB_##_mode == FB_LCD ? FBF_LTK0680YTMDB_LCD : FBF_LTK0680YTMDB, args)
+#define VD_LTK0680YTMDB_2(_mode, args...)	VDF_LTK0680YTMDB_2(_mode, "ltk0680ytmdb-2", RGB24, FB_##_mode == FB_LCD ? FBF_LTK0680YTMDB_LCD : FBF_LTK0680YTMDB, args)
 
 #define VD_MIPI_G156HCE_L01(_mode, args...)	VDF_MIPI_G156HCE_L01(_mode, "G156HCE-L01", RGB24, FBF_G156HCE_L01, args)
 #define VD_MIPI_COM50H5N03ULC(_mode, args...)	VDF_MIPI_COM50H5N03ULC(_mode, "com50h5n03ulc", RGB24, FBF_COM50H5N03ULC, args)
@@ -1559,6 +1560,26 @@ void fbp_setup_env_cmds(void);
 		.xres           = 480,\
 		.yres           = 1280,\
 		.pixclock       = 1000000000000ULL/((480+160+160+24)*(1280+10+12+2)*60), \
+		.left_margin    = 160,\
+		.right_margin   = 160,\
+		.upper_margin   = 10,\
+		.lower_margin   = 12,\
+		.hsync_len      = 24,\
+		.vsync_len      = 2,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
+#define VDF_LTK0680YTMDB_2(_mode, _name, _fmt, _flags, args...) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, args),\
+	.mode	= {\
+		.name           = _name,\
+		.refresh        = 60,\
+		.xres           = 480,\
+		.yres           = 1280,\
+		.pixclock       = 1000000000000ULL/((480+160+160+24)*(1280+10+12+2)*70), \
 		.left_margin    = 160,\
 		.right_margin   = 160,\
 		.upper_margin   = 10,\
