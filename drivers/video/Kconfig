@@ -206,7 +206,7 @@ config PANEL
 	help
 	  This provides panel uclass driver that enables basic panel support.
 
-config PANEL_MIPI_SIMPLE
+config PANEL_MIPI_COMMON
 	bool "Enable simple mipi panel support"
 	depends on PANEL
 	help

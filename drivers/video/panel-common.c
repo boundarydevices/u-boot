@@ -1176,7 +1176,7 @@ static const struct panel_ops simple_panel_ops = {
 };
 
 static const struct udevice_id simple_panel_ids[] = {
-	{ .compatible = "panel,simple" },
+	{ .compatible = "panel,common" },
 	{ }
 };
 
