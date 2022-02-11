@@ -156,7 +156,7 @@ static const struct display_info_t displays[] = {
 	VD_DMT050WVNXCMI(MIPI, board_detect_pca9546, fbp_bus_gp((1 | (3 << 4)), GP_SC18IS602B_RESET, 0, 30), fbp_addr_gp(0x2f, 0, 6, 0), FBP_SPI_LCD, FBTS_GOODIX),
 	VD_LTK080A60A004T(MIPI, board_detect_gt911, fbp_bus_gp((1 | (3 << 4)), GP_LTK08_MIPI_EN, GP_LTK08_MIPI_EN, 0), 0x5d, FBTS_GOODIX),	/* Goodix touchscreen */
 	VD_LCM_JM430_MINI(MIPI, board_detect_pca9546, fbp_bus_gp((1 | (3 << 4)), GP_ST1633_RESET, GP_TC358762_EN, 30), fbp_addr_gp(0x55, GP_LCM_JM430_BKL_EN, 0, 0), FBTS_ST1633I),	/* Sitronix touch */
-	VD_LTK0680YTMDB(MIPI, NULL, fbp_bus_gp((1 | (3 << 4)), GP_MIPI_RESET, GP_MIPI_RESET, 0), 0x5d, FBTS_GOODIX),
+	VD_LTK0680YTMDB_2(MIPI, NULL, fbp_bus_gp((1 | (3 << 4)), GP_MIPI_RESET, GP_MIPI_RESET, 0), 0x5d, FBTS_GOODIX),
 	VD_MIPI_COM50H5N03ULC(MIPI, NULL, fbp_bus_gp((1 | (3 << 4)), GP_MIPI_RESET, GP_MIPI_RESET, 0), 0x00),
 	/* 0x3e is the TPS65132 power chip on our adapter board */
 	VD_MIPI_LCD133_070(MIPI, board_detect_lcd133, fbp_bus_gp((1 | (3 << 4)), GP_LCD133_070_ENABLE, GP_LCD133_070_ENABLE, 1), fbp_addr_gp(0x3e, 0, 0, 0), FBTS_FT7250),
