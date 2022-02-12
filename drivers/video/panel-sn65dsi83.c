@@ -10,103 +10,39 @@
 #include <clk.h>
 #include <dm.h>
 #include <dm/ofnode.h>
+#include <dm/pinctrl.h>
 #include <errno.h>
 #include <i2c.h>
 #include <linux/delay.h>
 #include <log.h>
 #include <panel.h>
 #include <watchdog.h>
-
-/* register definitions according to the sn65dsi83 data sheet */
-#define SN_SOFT_RESET		0x09
-#define SN_CLK_SRC		0x0a
-#define SN_CLK_DIV		0x0b
-
-#define SN_PLL_EN		0x0d
-#define SN_DSI_LANES		0x10
-#define SN_DSI_EQ		0x11
-#define SN_DSI_CLK		0x12
-#define SN_FORMAT		0x18
-
-#define SN_LVDS_VOLTAGE		0x19
-#define SN_LVDS_TERM		0x1a
-#define SN_LVDS_CM_VOLTAGE	0x1b
-#define SN_HACTIVE_LOW		0x20
-#define SN_HACTIVE_HIGH		0x21
-#define SN_VACTIVE_LOW		0x24
-#define SN_VACTIVE_HIGH		0x25
-#define SN_SYNC_DELAY_LOW	0x28
-#define SN_SYNC_DELAY_HIGH	0x29
-#define SN_HSYNC_LOW		0x2c
-#define SN_HSYNC_HIGH		0x2d
-#define SN_VSYNC_LOW		0x30
-#define SN_VSYNC_HIGH		0x31
-#define SN_HBP			0x34
-#define SN_VBP			0x36
-#define SN_HFP			0x38
-#define SN_VFP			0x3a
-#define SN_TEST_PATTERN		0x3c
-#define SN_IRQ_EN		0xe0
-#define SN_IRQ_MASK		0xe1
-#define SN_IRQ_STAT		0xe5
-
-struct sn65dsi83_priv
-{
-	struct udevice	*dev;
-	ofnode	disp_node;
-	ofnode	disp_dsi;
-
-	struct gpio_desc	*gd_enable[2];
-	struct gpio_desc	*gd_irq[2];
-	struct clk		*mipi_clk;
-	struct clk		*pixel_clk;
-	struct display_timing	timings;
-	u32			int_cnt;
-	u8			chip_enabled;
-	u8			irq_enabled;
-	u8			show_reg;
-	u8			dsi_lanes;
-	u8			spwg;	/* lvds lane 3 has MSBs of color */
-	u8			jeida;	/* lvds lane 3 has LSBs of color */
-	u8			split_mode;
-	u8			dsi_bpp;
-	u16			sync_delay;
-	u16			hbp;
-
-	u8			dsi_clk_divider;
-	u8			mipi_clk_index;
-#define SN_STATE_OFF		0
-#define SN_STATE_STANDBY	1
-#define SN_STATE_ON		2
-	u8			state;
-	struct gpio_desc	gds_enable[2];
-	struct gpio_desc	gds_irq[2];
-};
+#include "panel-sn65dsi83.h"
 
 /**
  * sn_i2c_read_reg - read data from a register of the i2c slave device.
  *
  */
-static int sn_i2c_read_byte(struct sn65dsi83_priv *sn, u8 reg)
+static int sn_i2c_read_byte(struct panel_sn65dsi83 *sn, u8 reg)
 {
-	struct dm_i2c_chip *chip = dev_get_parent_platdata(sn->dev);
+	struct dm_i2c_ops *ops = i2c_get_ops(sn->i2c);
 	uint8_t tx_buf[4];
 	uint8_t rx_buf[4];
 	struct i2c_msg msgs[2];
 	int ret;
 
 	tx_buf[0] = reg;
-	msgs[0].addr = chip->chip_addr;
+	msgs[0].addr = sn->i2c_address;
 	msgs[0].flags = 0;
 	msgs[0].len = 1;
 	msgs[0].buf = tx_buf;
 
-	msgs[1].addr = chip->chip_addr;
+	msgs[1].addr = sn->i2c_address;
 	msgs[1].flags = I2C_M_RD;
 	msgs[1].len = 1;
 	msgs[1].buf = rx_buf;
-	ret = dm_i2c_xfer(sn->dev, msgs, 2);
-	if (ret) {
+	ret = ops->xfer(sn->i2c, msgs, 2);
+	if (ret < 0) {
 		debug("%s reg(%x), failed(%d)\n", __func__, reg, ret);
 		return ret;
 	}
@@ -117,27 +53,30 @@ static int sn_i2c_read_byte(struct sn65dsi83_priv *sn, u8 reg)
  * sn_i2c_write - write data to a register of the i2c slave device.
  *
  */
-static int sn_i2c_write_byte(struct sn65dsi83_priv *sn, u8 reg, u8 val)
+static int sn_i2c_write_byte(struct panel_sn65dsi83 *sn, u8 reg, u8 val)
 {
-	struct dm_i2c_chip *chip = dev_get_parent_platdata(sn->dev);
+	struct dm_i2c_ops *ops = i2c_get_ops(sn->i2c);
 	uint8_t buf[4];
 	struct i2c_msg msg;
 	int ret;
 
-	msg.addr = chip->chip_addr;
-	msg.flags = 0;
 	buf[0] = reg;
 	buf[1] = val;
-	msg.buf = buf;
+
+	msg.addr = sn->i2c_address;
+	msg.flags = 0;
 	msg.len = 2;
-	ret = dm_i2c_xfer(sn->dev, &msg, 1);
-	if (ret) {
+	msg.buf = buf;
+	ret = ops->xfer(sn->i2c, &msg, 1);
+	if (ret < 0) {
 		debug("%s reg(%x)=%x, failed(%d)\n", __func__, reg, val, ret);
+		mdelay(10);
+		ret = ops->xfer(sn->i2c, &msg, 1);
 	}
-	return ret;
+	return ret < 0 ? ret : 0;
 }
 
-static void sn_disable(struct sn65dsi83_priv *sn, int skip_irq)
+static void sn_disable(struct panel_sn65dsi83 *sn, int skip_irq)
 {
 	int i;
 
@@ -146,34 +85,35 @@ static void sn_disable(struct sn65dsi83_priv *sn, int skip_irq)
 		sn->int_cnt = 0;
 	}
 	sn->chip_enabled = 0;
-	for (i = 0; i < ARRAY_SIZE(sn->gd_enable); i++) {
-		if (!sn->gd_enable[i])
+	for (i = 0; i < ARRAY_SIZE(sn->gp_en); i++) {
+		if (!sn->gp_en[i])
 			break;
-		dm_gpio_set_value(sn->gd_enable[i], 0);
+		dm_gpio_set_value(sn->gp_en[i], 0);
 	}
 }
 
-static void sn_enable_gp(struct sn65dsi83_priv *sn)
+static void sn_enable_gp(struct panel_sn65dsi83 *sn)
 {
 	int i;
 
 	mdelay(15);	/* disabled for at least 10 ms */
-	for (i = 0; i < ARRAY_SIZE(sn->gd_enable); i++) {
-		if (!sn->gd_enable[i])
+
+	for (i = 0; i < ARRAY_SIZE(sn->gp_en); i++) {
+		if (!sn->gp_en[i])
 			break;
-		dm_gpio_set_value(sn->gd_enable[i], 1);
+		dm_gpio_set_value(sn->gp_en[i], 1);
 	}
-	mdelay(2);
+	mdelay(12);	/* enabled for at least 10 ms before i2c writes */
 }
 
-static void sn_enable_irq(struct sn65dsi83_priv *sn)
+static void sn_enable_irq(struct panel_sn65dsi83 *sn)
 {
 	sn_i2c_write_byte(sn, SN_IRQ_STAT, 0xff);
 	sn_i2c_write_byte(sn, SN_IRQ_MASK, 0x7f);
 	sn_i2c_write_byte(sn, SN_IRQ_EN, 1);
 }
 
-static int sn_get_dsi_clk_divider(struct sn65dsi83_priv *sn)
+static int sn_get_dsi_clk_divider(struct panel_sn65dsi83 *sn)
 {
 	u32 dsi_clk_divider = 25;
 	u32 mipi_clk_rate = 0;
@@ -181,18 +121,6 @@ static int sn_get_dsi_clk_divider(struct sn65dsi83_priv *sn)
 	int ret;
 	u32 pixelclock = sn->timings.pixelclock.typ;
 
-#if CONFIG_IS_ENABLED(CLK)
-	if (!sn->mipi_clk) {
-		struct clk *mipi_clk;
-
-		mipi_clk = devm_clk_get(sn->dev, "mipi_clk");
-		if (IS_ERR(mipi_clk)) {
-			debug("mipi_clk %ld\n", PTR_ERR(mipi_clk));
-		} else {
-			sn->mipi_clk = mipi_clk;
-		}
-	}
-#endif
 	if (sn->mipi_clk)
 		mipi_clk_rate = clk_get_rate(sn->mipi_clk);
 	if (!mipi_clk_rate) {
@@ -227,7 +155,7 @@ static int sn_get_dsi_clk_divider(struct sn65dsi83_priv *sn)
 	return ret;
 }
 
-static int sn_check_videomode_change(struct sn65dsi83_priv *sn)
+static int sn_check_videomode_change(struct panel_sn65dsi83 *sn)
 {
 	struct display_timing timings;
 	u32 pixelclock;
@@ -267,7 +195,7 @@ static int sn_check_videomode_change(struct sn65dsi83_priv *sn)
 	return ret;
 }
 
-static int sn_setup_regs(struct sn65dsi83_priv *sn)
+static int sn_setup_regs(struct panel_sn65dsi83 *sn)
 {
 	unsigned i = 5;
 	int format = 0x10;
@@ -354,26 +282,26 @@ static int sn_setup_regs(struct sn65dsi83_priv *sn)
 	return 0;
 }
 
-static void sn_enable_pll(struct sn65dsi83_priv *sn)
+static void sn_enable_pll(struct panel_sn65dsi83 *sn)
 {
 	if (!sn_get_dsi_clk_divider(sn)) {
 		sn_i2c_write_byte(sn, SN_CLK_DIV, (sn->dsi_clk_divider - 1) << 3);
 		sn_i2c_write_byte(sn, SN_DSI_CLK, sn->mipi_clk_index);
 	}
 	sn_i2c_write_byte(sn, SN_PLL_EN, 1);
-	mdelay(5);
+	mdelay(12);
 	sn_i2c_write_byte(sn, SN_SOFT_RESET, 1);
-	sn_enable_irq(sn);
+	mdelay(12);
 	debug("%s:reg0a=%02x\n", __func__, sn_i2c_read_byte(sn, SN_CLK_SRC));
 }
 
-static void sn_disable_pll(struct sn65dsi83_priv *sn)
+static void sn_disable_pll(struct panel_sn65dsi83 *sn)
 {
 	if (sn->chip_enabled)
 		sn_i2c_write_byte(sn, SN_PLL_EN, 0);
 }
 
-static void sn_init(struct sn65dsi83_priv *sn)
+static void sn_init(struct panel_sn65dsi83 *sn)
 {
 	sn_i2c_write_byte(sn, SN_SOFT_RESET, 1);
 	sn_i2c_write_byte(sn, SN_PLL_EN, 0);
@@ -381,7 +309,7 @@ static void sn_init(struct sn65dsi83_priv *sn)
 	sn_i2c_write_byte(sn, SN_IRQ_EN, 1);
 }
 
-static void sn_standby(struct sn65dsi83_priv *sn)
+static void sn_standby(struct panel_sn65dsi83 *sn)
 {
 	if (sn->state < SN_STATE_STANDBY) {
 		sn_enable_gp(sn);
@@ -396,7 +324,7 @@ static void sn_standby(struct sn65dsi83_priv *sn)
 	}
 }
 
-static void sn_prepare(struct sn65dsi83_priv *sn)
+static void sn_prepare(struct panel_sn65dsi83 *sn)
 {
 	if (sn->state < SN_STATE_STANDBY)
 		sn_standby(sn);
@@ -407,7 +335,7 @@ static void sn_prepare(struct sn65dsi83_priv *sn)
 	}
 }
 
-static void sn_powerdown1(struct sn65dsi83_priv *sn, int skip_irq)
+static void sn_powerdown1(struct panel_sn65dsi83 *sn, int skip_irq)
 {
 	debug("%s\n", __func__);
 	if (sn->state) {
@@ -417,17 +345,24 @@ static void sn_powerdown1(struct sn65dsi83_priv *sn, int skip_irq)
 	}
 }
 
-static void sn_powerdown(struct sn65dsi83_priv *sn)
+static void sn_powerdown(struct panel_sn65dsi83 *sn)
 {
 	sn_powerdown1(sn, 0);
 }
 
-static void sn_powerup_lock(struct sn65dsi83_priv *sn)
+void sn65_disable(struct panel_sn65dsi83 *sn)
+{
+	if (!sn->dev)
+		return;
+	sn_powerdown1(sn, 0);
+}
+
+static void sn_powerup_lock(struct panel_sn65dsi83 *sn)
 {
 	sn_prepare(sn);
 }
 
-static void sn_powerup(struct sn65dsi83_priv *sn)
+static void sn_powerup(struct panel_sn65dsi83 *sn)
 {
 	int ret = sn_check_videomode_change(sn);
 
@@ -443,7 +378,7 @@ static void sn_powerup(struct sn65dsi83_priv *sn)
 }
 
 #if 0
-static void sn_powerup_begin(struct sn65dsi83_priv *sn)
+static void sn_powerup_begin(struct panel_sn65dsi83 *sn)
 {
 	int ret = sn_check_videomode_change(sn);
 
@@ -464,7 +399,7 @@ static void sn_powerup_begin(struct sn65dsi83_priv *sn)
 /*
  * We only report errors in this handler
  */
-int sn_irq_handler(struct sn65dsi83_priv *sn)
+int sn_irq_handler(struct panel_sn65dsi83 *sn)
 {
 	int status = sn_i2c_read_byte(sn, SN_IRQ_STAT);
 
@@ -502,100 +437,63 @@ int sn_irq_handler(struct sn65dsi83_priv *sn)
 	return 0;
 }
 
-struct sn65dsi83_priv *g_sn;
+struct panel_sn65dsi83 *g_sn;
 
 void sn65dsi83_poll(void)
 {
-	struct sn65dsi83_priv *sn = g_sn;
+	struct panel_sn65dsi83 *sn = g_sn;
 	int ret, i;
 
 	if (!sn->irq_enabled)
 		return;
-	for (i = 0; i < ARRAY_SIZE(sn->gd_irq); i++) {
-		struct gpio_desc *gd_irq = sn->gd_irq[i];
+	for (i = 0; i < ARRAY_SIZE(sn->gp_irq); i++) {
+		struct gpio_desc *gp_irq = sn->gp_irq[i];
 
-		if (!gd_irq)
+		if (!gp_irq)
 			break;
-		ret = dm_gpio_get_value(gd_irq);
+		ret = dm_gpio_get_value(gp_irq);
 		if (ret) {
-			debug("%s: %d %s: %d\n", __func__, ret, gd_irq->dev->name, gd_irq->offset);
+			debug("%s: %d %s: %d\n", __func__, ret, gp_irq->dev->name, gp_irq->offset);
 			sn_irq_handler(sn);
 		}
 	}
 }
 
-static int sn65dsi83_init(struct udevice *dev)
+void sn65_enable(struct panel_sn65dsi83 *sn)
 {
-	debug("%s:\n", __func__);
-	return 0;
-}
-
-static void sn65dsi83_uninit(struct udevice *dev)
-{
-	debug("%s:\n", __func__);
-	set_poll_rtn(NULL);
-}
-
-static int sn65dsi83_enable_backlight(struct udevice *dev)
-{
-	struct sn65dsi83_priv *sn = dev_get_priv(dev);
-
 	debug("%s:\n", __func__);
 	set_poll_rtn(NULL);
 	sn_powerup(sn);
 	g_sn = sn;
-	if (sn->gd_irq[0])
+	if (sn->gp_irq[0])
 		set_poll_rtn(sn65dsi83_poll);
-	return 0;
 }
 
-static int sn65dsi83_set_backlight(struct udevice *dev, int percent)
+void sn65_enable2(struct panel_sn65dsi83 *sn)
 {
-	struct sn65dsi83_priv *sn = dev_get_priv(dev);
-
-	debug("%s:\n", __func__);
-	if (percent) {
-		sn65dsi83_enable_backlight(dev);
-	} else {
-		set_poll_rtn(NULL);
-		sn_powerdown(sn);
-	}
-	return 0;
+	if (!sn->dev)
+		return;
+	mdelay(5);
+	dev_dbg(sn->dev, "%s\n", __func__);
+	sn_enable_irq(sn);
 }
 
-static int sn65dsi83_get_display_timing(struct udevice *dev,
-					    struct display_timing *timings)
+int sn65dsi83_ofdata_to_platdata(struct udevice *dev, struct panel_sn65dsi83 *sn,
+		ofnode disp_dsi, ofnode np)
 {
-	struct sn65dsi83_priv *p = dev_get_priv(dev);
-
-	memcpy(timings, &p->timings, sizeof(*timings));
-	return 0;
-}
-
-static int of_parse_phandle(ofnode np, const char *propname, ofnode *ph)
-{
-	struct ofnode_phandle_args phandle;
-	int ret;
-
-	ret = ofnode_parse_phandle_with_args(np, propname, NULL, 0, 0, &phandle);
-	if (ret) {
-		printf("Can't find %s property (%d)\n", propname, ret);
-		return ret;
-	}
-	*ph = phandle.node;
-	return 0;
-}
-
-static int sn65dsi83_ofdata_to_platdata(struct udevice *dev)
-{
-	struct sn65dsi83_priv *sn = dev_get_priv(dev);
-	ofnode np = dev_ofnode(dev);
 	int ret;
 	const char *df;
 	u32 sync_delay, hbp;
 	u32 dsi_lanes;
 	struct clk *pixel_clk = NULL;
 	int i, j;
+
+	ret = uclass_get_device_by_ofnode_prop(UCLASS_I2C, np,
+			"i2c-bus", &sn->i2c);
+	if (ret)
+		printf("!!!i2c-bus not found %d\n", ret);
+	ofnode_read_u32(np, "i2c-address", &sn->i2c_address);
+	ofnode_read_u32(np, "i2c-max-frequency", &sn->i2c_max_frequency);
 
 #if CONFIG_IS_ENABLED(CLK)
 	pixel_clk = devm_clk_get(dev, "pixel_clock");
@@ -605,8 +503,8 @@ static int sn65dsi83_ofdata_to_platdata(struct udevice *dev)
 	}
 #endif
 
-	for (i = 0; i < ARRAY_SIZE(sn->gds_enable); i++) {
-		ret = gpio_request_by_name(dev, "enable-gpios", i, &sn->gds_enable[i],
+	for (i = 0; i < ARRAY_SIZE(sn->gds_en); i++) {
+		ret = gpio_request_by_name_nodev(np, "enable-gpios", i, &sn->gds_en[i],
 					   GPIOD_IS_OUT);
 		if (ret) {
 			debug("%s: Warning: cannot get enable-gpios: ret=%d\n",
@@ -617,13 +515,12 @@ static int sn65dsi83_ofdata_to_platdata(struct udevice *dev)
 			}
 		} else {
 			debug("%s: Success, enable-gpios\n", __func__);
-			sn->gd_enable[i] = &sn->gds_enable[i];
+			sn->gp_en[i] = &sn->gds_en[i];
 		}
 	}
-	sn_enable_gp(sn);
 
 	for (i = 0, j = 0; i < ARRAY_SIZE(sn->gds_irq); i++) {
-		ret = gpio_request_by_name(dev, "interrupts-gpios", i, &sn->gds_irq[i],
+		ret = gpio_request_by_name_nodev(np, "interrupts-gpios", i, &sn->gds_irq[i],
 				   GPIOD_IS_IN);
 		if (ret) {
 			debug("%s: Warning: cannot get interrupts-gpios: ret=%d\n",
@@ -633,28 +530,14 @@ static int sn65dsi83_ofdata_to_platdata(struct udevice *dev)
 				return log_ret(ret);
 			}
 		} else {
-			sn->gd_irq[j] = &sn->gds_irq[i];
-			ret = dm_gpio_get_value(sn->gd_irq[j]);
-			if (!ret) {
-				/* An interrupt is not pending, valid interrupt pin*/
-				j++;
-			}
+			sn->gp_irq[j] = &sn->gds_irq[i];
 		}
 	}
 
 	sn->dev = dev;
 	sn->pixel_clk = pixel_clk;
 
-	ret = of_parse_phandle(np, "display-dsi", &sn->disp_dsi);
-	if (ret) {
-		debug("display-dsi %d\n", ret);
-		return ret;
-	}
-	ret = of_parse_phandle(np, "display", &sn->disp_node);
-	if (ret) {
-		debug("display %d\n", ret);
-		return ret;
-	}
+	sn->disp_dsi = disp_dsi;
 	ret = ofnode_decode_display_timing(sn->disp_dsi, 0, &sn->timings);
 	if (ret < 0) {
 		debug("ofnode_decode_display_timing %d\n", ret);
@@ -702,21 +585,34 @@ static int sn65dsi83_ofdata_to_platdata(struct udevice *dev)
 /*
  * I2C init/probing/exit functions
  */
-static int sn65dsi83_probe(struct udevice *dev)
+int sn65_init(struct panel_sn65dsi83 *sn)
 {
-	struct sn65dsi83_priv *sn = dev_get_priv(dev);
-	int ret, i;
+	int ret, i, j;
 
-	if (device_get_uclass_id(dev->parent) != UCLASS_I2C)
-		return -EPROTONOSUPPORT;
+	ret = pinctrl_select_state(sn->dev, "sn65dsi83");
+	sn_enable_gp(sn);
+
+	for (i = 0, j = 0; i < ARRAY_SIZE(sn->gp_irq); i++) {
+		if (sn->gp_irq[j]) {
+			ret = dm_gpio_get_value(sn->gp_irq[j]);
+			if (!ret) {
+				/* An interrupt is not pending, valid interrupt pin */
+				if (j) {
+					sn->gp_irq[0] = sn->gp_irq[j];
+				}
+				sn->gp_irq[1] = NULL;
+				break;
+			}
+		}
+	}
 
 	ret = sn_i2c_read_byte(sn, SN_CLK_SRC);
 	if (ret < 0) {
-		for (i = 0; i < ARRAY_SIZE(sn->gd_enable); i++) {
-			if (!sn->gd_enable[i])
+		for (i = 0; i < ARRAY_SIZE(sn->gp_en); i++) {
+			if (!sn->gp_en[i])
 				break;
 			/* enable might be used for something else, change to input */
-			dm_gpio_set_dir_flags(sn->gd_enable[i], GPIOD_IS_IN);
+			dm_gpio_set_dir_flags(sn->gp_en[i], GPIOD_IS_IN);
 		}
 		debug("i2c read failed\n");
 		return -ENODEV;
@@ -725,25 +621,10 @@ static int sn65dsi83_probe(struct udevice *dev)
 	return 0;
 }
 
-static const struct panel_ops sn65dsi83_ops = {
-	.init			= sn65dsi83_init,
-	.uninit			= sn65dsi83_uninit,
-	.enable_backlight	= sn65dsi83_enable_backlight,
-	.get_display_timing	= sn65dsi83_get_display_timing,
-	.set_backlight		= sn65dsi83_set_backlight,
-};
-
-static const struct udevice_id sn65dsi83_dt_match[] = {
-	{.compatible = "ti,sn65dsi83"},
-	{}
-};
-
-U_BOOT_DRIVER(sn65dsi83) = {
-	.name	= "sn65dsi83",
-	.id	= UCLASS_PANEL,
-	.of_match = sn65dsi83_dt_match,
-	.ofdata_to_platdata	= sn65dsi83_ofdata_to_platdata,
-	.probe	= sn65dsi83_probe,
-	.ops	= &sn65dsi83_ops,
-	.priv_auto_alloc_size	= sizeof(struct sn65dsi83_priv),
-};
+int sn65_remove(struct panel_sn65dsi83 *sn)
+{
+	debug("%s:\n", __func__);
+	set_poll_rtn(NULL);
+	sn_powerdown(sn);
+	return 0;
+}

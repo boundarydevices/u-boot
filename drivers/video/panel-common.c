@@ -17,6 +17,7 @@
 #include <power/regulator.h>
 #include <spi.h>
 #include <video_link.h>
+#include "panel-sn65dsi83.h"
 
 struct cmds {
 	const u8* cmds;
@@ -76,6 +77,7 @@ struct panel_common {
 	struct interface_cmds cmds_enable;
 	struct interface_cmds cmds_enable2;
 	struct interface_cmds cmds_disable;
+	struct panel_sn65dsi83 sn65;
 	/* Keep a mulitple of 9 */
 	unsigned char tx_buf[63] __attribute__((aligned(64)));
 	unsigned char rx_buf[63] __attribute__((aligned(64)));
@@ -656,6 +658,7 @@ static int panel_common_disable(struct panel_common *p)
 	dsi = p->dsi;
 	dsi->mode_flags |= MIPI_DSI_MODE_LPM;
 	send_all_cmd_lists(p, &p->cmds_disable);
+	sn65_disable(&p->sn65);
 
 	p->enabled = false;
 
@@ -746,7 +749,7 @@ static int panel_common_enable(struct panel_common *p)
 		goto fail;
 	if (p->delay.enable)
 		mdelay(p->delay.enable);
-
+	sn65_enable(&p->sn65);
 	p->enabled = true;
 
 	return 0;
@@ -766,15 +769,19 @@ static int panel_common_enable2(struct panel_common *p)
 	dsi = p->dsi;
 	dsi->mode_flags &= ~MIPI_DSI_MODE_LPM;
 	ret = send_all_cmd_lists(p, &p->cmds_enable2);
-	if (ret < 0) {
-		p->enabled = false;
-		if (p->reset)
-			dm_gpio_set_value(p->reset, true);
-		if (p->gpd_prepare_enable)
-			dm_gpio_set_value(p->gpd_prepare_enable, false);
-		return ret;
-	}
+	if (ret < 0)
+		goto fail;
+
+	sn65_enable2(&p->sn65);
+
 	return 0;
+fail:
+	p->enabled = false;
+	if (p->reset)
+		dm_gpio_set_value(p->reset, true);
+	if (p->gpd_prepare_enable)
+		dm_gpio_set_value(p->gpd_prepare_enable, false);
+	return ret;
 }
 
 static int common_panel_init(struct udevice *dev)
@@ -949,6 +956,7 @@ static int common_panel_ofdata_to_platdata(struct udevice *dev)
 	const char *bf;
 	ofnode np = dev_ofnode(dev);
 	ofnode cmds_np;
+	ofnode sn65_np;
 	u32 bridge_de_active;
 	u32 bridge_sync_active;
 	struct clk *mipi_clk;
@@ -1130,7 +1138,14 @@ static int common_panel_ofdata_to_platdata(struct udevice *dev)
 		if (ret != -ENOENT)
 			return ret;
 	}
-	return 0;
+	ret = ofnode_parse_phandle(np, "sn65dsi83", &sn65_np);
+	if (!ret) {
+		if (ofnode_is_available(sn65_np)) {
+			panel->sn65.mipi_clk = mipi_clk;
+			ret = sn65dsi83_ofdata_to_platdata(dev, &panel->sn65, np, sn65_np);
+		}
+	}
+	return ret;
 }
 
 static int common_panel_probe(struct udevice *dev)
@@ -1153,8 +1168,11 @@ static int common_panel_probe(struct udevice *dev)
 		debug("get panel device error\n");
 		return -ENODEV;
 	}
-
-	return 0;
+	ret = 0;
+	if (p->sn65.i2c) {
+		ret = sn65_init(&p->sn65);
+	}
+	return ret;
 }
 
 static int common_panel_disable(struct udevice *dev)
@@ -1165,6 +1183,7 @@ static int common_panel_disable(struct udevice *dev)
 	panel_common_unprepare(p);
 	if (p->linked_panel)
 		panel_uninit(p->linked_panel);
+	sn65_remove(&p->sn65);
 	return 0;
 }
 
