@@ -29,7 +29,7 @@ struct interface_cmds {
 	struct cmds spi;
 };
 
-struct panel_simple {
+struct panel_common {
 	bool prepared;
 	bool enabled;
 	bool no_hpd;
@@ -87,7 +87,7 @@ struct panel_simple {
 };
 
 #if CONFIG_IS_ENABLED(DM_SPI)
-static int spi_send(struct panel_simple *panel, int rx)
+static int spi_send(struct panel_common *panel, int rx)
 {
         struct spi_slave *slave;
 	u8 *p = panel->tx_buf;
@@ -127,7 +127,7 @@ err:
 	return ret;
 }
 
-static int store_9bit(struct panel_simple *panel, const u8 *p, unsigned l)
+static int store_9bit(struct panel_common *panel, const u8 *p, unsigned l)
 {
 	int i = 0;
 	u8 * buf = panel->tx_buf;
@@ -177,7 +177,7 @@ static int store_9bit(struct panel_simple *panel, const u8 *p, unsigned l)
 	return ret;
 }
 
-static int store_high(struct panel_simple *panel, int bits)
+static int store_high(struct panel_common *panel, int bits)
 {
 	int i;
 	u8 * buf = panel->tx_buf;
@@ -235,7 +235,7 @@ static void extract_data(u8 *dst, unsigned bytes, u8 * buf, unsigned start_bit)
 }
 #endif
 
-int simple_i2c_write(struct panel_simple *panel, const u8 *tx, unsigned tx_len)
+int common_i2c_write(struct panel_common *panel, const u8 *tx, unsigned tx_len)
 {
 	u8 *buf = panel->tx_buf;
 	u8 tmp;
@@ -264,7 +264,7 @@ int simple_i2c_write(struct panel_simple *panel, const u8 *tx, unsigned tx_len)
 	return ret < 0 ? ret : 0;
 }
 
-int simple_i2c_read(struct panel_simple *panel, const u8 *tx, int tx_len, u8 *rx, unsigned rx_len)
+int common_i2c_read(struct panel_common *panel, const u8 *tx, int tx_len, u8 *rx, unsigned rx_len)
 {
 	u8 *buf = panel->tx_buf;
 	u8 tmp;
@@ -303,7 +303,7 @@ int simple_i2c_read(struct panel_simple *panel, const u8 *tx, int tx_len, u8 *rx
 #define prepare_ns 100
 #define zero_ns 250
 
-static int send_cmd_list(struct panel_simple *panel, struct cmds *mc, int type, const char *id)
+static int send_cmd_list(struct panel_common *panel, struct cmds *mc, int type, const char *id)
 {
 	struct display_timing *dm = &panel->timings;
 	struct mipi_dsi_device *dsi;
@@ -381,7 +381,7 @@ static int send_cmd_list(struct panel_simple *panel, struct cmds *mc, int type, 
 			}
 			if (!skip) {
 				if (type == TYPE_I2C) {
-					ret = simple_i2c_write(panel, p, l);
+					ret = common_i2c_write(panel, p, l);
 #if CONFIG_IS_ENABLED(DM_SPI)
 				} else if (type == TYPE_SPI) {
 					if (panel->spi_9bit) {
@@ -419,7 +419,7 @@ static int send_cmd_list(struct panel_simple *panel, struct cmds *mc, int type, 
 			match_index = generic ? 2 : 1;
 			if (!skip) {
 				if (type == TYPE_I2C) {
-					ret = simple_i2c_read(panel, cmd, match_index, data, len);
+					ret = common_i2c_read(panel, cmd, match_index, data, len);
 #if CONFIG_IS_ENABLED(DM_SPI)
 				} else if (type == TYPE_SPI) {
 					if (panel->spi_9bit) {
@@ -625,7 +625,7 @@ static int send_cmd_list(struct panel_simple *panel, struct cmds *mc, int type, 
 	return match;
 };
 
-static int send_all_cmd_lists(struct panel_simple *panel, struct interface_cmds *msc)
+static int send_all_cmd_lists(struct panel_common *panel, struct interface_cmds *msc)
 {
 	int ret = 0;
 
@@ -640,7 +640,7 @@ static int send_all_cmd_lists(struct panel_simple *panel, struct interface_cmds 
 	return ret;
 }
 
-static int panel_simple_disable(struct panel_simple *p)
+static int panel_common_disable(struct panel_common *p)
 {
 	struct mipi_dsi_device *dsi;
 
@@ -662,7 +662,7 @@ static int panel_simple_disable(struct panel_simple *p)
 	return 0;
 }
 
-static int panel_simple_unprepare(struct panel_simple *p)
+static int panel_common_unprepare(struct panel_common *p)
 {
 	if (!p->prepared)
 		return 0;
@@ -679,7 +679,7 @@ static int panel_simple_unprepare(struct panel_simple *p)
 	return 0;
 }
 
-static int panel_simple_prepare(struct panel_simple *p)
+static int panel_common_prepare(struct panel_common *p)
 {
 	struct mipi_dsi_device *dsi;
 	unsigned int delay;
@@ -731,7 +731,7 @@ static int panel_simple_prepare(struct panel_simple *p)
 	return 0;
 }
 
-static int panel_simple_enable(struct panel_simple *p)
+static int panel_common_enable(struct panel_common *p)
 {
 	struct mipi_dsi_device *dsi;
 	int ret;
@@ -758,7 +758,7 @@ fail:
 	return ret;
 }
 
-static int panel_simple_enable2(struct panel_simple *p)
+static int panel_common_enable2(struct panel_common *p)
 {
 	struct mipi_dsi_device *dsi;
 	int ret;
@@ -777,11 +777,11 @@ static int panel_simple_enable2(struct panel_simple *p)
 	return 0;
 }
 
-static int simple_panel_init(struct udevice *dev)
+static int common_panel_init(struct udevice *dev)
 {
 	struct mipi_dsi_panel_plat *plat = dev_get_platdata(dev);
 	struct mipi_dsi_device *dsi = plat->device;
-	struct panel_simple *p = dev_get_priv(dev);
+	struct panel_common *p = dev_get_priv(dev);
 	int ret;
 
 	debug("%s:\n", __func__);
@@ -802,28 +802,28 @@ static int simple_panel_init(struct udevice *dev)
 	return ret;
 }
 
-static int simple_panel_enable_backlight(struct udevice *dev)
+static int common_panel_enable_backlight(struct udevice *dev)
 {
 	struct mipi_dsi_panel_plat *plat = dev_get_platdata(dev);
 	struct mipi_dsi_device *dsi = plat->device;
-	struct panel_simple *p = dev_get_priv(dev);
+	struct panel_common *p = dev_get_priv(dev);
 	int ret;
 
 	debug("%s: start, backlight = '%s'\n", __func__, p->backlight->name);
 	p->dsi = dsi;
-	ret = panel_simple_prepare(p);
+	ret = panel_common_prepare(p);
 	if (ret)
 		return ret;
 	ret = mipi_dsi_enable_lpm(dsi);
 	if (ret && (ret != -ENOSYS))
 		return ret;
-	ret = panel_simple_enable(p);
+	ret = panel_common_enable(p);
 	if (ret)
 		return ret;
 	ret = mipi_dsi_enable_frame(dsi);
 	if (ret && (ret != -ENOSYS))
 		return ret;
-	ret = panel_simple_enable2(p);
+	ret = panel_common_enable2(p);
 	if (ret)
 		return ret;
 	if (p->gd_enable)
@@ -839,9 +839,9 @@ static int simple_panel_enable_backlight(struct udevice *dev)
 	return 0;
 }
 
-static int simple_panel_set_backlight(struct udevice *dev, int percent)
+static int common_panel_set_backlight(struct udevice *dev, int percent)
 {
-	struct panel_simple *p = dev_get_priv(dev);
+	struct panel_common *p = dev_get_priv(dev);
 	int ret;
 
 	debug("%s: start, backlight = '%s'\n", __func__, p->backlight->name);
@@ -858,10 +858,10 @@ static int simple_panel_set_backlight(struct udevice *dev, int percent)
 	return 0;
 }
 
-static int simple_panel_get_display_timing(struct udevice *dev,
+static int common_panel_get_display_timing(struct udevice *dev,
 					    struct display_timing *timings)
 {
-	struct panel_simple *p = dev_get_priv(dev);
+	struct panel_common *p = dev_get_priv(dev);
 
 	memcpy(timings, &p->timings, sizeof(*timings));
 	return 0;
@@ -885,7 +885,7 @@ void check_for_cmds(ofnode np, const char *dt_name, struct cmds *mc)
 	mc->length = data_len;
 }
 
-static void init_common(ofnode np, struct panel_simple *panel)
+static void init_common(ofnode np, struct panel_common *panel)
 {
 	long mode_flags = 0;
 	ofnode_read_u32(np, "delay-prepare", &panel->delay.prepare);
@@ -943,9 +943,9 @@ static void init_common(ofnode np, struct panel_simple *panel)
 #endif
 }
 
-static int simple_panel_ofdata_to_platdata(struct udevice *dev)
+static int common_panel_ofdata_to_platdata(struct udevice *dev)
 {
-	struct panel_simple *panel = dev_get_priv(dev);
+	struct panel_common *panel = dev_get_priv(dev);
 	const char *bf;
 	ofnode np = dev_ofnode(dev);
 	ofnode cmds_np;
@@ -1133,9 +1133,9 @@ static int simple_panel_ofdata_to_platdata(struct udevice *dev)
 	return 0;
 }
 
-static int simple_panel_probe(struct udevice *dev)
+static int common_panel_probe(struct udevice *dev)
 {
-	struct panel_simple *p = dev_get_priv(dev);
+	struct panel_common *p = dev_get_priv(dev);
 	int ret;
 
 	debug("%s:\n", __func__);
@@ -1157,37 +1157,37 @@ static int simple_panel_probe(struct udevice *dev)
 	return 0;
 }
 
-static int simple_panel_disable(struct udevice *dev)
+static int common_panel_disable(struct udevice *dev)
 {
-	struct panel_simple *p = dev_get_priv(dev);
+	struct panel_common *p = dev_get_priv(dev);
 
-	panel_simple_disable(p);
-	panel_simple_unprepare(p);
+	panel_common_disable(p);
+	panel_common_unprepare(p);
 	if (p->linked_panel)
 		panel_uninit(p->linked_panel);
 	return 0;
 }
 
-static const struct panel_ops simple_panel_ops = {
-	.init			= simple_panel_init,
-	.enable_backlight	= simple_panel_enable_backlight,
-	.get_display_timing	= simple_panel_get_display_timing,
-	.set_backlight		= simple_panel_set_backlight,
+static const struct panel_ops common_panel_ops = {
+	.init			= common_panel_init,
+	.enable_backlight	= common_panel_enable_backlight,
+	.get_display_timing	= common_panel_get_display_timing,
+	.set_backlight		= common_panel_set_backlight,
 };
 
-static const struct udevice_id simple_panel_ids[] = {
+static const struct udevice_id common_panel_ids[] = {
 	{ .compatible = "panel,common" },
 	{ }
 };
 
-U_BOOT_DRIVER(panel_simple) = {
-	.name	= "panel_simple",
+U_BOOT_DRIVER(panel_common) = {
+	.name	= "panel_common",
 	.id	= UCLASS_PANEL,
-	.of_match = simple_panel_ids,
-	.ops	= &simple_panel_ops,
-	.ofdata_to_platdata	= simple_panel_ofdata_to_platdata,
-	.probe		= simple_panel_probe,
-	.remove		= simple_panel_disable,
+	.of_match = common_panel_ids,
+	.ops	= &common_panel_ops,
+	.ofdata_to_platdata	= common_panel_ofdata_to_platdata,
+	.probe		= common_panel_probe,
+	.remove		= common_panel_disable,
 	.platdata_auto_alloc_size = sizeof(struct mipi_dsi_panel_plat),
-	.priv_auto_alloc_size	= sizeof(struct panel_simple),
+	.priv_auto_alloc_size	= sizeof(struct panel_common),
 };
