@@ -861,29 +861,6 @@
 	sda-gpios = GP_I2C2_SDA;
 	status = "okay";
 
-	mipi_to_lvds: mipi-to-lvds@2c {
-		alias = <&mipi_to_lvds>;
-		clocks = <&dsim_clk 0>,
-			<&clk IMX8MMN(CLK_LCDIF_PIXEL)>;
-		clock-names = "mipi_clk", "pixel_clock";
-		compatible = "ti,sn65dsi83";
-		display = <&display_subsystem>;
-		display-dsi = <&fb_mipi>;
-		enable-gpios = GP_SN65DSI83_EN;
-		interrupts-extended = GPIRQ_SN65DSI83;
-		interrupts-gpios = GP_SN65DSI83_IRQ;
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_sn65dsi83>;
-		reg = <0x2c>;
-		status = "disabled";
-
-		port@0 {
-			lvds_from_panel: endpoint {
-				remote-endpoint = <&panel_to_lvds>;
-			};
-		};
-	};
-
 	ts_ft5x06: touchscreen@38 {
 		compatible = "edt,ft5x06-ts";
 		interrupts-extended = GPIRQ_TS_FT5X06;
@@ -1179,7 +1156,10 @@
 		bridge-de-active = <0>;
 		bus-format = "rgb888";
 		bus-width = <24>;
-		compatible = "panel,simple";
+		clocks = <&dsim_clk 0>,
+			<&clk IMX8MMN(CLK_LCDIF_PIXEL)>;
+		clock-names = "mipi_clk", "pixel_clock";
+		compatible = "panel,common";
 		dsi-format = "rgb888";
 		dsi-lanes = <4>;
 #if 0
@@ -1196,8 +1176,11 @@
 #endif
 		panel-height-mm = <136>;
 		panel-width-mm = <217>;
+		pinctrl-names = "sn65dsi83";
+		pinctrl-0 = <&pinctrl_sn65dsi83>;
 		power-supply = <&reg_vref_5v>;
 		reg = <0>;
+		sn65dsi83 = <&mipi_to_lvds>;
 		spwg;
 
 		display-timings {
@@ -1218,6 +1201,16 @@
 			};
 		};
 
+		mipi_to_lvds: mipi-to-lvds {
+			alias = <&mipi_to_lvds>;
+			enable-gpios = GP_SN65DSI83_EN;
+			i2c-address = <0x2c>;
+			i2c-bus = <&i2c2>;
+			interrupts-extended = GPIRQ_SN65DSI83;
+			interrupts-gpios = GP_SN65DSI83_IRQ;
+			status = "disabled";
+		};
+
 		port@1 {
 			panel_from_dsim: endpoint {
 				remote-endpoint = <&dsim_to_panel>;
@@ -1225,18 +1218,12 @@
 		};
 
 		port@2 {
-			panel_to_lvds: endpoint {
-				remote-endpoint = <&lvds_from_panel>;
-			};
-		};
-
-		port@3 {
 			panel_to_lt8912: endpoint {
 				remote-endpoint = <&lt8912_from_panel>;
 			};
 		};
 
-		port@4 {
+		port@3 {
 			panel_to_lt8912_2: endpoint {
 				remote-endpoint = <&lt8912_2_from_panel>;
 			};
