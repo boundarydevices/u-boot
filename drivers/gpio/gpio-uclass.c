@@ -204,6 +204,8 @@ int gpio_xlate_offs_flags(struct udevice *dev, struct gpio_desc *desc,
 		else
 			desc->flags |= GPIOD_OPEN_SOURCE;
 	}
+	if (args->args[1] & GPIO_PULSE_HIGH)
+		desc->flags |= GPIOD_PULSE_HIGH;
 
 	if (args->args[1] & GPIO_PULL_UP)
 		desc->flags |= GPIOD_PULL_UP;
@@ -496,6 +498,14 @@ static int check_reserved(const struct gpio_desc *desc, const char *func)
 	return 0;
 }
 
+static int default_direction_out_in(struct udevice *dev, uint offset)
+{
+	struct dm_gpio_ops *ops = gpio_get_ops(dev);
+
+	ops->set_value(dev, offset, 1);
+	return ops->direction_input(dev, offset);
+}
+
 /**
  * gpio_direction_input() - [COMPAT] Set GPIO direction to input
  * gpio:	GPIO number
@@ -516,6 +526,8 @@ int gpio_direction_input(unsigned gpio)
 	if (ret)
 		return ret;
 
+	if (desc.flags & GPIOD_PULSE_HIGH)
+		return gpio_get_ops(desc.dev)->direction_out_in(desc.dev, desc.offset);
 	return gpio_get_ops(desc.dev)->direction_input(desc.dev, desc.offset);
 }
 
@@ -540,6 +552,9 @@ int gpio_direction_output(unsigned gpio, int value)
 	if (ret)
 		return ret;
 
+	if (value && (desc.flags & GPIOD_PULSE_HIGH))
+		return gpio_get_ops(desc.dev)->direction_out_in(desc.dev,
+								desc.offset);
 	return gpio_get_ops(desc.dev)->direction_output(desc.dev,
 							desc.offset, value);
 }
@@ -566,6 +581,7 @@ int dm_gpio_get_value(const struct gpio_desc *desc)
 
 int dm_gpio_set_value(const struct gpio_desc *desc, int value)
 {
+	struct dm_gpio_ops *ops;
 	int ret;
 
 	if (!desc)
@@ -574,24 +590,30 @@ int dm_gpio_set_value(const struct gpio_desc *desc, int value)
 	if (ret)
 		return ret;
 
+	ops = gpio_get_ops(desc->dev);
 	if (desc->flags & GPIOD_ACTIVE_LOW)
 		value = !value;
 
+	if (desc->flags & GPIOD_PULSE_HIGH) {
+		if (value)
+			return ops->direction_out_in(desc->dev, desc->offset);
+		else
+			return ops->direction_output(desc->dev, desc->offset,
+						     value);
+	}
 	/*
 	 * Emulate open drain by not actively driving the line high or
 	 * Emulate open source by not actively driving the line low
 	 */
 	if ((desc->flags & GPIOD_OPEN_DRAIN && value) ||
 	    (desc->flags & GPIOD_OPEN_SOURCE && !value))
-		return gpio_get_ops(desc->dev)->direction_input(desc->dev,
-								desc->offset);
+		return ops->direction_input(desc->dev, desc->offset);
 	else if (desc->flags & GPIOD_OPEN_DRAIN ||
 		 desc->flags & GPIOD_OPEN_SOURCE)
-		return gpio_get_ops(desc->dev)->direction_output(desc->dev,
-								desc->offset,
-								value);
+		return ops->direction_output(desc->dev, desc->offset,
+					     value);
 
-	gpio_get_ops(desc->dev)->set_value(desc->dev, desc->offset, value);
+	ops->set_value(desc->dev, desc->offset, value);
 	return 0;
 }
 
@@ -1213,11 +1235,11 @@ int gpio_dev_request_index(struct udevice *dev, const char *nodename,
 
 static int gpio_post_bind(struct udevice *dev)
 {
+	struct dm_gpio_ops *ops = (struct dm_gpio_ops *)device_get_ops(dev);
 	struct udevice *child;
 	ofnode node;
 
 #if defined(CONFIG_NEEDS_MANUAL_RELOC)
-	struct dm_gpio_ops *ops = (struct dm_gpio_ops *)device_get_ops(dev);
 	static int reloc_done;
 
 	if (!reloc_done) {
@@ -1229,6 +1251,8 @@ static int gpio_post_bind(struct udevice *dev)
 			ops->direction_input += gd->reloc_off;
 		if (ops->direction_output)
 			ops->direction_output += gd->reloc_off;
+		if (ops->direction_out_in)
+			ops->direction_out_in += gd->reloc_off;
 		if (ops->get_value)
 			ops->get_value += gd->reloc_off;
 		if (ops->set_value)
@@ -1246,6 +1270,8 @@ static int gpio_post_bind(struct udevice *dev)
 	}
 #endif
 
+	if (!ops->direction_out_in)
+		ops->direction_out_in = default_direction_out_in;
 	if (IS_ENABLED(CONFIG_GPIO_HOG)) {
 		dev_for_each_subnode(node, dev) {
 			if (ofnode_read_bool(node, "gpio-hog")) {
