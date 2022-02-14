@@ -127,6 +127,7 @@ struct gpio_desc {
 #define GPIOD_OPEN_SOURCE	BIT(6)	/* GPIO is open source type */
 #define GPIOD_PULL_UP		BIT(7)	/* GPIO has pull-up enabled */
 #define GPIOD_PULL_DOWN		BIT(8)	/* GPIO has pull-down enabled */
+#define GPIOD_PULSE_HIGH	BIT(9)	/* drive high, then input */
 
 /* Flags for updating the above */
 #define GPIOD_MASK_DIR		(GPIOD_IS_OUT | GPIOD_IS_IN | \
@@ -295,6 +296,7 @@ struct dm_gpio_ops {
 	 * @value.
 	 */
 	int (*set_value)(struct udevice *dev, unsigned offset, int value);
+	int (*direction_out_in)(struct udevice *dev, unsigned offset);
 	/**
 	 * get_function() Get the GPIO function
 	 *
