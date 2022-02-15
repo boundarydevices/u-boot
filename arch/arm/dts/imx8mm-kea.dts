@@ -186,7 +186,6 @@
 
 	pinctrl_sn65dsi83: sn65dsi83grp {
 		fsl,pins = <
-#define GP_SN65DSI83_IRQ <&gpio1 1 GPIO_ACTIVE_HIGH>
 #define GPIRQ_SN65DSI83	<&gpio1 1 IRQ_TYPE_LEVEL_HIGH>
 			MX8MMN(IOMUXC_GPIO1_IO01_GPIO1_IO1, 0x04)
 #define GP_SN65DSI83_EN	<&gpio1 9 GPIO_ACTIVE_HIGH>
@@ -622,7 +621,6 @@
 		status = "okay";
 	};
 
-#if 0
 	bt-rfkill {
 		compatible = "net,rfkill-gpio";
 		pinctrl-names = "default";
@@ -634,13 +632,12 @@
 	};
 
 	clocks {
-		clk20m: clk20m {
+		clk16m: clk16m {
 			#clock-cells = <0>;
 			compatible = "fixed-clock";
-			clock-frequency = <20000000>;
+			clock-frequency = <16000000>;
 		};
 	};
-#endif
 
 	csi_mclk: csi-mclk {
 		#clock-cells = <0>;
@@ -780,7 +777,7 @@
 	#size-cells = <0>;
 
 	can0: can@0 {
-		clocks = <&clk20m>;
+		clocks = <&clk16m>;
 		compatible = "microchip,mcp25625";
 		interrupts-extended = GPIRQ_MCP25625_1;
 		pinctrl-names = "default";
@@ -804,7 +801,7 @@
 	#size-cells = <0>;
 
 	can1: can@0 {
-		clocks = <&clk20m>;
+		clocks = <&clk16m>;
 		compatible = "microchip,mcp25625";
 		interrupts-extended = GPIRQ_MCP25625_2;
 		pinctrl-names = "default";
@@ -817,10 +814,8 @@
 #endif
 
 &fec1 {
-#if 0
 	mdc-gpios = GP_MII_MDC;
 	mdio-gpios = GP_MII_MDIO;
-#endif
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_fec1>;
 #if 0
@@ -1085,12 +1080,6 @@
 				display-dsi = <&fb_mipi>;
 				reg = <0x48>;
 				reset-gpios = <&max7323 0 GPIO_ACTIVE_LOW>;
-
-				port@0 {
-					lt8912_from_panel: endpoint {
-						remote-endpoint = <&panel_to_lt8912>;
-					};
-				};
 			};
 		};
 
@@ -1153,16 +1142,16 @@
 		DOVDD-supply = <&reg_vref_1v8>;
 		DVDD-supply = <&reg_vref_3v3>;
 		clocks = <&csi_mclk>;
-		clock-names = "csi_mclk";
+		clock-names = "xclk";
 		compatible = "ovti,ov5640_mipisubdev";
 		csi_id = <0>;
 		mclk = <20000000>;
 		mipi_csi;
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_i2c3_ov5640_mipi>;
-		pwn-gpios = GP_OV5640_MIPI_POWER_DOWN;
+		powerdown-gpios = GP_OV5640_MIPI_POWER_DOWN;
 		reg = <0x3c>;
-		rst-gpios = GP_OV5640_MIPI_RESET;
+		reset-gpios = GP_OV5640_MIPI_RESET;
 		status = "okay";
 
 		port {
@@ -1215,7 +1204,6 @@
 };
 
 &lcdif {
-	display = <&fb_mipi>;
 	status = "okay";
 };
 
@@ -1259,11 +1247,9 @@
 	fb_mipi: panel@0 {
 		backlight = <&backlight_mipi>;
 		bits-per-color = <8>;
-		bits-per-pixel = <24>;
 		bridge-de-active = <0>;
 		bus-format = "rgb888";
-		bus-width = <24>;
-		clocks = <&dsim_clk 0>,
+		clocks = <&mipi_dsi 0>,
 			<&clk IMX8MMN(CLK_LCDIF_PIXEL)>;
 		clock-names = "mipi_clk", "pixel_clock";
 		compatible = "panel,common";
@@ -1314,46 +1300,7 @@
 			i2c-address = <0x2c>;
 			i2c-bus = <&TOUCHSCREEN_I2C_BUS>;
 			interrupts-extended = GPIRQ_SN65DSI83;
-			interrupts-gpios = GP_SN65DSI83_IRQ;
 			status = "disabled";
-		};
-
-		port@1 {
-			panel_from_dsim: endpoint {
-				remote-endpoint = <&dsim_to_panel>;
-			};
-		};
-
-		port@2 {
-			panel_to_lt8912: endpoint {
-				remote-endpoint = <&lt8912_from_panel>;
-			};
-		};
-	};
-
-	dsim_clk: dsim-clk {
-		#clock-cells = <1>;
-		#size-cells = <0>;
-		compatible = "generic,clk";
-		clocks = <&clk IMX8MMN(CLK_DSI_PHY_REF)>;
-		clock-names = "parent";
-		clock-output-names = "dsim-clk";
-		status = "okay";
-	};
-
-	dsi_host: dsi-host {
-		compatible = "samsung,sec-mipi-dsi";
-		clocks = <&dsim_clk 0>,
-			 <&clk IMX8MMN(CLK_DSI_CORE)>,
-			 <&clk IMX8MMN(CLK_DSI_PHY_REF)>,
-			 <&clk IMX8MMN(CLK_LCDIF_PIXEL)>;
-		clock-names = "dsim-clk", "cfg", "pll-ref", "pixel_clock";
-		status = "okay";
-	};
-
-	port@1 {
-		dsim_to_panel: endpoint {
-			remote-endpoint = <&panel_from_dsim>;
 		};
 	};
 };
@@ -1385,16 +1332,14 @@
 };
 #endif
 
-#if 0
 &uart1 { /* BT */
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart1>;
 	assigned-clocks = <&clk IMX8MMN(CLK_UART1)>;
 	assigned-clock-parents = <&clk IMX8MMN(SYS_PLL1_80M)>;
-	fsl,uart-has-rtscts;
+	uart-has-rtscts;
 	status = "okay";
 };
-#endif
 
 &uart2 { /* console */
 	pinctrl-names = "default";
@@ -1404,7 +1349,6 @@
 	status = "okay";
 };
 
-#if 0
 &uart4 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart4>;
@@ -1412,7 +1356,6 @@
 	assigned-clock-parents = <&clk IMX8MMN(SYS_PLL1_80M)>;
 	status = "okay";
 };
-#endif
 
 &usbotg1 {
 	dr_mode = "otg";
@@ -1434,17 +1377,13 @@
 };
 
 &usdhc1 {
-	cap-mmc-highspeed;
 	bus-width = <8>;
-	mmc-ddr-1_8v;
-	mmc-hs200-1_8v;
 	no-mmc-hs400;
 	non-removable;
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
 	pinctrl-0 = <&pinctrl_usdhc1>;
 	pinctrl-1 = <&pinctrl_usdhc1_100mhz>;
 	pinctrl-2 = <&pinctrl_usdhc1_200mhz>;
-	reset-gpios = GP_EMMC_RESET;
 	status = "okay";
 	vmmc-supply = <&reg_vref_3v3>;
 	vqmmc-1-8-v;
@@ -1453,25 +1392,19 @@
 
 &usdhc2 {
 	bus-width = <4>;
-	cap-sd-highspeed;
 	cd-gpios = GP_USDHC2_CD;
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
 	pinctrl-0 = <&pinctrl_usdhc2>;
 	pinctrl-1 = <&pinctrl_usdhc2_100mhz>;
 	pinctrl-2 = <&pinctrl_usdhc2_200mhz>;
-	sd-uhs-ddr50;
-	sd-uhs-sdr104;
-	sd-uhs-sdr12;
-	sd-uhs-sdr25;
 	status = "okay";
-#if 1
+#if 0
 	vqmmc-supply = <&reg_usdhc2_vqmmc>;
 #else
 	vqmmc-supply = <&reg_ldo2>;
 #endif
 };
 
-#if 0
 &usdhc3 {
 	bus-width = <4>;
 	keep-power-in-suspend;
@@ -1486,7 +1419,6 @@
 	vmmc-supply = <&reg_wlan_vmmc>;
 	vqmmc-1-8-v;
 };
-#endif
 
 #if 0
 &vpu_g1 {
