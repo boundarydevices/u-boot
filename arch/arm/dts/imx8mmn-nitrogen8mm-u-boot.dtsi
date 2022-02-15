@@ -1,0 +1,120 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2021 Boundary Devices
+ */
+#define GP_SN65DSI83_IRQ <&gpio1 1 GPIO_ACTIVE_HIGH>
+
+#ifndef SKIP_MIPI_PANELS
+&lcdif {
+	display = <&fb_mipi>;
+};
+
+&lt8912_2 {
+	port@0 {
+		lt8912_2_from_panel: endpoint {
+			remote-endpoint = <&panel_to_lt8912_2>;
+		};
+	};
+};
+
+&mipi_dsi {
+	fb_mipi: panel@0 {
+		bits-per-pixel = <24>;
+		bus-width = <24>;
+		clocks = <&dsim_clk 0>,
+				<&clk IMX8MMN(CLK_LCDIF_PIXEL)>;
+
+		mipi_to_lvds: mipi-to-lvds {
+			interrupts-gpios = GP_SN65DSI83_IRQ;
+		};
+
+		port@1 {
+			panel_from_dsim: endpoint {
+				remote-endpoint = <&dsim_to_panel>;
+			};
+		};
+
+		port@2 {
+			panel_to_lt8912: endpoint {
+				remote-endpoint = <&lt8912_from_panel>;
+			};
+		};
+
+		port@3 {
+			panel_to_lt8912_2: endpoint {
+				remote-endpoint = <&lt8912_2_from_panel>;
+			};
+		};
+	};
+
+	dsim_clk: dsim-clk {
+		#clock-cells = <1>;
+		#size-cells = <0>;
+		compatible = "generic,clk";
+		clocks = <&clk IMX8MMN(CLK_DSI_PHY_REF)>;
+		clock-names = "parent";
+		clock-output-names = "dsim-clk";
+		status = "okay";
+	};
+
+	dsi_host: dsi-host {
+		compatible = "samsung,sec-mipi-dsi";
+		clocks = <&dsim_clk 0>,
+			 <&clk IMX8MMN(CLK_DSI_CORE)>,
+			 <&clk IMX8MMN(CLK_DSI_PHY_REF)>,
+			 <&clk IMX8MMN(CLK_LCDIF_PIXEL)>;
+		clock-names = "dsim-clk", "cfg", "pll-ref", "pixel_clock";
+		status = "okay";
+	};
+
+	port@1 {
+		dsim_to_panel: endpoint {
+			remote-endpoint = <&panel_from_dsim>;
+		};
+	};
+};
+
+&pca9546 {
+	TOUCHSCREEN_I2C_BUS@0 {
+		lt8912@48 {
+			port@0 {
+				lt8912_from_panel: endpoint {
+					remote-endpoint = <&panel_to_lt8912>;
+				};
+			};
+		};
+	};
+};
+#endif
+
+&uart1 { /* BT */
+	status = "disabled";
+};
+
+&uart3 { /* J15 */
+	status = "disabled";
+};
+
+&uart4 {
+	status = "disabled";
+};
+
+&usdhc1 {
+	cap-mmc-highspeed;
+	mmc-ddr-1_8v;
+	mmc-hs200-1_8v;
+	reset-gpios = GP_EMMC_RESET;
+};
+
+&usdhc2 {
+	cap-sd-highspeed;
+	sd-uhs-ddr50;
+	sd-uhs-sdr104;
+	sd-uhs-sdr12;
+	sd-uhs-sdr25;
+	vqmmc-supply = <&reg_usdhc2_vqmmc>;
+};
+
+&usdhc3 {
+	status = "disabled";
+};
