@@ -508,7 +508,7 @@
 	backlight_mipi: backlight-mipi {
 		brightness-levels = <0 1 2 3 4 5 6 7 8 9 10>;
 		compatible = "pwm-backlight";
-		default-brightness-level = <2>;
+		default-brightness-level = <8>;
 		display = <&display_subsystem>;
 		enable-gpios = GP_BACKLIGHT_MIPI_EN;
 		pinctrl-names = "default";
@@ -517,7 +517,6 @@
 		status = "okay";
 	};
 
-#if 0
 	bt-rfkill {
 		compatible = "net,rfkill-gpio";
 		pinctrl-names = "default";
@@ -528,6 +527,7 @@
 		status = "okay";
 	};
 
+#if 0
 	connector {
 		compatible = "usb-c-connector";
 		label = "USB-C";
@@ -1140,7 +1140,6 @@
 
 
 &lcdif {
-	display = <&fb_mipi>;
 	status = "okay";
 };
 
@@ -1179,7 +1178,8 @@
 			  <&clk IMX8MMN(VIDEO_PLL1_REF_SEL)>,
 			  <&clk IMX8MMN(CLK_LCDIF_PIXEL)>;
 	assigned-clock-parents = <&clk IMX8MMN(SYS_PLL1_266M)>,
-				 <&clk IMX8MMN(VIDEO_PLL1_OUT)>;
+				 <&clk IMX8MMN(VIDEO_PLL1_OUT)>,
+				 <&clk IMX8MMN(CLK_24M)>;
 	assigned-clock-rates = <266000000>, <0>, <0>, <66000000>;
 
 	clocks = <&clk IMX8MMN(CLK_DSI_CORE)>,
@@ -1191,10 +1191,11 @@
 	fb_mipi: panel@0 {
 		backlight = <&backlight_mipi>;
 		bits-per-color = <8>;
-		bits-per-pixel = <24>;
 		bridge-de-active = <0>;
 		bus-format = "rgb888";
-		bus-width = <24>;
+		clocks = <&mipi_dsi 0>,
+			<&clk IMX8MMN(CLK_LCDIF_PIXEL)>;
+		clock-names = "mipi_clk", "pixel_clock";
 		compatible = "panel,common";
 		dsi-format = "rgb888";
 		dsi-lanes = <4>;
@@ -1230,38 +1231,6 @@
 				vsync-active = <0>;
 				de-active = <1>;
 			};
-		};
-
-		port {
-			panel_from_dsim: endpoint {
-				remote-endpoint = <&dsim_to_panel>;
-			};
-		};
-	};
-
-	dsim_clk: dsim-clk {
-		#clock-cells = <1>;
-		#size-cells = <0>;
-		compatible = "generic,clk";
-		clocks = <&clk IMX8MMN(CLK_DSI_PHY_REF)>;
-		clock-names = "parent";
-		clock-output-names = "dsim-clk";
-		status = "okay";
-	};
-
-	dsi_host: dsi-host {
-		compatible = "samsung,sec-mipi-dsi";
-		clocks = <&dsim_clk 0>,
-			 <&clk IMX8MMN(CLK_DSI_CORE)>,
-			 <&clk IMX8MMN(CLK_DSI_PHY_REF)>,
-			 <&clk IMX8MMN(CLK_LCDIF_PIXEL)>;
-		clock-names = "dsim-clk", "cfg", "pll-ref", "pixel_clock";
-		status = "okay";
-	};
-
-	port@1 {
-		dsim_to_panel: endpoint {
-			remote-endpoint = <&panel_from_dsim>;
 		};
 	};
 };
@@ -1320,7 +1289,6 @@
 	status = "okay";
 };
 
-#if 0
 &uart3 { /* J15 */
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart3>;
@@ -1337,7 +1305,6 @@
 	assigned-clock-parents = <&clk IMX8MMN(CLK_24M)>;
 	status = "okay";
 };
-#endif
 
 &usbotg1 {
 	dr_mode = "otg";
@@ -1346,13 +1313,33 @@
 	pinctrl-0 = <&pinctrl_usbotg1>;
 	power-active-high;
 	status = "okay";
+	usb-role-switch;
+	vbus-supply = <&reg_usbotg_vbus>;
+
+#if 0
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		port@0 {
+			reg = <0>;
+			usb_hs_ep: endpoint {
+				remote-endpoint = <&hs_ep>;
+			};
+		};
+
+		port@1 {
+			reg = <1>;
+			usb_role_switch: endpoint {
+				remote-endpoint = <&max77958_out_ep>;
+			};
+		};
+	};
+#endif
 };
 
 &usdhc1 {
-	cap-mmc-highspeed;
 	bus-width = <8>;
-	mmc-ddr-1_8v;
-	mmc-hs200-1_8v;
 	no-mmc-hs400;
 	non-removable;
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
@@ -1368,21 +1355,15 @@
 
 &usdhc2 {
 	bus-width = <4>;
-	cap-sd-highspeed;
 	cd-gpios = GP_USDHC2_CD;
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
 	pinctrl-0 = <&pinctrl_usdhc2>;
 	pinctrl-1 = <&pinctrl_usdhc2_100mhz>;
 	pinctrl-2 = <&pinctrl_usdhc2_200mhz>;
-	sd-uhs-ddr50;
-	sd-uhs-sdr104;
-	sd-uhs-sdr12;
-	sd-uhs-sdr25;
 	status = "okay";
-	vqmmc-supply = <&reg_usdhc2_vqmmc>;
+	vqmmc-supply = <&reg_ldo2>;
 };
 
-#if 0
 &usdhc3 {
 	bus-width = <4>;
 	keep-power-in-suspend;
@@ -1397,7 +1378,6 @@
 	vmmc-supply = <&reg_wlan_vmmc>;
 	vqmmc-1-8-v;
 };
-#endif
 
 &wdog1 {
 	pinctrl-names = "default";
