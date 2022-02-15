@@ -304,7 +304,7 @@
 
 	pinctrl_pmic: pmicirq {
 		fsl,pins = <
-#define GP_PMIC_INT	<&gpio3 0 GPIO_ACTIVE_LOW>
+#define GPIRQ_PMIC	<&gpio3 0 IRQ_TYPE_LEVEL_LOW>
 			MX8MP_IOMUXC_NAND_ALE__GPIO3_IO00	0x41
 		>;
 	};
@@ -366,7 +366,6 @@
 
 	pinctrl_sn65dsi83: sn65dsi83grp {
 		fsl,pins = <
-#define GP_SN65DSI83_IRQ <&gpio4 0 GPIO_ACTIVE_HIGH>
 #define GPIRQ_SN65DSI83	<&gpio4 0 IRQ_TYPE_LEVEL_HIGH>
 			MX8MP_IOMUXC_SAI1_RXFS__GPIO4_IO00	0x04
 #define GP_SN65DSI83_EN	<&gpio4 27 GPIO_ACTIVE_HIGH>
@@ -377,7 +376,7 @@
 	pinctrl_sound_wm8960: sound-wm8960grp {
 		fsl,pins = <
 #define GP_WM8960_MIC_DET	<&gpio4 18 GPIO_ACTIVE_LOW>
-			MX8MP_IOMUXC_SAI1_TXD6__GPIO4_IO18	0x80
+			MX8MP_IOMUXC_SAI1_TXD6__GPIO4_IO18	0x1c0
 #define GP_WM8960_HP_DET	<&gpio1 14 GPIO_ACTIVE_HIGH>
 			MX8MP_IOMUXC_GPIO1_IO14__GPIO1_IO14	0x80
 		>;
@@ -641,7 +640,6 @@
 		pwm_mipi = &pwm1;
 		pwm_lvds = &pwm2;
 		pwm_lvds2 = &pwm2;
-		t_hdmi = &t_hdmi;
 		t_lvds = &t_lvds;
 		t_lvds2 = &t_lvds2;
 		t_mipi = &t_mipi;
@@ -822,11 +820,6 @@
 		linux,cma {
 			size = <0 0x20000000>;
 		};
-
-		rpmsg_reserved: rpmsg@0x55800000 {
-			no-map;
-			reg = <0 0x55800000 0 0x800000>;
-		};
 	};
 
 	sound-hdmi {
@@ -898,11 +891,23 @@
 #endif
 };
 
+#if 0
 &A53_0 {
-	cpu-supply = <&buck2_reg>;
+	cpu-supply = <&buck2>;
 };
 
-#if 0
+&A53_1 {
+	cpu-supply = <&buck2>;
+};
+
+&A53_2 {
+	cpu-supply = <&buck2>;
+};
+
+&A53_3 {
+	cpu-supply = <&buck2>;
+};
+
 &aud2htx {
 	status = "okay";
 };
@@ -948,11 +953,6 @@
 };
 
 &eqos {
-	compatible = "fsl,imx-eqos";
-	/delete-property/ assigned-clocks;
-	/delete-property/ assigned-clock-parents;
-	/delete-property/ assigned-clock-rates;
-
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_eqos>;
 	phy-mode = "rgmii-id";
@@ -1027,32 +1027,6 @@
 
 &hdmi {
 	status = "okay";
-
-	display-timings {
-		t_hdmi: t-hdmi-default {
-			/* m101nwwb by default */
-			clock-frequency = <148500000>;
-			hactive = <1920>;
-			vactive = <1080>;
-			hback-porch = <148>;
-			hfront-porch = <88>;
-			vback-porch = <36>;
-			vfront-porch = <4>;
-			hsync-len = <44>;
-			vsync-len = <5>;
-			hsync-active = <1>;
-			vsync-active = <1>;
-			de-active = <1>;
-		};
-	};
-};
-
-&hdmimix_clk {
-	status = "okay";
-};
-
-&hdmimix_reset {
-	status = "okay";
 };
 
 &hdmiphy {
@@ -1060,10 +1034,6 @@
 };
 
 &hdmiphy_clk {
-	status = "okay";
-};
-
-&hdmi_hpd {
 	status = "okay";
 };
 
@@ -1082,22 +1052,14 @@
 
 	pmic: pca9450@25 {
 		reg = <0x25>;
-		compatible = "nxp,pca9450";
+		compatible = "nxp,pca9450c";
 		/* PMIC PCA9450 PMIC_nINT GPIO1_IO3 */
 		pinctrl-0 = <&pinctrl_pmic>;
-		gpio_intr = GP_PMIC_INT;
+		interrupts-extended = GPIRQ_PMIC;
 
 		regulators {
-			#address-cells = <1>;
-			#size-cells = <0>;
-
-			pca9450,pmic-buck2-uses-i2c-dvs;
-			/* Run/Standby voltage */
-			pca9450,pmic-buck2-dvs-voltage = <950000>, <850000>;
-
-			buck1_reg: regulator@0 {
-				reg = <0>;
-				regulator-compatible = "buck1";
+			buck1: BUCK1 {
+				regulator-name = "BUCK1";
 				regulator-min-microvolt = <600000>;
 				regulator-max-microvolt = <2187500>;
 				regulator-boot-on;
@@ -1105,85 +1067,80 @@
 				regulator-ramp-delay = <3125>;
 			};
 
-			buck2_reg: regulator@1 {
-				reg = <1>;
-				regulator-compatible = "buck2";
+			buck2: BUCK2 {
+				regulator-name = "BUCK2";
 				regulator-min-microvolt = <600000>;
 				regulator-max-microvolt = <2187500>;
 				regulator-limit-microvolt = <1025000>;
 				regulator-boot-on;
 				regulator-always-on;
 				regulator-ramp-delay = <3125>;
+				nxp,dvs-run-voltage = <950000>;
+				nxp,dvs-standby-voltage = <850000>;
 			};
 
-			buck4_reg: regulator@3 {
-				reg = <3>;
-				regulator-compatible = "buck4";
+			buck4: BUCK4 {
+				regulator-name = "BUCK4";
 				regulator-min-microvolt = <600000>;
 				regulator-max-microvolt = <3400000>;
 				regulator-boot-on;
 				regulator-always-on;
 			};
 
-			buck5_reg: regulator@4 {
-				reg = <4>;
-				regulator-compatible = "buck5";
+			buck5: BUCK5 {
+				regulator-name = "BUCK5";
 				regulator-min-microvolt = <600000>;
 				regulator-max-microvolt = <3400000>;
 				regulator-boot-on;
 				regulator-always-on;
 			};
 
-			buck6_reg: regulator@5 {
-				reg = <5>;
-				regulator-compatible = "buck6";
+			buck6: BUCK6 {
+				regulator-name = "BUCK6";
 				regulator-min-microvolt = <600000>;
 				regulator-max-microvolt = <3400000>;
 				regulator-boot-on;
 				regulator-always-on;
 			};
 
-			ldo1_reg: regulator@6 {
-				reg = <6>;
-				regulator-compatible = "ldo1";
+			ldo1: LDO1 {
+				regulator-name = "LDO1";
 				regulator-min-microvolt = <1600000>;
 				regulator-max-microvolt = <3300000>;
 				regulator-boot-on;
 				regulator-always-on;
 			};
 
-			ldo2_reg: regulator@7 {
-				reg = <7>;
-				regulator-compatible = "ldo2";
+			ldo2: LDO2 {
+				regulator-name = "LDO2";
 				regulator-min-microvolt = <800000>;
 				regulator-max-microvolt = <1150000>;
 				regulator-boot-on;
 				regulator-always-on;
 			};
 
-			ldo3_reg: regulator@8 {
-				reg = <8>;
-				regulator-compatible = "ldo3";
+			ldo3: LDO3 {
+				regulator-name = "LDO3";
 				regulator-min-microvolt = <800000>;
 				regulator-max-microvolt = <3300000>;
 				regulator-boot-on;
 				regulator-always-on;
 			};
 
-			ldo4_reg: regulator@9 {
-				reg = <9>;
-				regulator-compatible = "ldo4";
+			ldo4: LDO4 {
+				regulator-name = "LDO4";
 				regulator-min-microvolt = <800000>;
 				regulator-max-microvolt = <3300000>;
 				regulator-boot-on;
 				regulator-always-on;
 			};
 
-			ldo5_reg: regulator@10 {
-				reg = <10>;
-				regulator-compatible = "ldo5";
+			ldo5: LDO5 {
+				regulator-name = "LDO5";
 				regulator-min-microvolt = <1800000>;
 				regulator-max-microvolt = <3300000>;
+				regulator-boot-on;
+				regulator-always-on;
 			};
 		};
 	};
@@ -1253,7 +1210,10 @@
 			basler_ep_0: endpoint {
 				clock-lanes = <0>;
 				data-lanes = <1 2 3 4>;
-				link-frequencies = /bits/ 64 <248000000>;
+				link-frequencies = /bits/ 64 <750000000>;
+				max-lane-frequency = /bits/ 64 <750000000>;
+				max-pixel-frequency = /bits/ 64 <266000000>;
+				max-data-rate = /bits/ 64 <0>;
 				remote-endpoint = <&mipi_csi0_ep>;
 			};
 		};
@@ -1262,7 +1222,7 @@
 
 &i2c2c {
 	basler_camera@36 {
-		compatible = "basler,basler-camera", "basler-camera";
+		compatible = "basler,basler-camera-vvcam", "basler-camera-vvcam";
 		reg = <0x36>;
 		csi_id = <0x01>;
 		status = "okay";
@@ -1271,7 +1231,10 @@
 			basler_ep_1: endpoint {
 				clock-lanes = <0>;
 				data-lanes = <1 2 3 4>;
-				link-frequencies = /bits/ 64 <248000000>;
+				link-frequencies = /bits/ 64 <750000000>;
+				max-lane-frequency = /bits/ 64 <750000000>;
+				max-pixel-frequency = /bits/ 64 <266000000>;
+				max-data-rate = /bits/ 64 <0>;
 				remote-endpoint = <&mipi_csi1_ep>;
 			};
 		};
@@ -1368,7 +1331,7 @@
 		compatible = "wlf,wm8960";
 		reg = <0x1a>;
 #if 0
-		clocks = <&audiomix_clk IMX8MP_CLK_AUDIOMIX_SAI3_MCLK1>;
+		clocks = <&audio_blk_ctrl IMX8MP_CLK_AUDIO_BLK_CTRL_SAI3_MCLK1>;
 #endif
 		clock-names = "mclk";
 		wlf,shared-lrclk;
@@ -1477,16 +1440,16 @@
 	status = "disabled";
 
 	cap_device {
-		status = "disabled";
+		status = "okay";
 	};
 
 	m2m_device {
-		status = "disabled";
+		status = "okay";
 	};
 };
 
 &isi_1 {
-	status = "okay";
+	status = "disabled";
 
 	cap_device {
 		status = "okay";
@@ -1498,21 +1461,20 @@
 };
 
 &isp_1 {
-	status = "disabled";
+	status = "okay";
 };
 #endif
 
 &lcdif1 {
-	display = <&fb_mipi>;
-	status = "okay";
+	status = "disabled";
 };
 
 &lcdif2 {
-	status = "okay";
+	status = "disabled";
 };
 
 &lcdif3 {
-	status = "okay";
+	status = "disabled";
 };
 
 &ldb {
@@ -1620,11 +1582,9 @@
 	fb_mipi: panel@0 {
 		backlight = <&backlight_mipi>;
 		bits-per-color = <8>;
-		bits-per-pixel = <24>;
 		bridge-de-active = <0>;
 		bus-format = "rgb888";
-		bus-width = <24>;
-		clocks = <&dsim_clk 0>,
+		clocks = <&mipi_dsi 0>,
 			<&clk IMX8MP_CLK_MEDIA_DISP1_PIX_ROOT>;
 		clock-names = "mipi_clk", "pixel_clock";
 		compatible = "panel,common";
@@ -1671,40 +1631,7 @@
 			i2c-address = <0x2c>;
 			i2c-bus = <&i2c2d>;
 			interrupts-extended = GPIRQ_SN65DSI83;
-			interrupts-gpios = GP_SN65DSI83_IRQ;
 			status = "disabled";
-		};
-
-		port@1 {
-			panel_from_dsim: endpoint {
-				remote-endpoint = <&dsim_to_panel>;
-			};
-		};
-	};
-
-	dsim_clk: dsim-clk {
-		#clock-cells = <1>;
-		#size-cells = <0>;
-		compatible = "generic,clk";
-		clocks = <&clk IMX8MP_CLK_MEDIA_MIPI_PHY1_REF>;
-		clock-names = "parent";
-		clock-output-names = "dsim-clk";
-		status = "okay";
-	};
-
-	dsi_host: dsi-host {
-		compatible = "samsung,sec-mipi-dsi";
-		clocks = <&dsim_clk 0>,
-			<&clk IMX8MP_CLK_MEDIA_APB_ROOT>,
-			<&clk IMX8MP_CLK_MEDIA_MIPI_PHY1_REF>,
-			<&clk IMX8MP_CLK_MEDIA_DISP1_PIX_ROOT>;
-		clock-names = "dsim-clk", "cfg", "pll-ref", "pixel_clock";
-		status = "okay";
-	};
-
-	port@1 {
-		dsim_to_panel: endpoint {
-			remote-endpoint = <&panel_from_dsim>;
 		};
 	};
 };
@@ -1721,20 +1648,20 @@
 
 #if 0
 &pcie {
-	assigned-clocks = <&clk IMX8MP_CLK_HSIO_AXI_SRC>,
+	assigned-clocks = <&clk IMX8MP_CLK_HSIO_AXI>,
 			  <&clk IMX8MP_CLK_PCIE_AUX>;
 	assigned-clock-parents = <&clk IMX8MP_SYS_PLL2_500M>,
 				 <&clk IMX8MP_SYS_PLL2_50M>;
-	clocks = <&clk IMX8MP_CLK_HSIO_AXI_DIV>,
+	assigned-clock-rates = <500000000>, <10000000>;
+	clocks = <&clk IMX8MP_CLK_HSIO_ROOT>,
 		 <&clk IMX8MP_CLK_PCIE_AUX>,
-		 <&clk IMX8MP_CLK_PCIE_PHY>,
+		 <&clk IMX8MP_CLK_HSIO_AXI>,
 		 <&clk IMX8MP_CLK_PCIE_ROOT>;
 	clock-names = "pcie", "pcie_aux", "pcie_phy", "pcie_bus";
 	disable-gpio = GP_PCIE_DISABLE;
 	ext_osc = <0>;
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_pcie>;
-	reserved-region = <&rpmsg_reserved>;
 	reset-gpio = GP_PCIE_RESET;
 	status = "okay";
 };
@@ -1770,8 +1697,8 @@
 	assigned-clocks = <&clk IMX8MP_CLK_SAI3>;
 	assigned-clock-parents = <&clk IMX8MP_AUDIO_PLL1_OUT>;
 	assigned-clock-rates = <12288000>;
-	clocks = <&audiomix_clk IMX8MP_CLK_AUDIOMIX_SAI3_IPG>, <&clk IMX8MP_CLK_DUMMY>,
-		 <&audiomix_clk IMX8MP_CLK_AUDIOMIX_SAI3_MCLK1>, <&clk IMX8MP_CLK_DUMMY>,
+	clocks = <&audio_blk_ctrl IMX8MP_CLK_AUDIO_BLK_CTRL_SAI3_IPG>, <&clk IMX8MP_CLK_DUMMY>,
+		 <&audio_blk_ctrl IMX8MP_CLK_AUDIO_BLK_CTRL_SAI3_MCLK1>, <&clk IMX8MP_CLK_DUMMY>,
 		 <&clk IMX8MP_CLK_DUMMY>;
 	clock-names = "bus", "mclk0", "mclk1", "mclk2", "mclk3";
 	fsl,sai-mclk-direction-output;
@@ -1781,6 +1708,10 @@
 &sdma2 {
 	status = "okay";
 };
+
+&snvs_pwrkey {
+	status = "okay";
+};
 #endif
 
 &uart1 { /* BT */
@@ -1788,7 +1719,7 @@
 	pinctrl-0 = <&pinctrl_uart1>;
 	assigned-clocks = <&clk IMX8MP_CLK_UART1>;
 	assigned-clock-parents = <&clk IMX8MP_SYS_PLL1_80M>;
-	fsl,uart-has-rtscts;
+	uart-has-rtscts;
 	status = "okay";
 };
 
@@ -1815,11 +1746,22 @@
 	status = "okay";
 };
 
+#if 0
+&usb3_0 {
+	status = "okay";
+};
+
+&usb3_1 {
+	status = "okay";
+};
+#endif
+
 &usb_dwc3_0 {
-	dr_mode = "peripheral";
+	dr_mode = "otg";
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usb3_0>;
 	status = "okay";
+	usb-role-switch;
 	vbus-supply = <&reg_usb_otg_vbus>;
 
 	ports {
@@ -1848,38 +1790,36 @@
 	pinctrl-0 = <&pinctrl_usb3_1>;
 	reset-gpios = GP_USB3_1_HUB_RESET;
 	status = "okay";
-	vbus-supply = <&reg_vref_5v0>;
 };
 
 &usb3_phy0 {
 	fsl,phy-tx-preemp-amp-tune = <2>;
 	status = "okay";
+	vbus-supply = <&reg_vref_5v0>;
 };
 
 &usb3_phy1 {
 	fsl,phy-tx-preemp-amp-tune = <2>;
 	status = "okay";
+	vbus-supply = <&reg_vref_5v0>;
 };
 
 &usdhc1 {
 	bus-width = <4>;
-	cap-sd-highspeed;
 	cd-gpios = GP_USDHC1_CD;
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
 	pinctrl-0 = <&pinctrl_usdhc1>, <&pinctrl_usdhc1_gpio>;
 	pinctrl-1 = <&pinctrl_usdhc1_100mhz>, <&pinctrl_usdhc1_gpio>;
 	pinctrl-2 = <&pinctrl_usdhc1_200mhz>, <&pinctrl_usdhc1_gpio>;
-	sd-uhs-ddr50;
-	sd-uhs-sdr104;
-	sd-uhs-sdr12;
-	sd-uhs-sdr25;
 	status = "okay";
+	vmmc-supply = <&reg_vref_3v3>;
 };
 
-#if 0
 &usdhc2 {
 	bus-width = <4>;
 	no-sd-uhs-sdr104;
+	pm-ignore-notify;
+	keep-power-in-suspend;
 	non-removable;
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
 	pinctrl-0 = <&pinctrl_usdhc2>;
@@ -1890,13 +1830,9 @@
 	vqmmc-1-8-v;
 	vqmmc-supply = <&reg_vref_1v8>;
 };
-#endif
 
 &usdhc3 {
-	cap-mmc-highspeed;
 	bus-width = <8>;
-	mmc-ddr-1_8v;
-	mmc-hs200-1_8v;
 	no-mmc-hs400;
 	non-removable;
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
