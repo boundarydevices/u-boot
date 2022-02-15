@@ -189,7 +189,6 @@
 
 	pinctrl_sn65dsi83: sn65dsi83grp {
 		fsl,pins = <
-#define GP_SN65DSI83_IRQ <&gpio1 1 GPIO_ACTIVE_HIGH>
 #define GPIRQ_SN65DSI83	<&gpio1 1 IRQ_TYPE_LEVEL_HIGH>
 			MX8MMN(IOMUXC_GPIO1_IO01_GPIO1_IO1, 0x04)	/* J8 pin 8 */
 #define GP_SN65DSI83_EN	<&gpio1 9 GPIO_ACTIVE_HIGH>
@@ -528,9 +527,7 @@
 		pca9540 = &pca9540;
 		pca9546 = &pca9546;
 		pwm_mipi = &pwm3;
-#if 0
 		reg_sw4 = &reg_sw4;
-#endif
 		t_mipi = &t_mipi;
 		ts_ft5x06 = &ts_ft5x06;
 		ts_goodix = &ts_goodix;
@@ -750,7 +747,6 @@
 	sda-gpios = GP_I2C1_SDA;
 	status = "okay";
 
-#if 0
 	pf8100@8 {
 		compatible = "nxp,pf8x00";
 		pinctrl-names = "default";
@@ -849,7 +845,6 @@
 			};
 		};
 	};
-#endif
 };
 
 &i2c2 {
@@ -940,12 +935,6 @@
 				pinctrl-0 = <&pinctrl_lt8912_2>;
 				reg = <0x48> ;
 				reset-gpios = GP_LT8912_2_RESET;
-
-				port@0 {
-					lt8912_2_from_panel: endpoint {
-						remote-endpoint = <&panel_to_lt8912_2>;
-					};
-				};
 			};
 		};
 	};
@@ -969,12 +958,6 @@
 				display-dsi = <&fb_mipi>;
 				reg = <0x48> ;
 				reset-gpios = <&max7323 0 GPIO_ACTIVE_LOW>;
-
-				port@0 {
-					lt8912_from_panel: endpoint {
-						remote-endpoint = <&panel_to_lt8912>;
-					};
-				};
 			};
 		};
 
@@ -1049,7 +1032,6 @@
 	};
 };
 
-#if 0
 &i2c3a {
 	rtc@52 {
 		backup-switchover-dsm;
@@ -1063,31 +1045,31 @@
 };
 
 &i2c3b {
+#if 0
 	ov5640-mipi1@3c {
 		AVDD-supply = <&reg_vref_2v5>;
 		DOVDD-supply = <&reg_vref_1v8>;
 		DVDD-supply = <&reg_vref_3v3>;
 		clocks = <&csi_mclk>;
-		clock-names = "csi_mclk";
-		compatible = "ovti,ov5640_mipisubdev";
-		csi_id = <0>;
-		mclk = <20000000>;
-		mipi_csi;
+		clock-names = "xclk";
+		compatible = "ovti,ov5640";
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_i2c3b_ov5640_mipi>;
-		pwn-gpios = GP_OV5640_MIPI_POWER_DOWN;
+		powerdown-gpios = GP_OV5640_MIPI_POWER_DOWN;
 		reg = <0x3c>;
-		rst-gpios = GP_OV5640_MIPI_RESET;
+		reset-gpios = GP_OV5640_MIPI_RESET;
 		status = "okay";
 
 		port {
 			ov5640_mipi1_ep: endpoint {
+				clock-lanes = <0>;
+				data-lanes = <1 2>;
 				remote-endpoint = <&mipi1_ov5640_ep>;
 			};
 		};
 	};
-};
 #endif
+};
 
 &i2c4 {
 	clock-frequency = <100000>;
@@ -1108,28 +1090,28 @@
 };
 
 &lcdif {
-	display = <&fb_mipi>;
 	status = "okay";
 };
 
 #if 0
 &mipi_csi_1 {
+#if 0
 	#address-cells = <1>;
 	#size-cells = <0>;
 	status = "okay";
-	port {
-		mipi1_ov5640_ep: endpoint@1 {
+
+	port@0 {
+		reg = <0>;
+
+		mipi1_ov5640_ep: endpoint {
 			remote-endpoint = <&ov5640_mipi1_ep>;
 			data-lanes = <2>;
 			csis-hs-settle = <13>;
 			csis-clk-settle = <2>;
 			csis-wclk;
 		};
-
-		csi1_mipi_ep: endpoint@2 {
-			remote-endpoint = <&csi1_ep>;
-		};
 	};
+#endif
 };
 #endif
 
@@ -1150,13 +1132,11 @@
 	status = "okay";
 
 	fb_mipi: panel@0 {
-		backlight= <&backlight_mipi>;
+		backlight = <&backlight_mipi>;
 		bits-per-color = <8>;
-		bits-per-pixel = <24>;
 		bridge-de-active = <0>;
 		bus-format = "rgb888";
-		bus-width = <24>;
-		clocks = <&dsim_clk 0>,
+		clocks = <&mipi_dsi 0>,
 			<&clk IMX8MMN(CLK_LCDIF_PIXEL)>;
 		clock-names = "mipi_clk", "pixel_clock";
 		compatible = "panel,common";
@@ -1207,52 +1187,7 @@
 			i2c-address = <0x2c>;
 			i2c-bus = <&i2c2>;
 			interrupts-extended = GPIRQ_SN65DSI83;
-			interrupts-gpios = GP_SN65DSI83_IRQ;
 			status = "disabled";
-		};
-
-		port@1 {
-			panel_from_dsim: endpoint {
-				remote-endpoint = <&dsim_to_panel>;
-			};
-		};
-
-		port@2 {
-			panel_to_lt8912: endpoint {
-				remote-endpoint = <&lt8912_from_panel>;
-			};
-		};
-
-		port@3 {
-			panel_to_lt8912_2: endpoint {
-				remote-endpoint = <&lt8912_2_from_panel>;
-			};
-		};
-	};
-
-	dsim_clk: dsim-clk {
-		#clock-cells = <1>;
-		#size-cells = <0>;
-		compatible = "generic,clk";
-		clocks = <&clk IMX8MMN(CLK_DSI_PHY_REF)>;
-		clock-names = "parent";
-		clock-output-names = "dsim-clk";
-		status = "okay";
-	};
-
-	dsi_host: dsi-host {
-		compatible = "samsung,sec-mipi-dsi";
-		clocks = <&dsim_clk 0>,
-			 <&clk IMX8MMN(CLK_DSI_CORE)>,
-			 <&clk IMX8MMN(CLK_DSI_PHY_REF)>,
-			 <&clk IMX8MMN(CLK_LCDIF_PIXEL)>;
-		clock-names = "dsim-clk", "cfg", "pll-ref", "pixel_clock";
-		status = "okay";
-	};
-
-	port@1 {
-		dsim_to_panel: endpoint {
-			remote-endpoint = <&panel_from_dsim>;
 		};
 	};
 };
@@ -1297,15 +1232,19 @@
 	status = "disabled";
 };
 
+&snvs_pwrkey {
+	status = "okay";
+};
+#endif
+
 &uart1 { /* BT */
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart1>;
 	assigned-clocks = <&clk IMX8MMN(CLK_UART1)>;
 	assigned-clock-parents = <&clk IMX8MMN(SYS_PLL1_80M)>;
-	fsl,uart-has-rtscts;
+	uart-has-rtscts;
 	status = "okay";
 };
-#endif
 
 &uart2 { /* console */
 	pinctrl-names = "default";
@@ -1315,7 +1254,6 @@
 	status = "okay";
 };
 
-#if 0
 &uart4 {
 	assigned-clocks = <&clk IMX8MMN(CLK_UART4)>;
 	assigned-clock-parents = <&clk IMX8MMN(CLK_24M)>;
@@ -1335,7 +1273,6 @@
 	status = "okay";
 	uart-has-rs485-half-duplex;
 };
-#endif
 
 &usbotg1 {
 	dr_mode = "otg";
@@ -1346,7 +1283,6 @@
 	status = "okay";
 };
 
-#if 0
 &usdhc1 {
 	bus-width = <4>;
 	no-sd-uhs-sdr104;
@@ -1362,20 +1298,14 @@
 	vqmmc-1-8-v;
 	vqmmc-supply = <&reg_vref_1v8>;
 };
-#endif
 
 &usdhc2 {
 	bus-width = <4>;
-	cap-sd-highspeed;
 	cd-gpios = GP_USDHC2_CD;
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
 	pinctrl-0 = <&pinctrl_usdhc2>;
 	pinctrl-1 = <&pinctrl_usdhc2_100mhz>;
 	pinctrl-2 = <&pinctrl_usdhc2_200mhz>;
-	sd-uhs-ddr50;
-	sd-uhs-sdr104;
-	sd-uhs-sdr12;
-	sd-uhs-sdr25;
 	status = "okay";
 #if 1
 	vqmmc-supply = <&reg_usdhc2_vqmmc>;
@@ -1385,10 +1315,7 @@
 };
 
 &usdhc3 {
-	cap-mmc-highspeed;
 	bus-width = <8>;
-	mmc-ddr-1_8v;
-	mmc-hs200-1_8v;
 	no-mmc-hs400;
 	non-removable;
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
