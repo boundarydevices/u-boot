@@ -127,7 +127,6 @@
 	/* i2c3c */
 	pinctrl_sn65dsi83: sn65dsi83grp {
 		fsl,pins = <
-#define GP_SN65DSI83_IRQ <&gpio3 20 GPIO_ACTIVE_HIGH>
 #define GPIRQ_SN65DSI83	<&gpio3 20 IRQ_TYPE_LEVEL_HIGH>
 			MX8MMN(IOMUXC_SAI5_RXC_GPIO3_IO20, 0x04)	/* J8, pin8, J8_GPIO1 */
 #define GP_SN65DSI83_EN	<&gpio5 28 GPIO_ACTIVE_HIGH>
@@ -759,16 +758,16 @@
 		DOVDD-supply = <&reg_vref_1v8>;
 		DVDD-supply = <&reg_vref_3v3>;
 		clocks = <&csi_mclk>;
-		clock-names = "csi_mclk";
+		clock-names = "xclk";
 		compatible = "ovti,ov5640_mipisubdev";
 		csi_id = <0>;
 		mclk = <20000000>;
 		mipi_csi;
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_i2c3b_ov5640_mipi>;
-		pwn-gpios = GP_OV5640_MIPI_POWER_DOWN;
+		powerdown-gpios = GP_OV5640_MIPI_POWER_DOWN;
 		reg = <0x3c>;
-		rst-gpios = GP_OV5640_MIPI_RESET;
+		reset-gpios = GP_OV5640_MIPI_RESET;
 		status = "okay";
 
 		port {
@@ -821,63 +820,63 @@
 
 		led@0 {
 			chan-name = "d1";
-			led-cur = /bits/ 8 <0x0>;
+			led-cur = /bits/ 8 <0x2f>;
 			max-cur = /bits/ 8 <0xff>;
 			reg = <0x0>;
 		};
 
 		led@1 {
 			chan-name = "d2";
-			led-cur = /bits/ 8 <0>;
+			led-cur = /bits/ 8 <0x2f>;
 			max-cur = /bits/ 8 <0xff>;
 			reg = <0x1>;
 		};
 
 		led@2 {
 			chan-name = "d3";
-			led-cur = /bits/ 8 <0>;
+			led-cur = /bits/ 8 <0x2f>;
 			max-cur = /bits/ 8 <0xff>;
 			reg = <0x2>;
 		};
 
 		led@3 {
 			chan-name = "d4";
-			led-cur = /bits/ 8 <0>;
+			led-cur = /bits/ 8 <0x2f>;
 			max-cur = /bits/ 8 <0xff>;
 			reg = <0x3>;
 		};
 
 		led@4 {
 			chan-name = "d5";
-			led-cur = /bits/ 8 <0>;
+			led-cur = /bits/ 8 <0x2f>;
 			max-cur = /bits/ 8 <0xff>;
 			reg = <0x4>;
 		};
 
 		led@5 {
 			chan-name = "d6";
-			led-cur = /bits/ 8 <0>;
+			led-cur = /bits/ 8 <0x2f>;
 			max-cur = /bits/ 8 <0xff>;
 			reg = <0x5>;
 		};
 
 		led@6 {
 			chan-name = "d7";
-			led-cur = /bits/ 8 <0>;
+			led-cur = /bits/ 8 <0x2f>;
 			max-cur = /bits/ 8 <0xff>;
 			reg = <0x6>;
 		};
 
 		led@7 {
 			chan-name = "d8";
-			led-cur = /bits/ 8 <0>;
+			led-cur = /bits/ 8 <0x2f>;
 			max-cur = /bits/ 8 <0xff>;
 			reg = <0x7>;
 		};
 
 		led@8 {
 			chan-name = "d9";
-			led-cur = /bits/ 8 <0>;
+			led-cur = /bits/ 8 <0x2f>;
 			max-cur = /bits/ 8 <0xff>;
 			reg = <0x8>;
 		};
@@ -896,63 +895,63 @@
 
 		led@0 {
 			chan-name = "d1";
-			led-cur = /bits/ 8 <0x0>;
+			led-cur = /bits/ 8 <0x2f>;
 			max-cur = /bits/ 8 <0xff>;
 			reg = <0x0>;
 		};
 
 		led@1 {
 			chan-name = "d2";
-			led-cur = /bits/ 8 <0>;
+			led-cur = /bits/ 8 <0x2f>;
 			max-cur = /bits/ 8 <0xff>;
 			reg = <0x1>;
 		};
 
 		led@2 {
 			chan-name = "d3";
-			led-cur = /bits/ 8 <0>;
+			led-cur = /bits/ 8 <0x2f>;
 			max-cur = /bits/ 8 <0xff>;
 			reg = <0x2>;
 		};
 
 		led@3 {
 			chan-name = "d4";
-			led-cur = /bits/ 8 <0>;
+			led-cur = /bits/ 8 <0x2f>;
 			max-cur = /bits/ 8 <0xff>;
 			reg = <0x3>;
 		};
 
 		led@4 {
 			chan-name = "d5";
-			led-cur = /bits/ 8 <0>;
+			led-cur = /bits/ 8 <0x2f>;
 			max-cur = /bits/ 8 <0xff>;
 			reg = <0x4>;
 		};
 
 		led@5 {
 			chan-name = "d6";
-			led-cur = /bits/ 8 <0>;
+			led-cur = /bits/ 8 <0x2f>;
 			max-cur = /bits/ 8 <0xff>;
 			reg = <0x5>;
 		};
 
 		led@6 {
 			chan-name = "d7";
-			led-cur = /bits/ 8 <0>;
+			led-cur = /bits/ 8 <0x2f>;
 			max-cur = /bits/ 8 <0xff>;
 			reg = <0x6>;
 		};
 
 		led@7 {
 			chan-name = "d8";
-			led-cur = /bits/ 8 <0>;
+			led-cur = /bits/ 8 <0x2f>;
 			max-cur = /bits/ 8 <0xff>;
 			reg = <0x7>;
 		};
 
 		led@8 {
 			chan-name = "d9";
-			led-cur = /bits/ 8 <0>;
+			led-cur = /bits/ 8 <0x2f>;
 			max-cur = /bits/ 8 <0xff>;
 			reg = <0x8>;
 		};
@@ -971,63 +970,63 @@
 
 		led@0 {
 			chan-name = "d1";
-			led-cur = /bits/ 8 <0x0>;
+			led-cur = /bits/ 8 <0x2f>;
 			max-cur = /bits/ 8 <0xff>;
 			reg = <0x0>;
 		};
 
 		led@1 {
 			chan-name = "d2";
-			led-cur = /bits/ 8 <0>;
+			led-cur = /bits/ 8 <0x2f>;
 			max-cur = /bits/ 8 <0xff>;
 			reg = <0x1>;
 		};
 
 		led@2 {
 			chan-name = "d3";
-			led-cur = /bits/ 8 <0>;
+			led-cur = /bits/ 8 <0x2f>;
 			max-cur = /bits/ 8 <0xff>;
 			reg = <0x2>;
 		};
 
 		led@3 {
 			chan-name = "d4";
-			led-cur = /bits/ 8 <0>;
+			led-cur = /bits/ 8 <0x2f>;
 			max-cur = /bits/ 8 <0xff>;
 			reg = <0x3>;
 		};
 
 		led@4 {
 			chan-name = "d5";
-			led-cur = /bits/ 8 <0>;
+			led-cur = /bits/ 8 <0x2f>;
 			max-cur = /bits/ 8 <0xff>;
 			reg = <0x4>;
 		};
 
 		led@5 {
 			chan-name = "d6";
-			led-cur = /bits/ 8 <0>;
+			led-cur = /bits/ 8 <0x2f>;
 			max-cur = /bits/ 8 <0xff>;
 			reg = <0x5>;
 		};
 
 		led@6 {
 			chan-name = "d7";
-			led-cur = /bits/ 8 <0>;
+			led-cur = /bits/ 8 <0x2f>;
 			max-cur = /bits/ 8 <0xff>;
 			reg = <0x6>;
 		};
 
 		led@7 {
 			chan-name = "d8";
-			led-cur = /bits/ 8 <0>;
+			led-cur = /bits/ 8 <0x2f>;
 			max-cur = /bits/ 8 <0xff>;
 			reg = <0x7>;
 		};
 
 		led@8 {
 			chan-name = "d9";
-			led-cur = /bits/ 8 <0>;
+			led-cur = /bits/ 8 <0x2f>;
 			max-cur = /bits/ 8 <0xff>;
 			reg = <0x8>;
 		};
@@ -1117,7 +1116,6 @@
 };
 
 &lcdif {
-	display = <&fb_mipi>;
 	status = "okay";
 };
 
@@ -1148,7 +1146,8 @@
 			  <&clk IMX8MMN(VIDEO_PLL1_REF_SEL)>,
 			  <&clk IMX8MMN(CLK_LCDIF_PIXEL)>;
 	assigned-clock-parents = <&clk IMX8MMN(SYS_PLL1_266M)>,
-				 <&clk IMX8MMN(VIDEO_PLL1_OUT)>;
+				 <&clk IMX8MMN(VIDEO_PLL1_OUT)>,
+				 <&clk IMX8MMN(CLK_24M)>;
 	assigned-clock-rates = <266000000>, <0>, <0>, <66000000>;
 
 	clocks = <&clk IMX8MMN(CLK_DSI_CORE)>,
@@ -1160,11 +1159,9 @@
 	fb_mipi: panel@0 {
 		backlight = <&backlight_mipi>;
 		bits-per-color = <8>;
-		bits-per-pixel = <24>;
 		bridge-de-active = <0>;
 		bus-format = "rgb888";
-		bus-width = <24>;
-		clocks = <&dsim_clk 0>,
+		clocks = <&mipi_dsi 0>,
 			<&clk IMX8MMN(CLK_LCDIF_PIXEL)>;
 		clock-names = "mipi_clk", "pixel_clock";
 		compatible = "panel,common";
@@ -1206,40 +1203,7 @@
 			i2c-address = <0x2c>;
 			i2c-bus = <&i2c3c>;
 			interrupts-extended = GPIRQ_SN65DSI83;
-			interrupts-gpios = GP_SN65DSI83_IRQ;
 			status = "disabled";
-		};
-
-		port@1 {
-			panel_from_dsim: endpoint {
-				remote-endpoint = <&dsim_to_panel>;
-			};
-		};
-	};
-
-	dsim_clk: dsim-clk {
-		#clock-cells = <1>;
-		#size-cells = <0>;
-		compatible = "generic,clk";
-		clocks = <&clk IMX8MMN(CLK_DSI_PHY_REF)>;
-		clock-names = "parent";
-		clock-output-names = "dsim-clk";
-		status = "okay";
-	};
-
-	dsi_host: dsi-host {
-		compatible = "samsung,sec-mipi-dsi";
-		clocks = <&dsim_clk 0>,
-			 <&clk IMX8MMN(CLK_DSI_CORE)>,
-			 <&clk IMX8MMN(CLK_DSI_PHY_REF)>,
-			 <&clk IMX8MMN(CLK_LCDIF_PIXEL)>;
-		clock-names = "dsim-clk", "cfg", "pll-ref", "pixel_clock";
-		status = "okay";
-	};
-
-	port@1 {
-		dsim_to_panel: endpoint {
-			remote-endpoint = <&panel_from_dsim>;
 		};
 	};
 };
@@ -1251,6 +1215,8 @@
 #endif
 
 &pwm1 {
+	assigned-clocks = <&clk IMX8MMN(CLK_PWM1)>;
+	assigned-clock-parents = <&clk IMX8MMN(SYS_PLL1_40M)>;
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_pwm1>;
 	status = "okay";
@@ -1302,7 +1268,7 @@
 	pinctrl-0 = <&pinctrl_uart3>;
 	assigned-clocks = <&clk IMX8MMN(CLK_UART3)>;
 	assigned-clock-parents = <&clk IMX8MMN(SYS_PLL1_80M)>;
-	fsl,uart-has-rtscts;
+	uart-has-rtscts;
 	status = "okay";
 };
 
