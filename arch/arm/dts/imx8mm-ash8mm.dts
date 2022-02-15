@@ -798,12 +798,6 @@
 		pinctrl-0 = <&pinctrl_i2c1_lt8912>;
 		reg = <0x48> ;
 		reset-gpios = GP_LT8912_RESET;
-
-		port@0 {
-			lt8912_from_panel: endpoint {
-				remote-endpoint = <&panel_to_lt8912>;
-			};
-		};
 	};
 };
 
@@ -967,7 +961,6 @@
 };
 
 &lcdif {
-	display = <&fb_mipi>;
 	status = "okay";
 };
 
@@ -977,7 +970,8 @@
 			  <&clk IMX8MMN(VIDEO_PLL1_REF_SEL)>,
 			  <&clk IMX8MMN(CLK_LCDIF_PIXEL)>;
 	assigned-clock-parents = <&clk IMX8MMN(SYS_PLL1_266M)>,
-				 <&clk IMX8MMN(VIDEO_PLL1_OUT)>;
+				 <&clk IMX8MMN(VIDEO_PLL1_OUT)>,
+				 <&clk IMX8MMN(CLK_24M)>;
 	assigned-clock-rates = <266000000>, <0>, <0>, <66000000>;
 
 	clocks = <&clk IMX8MMN(CLK_DSI_CORE)>,
@@ -989,10 +983,11 @@
 	fb_mipi: panel@0 {
 		backlight = <&backlight_mipi>;
 		bits-per-color = <8>;
-		bits-per-pixel = <24>;
 		bridge-de-active = <0>;
 		bus-format = "rgb888";
-		bus-width = <24>;
+		clocks = <&mipi_dsi 0>,
+			<&clk IMX8MMN(CLK_LCDIF_PIXEL)>;
+		clock-names = "mipi_clk", "pixel_clock";
 		compatible = "panel,common";
 		dsi-format = "rgb888";
 		dsi-lanes = <4>;
@@ -1026,44 +1021,6 @@
 				de-active = <1>;
 			};
 		};
-
-		port@1 {
-			panel_from_dsim: endpoint {
-				remote-endpoint = <&dsim_to_panel>;
-			};
-		};
-
-		port@2 {
-			panel_to_lt8912: endpoint {
-				remote-endpoint = <&lt8912_from_panel>;
-			};
-		};
-	};
-
-	dsim_clk: dsim-clk {
-		#clock-cells = <1>;
-		#size-cells = <0>;
-		compatible = "generic,clk";
-		clocks = <&clk IMX8MMN(CLK_DSI_PHY_REF)>;
-		clock-names = "parent";
-		clock-output-names = "dsim-clk";
-		status = "okay";
-	};
-
-	dsi_host: dsi-host {
-		compatible = "samsung,sec-mipi-dsi";
-		clocks = <&dsim_clk 0>,
-			 <&clk IMX8MMN(CLK_DSI_CORE)>,
-			 <&clk IMX8MMN(CLK_DSI_PHY_REF)>,
-			 <&clk IMX8MMN(CLK_LCDIF_PIXEL)>;
-		clock-names = "dsim-clk", "cfg", "pll-ref", "pixel_clock";
-		status = "okay";
-	};
-
-	port@1 {
-		dsim_to_panel: endpoint {
-			remote-endpoint = <&panel_from_dsim>;
-		};
 	};
 };
 
@@ -1090,7 +1047,6 @@
 	status = "okay";
 };
 
-#if 0
 &uart1 { /* RS485 */
 	assigned-clocks = <&clk IMX8MMN(CLK_UART1)>;
 	assigned-clock-parents = <&clk IMX8MMN(SYS_PLL1_80M)>;
@@ -1113,7 +1069,6 @@
 	status = "okay";
 	uart-has-rs485-half-duplex;
 };
-#endif
 
 &uart2 { /* console */
 	assigned-clocks = <&clk IMX8MMN(CLK_UART2)>;
@@ -1123,7 +1078,6 @@
 	status = "okay";
 };
 
-#if 0
 &uart3 { /* Bluetooth */
 	assigned-clocks = <&clk IMX8MMN(CLK_UART3)>;
 	assigned-clock-parents = <&clk IMX8MMN(SYS_PLL1_80M)>;
@@ -1140,7 +1094,6 @@
 	pinctrl-0 = <&pinctrl_uart4>;
 	status = "okay";
 };
-#endif
 
 &usbotg1 {
 	dr_mode = "otg";
@@ -1162,17 +1115,13 @@
 };
 
 &usdhc1 {
-	cap-mmc-highspeed;
 	bus-width = <8>;
-	mmc-ddr-1_8v;
-	mmc-hs200-1_8v;
 	no-mmc-hs400;
 	non-removable;
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
 	pinctrl-0 = <&pinctrl_usdhc1>;
 	pinctrl-1 = <&pinctrl_usdhc1_100mhz>;
 	pinctrl-2 = <&pinctrl_usdhc1_200mhz>;
-	reset-gpios = GP_EMMC_RESET;
 	status = "okay";
 	vmmc-supply = <&reg_vref_3v3>;
 	vqmmc-1-8-v;
@@ -1181,25 +1130,15 @@
 
 &usdhc2 {
 	bus-width = <4>;
-	cap-sd-highspeed;
 	cd-gpios = GP_USDHC2_CD;
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
 	pinctrl-0 = <&pinctrl_usdhc2>;
 	pinctrl-1 = <&pinctrl_usdhc2_100mhz>;
 	pinctrl-2 = <&pinctrl_usdhc2_200mhz>;
-	sd-uhs-ddr50;
-	sd-uhs-sdr104;
-	sd-uhs-sdr12;
-	sd-uhs-sdr25;
 	status = "okay";
-#if 1
 	vqmmc-supply = <&reg_usdhc2_vqmmc>;
-#else
-	vqmmc-supply = <&reg_ldo2>;
-#endif
 };
 
-#if 0
 &usdhc3 {
 	bus-width = <4>;
 	keep-power-in-suspend;
@@ -1215,6 +1154,7 @@
 	vqmmc-1-8-v;
 };
 
+#if 0
 &vpu_g1 {
 	status = "okay";
 };
