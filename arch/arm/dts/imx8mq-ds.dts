@@ -120,8 +120,8 @@
 		fsl,pins = <
 			MX8MQ_IOMUXC_SAI5_RXFS_GPIO3_IO19		0x16
 			MX8MQ_IOMUXC_SAI5_RXC_GPIO3_IO20		0x16
-#define GPIRQ_BQ25898	<&gpio3 21 IRQ_TYPE_LEVEL_LOW>
-			MX8MQ_IOMUXC_SAI5_RXD0_GPIO3_IO21		0x190
+#define GPIRQ_BQ25898	<&gpio3 21 IRQ_TYPE_EDGE_FALLING>
+			MX8MQ_IOMUXC_SAI5_RXD0_GPIO3_IO21		0x81
 			MX8MQ_IOMUXC_SAI5_MCLK_GPIO3_IO25		0x16
 		>;
 	};
@@ -194,6 +194,13 @@
 		fsl,pins = <
 #define GP_REG_USB_OTG_VBUS	<&gpio1 12 GPIO_ACTIVE_HIGH>
 			MX8MQ_IOMUXC_GPIO1_IO12_GPIO1_IO12		0x16
+		>;
+	};
+
+	pinctrl_reg_wifi_en: reg-wifi-engrp {
+		fsl,pins = <
+#define GP_REG_WIFI_EN		<&gpio5 10 GPIO_ACTIVE_HIGH>
+			MX8MQ_IOMUXC_ECSPI2_SCLK_GPIO5_IO10		0x16
 		>;
 	};
 
@@ -378,6 +385,17 @@
 		regulator-max-microvolt = <5000000>;
 	};
 
+	reg_wifi_en: regulator-wifi-en {
+		compatible = "regulator-fixed";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_reg_wifi_en>;
+		regulator-name = "wifi_en";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		gpio = GP_REG_WIFI_EN;
+		enable-active-high;
+	};
+
 	resmem: reserved-memory {
 		#address-cells = <2>;
 		#size-cells = <2>;
@@ -394,15 +412,33 @@
 	};
 };
 
-&A53_0 {
-	operating-points = <
-		/* kHz    uV */
-		1500000 1000000
-		1300000 1000000
-		1000000 900000
-		800000  900000
-	>;
+#if 0
+&a53_opp_table {
+	opp-800000000 {
+		opp-microvolt = <1000000>;
+	};
+
+	opp-1000000000 {
+		opp-microvolt = <1000000>;
+	};
 };
+
+&A53_0 {
+	cpu-supply = <&reg_arm_dram>;
+};
+
+&A53_1 {
+	cpu-supply = <&reg_arm_dram>;
+};
+
+&A53_2 {
+	cpu-supply = <&reg_arm_dram>;
+};
+
+&A53_3 {
+	cpu-supply = <&reg_arm_dram>;
+};
+#endif
 
 &fec1 {
 	pinctrl-names = "default";
@@ -580,26 +616,46 @@
 	status = "okay";
 };
 
+#if 0
+&mu {
+	status = "okay";
+};
+
 &pcie0 { /* SX-PCEAC2 */
+	assigned-clocks = <&clk IMX8MQ_CLK_PCIE1_AUX>,
+			  <&clk IMX8MQ_CLK_PCIE1_PHY>,
+			  <&clk IMX8MQ_CLK_PCIE1_CTRL>;
+	assigned-clock-parents = <&clk IMX8MQ_SYS2_PLL_50M>,
+				 <&clk IMX8MQ_SYS2_PLL_100M>,
+				 <&clk IMX8MQ_SYS2_PLL_250M>;
+	assigned-clock-rates = <10000000>, <100000000>, <250000000>;
 	clocks = <&clk IMX8MQ_CLK_PCIE1_ROOT>,
 		<&clk IMX8MQ_CLK_PCIE1_AUX>,
 		<&clk IMX8MQ_CLK_PCIE1_PHY>,
-		<&pcie0_refclk>;
-	clock-names = "pcie", "pcie_aux", "pcie_phy", "pcie_bus";
+		<&pcie0_refclk>, <&pcie0_refclk>;
+	clock-names = "pcie", "pcie_aux", "pcie_phy", "pcie_bus", "pcie_ext_src";
 	ext_osc = <1>;
 	hard-wired;
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_pcie0>;
 	reset-gpio = GP_PCIE0_RESET;
 	status = "okay";
+	vpcie-supply = <&reg_wifi_en>;
 };
 
 &pcie1 { /* Edge TPU */
+	assigned-clocks = <&clk IMX8MQ_CLK_PCIE2_AUX>,
+			  <&clk IMX8MQ_CLK_PCIE2_PHY>,
+			  <&clk IMX8MQ_CLK_PCIE2_CTRL>;
+	assigned-clock-parents = <&clk IMX8MQ_SYS2_PLL_50M>,
+				 <&clk IMX8MQ_SYS2_PLL_100M>,
+				 <&clk IMX8MQ_SYS2_PLL_250M>;
+	assigned-clock-rates = <10000000>, <100000000>, <250000000>;
 	clocks = <&clk IMX8MQ_CLK_PCIE2_ROOT>,
 		<&clk IMX8MQ_CLK_PCIE2_AUX>,
 		<&clk IMX8MQ_CLK_PCIE2_PHY>,
-		<&pcie1_refclk>;
-	clock-names = "pcie", "pcie_aux", "pcie_phy", "pcie_bus";
+		<&pcie1_refclk>, <&pcie1_refclk>;
+	clock-names = "pcie", "pcie_aux", "pcie_phy", "pcie_bus", "pcie_ext_src";
 	ext_osc = <1>;
 	hard-wired;
 	pinctrl-names = "default";
@@ -607,6 +663,7 @@
 	reset-gpio = GP_PCIE1_RESET;
 	status = "okay";
 };
+#endif
 
 &uart2 { /* console */
 	pinctrl-names = "default";
@@ -618,6 +675,7 @@
 
 &usb3_phy0 {
 	status = "okay";
+	vbus-supply = <&reg_vref_5v>;
 };
 
 &usb_dwc3_0 {
@@ -630,11 +688,13 @@
 
 &usb3_phy1 {
 	status = "okay";
+	vbus-supply = <&reg_vref_5v>;
 };
 
 &usb_dwc3_1 {
 	dr_mode = "host";
 	status = "okay";
+	vbus-supply = <&reg_vref_5v>;
 };
 
 &usdhc1 {
@@ -658,6 +718,13 @@
 	cd-gpios = GP_SD2_CD;
 	vmmc-supply = <&reg_vref_3v3>;
 };
+
+#if 0
+&vpu {
+	regulator-supply = <&reg_soc_gpu_vpu>;
+	status = "okay";
+};
+#endif
 
 &wdog1 {
 	pinctrl-names = "default";
