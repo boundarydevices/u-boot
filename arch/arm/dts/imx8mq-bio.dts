@@ -133,18 +133,18 @@
 		>;
 	};
 
-	pinctrl_i2c2_csi1: i2c2-csi1grp {
+	pinctrl_i2c2_ov5640_mipi: i2c2-ov5640-mipigrp {
 		fsl,pins = <
-#define GP_CSI1_MIPI_PWDN	<&gpio4 25 GPIO_ACTIVE_HIGH>
+#define GP_OV5640_MIPI_POWER_DOWN	<&gpio4 25 GPIO_ACTIVE_HIGH>
 			MX8MQ_IOMUXC_SAI2_TXC_GPIO4_IO25		0x61
-#define GP_CSI1_MIPI_RESET	<&gpio4 24 GPIO_ACTIVE_LOW>
+#define GP_OV5640_MIPI_RESET	<&gpio4 24 GPIO_ACTIVE_LOW>
 			MX8MQ_IOMUXC_SAI2_TXFS_GPIO4_IO24		0x61
 			/* Clock for CSI1 */
 			MX8MQ_IOMUXC_GPIO1_IO15_CCMSRCGPCMIX_CLKO2	0x59
 		>;
 	};
 
-	pinctrl_sn65dsi83: sn65dsi83grp {
+	pinctrl_i2c2_sn65dsi83: i2c2-sn65dsi83grp {
 		fsl,pins = <
 #define GP_I2C2_SN65DSI83_IRQ_REV0	<&gpio4 28 GPIO_ACTIVE_HIGH>
 #define GPIRQ_I2C2_SN65DSI83_REV0	<&gpio4 28 IRQ_TYPE_LEVEL_HIGH>
@@ -432,21 +432,16 @@
 		lcdif = &lcdif;
 		mipi = &fb_mipi;
 		mipi_dsi = &mipi_dsi;
-		mipi_dsi_bridge = &mipi_dsi_bridge;
+		mipi_dsi_bridge = &mipi_dsi;
 		mipi_dsi_phy = &dphy;
 		mipi_to_lvds = &mipi_to_lvds;
 		pwm_mipi = &pwm2;
 		sound_hdmi = &sound_hdmi;
-		t_hdmi = &t_hdmi;
 		t_mipi = &t_mipi;
 		ts_exc3000 = &ts_exc3000;
 		ts_ft5x06 = &ts_ft5x06;
 		ts_goodix = &ts_goodix;
 		ts_st1633i = &ts_st1633i;
-	};
-
-	chosen {
-		bootargs = "console=ttymxc0,115200 earlycon=ec_imx6q,0x30860000,115200";
 	};
 
 	backlight_mipi: backlight-mipi {
@@ -722,21 +717,23 @@
 	};
 };
 
-&A53_0 {
 #if 0
+&A53_0 {
 	cpu-supply = <&reg_sw3>;
-#endif
-
-	operating-points = <
-		/* kHz    uV */
-		1500000 1000000
-		1300000 1000000
-		1000000 900000
-		800000  900000
-	>;
 };
 
-#if 0
+&A53_1 {
+	cpu-supply = <&reg_sw3>;
+};
+
+&A53_2 {
+	cpu-supply = <&reg_sw3>;
+};
+
+&A53_3 {
+	cpu-supply = <&reg_sw3>;
+};
+
 &csi1_bridge {
 	fsl,mipi-mode;
 	fsl,two-8bit-sensor-mode;
@@ -752,9 +749,8 @@
 
 &dcss {
 	status = "okay";
-	disp-dev = "hdmi_disp";
 
-	port@0 {
+	port {
 		dcss_out: endpoint {
 			remote-endpoint = <&hdmi_in>;
 		};
@@ -778,27 +774,11 @@
 	assigned-clock-parents = <&clk IMX8MQ_CLK_27M>;
 	clocks = <&clk IMX8MQ_CLK_CLK2_CG>;
 	clock-names = "refclk";
-	compatible = "fsl,imx8mq-hdmi";
+	compatible = "cdn,imx8mq-hdmi";
 	lane-mapping = <0xe4>;
 	status = "okay";
 
-	display-timings {
-		native-mode = <&t_hdmi>;
-
-		t_hdmi: t-hdmi-default {
-			clock-frequency = <74250000>;
-			hactive = <1280>;
-			vactive = <720>;
-			hback-porch = <220>;
-			hfront-porch = <110>;
-			hsync-len = <40>;
-			vback-porch = <20>;
-			vfront-porch = <5>;
-			vsync-len = <5>;
-		};
-	};
-
-	port@0 {
+	port {
 		hdmi_in: endpoint {
 			remote-endpoint = <&dcss_out>;
 		};
@@ -944,7 +924,7 @@
 };
 
 &i2c4 {
-	clock-frequency = <100000>;
+	clock-frequency = <400000>;
 	pinctrl-names = "default", "gpio";
 	pinctrl-0 = <&pinctrl_i2c4>;
 	pinctrl-1 = <&pinctrl_i2c4_1>;
@@ -965,6 +945,7 @@
 		};
 
 		i2c4b: i2c4@1 {
+			clock-frequency = <100000>;
 			reg = <1>;
 			#address-cells = <1>;
 			#size-cells = <0>;
@@ -1030,27 +1011,30 @@
 #if 0
 &i2c4b {
 	ov5640-mipi1@3c {
-		compatible = "ovti,ov5640_mipisubdev";
-		reg = <0x3c>;
-		status = "okay";
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_i2c2_csi1>;
-		clocks = <&clk IMX8MQ_CLK_CLKO2>;
-		clock-names = "csi_mclk";
+		AVDD-supply = <&reg_ldo3>;
+		DOVDD-supply = <&reg_vref_1v8>;
+		DVDD-supply = <&reg_vref_3v3>;
 		assigned-clocks = <&clk IMX8MQ_CLK_CLKO2>;
 		assigned-clock-parents = <&clk IMX8MQ_SYS2_PLL_200M>;
-		assigned-clock-rates = <25000000>;
-		csi_id = <0>;
-		AVDD-supply = <&reg_ldo3>;
-		DVDD-supply = <&reg_vref_3v3>;
-		DOVDD-supply = <&reg_vref_1v8>;
-		pwn-gpios = GP_CSI1_MIPI_PWDN;
-		rst-gpios = GP_CSI1_MIPI_RESET;
-		mclk = <25000000>;
-		mipi_csi;
+		assigned-clock-rates = <20000000>;
+		clocks = <&clk IMX8MQ_CLK_CLKO2>;
+		clock-names = "xclk";
+#if 0
+		compatible = "ovti,ov5640";
+#else
+		compatible = "ovti,ov5640_mipisubdev";
+#endif
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_i2c2_ov5640_mipi>;
+		powerdown-gpios = GP_OV5640_MIPI_POWER_DOWN;
+		reg = <0x3c>;
+		reset-gpios = GP_OV5640_MIPI_RESET;
+		status = "okay";
 
 		port {
 			ov5640_mipi1_ep: endpoint {
+				clock-lanes = <0>;
+				data-lanes = <1 2>;
 				remote-endpoint = <&mipi1_sensor_ep>;
 			};
 		};
@@ -1063,14 +1047,7 @@
 			  <&clk IMX8MQ_VIDEO_PLL1_REF_SEL>;
 	assigned-clock-parents = <&clk IMX8MQ_VIDEO_PLL1_OUT>,
 				 <&clk IMX8MQ_CLK_25M>;
-	display = <&fb_mipi>;
-	status = "okay";
-
-	port@0 {
-		lcdif_out: endpoint {
-			remote-endpoint = <&mipi_dsi_bridge_in>;
-		};
-	};
+	status = "disabled";
 };
 
 #if 0
@@ -1080,8 +1057,9 @@
 	status = "okay";
 	port {
 		mipi1_sensor_ep: endpoint@1 {
-			remote-endpoint = <&ov5640_mipi1_ep>;
+			bus-type = <4>;
 			data-lanes = <1 2>;
+			remote-endpoint = <&ov5640_mipi1_ep>;
 		};
 
 		csi1_mipi_ep: endpoint@2 {
@@ -1091,32 +1069,8 @@
 };
 #endif
 
-&mipi_dsi_bridge {
-	ports {
-		#address-cells = <1>;
-		#size-cells = <0>;
-
-		port@0 {
-			reg = <0>;
-
-			mipi_dsi_bridge_in: endpoint {
-				remote-endpoint = <&lcdif_out>;
-			};
-		};
-
-		port@1 {
-			reg = <1>;
-
-			mipi_dsi_bridge_out: endpoint {
-				remote-endpoint = <&panel1_in>;
-			};
-		};
-	};
-};
-
 &mipi_dsi {
 	/delete-property/ no_clk_reset;
-	status = "disabled";
 	assigned-clocks = <&clk IMX8MQ_CLK_DSI_PHY_REF>,
 			  <&clk IMX8MQ_CLK_DSI_CORE>,
 			  <&clk IMX8MQ_CLK_DSI_AHB>,
@@ -1131,21 +1085,19 @@
 			       <80000000>,
 			       <0>,
 			       <20000000>;
-	input-source = "lcdif";
+	status = "disabled";
+	#address-cells = <1>;
+	#size-cells = <0>;
 
 	fb_mipi: panel@0 {
-		#address-cells = <1>;
-		#size-cells = <0>;
 		backlight = <&backlight_mipi>;
 		bits-per-color = <8>;
-		bits-per-pixel = <24>;
 		bridge-de-active = <0>;
 #if 0
 		bridge-sync-active = <1>;
 #endif
 		bus-format = "rgb888";
-		bus-width = <24>;
-		clocks = <&dsim_clk 0>,
+		clocks = <&dphy 0>,
 			<&clk IMX8MQ_CLK_LCDIF_PIXEL>;
 		clock-names = "mipi_clk", "pixel_clock";
 		compatible = "panel,common";
@@ -1158,10 +1110,11 @@
 		panel-height-mm = <136>;
 		panel-width-mm = <217>;
 		pinctrl-names = "sn65dsi83";
-		pinctrl-0 = <&pinctrl_sn65dsi83>;
+		pinctrl-0 = <&pinctrl_i2c2_sn65dsi83>;
 		power-supply = <&reg_vref_5v>;
 		reg = <0>;
 		sn65dsi83 = <&mipi_to_lvds>;
+		spwg;
 
 		display-timings {
 			t_mipi: t-dsi-default {
@@ -1182,23 +1135,27 @@
 		};
 
 		mipi_to_lvds: mipi-to-lvds {
-			#address-cells = <1>;
-			#size-cells = <0>;
 			alias = <&mipi_to_lvds>;
 			enable-gpios = GP_I2C2_SN65DSI83_EN_REV0, GP_I2C2_SN65DSI83_EN;
 			i2c-address = <0x2c>;
 			i2c-bus = <&i2c2>;
 			interrupts-extended = GPIRQ_I2C2_SN65DSI83_REV0, GPIRQ_I2C2_SN65DSI83;
-			interrupts-gpios = GP_I2C2_SN65DSI83_IRQ_REV0, GP_I2C2_SN65DSI83_IRQ;
-			spwg;
 			status = "disabled";
 		};
 
+		port {
+			panel1_in: endpoint {
+				remote-endpoint = <&mipi_dsi_out>;
+			};
+		};
+	};
+
+	ports {
 		port@1 {
 			reg = <1>;
 
-			panel1_in: endpoint {
-				remote-endpoint = <&mipi_dsi_bridge_out>;
+			mipi_dsi_out: endpoint {
+				remote-endpoint = <&panel1_in>;
 			};
 		};
 	};
@@ -1281,7 +1238,6 @@
 };
 #endif
 
-#if 0
 &uart1 { /* console */
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart1>;
@@ -1306,10 +1262,10 @@
 	uart-has-rtscts;
 	status = "okay";
 };
-#endif
 
 &usb3_phy0 {
 	status = "okay";
+	vbus-supply = <&reg_vref_5v>;
 };
 
 &usb_dwc3_0 {
@@ -1322,6 +1278,7 @@
 
 &usb3_phy1 {
 	status = "okay";
+	vbus-supply = <&reg_vref_5v>;
 };
 
 &usb_dwc3_1 {
@@ -1330,27 +1287,23 @@
 	pinctrl-0 = <&pinctrl_usb3_1>;
 	reset-gpios = GP_USB3_1_HUB_RESET, GP_USB3_1_DN3_SD_RESET;
 	status = "okay";
+	vbus-supply = <&reg_vref_5v>;
 };
 
 &usdhc1 {
-	cap-mmc-highspeed;
 	bus-width = <8>;
-	mmc-ddr-1_8v;
-	mmc-hs200-1_8v;
 	no-mmc-hs400;
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
 	pinctrl-0 = <&pinctrl_usdhc1>;
 	pinctrl-1 = <&pinctrl_usdhc1_100mhz>;
 	pinctrl-2 = <&pinctrl_usdhc1_200mhz>;
-	reset-gpios = GP_EMMC_RESET;
 	non-removable;
+	vmmc-supply = <&reg_vref_3v3>;
 	vqmmc-1-8-v;
 	vqmmc-supply = <&reg_vref_1v8>;
-	vmmc-supply = <&reg_vref_3v3>;
 	status = "okay";
 };
 
-#if 0
 &usdhc2 {
 	bus-width = <4>;
 	no-sd-uhs-sdr104;
@@ -1366,6 +1319,7 @@
 	vqmmc-1-8-v;
 };
 
+#if 0
 &vpu {
 	power-domains = <&pgc_vpu>;
 	regulator-supply = <&reg_vref_0v9>;
