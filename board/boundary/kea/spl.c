@@ -126,6 +126,7 @@ int power_init_boundary(void)
 
 	i2c_set_bus_num(0);
 #define PF8100	0x08
+#define FREQ_CTRL	0x40
 #define SW2_VOLT	0x59
 #define SW3_CONFIG2	0x5e
 #define SW3_VOLT	0x61
@@ -155,6 +156,9 @@ int power_init_boundary(void)
 
 	buf[0] = 0x40;	/* (.80-.4)*160=.40*160=64=0x40  64/160+.4=.80 vpu */
 	ret = i2c_write(PF8100, SW5_VOLT, 1, buf, 1);
+
+	buf[0] = 0x30;	/* enable spread spectrum */
+	ret = i2c_write(PF8100, FREQ_CTRL, 1, buf, 1);
 	return ret;
 }
 
