@@ -9,7 +9,6 @@
 /memreserve/ 0x40000000 0x00020000;
 
 #include "imx8mq.dtsi"
-#include "panel-m101nwwb.dtsi"
 
 &iomuxc {
 	pinctrl-names = "default";
@@ -197,9 +196,8 @@
 		>;
 	};
 
-	pinctrl_sn65dsi83: sn65dsi83grp {
+	pinctrl_i2c2a_sn65dsi83: i2c2a-sn65dsi83grp {
 		fsl,pins = <
-#define GP_I2C2A_SN65DSI83_IRQ <&gpio3 19 GPIO_ACTIVE_HIGH>
 #define GPIRQ_I2C2A_SN65DSI83	<&gpio3 19 IRQ_TYPE_LEVEL_HIGH>
 			MX8MQ_IOMUXC_SAI5_RXFS_GPIO3_IO19	0x04
 #define GP_I2C2A_SN65DSI83_EN	<&gpio3 15 GPIO_ACTIVE_HIGH>
@@ -499,12 +497,11 @@
 		lcdif = &lcdif;
 		mipi = &fb_mipi;
 		mipi_dsi = &mipi_dsi;
-		mipi_dsi_bridge = &mipi_dsi_bridge;
+		mipi_dsi_bridge = &mipi_dsi;
 		mipi_dsi_phy = &dphy;
 		mipi_to_lvds = &mipi_to_lvds;
 		pwm_mipi = &pwm1;
 		sound_hdmi = &sound_hdmi;
-		t_hdmi = &t_hdmi;
 		t_mipi = &t_mipi;
 	};
 
@@ -528,10 +525,6 @@
 		type = <2>; /* Bluetooth */
 		reset-gpios = GP_BT_RFKILL_RESET;
 		status = "okay";
-	};
-
-	chosen {
-		bootargs = "console=ttymxc0,115200 earlycon=ec_imx6q,0x30860000,115200";
 	};
 
 	clocks {
@@ -707,6 +700,12 @@
 		clock-frequency = <100000000>;
 	};
 
+	pcie1_refclk: pcie1-refclk {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <100000000>;
+	};
+
 	reg_usb_otg_vbus: regulator-usb-otg-vbus {
 		compatible = "regulator-fixed";
 		pinctrl-names = "default";
@@ -812,68 +811,28 @@
 		hdmi-out;
 		status = "okay";
 	};
-
-#if 0
-	power-domains {
-		#address-cells = <1>;
-		#size-cells = <0>;
-
-		pgc_gpuvpu: power-domain@ffffffff {
-			compatible = "fsl,imx8mq-pm-domain";
-			reg = <0xffffffff>;
-			domain-name = "VPUGPU_PD";
-			dvfs-supply = <&reg_sw5>;
-			idle-microvolt = <900000 810000 1050000>;
-			#address-cells = <1>;
-			#power-domain-cells = <0>;
-			#size-cells = <0>;
-
-			pgc_gpu: power-domain@4 {
-				clocks = <&clk IMX8MQ_CLK_GPU_AXI>,
-					<&clk IMX8MQ_CLK_GPU_SHADER_DIV>,
-					<&clk IMX8MQ_CLK_GPU_ROOT>,
-					<&clk IMX8MQ_CLK_GPU_AHB>;
-				compatible = "fsl,imx8mq-pm-domain";
-				reg = <4>;
-				domain-name = "GPU_PD";
-				operating-points-v2 = <&gpu_opp_table>;
-				#power-domain-cells = <0>;
-			};
-
-			pgc_vpu: power-domain@5 {
-				clocks = <&clk IMX8MQ_CLK_VPU_G1_ROOT>,
-					<&clk IMX8MQ_CLK_VPU_G2_ROOT>,
-					<&clk IMX8MQ_CLK_VPU_DEC_ROOT>;
-				compatible = "fsl,imx8mq-pm-domain";
-				reg = <5>;
-				domain-name = "VPU_PD";
-				operating-points-v2 = <&vpu_opp_table_g1>,
-						<&vpu_opp_table_g2>,
-						<&vpu_opp_table_dec>;
-				#power-domain-cells = <0>;
-			};
-		};
-	};
-#endif
 };
 
 &A53_0 {
 	cpu-supply = <&reg_sw3>;
+};
 
-	operating-points = <
-		/* kHz    uV */
-		1500000 1000000
-		1300000 1000000
-		1000000 900000
-		800000  900000
-	>;
+&A53_1 {
+	cpu-supply = <&reg_sw3>;
+};
+
+&A53_2 {
+	cpu-supply = <&reg_sw3>;
+};
+
+&A53_3 {
+	cpu-supply = <&reg_sw3>;
 };
 
 &dcss {
 	status = "okay";
-	disp-dev = "hdmi_disp";
 
-	port@0 {
+	port {
 		dcss_out: endpoint {
 			remote-endpoint = <&hdmi_in>;
 		};
@@ -958,26 +917,11 @@
 #endif
 
 &hdmi {
-	compatible = "fsl,imx8mq-hdmi";
+	compatible = "cdn,imx8mq-hdmi";
+	lane-mapping = <0xe4>;
 	status = "okay";
 
-	display-timings {
-		native-mode = <&t_hdmi>;
-
-		t_hdmi: t-hdmi-default {
-			clock-frequency = <74250000>;
-			hactive = <1280>;
-			vactive = <720>;
-			hback-porch = <220>;
-			hfront-porch = <110>;
-			hsync-len = <40>;
-			vback-porch = <20>;
-			vfront-porch = <5>;
-			vsync-len = <5>;
-		};
-	};
-
-	port@0 {
+	port {
 		hdmi_in: endpoint {
 			remote-endpoint = <&dcss_out>;
 		};
@@ -1058,7 +1002,6 @@
 				regulator-boot-on;
 				regulator-max-microvolt = <1800000>;
 				regulator-min-microvolt =  <400000>;
-				dual-phase;
 			};
 
 			reg_sw5: sw5 {
@@ -1136,9 +1079,6 @@
 	};
 };
 
-&i2c2a {
-};
-
 &i2c2b {
 	/* J27 */
 };
@@ -1202,46 +1142,15 @@
 };
 
 &lcdif {
-	display = <&fb_mipi>;
-	status = "okay";
+	status = "disabled";
 	assigned-clocks = <&clk IMX8MQ_CLK_LCDIF_PIXEL>,
 			  <&clk IMX8MQ_VIDEO_PLL1_REF_SEL>;
 	assigned-clock-parents = <&clk IMX8MQ_VIDEO_PLL1_OUT>,
 				 <&clk IMX8MQ_CLK_25M>;
-
-	port@0 {
-		lcdif_out: endpoint {
-			remote-endpoint = <&mipi_dsi_bridge_in>;
-		};
-	};
-};
-
-&mipi_dsi_bridge {
-	ports {
-		#address-cells = <1>;
-		#size-cells = <0>;
-
-		port@0 {
-			reg = <0>;
-
-			mipi_dsi_bridge_in: endpoint {
-				remote-endpoint = <&lcdif_out>;
-			};
-		};
-
-		port@1 {
-			reg = <1>;
-
-			mipi_dsi_bridge_out: endpoint {
-				remote-endpoint = <&panel1_in>;
-			};
-		};
-	};
 };
 
 &mipi_dsi {
 	/delete-property/ no_clk_reset;
-	status = "disabled";
 	assigned-clocks = <&clk IMX8MQ_CLK_DSI_PHY_REF>,
 			  <&clk IMX8MQ_CLK_DSI_CORE>,
 			  <&clk IMX8MQ_CLK_DSI_AHB>,
@@ -1256,22 +1165,19 @@
 			       <80000000>,
 			       <0>,
 			       <20000000>;
-	input-source = "lcdif";
+	status = "disabled";
+	#address-cells = <1>;
+	#size-cells = <0>;
 
 	fb_mipi: panel@0 {
-		#address-cells = <1>;
-		#size-cells = <0>;
-
-		backlight= <&backlight_mipi>;
+		backlight = <&backlight_mipi>;
 		bits-per-color = <8>;
-		bits-per-pixel = <24>;
 		bridge-de-active = <0>;
 #if 0
 		bridge-sync-active = <1>;
 #endif
 		bus-format = "rgb888";
-		bus-width = <24>;
-		clocks = <&dsim_clk 0>,
+		clocks = <&dphy 0>,
 			<&clk IMX8MQ_CLK_LCDIF_PIXEL>;
 		clock-names = "mipi_clk", "pixel_clock";
 		compatible = "panel,common";
@@ -1284,7 +1190,7 @@
 		panel-height-mm = <136>;
 		panel-width-mm = <217>;
 		pinctrl-names = "sn65dsi83";
-		pinctrl-0 = <&pinctrl_sn65dsi83>;
+		pinctrl-0 = <&pinctrl_i2c2a_sn65dsi83>;
 		power-supply = <&reg_vref_5v>;
 		reg = <0>;
 		sn65dsi83 = <&mipi_to_lvds>;
@@ -1308,22 +1214,27 @@
 		};
 
 		mipi_to_lvds: mipi-to-lvds {
-			#address-cells = <1>;
-			#size-cells = <0>;
 			alias = <&mipi_to_lvds>;
 			enable-gpios = GP_I2C2A_SN65DSI83_EN;
 			i2c-address = <0x2c>;
 			i2c-bus = <&i2c2a>;
 			interrupts-extended = GPIRQ_I2C2A_SN65DSI83;
-			interrupts-gpios = GP_I2C2A_SN65DSI83_IRQ;
 			status = "disabled";
 		};
 
+		port {
+			panel1_in: endpoint {
+				remote-endpoint = <&mipi_dsi_out>;
+			};
+		};
+	};
+
+	ports {
 		port@1 {
 			reg = <1>;
 
-			panel1_in: endpoint {
-				remote-endpoint = <&mipi_dsi_bridge_out>;
+			mipi_dsi_out: endpoint {
+				remote-endpoint = <&panel1_in>;
 			};
 		};
 	};
@@ -1335,6 +1246,13 @@
 };
 
 &pcie0 {
+	assigned-clocks = <&clk IMX8MQ_CLK_PCIE1_AUX>,
+			  <&clk IMX8MQ_CLK_PCIE1_PHY>,
+			  <&clk IMX8MQ_CLK_PCIE1_CTRL>;
+	assigned-clock-parents = <&clk IMX8MQ_SYS2_PLL_50M>,
+				 <&clk IMX8MQ_SYS2_PLL_100M>,
+				 <&clk IMX8MQ_SYS2_PLL_250M>;
+	assigned-clock-rates = <10000000>, <100000000>, <250000000>;
 	clkreq-gpio = GP_PCIE0_CLKREQ;
 #if 1
 	clocks = <&clk IMX8MQ_CLK_PCIE1_ROOT>,
@@ -1347,20 +1265,69 @@
 #else
 	ext_osc = <1>;
 #endif
+	fsl,tx-deemph-gen1 = <27>;
+	fsl,tx-deemph-gen2-3p5db = <24>;
+	fsl,tx-deemph-gen2-6db = <35>;
+	fsl,tx-swing-full = <62>;
+	fsl,tx-swing-low = <62>;
+	fsl,max-link-speed = <1>;
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_pcie0>;
 	/* TODO check clock */
 	reset-gpio = GP_PCIE0_RESET;
 	status = "okay";
 };
-#endif
 
-#if 0
 &pcie1 {
-	/* TODO check clock */
+	assigned-clocks = <&clk IMX8MQ_CLK_PCIE2_AUX>,
+			  <&clk IMX8MQ_CLK_PCIE2_PHY>,
+			  <&clk IMX8MQ_CLK_PCIE2_CTRL>;
+	assigned-clock-parents = <&clk IMX8MQ_SYS2_PLL_50M>,
+				 <&clk IMX8MQ_SYS2_PLL_100M>,
+				 <&clk IMX8MQ_SYS2_PLL_250M>;
+	assigned-clock-rates = <10000000>, <100000000>, <250000000>;
+	clocks = <&clk IMX8MQ_CLK_PCIE2_ROOT>,
+		<&clk IMX8MQ_CLK_PCIE2_AUX>,
+		<&clk IMX8MQ_CLK_PCIE2_PHY>,
+		<&pcie1_refclk>;
+	clock-names = "pcie", "pcie_aux", "pcie_phy", "pcie_bus";
 	ext_osc = <1>;
-	hard-wired = <1>;
+	hard-wired;
 	status = "disabled";
+};
+
+/delete-node/ &pgc_gpu;
+/delete-node/ &pgc_vpu;
+&pgc {
+	pgc_gpuvpu: pgc-gpuvpu {
+		#address-cells = <1>;
+		#power-domain-cells = <0>;
+		#size-cells = <0>;
+		domain-name = "VPUGPU_PD";
+		dvfs-supply = <&reg_sw5>;
+		idle-microvolt = <900000 837000 990000>;
+
+		pgc_gpu: power-domain@5 {
+			clocks = <&clk IMX8MQ_CLK_GPU_AXI>,
+				 <&clk IMX8MQ_CLK_GPU_SHADER_DIV>,
+				 <&clk IMX8MQ_CLK_GPU_ROOT>,
+				 <&clk IMX8MQ_CLK_GPU_AHB>;
+			reg = <IMX8M_POWER_DOMAIN_GPU>;
+			operating-points-v2 = <&gpu_opp_table>;
+			#power-domain-cells = <0>;
+		};
+
+		pgc_vpu: power-domain@6 {
+			clocks = <&clk IMX8MQ_CLK_VPU_G1_ROOT>,
+				 <&clk IMX8MQ_CLK_VPU_G2_ROOT>,
+				 <&clk IMX8MQ_CLK_VPU_DEC_ROOT>;
+			reg = <IMX8M_POWER_DOMAIN_VPU>;
+			operating-points-v2 = <&vpu_opp_table_g1>,
+					<&vpu_opp_table_g2>,
+					<&vpu_opp_table_dec>;
+			#power-domain-cells = <0>;
+		};
+	};
 };
 #endif
 
@@ -1399,7 +1366,6 @@
 };
 #endif
 
-#if 0
 &uart1 { /* console */
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart1>;
@@ -1431,10 +1397,10 @@
 	assigned-clock-parents = <&clk IMX8MQ_CLK_25M>;
 	status = "okay";
 };
-#endif
 
 &usb3_phy0 {
 	status = "okay";
+	vbus-supply = <&reg_vref_5v>;
 };
 
 &usb_dwc3_0 {
@@ -1447,6 +1413,7 @@
 
 &usb3_phy1 {
 	status = "okay";
+	vbus-supply = <&reg_vref_5v>;
 };
 
 &usb_dwc3_1 {
@@ -1455,13 +1422,11 @@
 	pinctrl-0 = <&pinctrl_usb3_1>;
 	reset-gpios = GP_USB3_1_HUB_RESET;
 	status = "okay";
+	vbus-supply = <&reg_vref_5v>;
 };
 
 &usdhc1 {
-	cap-mmc-highspeed;
 	bus-width = <8>;
-	mmc-ddr-1_8v;
-	mmc-hs200-1_8v;
 	no-mmc-hs400;
 	non-removable;
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
@@ -1477,16 +1442,11 @@
 
 &usdhc2 {
 	bus-width = <4>;
-	cap-sd-highspeed;
 	cd-gpios = GP_USDHC2_CD;
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
 	pinctrl-0 = <&pinctrl_usdhc2>;
 	pinctrl-1 = <&pinctrl_usdhc2_100mhz>;
 	pinctrl-2 = <&pinctrl_usdhc2_200mhz>;
-	sd-uhs-ddr50;
-	sd-uhs-sdr104;
-	sd-uhs-sdr12;
-	sd-uhs-sdr25;
 	status = "okay";
 	vmmc-supply = <&reg_vref_3v3>;
 #if 1

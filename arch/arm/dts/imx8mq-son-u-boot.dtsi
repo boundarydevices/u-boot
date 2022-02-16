@@ -3,7 +3,14 @@
  * Copyright 2019 NXP
  */
 
+#define GP_I2C2A_SN65DSI83_IRQ <&gpio3 19 GPIO_ACTIVE_HIGH>
+
 / {
+	aliases {
+		mipi_dsi_bridge = &mipi_dsi_bridge;
+		t_hdmi = &t_hdmi;
+	};
+
 	wdt-reboot {
 		compatible = "wdt-reboot";
 		wdt = <&wdog1>;
@@ -29,12 +36,46 @@
 	u-boot,dm-spl;
 };
 
+&ckil {
+	u-boot,dm-spl;
+	u-boot,dm-pre-reloc;
+};
+
 &clk {
 	u-boot,dm-spl;
 	u-boot,dm-pre-reloc;
 	/delete-property/ assigned-clocks;
 	/delete-property/ assigned-clock-parents;
 	/delete-property/ assigned-clock-rates;
+};
+
+&clk_ext1 {
+	u-boot,dm-spl;
+	u-boot,dm-pre-reloc;
+};
+
+&clk_ext2 {
+	u-boot,dm-spl;
+	u-boot,dm-pre-reloc;
+};
+
+&clk_ext3 {
+	u-boot,dm-spl;
+	u-boot,dm-pre-reloc;
+};
+
+&clk_ext4 {
+	u-boot,dm-spl;
+	u-boot,dm-pre-reloc;
+};
+
+&dcss {
+	disp-dev = "hdmi_disp";
+};
+
+&dummy {
+	u-boot,dm-spl;
+	u-boot,dm-pre-reloc;
 };
 
 &gpio1 {
@@ -57,6 +98,26 @@
 	u-boot,dm-spl;
 };
 
+&hdmi {
+	compatible = "fsl,imx8mq-hdmi";
+
+	display-timings {
+		native-mode = <&t_hdmi>;
+
+		t_hdmi: t-hdmi-default {
+			clock-frequency = <74250000>;
+			hactive = <1280>;
+			vactive = <720>;
+			hback-porch = <220>;
+			hfront-porch = <110>;
+			hsync-len = <40>;
+			vback-porch = <20>;
+			vfront-porch = <5>;
+			vsync-len = <5>;
+		};
+	};
+};
+
 &i2c1 {
 	u-boot,dm-spl;
 };
@@ -65,14 +126,61 @@
 	u-boot,dm-spl;
 };
 
-&ckil {
-	u-boot,dm-spl;
-	u-boot,dm-pre-reloc;
+&lcdif {
+	display = <&fb_mipi>;
+	status = "okay";
+
+	port {
+		lcdif_out: endpoint {
+			remote-endpoint = <&mipi_dsi_bridge_in>;
+		};
+	};
 };
 
-&dummy {
-	u-boot,dm-spl;
-	u-boot,dm-pre-reloc;
+&mipi_dsi {
+	input-source = "lcdif";
+
+	fb_mipi: panel@0 {
+		bits-per-pixel = <24>;
+		bus-width = <24>;
+		clocks = <&dsim_clk 0>,
+			 <&clk IMX8MQ_CLK_LCDIF_PIXEL>;
+
+		mipi_to_lvds: mipi-to-lvds {
+			interrupts-gpios = GP_I2C2A_SN65DSI83_IRQ;
+		};
+
+		port {
+			panel1_in: endpoint {
+				remote-endpoint = <&mipi_dsi_bridge_out>;
+			};
+		};
+	};
+
+	/delete-node/ ports;
+};
+
+&mipi_dsi_bridge {
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		port@0 {
+			reg = <0>;
+
+			mipi_dsi_bridge_in: endpoint {
+				remote-endpoint = <&lcdif_out>;
+			};
+		};
+
+		port@1 {
+			reg = <1>;
+
+			mipi_dsi_bridge_out: endpoint {
+				remote-endpoint = <&panel1_in>;
+			};
+		};
+	};
 };
 
 &osc_25m {
@@ -86,26 +194,6 @@
 };
 
 &phy_27m {
-	u-boot,dm-spl;
-	u-boot,dm-pre-reloc;
-};
-
-&clk_ext1 {
-	u-boot,dm-spl;
-	u-boot,dm-pre-reloc;
-};
-
-&clk_ext2 {
-	u-boot,dm-spl;
-	u-boot,dm-pre-reloc;
-};
-
-&clk_ext3 {
-	u-boot,dm-spl;
-	u-boot,dm-pre-reloc;
-};
-
-&clk_ext4 {
 	u-boot,dm-spl;
 	u-boot,dm-pre-reloc;
 };
@@ -158,8 +246,20 @@
 	u-boot,dm-spl;
 };
 
-&uart2 {
+&uart1 {
 	u-boot,dm-spl;
+};
+
+&uart2 {
+	status = "disabled";
+};
+
+&uart3 {
+	status = "disabled";
+};
+
+&uart4 {
+	status = "disabled";
 };
 
 &usb3_phy0 {
@@ -179,10 +279,18 @@
 };
 
 &usdhc1 {
+	cap-mmc-highspeed;
+	mmc-ddr-1_8v;
+	mmc-hs200-1_8v;
 	u-boot,dm-spl;
 };
 
 &usdhc2 {
+	cap-sd-highspeed;
+	sd-uhs-ddr50;
+	sd-uhs-sdr104;
+	sd-uhs-sdr12;
+	sd-uhs-sdr25;
 	u-boot,dm-spl;
 };
 
