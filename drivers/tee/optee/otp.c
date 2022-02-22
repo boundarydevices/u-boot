@@ -11,6 +11,7 @@
 #include <mmc.h>
 #include <net.h>
 #include <tee.h>
+#include <fdt_support.h>
 
 #include <tee/optee_ta_otp.h>
 
@@ -173,6 +174,38 @@ int optee_otp_read_mac(const char *name)
 	ret = read_persistent_value("mac", MAC_ADDRESS_LEN, ethaddr, &len);
 	if (!ret && is_valid_ethaddr(ethaddr))
 		eth_env_set_enetaddr(name, ethaddr);
+
+	return ret;
+}
+
+int optee_otp_read_mac_fdt(void *blob, const char *node,
+			   const char *attribute,
+			   const char *otp_name)
+{
+	u8 ethaddr[MAC_ADDRESS_LEN];
+	size_t len;
+	int ret;
+	int nodeoffset;
+
+	ret = read_persistent_value(otp_name, MAC_ADDRESS_LEN, ethaddr, &len);
+	if (!ret && is_valid_ethaddr(ethaddr)) {
+		nodeoffset = fdt_path_offset(blob, node);
+		if (nodeoffset < 0)
+			return nodeoffset;
+
+		ret = fdt_setprop(blob, nodeoffset, attribute, ethaddr,
+				  sizeof(ethaddr));
+		if (ret < 0) {
+			printf("WARNING: could not set %s %s.\n", attribute,
+					fdt_strerror(ret));
+			return ret;
+		}
+	} else {
+		printf("Failed to read mac address\n");
+		ret = 0;
+	}
+
+	optee_otp_ta_close_session();
 
 	return ret;
 }
