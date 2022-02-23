@@ -43,6 +43,7 @@ void optee_otp_ta_close_session(void)
 {
 	if (tee)
 		tee_close_session(tee, session);
+	tee = NULL;
 }
 
 static int invoke_func(u32 func, ulong num_param, struct tee_param *param)
