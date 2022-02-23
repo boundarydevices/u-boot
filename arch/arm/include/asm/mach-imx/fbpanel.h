@@ -122,6 +122,7 @@ struct display_info_t {
 #define FBF_DSI_LANES_4		(0x4 << FBF_DSI_LANE_SHIFT)
 
 #define FBF_DMT050WVNXCMI	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4)
+#define FBF_DMT055FHNMCMI	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_ENABLE_GPIOS_DTB)
 #define FBF_ER_TFT050		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_ENABLE_GPIOS_DTB)
 #define FBF_LCM_JM430		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_SYNC_PULSE | FBF_MODE_VIDEO_MBC | FBF_MIPI_CMDS | FBF_DSI_LANES_1 | FBF_BKLIT_EN_DTB | FBF_ENABLE_GPIOS_DTB)
 #define FBF_LS050T1SX12		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_PINCTRL | FBF_ENABLE_GPIOS_DTB)
@@ -221,6 +222,8 @@ void fbp_setup_env_cmds(void);
 #define VD_OKAYA_480_272(_mode, args...)	VDF_OKAYA_480_272(_mode, "okaya_480x272", RGB24, FBF_MODESTR, args)
 #define VD_OKAYA_480_272_IPU(_mode, args...)	VDF_OKAYA_480_272_IPU(_mode, "okaya_480x272ipu", RGB24, FBF_MODESTR_IPU, args)
 #define VD_DMT050WVNXCMI(_mode, args...)	VDF_DMT050WVNXCMI(_mode, "dmt050wvnxcmi", RGB24, FBF_DMT050WVNXCMI, args)
+#define VD_DMT055FHNMCMI(_mode, args...)	VDF_DMT055FHNMCMI(_mode, "dmt055fhnmcmi", RGB24, FBF_DMT055FHNMCMI, args)
+
 #define VD_ER_TFT050_MINI(_mode, args...)	VDF_ER_TFT050_MINI(_mode, "er_tft050", RGB24, FBF_ER_TFT050, args)
 #define VD_LCM_JM430(_mode, args...)		VDF_LCM_JM430(_mode, "lcm_jm430", RGB24, FBF_LCM_JM430, args)
 #define VD_LCM_JM430_MINI(_mode, args...)	VDF_LCM_JM430_MINI(_mode, "lcm_jm430", RGB24, FBF_LCM_JM430, args)
@@ -884,6 +887,26 @@ void fbp_setup_env_cmds(void);
 		.lower_margin	= 20,\
 		.hsync_len	= 8,\
 		.vsync_len	= 1,\
+		.sync		= FB_SYNC_EXT | FB_SYNC_CLK_LAT_FALL,\
+		.vmode		= FB_VMODE_NONINTERLACED\
+	}\
+}
+
+#define VDF_DMT055FHNMCMI(_mode, _name, _fmt, _flags, args...) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, args),\
+	.mode	= {\
+		.name		= _name,\
+		.refresh	= 60,\
+		.xres		= 1080,\
+		.yres		= 1920,\
+		.pixclock	= 1000000000000ULL/((1080+16+16+8)*(1920+20+10+8)*60),\
+		.left_margin	= 16,\
+		.right_margin	= 16,\
+		.upper_margin	= 20,\
+		.lower_margin	= 10,\
+		.hsync_len	= 8,\
+		.vsync_len	= 8,\
 		.sync		= FB_SYNC_EXT | FB_SYNC_CLK_LAT_FALL,\
 		.vmode		= FB_VMODE_NONINTERLACED\
 	}\
