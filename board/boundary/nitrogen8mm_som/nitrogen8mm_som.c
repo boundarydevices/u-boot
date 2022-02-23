@@ -60,7 +60,8 @@ static iomux_v3_cfg_t const init_pads[] = {
 
 #define GP_TC358762_EN		IMX_GPIO_NR(5, 0)
 #define GP_SC18IS602B_RESET	IMX_GPIO_NR(5, 0)
-#define GP_SN65DSI83_EN	IMX_GPIO_NR(5, 0)
+#define GP_DMT055FHNMCMI_EN	IMX_GPIO_NR(5, 0)
+#define GP_SN65DSI83_EN		IMX_GPIO_NR(5, 0)
 #define GP_MIPI_RESET		IMX_GPIO_NR(5, 0)
 #define	GP_LT8912_RESET		IMX_GPIO_NR(5, 0)
 /* enable for TPS65132 Single Inductor - Dual Output Power Supply */
@@ -169,6 +170,7 @@ static const struct display_info_t displays[] = {
 	VD_TM070JDHG30_LT8912(MIPI, NULL, fbp_bus_gp((3 | (3 << 4)), 0, 0, 0), fbp_addr_gp(0x68, GP_LT8912_DISPLAY_EN, 0, 0), FBP_PCA9546),
 
 	VD_MIPI_VTFT101RPFT20(MIPI, fbp_detect_i2c, 3, 0x70, FBP_PCA9540),
+	VD_DMT055FHNMCMI(MIPI, board_detect_gt911, fbp_bus_gp(1, 0, GP_DMT055FHNMCMI_EN, 0), fbp_addr_gp(0x5d, 0, 0, 0), FBTS_GOODIX2),
 };
 #define display_cnt	ARRAY_SIZE(displays)
 #else
