@@ -465,7 +465,11 @@ static void phy_ar8031_config(struct phy_device *phydev)
 	regval = phy_read(phydev, MDIO_DEVAD_NONE, 0xe);
 	regval &= ~0x11c;
 	regval |= 0x80;	/* 1/2 drive strength */
+#if defined(CONFIG_IMX8MM) || defined(CONFIG_IMX8MN) || defined(CONFIG_IMX8MP) || defined(CONFIG_IMX8MQ)
+	freq = env_get_ulong("phy_clock_out", 10, 0);
+#else
 	freq = env_get_ulong("phy_clock_out", 10, 125000000);
+#endif
 	if (freq >= 125000000) {
 		regval |= 0x18;
 	} else if (freq >= 62500000) {
@@ -507,7 +511,11 @@ static void phy_ar8035_config(struct phy_device *phydev)
 	val = phy_read(phydev, MDIO_DEVAD_NONE, 0xe);
 	val &= ~0x11c;
 	val |= 0x80; /* 1/2 drive strength */
+#if defined(CONFIG_IMX8MM) || defined(CONFIG_IMX8MN) || defined(CONFIG_IMX8MP) || defined(CONFIG_IMX8MQ)
+	freq = env_get_ulong("phy_clock_out", 10, 0);
+#else
 	freq = env_get_ulong("phy_clock_out", 10, 125000000);
+#endif
 	if (freq >= 125000000) {
 		val |= 0x18;
 	} else if (freq >= 62500000) {
