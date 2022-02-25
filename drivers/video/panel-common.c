@@ -49,6 +49,7 @@ struct panel_common {
 		unsigned int enable;
 		unsigned int disable;
 		unsigned int unprepare;
+		unsigned int before_backlight_on;
 	} delay;
 	unsigned enable_high_duration_us;
 	unsigned enable_low_duration_us;
@@ -63,6 +64,7 @@ struct panel_common {
 
 	struct gpio_desc *gpd_prepare_enable;
 	struct gpio_desc *gpd_power;
+	struct gpio_desc *gpd_display_enable;
 	struct gpio_desc *reset;
 	struct display_timing timings;
 
@@ -86,6 +88,7 @@ struct panel_common {
 	struct gpio_desc gds_reset;
 	struct gpio_desc gds_power;
 	struct gpio_desc gds_enable;
+	struct gpio_desc gds_display_enable;
 };
 
 #if CONFIG_IS_ENABLED(DM_SPI)
@@ -651,6 +654,8 @@ static int panel_common_disable(struct panel_common *p)
 
 	if (p->backlight)
 		backlight_set_brightness(p->backlight, 0);
+	if (p->gpd_display_enable)
+		dm_gpio_set_value(p->gpd_display_enable, false);
 
 	if (p->delay.disable)
 		mdelay(p->delay.disable);
@@ -773,7 +778,10 @@ static int panel_common_enable2(struct panel_common *p)
 		goto fail;
 
 	sn65_enable2(&p->sn65);
-
+	if (p->gpd_display_enable)
+		dm_gpio_set_value(p->gpd_display_enable, true);
+	if (p->delay.before_backlight_on)
+		mdelay(p->delay.before_backlight_on);
 	return 0;
 fail:
 	p->enabled = false;
@@ -899,6 +907,7 @@ static void init_common(ofnode np, struct panel_common *panel)
 	ofnode_read_u32(np, "delay-enable", &panel->delay.enable);
 	ofnode_read_u32(np, "delay-disable", &panel->delay.disable);
 	ofnode_read_u32(np, "delay-unprepare", &panel->delay.unprepare);
+	ofnode_read_u32(np, "delay-before-backlight-on", &panel->delay.before_backlight_on);
 	ofnode_read_u32(np, "min-hs-clock-multiple", &panel->min_hs_clock_multiple);
 	ofnode_read_u32(np, "mipi-dsi-multiple", &panel->mipi_dsi_multiple);
 	ofnode_read_u32(np, "mipi-delay-between-cmds", &panel->mipi_delay_between_cmds);
@@ -1015,6 +1024,18 @@ static int common_panel_ofdata_to_platdata(struct udevice *dev)
 	ofnode_read_u32(np, "bits-per-color", &panel->bpc);
 	ret = ofnode_parse_phandle(np, "mipi-cmds", &cmds_np);
 	if (!ret) {
+		debug("%s: %s\n", __func__, ofnode_get_name(cmds_np));
+		ret = gpio_request_by_name_nodev(cmds_np, "display-enable-gpios", 0, &panel->gds_display_enable,
+					   GPIOD_IS_OUT);
+		if (ret) {
+			debug("%s: Warning: cannot get display-enable-gpios: ret=%d\n",
+			      __func__, ret);
+			if (ret != -ENOENT)
+				return ret;
+		} else {
+			panel->gpd_display_enable = &panel->gds_display_enable;
+		}
+
 		ret = uclass_get_device_by_ofnode_prop(UCLASS_I2C, cmds_np,
 				"i2c-bus", &panel->i2c);
 		if (ret && (ret != -ENOENT))
