@@ -38,7 +38,6 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IMX8MQ_PAD_UART1_RXD__UART1_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
 	IMX8MQ_PAD_UART1_TXD__UART1_TX | MUX_PAD_CTRL(UART_PAD_CTRL),
 #define GP_I2C1D_SN65DSI83_IRQ		IMX_GPIO_NR(1, 1)
-#define GP_LCM_JM430_BKL_EN		IMX_GPIO_NR(1, 1)
 /* This enables 5V power on LTK080A60A004T mipi display */
 #define GP_LTK08_MIPI_EN		IMX_GPIO_NR(1, 1)
 	IMX8MQ_PAD_GPIO1_IO01__GPIO1_IO1 | MUX_PAD_CTRL(0x16),
@@ -162,7 +161,7 @@ static const struct display_info_t displays[] = {
 #endif
 	VD_MIPI_M101NWWB(MIPI, fbp_detect_i2c, fbp_bus_gp(7, GP_I2C1D_SN65DSI83_EN, 0, 0), 0x2c, FBP_MIPI_TO_LVDS, FBTS_FT5X06),
 	VD_LTK080A60A004T(MIPI, board_detect_gt911, fbp_bus_gp(7, GP_LTK08_MIPI_EN, GP_LTK08_MIPI_EN, 0), 0x5d, FBTS_GOODIX),	/* Goodix touchscreen */
-	VD_LCM_JM430(MIPI, fbp_detect_i2c, fbp_bus_gp(7, GP_ST1633_RESET, GP_TC358762_EN, 30), fbp_addr_gp(0x55, GP_LCM_JM430_BKL_EN, 0, 0), FBTS_ST1633I),		/* Sitronix touch */
+	VD_LCM_JM430(MIPI, fbp_detect_i2c, fbp_bus_gp(7, GP_ST1633_RESET, GP_TC358762_EN, 30), fbp_addr_gp(0x55, 0, 0, 0), FBTS_ST1633I),		/* Sitronix touch */
 	VD_LTK0680YTMDB(MIPI, NULL, fbp_bus_gp(7, GP_MIPI_RESET, GP_MIPI_RESET, 0), 0x0),
 	VD_MIPI_COM50H5N03ULC(MIPI, NULL, fbp_bus_gp(7, GP_MIPI_RESET, GP_MIPI_RESET, 0), 0x00),
 };
