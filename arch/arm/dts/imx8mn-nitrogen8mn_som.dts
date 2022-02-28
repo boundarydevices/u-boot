@@ -9,7 +9,6 @@
 &iomuxc {
 	pinctrl_sn65dsi83: sn65dsi83grp {
 		fsl,pins = <
-#define GP_SN65DSI83_IRQ <&gpio1 1 GPIO_ACTIVE_HIGH>
 #define GPIRQ_SN65DSI83	<&gpio1 1 IRQ_TYPE_LEVEL_HIGH>
 			MX8MMN(IOMUXC_GPIO1_IO01_GPIO1_IO1, 0x04)
 #undef  GP_SN65DSI83_EN
@@ -20,6 +19,12 @@
 
 	/delete-node/ i2c3a-rv4162grp;
 	/delete-node/ i2c3b-ov5640-mipigrp;
+
+	pinctrl_hog: hoggrp {
+		fsl,pins = <
+			MX8MMN(IOMUXC_GPIO1_IO08_GPIO1_IO8, 0x09)
+		>;
+	};
 
 	pinctrl_i2c2_rv4162: i2c2-rv4162grp {
 		fsl,pins = <
@@ -63,6 +68,8 @@
 #undef GP_TC358762_EN
 #define GP_TC358762_EN	<&gpio5 0 GPIO_ACTIVE_HIGH>
 			MX8MMN(IOMUXC_SAI3_TXC_GPIO5_IO0, 0x16)
+#define GP_JM430_DISPLAY_EN	<&gpio1 1 GPIO_ACTIVE_HIGH>
+			MX8MMN(IOMUXC_GPIO1_IO01_GPIO1_IO1, 0x106)
 		>;
 	};
 
