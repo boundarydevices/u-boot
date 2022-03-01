@@ -780,8 +780,6 @@ static int panel_common_enable2(struct panel_common *p)
 	sn65_enable2(&p->sn65);
 	if (p->gpd_display_enable)
 		dm_gpio_set_value(p->gpd_display_enable, true);
-	if (p->delay.before_backlight_on)
-		mdelay(p->delay.before_backlight_on);
 	return 0;
 fail:
 	p->enabled = false;
@@ -817,7 +815,7 @@ static int common_panel_init(struct udevice *dev)
 	return ret;
 }
 
-static int common_panel_enable_backlight(struct udevice *dev)
+static int common_panel_enable(struct udevice *dev)
 {
 	struct mipi_dsi_panel_plat *plat = dev_get_platdata(dev);
 	struct mipi_dsi_device *dsi = plat->device;
@@ -843,6 +841,16 @@ static int common_panel_enable_backlight(struct udevice *dev)
 		return ret;
 	if (p->gd_enable)
 		dm_gpio_set_value(p->gd_enable, true);
+	return 0;
+}
+
+static int common_panel_enable_backlight(struct udevice *dev)
+{
+	struct panel_common *p = dev_get_priv(dev);
+	int ret;
+
+	if (p->delay.before_backlight_on)
+		mdelay(p->delay.before_backlight_on);
 	if (p->backlight) {
 		ret = backlight_enable(p->backlight);
 		debug("%s: done, ret = %d\n", __func__, ret);
@@ -1210,6 +1218,7 @@ static int common_panel_disable(struct udevice *dev)
 
 static const struct panel_ops common_panel_ops = {
 	.init			= common_panel_init,
+	.enable			= common_panel_enable,
 	.enable_backlight	= common_panel_enable_backlight,
 	.get_display_timing	= common_panel_get_display_timing,
 	.set_backlight		= common_panel_set_backlight,
