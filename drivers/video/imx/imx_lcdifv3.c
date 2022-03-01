@@ -384,12 +384,6 @@ static int lcdifv3_video_probe(struct udevice *dev)
 				dev_err(dev, "fail to attach bridge\n");
 				return ret;
 			}
-
-			ret = video_bridge_set_backlight(priv->disp_dev, 80);
-			if (ret) {
-				dev_err(dev, "fail to set backlight\n");
-				return ret;
-			}
 		}
 #endif
 #ifdef CONFIG_DISPLAY
@@ -435,6 +429,17 @@ static int lcdifv3_video_probe(struct udevice *dev)
 					DCACHE_WRITEBACK);
 	video_set_flush_dcache(dev, true);
 	gd->fb_base = plat->base;
+#if IS_ENABLED(CONFIG_VIDEO_BRIDGE)
+	if (priv->disp_dev) {
+		if (device_get_uclass_id(priv->disp_dev) == UCLASS_VIDEO_BRIDGE) {
+			ret = video_bridge_set_backlight(priv->disp_dev, 80);
+			if (ret) {
+				dev_err(dev, "fail to set backlight\n");
+				return ret;
+			}
+		}
+	}
+#endif
 
 	return ret;
 }
