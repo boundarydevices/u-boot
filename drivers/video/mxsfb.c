@@ -723,7 +723,12 @@ static int mxs_video_probe(struct udevice *dev)
 			dev_err(dev, "fail to attach bridge\n");
 			return ret;
 		}
+	}
+#endif
 
+	mxs_lcd_run();
+#if IS_ENABLED(CONFIG_VIDEO_BRIDGE)
+	if (enable_bridge) {
 		ret = video_bridge_set_backlight(priv->disp_dev, 80);
 		if (ret) {
 			dev_err(dev, "fail to set backlight\n");
@@ -731,7 +736,6 @@ static int mxs_video_probe(struct udevice *dev)
 		}
 	}
 #endif
-
 	if (priv->disp_dev) {
 		if (device_get_uclass_id(priv->disp_dev) == UCLASS_PANEL) {
 			ret = panel_enable_backlight(priv->disp_dev);
@@ -742,7 +746,6 @@ static int mxs_video_probe(struct udevice *dev)
 			}
 		}
 	}
-	mxs_lcd_run();
 
 	return ret;
 }
