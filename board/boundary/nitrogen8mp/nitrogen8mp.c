@@ -36,6 +36,8 @@ DECLARE_GLOBAL_DATA_PTR;
 #define WDOG_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_ODE | PAD_CTL_PUE | PAD_CTL_PE)
 
 static iomux_v3_cfg_t const init_pads[] = {
+#define GP_PWM1_MIPI		IMX_GPIO_NR(1, 0)
+	IOMUX_PAD_CTRL(GPIO1_IO01__GPIO1_IO01, 0x100),
 	IOMUX_PAD_CTRL(GPIO1_IO02__WDOG1_WDOG_B, WDOG_PAD_CTRL),
 	IOMUX_PAD_CTRL(UART2_RXD__UART2_DCE_RX, UART_PAD_CTRL),
 	IOMUX_PAD_CTRL(UART2_TXD__UART2_DCE_TX, UART_PAD_CTRL),
@@ -98,6 +100,10 @@ static iomux_v3_cfg_t const init_pads[] = {
 int board_early_init_f(void)
 {
 	struct wdog_regs *wdog = (struct wdog_regs *)WDOG1_BASE_ADDR;
+
+	gpio_request(GP_PWM1_MIPI, "pwm1");
+	gpio_direction_output(GP_PWM1_MIPI, 0);
+	gpio_free(GP_PWM1_MIPI);
 
 	gpio_request(GP_SN65DSI83_EN, "sn65en");
 	gpio_direction_output(GP_SN65DSI83_EN, 0);
