@@ -26,6 +26,16 @@ void panel_uninit(struct udevice *dev)
 		ops->uninit(dev);
 }
 
+int panel_enable(struct udevice *dev)
+{
+	struct panel_ops *ops = panel_get_ops(dev);
+
+	if (!ops->enable)
+		return -ENOSYS;
+
+	return ops->enable(dev);
+}
+
 int panel_enable_backlight(struct udevice *dev)
 {
 	struct panel_ops *ops = panel_get_ops(dev);
