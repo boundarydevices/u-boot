@@ -73,6 +73,18 @@ static int nw_dsi_imx_attach(struct udevice *dev)
 			priv->panel->name, ret);
 		return ret;
 	}
+
+	ret = dsi_host_enable(priv->dsi_host);
+	if (ret) {
+		dev_err(dev, "failed to enable mipi dsi host\n");
+		return ret;
+	}
+
+	ret = panel_enable(priv->panel);
+	if (ret && (ret != ENOSYS)) {
+		dev_err(dev, "panel_enable failed\n");
+		return ret;
+	}
 	return 0;
 }
 
@@ -80,12 +92,6 @@ static int nw_dsi_imx_set_backlight(struct udevice *dev, int percent)
 {
 	struct nw_dsi_imx_priv *priv = dev_get_priv(dev);
 	int ret;
-
-	ret = dsi_host_enable(priv->dsi_host);
-	if (ret) {
-		dev_err(dev, "failed to enable mipi dsi host\n");
-		return ret;
-	}
 
 	ret = panel_enable_backlight(priv->panel);
 	if (ret) {
