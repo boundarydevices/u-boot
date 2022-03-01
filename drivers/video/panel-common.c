@@ -645,6 +645,25 @@ static int send_all_cmd_lists(struct panel_common *panel, struct interface_cmds 
 	return ret;
 }
 
+static int _panel_set_backlight(struct panel_common *p, int percent)
+{
+	int ret;
+
+	debug("%s: start, backlight = '%s'\n", __func__, p->backlight->name);
+	if (p->gd_enable)
+		dm_gpio_set_value(p->gd_enable, (percent > 0) ? true : false);
+	if (p->backlight) {
+		ret = backlight_set_brightness(p->backlight, percent);
+		debug("%s: done, ret = %d\n", __func__, ret);
+		if (ret)
+			return ret;
+	}
+	if (p->linked_panel)
+		panel_set_backlight(p->linked_panel, percent);
+	return 0;
+}
+
+
 static int panel_common_disable(struct panel_common *p)
 {
 	struct mipi_dsi_device *dsi;
@@ -652,13 +671,12 @@ static int panel_common_disable(struct panel_common *p)
 	if (!p->enabled)
 		return 0;
 
-	if (p->backlight)
-		backlight_set_brightness(p->backlight, 0);
-	if (p->gpd_display_enable)
-		dm_gpio_set_value(p->gpd_display_enable, false);
-
+	_panel_set_backlight(p, BACKLIGHT_OFF);
 	if (p->delay.disable)
 		mdelay(p->delay.disable);
+
+	if (p->gpd_display_enable)
+		dm_gpio_set_value(p->gpd_display_enable, false);
 
 	dsi = p->dsi;
 	dsi->mode_flags |= MIPI_DSI_MODE_LPM;
@@ -849,6 +867,8 @@ static int common_panel_enable_backlight(struct udevice *dev)
 	struct panel_common *p = dev_get_priv(dev);
 	int ret;
 
+	if (!p->enabled)
+		return 0;
 	if (p->delay.before_backlight_on)
 		mdelay(p->delay.before_backlight_on);
 	if (p->backlight) {
@@ -865,20 +885,8 @@ static int common_panel_enable_backlight(struct udevice *dev)
 static int common_panel_set_backlight(struct udevice *dev, int percent)
 {
 	struct panel_common *p = dev_get_priv(dev);
-	int ret;
 
-	debug("%s: start, backlight = '%s'\n", __func__, p->backlight->name);
-	if (p->gd_enable)
-		dm_gpio_set_value(p->gd_enable, percent ? true : false);
-	if (p->backlight) {
-		ret = backlight_set_brightness(p->backlight, percent);
-		debug("%s: done, ret = %d\n", __func__, ret);
-		if (ret)
-			return ret;
-	}
-	if (p->linked_panel)
-		panel_set_backlight(p->linked_panel, percent);
-	return 0;
+	return _panel_set_backlight(p, percent);
 }
 
 static int common_panel_get_display_timing(struct udevice *dev,
