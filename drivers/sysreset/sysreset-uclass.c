@@ -22,6 +22,7 @@
 #include <linux/delay.h>
 #include <linux/err.h>
 #include <asm/global_data.h>
+#include <video_link.h>
 
 int sysreset_request(struct udevice *dev, enum sysreset_t type)
 {
@@ -133,6 +134,11 @@ int do_reset(struct cmd_tbl *cmdtp, int flag, int argc, char *const argv[])
 
 	printf("resetting ...\n");
 	mdelay(100);
+#ifndef CONFIG_SPL_BUILD
+#if defined(CONFIG_VIDEO_LINK)
+	video_link_shut_down();
+#endif
+#endif
 
 	sysreset_walk_halt(reset_type);
 
