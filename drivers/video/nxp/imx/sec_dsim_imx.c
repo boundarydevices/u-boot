@@ -76,6 +76,12 @@ static int imx_sec_dsim_set_backlight(struct udevice *dev, int percent)
 	struct imx_sec_dsim_priv *priv = dev_get_priv(dev);
 	int ret;
 
+	ret = panel_enable(priv->panel);
+	if (ret && (ret != ENOSYS)) {
+		dev_err(dev, "panel_enable failed\n");
+		return ret;
+	}
+
 	ret = panel_enable_backlight(priv->panel);
 	if (ret) {
 		dev_err(dev, "panel %s enable backlight error %d\n",
