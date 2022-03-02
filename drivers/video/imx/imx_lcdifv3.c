@@ -338,7 +338,7 @@ static int lcdifv3_video_probe(struct udevice *dev)
 	struct lcdifv3_priv *priv = dev_get_priv(dev);
 	struct display_timing timings;
 
-	u32 fb_start, fb_end;
+	ulong fb_start, fb_end;
 #if CONFIG_IS_ENABLED(CLK)
 	struct clk pll;
 	u32 pixclock;
@@ -423,6 +423,9 @@ static int lcdifv3_video_probe(struct udevice *dev)
 	fb_start = plat->base & ~(MMU_SECTION_SIZE - 1);
 	fb_end = plat->base + plat->size;
 	fb_end = ALIGN(fb_end, 1 << MMU_SECTION_SHIFT);
+	/* clear framebuffer */
+	memset((void *)fb_start, 0, timings.hactive.typ * timings.vactive.typ << 2);
+
 	mmu_set_region_dcache_behaviour(fb_start, fb_end - fb_start,
 					DCACHE_WRITEBACK);
 	video_set_flush_dcache(dev, true);
