@@ -80,6 +80,8 @@ static ulong alloc_fb(struct udevice *dev, ulong *addrp)
 	plat->base = base;
 	size = *addrp - base;
 	*addrp = base;
+	/* Wipe framebuffer */
+	memset((void *)base, 0, size);
 
 	return size;
 }
