@@ -415,8 +415,6 @@ static int lcdifv3_video_probe(struct udevice *dev)
 		}
 	}
 
-	lcdifv3_init(dev, &timings, GDF_32BIT_X888RGB);
-
 	uc_priv->bpix = VIDEO_BPP32; /* only support 32 BPP now */
 	uc_priv->xsize = timings.hactive.typ;
 	uc_priv->ysize = timings.vactive.typ;
@@ -429,6 +427,9 @@ static int lcdifv3_video_probe(struct udevice *dev)
 					DCACHE_WRITEBACK);
 	video_set_flush_dcache(dev, true);
 	gd->fb_base = plat->base;
+
+	lcdifv3_init(dev, &timings, GDF_32BIT_X888RGB);
+
 #if IS_ENABLED(CONFIG_VIDEO_BRIDGE)
 	if (priv->disp_dev) {
 		if (device_get_uclass_id(priv->disp_dev) == UCLASS_VIDEO_BRIDGE) {
