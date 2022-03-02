@@ -565,7 +565,7 @@ static int mxs_video_probe(struct udevice *dev)
 
 	struct display_timing timings;
 	u32 bpp = 0;
-	u32 fb_start, fb_end;
+	ulong fb_start, fb_end;
 	int ret;
 	bool enable_pol = true, enable_bridge = false;
 
@@ -685,6 +685,8 @@ static int mxs_video_probe(struct udevice *dev)
 	/* Enable dcache for the frame buffer */
 	fb_start = plat->base;
 	fb_end = plat->base + plat->size;
+	/* clear framebuffer */
+	memset((void *)fb_start, 0, timings.hactive.typ * timings.vactive.typ << 2);
 
 	mmu_set_region_dcache_behaviour(fb_start, fb_end - fb_start,
 					DCACHE_WRITEBACK);
