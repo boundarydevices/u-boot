@@ -31,9 +31,11 @@ config TARGET_IMX8ULP_EVK
 	select FSL_BLOB
 	select ARCH_MISC_INIT
 	select SPL_CRYPTO if SPL
+	select IMX8ULP_DRAM
 
 config BOUNDARY_BOARD_IMX8ULP
 	bool "Boundary Devices i.MX8ULP board"
+	select IMX8ULP_DRAM
 
 endchoice
 

@@ -9,7 +9,4 @@ obj-y += lpddr4_timing_266.o
 else
 obj-y += lpddr4_timing.o
 endif
-ifndef CONFIG_IMX8ULP_DRAM
-obj-y += ddr_init.o
-endif
 endif
