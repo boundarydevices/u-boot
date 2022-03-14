@@ -46,7 +46,9 @@
 #endif
 
 #ifdef CONFIG_FEC_MXC_PHYADDR
-#ifdef CONFIG_PHY_ATHEROS
+#if defined(CONFIG_PHY_MICREL) && defined(CONFIG_PHY_ATHEROS)
+#define ATHEROS_MASK(a) (1 << (a))
+#elif defined(CONFIG_PHY_ATHEROS)
 #define ATHEROS_MASK(a) ((1 << (a)) | ((1 << ((a) ^ 4))))
 #else
 #define ATHEROS_MASK(a) 0
@@ -563,7 +565,8 @@ int board_phy_config(struct phy_device *phydev)
 		phy_ar8031_config(phydev);
 	} else if (((phydev->drv->uid ^ PHY_ID_AR8035) & 0xffffffef) == 0) {
 		phy_ar8035_config(phydev);
-	} else if (((phydev->drv->uid ^ PHY_ID_KSZ9021) & 0xfffffff0) == 0) {
+	} else if ((((phydev->drv->uid ^ PHY_ID_KSZ9021) & 0xfffffff0) == 0) ||
+		   (((phydev->drv->uid ^ PHY_ID_KSZ9031) & 0xfffffff0) == 0)) {
 		/* found KSZ, reinit phy for KSZ */
 		setup_iomux_enet(1);
 #else
