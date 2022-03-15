@@ -558,7 +558,7 @@ int board_phy_config(struct phy_device *phydev)
 #ifdef CONFIG_PHY_MICREL
 #define PHY_ID_KSZ9021	0x221610
 #define MII_KSZ9031_EXT_RGMII_COMMON_CTRL	0
-#define KSZ9031_LED_MODE_SINGLE			0x80
+#define KSZ9031_LED_MODE_SINGLE			0x10
 #define KSZ9031_LED_MODE_TRI_COLOR		0
 #define KSZ9031_CLK125MHZ_EN			0x02
 #if defined(CONFIG_IMX8MM) || defined(CONFIG_IMX8MN) || defined(CONFIG_IMX8MP) || defined(CONFIG_IMX8MQ) || defined(CONFIG_IMX8ULP)
