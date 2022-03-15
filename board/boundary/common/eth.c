@@ -558,8 +558,9 @@ int board_phy_config(struct phy_device *phydev)
 #ifdef CONFIG_PHY_MICREL
 #define PHY_ID_KSZ9021	0x221610
 #define MII_KSZ9031_EXT_RGMII_COMMON_CTRL	0
-#define KSZ9031_LED_MODE	0x0	/* tri-color */
-#define KSZ9031_CLK125_EN	0x2	/* Enable 125 Mhz output */
+#define KSZ9031_LED_MODE_SINGLE			0x80
+#define KSZ9031_LED_MODE_TRI_COLOR		0
+#define KSZ9031_CLK125MHZ_EN			0x02
 #if defined(CONFIG_IMX8MM) || defined(CONFIG_IMX8MN) || defined(CONFIG_IMX8MP) || defined(CONFIG_IMX8MQ) || defined(CONFIG_IMX8ULP)
 #define KSZ_CLK_DEFAULT	0		/* Disable 125 Mhz output */
 #else
@@ -570,10 +571,12 @@ static void phy_micrel_config(struct phy_device *phydev)
 {
 	if (((phydev->drv->uid ^ PHY_ID_KSZ9031) & 0xfffffff0) == 0) {
 		u32 freq = env_get_ulong("phy_clock_out", 10, KSZ_CLK_DEFAULT);
-		u32 common_ctrl = KSZ9031_LED_MODE;
+		u32 led_mod = env_get_ulong("phy_led_mode", 10, 1);
+		u32 common_ctrl = led_mod ? KSZ9031_LED_MODE_SINGLE:
+				KSZ9031_LED_MODE_TRI_COLOR;
 
 		if (freq)
-			common_ctrl |= KSZ9031_CLK125_EN;
+			common_ctrl |= KSZ9031_CLK125MHZ_EN;
 		/* common ctrl - devaddr = 0x02, register = 0x00, tri-color led mode */
 		ksz9031_phy_extended_write(phydev, 0x02,
 			MII_KSZ9031_EXT_RGMII_COMMON_CTRL,
