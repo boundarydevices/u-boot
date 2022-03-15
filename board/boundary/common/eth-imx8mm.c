@@ -50,7 +50,9 @@ static const iomux_v3_cfg_t enet_ar8035_pads[] = {
 };
 #endif
 
-#define STRAP_KSZ9021	(0x1f | ((CONFIG_FEC_MXC_PHYADDR & 4) ? 0x20 : 0))
+#define STRAP_KSZ_CLK125_EN	0x10
+#define STRAP_KSZ_BASE		0x0f
+#define STRAP_KSZ9021	(STRAP_KSZ_BASE | ((CONFIG_FEC_MXC_PHYADDR & 4) ? 0x20 : 0))
 
 #ifdef CONFIG_PHY_MICREL
 static const iomux_v3_cfg_t enet_ksz9021_gpio_pads[] = {
