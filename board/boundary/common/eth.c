@@ -557,6 +557,55 @@ int board_phy_config(struct phy_device *phydev)
 
 #ifdef CONFIG_PHY_MICREL
 #define PHY_ID_KSZ9021	0x221610
+#define MII_KSZ9031_EXT_RGMII_COMMON_CTRL	0
+#define KSZ9031_LED_MODE	0x0	/* tri-color */
+#define KSZ9031_CLK125_EN	0x2	/* Enable 125 Mhz output */
+#if defined(CONFIG_IMX8MM) || defined(CONFIG_IMX8MN) || defined(CONFIG_IMX8MP) || defined(CONFIG_IMX8MQ) || defined(CONFIG_IMX8ULP)
+#define KSZ_CLK_DEFAULT	0		/* Disable 125 Mhz output */
+#else
+#define KSZ_CLK_DEFAULT	125000000	/* Disable 125 Mhz output */
+#endif
+
+static void phy_micrel_config(struct phy_device *phydev)
+{
+	if (((phydev->drv->uid ^ PHY_ID_KSZ9031) & 0xfffffff0) == 0) {
+		u32 freq = env_get_ulong("phy_clock_out", 10, KSZ_CLK_DEFAULT);
+		u32 common_ctrl = KSZ9031_LED_MODE;
+
+		if (freq)
+			common_ctrl |= KSZ9031_CLK125_EN;
+		/* common ctrl - devaddr = 0x02, register = 0x00, tri-color led mode */
+		ksz9031_phy_extended_write(phydev, 0x02,
+			MII_KSZ9031_EXT_RGMII_COMMON_CTRL,
+			MII_KSZ9031_MOD_DATA_NO_POST_INC, common_ctrl);
+		/* control data pad skew - devaddr = 0x02, register = 0x04 */
+		ksz9031_phy_extended_write(phydev, 0x02,
+			MII_KSZ9031_EXT_RGMII_CTRL_SIG_SKEW,
+			MII_KSZ9031_MOD_DATA_NO_POST_INC, 0);
+		/* rx data pad skew - devaddr = 0x02, register = 0x05 */
+		ksz9031_phy_extended_write(phydev, 0x02,
+			MII_KSZ9031_EXT_RGMII_RX_DATA_SKEW,
+			MII_KSZ9031_MOD_DATA_NO_POST_INC, 0);
+		/* tx data pad skew - devaddr = 0x02, register = 0x06 */
+		ksz9031_phy_extended_write(phydev, 0x02,
+			MII_KSZ9031_EXT_RGMII_TX_DATA_SKEW,
+			MII_KSZ9031_MOD_DATA_NO_POST_INC, 0);
+		/* gtx and rx clock pad skew - devaddr = 0x02, register = 0x08 */
+		ksz9031_phy_extended_write(phydev, 0x02,
+			MII_KSZ9031_EXT_RGMII_CLOCK_SKEW,
+			MII_KSZ9031_MOD_DATA_NO_POST_INC, 0x03FF);
+	} else {
+		/* min rx data delay */
+		ksz9021_phy_extended_write(phydev,
+			MII_KSZ9021_EXT_RGMII_RX_DATA_SKEW, 0x0);
+		/* min tx data delay */
+		ksz9021_phy_extended_write(phydev,
+			MII_KSZ9021_EXT_RGMII_TX_DATA_SKEW, 0x0);
+		/* max rx/tx clock delay, min rx/tx control */
+		ksz9021_phy_extended_write(phydev,
+			MII_KSZ9021_EXT_RGMII_CLOCK_SKEW, 0xf0f0);
+	}
+}
 
 int board_phy_config(struct phy_device *phydev)
 {
@@ -573,34 +622,7 @@ int board_phy_config(struct phy_device *phydev)
 	{
 #endif
 #ifndef CONFIG_PHY_MICREL_KSZ8XXX
-		if (((phydev->drv->uid ^ PHY_ID_KSZ9031) & 0xfffffff0) == 0) {
-			/* control data pad skew - devaddr = 0x02, register = 0x04 */
-			ksz9031_phy_extended_write(phydev, 0x02,
-				MII_KSZ9031_EXT_RGMII_CTRL_SIG_SKEW,
-				MII_KSZ9031_MOD_DATA_NO_POST_INC, 0);
-			/* rx data pad skew - devaddr = 0x02, register = 0x05 */
-			ksz9031_phy_extended_write(phydev, 0x02,
-				MII_KSZ9031_EXT_RGMII_RX_DATA_SKEW,
-				MII_KSZ9031_MOD_DATA_NO_POST_INC, 0);
-			/* tx data pad skew - devaddr = 0x02, register = 0x06 */
-			ksz9031_phy_extended_write(phydev, 0x02,
-				MII_KSZ9031_EXT_RGMII_TX_DATA_SKEW,
-				MII_KSZ9031_MOD_DATA_NO_POST_INC, 0);
-			/* gtx and rx clock pad skew - devaddr = 0x02, register = 0x08 */
-			ksz9031_phy_extended_write(phydev, 0x02,
-				MII_KSZ9031_EXT_RGMII_CLOCK_SKEW,
-				MII_KSZ9031_MOD_DATA_NO_POST_INC, 0x03FF);
-		} else {
-			/* min rx data delay */
-			ksz9021_phy_extended_write(phydev,
-				MII_KSZ9021_EXT_RGMII_RX_DATA_SKEW, 0x0);
-			/* min tx data delay */
-			ksz9021_phy_extended_write(phydev,
-				MII_KSZ9021_EXT_RGMII_TX_DATA_SKEW, 0x0);
-			/* max rx/tx clock delay, min rx/tx control */
-			ksz9021_phy_extended_write(phydev,
-				MII_KSZ9021_EXT_RGMII_CLOCK_SKEW, 0xf0f0);
-		}
+		phy_micrel_config(phydev);
 #endif
 	}
 	if (phydev->drv->config)
