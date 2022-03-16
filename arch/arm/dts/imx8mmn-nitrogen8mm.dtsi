@@ -722,8 +722,8 @@
 
 		ethphy0: ethernet-phy {
 			compatible = "ethernet-phy-ieee802.3-c22";
-			reg-mask = <0x90>;
 			interrupts-extended = GPIRQ_FEC1_PHY;
+			reg-mask = <0x90>;
 		};
 	};
 };

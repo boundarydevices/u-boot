@@ -337,6 +337,7 @@ static void sn_prepare(struct panel_sn65dsi83 *sn)
 
 static void sn_powerdown1(struct panel_sn65dsi83 *sn, int skip_irq)
 {
+	set_poll_rtn(NULL);
 	debug("%s\n", __func__);
 	if (sn->state) {
 		sn_disable_pll(sn);
@@ -624,7 +625,6 @@ int sn65_init(struct panel_sn65dsi83 *sn)
 int sn65_remove(struct panel_sn65dsi83 *sn)
 {
 	debug("%s:\n", __func__);
-	set_poll_rtn(NULL);
 	sn_powerdown(sn);
 	return 0;
 }
