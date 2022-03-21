@@ -1017,4 +1017,10 @@ config VIDEO_LINK
 config DRM_SCDC_HELPER
 	bool "Enable scdc helper library"
 
+config HIDE_LOGO_VERSION
+	bool "Hide logo version"
+	help
+		If this is not enabled, a text containing the u-boot version is printed
+		when the logo is shown.
+
 endmenu
