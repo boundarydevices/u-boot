@@ -27,6 +27,11 @@ config TARGET_CLE
 	select IMX8MM
 	select SUPPORT_SPL
 
+config TARGET_CRS
+	bool "crs board"
+	select IMX8MP
+	select SUPPORT_SPL
+
 config TARGET_DS
 	bool "ds"
 	select IMX8MQ
@@ -117,6 +122,7 @@ source "board/boundary/bio/Kconfig"
 source "board/boundary/c2-imx8mm/Kconfig"
 source "board/boundary/c2-mid/Kconfig"
 source "board/boundary/cle/Kconfig"
+source "board/boundary/crs/Kconfig"
 source "board/boundary/ds/Kconfig"
 source "board/boundary/dwe/Kconfig"
 source "board/boundary/hl8mm/Kconfig"

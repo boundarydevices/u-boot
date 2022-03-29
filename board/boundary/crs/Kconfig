@@ -1,0 +1,14 @@
+if TARGET_CRS
+
+config SYS_BOARD
+	default "crs"
+
+config SYS_VENDOR
+	default "boundary"
+
+config SYS_CONFIG_NAME
+	default "crs"
+
+source "board/boundary/common/Kconfig"
+
+endif
