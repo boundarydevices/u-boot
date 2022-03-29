@@ -937,6 +937,9 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
 	imx8mm-cle.dtb \
 
 dtb-$(CONFIG_ARCH_IMX8M) += \
+	imx8mp-crs.dtb \
+
+dtb-$(CONFIG_ARCH_IMX8M) += \
 	imx8mq-bio.dtb \
 
 dtb-$(CONFIG_ARCH_IMXRT) += imxrt1050-evk.dtb \

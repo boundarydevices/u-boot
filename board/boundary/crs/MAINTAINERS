@@ -1,0 +1,6 @@
+i.MX8MP crs BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/crs/
+F:	include/configs/crs.h
+F:	configs/crs_2gr0_defconfig
