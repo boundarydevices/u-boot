@@ -53,7 +53,6 @@ static const char * const imx8mq_ahb_sels[] = {"osc_25m", "sys1_pll_133m", "sys1
 static const char * const imx8mq_dram_alt_sels[] = {"osc_25m", "sys1_pll_800m", "sys1_pll_100m", "sys2_pll_500m",
 						"sys2_pll_250m", "sys1_pll_400m", "audio_pll1_out", "sys1_pll_266m", };
 
-
 static const char * const imx8mq_dram_apb_sels[] = {"osc_25m", "sys2_pll_200m", "sys1_pll_40m",
 						    "sys1_pll_160m", "sys1_pll_800m", "sys3_pll_out",
 						    "sys2_pll_250m", "audio_pll2_out", };
