@@ -110,6 +110,9 @@
 #if !defined(CONFIG_FEC_ENET1) && !defined(CONFIG_FEC_ENET2) && defined(CONFIG_FEC_MXC)
 #define CONFIG_FEC_ENET1
 #endif
+#if !defined(CONFIG_FEC_ENET2) && defined(CONFIG_DWC_ETH_QOS)
+#define CONFIG_FEC_ENET2
+#endif
 
 #if defined(CONFIG_PHY_ATHEROS) || defined(CONFIG_PHY_MICREL)
 static unsigned char strap_gpios[] = {
@@ -265,6 +268,7 @@ static void init_fec_clocks(void)
 	udelay(100);	/* Wait 100 us before using mii interface */
 }
 #endif
+#endif
 
 #if defined(CONFIG_FEC_ENET1) && defined(CONFIG_FEC_ENET2)
 #define FEC_ENET1_ID	0	/* FEC0 for imx6sx */
@@ -284,21 +288,27 @@ static void init_fec_clocks(void)
 #define PHY_MODE PHY_INTERFACE_MODE_RGMII
 #endif
 
-#ifndef CONFIG_DM_ETH
+#if !defined(CONFIG_DM_ETH) && defined(CONFIG_FEC_MXC)
+
+#if defined(CONFIG_MX6SX) || defined(CONFIG_MX6ULL)
+#define MDIO_BASE	ENET_MDIO_BASE
+#define BASE		ENET_BASE_ADDR
+#else
+#define MDIO_BASE	IMX_FEC_BASE
+#define BASE		IMX_FEC_BASE
+#endif
+
 static void init_fec(struct bd_info *bis, unsigned phy_mask)
 {
-#if defined(CONFIG_MX6SX) || defined(CONFIG_MX6ULL)
-	uint32_t mdio_base = ENET_MDIO_BASE;
-#if defined(CONFIG_FEC_ENET1)
-	uint32_t base = ENET_BASE_ADDR;
-#endif
-#else
-	uint32_t mdio_base = IMX_FEC_BASE;
-	uint32_t base = IMX_FEC_BASE;
-#endif
 	struct mii_dev *bus = NULL;
+	uint32_t mdio_base = MDIO_BASE;
+#if defined(CONFIG_FEC_ENET1)
+	uint32_t base = BASE;
+#endif
+#if defined(CONFIG_FEC_ENET1) || defined(CONFIG_FEC_ENET2)
 	struct phy_device *phydev = NULL;
 	int ret;
+#endif
 
 	bus = fec_get_miibus(mdio_base, -1);
 	if (!bus)
@@ -332,6 +342,7 @@ static void init_fec(struct bd_info *bis, unsigned phy_mask)
 	}
 #endif
 	return;
+#if defined(CONFIG_FEC_ENET1) || defined(CONFIG_FEC_ENET2)
 error:
 	;
 	/* Let's leave "mii read" in working state for debug */
@@ -339,8 +350,8 @@ error:
 	mdio_unregister(bus);
 	mdio_free(bus);
 #endif
-}
 #endif
+}
 #endif
 
 #ifdef CONFIG_PHY_ATHEROS
@@ -564,7 +575,7 @@ int board_phy_config(struct phy_device *phydev)
 #if defined(CONFIG_IMX8MM) || defined(CONFIG_IMX8MN) || defined(CONFIG_IMX8MP) || defined(CONFIG_IMX8MQ) || defined(CONFIG_IMX8ULP)
 #define KSZ_CLK_DEFAULT	0		/* Disable 125 Mhz output */
 #else
-#define KSZ_CLK_DEFAULT	125000000	/* Disable 125 Mhz output */
+#define KSZ_CLK_DEFAULT	125000000
 #endif
 
 static void phy_micrel_config(struct phy_device *phydev)
@@ -788,10 +799,8 @@ int board_eth_init(struct bd_info *bis)
 #ifdef GP_KS8995_RESET
 	ks8995_reset();
 #endif
-#ifdef CONFIG_FEC_MXC
-#ifndef CONFIG_DM_ETH
+#if !defined(CONFIG_DM_ETH) && defined(CONFIG_FEC_MXC)
 	init_fec(bis, ETH_PHY_MASK);
-#endif
 #endif
 
 	board_eth_addresses();
