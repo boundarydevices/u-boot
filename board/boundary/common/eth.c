@@ -422,7 +422,7 @@ static void setup_iomux_enet(int kz)
 #endif
 	setup_gpio_eth(kz);
 
-#ifdef CONFIG_FEC_MXC
+#if defined(CONFIG_FEC_MXC) || defined(CONFIG_DWC_ETH_QOS)
 	init_fec_clocks();
 #endif
 	/* Need delay 10ms according to KSZ9021 spec */
@@ -730,10 +730,10 @@ void board_eth_addresses(void)
 		env_set(USB_ETH, env_get("usbnet_devaddr"));
 #endif
 #endif
-#if defined(CONFIG_FEC_ENET1)
+#if defined(CONFIG_FEC) && defined(CONFIG_FEC_ENET1)
 	fec_env_set_ethaddr(0);
 #endif
-#if defined(CONFIG_FEC_ENET2)
+#if defined(CONFIG_FEC) && defined(CONFIG_FEC_ENET2)
 	fec_env_set_ethaddr(1);
 #endif
 }
