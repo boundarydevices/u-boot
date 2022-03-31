@@ -716,9 +716,24 @@ int bdcommon_env_init(void)
 	return 0;
 }
 
+char sfname_buf[32];
+
+void board_env_pre_set_default(void)
+{
+	char *sfname = env_get("sfname");
+
+	sfname_buf[0] = 0;
+	if (sfname) {
+		strncpy(sfname_buf, sfname, sizeof(sfname_buf));
+		sfname_buf[sizeof(sfname_buf) - 1] = 0;
+	}
+}
+
 void board_env_set_default(void)
 {
 	bdcommon_env_init();
+	if (sfname_buf[0])
+		env_set("sfname", sfname_buf);
 }
 
 void init_usb_clk(int usbno);
