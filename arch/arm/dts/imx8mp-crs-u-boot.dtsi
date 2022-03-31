@@ -4,6 +4,15 @@
  * Copyright 2022 Boundary Devices
  */
 
+&iomuxc {
+	pinctrl_hog1: hog1grp {
+		fsl,pins = <
+/* Sierra EM7411(J53) and PCIe(J54) 3.5V enable gpio */
+			MX8MP_IOMUXC_SAI5_MCLK__GPIO3_IO25		0x100
+		>;
+	};
+};
+
 / {
 	aliases {
 		t_hdmi = &t_hdmi;

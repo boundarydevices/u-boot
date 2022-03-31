@@ -10,7 +10,7 @@
 
 &iomuxc {
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_hog>;
+	pinctrl-0 = <&pinctrl_hog>, <&pinctrl_hog1>;
 
 	pinctrl_bt_rfkill: bt-rfkillgrp {
 		fsl,pins = <
@@ -82,9 +82,6 @@
 #define GP_USB_M2_ANT_CTRL1	<&gpio4 30 GPIO_ACTIVE_HIGH>
 			MX8MP_IOMUXC_SAI3_RXD__GPIO4_IO30		0x00
 
-/* Sierra EM7411(J53) and PCIe(J54) */
-#define GP_3P5V_EN		<&gpio3 25 GPIO_ACTIVE_HIGH>
-			MX8MP_IOMUXC_SAI5_MCLK__GPIO3_IO25		0x100
 
 			MX8MP_IOMUXC_GPIO1_IO04__GPIO1_IO04		0x00	/* J57 Pin 20 */
 			MX8MP_IOMUXC_GPIO1_IO05__GPIO1_IO05		0x00	/* J57 Pin 22 */
@@ -108,6 +105,14 @@
 			MX8MP_IOMUXC_HDMI_DDC_SDA__HDMIMIX_EARC_SDA	0x400001c3
 			MX8MP_IOMUXC_HDMI_HPD__HDMIMIX_EARC_DC_HPD	0x40000019
 			MX8MP_IOMUXC_HDMI_CEC__HDMIMIX_EARC_CEC		0x40000019
+		>;
+	};
+
+	pinctrl_hog1: hog1grp {
+		fsl,pins = <
+/* Sierra EM7411(J53) and PCIe(J54) */
+#define GP_3P5V_EN		<&gpio3 25 GPIO_ACTIVE_HIGH>
+			MX8MP_IOMUXC_SAI5_MCLK__GPIO3_IO25		0x140
 		>;
 	};
 
