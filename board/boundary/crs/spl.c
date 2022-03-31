@@ -123,6 +123,8 @@ int power_init_board(void)
 	/* set WDOG_B_CFG to cold reset */
 	pmic_reg_write(p, PCA9450_RESET_CTRL, 0xA1);
 
+	/* turn on swout */
+	pmic_reg_write(p, PCA9450_LOADSW_CTRL, 0x86);
 	return 0;
 }
 #endif
