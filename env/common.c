@@ -253,6 +253,10 @@ char *env_get_default(const char *name)
 	return NULL;
 }
 
+void __weak board_env_pre_set_default(void)
+{
+}
+
 void __weak board_env_set_default(void)
 {
 }
@@ -270,6 +274,7 @@ void env_set_default(const char *s, int flags)
 		debug("Using default environment\n");
 	}
 
+	board_env_pre_set_default();
 	flags |= H_DEFAULT;
 	if (himport_r(&env_htab, default_environment,
 			sizeof(default_environment), '\0', flags, 0,
