@@ -27,4 +27,6 @@
 	"scriptaddr=0x40000000\0" \
 	BOOTENV
 
+#define CONFIG_SETUP_MEMORY_TAGS
+
 #endif
