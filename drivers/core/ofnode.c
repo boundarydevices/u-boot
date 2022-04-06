@@ -1236,7 +1236,7 @@ phy_interface_t ofnode_read_phy_mode(ofnode node)
 		mode = ofnode_read_string(node, "phy-connection-type");
 
 	if (!mode)
-		return PHY_INTERFACE_MODE_NONE;
+		return PHY_INTERFACE_MODE_NA;
 
 	for (i = 0; i < PHY_INTERFACE_MODE_COUNT; i++)
 		if (!strcmp(mode, phy_interface_strings[i]))
@@ -1244,5 +1244,5 @@ phy_interface_t ofnode_read_phy_mode(ofnode node)
 
 	debug("%s: Invalid PHY interface '%s'\n", __func__, mode);
 
-	return PHY_INTERFACE_MODE_NONE;
+	return PHY_INTERFACE_MODE_NA;
 }
