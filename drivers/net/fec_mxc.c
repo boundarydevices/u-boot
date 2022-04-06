@@ -1673,19 +1673,13 @@ static int fecmxc_of_to_plat(struct udevice *dev)
 	int ret = 0;
 	struct eth_pdata *pdata = dev_get_plat(dev);
 	struct fec_priv *priv = dev_get_priv(dev);
-	const char *phy_mode;
 
 	pdata->iobase = dev_read_addr(dev);
 	priv->eth = (struct ethernet_regs *)pdata->iobase;
 
-	pdata->phy_interface = -1;
-	phy_mode = ofnode_read_string(dev_ofnode(dev), "phy-mode");
-	if (phy_mode)
-		pdata->phy_interface = phy_get_interface_by_name(phy_mode);
-	if (pdata->phy_interface == -1) {
-		debug("%s: Invalid PHY interface '%s'\n", __func__, phy_mode);
+	pdata->phy_interface = dev_read_phy_mode(dev);
+	if (pdata->phy_interface == PHY_INTERFACE_MODE_NONE)
 		return -EINVAL;
-	}
 
 #ifdef CONFIG_DM_REGULATOR
 	device_get_supply_regulator(dev, "phy-supply", &priv->phy_supply);

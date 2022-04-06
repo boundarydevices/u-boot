@@ -743,6 +743,18 @@ int dev_read_pci_bus_range(const struct udevice *dev, struct resource *res);
 int dev_decode_display_timing(const struct udevice *dev, int index,
 			      struct display_timing *config);
 
+/**
+ * dev_read_phy_mode() - Read PHY connection type from a MAC
+ *
+ * This function parses the "phy-mode" / "phy-connection-type" property and
+ * returns the corresponding PHY interface type.
+ *
+ * @dev: device representing the MAC
+ * Return: one of PHY_INTERFACE_MODE_* constants, PHY_INTERFACE_MODE_NONE on
+ *	   error
+ */
+phy_interface_t dev_read_phy_mode(const struct udevice *dev);
+
 #else /* CONFIG_DM_DEV_READ_INLINE is enabled */
 #include <asm/global_data.h>
 
@@ -1090,6 +1102,11 @@ static inline int dev_decode_display_timing(const struct udevice *dev,
 					    struct display_timing *config)
 {
 	return ofnode_decode_display_timing(dev_ofnode(dev), index, config);
+}
+
+static inline phy_interface_t dev_read_phy_mode(const struct udevice *dev)
+{
+	return ofnode_read_phy_mode(dev_ofnode(dev));
 }
 
 #endif /* CONFIG_DM_DEV_READ_INLINE */

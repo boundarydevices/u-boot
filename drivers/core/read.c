@@ -398,3 +398,8 @@ int dev_decode_display_timing(const struct udevice *dev, int index,
 {
 	return ofnode_decode_display_timing(dev_ofnode(dev), index, config);
 }
+
+phy_interface_t dev_read_phy_mode(const struct udevice *dev)
+{
+	return ofnode_read_phy_mode(dev_ofnode(dev));
+}

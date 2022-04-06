@@ -12,6 +12,7 @@
 #include <dm/of.h>
 #include <dm/of_access.h>
 #include <log.h>
+#include <phy_interface.h>
 
 /* Enable checks to protect against invalid calls */
 #undef OF_CHECKS
@@ -1215,5 +1216,17 @@ int ofnode_conf_read_int(const char *prop_name, int default_val);
  * Return: string value, if found, or NULL if not
  */
 const char *ofnode_conf_read_str(const char *prop_name);
+
+/**
+ * ofnode_read_phy_mode() - Read PHY connection type from a MAC node
+ *
+ * This function parses the "phy-mode" / "phy-connection-type" property and
+ * returns the corresponding PHY interface type.
+ *
+ * @mac_node:	ofnode containing the property
+ * Return: one of PHY_INTERFACE_MODE_* constants, PHY_INTERFACE_MODE_NONE on
+ *	   error
+ */
+phy_interface_t ofnode_read_phy_mode(ofnode mac_node);
 
 #endif
