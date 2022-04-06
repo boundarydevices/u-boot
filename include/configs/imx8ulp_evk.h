@@ -84,6 +84,7 @@
 	"console=ttyLP1,115200 earlycon\0" \
 	"fastboot_raw_partition_bootloader=0x0 0x1ff0 mmcpart 1\0" \
 	"fastboot_raw_partition_bootloader-env=0x1ff0 0x10 mmcpart 1\0" \
+	"fdtoverlay_addr_r=0x83040000\0"			\
 	"fdt_addr_r=0x83000000\0"			\
 	"fdt_addr=0x83000000\0"			\
 	"fdt_high=0xffffffffffffffff\0"		\
