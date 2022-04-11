@@ -58,21 +58,21 @@
 		fsl,pins = <
 /* sierra em7411 */
 #define GP_USB_M2_PWR_OFF	<&gpio4 27 GPIO_ACTIVE_HIGH>
-			MX8MP_IOMUXC_SAI2_MCLK__GPIO4_IO27		0x00
+			MX8MP_IOMUXC_SAI2_MCLK__GPIO4_IO27		0x140
 #define GP_USB_M2_WD		<&gpio4 25 GPIO_ACTIVE_LOW>
-			MX8MP_IOMUXC_SAI2_TXC__GPIO4_IO25		0x00
+			MX8MP_IOMUXC_SAI2_TXC__GPIO4_IO25		0x140
 #define GP_USB_M2_SIM1_DET	<&gpio4 21 GPIO_ACTIVE_HIGH>
-			MX8MP_IOMUXC_SAI2_RXFS__GPIO4_IO21		0x00
+			MX8MP_IOMUXC_SAI2_RXFS__GPIO4_IO21		0x140
 #define GP_USB_M2_WL_DISABLE	<&gpio4 22 GPIO_ACTIVE_HIGH>
-			MX8MP_IOMUXC_SAI2_RXC__GPIO4_IO22		0x00
+			MX8MP_IOMUXC_SAI2_RXC__GPIO4_IO22		0x140
 #define GP_USB_M2_HST_WAKE	<&gpio4 23 GPIO_ACTIVE_HIGH>
 			MX8MP_IOMUXC_SAI2_RXD0__GPIO4_IO23		0x00
 #define GP_USB_M2_VID0		<&gpio5 2 GPIO_ACTIVE_HIGH>
 			MX8MP_IOMUXC_SAI3_MCLK__GPIO5_IO02		0x00
 #define GP_USB_M2_SIM2_DET	<&gpio4 31 GPIO_ACTIVE_HIGH>
-			MX8MP_IOMUXC_SAI3_TXFS__GPIO4_IO31		0x00
+			MX8MP_IOMUXC_SAI3_TXFS__GPIO4_IO31		0x140
 #define GP_USB_M2_RESET		<&gpio5 0 GPIO_ACTIVE_LOW>
-			MX8MP_IOMUXC_SAI3_TXC__GPIO5_IO00		0x00
+			MX8MP_IOMUXC_SAI3_TXC__GPIO5_IO00		0x140
 #define GP_USB_M2_CONFIG_0	<&gpio5 1 GPIO_ACTIVE_HIGH>
 			MX8MP_IOMUXC_SAI3_TXD__GPIO5_IO01		0x00
 #define GP_USB_M2_ANT_CTRL2	<&gpio4 28 GPIO_ACTIVE_HIGH>
@@ -81,7 +81,6 @@
 			MX8MP_IOMUXC_SAI3_RXC__GPIO4_IO29		0x00
 #define GP_USB_M2_ANT_CTRL1	<&gpio4 30 GPIO_ACTIVE_HIGH>
 			MX8MP_IOMUXC_SAI3_RXD__GPIO4_IO30		0x00
-
 
 			MX8MP_IOMUXC_GPIO1_IO04__GPIO1_IO04		0x00	/* J57 Pin 20 */
 			MX8MP_IOMUXC_GPIO1_IO05__GPIO1_IO05		0x00	/* J57 Pin 22 */
@@ -99,7 +98,6 @@
 			MX8MP_IOMUXC_SPDIF_TX__GPIO5_IO03		0x00	/* TP137 */
 			MX8MP_IOMUXC_SPDIF_EXT_CLK__GPIO5_IO05		0x00	/* TP139 */
 			MX8MP_IOMUXC_GPIO1_IO11__GPIO1_IO11		0x00	/* TP152 */
-
 
 			MX8MP_IOMUXC_HDMI_DDC_SCL__HDMIMIX_EARC_SCL	0x400001c3
 			MX8MP_IOMUXC_HDMI_DDC_SDA__HDMIMIX_EARC_SDA	0x400001c3
@@ -733,6 +731,8 @@
 	pinctrl-0 = <&pinctrl_eqos>;
 	phy-mode = "rgmii-id";
 	phy-handle = <&ethphy0>;
+	phy-reset-post-delay = <150>;
+	phy-reset-duration = <10>;
 	status = "okay";
 
 	mdio {
@@ -742,13 +742,13 @@
 
 		ethphy0: ethernet-phy@7 {
 			compatible = "ethernet-phy-ieee802.3-c22";
-			at803x,hib-disabled;
-			eee-broken-1000t;
 			interrupts-extended = GPIRQ_EQOS_PHY;
+			reg = <7>;
 #if 0
 			reset-gpios = GP_EQOS_RESET;
 #endif
-			reg = <7>;
+			rxc-skew-ps = <3000>;
+			txc-skew-ps = <3000>;
 		};
 	};
 };
@@ -953,7 +953,7 @@
 #if 0
 &i2c3a {
 	basler_camera@36 {
-		compatible = "basler,basler-camera-vvcam", "basler-camera-vvcam";
+		compatible = "basler,basler-camera", "basler-camera";
 		reg = <0x36>;
 		csi_id = <0x01>;
 		status = "okay";
@@ -962,7 +962,7 @@
 			basler_ep_1: endpoint {
 				clock-lanes = <0>;
 				data-lanes = <1 2 3 4>;
-				link-frequencies = /bits/ 64 <750000000>;
+				link-frequencies = /bits/ 64 <594000000>;
 				max-lane-frequency = /bits/ 64 <750000000>;
 				max-pixel-frequency = /bits/ 64 <266000000>;
 				max-data-rate = /bits/ 64 <0>;
@@ -974,7 +974,7 @@
 
 &i2c3b {
 	basler_camera@36 {
-		compatible = "basler,basler-camera-vvcam", "basler-camera-vvcam";
+		compatible = "basler,basler-camera", "basler-camera";
 		reg = <0x36>;
 		csi_id = <0x00>;
 		status = "okay";
@@ -983,7 +983,7 @@
 			basler_ep_0: endpoint {
 				clock-lanes = <0>;
 				data-lanes = <1 2 3 4>;
-				link-frequencies = /bits/ 64 <750000000>;
+				link-frequencies = /bits/ 64 <594000000>;
 				max-lane-frequency = /bits/ 64 <750000000>;
 				max-pixel-frequency = /bits/ 64 <266000000>;
 				max-data-rate = /bits/ 64 <0>;
@@ -1031,7 +1031,7 @@
 };
 
 &isi_0 {
-	status = "disabled";
+	status = "okay";
 
 	cap_device {
 		status = "okay";
@@ -1043,7 +1043,7 @@
 };
 
 &isi_1 {
-	status = "disabled";
+	status = "okay";
 
 	cap_device {
 		status = "okay";
@@ -1051,11 +1051,11 @@
 };
 
 &isp_0 {
-	status = "okay";
+	status = "disabled";
 };
 
 &isp_1 {
-	status = "okay";
+	status = "disabled";
 };
 #endif
 
