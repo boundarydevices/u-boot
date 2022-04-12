@@ -79,6 +79,12 @@ static int imx8m_power_domain_bind(struct udevice *dev)
 		/* Bind the subnode to this driver */
 		name = ofnode_get_name(subnode);
 
+		/* Descend into 'pgc' subnode */
+		if (!strstr(name, "power-domain")) {
+			subnode = ofnode_first_subnode(subnode);
+			name = ofnode_get_name(subnode);
+		}
+
 		ret = device_bind_with_driver_data(dev, dev->driver, name,
 						   dev->driver_data,
 						   subnode,
