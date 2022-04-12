@@ -339,17 +339,6 @@ static int ti_power_domain_of_xlate(struct power_domain *pd,
 
 	return 0;
 }
-
-static int ti_power_domain_request(struct power_domain *pd)
-{
-	return 0;
-}
-
-static int ti_power_domain_free(struct power_domain *pd)
-{
-	return 0;
-}
-
 static const struct udevice_id ti_power_domain_of_match[] = {
 	{ .compatible = "ti,sci-pm-domain" },
 	{ /* sentinel */ }
@@ -359,8 +348,6 @@ static struct power_domain_ops ti_power_domain_ops = {
 	.on = ti_power_domain_on,
 	.off = ti_power_domain_off,
 	.of_xlate = ti_power_domain_of_xlate,
-	.request = ti_power_domain_request,
-	.rfree = ti_power_domain_free,
 };
 
 U_BOOT_DRIVER(ti_pm_domains) = {

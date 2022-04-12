@@ -51,7 +51,7 @@ static int power_domain_request(struct power_domain *power_domain,
 		return ret;
 	}
 
-	ret = ops->request(power_domain);
+	ret = ops->request ? ops->request(power_domain) : 0;
 	if (ret) {
 		debug("ops->request() failed: %d\n", ret);
 		return ret;
@@ -123,7 +123,7 @@ int power_domain_free(struct power_domain *power_domain)
 
 	debug("%s(power_domain=%p)\n", __func__, power_domain);
 
-	return ops->rfree(power_domain);
+	return ops->rfree ? ops->rfree(power_domain) : 0;
 }
 
 int power_domain_on(struct power_domain *power_domain)
@@ -132,7 +132,7 @@ int power_domain_on(struct power_domain *power_domain)
 
 	debug("%s(power_domain=%p)\n", __func__, power_domain);
 
-	return ops->on(power_domain);
+	return ops->on ? ops->on(power_domain) : 0;
 }
 
 int power_domain_off(struct power_domain *power_domain)
@@ -141,7 +141,7 @@ int power_domain_off(struct power_domain *power_domain)
 
 	debug("%s(power_domain=%p)\n", __func__, power_domain);
 
-	return ops->off(power_domain);
+	return ops->off ? ops->off(power_domain) : 0;
 }
 
 #if CONFIG_IS_ENABLED(OF_REAL)
