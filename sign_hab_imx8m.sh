@@ -28,6 +28,9 @@ if [ -z "$SRK_TABLE" ] || [ ! -f $SRK_TABLE ]; then
 	exit 1
 fi
 
+# retrieve the current script path in case it is executed from another location
+SCRIPT_PATH=$(dirname $0)
+
 # source config file for convenience
 source .config
 
@@ -35,11 +38,11 @@ source .config
 for i in $CONFIG_OF_LIST; do
 	DTBS="arch/arm/dts/$i.dtb $DTBS"
 done
-./print_fit_hab.sh $DTBS > fit.log
+$SCRIPT_PATH/print_fit_hab.sh $DTBS > fit.log
 
 # copy templates and update values
-cp doc/imx/habv4/csf_examples/mx8m_mx8mm/template_csf_spl.txt csf_spl.txt
-cp doc/imx/habv4/csf_examples/mx8m_mx8mm/template_csf_fit.txt csf_fit.txt
+cp $SCRIPT_PATH/doc/imx/habv4/csf_examples/mx8m_mx8mm/template_csf_spl.txt csf_spl.txt
+cp $SCRIPT_PATH/doc/imx/habv4/csf_examples/mx8m_mx8mm/template_csf_fit.txt csf_fit.txt
 sed -i "s|_SIGN_KEY_|$SIGN_KEY|g" csf_*.txt
 sed -i "s|_IMG_KEY_|$IMG_KEY|g" csf_*.txt
 sed -i "s|_SRK_TABLE_|$SRK_TABLE|g" csf_*.txt
