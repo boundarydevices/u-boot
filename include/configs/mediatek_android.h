@@ -211,7 +211,16 @@
 			"echo Running Android...;" \
 			BOOT_CMD \
 		"fi;" \
-		"echo Failed to boot Android...;\0"
+		"echo Failed to boot Android...;" \
+		"part start mmc ${mmcdev} " CONTROL_PARTITION " misc_start;" \
+		"part size mmc ${mmcdev} " CONTROL_PARTITION " misc_size;" \
+		"echo Clearing Misc Partition...;" \
+		"mmc erase ${misc_start} ${misc_size};" \
+		"bcb load ${mmcdev} " CONTROL_PARTITION ";" \
+		"bcb set command boot-recovery;" \
+		"bcb store;" \
+		"echo Rebooting to Recovery mode...;" \
+		"reset;\0"
 
 #define BOOTENV_DEV_NAME_SYSTEM(devtypeu, devtypel, instance)	\
 		"system "
