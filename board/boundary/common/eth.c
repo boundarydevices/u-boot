@@ -66,20 +66,40 @@
 #define KSZ8XXX_MASK(a) 0
 #endif
 
-#define ALL_PHY_MASK(a) (ATHEROS_MASK(a) | KSZ9021_MASK(a) | KSZ8XXX_MASK(a))
+#define ALL_ATH_PHY_MASK(a) (ATHEROS_MASK(a))
+#define ALL_KSZ_PHY_MASK(a) (KSZ9021_MASK(a) | KSZ8XXX_MASK(a))
 #ifdef CONFIG_FEC_ENET2
-#define COMBINED_MASK(a) (ALL_PHY_MASK(a) | (ALL_PHY_MASK(a + 1) << 16))
+#define COMBINED_ATH_MASK(a, b) (ALL_ATH_PHY_MASK(a) | (ALL_ATH_PHY_MASK(b) << 16))
+#define COMBINED_KSZ_MASK(a, b) (ALL_KSZ_PHY_MASK(a) | (ALL_KSZ_PHY_MASK(b) << 16))
 #else
-#define COMBINED_MASK(a) ALL_PHY_MASK(a)
+#define COMBINED_ATH_MASK(a, b) ALL_ATH_PHY_MASK(a)
+#define COMBINED_KSZ_MASK(a, b) ALL_KSZ_PHY_MASK(a)
+#endif
+
+#ifndef CONFIG_FEC_MXC_PHYADDR2
+#define CONFIG_FEC_MXC_PHYADDR2		(CONFIG_FEC_MXC_PHYADDR + 1)
+#endif
+
+#ifndef CONFIG_FEC_MXC_KSZ_PHYADDR
+#define CONFIG_FEC_MXC_KSZ_PHYADDR	CONFIG_FEC_MXC_PHYADDR
+#endif
+
+#ifndef CONFIG_FEC_MXC_KSZ_PHYADDR2
+#define CONFIG_FEC_MXC_KSZ_PHYADDR2	(CONFIG_FEC_MXC_KSZ_PHYADDR + 1)
 #endif
 
 #ifndef ETH_PHY_MASK
-#define ETH_PHY_MASK	COMBINED_MASK(CONFIG_FEC_MXC_PHYADDR)
-#endif
+#define ETH_PHY_MASK_ATH	COMBINED_ATH_MASK(CONFIG_FEC_MXC_PHYADDR, CONFIG_FEC_MXC_PHYADDR2)
+#define ETH_PHY_MASK_KSZ	COMBINED_KSZ_MASK(CONFIG_FEC_MXC_KSZ_PHYADDR, CONFIG_FEC_MXC_KSZ_PHYADDR2)
+#else
+#define ETH_PHY_MASK_ATH	ETH_PHY_MASK
+#define ETH_PHY_MASK_KSZ	ETH_PHY_MASK
 
 #if ((ETH_PHY_MASK >> CONFIG_FEC_MXC_PHYADDR) & 1) == 0
 #error CONFIG_FEC_MXC_PHYADDR is not part of ETH_PHY_MASK
 #endif
+#endif
+
 #endif
 
 #define PULL_GP(a, bit)		(((a >> (bit)) & 1) ? WEAK_PULLUP_OUTPUT : WEAK_PULLDN_OUTPUT)
@@ -192,6 +212,61 @@ static void set_strap_input(void)
 #endif
 #endif
 
+#ifdef CONFIG_PHY_ATHEROS
+static void setup_gpio_ar8035(void)
+{
+	set_strap_pins(STRAP_AR8035);
+	SETUP_IOMUX_PADS(enet_ar8035_gpio_pads);
+}
+
+static void setup_enet_ar8035(void)
+{
+	SETUP_IOMUX_PADS(enet_ar8035_pads);
+}
+#ifndef CONFIG_PHY_MICREL
+#define setup_gpio_eth(kz) setup_gpio_ar8035()
+#define setup_enet_eth(kz) setup_enet_ar8035()
+#endif
+#endif
+
+#ifdef CONFIG_PHY_MICREL
+#ifdef CONFIG_PHY_MICREL_KSZ8XXX
+static void setup_gpio_ksz8863(void)
+{
+	set_strap_pins(STRAP_KSZ8863);
+	SETUP_IOMUX_PADS(enet_ksz8863_gpio_pads);
+}
+
+static void setup_enet_ksz8863(void)
+{
+	SETUP_IOMUX_PADS(enet_ksz8863_pads);
+}
+#define setup_gpio_micrel setup_gpio_ksz8863
+#define setup_enet_micrel setup_enet_ksz8863
+#else
+static void setup_gpio_ksz9021(void)
+{
+	set_strap_pins(STRAP_KSZ9021);
+	SETUP_IOMUX_PADS(enet_ksz9021_gpio_pads);
+}
+
+static void setup_enet_ksz9021(void)
+{
+	SETUP_IOMUX_PADS(enet_ksz9021_pads);
+}
+#define setup_gpio_micrel setup_gpio_ksz9021
+#define setup_enet_micrel setup_enet_ksz9021
+#endif
+#ifndef CONFIG_PHY_ATHEROS
+#define setup_gpio_eth(kz) setup_gpio_micrel();
+#define setup_enet_eth(kz) setup_enet_micrel();
+#else
+#define setup_gpio_eth(kz) if (kz) setup_gpio_micrel(); else setup_gpio_ar8035();
+#define setup_enet_eth(kz) if (kz) setup_enet_micrel(); else setup_enet_ar8035();
+#endif
+#endif
+
+
 #if defined(CONFIG_FEC_MXC) || defined(CONFIG_DWC_ETH_QOS)
 #if !defined(CONFIG_MX5)
 static void init_fec_clocks(void)
@@ -288,126 +363,6 @@ static void init_fec_clocks(void)
 #define PHY_MODE PHY_INTERFACE_MODE_RGMII
 #endif
 
-#if !defined(CONFIG_DM_ETH) && defined(CONFIG_FEC_MXC)
-
-#if defined(CONFIG_MX6SX) || defined(CONFIG_MX6ULL)
-#define MDIO_BASE	ENET_MDIO_BASE
-#define BASE		ENET_BASE_ADDR
-#else
-#define MDIO_BASE	IMX_FEC_BASE
-#define BASE		IMX_FEC_BASE
-#endif
-
-static void init_fec(struct bd_info *bis, unsigned phy_mask)
-{
-	struct mii_dev *bus = NULL;
-	uint32_t mdio_base = MDIO_BASE;
-#if defined(CONFIG_FEC_ENET1)
-	uint32_t base = BASE;
-#endif
-#if defined(CONFIG_FEC_ENET1) || defined(CONFIG_FEC_ENET2)
-	struct phy_device *phydev = NULL;
-	int ret;
-#endif
-
-	bus = fec_get_miibus(mdio_base, -1);
-	if (!bus)
-		return;
-#if defined(CONFIG_FEC_ENET1)
-	phydev = phy_find_by_mask(bus, phy_mask & 0xffff, PHY_MODE);
-	if (!phydev) {
-		printf("%s: phy not found\n", __func__);
-		goto error;
-	}
-	printf("%s at %d\n", phydev->drv->name, phydev->addr);
-	ret  = fec_probe(bis, FEC_ENET1_ID, base, bus, phydev);
-	if (ret) {
-		printf("FEC MXC: %s:failed\n", __func__);
-		free(phydev);
-		goto error;
-	}
-#endif
-#if defined(CONFIG_FEC_ENET2)
-	phydev = phy_find_by_mask(bus, phy_mask >> 16, PHY_MODE);
-	if (!phydev) {
-		printf("%s: phy2 not found\n", __func__);
-		goto error;
-	}
-	printf("%s at %d\n", phydev->drv->name, phydev->addr);
-	ret  = fec_probe(bis, FEC_ENET2_ID, ENET2_BASE_ADDR, bus, phydev);
-	if (ret) {
-		printf("FEC1 MXC: %s:failed\n", __func__);
-		free(phydev);
-		goto error;
-	}
-#endif
-	return;
-#if defined(CONFIG_FEC_ENET1) || defined(CONFIG_FEC_ENET2)
-error:
-	;
-	/* Let's leave "mii read" in working state for debug */
-#if 0
-	mdio_unregister(bus);
-	mdio_free(bus);
-#endif
-#endif
-}
-#endif
-
-#ifdef CONFIG_PHY_ATHEROS
-static void setup_gpio_ar8035(void)
-{
-	set_strap_pins(STRAP_AR8035);
-	SETUP_IOMUX_PADS(enet_ar8035_gpio_pads);
-}
-
-static void setup_enet_ar8035(void)
-{
-	SETUP_IOMUX_PADS(enet_ar8035_pads);
-}
-#ifndef CONFIG_PHY_MICREL
-#define setup_gpio_eth(kz) setup_gpio_ar8035()
-#define setup_enet_eth(kz) setup_enet_ar8035()
-#endif
-#endif
-
-#ifdef CONFIG_PHY_MICREL
-#ifdef CONFIG_PHY_MICREL_KSZ8XXX
-static void setup_gpio_ksz8863(void)
-{
-	set_strap_pins(STRAP_KSZ8863);
-	SETUP_IOMUX_PADS(enet_ksz8863_gpio_pads);
-}
-
-static void setup_enet_ksz8863(void)
-{
-	SETUP_IOMUX_PADS(enet_ksz8863_pads);
-}
-#define setup_gpio_micrel setup_gpio_ksz8863
-#define setup_enet_micrel setup_enet_ksz8863
-#else
-static void setup_gpio_ksz9021(void)
-{
-	set_strap_pins(STRAP_KSZ9021);
-	SETUP_IOMUX_PADS(enet_ksz9021_gpio_pads);
-}
-
-static void setup_enet_ksz9021(void)
-{
-	SETUP_IOMUX_PADS(enet_ksz9021_pads);
-}
-#define setup_gpio_micrel setup_gpio_ksz9021
-#define setup_enet_micrel setup_enet_ksz9021
-#endif
-#ifndef CONFIG_PHY_ATHEROS
-#define setup_gpio_eth(kz) setup_gpio_micrel();
-#define setup_enet_eth(kz) setup_enet_micrel();
-#else
-#define setup_gpio_eth(kz) if (kz) setup_gpio_micrel(); else setup_gpio_ar8035();
-#define setup_enet_eth(kz) if (kz) setup_enet_micrel(); else setup_enet_ar8035();
-#endif
-#endif
-
 #if defined(CONFIG_PHY_ATHEROS) || defined(CONFIG_PHY_MICREL)
 static void release_phy_reset(int gp)
 {
@@ -420,8 +375,14 @@ static void release_phy_reset(int gp)
 #endif
 }
 
+static int iomux_selection = -1;
+
 static void setup_iomux_enet(int kz)
 {
+	if (iomux_selection == kz)
+		return;
+	iomux_selection = kz;
+
 #ifdef GP_KS8995_RESET
 	gpio_direction_output(GP_KS8995_RESET, 0);
 #endif
@@ -461,6 +422,106 @@ static void setup_iomux_enet(int kz)
 	setup_enet_eth(kz);
 #ifdef CONFIG_MX6ULL
 	set_strap_input();
+#endif
+}
+#endif
+
+#define PHY_ID_KSZ9021	0x221610
+
+static inline bool is_micrel_part(struct phy_device *phydev)
+{
+	if ((((phydev->drv->uid ^ PHY_ID_KSZ9021) & 0xfffffff0) == 0) ||
+	    (((phydev->drv->uid ^ PHY_ID_KSZ9031) & 0xfffffff0) == 0))
+		return true;
+	return false;
+}
+
+
+#if !defined(CONFIG_DM_ETH) && defined(CONFIG_FEC_MXC)
+#if defined(CONFIG_MX6SX) || defined(CONFIG_MX6ULL)
+#define MDIO_BASE	ENET_MDIO_BASE
+#define BASE		ENET_BASE_ADDR
+#else
+#define MDIO_BASE	IMX_FEC_BASE
+#define BASE		IMX_FEC_BASE
+#endif
+
+static void init_fec(struct bd_info *bis, unsigned phy_mask_ath, unsigned phy_mask_ksz)
+{
+	struct mii_dev *bus = NULL;
+	uint32_t mdio_base = MDIO_BASE;
+#if defined(CONFIG_FEC_ENET1)
+	uint32_t base = BASE;
+	struct phy_device *phydev1 = NULL;
+#endif
+#if defined(CONFIG_FEC_ENET2)
+	struct phy_device *phydev2 = NULL;
+#endif
+#if defined(CONFIG_FEC_ENET1) || defined(CONFIG_FEC_ENET2)
+	int ret;
+#endif
+
+	bus = fec_get_miibus(mdio_base, -1);
+	if (!bus)
+		return;
+#if defined(CONFIG_FEC_ENET1)
+	if (phy_mask_ath & 0xffff)
+		phydev1 = phy_find_by_mask(bus, phy_mask_ath & 0xffff, PHY_MODE);
+	if (!phydev1 && (phy_mask_ksz & 0xffff)) {
+#if defined(CONFIG_PHY_ATHEROS) && defined(CONFIG_PHY_MICREL)
+		setup_iomux_enet(1);
+#endif
+		phydev1 = phy_find_by_mask(bus, phy_mask_ksz & 0xffff, PHY_MODE);
+	}
+	if (!phydev1) {
+		printf("%s: phy not found\n", __func__);
+#if defined(CONFIG_PHY_ATHEROS) && defined(CONFIG_PHY_MICREL)
+		setup_iomux_enet(0);
+#endif
+	} else {
+		printf("%s at %d\n", phydev1->drv->name, phydev1->addr);
+		ret  = fec_probe(bis, FEC_ENET1_ID, base, bus, phydev1);
+		if (ret) {
+			printf("FEC MXC: %s:failed\n", __func__);
+			free(phydev1);
+		}
+	}
+#endif
+
+#if defined(CONFIG_FEC_ENET2)
+	if ((phy_mask_ath >> 16)
+#if defined(CONFIG_FEC_ENET1)
+			&& (!phydev1 || !is_micrel_part(phydev1))
+#endif
+			)
+		phydev2 = phy_find_by_mask(bus, phy_mask_ath >> 16, PHY_MODE);
+	if (!phydev2 && (phy_mask_ksz >> 16) && (!phydev1 || is_micrel_part(phydev1))) {
+#if defined(CONFIG_PHY_ATHEROS) && defined(CONFIG_PHY_MICREL)
+		setup_iomux_enet(1);
+#endif
+		phydev2 = phy_find_by_mask(bus, phy_mask_ksz >> 16, PHY_MODE);
+	}
+	if (!phydev2) {
+		printf("%s: phy2 not found\n", __func__);
+		goto error;
+	}
+	printf("%s at %d\n", phydev2->drv->name, phydev2->addr);
+	ret  = fec_probe(bis, FEC_ENET2_ID, ENET2_BASE_ADDR, bus, phydev2);
+	if (ret) {
+		printf("FEC1 MXC: %s:failed\n", __func__);
+		free(phydev2);
+		goto error;
+	}
+#endif
+	return;
+#if defined(CONFIG_FEC_ENET2)
+error:
+	;
+	/* Let's leave "mii read" in working state for debug */
+#if 0
+	mdio_unregister(bus);
+	mdio_free(bus);
+#endif
 #endif
 }
 #endif
@@ -567,7 +628,6 @@ int board_phy_config(struct phy_device *phydev)
 #endif
 
 #ifdef CONFIG_PHY_MICREL
-#define PHY_ID_KSZ9021	0x221610
 #define MII_KSZ9031_EXT_RGMII_COMMON_CTRL	0
 #define KSZ9031_LED_MODE_SINGLE			0x10
 #define KSZ9031_LED_MODE_TRI_COLOR		0
@@ -628,8 +688,7 @@ int board_phy_config(struct phy_device *phydev)
 		phy_ar8031_config(phydev);
 	} else if (((phydev->drv->uid ^ PHY_ID_AR8035) & 0xffffffef) == 0) {
 		phy_ar8035_config(phydev);
-	} else if ((((phydev->drv->uid ^ PHY_ID_KSZ9021) & 0xfffffff0) == 0) ||
-		   (((phydev->drv->uid ^ PHY_ID_KSZ9031) & 0xfffffff0) == 0)) {
+	} else if (is_micrel_part(phydev)) {
 		/* found KSZ, reinit phy for KSZ */
 		setup_iomux_enet(1);
 #else
@@ -800,7 +859,7 @@ int board_eth_init(struct bd_info *bis)
 	ks8995_reset();
 #endif
 #if !defined(CONFIG_DM_ETH) && defined(CONFIG_FEC_MXC)
-	init_fec(bis, ETH_PHY_MASK);
+	init_fec(bis, ETH_PHY_MASK_ATH, ETH_PHY_MASK_KSZ);
 #endif
 
 	board_eth_addresses();
