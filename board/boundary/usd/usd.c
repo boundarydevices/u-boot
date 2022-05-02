@@ -291,7 +291,7 @@ void board_enable_lvds(const struct display_info_t *di, int enable)
 
 static const struct display_info_t displays[] = {
 	/* IVO Default LVDS Display */
-	VD_M101NWWB(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
+	VD_TM070JDHG30(LVDS, fbp_detect_i2c, fbp_bus_gp(2, GP_I2C3_J7_RESET, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
 
 	/* hdmi */
 	VD_1280_720M_60(HDMI, fbp_detect_i2c, 1, 0x50),
@@ -307,10 +307,10 @@ static const struct display_info_t displays[] = {
 	VD_TM070JDHG30(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
 
 	/* goodix */
-	VD_M101NWWB_14(LVDS, board_detect_gt911, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x14, FBTS_GOODIX),
-	VD_M101NWWB_5D(LVDS, board_detect_gt911, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x5d, FBTS_GOODIX2),
-	VD_TM070JDHG30_14(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x14, FBTS_GOODIX),
-	VD_TM070JDHG30_5D(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x5d, FBTS_GOODIX2),
+	VD_TM070JDHG30_14(LVDS, board_detect_gt911, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x14, FBTS_GOODIX),
+	VD_TM070JDHG30_5D(LVDS, board_detect_gt911, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x5d, FBTS_GOODIX2),
+	VD_M101NWWB_14(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x14, FBTS_GOODIX),
+	VD_M101NWWB_5D(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x5d, FBTS_GOODIX2),
 
 	/* ili210x */
 	VD_AMP1024_600(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x41, FBTS_ILI210X),
