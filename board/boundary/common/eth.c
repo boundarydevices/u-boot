@@ -495,7 +495,11 @@ static void init_fec(struct bd_info *bis, unsigned phy_mask_ath, unsigned phy_ma
 #endif
 			)
 		phydev2 = phy_find_by_mask(bus, phy_mask_ath >> 16, PHY_MODE);
-	if (!phydev2 && (phy_mask_ksz >> 16) && (!phydev1 || is_micrel_part(phydev1))) {
+	if (!phydev2 && (phy_mask_ksz >> 16)
+#if defined(CONFIG_FEC_ENET1)
+			&& (!phydev1 || is_micrel_part(phydev1))
+#endif
+			) {
 #if defined(CONFIG_PHY_ATHEROS) && defined(CONFIG_PHY_MICREL)
 		setup_iomux_enet(1);
 #endif
