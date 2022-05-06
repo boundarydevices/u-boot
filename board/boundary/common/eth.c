@@ -641,7 +641,7 @@ int board_phy_config(struct phy_device *phydev)
 #define KSZ9031_LED_MODE_SINGLE			0x10
 #define KSZ9031_LED_MODE_TRI_COLOR		0
 #define KSZ9031_CLK125MHZ_EN			0x02
-#if defined(CONFIG_IMX8MM) || defined(CONFIG_IMX8MN) || defined(CONFIG_IMX8MP) || defined(CONFIG_IMX8MQ) || defined(CONFIG_IMX8ULP)
+#if defined(CONFIG_IMX8MM) || defined(CONFIG_IMX8MN) || defined(CONFIG_IMX8MP) || defined(CONFIG_IMX8MQ) || defined(CONFIG_IMX8ULP) || defined(CONFIG_MX6SX) || defined(CONFIG_MX6ULL)
 #define KSZ_CLK_DEFAULT	0		/* Disable 125 Mhz output */
 #else
 #define KSZ_CLK_DEFAULT	125000000
