@@ -423,6 +423,11 @@ static void setup_iomux_enet(int kz)
 #ifdef CONFIG_MX6ULL
 	set_strap_input();
 #endif
+	/*
+	 * KSZ9031 needs 100 us before starting programming,
+	 * we've already waited 40us, let's wait 100 more
+	 */
+	udelay(100);
 }
 #endif
 
