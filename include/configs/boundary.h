@@ -91,6 +91,10 @@
 #endif
 #endif
 
+#ifdef CONFIG_PHY_MICREL_KSZ90X1
+#define PHY_ANEG_TIMEOUT		20000
+#endif
+
 #ifdef CONFIG_FEC_MXC
 #ifndef CONFIG_FEC_MXC_PHYADDR
 #define CONFIG_FEC_MXC_PHYADDR		6
