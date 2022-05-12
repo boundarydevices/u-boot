@@ -730,12 +730,7 @@ int eqos_get_phy(struct udevice *dev, struct eqos_priv *eqos)
 	 * don't need to reconnect/reconfigure again
 	 */
 	if (!eqos->phy) {
-#ifdef DWC_NET_PHYADDR
-#define DEFAULT_MASK (1 << DWC_NET_PHYADDR)
-#else
-#define DEFAULT_MASK 0xffffffff
-#endif
-		eqos->phy = eth_phy_connect(dev, eqos->mii, DEFAULT_MASK, eqos->config->interface(dev));
+		eqos->phy = eth_phy_connect(dev, eqos->mii, 0xffffffff, eqos->config->interface(dev));
 		if (!eqos->phy) {
 			pr_err("phy_connect() failed");
 			return -ENODEV;
