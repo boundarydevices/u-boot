@@ -104,7 +104,8 @@ void set_wdog_reset(struct wdog_regs *wdog)
 	setbits_le16(&wdog->wcr, WDOG_WDT_MASK | WDOG_WDZST_MASK);
 }
 
-static struct mm_region imx8m_mem_map[] = {
+/* One extra for terminator */
+static struct mm_region imx8m_mem_map[6 + CONFIG_NR_DRAM_BANKS + 1] = {
 	{
 		/* ROM */
 		.virt = 0x0UL,
@@ -157,21 +158,6 @@ static struct mm_region imx8m_mem_map[] = {
 		.size = PHYS_SDRAM_SIZE,
 		.attrs = PTE_BLOCK_MEMTYPE(MT_NORMAL) |
 			 PTE_BLOCK_OUTER_SHARE
-#ifdef PHYS_SDRAM_2_SIZE
-	}, {
-		/* DRAM2 */
-		.virt = 0x100000000UL,
-		.phys = 0x100000000UL,
-		.size = PHYS_SDRAM_2_SIZE,
-		.attrs = PTE_BLOCK_MEMTYPE(MT_NORMAL) |
-			 PTE_BLOCK_OUTER_SHARE
-#endif
-	}, {
-		/* empty entrie to split table entry 5 if needed when TEEs are used */
-		0,
-	}, {
-		/* List terminator */
-		0,
 	}
 };
 
@@ -190,32 +176,25 @@ static unsigned int imx8m_find_dram_entry_in_mem_map(void)
 
 void enable_caches(void)
 {
-	/* If OPTEE runs, remove OPTEE memory from MMU table to avoid speculative prefetch */
-	if (rom_pointer[1]) {
-		/*
-		 * TEE are loaded, So the ddr bank structures
-		 * have been modified update mmu table accordingly
-		 */
-		int i = 0;
-		/*
-		 * please make sure that entry initial value matches
-		 * imx8m_mem_map for DRAM1
-		 */
-		int entry = imx8m_find_dram_entry_in_mem_map();
-		u64 attrs = imx8m_mem_map[entry].attrs;
+	int i = 0;
+	/*
+	 * please make sure that entry initial value matches
+	 * imx8m_mem_map for DRAM1
+	 */
+	int entry = imx8m_find_dram_entry_in_mem_map();
+	u64 attrs = imx8m_mem_map[entry].attrs;
 
-		while (i < CONFIG_NR_DRAM_BANKS &&
-		       entry < ARRAY_SIZE(imx8m_mem_map)) {
-			if (gd->bd->bi_dram[i].start == 0)
-				break;
-			imx8m_mem_map[entry].phys = gd->bd->bi_dram[i].start;
-			imx8m_mem_map[entry].virt = gd->bd->bi_dram[i].start;
-			imx8m_mem_map[entry].size = gd->bd->bi_dram[i].size;
-			imx8m_mem_map[entry].attrs = attrs;
-			debug("Added memory mapping (%d): %llx %llx\n", entry,
-			      imx8m_mem_map[entry].phys, imx8m_mem_map[entry].size);
-			i++; entry++;
-		}
+	while (i < CONFIG_NR_DRAM_BANKS &&
+	       entry < ARRAY_SIZE(imx8m_mem_map)) {
+		if (gd->bd->bi_dram[i].start == 0)
+			break;
+		imx8m_mem_map[entry].phys = gd->bd->bi_dram[i].start;
+		imx8m_mem_map[entry].virt = gd->bd->bi_dram[i].start;
+		imx8m_mem_map[entry].size = gd->bd->bi_dram[i].size;
+		imx8m_mem_map[entry].attrs = attrs;
+		debug("Added memory mapping (%d): %llx %llx\n", entry,
+		      imx8m_mem_map[entry].phys, imx8m_mem_map[entry].size);
+		i++; entry++;
 	}
 
 	icache_enable();
@@ -308,7 +287,7 @@ phys_size_t get_effective_memsize(void)
 #ifdef PHYS_SDRAM_2_SIZE
 	return gd->ram_size - PHYS_SDRAM_2_SIZE;
 #else
-	return gd->ram_size;
+	return (gd->ram_base + gd->ram_size) <= 100000000ULL ? gd->ram_size : 100000000ULL - gd->ram_base;
 #endif
 }
 
