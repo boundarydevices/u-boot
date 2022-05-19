@@ -260,7 +260,6 @@
 	"dtbo_index=0\0" \
 	"serial#=" SERIAL_ANDROID "\0" \
 	"hardware=" CONFIG_SYS_BOARD "\0" \
-	"loadaddr=0x50000000\0" \
 	"dtbaddr=0x54000000\0" \
 	"dtboaddr=0x54C00000\0" \
 	"fdt_addr_r=0x56000000\0" \
