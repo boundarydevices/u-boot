@@ -36,6 +36,10 @@
 	/* Address map is from MSB 29: cs, r15, r14, r13-r0, b2-b0, c9-c0 */
 #define CH2_VAL_DDRC_ADDRMAP0_R1	0x00000017
 #define CH2_VAL_DDRC_ADDRMAP6_R1	0x07070707
+#elif CONFIG_DDR_MB == 8192
+	/* Address map is from MSB 29: cs, r15, r14, r13-r0, b2-b0, c9-c0 */
+#define CH2_VAL_DDRC_ADDRMAP0_R1	0x00000018
+#define CH2_VAL_DDRC_ADDRMAP6_R1	0x07070707
 #else
 #error unsupported memory size
 #endif
