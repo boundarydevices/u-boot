@@ -245,6 +245,7 @@
 	func(SYSTEM, system, na) \
 	func(PANIC, panic, na) \
 
+#define CONFIG_BOOTCOMMAND "run distro_bootcmd"
 
 #ifdef CONFIG_EXTRA_ENV_SETTINGS
 #undef CONFIG_EXTRA_ENV_SETTINGS
