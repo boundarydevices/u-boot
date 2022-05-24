@@ -41,8 +41,6 @@ config AHCI_PCI
 	help
 	  Enables support for the PCI-based AHCI controller.
 
-if AHCI
-
 config SPL_AHCI_PCI
 	bool "Support for PCI-based AHCI controller for SPL"
 	depends on SPL
@@ -95,8 +93,6 @@ config SUNXI_AHCI
 	help
 	  Enable this driver to support the SATA controllers found in the
 	  Allwinner A10, A20 and R40 SoCs.
-
-endif # AHCI
 
 if SATA
 
