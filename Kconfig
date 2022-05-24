@@ -403,9 +403,12 @@ config SYS_LOAD_ADDR
 	default 0x22000000 if MACH_SUN9I
 	default 0x42000000 if ARCH_SUNXI
 	default 0x82000000 if ARCH_KEYSTONE || ARCH_OMAP2PLUS || ARCH_K3
+	default 0x72000000 if ARCH_MX5 && SYS_TEXT_BASE=0x77800000
+	default 0x92000000 if ARCH_MX5 && SYS_TEXT_BASE=0x97800000
 	default 0x82000000 if ARCH_MX6 && (MX6SL || MX6SLL  || MX6SX || MX6UL || MX6ULL)
 	default 0x12000000 if ARCH_MX6 && !(MX6SL || MX6SLL  || MX6SX || MX6UL || MX6ULL)
 	default 0x80800000 if ARCH_MX7
+	default 0x40480000 if ARCH_IMX8M
 	default 0x90000000 if FSL_LSCH2 || FSL_LSCH3
 	help
 	  Address in memory to use as the default safe load address.
