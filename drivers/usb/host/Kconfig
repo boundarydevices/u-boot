@@ -5,7 +5,6 @@ comment "USB Host Controller Drivers"
 
 config USB_HOST
 	bool
-	select DM_USB
 
 config USB_XHCI_HCD
 	bool "xHCI HCD (USB 3.0) support"
@@ -126,7 +125,6 @@ endif # USB_XHCI_HCD
 config USB_EHCI_HCD
 	bool "EHCI HCD (USB 2.0) support"
 	default y if ARCH_MX5 || ARCH_MX6
-	depends on DM && OF_CONTROL
 	select USB_HOST
 	---help---
 	  The Enhanced Host Controller Interface (EHCI) is standard for USB 2.0

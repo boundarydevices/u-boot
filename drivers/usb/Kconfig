@@ -34,7 +34,7 @@ menuconfig USB
 if USB
 
 config DM_USB
-	bool
+	bool "Enable driver model for USB"
 	depends on DM && OF_CONTROL
 	help
 	  Enable driver model for USB. The USB interface is then implemented
