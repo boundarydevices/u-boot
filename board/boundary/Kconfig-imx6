@@ -12,4 +12,8 @@ config TARGET_NITROGEN6X
 
 endchoice
 
+config MX6QP
+	bool "mx6qp support"
+	depends on MX6Q || MX6QDL
+
 source "board/boundary/nitrogen6x/Kconfig"
