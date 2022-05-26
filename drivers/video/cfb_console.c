@@ -42,6 +42,11 @@
  * VIDEO_TSTC_FCT	      - keyboard_tstc function
  * VIDEO_GETC_FCT	      - keyboard_getc function
  *
+ * CONFIG_VIDEO_LOGO	      - display Linux Logo in upper left corner.
+ *				Use CONFIG_SPLASH_SCREEN_ALIGN with
+ *				environment variable "splashpos" to place
+ *				the logo on other position. In this case
+ *				no CONSOLE_EXTRA_INFO is possible.
  * CONFIG_VIDEO_BMP_LOGO      - use bmp_logo instead of linux_logo
  * CONFIG_CONSOLE_EXTRA_INFO  - display additional board information
  *				strings that normaly goes to serial
@@ -65,6 +70,7 @@
 #include <env.h>
 #include <fdtdec.h>
 #include <gzip.h>
+#include <lcd.h>
 #include <log.h>
 #include <version_string.h>
 #include <malloc.h>
@@ -122,6 +128,33 @@ void console_cursor(int state);
 #define CURSOR_SET video_set_cursor()
 #endif /* CONFIG_VIDEO_SW_CURSOR */
 
+#if defined(CONFIG_VIDEO_LOGO)
+#ifdef	CONFIG_VIDEO_BMP_LOGO
+#include <bmp_logo.h>
+#define VIDEO_LOGO_WIDTH	BMP_LOGO_WIDTH
+#define VIDEO_LOGO_HEIGHT	BMP_LOGO_HEIGHT
+#define VIDEO_LOGO_LUT_OFFSET	BMP_LOGO_OFFSET
+#define VIDEO_LOGO_COLORS	BMP_LOGO_COLORS
+
+#else  /* CONFIG_VIDEO_BMP_LOGO */
+#define LINUX_LOGO_WIDTH	80
+#define LINUX_LOGO_HEIGHT	80
+#define LINUX_LOGO_COLORS	214
+#define LINUX_LOGO_LUT_OFFSET	0x20
+#define __initdata
+#include <linux_logo.h>
+#define VIDEO_LOGO_WIDTH	LINUX_LOGO_WIDTH
+#define VIDEO_LOGO_HEIGHT	LINUX_LOGO_HEIGHT
+#define VIDEO_LOGO_LUT_OFFSET	LINUX_LOGO_LUT_OFFSET
+#define VIDEO_LOGO_COLORS	LINUX_LOGO_COLORS
+#endif /* CONFIG_VIDEO_BMP_LOGO */
+#define VIDEO_INFO_X		(VIDEO_LOGO_WIDTH)
+#define VIDEO_INFO_Y		(VIDEO_FONT_HEIGHT/2)
+#else  /* CONFIG_VIDEO_LOGO */
+#define VIDEO_LOGO_WIDTH	0
+#define VIDEO_LOGO_HEIGHT	0
+#endif /* CONFIG_VIDEO_LOGO */
+
 #define VIDEO_COLS		VIDEO_VISIBLE_COLS
 #define VIDEO_ROWS		VIDEO_VISIBLE_ROWS
 #ifndef VIDEO_LINE_LEN
@@ -130,7 +163,11 @@ void console_cursor(int state);
 #define VIDEO_SIZE		(VIDEO_ROWS * VIDEO_LINE_LEN)
 #define VIDEO_BURST_LEN		(VIDEO_COLS/8)
 
+#ifdef	CONFIG_VIDEO_LOGO
+#define CONSOLE_ROWS		((VIDEO_ROWS - video_logo_height) / VIDEO_FONT_HEIGHT)
+#else
 #define CONSOLE_ROWS		(VIDEO_ROWS / VIDEO_FONT_HEIGHT)
+#endif
 
 #define CONSOLE_COLS		(VIDEO_COLS / VIDEO_FONT_WIDTH)
 #define CONSOLE_ROW_SIZE	(VIDEO_FONT_HEIGHT * VIDEO_LINE_LEN)
@@ -177,7 +214,7 @@ static GraphicDevice *pGD;	/* Pointer to Graphic array */
 static void *video_fb_address;	/* frame buffer address */
 static void *video_console_address;	/* console buffer start address */
 
-static int video_logo_height;		/* not supported anymore */
+static int video_logo_height = VIDEO_LOGO_HEIGHT;
 
 static int __maybe_unused cursor_state;
 static int __maybe_unused old_col;
@@ -1630,6 +1667,44 @@ int video_display_bitmap(ulong bmp_image, int x, int y)
 	if (cfb_do_flush_cache)
 		flush_cache(VIDEO_FB_ADRS, VIDEO_SIZE);
 	return (0);
+}
+#endif
+
+
+#if defined(CONFIG_VIDEO_LOGO) || defined(CONFIG_SPLASH_SCREEN)
+extern unsigned char bmp_logo_bitmap[];
+static int video_logo_xpos;
+static int video_logo_ypos;
+
+#endif
+
+#if defined(CONFIG_VIDEO_LOGO) || defined(CONFIG_SPLASH_SCREEN)
+static void *video_logo(void)
+{
+	__maybe_unused int y_off = 0;
+	__maybe_unused ulong addr;
+	__maybe_unused char *s;
+	__maybe_unused int len, ret, space;
+
+	splash_get_pos(&video_logo_xpos, &video_logo_ypos);
+
+#ifdef CONFIG_SPLASH_SCREEN
+	s = env_get("splashimage");
+	if (s != NULL) {
+		ret = splash_screen_prepare();
+		if (ret < 0)
+			return video_fb_address;
+		addr = hextoul(s, NULL);
+
+		if (video_display_bitmap(addr,
+					video_logo_xpos,
+					video_logo_ypos) == 0) {
+			video_logo_height = 0;
+			return ((void *) (video_fb_address));
+		}
+	}
+#endif /* CONFIG_SPLASH_SCREEN */
+	return ((void *) (video_fb_address));
 }
 #endif
 
