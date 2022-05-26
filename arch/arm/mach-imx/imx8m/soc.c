@@ -311,6 +311,7 @@ phys_size_t get_effective_memsize(void)
 #endif
 }
 
+#if 0
 ulong board_get_usable_ram_top(ulong total_size)
 {
 	ulong top_addr = PHYS_SDRAM + gd->ram_size;
@@ -334,6 +335,7 @@ ulong board_get_usable_ram_top(ulong total_size)
 
 	return top_addr;
 }
+#endif
 
 static u32 get_cpu_variant_type(u32 type)
 {
