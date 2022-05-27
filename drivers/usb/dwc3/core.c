@@ -465,7 +465,6 @@ static void dwc3_phy_setup(struct dwc3 *dwc)
 /* set global incr burst type configuration registers */
 static void dwc3_set_incr_burst_type(struct dwc3 *dwc)
 {
-	struct udevice *dev = dwc->dev;
 	u32 cfg;
 
 	if (!dwc->incrx_size)
@@ -502,7 +501,7 @@ static void dwc3_set_incr_burst_type(struct dwc3 *dwc)
 	case 1:
 		break;
 	default:
-		dev_err(dev, "Invalid property\n");
+		dev_err(dwc->dev, "Invalid property\n");
 		break;
 	}
 
@@ -700,6 +699,7 @@ static int dwc3_core_init_mode(struct dwc3 *dwc)
 	return 0;
 }
 
+#if CONFIG_IS_ENABLED(DM_USB)
 static void dwc3_core_stop(struct dwc3 *dwc)
 {
 	u32 reg;
@@ -707,6 +707,7 @@ static void dwc3_core_stop(struct dwc3 *dwc)
 	reg = dwc3_readl(dwc->regs, DWC3_DCTL);
 	dwc3_writel(dwc->regs, DWC3_DCTL, reg & ~(DWC3_DCTL_RUN_STOP));
 }
+#endif
 
 static void dwc3_core_exit_mode(struct dwc3 *dwc)
 {
