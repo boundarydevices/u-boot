@@ -187,7 +187,8 @@ static const struct display_info_t displays[] = {
 	VD_1920_1080M_60(HDMI, board_detect_hdmi, 0, 0x50),
 	VD_1280_720M_60(HDMI, NULL, 0, 0x50),
 #endif
-	VD_MIPI_M101NWWB_2(MIPI, board_detect_gt911_sn65, fbp_bus_gp(3, GP_SN65DSI83_EN, 0, 0), 0x5d, FBP_MIPI_TO_LVDS, FBTS_GOODIX),
+	VD_MIPI_MQ_M101NWWB_4(MIPI, board_detect_gt911_sn65, fbp_bus_gp(3, GP_SN65DSI83_EN, 0, 0), 0x5d, FBP_MIPI_TO_LVDS, FBTS_GOODIX),
+	VD_MIPI_M101NWWB_2(MIPI, NULL, fbp_bus_gp(3, GP_SN65DSI83_EN, 0, 0), 0x5d, FBP_MIPI_TO_LVDS, FBTS_GOODIX),
 	VD_MIPI_M101NWWB(MIPI, board_detect_sn65_and_ts, fbp_bus_gp(3, GP_SN65DSI83_EN, GP_TS_FT5X06_RESET, 0), 0x38, FBP_MIPI_TO_LVDS, FBTS_FT5X06),
 	VD_DMT050WVNXCMI(MIPI, fbp_detect_i2c, fbp_bus_gp(3, GP_SC18IS602B_RESET, 0, 30), fbp_addr_gp(0x2f, 0, 6, 0), FBP_SPI_LCD, FBTS_GOODIX),
 	VD_LTK080A60A004T(MIPI, board_detect_gt911, fbp_bus_gp(3, GP_LTK08_MIPI_EN, GP_LTK08_MIPI_EN, 0), 0x5d, FBTS_GOODIX),	/* Goodix touchscreen */
