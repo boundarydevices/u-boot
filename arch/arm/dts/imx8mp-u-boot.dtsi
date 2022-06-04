@@ -124,9 +124,28 @@
 					entry = <0x970000>;
 
 					atf_blob: blob-ext {
-						filename = "bl31.bin";
+#ifdef CONFIG_OPTEE_FIRMWARE_SET
+						filename = "bl31-tee-iMX8MP.bin";
+#else
+						filename = "bl31-iMX8MP.bin";
+#endif
 					};
 				};
+
+#ifdef CONFIG_OPTEE_FIRMWARE_SET
+				tee {
+					description = "TEE firmware";
+					type = "firmware";
+					arch = "arm64";
+					compression = "none";
+					load = <0x56000000>;
+					entry = <0x56000000>;
+
+					tee_blob: blob-ext {
+						filename = CONFIG_OPTEE_FIRMWARE;
+					};
+				};
+#endif
 
 				fdt {
 					description = "NAME";
@@ -145,7 +164,11 @@
 				conf {
 					description = "NAME";
 					firmware = "uboot";
+#ifdef CONFIG_OPTEE_FIRMWARE_SET
+					loadables = "atf", "tee";
+#else
 					loadables = "atf";
+#endif
 					fdt = "fdt";
 				};
 			};
