@@ -99,11 +99,29 @@
 					type = "firmware";
 
 					atf-blob {
-						filename = "bl31.bin";
+#ifdef CONFIG_OPTEE_FIRMWARE_SET
+						filename = "bl31-tee-iMX8MQ.bin";
+#else
+						filename = "bl31-iMX8MQ.bin";
+#endif
 						type = "blob-ext";
 					};
 				};
 
+#ifdef CONFIG_OPTEE_FIRMWARE_SET
+				tee {
+					description = "TEE firmware";
+					type = "firmware";
+					arch = "arm64";
+					compression = "none";
+					load = <0xfe000000>;
+					entry = <0xfe000000>;
+
+					tee_blob: blob-ext {
+						filename = CONFIG_OPTEE_FIRMWARE;
+					};
+				};
+#endif
 				fdt {
 					compression = "none";
 					description = "NAME";
@@ -123,7 +141,11 @@
 					description = "NAME";
 					fdt = "fdt";
 					firmware = "uboot";
+#ifdef CONFIG_OPTEE_FIRMWARE_SET
+					loadables = "atf", "tee";
+#else
 					loadables = "atf";
+#endif
 				};
 			};
 		};
