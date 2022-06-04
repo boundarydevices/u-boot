@@ -1,0 +1,170 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2019 NXP
+ */
+
+/ {
+	binman: binman {
+		multiple-images;
+	};
+};
+
+&binman {
+	 u-boot-spl-ddr {
+		filename = "u-boot-spl-ddr.bin";
+		pad-byte = <0xff>;
+		align-size = <4>;
+		align = <4>;
+
+		u-boot-spl {
+			align-end = <4>;
+		};
+
+		blob_1: blob-ext@1 {
+			filename = "lpddr4_pmu_train_1d_imem.bin";
+			size = <0x8000>;
+		};
+
+		blob_2: blob-ext@2 {
+			filename = "lpddr4_pmu_train_1d_dmem.bin";
+			size = <0x4000>;
+		};
+
+		blob_3: blob-ext@3 {
+			filename = "lpddr4_pmu_train_2d_imem.bin";
+			size = <0x8000>;
+		};
+
+		blob_4: blob-ext@4 {
+			filename = "lpddr4_pmu_train_2d_dmem.bin";
+			size = <0x4000>;
+		};
+	};
+
+
+	spl {
+		filename = "spl.bin";
+
+		mkimage {
+			args = "-n spl/u-boot-spl.cfgout -T imx8mimage -e 0x912000";
+
+			blob {
+				filename = "u-boot-spl-ddr.bin";
+			};
+		};
+	};
+
+	itb {
+		filename = "u-boot.itb";
+
+		fit {
+			description = "Configuration to load ATF before U-Boot";
+			#address-cells = <1>;
+			fit,external-offset = <CONFIG_FIT_EXTERNAL_OFFSET>;
+
+			images {
+				uboot {
+					arch = "arm64";
+					compression = "none";
+					description = "U-Boot (64-bit)";
+					load = <CONFIG_SYS_TEXT_BASE>;
+					type = "standalone";
+
+					uboot_blob: blob-ext {
+						filename = "u-boot-nodtb.bin";
+					};
+				};
+
+				atf {
+					arch = "arm64";
+					compression = "none";
+					description = "ARM Trusted Firmware";
+					entry = <0x960000>;
+					load = <0x960000>;
+					type = "firmware";
+
+					atf_blob: blob-ext {
+#ifdef CONFIG_OPTEE_FIRMWARE_SET
+						filename = "bl31-tee-iMX8MN.bin";
+#else
+						filename = "bl31-iMX8MN.bin";
+#endif
+					};
+				};
+
+#ifdef CONFIG_OPTEE_FIRMWARE_SET
+				tee {
+					description = "TEE firmware";
+					type = "firmware";
+					arch = "arm64";
+					compression = "none";
+					load = <0xbe000000>;
+					entry = <0xbe000000>;
+
+					tee_blob: blob-ext {
+						filename = CONFIG_OPTEE_FIRMWARE;
+					};
+				};
+#endif
+
+				fdt {
+					compression = "none";
+					description = "NAME";
+					type = "flat_dt";
+
+					uboot_fdt_blob: blob-ext {
+						filename = "u-boot.dtb";
+					};
+				};
+			};
+
+			configurations {
+				default = "conf";
+
+				conf {
+					description = "NAME";
+					fdt = "fdt";
+					firmware = "uboot";
+#ifdef CONFIG_OPTEE_FIRMWARE_SET
+					loadables = "atf", "tee";
+#else
+					loadables = "atf";
+#endif
+				};
+			};
+		};
+	};
+
+	imx-boot {
+		filename = "flash.bin";
+		pad-byte = <0x00>;
+
+		spl: blob-ext@1 {
+			filename = "spl.bin";
+			offset = <0x0>;
+		};
+
+		uboot: blob-ext@2 {
+			filename = "u-boot.itb";
+#if defined(CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_USE_OFFSET)
+			offset = <CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_OFFSET>;
+#else
+			/* imx8mm's offset is 0x57c00 because its programming starts at 0x8400, even for hw partition */
+#ifdef CONFIG_SPL_BOOTROM_SUPPORT
+			offset = <0x58000>;	/* Bootrom handles the changing offset */
+#else
+#if CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR == 0x300
+#if CONFIG_SYS_MMC_ENV_PART == 0
+			offset = <0x58000>;	/* Programming starts at 0x8000 */
+#else
+			offset = <0x60000>;	/* Programming starts at 0x0 */
+#endif
+#else
+#error Offset needs modified,  CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR * 0x200 - start offset
+#endif
+#endif
+#endif
+
+		};
+	};
+};
