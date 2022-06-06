@@ -15,6 +15,14 @@
 
 #define CONFIG_SYS_CONSOLE_IS_IN_ENV
 
+
+/* Yellowstone PCB and MAC_ID variables names */
+#define YELLOWSTONE_PCB_SERIAL_NUMBER "AAAA"
+#define YELLOWSTONE_PCB_REVISION_NUMBER "BBBB"
+#define YELLOWSTONE_PCB_PART_NUMBER "CCCC"
+#define YELLOWSTONE_AP0_MAC "99:99:99:99:99:99"
+#define YELLOWSTONE_BR0_MAC "99:99:99:99:99:99"
+
 /* M4 specific */
 #define EXTRA_ENV_M4 \
 	"m4image=m4_fw.bin\0" \
@@ -38,6 +46,13 @@
 	"m4boot_nor=sf probe; sf read ${m4loadaddr} ${m4offset} ${m4size}; " \
 		"dcache flush; bootaux ${m4loadaddr}\0"
 
+#define YELLOWSTONE_ENV \
+	"ys_pcb_serial_number=" YELLOWSTONE_PCB_SERIAL_NUMBER "\0" \
+	"ys_pcb_revision_number=" YELLOWSTONE_PCB_REVISION_NUMBER "\0" \
+	"ys_pcb_part_number=" YELLOWSTONE_PCB_PART_NUMBER "\0" \
+	"ys_ap0_mac=" YELLOWSTONE_AP0_MAC "\0" \
+	"ys_br0_mac=" YELLOWSTONE_BR0_MAC "\0"
+
 #define CONFIG_PCIE_IMX_PERST_GPIO	IMX_GPIO_NR(4, 10)
 #define CONFIG_FEC_ENET1
 #define CONFIG_FEC_ENET2
@@ -59,6 +74,7 @@
 #include "boundary.h"
 #define CONFIG_EXTRA_ENV_SETTINGS BD_BOUNDARY_ENV_SETTINGS \
 	"cmd_custom= \0" \
-	EXTRA_ENV_M4
+	EXTRA_ENV_M4 \
+	YELLOWSTONE_ENV
 
 #endif	       /* __CONFIG_H */
