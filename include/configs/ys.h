@@ -15,6 +15,10 @@
 
 #define CONFIG_SYS_CONSOLE_IS_IN_ENV
 
+/* Watchdog */
+#define CONFIG_HW_WATCHDOG
+#define CONFIG_IMX_WATCHDOG
+#define CONFIG_WATCHDOG_TIMEOUT_MSECS	120000
 
 /* Yellowstone PCB and MAC_ID variables names */
 #define YELLOWSTONE_PCB_SERIAL_NUMBER "AAAA"
