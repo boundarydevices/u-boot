@@ -130,7 +130,8 @@ static const iomux_v3_cfg_t init_pads[] = {
 #define GP_RESET_DSP_N		IMX_GPIO_NR(3, 3)
 	IOMUX_PAD_CTRL(LCD1_DATA02__GPIO3_IO_3, WEAK_PULLUP_OUTPUT),
 #define GP_485_DIR		IMX_GPIO_NR(3, 4)
-	IOMUX_PAD_CTRL(LCD1_DATA03__GPIO3_IO_4, WEAK_PULLDN_OUTPUT),
+	/* set pullup to fix noise, allow booting on YS without DSP board */
+	IOMUX_PAD_CTRL(LCD1_DATA03__GPIO3_IO_4, WEAK_PULLUP),
 #define GP_PWR_SYNC		IMX_GPIO_NR(3, 6)
 	IOMUX_PAD_CTRL(LCD1_DATA05__GPIO3_IO_6, WEAK_PULLDN_OUTPUT),
 #define GP_SERVICE_LED		IMX_GPIO_NR(3, 7)
@@ -283,17 +284,14 @@ struct fsl_esdhc_cfg board_usdhc_cfg[] = {
 #endif
 
 static const unsigned short gpios_out_low[] = {
-	GP_485_DIR,
 	GP_485_TERM_CTRL,
 	GP_CUST_START,
-	GP_NETWORK_LED,
 	GP_PCIE_RESET,
 	GP_POWER_OK_VDSP,
 	GP_PWR_SYNC,
 	GP_RGMII_PHY_RESET,
 	GP_RGMII2_PHY_RESET,
-	GP_SERVICE_LED,
-	GP_SYSTEM_LED,
+	GP_SERVICE_LED,		/* off at YS, on at DSP */
 	GP_TERM_ON_OFF,
 	GP_USB_HUB_RESET,
 	GP_USB_OTG1_PWR,
@@ -306,10 +304,13 @@ static const unsigned short gpios_out_high[] = {
 	GP_ECSPI3_CS,
 	GP_ECSPI5_CS,
 	GP_RESET_DSP_N,
+	GP_SYSTEM_LED,		/* on at YS */
+	GP_NETWORK_LED,		/* on at YS, off at DSP */
 	GP_RS485_RXEN,
 };
 
 static const unsigned short gpios_in[] = {
+	GP_485_DIR,		/* set this to INPUT - JE 2017-12-21 */
 	GP_RGMII_PHY_INT,
 	GP_RGMII2_PHY_INT,
 	GP_USDHC2_CD,
