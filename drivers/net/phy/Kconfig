@@ -68,7 +68,6 @@ if PHY_MICREL
 
 config PHY_MICREL_KSZ9021
 	bool "Micrel KSZ9021 family support"
-	select PHY_GIGE
 	help
 	  Enable support for the Micrel KSZ9021 GbE PHY family.  If
 	  enabled, the extended register read/write for KSZ9021 PHYs
@@ -82,7 +81,6 @@ config PHY_MICREL_KSZ9021
 
 config PHY_MICREL_KSZ9031
 	bool "Micrel KSZ9031 family support"
-	select PHY_GIGE
 	help
 	  Enable support for the Micrel KSZ9031 GbE PHY family.  If
 	  enabled, the extended register read/write for KSZ9021 PHYs
