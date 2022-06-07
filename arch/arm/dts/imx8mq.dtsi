@@ -543,7 +543,6 @@
 				assigned-clock-parents = <&clk IMX8MQ_CLK_25M>,
 						  <&clk IMX8MQ_VIDEO_PLL1>,
 						  <&clk IMX8MQ_VIDEO_PLL1_OUT>;
-				assigned-clock-rates = <0>, <0>, <0>, <594000000>;
 				status = "disabled";
 
 				port {
