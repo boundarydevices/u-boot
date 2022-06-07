@@ -399,14 +399,16 @@ int mux_get_by_index(struct udevice *dev, int index, struct mux_control **mux)
 int mux_control_get(struct udevice *dev, const char *name,
 		    struct mux_control **mux)
 {
-	int index;
+	int index = 0;
 
 	debug("%s(dev=%p, name=%s, mux=%p)\n", __func__, dev, name, mux);
 
-	index = dev_read_stringlist_search(dev, "mux-control-names", name);
-	if (index < 0) {
-		debug("fdt_stringlist_search() failed: %d\n", index);
-		return index;
+	if (name) {
+		index = dev_read_stringlist_search(dev, "mux-control-names", name);
+		if (index < 0) {
+			debug("fdt_stringlist_search() failed: %d %s\n", index, dev->name);
+			return index;
+		}
 	}
 
 	return mux_get_by_index(dev, index, mux);
