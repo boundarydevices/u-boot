@@ -1437,9 +1437,7 @@ static int fsl_esdhc_ofdata_to_platdata(struct udevice *dev)
 	struct udevice *vqmmc_dev;
 	int ret;
 #endif
-	const void *fdt = gd->fdt_blob;
-	int node = dev_of_offset(dev);
-
+	ofnode np = dev_ofnode(dev);
 	fdt_addr_t addr;
 	unsigned int val;
 
@@ -1458,12 +1456,12 @@ static int fsl_esdhc_ofdata_to_platdata(struct udevice *dev)
 	else
 		priv->c.bus_width = 1;
 
-	val = fdtdec_get_int(fdt, node, "fsl,tuning-step", 1);
+	val = ofnode_read_u32_default(np, "fsl,tuning-step", 1);
 	priv->tuning_step = val;
-	val = fdtdec_get_int(fdt, node, "fsl,tuning-start-tap",
+	val = ofnode_read_u32_default(np, "fsl,tuning-start-tap",
 			     ESDHC_TUNING_START_TAP_DEFAULT);
 	priv->tuning_start_tap = val;
-	val = fdtdec_get_int(fdt, node, "fsl,strobe-dll-delay-target",
+	val = ofnode_read_u32_default(np, "fsl,strobe-dll-delay-target",
 			     ESDHC_STROBE_DLL_CTRL_SLV_DLY_TARGET_DEFAULT);
 	priv->strobe_dll_delay_target = val;
 
