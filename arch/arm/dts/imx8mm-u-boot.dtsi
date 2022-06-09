@@ -203,3 +203,15 @@
 	u-boot,dm-pre-reloc;
 	u-boot,dm-spl;
 };
+
+&usdhc1 {
+	fsl,signal-voltage-switch-extra-delay-ms = <8>;
+};
+
+&usdhc2 {
+	fsl,signal-voltage-switch-extra-delay-ms = <8>;
+};
+
+&usdhc3 {
+	fsl,signal-voltage-switch-extra-delay-ms = <8>;
+};
