@@ -605,7 +605,13 @@ static int mmc_switch_voltage(struct mmc *mmc, int signal_voltage)
 	 * Failure to switch is indicated by the card holding
 	 * dat[0:3] low. Wait for at least 1 ms according to spec
 	 */
+#if 0
 	err = mmc_wait_dat0(mmc, 1, 1000);
+#else
+	/* my sdcard does not like calling mmc_wait_dat0 here */
+	udelay(1000);
+	err = 0;
+#endif
 	if (err == -ENOSYS)
 		udelay(1000);
 	else if (err)
