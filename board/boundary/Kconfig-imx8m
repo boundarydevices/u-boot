@@ -42,6 +42,11 @@ config TARGET_DWE
 	select IMX8MM
 	select SUPPORT_SPL
 
+config TARGET_EM
+	bool "em"
+	select IMX8MM
+	select SUPPORT_SPL
+
 config TARGET_HL8MM
 	bool "hl8mm"
 	select IMX8MM
@@ -125,6 +130,7 @@ source "board/boundary/cle/Kconfig"
 source "board/boundary/crs/Kconfig"
 source "board/boundary/ds/Kconfig"
 source "board/boundary/dwe/Kconfig"
+source "board/boundary/em/Kconfig"
 source "board/boundary/hl8mm/Kconfig"
 source "board/boundary/kea/Kconfig"
 source "board/boundary/moo/Kconfig"
