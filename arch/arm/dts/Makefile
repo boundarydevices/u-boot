@@ -936,6 +936,7 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
 	imx8mm-c2-mid.dtb \
 	imx8mm-cle.dtb \
 	imx8mm-dwe.dtb \
+	imx8mm-em.dtb \
 
 dtb-$(CONFIG_ARCH_IMX8M) += \
 	imx8mp-crs.dtb \

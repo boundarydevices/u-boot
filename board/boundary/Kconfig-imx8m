@@ -50,6 +50,12 @@ config TARGET_DWE
 	select IMX8MM
 	select SUPPORT_SPL
 
+config TARGET_EM
+	bool "em"
+	select BINMAN
+	select IMX8MM
+	select SUPPORT_SPL
+
 endchoice
 
 source "board/boundary/ash8mm/Kconfig"
@@ -60,3 +66,4 @@ source "board/boundary/cle/Kconfig"
 source "board/boundary/crs/Kconfig"
 source "board/boundary/ds/Kconfig"
 source "board/boundary/dwe/Kconfig"
+source "board/boundary/em/Kconfig"
