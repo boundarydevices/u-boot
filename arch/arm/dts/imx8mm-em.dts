@@ -395,6 +395,8 @@
 	};
 };
 
+#include "panel-m101nwwb.dtsi"
+
 / {
 	model = "Boundary Devices i.MX 8M Mini EM";
 	compatible = "boundary,imx8mm-em", "fsl,imx8mm";
