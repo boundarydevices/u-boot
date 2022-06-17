@@ -408,6 +408,7 @@
 		lcdif = &lcdif;
 		mipi = &fb_mipi;
 		mipi_dsi = &mipi_dsi;
+		mipi_to_lvds = &mipi_to_lvds;
 		pwm_mipi = &pwm3;
 		t_mipi = &t_mipi;
 		ts_ft5x06 = &ts_ft5x06;
