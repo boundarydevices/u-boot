@@ -5,6 +5,7 @@
  */
 
 #include <common.h>
+#include <command.h>
 #include <errno.h>
 #include <asm/io.h>
 #include <miiphy.h>
@@ -149,6 +150,10 @@ int board_init(void)
 #if defined(CONFIG_MXC_SPI) && !defined(CONFIG_DM_SPI)
 	setup_spi();
 #endif
+#ifdef CONFIG_MAX77975
+	max77975_init();
+	max77975_set_chrgin_limit(8000);	/* 8 amps */
+#endif
 #ifdef CONFIG_DM_ETH
 	board_eth_init(gd->bd);
 #endif
@@ -166,3 +171,23 @@ void board_env_init(void)
 	 */
 	gpio_direction_output(GP_TS_FT7250_RESET, 1);
 }
+
+void board_poweroff(void)
+{
+	struct snvs_regs *snvs = (struct snvs_regs *)(SNVS_BASE_ADDR);
+
+	writel(0x60, &snvs->lpcr);
+	mdelay(500);
+}
+
+static int _do_poweroff(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[])
+{
+	board_poweroff();
+	return 0;
+}
+
+U_BOOT_CMD(
+	poweroff, 70, 0, _do_poweroff,
+	"power down board",
+	""
+);

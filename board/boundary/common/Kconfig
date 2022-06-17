@@ -32,10 +32,12 @@ config MAX77823
 config MAX77975
 	bool
 	default y if TARGET_NITROGEN8MM_TAB
+	default y if TARGET_EM
 
 config MAX17260
 	bool
 	default y if TARGET_NITROGEN8MM_TAB
+	default y if TARGET_EM
 
 config BQ25898
 	bool
@@ -65,11 +67,13 @@ config I2C_BUS_MAX77975
 	int
 	depends on MAX77975
 	default 0 if TARGET_NITROGEN8MM_TAB
+	default 1 if TARGET_EM
 
 config I2C_BUS_MAX17260
 	hex
 	depends on MAX17260
 	default 0x41 if TARGET_NITROGEN8MM_TAB
+	default 0x01 if TARGET_EM
 
 config FAN53526
 	bool
