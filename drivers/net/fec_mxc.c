@@ -1428,49 +1428,20 @@ static const struct eth_ops fecmxc_ops = {
 	.set_promisc		= fecmxc_set_promisc,
 };
 
-static int device_get_phy_addr(struct fec_priv *priv, struct udevice *dev)
-{
-	struct ofnode_phandle_args phandle_args;
-	int reg, ret;
-
-	ret = dev_read_phandle_with_args(dev, "phy-handle", NULL, 0, 0,
-					 &phandle_args);
-	if (ret) {
-		priv->phy_of_node = ofnode_find_subnode(dev_ofnode(dev),
-							"fixed-link");
-		if (ofnode_valid(priv->phy_of_node))
-			return 0;
-		debug("Failed to find phy-handle (err = %d)\n", ret);
-		return ret;
-	}
-
-	if (!ofnode_is_available(phandle_args.node))
-		return -ENOENT;
-
-	priv->phy_of_node = phandle_args.node;
-	reg = ofnode_read_u32_default(phandle_args.node, "reg", 0);
-
-	return reg;
-}
-
 static int fec_phy_init(struct fec_priv *priv, struct udevice *dev)
 {
 	struct phy_device *phydev;
-	int addr;
 
-	addr = device_get_phy_addr(priv, dev);
 #ifdef CONFIG_FEC_MXC_PHYADDR
-	addr = CONFIG_FEC_MXC_PHYADDR;
+#define DEFAULT_MASK (1 << CONFIG_FEC_MXC_PHYADDR)
+#else
+#define DEFAULT_MASK 0xffffffff
 #endif
-
-	phydev = phy_connect(priv->bus, addr, dev, priv->interface);
+	phydev = eth_phy_connect(dev, priv->bus, DEFAULT_MASK, priv->interface);
+	priv->phydev = phydev;
 	if (!phydev)
 		return -ENODEV;
-
-	priv->phydev = phydev;
-	priv->phydev->node = priv->phy_of_node;
 	phy_config(phydev);
-
 	return 0;
 }
 
@@ -1645,10 +1616,12 @@ static int fecmxc_probe(struct udevice *dev)
 	return 0;
 
 err_phy:
+#if 0
 	if (!dm_mii_bus) {
 		mdio_unregister(bus);
 		free(bus);
 	}
+#endif
 err_mii:
 err_timeout:
 	fec_free_descs(priv);

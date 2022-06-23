@@ -250,7 +250,6 @@ struct fec_priv {
 	struct mii_dev *bus;
 #ifdef CONFIG_PHYLIB
 	struct phy_device *phydev;
-	ofnode phy_of_node;
 #else
 	int phy_id;
 	int (*mii_postcall)(int);
