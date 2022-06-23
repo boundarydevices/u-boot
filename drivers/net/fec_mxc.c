@@ -1414,42 +1414,18 @@ static const struct eth_ops fecmxc_ops = {
 	.read_rom_hwaddr	= fecmxc_read_rom_hwaddr,
 };
 
-static int device_get_phy_addr(struct fec_priv *priv, struct udevice *dev)
-{
-	struct ofnode_phandle_args phandle_args;
-	int reg;
-
-	if (dev_read_phandle_with_args(dev, "phy-handle", NULL, 0, 0,
-				       &phandle_args)) {
-		debug("Failed to find phy-handle");
-		return -ENODEV;
-	}
-
-	priv->phy_of_node = phandle_args.node;
-
-	reg = ofnode_read_u32_default(phandle_args.node, "reg", 0);
-
-	return reg;
-}
-
 static int fec_phy_init(struct fec_priv *priv, struct udevice *dev)
 {
 	struct phy_device *phydev;
-	int addr;
 
-	addr = device_get_phy_addr(priv, dev);
 #ifdef CONFIG_FEC_MXC_PHYADDR
-	addr = CONFIG_FEC_MXC_PHYADDR;
+#define DEFAULT_MASK (1 << CONFIG_FEC_MXC_PHYADDR)
+#else
+#define DEFAULT_MASK 0xffffffff
 #endif
-
-	phydev = phy_connect(priv->bus, addr, dev, priv->interface);
-	if (!phydev)
-		return -ENODEV;
-
+	phydev = eth_phy_connect(dev, priv->bus, DEFAULT_MASK, priv->interface);
 	priv->phydev = phydev;
-	priv->phydev->node = priv->phy_of_node;
 	phy_config(phydev);
-
 	return 0;
 }
 
@@ -1621,8 +1597,10 @@ static int fecmxc_probe(struct udevice *dev)
 	return 0;
 
 err_phy:
+#if 0
 	mdio_unregister(bus);
 	free(bus);
+#endif
 err_mii:
 err_timeout:
 	fec_free_descs(priv);
