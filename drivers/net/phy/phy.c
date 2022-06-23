@@ -1026,17 +1026,16 @@ static struct phy_device *phy_connect_fixed(struct mii_dev *bus,
 #endif
 
 #ifdef CONFIG_DM_ETH
-struct phy_device *phy_connect(struct mii_dev *bus, int addr,
+struct phy_device *phy_connect_mask(struct mii_dev *bus, uint mask,
 			       struct udevice *dev,
 			       phy_interface_t interface)
 #else
-struct phy_device *phy_connect(struct mii_dev *bus, int addr,
+struct phy_device *phy_connect_mask(struct mii_dev *bus, uint mask,
 			       struct eth_device *dev,
 			       phy_interface_t interface)
 #endif
 {
 	struct phy_device *phydev = NULL;
-	uint mask = (addr >= 0) ? (1 << addr) : 0xffffffff;
 
 #ifdef CONFIG_PHY_FIXED
 	phydev = phy_connect_fixed(bus, dev, interface);
@@ -1058,9 +1057,62 @@ struct phy_device *phy_connect(struct mii_dev *bus, int addr,
 	if (phydev)
 		phy_connect_dev(phydev, dev);
 	else
-		printf("Could not get PHY for %s: addr %d\n", bus->name, addr);
+		printf("Could not get PHY for %s: mask 0x%x\n", bus->name, mask);
 	return phydev;
 }
+
+#ifdef CONFIG_DM_ETH
+struct phy_device *phy_connect(struct mii_dev *bus, int addr,
+			       struct udevice *dev,
+			       phy_interface_t interface)
+#else
+struct phy_device *phy_connect(struct mii_dev *bus, int addr,
+			       struct eth_device *dev,
+			       phy_interface_t interface)
+#endif
+{
+	uint mask = (addr >= 0) ? (1 << addr) : 0xffffffff;
+
+	return phy_connect_mask(bus, mask, dev, interface);
+}
+
+#ifdef CONFIG_DM_ETH
+struct phy_device *eth_phy_connect(struct udevice *dev, struct mii_dev *bus,
+				   u32 def_phy_mask, phy_interface_t interface)
+{
+	struct ofnode_phandle_args phandle_args;
+	struct phy_device *phydev;
+	ofnode node;
+	u32 reg;
+	u32 mask;
+	int ret;
+
+	ret = dev_read_phandle_with_args(dev, "phy-handle", NULL, 0, 0,
+					 &phandle_args);
+	if (ret) {
+		node = ofnode_find_subnode(dev_ofnode(dev), "fixed-link");
+		if (!ofnode_valid(node)) {
+			debug("Failed to find phy-handle (err = %d)\n", ret);
+			return NULL;
+		}
+	} else {
+		node = phandle_args.node;
+	}
+	if (!ofnode_is_available(node))
+		return NULL;
+
+	reg = ofnode_read_u32_default(node, "reg", 0xffffffff);
+	if (reg < 32)
+		mask = (1 << reg);
+	else
+		mask = ofnode_read_u32_default(node, "reg-mask", def_phy_mask);
+
+	phydev = phy_connect_mask(bus, mask, dev, interface);
+	if (phydev)
+		phydev->node = node;
+	return phydev;
+}
+#endif
 
 /*
  * Start the PHY.  Returns 0 on success, or a negative error code.

@@ -454,6 +454,11 @@ void phy_connect_dev(struct phy_device *phydev, struct udevice *dev);
 struct phy_device *phy_connect(struct mii_dev *bus, int addr,
 				struct udevice *dev,
 				phy_interface_t interface);
+struct phy_device *phy_connect_mask(struct mii_dev *bus, uint mask,
+				struct udevice *dev,
+				phy_interface_t interface);
+struct phy_device *eth_phy_connect(struct udevice *dev, struct mii_dev *bus,
+				   u32 def_phy_mask, phy_interface_t interface);
 
 static inline ofnode phy_get_ofnode(struct phy_device *phydev)
 {
