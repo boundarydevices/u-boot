@@ -1159,6 +1159,42 @@ static int eqos_read_rom_hwaddr(struct udevice *dev)
 	return !is_valid_ethaddr(pdata->enetaddr);
 }
 
+int eqos_get_phy(struct udevice *dev, struct eqos_priv *eqos)
+{
+	int ret;
+	/*
+	 * if PHY was already connected and configured,
+	 * don't need to reconnect/reconfigure again
+	 */
+	if (!eqos->phy) {
+#ifdef DWC_NET_PHYADDR
+#define DEFAULT_MASK (1 << DWC_NET_PHYADDR)
+#else
+#define DEFAULT_MASK 0xffffffff
+#endif
+		eqos->phy = eth_phy_connect(dev, eqos->mii, DEFAULT_MASK, eqos->config->interface(dev));
+		if (!eqos->phy) {
+			pr_err("phy_connect() failed");
+			return -ENODEV;
+		}
+
+		if (eqos->max_speed) {
+			ret = phy_set_supported(eqos->phy, eqos->max_speed);
+			if (ret) {
+				pr_err("phy_set_supported() failed: %d", ret);
+				return ret;
+			}
+		}
+
+		ret = phy_config(eqos->phy);
+		if (ret < 0) {
+			pr_err("phy_config() failed: %d", ret);
+			return ret;
+		}
+	}
+	return 0;
+}
+
 static int eqos_start(struct udevice *dev)
 {
 	struct eqos_priv *eqos = dev_get_priv(dev);
@@ -1206,39 +1242,9 @@ static int eqos_start(struct udevice *dev)
 	val = (rate / 1000000) - 1;
 	writel(val, &eqos->mac_regs->us_tic_counter);
 
-	/*
-	 * if PHY was already connected and configured,
-	 * don't need to reconnect/reconfigure again
-	 */
-	if (!eqos->phy) {
-		int addr = -1;
-#ifdef CONFIG_DM_ETH_PHY
-		addr = eth_phy_get_addr(dev);
-#endif
-#ifdef DWC_NET_PHYADDR
-		addr = DWC_NET_PHYADDR;
-#endif
-		eqos->phy = phy_connect(eqos->mii, addr, dev,
-					eqos->config->interface(dev));
-		if (!eqos->phy) {
-			pr_err("phy_connect() failed");
-			goto err_stop_resets;
-		}
-
-		if (eqos->max_speed) {
-			ret = phy_set_supported(eqos->phy, eqos->max_speed);
-			if (ret) {
-				pr_err("phy_set_supported() failed: %d", ret);
-				goto err_shutdown_phy;
-			}
-		}
-
-		ret = phy_config(eqos->phy);
-		if (ret < 0) {
-			pr_err("phy_config() failed: %d", ret);
-			goto err_shutdown_phy;
-		}
-	}
+	ret = eqos_get_phy(dev, eqos);
+	if (ret < 0)
+		goto err_shutdown_phy;
 
 	ret = phy_startup(eqos->phy);
 	if (ret < 0) {
@@ -1481,7 +1487,8 @@ static int eqos_start(struct udevice *dev)
 	return 0;
 
 err_shutdown_phy:
-	phy_shutdown(eqos->phy);
+	if (eqos->phy)
+		phy_shutdown(eqos->phy);
 err_stop_resets:
 	eqos->config->ops->eqos_stop_resets(dev);
 err_stop_clks:
@@ -2040,6 +2047,7 @@ static int eqos_probe(struct udevice *dev)
 #ifdef CONFIG_DM_ETH_PHY
 	eth_phy_set_mdio_bus(dev, eqos->mii);
 #endif
+	eqos_get_phy(dev, eqos);
 
 	debug("%s: OK\n", __func__);
 	return 0;
