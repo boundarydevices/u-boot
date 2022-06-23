@@ -3,18 +3,25 @@
  *
  * SPDX-License-Identifier:	GPL-2.0+
  */
+#if !defined(CONFIG_FEC_ENET1) && !defined(CONFIG_FEC_ENET2) && defined(CONFIG_FEC_MXC)
+#define CONFIG_FEC_ENET1
+#endif
+
+#ifdef CONFIG_FEC_ENET1
 #define GP_PHY_RD0	IMX_GPIO_NR(7, 0)
 #define GP_PHY_RD1	IMX_GPIO_NR(7, 1)
 #define GP_PHY_RD2	IMX_GPIO_NR(7, 2)
 #define GP_PHY_RD3	IMX_GPIO_NR(7, 3)
 #define GP_PHY_RX_CTL	IMX_GPIO_NR(7, 4)
 #define GP_PHY_RXC	IMX_GPIO_NR(7, 5)
+#endif
 
+#ifdef CONFIG_PHY_ATHEROS
 #ifndef STRAP_AR8035
 #define STRAP_AR8035	(0x28 | (CONFIG_FEC_MXC_PHYADDR & 3))
 #endif
 
-#ifdef CONFIG_PHY_ATHEROS
+#ifdef CONFIG_FEC_ENET1
 	/* really AR8031 for nitrogen7 */
 static const iomux_v3_cfg_t enet_ar8035_gpio_pads[] = {
 	IOMUX_PAD_CTRL(ENET1_RGMII_RD0__GPIO7_IO0, PULL_GP(STRAP_AR8035, 0)),
@@ -35,4 +42,5 @@ static const iomux_v3_cfg_t enet_ar8035_pads[] = {
 	IOMUX_PAD_CTRL(ENET1_RGMII_RX_CTL__ENET1_RGMII_RX_CTL, PULL_ENET(STRAP_AR8035, 4)),
 	IOMUX_PAD_CTRL(ENET1_RGMII_RXC__ENET1_RGMII_RXC, PULL_ENET(STRAP_AR8035, 5)),
 };
+#endif
 #endif
