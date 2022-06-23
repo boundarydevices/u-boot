@@ -18,7 +18,7 @@ if [ $# -lt 2 ]; then
 		exit 1
 	fi
 	# get default LOADADDR
-	LOADADDR=`awk '/define CONFIG_SYS_LOADADDR/{print $3}' u-boot.cfg`
+	LOADADDR=`awk '/define CONFIG_SYS_LOAD_ADDR/{print $3}' u-boot.cfg`
 else
 	LOADADDR=$2
 fi
