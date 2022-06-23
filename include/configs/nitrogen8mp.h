@@ -54,10 +54,11 @@
 /* ENET Config */
 /* ENET1 */
 #if defined(CONFIG_CMD_NET)
-#define CONFIG_ETHPRIME                 "eth0" /* nitrogen8mp-enc only has 1 ethernet */
+#define CONFIG_ETHPRIME			"eth0" /* nitrogen8mp-enc only has 1 ethernet */
 
-#define CONFIG_FEC_XCV_TYPE             RGMII
-#define CONFIG_FEC_MXC_PHYADDR          4
+#define CONFIG_FEC_XCV_TYPE		RGMII
+#define CONFIG_FEC_MXC_PHYADDR		4
+#define CONFIG_FEC_MXC_KSZ_PHYADDR	7
 #define FEC_QUIRK_ENET_MAC
 
 #define IMX_FEC_BASE			0x30BE0000
