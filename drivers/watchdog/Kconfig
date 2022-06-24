@@ -36,6 +36,12 @@ config WATCHDOG_TIMEOUT_MSECS
 config HW_WATCHDOG
 	bool
 
+config BOARD_WATCHDOG
+	bool "enable periodic callback to board code"
+	select HW_WATCHDOG
+	help
+	  Select this to enable periodic callback to board code.
+
 config IMX_WATCHDOG
 	bool "Enable Watchdog Timer support for IMX and LSCH2 of NXP"
 	select HW_WATCHDOG if !WDT
