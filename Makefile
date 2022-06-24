@@ -1029,6 +1029,7 @@ quiet_cmd_efipayload = OBJCOPY $@
 cmd_efipayload = $(OBJCOPY) -I binary -O $(EFIPAYLOAD_BFDTARGET) -B $(EFIPAYLOAD_BFDARCH) $< $@
 
 MKIMAGEOUTPUT ?= /dev/null
+BINMANOUTPUT ?= /dev/null
 
 quiet_cmd_mkimage = MKIMAGE $@
 cmd_mkimage = $(objtree)/tools/mkimage $(MKIMAGEFLAGS_$(@F)) -d $< $@ \
@@ -1336,7 +1337,8 @@ cmd_binman = $(srctree)/tools/binman/binman $(if $(BINMAN_DEBUG),-D) \
 		-a tpl-bss-pad=$(if $(CONFIG_TPL_SEPARATE_BSS),,1) \
 		-a spl-dtb=$(CONFIG_SPL_OF_REAL) \
 		-a tpl-dtb=$(CONFIG_TPL_OF_REAL) \
-		$(BINMAN_$(@F))
+		$(BINMAN_$(@F)) \
+		>$(BINMANOUTPUT) $(if $(KBUILD_VERBOSE:0=), && cat $(BINMANOUTPUT))
 
 OBJCOPYFLAGS_u-boot.ldr.hex := -I binary -O ihex
 
@@ -1570,6 +1572,8 @@ flash.bin: spl/u-boot-spl.bin u-boot.cnt FORCE
 	$(Q)$(MAKE) $(build)=arch/arm/mach-imx $@
 else
 ifeq ($(CONFIG_BINMAN),y)
+BINMAN_VERBOSE = 5
+BINMANOUTPUT = flash.log
 flash.bin: spl/u-boot-spl.bin $(INPUTS-y) FORCE
 	$(call if_changed,binman)
 else
