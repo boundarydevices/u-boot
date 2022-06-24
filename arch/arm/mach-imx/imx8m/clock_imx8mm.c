@@ -21,13 +21,6 @@ DECLARE_GLOBAL_DATA_PTR;
 
 static struct anamix_pll *ana_pll = (struct anamix_pll *)ANATOP_BASE_ADDR;
 
-#ifdef CONFIG_IMX_HAB
-void hab_caam_clock_enable(unsigned char enable)
-{
-	/* The CAAM clock is always on for iMX8M */
-}
-#endif
-
 static u32 get_root_clk(enum clk_root_index clock_id);
 
 #ifdef CONFIG_IMX_HAB
