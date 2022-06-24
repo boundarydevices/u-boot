@@ -1066,6 +1066,8 @@ quiet_cmd_efipayload = OBJCOPY $@
 cmd_efipayload = $(OBJCOPY) -I binary -O $(EFIPAYLOAD_BFDTARGET) -B $(EFIPAYLOAD_BFDARCH) $< $@
 
 MKIMAGEOUTPUT ?= /dev/null
+BINMANOUTPUT ?= binman.log
+BINMAN_VERBOSE ?= 5
 
 quiet_cmd_mkimage = MKIMAGE $@
 cmd_mkimage = $(objtree)/tools/mkimage $(MKIMAGEFLAGS_$(@F)) -d $< $@ \
@@ -1360,7 +1362,8 @@ cmd_binman = $(srctree)/tools/binman/binman $(if $(BINMAN_DEBUG),-D) \
 		-a spl-dtb=$(CONFIG_SPL_OF_REAL) \
 		-a tpl-dtb=$(CONFIG_TPL_OF_REAL) \
 		-a pre-load-key-path=${PRE_LOAD_KEY_PATH} \
-		$(BINMAN_$(@F))
+		$(BINMAN_$(@F)) \
+		>$(BINMANOUTPUT) $(if $(KBUILD_VERBOSE:0=), && cat $(BINMANOUTPUT))
 
 OBJCOPYFLAGS_u-boot.ldr.hex := -I binary -O ihex
 
