@@ -19,6 +19,7 @@
 
 #include <dt-bindings/power/mt7623-power.h>
 #include <dt-bindings/power/mt7629-power.h>
+#include <dt-bindings/power/mt8365-power.h>
 
 #define SPM_EN			(0xb16 << 16 | 0x1)
 #define SPM_VDE_PWR_CON		0x0210
@@ -66,6 +67,7 @@ enum scp_domain_type {
 	SCPSYS_MT7622,
 	SCPSYS_MT7623,
 	SCPSYS_MT7629,
+	SCPSYS_MT8365,
 };
 
 struct scp_domain;
@@ -160,6 +162,63 @@ static struct scp_domain_data scp_domain_mt7629[] = {
 		.sram_pdn_bits = GENMASK(11, 8),
 		.sram_pdn_ack_bits = GENMASK(15, 12),
 		.bus_prot_mask = GENMASK(28, 26),
+	},
+};
+
+static struct scp_domain_data scp_domain_mt8365[] = {
+	[MT8365_POWER_DOMAIN_MM] = {
+		.sta_mask = PWR_STATUS_DISP,
+		.ctl_offs = 0x30c,
+		.sram_pdn_bits = GENMASK(8, 8),
+		.sram_pdn_ack_bits = GENMASK(12, 12),
+	},
+	[MT8365_POWER_DOMAIN_CONN] = {
+		.sta_mask = PWR_STATUS_CONN,
+		.ctl_offs = 0x032c,
+		.sram_pdn_bits = 0,
+		.sram_pdn_ack_bits = 0,
+	},
+	[MT8365_POWER_DOMAIN_MFG] = {
+		.sta_mask = PWR_STATUS_MFG,
+		.ctl_offs = 0x0338,
+		.sram_pdn_bits = GENMASK(9, 8),
+		.sram_pdn_ack_bits = GENMASK(13, 12),
+	},
+	[MT8365_POWER_DOMAIN_AUDIO] = {
+		.sta_mask = BIT(24),
+		.ctl_offs = 0x0314,
+		.sram_pdn_bits = GENMASK(12, 8),
+		.sram_pdn_ack_bits = GENMASK(17, 13),
+	},
+	[MT8365_POWER_DOMAIN_CAM] = {
+		.sta_mask = BIT(25),
+		.ctl_offs = 0x0344,
+		.sram_pdn_bits = GENMASK(9, 8),
+		.sram_pdn_ack_bits = GENMASK(13, 12),
+	},
+	[MT8365_POWER_DOMAIN_DSP] = {
+		.sta_mask = BIT(17),
+		.ctl_offs = 0x037C,
+		.sram_pdn_bits = GENMASK(11, 8),
+		.sram_pdn_ack_bits = GENMASK(15, 12),
+	},
+	[MT8365_POWER_DOMAIN_VDEC] = {
+		.sta_mask = BIT(31),
+		.ctl_offs = 0x0370,
+		.sram_pdn_bits = GENMASK(8, 8),
+		.sram_pdn_ack_bits = GENMASK(12, 12),
+	},
+	[MT8365_POWER_DOMAIN_VENC] = {
+		.sta_mask = BIT(21),
+		.ctl_offs = 0x0304,
+		.sram_pdn_bits = GENMASK(8, 8),
+		.sram_pdn_ack_bits = GENMASK(12, 12),
+	},
+	[MT8365_POWER_DOMAIN_APU] = {
+		.sta_mask = BIT(16),
+		.ctl_offs = 0x0378,
+		.sram_pdn_bits = GENMASK(14, 8),
+		.sram_pdn_ack_bits = GENMASK(21, 15),
 	},
 };
 
@@ -331,6 +390,9 @@ static int mtk_power_domain_hook(struct udevice *dev)
 	case SCPSYS_MT7629:
 		scpd->data = scp_domain_mt7629;
 		break;
+	case SCPSYS_MT8365:
+		scpd->data = scp_domain_mt8365;
+		break;
 	default:
 		return -EINVAL;
 	}
@@ -389,6 +451,10 @@ static const struct udevice_id mtk_power_domain_ids[] = {
 	{
 		.compatible = "mediatek,mt7629-scpsys",
 		.data = SCPSYS_MT7629,
+	},
+	{
+		.compatible = "mediatek,mt8365-scpsys",
+		.data = SCPSYS_MT8365,
 	},
 	{ /* sentinel */ }
 };
