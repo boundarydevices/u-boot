@@ -56,6 +56,10 @@
 #define PWR_STATUS_HIF0		BIT(25)
 #define PWR_STATUS_HIF1		BIT(26)
 
+/* MT8365 specific registers */
+#define MT8365_SPM_PWR_STATUS	   0x180
+#define MT8365_SPM_PWR_STATUS_2ND  0x184
+
 /* Infrasys configuration */
 #define INFRA_TOPDCM_CTRL	0x10
 #define INFRA_TOPAXI_PROT_EN	0x220
@@ -252,10 +256,19 @@ static int mtk_infracfg_clear_bus_protection(void __iomem *infracfg,
 static int scpsys_domain_is_on(struct scp_domain_data *data)
 {
 	struct scp_domain *scpd = data->scpd;
-	u32 sta = readl(scpd->base + SPM_PWR_STATUS) &
-			data->sta_mask;
-	u32 sta2 = readl(scpd->base + SPM_PWR_STATUS_2ND) &
-			 data->sta_mask;
+	u32 spm_pwr_status, spm_pwr_status_2nd;
+	u32 sta, sta2;
+
+	if (data->scpd->type == SCPSYS_MT8365) {
+		spm_pwr_status = MT8365_SPM_PWR_STATUS;
+		spm_pwr_status_2nd = MT8365_SPM_PWR_STATUS_2ND;
+	} else {
+		spm_pwr_status = SPM_PWR_STATUS;
+		spm_pwr_status_2nd = SPM_PWR_STATUS_2ND;
+	}
+
+	sta = readl(scpd->base + spm_pwr_status) & data->sta_mask;
+	sta2 = readl(scpd->base + spm_pwr_status_2nd) & data->sta_mask;
 
 	/*
 	 * A domain is on when both status bits are set. If only one is set
