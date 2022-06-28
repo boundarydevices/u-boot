@@ -91,7 +91,7 @@ struct display_info_t {
 	int	fbtype;
 
 #define FBF_MODESTR	1
-#define FBF_JEIDA	2
+#define FBF_JEIDA	2	/* JEIDA - BGR 0/1 on last differential pair */
 #define FBF_SPLITMODE	4
 #define FBF_SPI		8
 #define FBF_BKLIT_LOW_ACTIVE	0x010	/* pwm active level */
@@ -190,6 +190,7 @@ void fbp_setup_env_cmds(void);
 #define VD_MIPI_800_600MR_60(_mode, args...)	VDF_800_600MR_60(_mode, "dsi-800x600MR@60", RGB24, FBF_MIPI_TO_HDMI, args)
 #define VD_MIPI_640_480M_60(_mode, args...)	VDF_640_480M_60(_mode, "dsi-640x480M@60", RGB24, FBF_MIPI_TO_HDMI, args)
 #define VD_MIPI_720_480M_60(_mode, args...)	VDF_720_480M_60(_mode, "dsi-720x480M@60", RGB24, FBF_MIPI_TO_HDMI, args)
+#define VD_VTFT101RPFT20(_mode, args...)	VDF_MIPI_VTFT101RPFT20(_mode, "vtft101rpft20", RGB24, 0, args)
 #define VD_MIPI_VTFT101RPFT20(_mode, args...)	VDF_MIPI_VTFT101RPFT20(_mode, "vtft101rpft20", RGB24, FBF_VTFT101, args)
 #define VD_MIPI_VTFT101RPFT20_2(_mode, args...)	VDF_MIPI_VTFT101RPFT20(_mode, "vtft101rpft20-2", RGB24, FBF_VTFT101, args)
 #define VD_MIPI_VTFT101RPFT20_3(_mode, args...)	VDF_MIPI_VTFT101RPFT20(_mode, "vtft101rpft20-3", RGB24, FBF_VTFT101, args)
