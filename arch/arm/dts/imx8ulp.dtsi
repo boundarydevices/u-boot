@@ -374,6 +374,36 @@
 				clock-names = "ipg";
 				status = "disabled";
 			};
+
+			lpspi4: spi@293b0000 {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				compatible = "fsl,imx8ulp-spi", "fsl,imx7ulp-spi";
+				reg = <0x293b0000 0x10000>;
+				interrupts = <GIC_SPI 97 IRQ_TYPE_LEVEL_HIGH>;
+				clocks = <&pcc3 IMX8ULP_CLK_LPSPI4>,
+					 <&pcc3 IMX8ULP_CLK_LPSPI4>;
+				clock-names = "per", "ipg";
+				assigned-clocks = <&pcc3 IMX8ULP_CLK_LPSPI4>;
+				assigned-clock-parents = <&cgc1 IMX8ULP_CLK_XBAR_DIVBUS>;
+				assigned-clock-rates = <16000000>;
+				status = "disabled";
+			};
+
+			lpspi5: spi@293c0000 {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				compatible = "fsl,imx8ulp-spi", "fsl,imx7ulp-spi";
+				reg = <0x293c0000 0x10000>;
+				interrupts = <GIC_SPI 98 IRQ_TYPE_LEVEL_HIGH>;
+				clocks = <&pcc3 IMX8ULP_CLK_LPSPI5>,
+					 <&pcc3 IMX8ULP_CLK_LPSPI5>;
+				clock-names = "per", "ipg";
+				assigned-clocks = <&pcc3 IMX8ULP_CLK_LPSPI5>;
+				assigned-clock-parents = <&cgc1 IMX8ULP_CLK_XBAR_DIVBUS>;
+				assigned-clock-rates = <16000000>;
+				status = "disabled";
+			};
 		};
 
 		per_bridge4: bus@29800000 {
