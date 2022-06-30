@@ -89,9 +89,12 @@ static unsigned long clk_pll1416x_recalc_rate(struct clk *clk)
 static unsigned long clk_pll1443x_recalc_rate(struct clk *clk)
 {
 	struct clk_pll14xx *pll = to_clk_pll14xx(dev_get_clk_ptr(clk->dev));
-	u64 fvco = clk_get_parent_rate(clk);
+	const struct imx_pll14xx_rate_table *rate_table = pll->rate_table;
 	u32 mdiv, pdiv, sdiv, pll_div_ctl0, pll_div_ctl1;
 	short int kdiv;
+	u64 fvco = clk_get_parent_rate(clk);
+	long rate = 0;
+	int i;
 
 	pll_div_ctl0 = readl(pll->base + 4);
 	pll_div_ctl1 = readl(pll->base + 8);
@@ -100,16 +103,29 @@ static unsigned long clk_pll1443x_recalc_rate(struct clk *clk)
 	sdiv = (pll_div_ctl0 & SDIV_MASK) >> SDIV_SHIFT;
 	kdiv = pll_div_ctl1 & KDIV_MASK;
 
+	/*
+	 * Sometimes, the recalculated rate has deviation due to
+	 * the frac part. So find the accurate pll rate from the table
+	 * first, if no match rate in the table, use the rate calculated
+	 * from the equation below.
+	 */
+	for (i = 0; i < pll->rate_count; i++) {
+		if (rate_table[i].pdiv == pdiv && rate_table[i].mdiv == mdiv &&
+		    rate_table[i].sdiv == sdiv && rate_table[i].kdiv == kdiv)
+			rate = rate_table[i].rate;
+	}
+
 	/* fvco = (m * 65536 + k) * Fin / (p * 65536) */
 	fvco *= (mdiv * 65536 + kdiv);
 	pdiv *= 65536;
 
 	do_div(fvco, pdiv << sdiv);
+	pr_info("%s: rate=%ld fvco=%lld\n", __func__, rate, fvco);
 
-	return fvco;
+	return rate ? (unsigned long) rate : (unsigned long)fvco;
 }
 
-static inline bool clk_pll1416x_mp_change(const struct imx_pll14xx_rate_table *rate,
+static inline bool clk_pll14xx_mp_change(const struct imx_pll14xx_rate_table *rate,
 					  u32 pll_div)
 {
 	u32 old_mdiv, old_pdiv;
@@ -118,32 +134,6 @@ static inline bool clk_pll1416x_mp_change(const struct imx_pll14xx_rate_table *r
 	old_pdiv = (pll_div & PDIV_MASK) >> PDIV_SHIFT;
 
 	return rate->mdiv != old_mdiv || rate->pdiv != old_pdiv;
-}
-
-static inline bool clk_pll1443x_mpk_change(const struct imx_pll14xx_rate_table *rate,
-					   u32 pll_div_ctl0, u32 pll_div_ctl1)
-{
-	u32 old_mdiv, old_pdiv, old_kdiv;
-
-	old_mdiv = (pll_div_ctl0 & MDIV_MASK) >> MDIV_SHIFT;
-	old_pdiv = (pll_div_ctl0 & PDIV_MASK) >> PDIV_SHIFT;
-	old_kdiv = (pll_div_ctl1 & KDIV_MASK) >> KDIV_SHIFT;
-
-	return rate->mdiv != old_mdiv || rate->pdiv != old_pdiv ||
-		rate->kdiv != old_kdiv;
-}
-
-static inline bool clk_pll1443x_mp_change(const struct imx_pll14xx_rate_table *rate,
-					  u32 pll_div_ctl0, u32 pll_div_ctl1)
-{
-	u32 old_mdiv, old_pdiv, old_kdiv;
-
-	old_mdiv = (pll_div_ctl0 & MDIV_MASK) >> MDIV_SHIFT;
-	old_pdiv = (pll_div_ctl0 & PDIV_MASK) >> PDIV_SHIFT;
-	old_kdiv = (pll_div_ctl1 & KDIV_MASK) >> KDIV_SHIFT;
-
-	return rate->mdiv != old_mdiv || rate->pdiv != old_pdiv ||
-		rate->kdiv != old_kdiv;
 }
 
 static int clk_pll14xx_wait_lock(struct clk_pll14xx *pll)
@@ -170,7 +160,7 @@ static ulong clk_pll1416x_set_rate(struct clk *clk, unsigned long drate)
 
 	tmp = readl(pll->base + 4);
 
-	if (!clk_pll1416x_mp_change(rate, tmp)) {
+	if (!clk_pll14xx_mp_change(rate, tmp)) {
 		tmp &= ~(SDIV_MASK) << SDIV_SHIFT;
 		tmp |= rate->sdiv << SDIV_SHIFT;
 		writel(tmp, pll->base + 4);
@@ -190,7 +180,6 @@ static ulong clk_pll1416x_set_rate(struct clk *clk, unsigned long drate)
 	/* Enable BYPASS */
 	tmp |= BYPASS_MASK;
 	writel(tmp, pll->base);
-
 
 	div_val = (rate->mdiv << MDIV_SHIFT) | (rate->pdiv << PDIV_SHIFT) |
 		(rate->sdiv << SDIV_SHIFT);
@@ -235,19 +224,20 @@ static ulong clk_pll1443x_set_rate(struct clk *clk, unsigned long drate)
 	}
 
 	tmp = readl(pll->base + 4);
-	div_val = readl(pll->base + 8);
 
-	if (!clk_pll1443x_mpk_change(rate, tmp, div_val)) {
+	if (!clk_pll14xx_mp_change(rate, tmp)) {
 		tmp &= ~(SDIV_MASK) << SDIV_SHIFT;
 		tmp |= rate->sdiv << SDIV_SHIFT;
 		writel(tmp, pll->base + 4);
 
+		tmp = rate->kdiv << KDIV_SHIFT;
+		writel_relaxed(tmp, pll->base + 8);
+
 		return clk_pll1443x_recalc_rate(clk);
 	}
 
-	tmp = readl(pll->base);
-
 	/* Enable RST */
+	tmp = readl(pll->base);
 	tmp &= ~RST_MASK;
 	writel(tmp, pll->base);
 
@@ -288,16 +278,28 @@ static int clk_pll14xx_prepare(struct clk *clk)
 {
 	struct clk_pll14xx *pll = to_clk_pll14xx(dev_get_clk_ptr(clk->dev));
 	u32 val;
+	int ret;
 
 	/*
 	 * RESETB = 1 from 0, PLL starts its normal
 	 * operation after lock time
 	 */
 	val = readl(pll->base + GNRL_CTL);
+	if (val & RST_MASK)
+		return 0;
+	val |= BYPASS_MASK;
+	writel_relaxed(val, pll->base + GNRL_CTL);
 	val |= RST_MASK;
 	writel(val, pll->base + GNRL_CTL);
 
-	return clk_pll14xx_wait_lock(pll);
+	ret = clk_pll14xx_wait_lock(pll);
+	if (ret)
+		return ret;
+
+	val &= ~BYPASS_MASK;
+	writel_relaxed(val, pll->base + GNRL_CTL);
+
+	return 0;
 }
 
 static int clk_pll14xx_unprepare(struct clk *clk)
