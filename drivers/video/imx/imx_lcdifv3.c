@@ -252,13 +252,20 @@ static int lcdifv3_of_get_timings(struct udevice *dev,
 
 #if CONFIG_IS_ENABLED(CLK)
 u32 pll_rates[] = {
+	 361267200U,
+	 364000000U,
+	 384000000U,
+	 393216000U,
+	 452900000U,
+	 453000000U,
+	 497755966U,
 	 519750000U,
 	 594000000U,
 	 650000000U,
 	1039500000U,
 };
 
-static u32 get_pixclock(struct clk *pll, unsigned long pixclock)
+static u32 get_pixclock(struct clk *pll, unsigned long pixclock, int ldb)
 {
 	unsigned long rate;
 	unsigned long best = 0, best_n = 1, best_diff = ~0;
@@ -269,7 +276,10 @@ static u32 get_pixclock(struct clk *pll, unsigned long pixclock)
 
 	for (i = 0; i < ARRAY_SIZE(pll_rates); i++) {
 		rate = pll_rates[i];
-		cur_n = (rate + (pixclock >> 1)) / pixclock;
+		if (!ldb)
+			cur_n = (rate + (pixclock >> 1)) / pixclock;
+		else
+			cur_n = 7;
 		cur = rate / cur_n;
 		if (cur >= pixclock)
 			cur_diff = cur - pixclock;
@@ -340,7 +350,8 @@ static int lcdifv3_video_probe(struct udevice *dev)
 
 	ulong fb_start, fb_end;
 #if CONFIG_IS_ENABLED(CLK)
-	struct clk pll;
+	struct clk* video_pll;
+	struct clk* clk_ldb;
 	u32 pixclock;
 #endif
 	int ret;
@@ -359,9 +370,16 @@ static int lcdifv3_video_probe(struct udevice *dev)
 		return ret;
 
 #if CONFIG_IS_ENABLED(CLK)
-	ret = clk_get_by_name(dev, "video_pll", &pll);
-	if (!ret) {
-		pixclock = get_pixclock(&pll, timings.pixelclock.typ);
+	clk_ldb = devm_clk_get_optional(dev, "ldb");
+	if (IS_ERR(clk_ldb))
+		return PTR_ERR(clk_ldb);
+
+	video_pll = devm_clk_get_optional(dev, "video_pll");
+	if (IS_ERR(video_pll))
+		return PTR_ERR(video_pll);
+
+	if (video_pll) {
+		pixclock = get_pixclock(video_pll, timings.pixelclock.typ, clk_ldb ? 1 : 0);
 	} else {
 		pixclock = timings.pixelclock.typ;
 	}
@@ -370,6 +388,15 @@ static int lcdifv3_video_probe(struct udevice *dev)
 		printf("Failed to get pix clk\n");
 		return ret;
 	}
+
+	if (clk_ldb) {
+		ret = clk_set_rate(video_pll, pixclock * 7);
+		if (ret < 0) {
+			printf("Failed to set pll rate(%d) %d\n", pixclock, ret);
+			return ret;
+		}
+	}
+
 	ret = clk_set_rate(&priv->lcdif_pix, pixclock);
 	if (ret < 0) {
 		printf("Failed to set pix clk rate(%d) %d\n", pixclock, ret);
