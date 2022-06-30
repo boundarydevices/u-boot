@@ -1147,14 +1147,17 @@
 				clocks = <&clk IMX8MP_CLK_MEDIA_DISP2_PIX_ROOT>,
 					 <&clk IMX8MP_CLK_MEDIA_AXI_ROOT>,
 					 <&clk IMX8MP_CLK_MEDIA_APB_ROOT>,
+					 <&clk IMX8MP_CLK_MEDIA_LDB_ROOT>,
 					 <&clk IMX8MP_VIDEO_PLL1>;
-				clock-names = "pix", "disp-axi", "disp-apb", "video_pll";
+				clock-names = "pix", "disp-axi", "disp-apb", "ldb", "video_pll";
 				assigned-clocks = <&clk IMX8MP_CLK_MEDIA_DISP2_PIX>,
 						  <&clk IMX8MP_CLK_MEDIA_AXI>,
-						  <&clk IMX8MP_CLK_MEDIA_APB>;
+						  <&clk IMX8MP_CLK_MEDIA_APB>,
+						  <&clk IMX8MP_CLK_MEDIA_LDB>;
 				assigned-clock-parents = <&clk IMX8MP_VIDEO_PLL1_OUT>,
 							 <&clk IMX8MP_SYS_PLL2_1000M>,
-							 <&clk IMX8MP_SYS_PLL1_800M>;
+							 <&clk IMX8MP_SYS_PLL1_800M>,
+							 <&clk IMX8MP_VIDEO_PLL1_OUT>;
 				assigned-clock-rates = <0>, <500000000>, <200000000>;
 				interrupts = <GIC_SPI 6 IRQ_TYPE_LEVEL_HIGH>;
 				power-domains = <&mediamix_pd>;
