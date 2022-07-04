@@ -47,6 +47,8 @@
 #define HUB_SHORT_RESET_TIME	20
 #define HUB_LONG_RESET_TIME	200
 
+#define HUB_DEBOUNCE_TIMEOUT	1000
+
 #define PORT_OVERCURRENT_MAX_SCAN_COUNT		3
 
 struct usb_device_scan {
@@ -212,13 +214,12 @@ static void usb_hub_power_on(struct usb_hub_device *hub)
 	 */
 	hub->connect_timeout = hub->query_delay;
 #ifdef CONFIG_SPL_BUILD
-	hub->connect_timeout += 1000;
+	hub->connect_timeout += HUB_DEBOUNCE_TIMEOUT;
 #else
-	hub->connect_timeout += env_get_ulong("usb_connect_wait", 10, 1500);
+	hub->connect_timeout += env_get_ulong("usb_connect_wait", 10, HUB_DEBOUNCE_TIMEOUT);
 #endif
 	debug("devnum=%d poweron: query_delay=%d connect_timeout=%d\n",
-	      dev->devnum, max(100, (int)pgood_delay),
-	      max(100, (int)pgood_delay) + 1000);
+	      dev->devnum, hub->query_delay, hub->connect_timeout);
 }
 
 #if !CONFIG_IS_ENABLED(DM_USB)
