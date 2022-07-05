@@ -26,7 +26,16 @@ config TARGET_IMX8ULP_EVK
 	select ARCH_MISC_INIT
 	select SPL_CRYPTO if SPL
 
+config BOUNDARY_BOARD_IMX8ULP
+	bool "Boundary Devices i.MX8ULP board"
+
 endchoice
+
+menu "Boundary Devices i.MX8ULP boards"
+	depends on BOUNDARY_BOARD_IMX8ULP
+
+source "board/boundary/Kconfig-imx8ulp"
+endmenu
 
 source "board/freescale/imx8ulp_evk/Kconfig"
 

@@ -1,0 +1,6 @@
+i.MX8ULP tagBOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/tag/
+F:	include/configs/tag.h
+F:	configs/tag_2gr0_defconfig

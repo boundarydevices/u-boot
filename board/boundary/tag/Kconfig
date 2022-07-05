@@ -1,0 +1,14 @@
+if TARGET_TAG
+
+config SYS_BOARD
+	default "tag"
+
+config SYS_VENDOR
+	default "boundary"
+
+config SYS_CONFIG_NAME
+	default "tag"
+
+source "board/boundary/common/Kconfig"
+
+endif
