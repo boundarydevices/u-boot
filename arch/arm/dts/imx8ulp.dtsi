@@ -452,6 +452,25 @@
 				clock-names = "dummy";
 			};
 
+			flexspi2: flexspi@29810000 {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				compatible = "nxp,imx8ulp-fspi";
+				reg = <0x29810000 0x10000>,
+					<0x60000000 0xfffffff>;
+				reg-names = "fspi_base", "fspi_mmap";
+				status = "disabled";
+			};
+
+			flexspi2_nand: flexspi2_nand@29810000 {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				compatible = "fsl,imx8-fspi-nand";
+				reg = <0x29810000 0x10000>, <0x60000000 0x10000000>;
+				reg-names = "FlexSPI", "FlexSPI-memory";
+				status = "disabled";
+			};
+
 			lpi2c6: lpi2c6@29840000 {
 				compatible = "fsl,imx8ulp-lpi2c", "fsl,imx7ulp-lpi2c";
 				reg = <0x29840000 0x10000>;
@@ -472,22 +491,24 @@
 				status = "disabled";
 			};
 
-			flexspi2: flexspi@29810000 {
-				#address-cells = <1>;
-				#size-cells = <0>;
-				compatible = "nxp,imx8ulp-fspi";
-				reg = <0x29810000 0x10000>,
-					<0x60000000 0xfffffff>;
-				reg-names = "fspi_base", "fspi_mmap";
+			lpuart6: serial@29860000 {
+				compatible = "fsl,imx8ulp-lpuart", "fsl,imx7ulp-lpuart";
+				reg = <0x29860000 0x1000>;
+				interrupts = <GIC_SPI 101 IRQ_TYPE_LEVEL_HIGH>;
+				clocks = <&pcc4 IMX8ULP_CLK_LPUART6>,
+					 <&pcc4 IMX8ULP_CLK_LPUART6>;
+				clock-names = "ipg", "per";
+				dmas = <&edma1 60 0 0>, <&edma1 59 0 1>;
+				dma-names = "tx","rx";
 				status = "disabled";
 			};
 
-			flexspi2_nand: flexspi2_nand@29810000 {
-				#address-cells = <1>;
-				#size-cells = <0>;
-				compatible = "fsl,imx8-fspi-nand";
-				reg = <0x29810000 0x10000>, <0x60000000 0x10000000>;
-				reg-names = "FlexSPI", "FlexSPI-memory";
+			lpuart7: serial@29870000 {
+				compatible = "fsl,imx8ulp-lpuart", "fsl,imx7ulp-lpuart";
+				reg = <0x29870000 0x1000>;
+				clocks = <&pcc4 IMX8ULP_CLK_LPUART7>,
+					 <&pcc4 IMX8ULP_CLK_LPUART7>;
+				clock-names = "ipg", "per";
 				status = "disabled";
 			};
 
