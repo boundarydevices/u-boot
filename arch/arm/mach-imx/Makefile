@@ -126,6 +126,9 @@ DEPFILE_EXISTS := $(shell $(CPP) $(cpp_flags) -x c -o u-boot-dtb.cfgout $(srctre
 else ifeq ($(CONFIG_ARCH_IMX8M), y)
 IMAGE_TYPE := imx8mimage
 DEPFILE_EXISTS := 0
+else ifeq ($(CONFIG_ARCH_IMX8ULP), y)
+IMAGE_TYPE := imx8image
+DEPFILE_EXISTS := 0
 else
 IMAGE_TYPE := imximage
 DEPFILE_EXISTS := 0
@@ -177,7 +180,7 @@ flash.bin: spl/u-boot-spl-ddr.bin u-boot.itb FORCE
 	$(call if_changed,mkimage)
 endif
 
-ifeq ($(CONFIG_ARCH_IMX8), y)
+ifeq ($(CONFIG_ARCH_IMX8)$(CONFIG_ARCH_IMX8ULP), y)
 SPL:
 
 MKIMAGEFLAGS_flash.bin = -n spl/u-boot-spl.cfgout -T $(IMAGE_TYPE) -e 0x100000
