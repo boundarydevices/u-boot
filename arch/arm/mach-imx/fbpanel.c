@@ -1137,12 +1137,22 @@ int fbp_detect_i2c(struct display_info_t const *di)
 	}
 #ifdef CONFIG_DM_I2C
 	ret = uclass_get_device_by_seq(UCLASS_I2C, di->bus_num, &bus);
-	if (!ret)
+	if (!ret) {
 		ret = i2c_probe_chip(bus, di->addr_num, 0);
+		if (ret && (di->addr_num == 0x4a)) {
+			/* atmel's address can be 0x26 the 1st time */
+			ret = i2c_probe_chip(bus, 0x26, 0);
+		}
+	}
 #else
 	ret = i2c_set_bus_num(di->bus_num);
-	if (ret == 0)
+	if (!ret) {
 		ret = i2c_probe(di->addr_num);
+		if (ret && (di->addr_num == 0x4a)) {
+			/* atmel's address can be 0x26 the 1st time */
+			ret = i2c_probe(0x26);
+		}
+	}
 #endif
 
 	if (di->bus_gp)

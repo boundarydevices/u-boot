@@ -136,6 +136,7 @@ struct display_info_t {
 #define FBF_G156HCE_L01		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_DSI_LANES_4 | FBF_SPLITMODE)
 #define FBF_COM50H5N03ULC	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_PINCTRL | FBF_ENABLE_GPIOS_DTB)
 #define FBF_LTK080A60A004T	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_PINCTRL | FBF_ENABLE_GPIOS_DTB)
+#define FBF_CS005_0004_03	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_PINCTRL | FBF_ENABLE_GPIOS_DTB | FBF_BKLIT_EN_DTB)
 #define FBF_M101NWWB		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4)
 #define FBF_MQ_M101NWWB		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_SYNC_PULSE | FBF_MIPI_CMDS | FBF_DSI_LANES_4)
 #define FBF_DLC0350GEV06	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_PINCTRL | FBF_ENABLE_GPIOS_DTB | FBF_ENABLE_GPIOS_OPEN_DRAIN)
@@ -190,6 +191,7 @@ void fbp_setup_env_cmds(void);
 #define VD_MIPI_800_600MR_60(_mode, args...)	VDF_800_600MR_60(_mode, "dsi-800x600MR@60", RGB24, FBF_MIPI_TO_HDMI, args)
 #define VD_MIPI_640_480M_60(_mode, args...)	VDF_640_480M_60(_mode, "dsi-640x480M@60", RGB24, FBF_MIPI_TO_HDMI, args)
 #define VD_MIPI_720_480M_60(_mode, args...)	VDF_720_480M_60(_mode, "dsi-720x480M@60", RGB24, FBF_MIPI_TO_HDMI, args)
+#define VD_MIPI_CS005_0004_03(_mode, args...)	VDF_MIPI_CS005_0004_03(_mode, "cs005_0004_03", RGB24, FBF_CS005_0004_03, args)
 #define VD_VTFT101RPFT20(_mode, args...)	VDF_MIPI_VTFT101RPFT20(_mode, "vtft101rpft20", RGB24, 0, args)
 #define VD_MIPI_VTFT101RPFT20(_mode, args...)	VDF_MIPI_VTFT101RPFT20(_mode, "vtft101rpft20", RGB24, FBF_VTFT101, args)
 #define VD_MIPI_VTFT101RPFT20_2(_mode, args...)	VDF_MIPI_VTFT101RPFT20(_mode, "vtft101rpft20-2", RGB24, FBF_VTFT101, args)
@@ -391,6 +393,25 @@ void fbp_setup_env_cmds(void);
 	}\
 }
 
+#define VDF_MIPI_CS005_0004_03(_mode, _name, _fmt, _flags, args...) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, args),\
+	.mode	= {\
+		.name           = _name,\
+		.refresh        = 60,\
+		.xres           = 800,\
+		.yres           = 480,\
+		.pixclock       = 1000000000000ULL/((800+30+110+10)*(480+8+8+4)*60),\
+		.left_margin    = 30,\
+		.right_margin   = 110,\
+		.upper_margin   = 8,\
+		.lower_margin   = 8,\
+		.hsync_len      = 10,\
+		.vsync_len      = 4,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
 
 #define VDF_MIPI_VTFT101RPFT20(_mode, _name, _fmt, _flags, args...) \
 {\
