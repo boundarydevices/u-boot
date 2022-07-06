@@ -43,6 +43,7 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IOMUX_PAD_CTRL(UART2_TXD__UART2_DCE_TX, UART_PAD_CTRL),
 
 #define GPIRQ_SN65DSI83			IMX_GPIO_NR(1, 1)
+#define GP_CS005_0004_03_DISPLAY_EN	IMX_GPIO_NR(1, 1)
 /* This enables 5V power on LTK080A60A004T mipi display */
 #define GP_LTK08_MIPI_EN		IMX_GPIO_NR(1, 1)
 #define GP_LCD133_070_RESET		IMX_GPIO_NR(1, 1)
@@ -51,12 +52,14 @@ static iomux_v3_cfg_t const init_pads[] = {
 #define GPIRQ_TS_GT911 			IMX_GPIO_NR(1, 6)
 #define GPIRQ_TS_FT5X06			IMX_GPIO_NR(1, 6)
 	IOMUX_PAD_CTRL(GPIO1_IO06__GPIO1_IO6, 0x180),
+#define GP_TS_ATMEL_RESET		IMX_GPIO_NR(1, 7)
 #define GP_TS_GT911_RESET		IMX_GPIO_NR(1, 7)
 #define GP_ST1633_RESET			IMX_GPIO_NR(1, 7)
 #define GP_TS_FT5X06_RESET		IMX_GPIO_NR(1, 7)
 #define GP_TS_FT7250_RESET		IMX_GPIO_NR(1, 7)
 	IOMUX_PAD_CTRL(GPIO1_IO07__GPIO1_IO7, 0x100),
 
+#define GP_CS005_0004_03_BKL_EN	IMX_GPIO_NR(1, 9)
 #define GP_TC358762_EN		IMX_GPIO_NR(1, 9)
 #define GP_SC18IS602B_RESET	IMX_GPIO_NR(1, 9)
 #define GP_SN65DSI83_EN		IMX_GPIO_NR(1, 9)
@@ -176,6 +179,8 @@ static const struct display_info_t displays[] = {
 	VD_MIPI_640_480M_60(MIPI, NULL, fbp_bus_gp((1 | (3 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
 
 	VD_MIPI_VTFT101RPFT20(MIPI, fbp_detect_i2c, 1, 0x70, FBP_PCA9540),
+
+	VD_MIPI_CS005_0004_03(MIPI, fbp_detect_i2c, fbp_bus_gp(3, GP_TS_ATMEL_RESET, GP_CS005_0004_03_DISPLAY_EN, 0), fbp_addr_gp(0x4a, GP_CS005_0004_03_BKL_EN, 0, 0), FBTS_ATMEL_MT),
 };
 #define display_cnt	ARRAY_SIZE(displays)
 #else
