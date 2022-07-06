@@ -32,6 +32,8 @@ struct dram_timing_info2 {
 };
 
 extern struct dram_timing_info2 dram_timing;
+extern struct dram_timing_info2 dram_timing_ch1;
+extern struct dram_timing_info2 dram_timing_ch2;
 
 int ddr_init(struct dram_timing_info2 *dram_timing);
 
