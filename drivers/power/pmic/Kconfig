@@ -375,6 +375,14 @@ config PMIC_TPS65219
 	help
 	The TPS65219 is a PMIC containing a bunch of SMPS & LDOs.
 	This driver binds the pmic children.
+
+config MTK_PMIC_WRAP
+	bool "Enable driver for MediaTek PMIC Wrapper Support"
+	help
+	  Say yes here to add support for MediaTek PMIC Wrapper found
+	  on different MediaTek SoCs. The PMIC wrapper is a proprietary
+	  hardware to connect the PMIC.
+
 endif
 
 config PMIC_TPS65217

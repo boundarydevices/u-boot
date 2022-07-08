@@ -44,3 +44,4 @@ obj-$(CONFIG_POWER_HI6553) += pmic_hi6553.o
 obj-$(CONFIG_POWER_MC34VR500) += pmic_mc34vr500.o
 obj-$(CONFIG_PMIC_TPS65941) += tps65941.o
 obj-$(CONFIG_PMIC_TPS65219) += tps65219.o
+obj-$(CONFIG_MTK_PMIC_WRAP) += mtk-pmic-wrap.o
