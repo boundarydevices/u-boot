@@ -42,7 +42,10 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IOMUX_PAD_CTRL(GPIO1_IO02__WDOG1_WDOG_B, WDOG_PAD_CTRL),
 	IOMUX_PAD_CTRL(UART2_RXD__UART2_DCE_RX, UART_PAD_CTRL),
 	IOMUX_PAD_CTRL(UART2_TXD__UART2_DCE_TX, UART_PAD_CTRL),
+
+#define GP_B_MODEM_COEX1		IMX_GPIO_NR(5, 28)
 	IOMUX_PAD_CTRL(UART4_RXD__GPIO5_IO28, 0x100),	/* B_MODEM_COEX1 pull-down */
+#define GP_B_MODEM_COEX2		IMX_GPIO_NR(5, 29)
 	IOMUX_PAD_CTRL(UART4_TXD__GPIO5_IO29, 0x100),	/* B_MODEM_COEX2 pull-down */
 
 #define GPIRQ_SN65DSI83			IMX_GPIO_NR(1, 1)
@@ -102,7 +105,11 @@ int board_early_init_f(void)
 
 	gpio_direction_output(GP_BACKLIGHT_MIPI, 0);
 	gpio_request(GP_SN65DSI83_EN, "sn65en");
+	gpio_request(GP_B_MODEM_COEX1, "modem_coex1");
+	gpio_request(GP_B_MODEM_COEX2, "modem_coex2");
 	gpio_direction_output(GP_SN65DSI83_EN, 0);
+	gpio_direction_output(GP_B_MODEM_COEX1, 0);
+	gpio_direction_output(GP_B_MODEM_COEX2, 0);
 	imx_iomux_v3_setup_multiple_pads(init_pads, ARRAY_SIZE(init_pads));
 
 	gpio_direction_output(GP_USB_RESET, 1);
