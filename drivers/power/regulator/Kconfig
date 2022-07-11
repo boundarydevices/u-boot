@@ -395,3 +395,12 @@ config DM_REGULATOR_TPS65219
 	features for REGULATOR TPS65219 and the family of TPS65219 PMICs.
 	TPS65219 series of PMICs have 3 single phase BUCKs & 4 LDOs.
 	The driver implements get/set api for value and enable.
+
+config DM_REGULATOR_MT6357
+	bool "Enable driver for MediaTek MT6357 PMIC regulators"
+	depends on DM_REGULATOR && MTK_PMIC_WRAP
+	help
+	  Say y here to select this option to enable the power regulator of
+	  MediaTek MT6357 PMIC.
+	  This driver supports the control of different power rails of device
+	  through regulator interface.
