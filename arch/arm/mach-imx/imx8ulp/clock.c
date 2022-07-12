@@ -474,6 +474,13 @@ u32 get_lpuart_clk(void)
 	return pcc_clock_get_rate(lpuart_pcc[index], lpuart_pcc_slots[index]);
 }
 
+u32 imx_get_fecclk(void)
+{
+	u32 rate = cgc_clk_get_rate(NIC_PERCLK);
+
+	return rate;
+}
+
 #ifndef CONFIG_SPL_BUILD
 /*
  * Dump some core clockes.
