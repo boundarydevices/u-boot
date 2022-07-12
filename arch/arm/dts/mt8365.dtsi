@@ -182,6 +182,16 @@
 			status = "disabled";
 		};
 
+		i2c1: i2c@11008000 {
+			compatible = "mediatek,mt8365-i2c";
+			reg = <0 0x11008000 0 0xa0>,
+			      <0 0x11000100 0 0x80>;
+			clock-div = <1>;
+			clocks = <&infracfg CLK_IFR_I2C1_AXI>;
+			clock-names = "main";
+			status = "disabled";
+		};
+
 		mmc0: mmc@11230000 {
 			compatible = "mediatek,mt8365-mmc", "mediatek,mt8183-mmc";
 			reg = <0 0x11230000 0 0x1000>,
