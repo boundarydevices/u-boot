@@ -563,7 +563,8 @@ static void setup_iomux_enet(int kz, int net_mask)
 static inline bool is_micrel_part(struct phy_device *phydev)
 {
 	if ((((phydev->drv->uid ^ PHY_ID_KSZ9021) & 0xfffffff0) == 0) ||
-	    (((phydev->drv->uid ^ PHY_ID_KSZ9031) & 0xfffffff0) == 0))
+	    (((phydev->drv->uid ^ PHY_ID_KSZ9031) & 0xfffffff0) == 0) ||
+	    (((phydev->drv->uid ^ PHY_ID_KSZ9131) & 0xfffffff0) == 0))
 		return true;
 	return false;
 }
@@ -781,7 +782,32 @@ int board_phy_config(struct phy_device *phydev)
 #ifndef CONFIG_PHY_MICREL_KSZ8XXX
 static void phy_micrel_config(struct phy_device *phydev)
 {
-	if (((phydev->drv->uid ^ PHY_ID_KSZ9031) & 0xfffffff0) == 0) {
+	if (((phydev->drv->uid ^ PHY_ID_KSZ9131) & 0xfffffff0) == 0) {
+		u32 tmp;
+
+		/* read rxc dll control - devaddr = 0x2, register = 0x4c */
+		tmp = ksz9031_phy_extended_read(phydev, 0x02,
+					MII_KSZ9131_EXT_RGMII_2NS_SKEW_RXDLL,
+					MII_KSZ9031_MOD_DATA_NO_POST_INC);
+		/* disable rxdll bypass (enable 2ns skew delay on RXC) */
+		tmp &= ~MII_KSZ9131_RXTXDLL_BYPASS;
+		/* rxc data pad skew 2ns - devaddr = 0x02, register = 0x4c */
+		tmp = ksz9031_phy_extended_write(phydev, 0x02,
+					MII_KSZ9131_EXT_RGMII_2NS_SKEW_RXDLL,
+					MII_KSZ9031_MOD_DATA_NO_POST_INC, tmp);
+		/* read txc dll control - devaddr = 0x02, register = 0x4d */
+		tmp = ksz9031_phy_extended_read(phydev, 0x02,
+					MII_KSZ9131_EXT_RGMII_2NS_SKEW_TXDLL,
+					MII_KSZ9031_MOD_DATA_NO_POST_INC);
+		/* disable txdll bypass (enable 2ns skew delay on TXC) */
+		tmp &= ~MII_KSZ9131_RXTXDLL_BYPASS;
+		/* rxc data pad skew 2ns - devaddr = 0x02, register = 0x4d */
+		tmp = ksz9031_phy_extended_write(phydev, 0x02,
+					MII_KSZ9131_EXT_RGMII_2NS_SKEW_TXDLL,
+					MII_KSZ9031_MOD_DATA_NO_POST_INC, tmp);
+	}
+	if ((((phydev->drv->uid ^ PHY_ID_KSZ9031) & 0xfffffff0) == 0) ||
+	    (((phydev->drv->uid ^ PHY_ID_KSZ9131) & 0xfffffff0) == 0)) {
 		u32 freq = env_get_ulong("phy_clock_out", 10, KSZ_CLK_DEFAULT);
 		u32 led_mod = env_get_ulong("phy_led_mode", 10, 1);
 		u32 common_ctrl = led_mod ? KSZ9031_LED_MODE_SINGLE:
