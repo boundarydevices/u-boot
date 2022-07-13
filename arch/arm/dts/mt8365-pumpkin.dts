@@ -100,3 +100,17 @@
 	dr_mode = "peripheral";
 	status = "okay";
 };
+
+&i2c1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c1_pins_default>;
+	clock-frequency = <100000>;
+	status = "okay";
+};
+
+&pio {
+	i2c1_pins_default: i2c1_pins_default {
+		function = "i2c";
+		groups = "i2c1";
+	};
+};
