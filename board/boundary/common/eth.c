@@ -155,6 +155,9 @@ static unsigned char strap_gpios[] = {
 #ifdef GP_PHY_RXC
 	GP_PHY_RXC,
 #endif
+#ifdef GP_PHY_REF_CLK
+	GP_PHY_REF_CLK,
+#endif
 };
 #endif
 
@@ -169,6 +172,9 @@ static unsigned char strap2_gpios[] = {
 #endif
 #ifdef GP_PHY2_RXC
 	GP_PHY2_RXC,
+#endif
+#ifdef GP_PHY2_REF_CLK
+	GP_PHY2_REF_CLK,
 #endif
 #ifdef CONFIG_PHY_MICREL_KSZ8XXX
 	GP_PHY2_RX_EN,
