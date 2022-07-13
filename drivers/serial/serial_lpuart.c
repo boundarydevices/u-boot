@@ -103,9 +103,13 @@ static void lpuart_write32(u32 flags, u32 *addr, u32 val)
 }
 
 
-u32 __weak get_lpuart_clk(void)
+u32 __weak get_lpuart_clk(u32 base)
 {
 	return get_board_sys_clk();
+}
+
+void __weak init_clk_lpuart(u32 base)
+{
 }
 
 #if CONFIG_IS_ENABLED(CLK)
@@ -155,7 +159,7 @@ static void _lpuart_serial_setbrg(struct udevice *dev,
 		if (ret)
 			return;
 	} else {
-		clk = get_lpuart_clk();
+		clk = get_lpuart_clk((u32)(long)plat->reg);
 	}
 
 	sbr = (u16)(clk / (16 * baudrate));
@@ -244,7 +248,7 @@ static void _lpuart32_serial_setbrg_7ulp(struct udevice *dev,
 		if (ret)
 			return;
 	} else {
-		clk = get_lpuart_clk();
+		clk = get_lpuart_clk((u32)(long)plat->reg);
 	}
 
 	baud_diff = baudrate;
@@ -313,7 +317,7 @@ static void _lpuart32_serial_setbrg(struct udevice *dev,
 		if (ret)
 			return;
 	} else {
-		clk = get_lpuart_clk();
+		clk = get_lpuart_clk((u32)(long)plat->reg);
 	}
 
 	sbr = (clk / (16 * baudrate));
@@ -520,6 +524,9 @@ static int lpuart_serial_of_to_plat(struct udevice *dev)
 	if (addr == FDT_ADDR_T_NONE)
 		return -EINVAL;
 
+#if !CONFIG_IS_ENABLED(CLK_CCF)
+	init_clk_lpuart((u32)addr);
+#endif
 	plat->reg = (void *)addr;
 	plat->flags = dev_get_driver_data(dev);
 

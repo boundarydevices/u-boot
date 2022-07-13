@@ -268,7 +268,7 @@ unsigned long get_board_ddr_clk(void)
 }
 
 #ifdef CONFIG_LPUART
-u32 get_lpuart_clk(void)
+u32 get_lpuart_clk(u32 base)
 {
 	return gd->bus_clk;
 }

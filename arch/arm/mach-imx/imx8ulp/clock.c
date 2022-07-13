@@ -50,7 +50,7 @@ static void lpuart_set_clk(u32 index, enum cgc_clk clk)
 	pcc_reset_peripheral(lpuart_pcc[index], lpuart_pcc_slots[index], false);
 }
 
-static void init_clk_lpuart(void)
+void init_clk_lpuart(u32 base)
 {
 	u32 index = 0, i;
 
@@ -62,7 +62,7 @@ static void init_clk_lpuart(void)
 	};
 
 	for (i = 0; i < 4; i++) {
-		if (lpuart_array[i] == LPUART_BASE) {
+		if (lpuart_array[i] == base) {
 			index = i;
 			break;
 		}
@@ -157,8 +157,6 @@ void clock_init(void)
 {
 	cgc1_soscdiv_init();
 	cgc1_init_core_clk();
-
-	init_clk_lpuart();
 
 	pcc_clock_enable(4, SDHC0_PCC4_SLOT, false);
 	pcc_clock_sel(4, SDHC0_PCC4_SLOT, PLL3_PFD1_DIV2);
@@ -441,7 +439,7 @@ u32 mxc_get_clock(enum mxc_clock clk)
 	}
 }
 
-u32 get_lpuart_clk(void)
+u32 get_lpuart_clk(u32 base)
 {
 	int index = 0;
 
@@ -464,7 +462,7 @@ u32 get_lpuart_clk(void)
 	};
 
 	for (index = 0; index < 4; index++) {
-		if (lpuart_array[index] == LPUART_BASE)
+		if (lpuart_array[index] == base)
 			break;
 	}
 

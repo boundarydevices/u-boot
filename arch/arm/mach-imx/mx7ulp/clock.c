@@ -42,7 +42,7 @@ static u32 get_ipg_clk(void)
 	return scg_clk_get_rate(SCG_NIC1_BUS_CLK);
 }
 
-u32 get_lpuart_clk(void)
+u32 get_lpuart_clk(u32 base)
 {
 	int index = 0;
 
@@ -65,7 +65,7 @@ u32 get_lpuart_clk(void)
 	};
 
 	for (index = 0; index < 8; index++) {
-		if (lpuart_array[index] == LPUART_BASE)
+		if (lpuart_array[index] == base)
 			break;
 	}
 
@@ -129,7 +129,7 @@ unsigned int mxc_get_clock(enum mxc_clock clk)
 	case MXC_I2C_CLK:
 		return pcc_clock_get_rate(PER_CLK_LPI2C4);
 	case MXC_UART_CLK:
-		return get_lpuart_clk();
+		return get_lpuart_clk(LPUART_BASE);
 	case MXC_ESDHC_CLK:
 		return pcc_clock_get_rate(PER_CLK_USDHC0);
 	case MXC_ESDHC2_CLK:

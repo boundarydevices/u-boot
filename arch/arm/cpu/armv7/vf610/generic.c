@@ -211,7 +211,7 @@ static u32 get_dspi_clk(void)
 	return get_ipg_clk();
 }
 
-u32 get_lpuart_clk(void)
+u32 get_lpuart_clk(u32 base)
 {
 	return get_uart_clk();
 }
