@@ -791,6 +791,11 @@ static void phy_micrel_config(struct phy_device *phydev)
 	if (((phydev->drv->uid ^ PHY_ID_KSZ9131) & 0xfffffff0) == 0) {
 		u32 tmp;
 
+		/* Make leds blink normally, and separately */
+		phy_write(phydev, MDIO_DEVAD_NONE, 0x16, 0xa);
+		phy_write(phydev, MDIO_DEVAD_NONE, 0x17, 0x8863);
+		phy_write(phydev, MDIO_DEVAD_NONE, 0x1a, 0);
+
 		/* read rxc dll control - devaddr = 0x2, register = 0x4c */
 		tmp = ksz9031_phy_extended_read(phydev, 0x02,
 					MII_KSZ9131_EXT_RGMII_2NS_SKEW_RXDLL,
