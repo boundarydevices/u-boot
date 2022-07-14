@@ -87,7 +87,7 @@
 			MX8MP_IOMUXC_SAI1_RXD6__ENET1_RGMII_RD2		0x91
 			MX8MP_IOMUXC_SAI1_RXD7__ENET1_RGMII_RD3		0x91
 #define GP_FEC_RESET	<&gpio5 8 GPIO_ACTIVE_LOW>
-			MX8MP_IOMUXC_ECSPI1_MISO__GPIO5_IO08		0x140
+			MX8MP_IOMUXC_ECSPI1_MISO__GPIO5_IO08		0x100
 #define GPIRQ_FEC_PHY	<&gpio1 7 IRQ_TYPE_LEVEL_LOW>
 			MX8MP_IOMUXC_GPIO1_IO07__GPIO1_IO07		0x10
 		>;
@@ -376,6 +376,16 @@
 		>;
 	};
 
+	pinctrl_ts_atmel_lvds: ts-atmel-lvdsgrp {
+		fsl,pins = <
+#define GPIRQ_TS_ATMEL	<&gpio1 10 IRQ_TYPE_EDGE_FALLING>
+#define GP_TS_ATMEL	<&gpio1 10 GPIO_ACTIVE_LOW>
+			MX8MP_IOMUXC_GPIO1_IO10__GPIO1_IO10	0x149
+#define GP_TS_ATMEL_RESET	<&gpio3 14 GPIO_ACTIVE_LOW>
+			MX8MP_IOMUXC_NAND_DQS__GPIO3_IO14	0x149
+		>;
+	};
+
 	pinctrl_ts_ft5x06: ts-ft5x06grp {
 		fsl,pins = <
 #define GPIRQ_TS_FT5X06	<&gpio4 25 IRQ_TYPE_EDGE_FALLING>
@@ -471,7 +481,7 @@
 
 	pinctrl_usb3_0: usb3-0grp {
 		fsl,pins = <
-			MX8MP_IOMUXC_GPIO1_IO13__HSIOMIX_usb1_OTG_OC	0x116
+			MX8MP_IOMUXC_GPIO1_IO13__HSIOMIX_usb1_OTG_OC	0x1c0
 		>;
 	};
 
@@ -646,6 +656,7 @@
 		t_lvds = &t_lvds;
 		t_lvds2 = &t_lvds2;
 		t_mipi = &t_mipi;
+		ts_atmel_mt = &ts_atmel_mt;
 		ts_egalax = &ts_egalax_lvds;
 		ts_ft5x06 = &ts_ft5x06;
 		ts_ft5x06_2 = &ts_ft5x06_lvds;
@@ -816,17 +827,13 @@
 	};
 
 	reserved-memory {
-		#address-cells = <2>;
-		#size-cells = <2>;
-		ranges;
-
 		linux,cma {
 			size = <0 0x20000000>;
 		};
 	};
 
 	sound-hdmi {
-		compatible = "fsl,imx-audio-cdnhdmi";
+		compatible = "fsl,imx-audio-hdmi";
 		model = "audio-hdmi";
 #if 0
 		audio-cpu = <&aud2htx>;
@@ -1350,6 +1357,16 @@
 	sda-gpios = GP_I2C4_SDA;
 	status = "okay";
 
+	ts_atmel_mt: touchscreen@4a {
+		compatible = "atmel,maxtouch";
+		interrupts-extended = GPIRQ_TS_ATMEL;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_ts_atmel_lvds>;
+		reg = <0x4a>;
+		reset-gpios = GP_TS_ATMEL_RESET;
+		wakeup-gpios = GP_TS_ATMEL;
+	};
+
 	ts_egalax_lvds: touchscreen@4 {
 		compatible = "eeti,egalax_ts";
 		interrupts-extended = GPIRQ_TS_EGALAX_LVDS;
@@ -1751,6 +1768,7 @@
 
 #if 0
 &usb3_0 {
+	fsl,over-current-active-low;
 	status = "okay";
 };
 
@@ -1820,14 +1838,15 @@
 
 &usdhc2 {
 	bus-width = <4>;
-	no-sd-uhs-sdr104;
-	pm-ignore-notify;
+	fsl,sdio-async-interrupt-enabled;
 	keep-power-in-suspend;
+	no-sd-uhs-sdr104;
 	non-removable;
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
 	pinctrl-0 = <&pinctrl_usdhc2>;
 	pinctrl-1 = <&pinctrl_usdhc2_100mhz>;
 	pinctrl-2 = <&pinctrl_usdhc2_200mhz>;
+	pm-ignore-notify;
 	status = "okay";
 	vmmc-supply = <&reg_wlan_vmmc>;
 	vqmmc-1-8-v;
@@ -1858,6 +1877,10 @@
 };
 
 &vpu_vc8000e {
+	status = "okay";
+};
+
+&vpu_v4l2 {
 	status = "okay";
 };
 #endif
