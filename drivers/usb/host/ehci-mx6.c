@@ -29,6 +29,7 @@
 #include <power/regulator.h>
 #include <linux/usb/otg.h>
 #include <linux/usb/phy.h>
+#include <power-domain.h>
 
 #include "ehci.h"
 #if CONFIG_IS_ENABLED(POWER_DOMAIN)
@@ -227,7 +228,6 @@ struct ehci_mx6_priv_data {
 	enum usb_init_type init_type;
 	enum usb_phy_interface phy_type;
 	int portnr;
-	int phy_node_off;
 #if !CONFIG_IS_ENABLED(PHY) || defined(CONFIG_IMX8)
 	struct udevice phy_dev;
 	struct ehci_mx6_phy_data phy_data;
@@ -442,48 +442,50 @@ check_type:
 static int mx6_parse_dt_addrs(struct udevice *dev)
 {
 	struct ehci_mx6_priv_data *priv = dev_get_priv(dev);
-	int phy_off, misc_off;
-	const void *blob = gd->fdt_blob;
-	int offset = dev_of_offset(dev);
+	ofnode phy;
+	ofnode misc;
+	int ret;
 
-	phy_off = fdtdec_lookup_phandle(blob, offset, "fsl,usbphy");
-	if (phy_off < 0) {
-		phy_off = fdtdec_lookup_phandle(blob, offset, "phys");
-		if (phy_off < 0)
-			return -EINVAL;
+	ret = ofnode_parse_phandle(dev_ofnode(dev), "fsl,usbphy", &phy);
+	if (ret < 0) {
+		ret = ofnode_parse_phandle(dev_ofnode(dev), "phys", &phy);
+		if (ret < 0)
+			return ret;
 	}
+#if !CONFIG_IS_ENABLED(PHY) || defined(CONFIG_IMX8)
+	dev_set_ofnode(&priv->phy_dev, phy);
+#endif
 
-	misc_off = fdtdec_lookup_phandle(blob, offset, "fsl,usbmisc");
-	if (misc_off < 0)
-		return -EINVAL;
+	ret = ofnode_parse_phandle(dev_ofnode(dev), "fsl,usbmisc", &misc);
+	if (ret < 0)
+		return ret;
 
 	priv->portnr = dev_seq(dev);
-	priv->phy_node_off = phy_off;
 
 #if !CONFIG_IS_ENABLED(PHY) || defined(CONFIG_IMX8)
 	void *__iomem addr;
 	struct ehci_mx6_phy_data *phy_data = &priv->phy_data;
-	addr = (void __iomem *)fdtdec_get_addr_size_auto_noparent(blob, phy_off, "reg", 0, NULL, false);
+	addr = (void __iomem *)ofnode_get_addr(phy);
 	if ((fdt_addr_t)addr == FDT_ADDR_T_NONE)
 		addr = NULL;
 
 	phy_data->phy_addr = addr;
 
-	addr = (void __iomem *)fdtdec_get_addr_size_auto_noparent(blob, misc_off, "reg", 0, NULL, false);
+	addr = (void __iomem *)ofnode_get_addr(misc);
 	if ((fdt_addr_t)addr == FDT_ADDR_T_NONE)
 		return -EINVAL;
 
 	phy_data->misc_addr = addr;
 
 #if defined(CONFIG_MX6)
-	int anatop_off;
+	ofnode anatop;
 
 	/* Resolve ANATOP offset through USB PHY node */
-	anatop_off = fdtdec_lookup_phandle(blob, phy_off, "fsl,anatop");
-	if (anatop_off < 0)
-		return -EINVAL;
+	ret = ofnode_parse_phandle(phy, "fsl,anatop", &anatop);
+	if (ret < 0)
+		return ret;
 
-	addr = (void __iomem *)fdtdec_get_addr_size_auto_noparent(blob, anatop_off, "reg", 0, NULL, false);
+	addr = (void __iomem *)ofnode_get_addr(anatop);
 	if ((fdt_addr_t)addr == FDT_ADDR_T_NONE)
 		return -EINVAL;
 
@@ -496,8 +498,6 @@ static int mx6_parse_dt_addrs(struct udevice *dev)
 #if !CONFIG_IS_ENABLED(PHY) || defined(CONFIG_IMX8)
 static int ehci_mx6_phy_prepare(struct ehci_mx6_priv_data *priv)
 {
-	dev_set_ofnode(&priv->phy_dev, offset_to_ofnode(priv->phy_node_off));
-
 #if CONFIG_IS_ENABLED(POWER_DOMAIN)
 	/* Need to power on the PHY before access it */
 	if (!power_domain_get(&priv->phy_dev, &priv->phy_pd)) {
