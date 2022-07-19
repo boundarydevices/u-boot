@@ -716,24 +716,21 @@ int scg_enable_pll_pfd(enum scg_clk clk, u32 frac)
 }
 
 #define SIM_MISC_CTRL0_USB_PLL_EN_MASK (0x1 << 2)
-int scg_enable_usb_pll(bool usb_control)
+int enable_usb_pll(ulong usb_phy_base)
 {
 	u32 sosc_rate;
 	s32 timeout = 1000000;
 	u32 reg;
 
 	struct usbphy_regs *usbphy =
-		(struct usbphy_regs *)USBPHY_RBASE;
+		(struct usbphy_regs *)usb_phy_base;
 
 	sosc_rate = scg_src_get_rate(SCG_SOSC_CLK);
 	if (!sosc_rate)
 		return -EPERM;
 
 	reg = readl(SIM0_RBASE + 0x3C);
-	if (usb_control)
-		reg &= ~SIM_MISC_CTRL0_USB_PLL_EN_MASK;
-	else
-		reg |= SIM_MISC_CTRL0_USB_PLL_EN_MASK;
+	reg &= ~SIM_MISC_CTRL0_USB_PLL_EN_MASK;
 	writel(reg, SIM0_RBASE + 0x3C);
 
 	if (!(readl(&usbphy->usb1_pll_480_ctrl) & PLL_USB_LOCK_MASK)) {
@@ -788,21 +785,6 @@ int scg_enable_usb_pll(bool usb_control)
 	/* Enable the PLL clock out to USB */
 	writel((PLL_USB_EN_USB_CLKS_MASK | PLL_USB_ENABLE_MASK),
 	       &usbphy->usb1_pll_480_ctrl_set);
-
-	if (!usb_control) {
-		while (timeout--) {
-			if (readl(&scg1_regs->upllcsr) &
-			    SCG_UPLL_CSR_UPLLVLD_MASK)
-				break;
-		}
-
-		if (timeout <= 0) {
-			reg = readl(SIM0_RBASE + 0x3C);
-			reg &= ~SIM_MISC_CTRL0_USB_PLL_EN_MASK;
-			writel(reg, SIM0_RBASE + 0x3C);
-			return -ETIME;
-		}
-	}
 
 	return 0;
 }
