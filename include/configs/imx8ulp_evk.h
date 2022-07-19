@@ -142,6 +142,12 @@
 
 /* Using ULP WDOG for reset */
 #define WDOG_BASE_ADDR			WDG3_RBASE
-/* USB Configs */
-#define CONFIG_USB_MAX_CONTROLLER_COUNT 2
+
+/* USB configs */
+#ifndef CONFIG_SPL_BUILD
+#define CONFIG_USBD_HS
+#endif
+#define CONFIG_USB_GADGET_VBUS_DRAW 2
+#define CONFIG_USB_MAX_CONTROLLER_COUNT         2
+
 #endif

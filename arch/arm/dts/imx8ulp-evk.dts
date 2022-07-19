@@ -215,11 +215,12 @@
 };
 
 &usbotg0 {
+	adp-disable;
+	hnp-disable;
+	disable-over-current;
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usbotg0_id>;
 	srp-disable;
-	hnp-disable;
-	adp-disable;
 	status = "okay";
 };
 
@@ -228,11 +229,11 @@
 };
 
 &usbotg1 {
+	adp-disable;
+	hnp-disable;
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usbotg1_id>;
 	srp-disable;
-	hnp-disable;
-	adp-disable;
 	status = "okay";
 };
 
