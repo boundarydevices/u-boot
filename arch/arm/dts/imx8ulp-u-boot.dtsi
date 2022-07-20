@@ -4,13 +4,31 @@
  * Author: Teresa Remmet <t.remmet@phytec.de>
  */
 
-#ifdef CONFIG_BINMAN
 / {
+	aliases {
+		usbgadget0 = &usbg0;
+		usbgadget1 = &usbg1;
+	};
+
+#ifdef CONFIG_BINMAN
 	binman: binman {
 		multiple-images;
 	};
-};
 #endif
+	usbg0: usbg0 {
+		compatible = "fsl,imx27-usb-gadget";
+		dr_mode = "peripheral";
+		chipidea,usb = <&usbotg1>;
+		status = "okay";
+	};
+
+	usbg1: usbg1 {
+		compatible = "fsl,imx27-usb-gadget";
+		dr_mode = "peripheral";
+		chipidea,usb = <&usbotg2>;
+		status = "okay";
+	};
+};
 
 &{/soc@0} {
 	u-boot,dm-pre-reloc;
