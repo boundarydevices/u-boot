@@ -6,6 +6,7 @@
 #include <dt-bindings/clock/imx8ulp-clock.h>
 #include <dt-bindings/gpio/gpio.h>
 #include <dt-bindings/interrupt-controller/arm-gic.h>
+#include <dt-bindings/power/imx8ulp-power.h>
 #include "imx8ulp-pinfunc.h"
 
 / {
@@ -26,10 +27,10 @@
 		ethernet0 = &fec;
 		i2c6 = &lpi2c6;
 		i2c7 = &lpi2c7;
-		usbphy0 = &usbphy0;
-		usb0 = &usbotg0;
-		usbphy1 = &usbphy1;
-		usb1 = &usbotg1;
+		usb0 = &usbotg1;
+		usb1 = &usbotg2;
+		usbphy0 = &usbphy1;
+		usbphy1 = &usbphy2;
 	};
 
 	cpus: cpus {
@@ -554,6 +555,7 @@
 					 <&cgc1 IMX8ULP_CLK_NIC_PER_DIVPLAT>,
 					 <&pcc4 IMX8ULP_CLK_USDHC2>;
 				clock-names = "ipg", "ahb", "per";
+				power-domains = <&scmi_devpd IMX8ULP_PD_USDHC2_USB1>;
 				assigned-clocks = <&cgc1 IMX8ULP_CLK_SPLL3_PFD2>, <&pcc4 IMX8ULP_CLK_USDHC2>;
 				assigned-clock-parents = <0>, <&cgc1 IMX8ULP_CLK_SPLL3_PFD2_DIV1>;
 				assigned-clock-rates = <396000000>, <396000000>;
@@ -563,42 +565,14 @@
 				status = "disabled";
 			};
 
-			usbotg0: usb@29900000 {
+			usbotg1: usb@29900000 {
 				compatible = "fsl,imx8ulp-usb", "fsl,imx7ulp-usb",
 					"fsl,imx27-usb";
 				reg = <0x29900000 0x200>;
 				interrupts = <GIC_SPI 103 IRQ_TYPE_LEVEL_HIGH>;
 				clocks = <&pcc4 IMX8ULP_CLK_USB0>;
-				fsl,usbphy = <&usbphy0>;
-				fsl,usbmisc = <&usbmisc0 0>;
-				ahb-burst-config = <0x0>;
-				tx-burst-size-dword = <0x8>;
-				rx-burst-size-dword = <0x8>;
-				status = "disabled";
-			};
-
-			usbmisc0: usbmisc@29900200 {
-				#index-cells = <1>;
-				compatible = "fsl,imx8ulp-usbmisc", "fsl,imx7ulp-usbmisc",
-					"fsl,imx6q-usbmisc";
-				reg = <0x29900200 0x200>;
-			};
-
-			usbphy0: usbphy@29910000 {
-				compatible = "fsl,imx8ulp-usbphy",
-					"fsl,imx7ulp-usbphy", "fsl,imx23-usbphy";
-				reg = <0x29910000 0x1000>;
-				interrupts = <GIC_SPI 104 IRQ_TYPE_LEVEL_HIGH>;
-				clocks = <&pcc4 IMX8ULP_CLK_USB0_PHY>;
-			};
-
-			usbotg1: usb@29920000 {
-				compatible = "fsl,imx8ulp-usb", "fsl,imx7ulp-usb",
-					"fsl,imx27-usb";
-				reg = <0x29920000 0x200>;
-				interrupts = <GIC_SPI 105 IRQ_TYPE_LEVEL_HIGH>;
-				clocks = <&pcc4 IMX8ULP_CLK_USB1>;
-				fsl,usbphy = <&usbphy1>;
+				power-domains = <&scmi_devpd IMX8ULP_PD_USB0>;
+				phys = <&usbphy1>;
 				fsl,usbmisc = <&usbmisc1 0>;
 				ahb-burst-config = <0x0>;
 				tx-burst-size-dword = <0x8>;
@@ -606,19 +580,51 @@
 				status = "disabled";
 			};
 
-			usbmisc1: usbmisc@29920200 {
+			usbmisc1: usbmisc@29900200 {
+				#index-cells = <1>;
+				compatible = "fsl,imx8ulp-usbmisc", "fsl,imx7ulp-usbmisc",
+					"fsl,imx6q-usbmisc";
+				reg = <0x29900200 0x200>;
+			};
+
+			usbphy1: usbphy@29910000 {
+				compatible = "fsl,imx8ulp-usbphy",
+					"fsl,imx7ulp-usbphy", "fsl,imx23-usbphy";
+				reg = <0x29910000 0x1000>;
+				interrupts = <GIC_SPI 104 IRQ_TYPE_LEVEL_HIGH>;
+				clocks = <&pcc4 IMX8ULP_CLK_USB0_PHY>;
+				#phy-cells = <0>;
+			};
+
+			usbotg2: usb@29920000 {
+				compatible = "fsl,imx8ulp-usb", "fsl,imx7ulp-usb",
+					"fsl,imx27-usb";
+				reg = <0x29920000 0x200>;
+				interrupts = <GIC_SPI 105 IRQ_TYPE_LEVEL_HIGH>;
+				clocks = <&pcc4 IMX8ULP_CLK_USB1>;
+				power-domains = <&scmi_devpd IMX8ULP_PD_USDHC2_USB1>;
+				phys = <&usbphy2>;
+				fsl,usbmisc = <&usbmisc2 0>;
+				ahb-burst-config = <0x0>;
+				tx-burst-size-dword = <0x8>;
+				rx-burst-size-dword = <0x8>;
+				status = "disabled";
+			};
+
+			usbmisc2: usbmisc@29920200 {
 				#index-cells = <1>;
 				compatible = "fsl,imx8ulp-usbmisc", "fsl,imx7ulp-usbmisc",
 					"fsl,imx6q-usbmisc";
 				reg = <0x29920200 0x200>;
 			};
 
-			usbphy1: usbphy@29930000 {
+			usbphy2: usbphy@29930000 {
 				compatible = "fsl,imx8ulp-usbphy",
 					"fsl,imx7ulp-usbphy", "fsl,imx23-usbphy";
 				reg = <0x29930000 0x1000>;
 				interrupts = <GIC_SPI 106 IRQ_TYPE_LEVEL_HIGH>;
 				clocks = <&pcc4 IMX8ULP_CLK_USB1_PHY>;
+				#phy-cells = <0>;
 			};
 
 			fec: ethernet@29950000 {
