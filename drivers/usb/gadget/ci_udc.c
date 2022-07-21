@@ -1453,7 +1453,7 @@ static int ci_udc_otg_probe(struct udevice *dev)
 	struct usb_ehci *ehci;
 	int ret;
 
-	ehci = (struct usb_ehci *)devfdt_get_addr(&priv->otgdev);
+	ehci = dev_read_addr_ptr(&priv->otgdev);
 
 	ret = pinctrl_select_state(&priv->otgdev, "default");
 	if (ret)
