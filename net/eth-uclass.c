@@ -339,6 +339,11 @@ void eth_halt(void)
 		return;
 
 	eth_get_ops(current)->stop(current);
+
+	priv = dev_get_uclass_priv(current);
+	if (!priv)
+		return;
+
 	priv->state = ETH_STATE_PASSIVE;
 	priv->running = false;
 }
