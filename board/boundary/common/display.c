@@ -196,7 +196,8 @@ int board_detect_pca9546(struct display_info_t const *di)
 
 int board_detect_sn65_and_ts(struct display_info_t const *di)
 {
-	return detect_common(di, 0, 0, -1, 0x0, -1, 0x0, 0, 0, 0x2c);
+	//if sub bus not 0, use pca9540
+	return detect_common(di, (di->bus_num >> 4) ? 5 : 0, 0, -1, 0x0, -1, 0x0, 0, 0, 0x2c);
 }
 
 int board_detect_pca9546_sn65(struct display_info_t const *di)
