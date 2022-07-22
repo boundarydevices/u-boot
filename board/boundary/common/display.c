@@ -71,7 +71,7 @@ static int detect_common(struct display_info_t const *di, int sub_bus,
 #ifdef CONFIG_DM_I2C
 	ret = uclass_get_device_by_seq(UCLASS_I2C, di->bus_num & 0xf, &bus);
 	if (ret) {
-		printf("%s: Can't find bus\n", __func__);
+		printf("%s: Can't find bus %d\n", __func__, di->bus_num & 0xf);
 	} else {
 		ops = i2c_get_ops(bus);
 		msg.addr = 0x70;
