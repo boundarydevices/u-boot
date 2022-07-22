@@ -774,6 +774,7 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
 	imx8mm-nitrogen8_lite.dtb \
 	imx8mm-nitrogen8mm.dtb \
 	imx8mm-nitrogen8mm_rev2.dtb \
+	imx8mm-nitrogen8mm_svt.dtb \
 	imx8mm-nitrogen8mm_som.dtb \
 	imx8mm-nitrogen8mm_tab.dtb \
 	imx8mm-span.dtb \

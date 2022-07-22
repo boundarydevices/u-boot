@@ -116,6 +116,18 @@ static iomux_v3_cfg_t const init_pads[] = {
 
 #define GP_EMMC_RESET	IMX_GPIO_NR(2, 10)
 	IOMUX_PAD_CTRL(SD1_RESET_B__GPIO2_IO10, 0x41),
+
+#if defined(CONFIG_BOARD_SVT)
+	IOMUX_PAD_CTRL(SAI1_TXD1__GPIO4_IO13, 0),
+	IOMUX_PAD_CTRL(SAI1_TXD2__GPIO4_IO14, 0),
+	IOMUX_PAD_CTRL(SAI1_TXD3__GPIO4_IO15, 0),
+	IOMUX_PAD_CTRL(SAI1_TXD4__GPIO4_IO16, 0),
+	IOMUX_PAD_CTRL(SAI1_TXD5__GPIO4_IO17, 0),
+	IOMUX_PAD_CTRL(SAI1_TXD6__GPIO4_IO18, 0),
+	IOMUX_PAD_CTRL(SAI1_TXD7__GPIO4_IO19, 0),
+	IOMUX_PAD_CTRL(SAI1_RXFS__GPIO4_IO0, 0),
+	IOMUX_PAD_CTRL(SAI1_RXC__GPIO4_IO1, 0),
+#endif
 };
 
 int board_early_init_f(void)
@@ -136,39 +148,56 @@ int board_early_init_f(void)
 #ifdef CONFIG_CMD_FBPANEL
 int board_detect_gt911(struct display_info_t const *di)
 {
-	return board_detect_gt911_common(di, 0, 0, GP_TS_GT911_RESET, GPIRQ_TS_GT911);
+	//if sub bus not 0, use pca9540
+	return board_detect_gt911_common(di, (di->bus_num >> 4) ? 5 : 0, 0, GP_TS_GT911_RESET, GPIRQ_TS_GT911);
 }
 
+#if !defined(CONFIG_BOARD_SVT)
 int board_detect_pca9540_gt911(struct display_info_t const *di)
 {
 	return board_detect_gt911_common(di, (di->bus_num >> 4) ? 5 : 4, 0, GP_TS_GT911_RESET, GPIRQ_TS_GT911);
 }
+#endif
 
 int board_detect_gt911_sn65(struct display_info_t const *di)
 {
-	return board_detect_gt911_sn65_common(di, 0, 0, GP_TS_GT911_RESET, GPIRQ_TS_GT911);
+	//if sub bus not 0, use pca9540
+	return board_detect_gt911_sn65_common(di, (di->bus_num >> 4) ? 5 : 0, 0, GP_TS_GT911_RESET, GPIRQ_TS_GT911);
 }
+
+#if defined(CONFIG_BOARD_SVT)
+#define DETECT_BUS	(2 | (1 << 4))
+#define DETECT_RTN	board_detect_pca9540
+#else
+#define DETECT_BUS	1
+#define DETECT_RTN	fbp_detect_i2c
+#endif
 
 static const struct display_info_t displays[] = {
 #ifdef CONFIG_BOARD_GENO
-	VD_MIPI_X090DTLNC01(MIPI, fbp_detect_i2c, fbp_bus_gp(1, GP_SN65DSI83_EN, 0, 0), 0x2c, FBP_MIPI_TO_LVDS, FBTS_ILI251X),
+	VD_MIPI_X090DTLNC01(MIPI, DETECT_RTN, fbp_bus_gp(DETECT_BUS, GP_SN65DSI83_EN, 0, 0), 0x2c, FBP_MIPI_TO_LVDS, FBTS_ILI251X),
 #endif
-	VD_MIPI_M101NWWB_3(MIPI, board_detect_gt911_sn65, fbp_bus_gp(1, GP_SN65DSI83_EN, 0, 0), 0x5d, FBP_MIPI_TO_LVDS, FBTS_GOODIX),
-	VD_MIPI_M101NWWB_2(MIPI, NULL, fbp_bus_gp(1, GP_SN65DSI83_EN, 0, 0), 0x5d, FBP_MIPI_TO_LVDS, FBTS_GOODIX),
-	VD_MIPI_M101NWWB(MIPI, board_detect_sn65_and_ts, fbp_bus_gp(1, GP_SN65DSI83_EN, GP_TS_FT5X06_RESET, 0), 0x38, FBP_MIPI_TO_LVDS, FBTS_FT5X06),
-	VD_MIPI_MTD0900DCP27KF(MIPI, fbp_detect_i2c, fbp_bus_gp(1, 0, 0, 0), 0x41, FBP_MIPI_TO_LVDS, FBTS_ILI251X),
-	VD_DMT050WVNXCMI(MIPI, fbp_detect_i2c, fbp_bus_gp(1, GP_SC18IS602B_RESET, 0, 30), fbp_addr_gp(0x2f, 0, 6, 0), FBP_SPI_LCD, FBTS_GOODIX),
-	VD_ER_TFT050_MINI(MIPI, board_detect_pca9540_gt911, fbp_bus_gp(1, 0, GP_TC358762_EN, 0), fbp_addr_gp(0x5d, 0, 0, 0), FBP_PCA9540_2),
-	VD_LTK080A60A004T(MIPI, board_detect_gt911, fbp_bus_gp(1, GP_LTK08_MIPI_EN, GP_LTK08_MIPI_EN, 0), 0x5d, FBTS_GOODIX),	/* Goodix touchscreen */
-	VD_LCM_JM430_MINI(MIPI, fbp_detect_i2c, fbp_bus_gp(1, GP_ST1633_RESET, GP_TC358762_EN, 30), fbp_addr_gp(0x55, 0, 0, 0), FBTS_ST1633I),	/* Sitronix touch */
+	VD_MIPI_M101NWWB_3(MIPI, board_detect_gt911_sn65, fbp_bus_gp(DETECT_BUS, GP_SN65DSI83_EN, 0, 0), 0x5d, FBP_MIPI_TO_LVDS, FBTS_GOODIX),
+	VD_MIPI_M101NWWB_2(MIPI, NULL, fbp_bus_gp(DETECT_BUS, GP_SN65DSI83_EN, 0, 0), 0x5d, FBP_MIPI_TO_LVDS, FBTS_GOODIX),
+	VD_MIPI_M101NWWB(MIPI, board_detect_sn65_and_ts, fbp_bus_gp(DETECT_BUS, GP_SN65DSI83_EN, GP_TS_FT5X06_RESET, 0), 0x38, FBP_MIPI_TO_LVDS, FBTS_FT5X06),
+	VD_MIPI_MTD0900DCP27KF(MIPI, DETECT_RTN, fbp_bus_gp(DETECT_BUS, 0, 0, 0), 0x41, FBP_MIPI_TO_LVDS, FBTS_ILI251X),
+	VD_DMT050WVNXCMI(MIPI, DETECT_RTN, fbp_bus_gp(DETECT_BUS, GP_SC18IS602B_RESET, 0, 30), fbp_addr_gp(0x2f, 0, 6, 0), FBP_SPI_LCD, FBTS_GOODIX),
+#if !defined(CONFIG_BOARD_SVT)
+	VD_ER_TFT050_MINI(MIPI, board_detect_pca9540_gt911, fbp_bus_gp(DETECT_BUS, 0, GP_TC358762_EN, 0), fbp_addr_gp(0x5d, 0, 0, 0), FBP_PCA9540_2),
+#endif
+	VD_LTK080A60A004T(MIPI, board_detect_gt911, fbp_bus_gp(DETECT_BUS, GP_LTK08_MIPI_EN, GP_LTK08_MIPI_EN, 0), 0x5d, FBTS_GOODIX),	/* Goodix touchscreen */
+	VD_LCM_JM430_MINI(MIPI, DETECT_RTN, fbp_bus_gp(DETECT_BUS, GP_ST1633_RESET, GP_TC358762_EN, 30), fbp_addr_gp(0x55, 0, 0, 0), FBTS_ST1633I),	/* Sitronix touch */
 
-	VD_LS050T1SX12(MIPI, NULL, fbp_bus_gp(1, GP_MIPI_RESET, GP_MIPI_RESET, 0), 0x5d, FBTS_GOODIX),
-	VD_LTK0680YTMDB(MIPI, NULL, fbp_bus_gp(1, GP_MIPI_RESET, GP_MIPI_RESET, 0), 0x5d, FBTS_GOODIX),
-	VD_MIPI_COM50H5N03ULC(MIPI, NULL, fbp_bus_gp(1, GP_MIPI_RESET, GP_MIPI_RESET, 0), 0x00),
+	VD_LS050T1SX12(MIPI, NULL, fbp_bus_gp(DETECT_BUS, GP_MIPI_RESET, GP_MIPI_RESET, 0), 0x5d, FBTS_GOODIX),
+	VD_LTK0680YTMDB(MIPI, NULL, fbp_bus_gp(DETECT_BUS, GP_MIPI_RESET, GP_MIPI_RESET, 0), 0x5d, FBTS_GOODIX),
+	VD_MIPI_COM50H5N03ULC(MIPI, NULL, fbp_bus_gp(DETECT_BUS, GP_MIPI_RESET, GP_MIPI_RESET, 0), 0x00),
 
+#if !defined(CONFIG_BOARD_SVT)
 	/* 0x3e is the TPS65132 power chip on our adapter board */
-	VD_MIPI_LCD133_070(MIPI, board_detect_lcd133, fbp_bus_gp(1, GP_LCD133_070_ENABLE, GP_LCD133_070_ENABLE, 1), fbp_addr_gp(0x3e, 0, 0, 0), FBTS_FT7250),
+	VD_MIPI_LCD133_070(MIPI, board_detect_lcd133, fbp_bus_gp(DETECT_BUS, GP_LCD133_070_ENABLE, GP_LCD133_070_ENABLE, 1), fbp_addr_gp(0x3e, 0, 0, 0), FBTS_FT7250),
+#endif
 
+#if !defined(CONFIG_BOARD_SVT)
 	/* Looking for the max7323 gpio chip on the Lontium daughter board */
 	VD_MIPI_1920_1080M_60(MIPI, board_detect_pca9546, fbp_bus_gp((1 | (3 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
 	VD_MIPI_1280_800M_60(MIPI, NULL, fbp_bus_gp((1 | (3 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
@@ -179,6 +208,7 @@ static const struct display_info_t displays[] = {
 	VD_MIPI_640_480M_60(MIPI, NULL, fbp_bus_gp((1 | (3 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
 
 	VD_MIPI_VTFT101RPFT20(MIPI, fbp_detect_i2c, 1, 0x70, FBP_PCA9540),
+#endif
 
 	VD_MIPI_CS005_0004_03(MIPI, fbp_detect_i2c, fbp_bus_gp(3, GP_TS_ATMEL_RESET, GP_CS005_0004_03_DISPLAY_EN, 0), fbp_addr_gp(0x4a, GP_CS005_0004_03_BKL_EN, 0, 0), FBTS_ATMEL_MT),
 };
@@ -229,7 +259,7 @@ int board_init(void)
 	return 0;
 }
 
-#if !defined(CONFIG_BOARD_REV2) && !defined(CONFIG_BOARD_GENO)
+#if !defined(CONFIG_BOARD_REV2) && !defined(CONFIG_BOARD_SVT) && !defined(CONFIG_BOARD_GENO)
 #define PF8100 0x08
 #define PF8X00_EMREV	0x02
 #define PF8X00_PROGID	0x03
@@ -275,7 +305,7 @@ static void check_wdog(void)
 
 void board_env_init(void)
 {
-#if !defined(CONFIG_BOARD_REV2) && !defined(CONFIG_BOARD_GENO)
+#if !defined(CONFIG_BOARD_REV2) && !defined(CONFIG_BOARD_SVT) && !defined(CONFIG_BOARD_GENO)
 	check_wdog();
 #endif
 	/*

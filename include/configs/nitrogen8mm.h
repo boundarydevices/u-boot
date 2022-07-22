@@ -81,6 +81,12 @@
 #define CONFIG_FEC_MXC_PHYADDR          4
 #define FEC_QUIRK_ENET_MAC
 
+#if defined(CONFIG_BOARD_SVT)
+#define GP_RGMII_PHY_RESET	IMX_GPIO_NR(1, 3)
+#else
+#define GP_RGMII_PHY_RESET	IMX_GPIO_NR(3, 15)
+#endif
+
 #define IMX_FEC_BASE			0x30BE0000
 
 #endif
