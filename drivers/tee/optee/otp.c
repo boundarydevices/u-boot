@@ -82,6 +82,48 @@ static int invoke_func(u32 func, ulong num_param, struct tee_param *param)
 	}
 }
 
+int optee_otp_writep_value(const char *name, u8 *data, size_t data_len)
+{
+	int rc = 0;
+	struct tee_shm *shm_name;
+	struct tee_shm *shm_buf;
+	struct tee_param param[2];
+	size_t name_size = strlen(name) + 1;
+
+	if (!tee)
+		if (optee_otp_ta_open_session())
+			return -ENODEV;
+
+	rc = tee_shm_alloc(tee, name_size, TEE_SHM_ALLOC, &shm_name);
+	if (rc)
+		return -ENOMEM;
+
+	rc = tee_shm_alloc(tee, data_len, TEE_SHM_ALLOC, &shm_buf);
+	if (rc) {
+		rc = -ENOMEM;
+		goto free_name;
+	}
+
+	memcpy(shm_name->addr, name, name_size);
+	memcpy(shm_buf->addr, data, data_len);
+
+	memset(param, 0, sizeof(param));
+	param[0].attr = TEE_PARAM_ATTR_TYPE_MEMREF_INPUT;
+	param[0].u.memref.shm = shm_name;
+	param[0].u.memref.size = name_size;
+	param[1].attr = TEE_PARAM_ATTR_TYPE_MEMREF_INPUT;
+	param[1].u.memref.shm = shm_buf;
+	param[1].u.memref.size = data_len;
+
+	rc = invoke_func(TA_OTP_CMD_WRITE_RW_RAW, 2, param);
+
+	tee_shm_free(shm_buf);
+free_name:
+	tee_shm_free(shm_name);
+
+	return rc;
+}
+
 int optee_otp_readp_value(const char *name,
 			  size_t buffer_size,
 			  u8 *out_buffer,
