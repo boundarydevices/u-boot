@@ -51,7 +51,7 @@
 #define TA_OTP_CMD_WRITE_RAW		1
 
 #ifdef CONFIG_OPTEE_TA_OTP
-int read_persistent_value(const char *name,
+int optee_otp_readp_value(const char *name,
                           size_t buffer_size,
                           u8 *out_buffer,
                           size_t *out_num_bytes_read);
@@ -62,7 +62,8 @@ int optee_otp_read_mac_fdt(void *blob, const char *node,
                            const char *otp_name);
 void optee_otp_ta_close_session(void);
 #else /* CONFIG_OPTEE_TA_OTP */
-static inline int read_persistent_value(const char *name, size_t buffer_size,
+static inline int optee_otp_readp_value(const char *name,
+                                        size_t buffer_size,
                                         u8 *out_buffer,
                                         size_t *out_num_bytes_read)
 {

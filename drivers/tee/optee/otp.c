@@ -82,7 +82,7 @@ static int invoke_func(u32 func, ulong num_param, struct tee_param *param)
 	}
 }
 
-int read_persistent_value(const char *name,
+int optee_otp_readp_value(const char *name,
 			  size_t buffer_size,
 			  u8 *out_buffer,
 			  size_t *out_num_bytes_read)
@@ -153,7 +153,7 @@ int optee_otp_read_serial(void)
 	}
 
 	memset(serial_data, 0, MAX_SN_LEN);
-	ret = read_persistent_value("serial", MAX_SN_LEN, serial_data, &len);
+	ret = optee_otp_readp_value("serial", MAX_SN_LEN, serial_data, &len);
 	if (!ret)
 		env_set("serial#", serial_data);
 
@@ -171,7 +171,7 @@ int optee_otp_read_mac(const char *name)
 		return 0;
 	}
 
-	ret = read_persistent_value("mac", MAC_ADDRESS_LEN, ethaddr, &len);
+	ret = optee_otp_readp_value("mac", MAC_ADDRESS_LEN, ethaddr, &len);
 	if (!ret && is_valid_ethaddr(ethaddr))
 		eth_env_set_enetaddr(name, ethaddr);
 
@@ -187,7 +187,7 @@ int optee_otp_read_mac_fdt(void *blob, const char *node,
 	int ret;
 	int nodeoffset;
 
-	ret = read_persistent_value(otp_name, MAC_ADDRESS_LEN, ethaddr, &len);
+	ret = optee_otp_readp_value(otp_name, MAC_ADDRESS_LEN, ethaddr, &len);
 	if (!ret && is_valid_ethaddr(ethaddr)) {
 		nodeoffset = fdt_path_offset(blob, node);
 		if (nodeoffset < 0)
