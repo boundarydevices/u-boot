@@ -26,6 +26,7 @@
 		.pwr_reg = _pwr_reg,					\
 		.en_mask = _en_mask,					\
 		.rst_bar_mask = BIT(23),				\
+		.fmin = MT8365_PLL_FMIN,				\
 		.fmax = MT8365_PLL_FMAX,				\
 		.flags = _flags,					\
 		.pcwbits = _pcwbits,					\
