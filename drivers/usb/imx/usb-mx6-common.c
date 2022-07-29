@@ -74,6 +74,11 @@ static const ulong phy_bases[] = {
 #endif
 };
 
+ulong get_usb_mx6_phy_base(int index)
+{
+	return (index < ARRAY_SIZE(phy_bases)) ? phy_bases[index] : 0;
+}
+
 int usb_phy_mode(int port)
 {
 	void __iomem *phy_reg;

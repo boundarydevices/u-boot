@@ -266,6 +266,7 @@ struct usb_ehci {
 #define MXC_EHCI_IPPUE_DOWN		(1 << 10)
 #define MXC_EHCI_IPPUE_UP		(1 << 11)
 
+ulong get_usb_mx6_phy_base(int index);
 int usb_phy_mode(int port);
 /* Board-specific initialization */
 int board_ehci_hcd_init(int port);

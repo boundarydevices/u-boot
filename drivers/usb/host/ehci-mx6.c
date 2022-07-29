@@ -137,8 +137,9 @@ int ehci_hcd_init(int index, enum usb_init_type init,
 	phy_data.anatop_addr = (void __iomem *)ANATOP_BASE_ADDR;
 	phy_data.misc_addr = (void __iomem *)(USB_BASE_ADDR +
 			USB_OTHERREGS_OFFSET);
-	if (index < ARRAY_SIZE(phy_bases))
-		phy_data.phy_addr = (void __iomem *)(ulong)phy_bases[index];
+	phy_data.phy_addr = (void __iomem *)get_usb_mx6_phy_base(index);
+	if (!phy_data.phy_addr)
+		return -EINVAL;
 
 #elif defined(CONFIG_USB_EHCI_MX7)
 	if (index > 1)
@@ -148,11 +149,10 @@ int ehci_hcd_init(int index, enum usb_init_type init,
 	phy_data.misc_addr = (void __iomem *)(ulong)(USB_BASE_ADDR +
 			(0x10000 * index) + USBNC_OFFSET);
 #elif defined(CONFIG_MX7ULP) || defined(CONFIG_IMX8)
-	if (index >= ARRAY_SIZE(phy_bases))
-		return -EINVAL;
-
 	u32 controller_spacing = 0x10000;
-	phy_data.phy_addr = (void __iomem *)(ulong)phy_bases[index];
+	phy_data.phy_addr = (void __iomem *)get_usb_mx6_phy_base(index);
+	if (!phy_data.phy_addr)
+		return -EINVAL;
 	phy_data.misc_addr = (void __iomem *)(ulong)(USB_BASE_ADDR +
 			(0x10000 * index) + USBNC_OFFSET);
 #endif
