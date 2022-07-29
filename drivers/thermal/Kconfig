@@ -35,6 +35,12 @@ config IMX_TMU
 	  The boot is hold to the cool device to throttle CPUs when the
 	  passive trip is crossed
 
+config SCMI_THERMAL
+	bool "SCMI Sensor based thermal driver"
+	select SCMI_FIRMWARE
+	help
+	  Enable SCMI Sensor protocol based thermal driver to get temperature.
+
 config TI_DRA7_THERMAL
         bool "Temperature sensor driver for TI dra7xx SOCs"
         help
