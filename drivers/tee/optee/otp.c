@@ -183,6 +183,35 @@ free_name:
 	return rc;
 }
 
+int optee_otp_delete_value(const char *name)
+{
+	int rc = 0;
+	struct tee_shm *shm_name;
+	struct tee_param param;
+	size_t name_size = strlen(name) + 1;
+
+	if (!tee)
+		if (optee_otp_ta_open_session())
+			return -ENODEV;
+
+	rc = tee_shm_alloc(tee, name_size, TEE_SHM_ALLOC, &shm_name);
+	if (rc)
+		return -ENOMEM;
+
+	memcpy(shm_name->addr, name, name_size);
+
+	memset(&param, 0, sizeof(param));
+	param.attr = TEE_PARAM_ATTR_TYPE_MEMREF_INPUT;
+	param.u.memref.shm = shm_name;
+	param.u.memref.size = name_size;
+
+	rc = invoke_func(TA_OTP_CMD_DELETE, 1, &param);
+
+	tee_shm_free(shm_name);
+
+	return rc;
+}
+
 int optee_otp_read_serial(void)
 {
 	u8 serial_data[MAX_SN_LEN];

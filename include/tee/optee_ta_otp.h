@@ -59,6 +59,15 @@
  */
 #define TA_OTP_CMD_WRITE_RW_RAW        2
 
+/*
+ * TA_OTP_CMD_DELETE - Delete a variable from secure storage
+ * param[0] (memref) ID used the identify the persistent object
+ * param[1] unused
+ * param[2] unused
+ * param[3] unused
+ */
+#define TA_OTP_CMD_DELETE              3
+
 #ifdef CONFIG_OPTEE_TA_OTP
 int optee_otp_readp_value(const char *name,
                           size_t buffer_size,
@@ -66,6 +75,7 @@ int optee_otp_readp_value(const char *name,
                           size_t *out_num_bytes_read);
 int optee_otp_writep_value(const char *name, u8 *data, size_t data_len);
 int optee_otp_read_serial(void);
+int optee_otp_delete_value(const char *name);
 int optee_otp_read_mac(const char *name);
 int optee_otp_read_mac_fdt(void *blob, const char *node,
                            const char *attribute,
