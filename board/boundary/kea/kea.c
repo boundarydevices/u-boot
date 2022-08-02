@@ -93,6 +93,12 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IOMUX_PAD_CTRL(ENET_TD2__ENET1_RGMII_TD2, PAD_CTRL_ENET_TX),
 	IOMUX_PAD_CTRL(ENET_TD3__ENET1_RGMII_TD3, PAD_CTRL_ENET_TX),
 	IOMUX_PAD_CTRL(ENET_TXC__ENET1_RGMII_TXC, PAD_CTRL_ENET_TX),
+#ifdef CONFIG_FEC_RESET_PULLUP
+#define RESET_PINCTRL	WEAK_PULLUP_OUTPUT
+#else
+#define RESET_PINCTRL	WEAK_PULLDN_OUTPUT
+#endif
+	IOMUX_PAD_CTRL(GPIO1_IO00__GPIO1_IO0, RESET_PINCTRL),
 #endif
 
 #ifdef CONFIG_IMX8MM
@@ -120,8 +126,11 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IOMUX_PAD_CTRL(SAI1_TXD7__GPIO4_IO19, 0x100),	/* 115, LTE_AP_READY */
 #define GP_EC21_ACTIVE_STATUS	IMX_GPIO_NR(4, 1)
 	IOMUX_PAD_CTRL(SAI1_RXC__GPIO4_IO1, 0x80),	/*  97, LTE_STAT */
+#if 0
+/* EC21 only on very 1st prototype of board */
 #define GP_EC21_NET_STAT	IMX_GPIO_NR(1, 0)
 	IOMUX_PAD_CTRL(GPIO1_IO00__GPIO1_IO0, 0x80),	/*   0, LTE_NET_STAT */
+#endif
 #define GP_EC21_NET_MODE	IMX_GPIO_NR(4, 12)
 	IOMUX_PAD_CTRL(SAI1_TXD0__GPIO4_IO12, 0x80),	/* 108, LTE_NET_MODE */
 #define GP_EC21_RI		IMX_GPIO_NR(4, 0)
@@ -140,7 +149,9 @@ static const struct gpio_reserve gpios_to_reserve[] = {
 	{ GP_EC21_AP_READY, GPIOD_OUT_LOW, 0, "ec21-ap-ready", },
 	{ GP_EMMC_RESET, GPIOD_OUT_HIGH, 0, "emmc-reset", },
 	{ GP_EC21_ACTIVE_STATUS, GPIOD_IN, 0, "ec21-active-status", },
+#if 0
 	{ GP_EC21_NET_STAT, GPIOD_IN, 0, "ec21-net-stat", },
+#endif
 	{ GP_EC21_NET_MODE, GPIOD_IN, 0, "ec21-net-mode", },
 	{ GP_EC21_RI, GPIOD_IN, 0, "ec21-ri", },
 #ifdef CONFIG_FEC_PHY_BITBANG

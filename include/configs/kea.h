@@ -80,6 +80,8 @@
 #define CONFIG_FEC_XCV_TYPE		RGMII
 #define CONFIG_FEC_MXC_PHYADDR		4
 #define CONFIG_FEC_MXC_KSZ_PHYADDR	7
+#define GP_RGMII_PHY_RESET2		IMX_GPIO_NR(1, 0)	/* KSZ has reset moved */
+
 #define FEC_QUIRK_ENET_MAC
 
 #define IMX_FEC_BASE			0x30BE0000
