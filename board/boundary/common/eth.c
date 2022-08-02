@@ -451,17 +451,6 @@ static void init_fec_clocks(void)
 #endif
 
 #if defined(CONFIG_PHY_ATHEROS) || defined(CONFIG_PHY_MICREL)
-static void release_phy_reset(int gp)
-{
-	gpio_set_value(gp, 1);
-#ifdef CONFIG_FEC_RESET_PULLUP
-	udelay(20);
-	gpio_direction_input(gp);
-	/* Let external pull have time to pull to guaranteed high */
-	udelay(200);
-#endif
-}
-
 #ifdef CONFIG_FEC_ENET1
 static char iomux_selection = -1;
 #endif
@@ -494,8 +483,12 @@ static void setup_iomux_enet(int kz, int net_mask)
 	gpio_direction_output(GP_KS8995_RESET, 0);
 #endif
 #ifdef GP_RGMII_PHY_RESET
-	if (net_mask & 1)
+	if (net_mask & 1) {
 		gpio_direction_output(GP_RGMII_PHY_RESET, 0); /* PHY rst */
+#ifdef GP_RGMII_PHY_RESET2
+		gpio_direction_output(GP_RGMII_PHY_RESET2, 0); /* PHY rst */
+#endif
+	}
 #endif
 #ifdef GP_RGMII2_PHY_RESET
 #ifdef CONFIG_FEC_ENET2
@@ -522,14 +515,33 @@ static void setup_iomux_enet(int kz, int net_mask)
 	/* 1 ms minimum reset pulse for ar8035 */
 	udelay(1000 * 10);
 #ifdef GP_RGMII_PHY_RESET
-	if (net_mask & 1)
-		release_phy_reset(GP_RGMII_PHY_RESET);
+	if (net_mask & 1) {
+		gpio_set_value(GP_RGMII_PHY_RESET, 1);
+#ifdef GP_RGMII_PHY_RESET2
+		gpio_set_value(GP_RGMII_PHY_RESET2, 1);
+#endif
+	}
 #endif
 #ifdef GP_RGMII2_PHY_RESET
 #ifdef CONFIG_FEC_ENET2
 	if (net_mask & 2)
 #endif
-		release_phy_reset(GP_RGMII2_PHY_RESET);
+		gpio_set_value(GP_RGMII2_PHY_RESET, 1);
+#endif
+
+#ifdef CONFIG_FEC_RESET_PULLUP
+	udelay(20);
+#ifdef GP_RGMII_PHY_RESET
+	gpio_direction_input(GP_RGMII_PHY_RESET);
+#endif
+#ifdef GP_RGMII_PHY_RESET2
+	gpio_direction_input(GP_RGMII_PHY_RESET2);
+#endif
+#ifdef GP_RGMII2_PHY_RESET
+	gpio_direction_input(GP_RGMII2_PHY_RESET);
+#endif
+	/* Let external pull have time to pull to guaranteed high */
+	udelay(200);
 #endif
 
 #ifdef GP_KS8995_POWER_DOWN
@@ -1001,6 +1013,9 @@ int board_eth_init(struct bd_info *bis)
 #if defined(CONFIG_PHY_ATHEROS) || defined(CONFIG_PHY_MICREL)
 #ifdef CONFIG_FEC_ENET1
 	gpio_request(GP_RGMII_PHY_RESET, "fec_rst");
+#ifdef GP_RGMII_PHY_RESET2
+	gpio_request(GP_RGMII_PHY_RESET2, "fec_rst2");
+#endif
 #if defined(GP_RGMII2_PHY_RESET) && !defined(CONFIG_FEC_ENET2)
 	gpio_request(GP_RGMII2_PHY_RESET, "fec2_rst");
 #endif
