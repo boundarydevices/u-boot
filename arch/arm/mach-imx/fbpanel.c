@@ -1485,10 +1485,6 @@ static void setup_clock(struct display_info_t const *di)
 			break;
 		}
 	}
-
-	/* Enable PLL out */
-	writel(CCM_ANALOG_PLL_VIDEO_CLR_ENABLE_CLK_MASK,
-			&ccm_anatop->pll_video_set);
 #else
 	writel(num, &ccm->analog_pll_video_num);
 	writel(denom, &ccm->analog_pll_video_denom);
@@ -1504,9 +1500,6 @@ static void setup_clock(struct display_info_t const *di)
 		}
 	}
 
-	pll_video &= ~BM_ANADIG_PLL_VIDEO_BYPASS;
-	pll_video |= BM_ANADIG_PLL_VIDEO_ENABLE;
-	writel(pll_video, &ccm->analog_pll_video);
 #endif
 
 #if defined(CONFIG_MX6SX) || defined(CONFIG_MX6ULL)
@@ -1563,6 +1556,15 @@ static void setup_clock(struct display_info_t const *di)
 			(lvds ? ((di->fbtype == FB_LVDS2) ?
 				 MXC_CCM_CCGR3_LDB_DI1_MASK : MXC_CCM_CCGR3_LDB_DI0_MASK)
 			 : 0));
+#endif
+	/* Enable PLL out */
+#if defined(CONFIG_MX7D)
+	writel(CCM_ANALOG_PLL_VIDEO_CLR_ENABLE_CLK_MASK,
+			&ccm_anatop->pll_video_set);
+#else
+	pll_video &= ~BM_ANADIG_PLL_VIDEO_BYPASS;
+	pll_video |= BM_ANADIG_PLL_VIDEO_ENABLE;
+	writel(pll_video, &ccm->analog_pll_video);
 #endif
 }
 #else
