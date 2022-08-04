@@ -109,7 +109,18 @@ int ccf_clk_set_parent(struct clk *clk, struct clk *parent)
 	if (err)
 		return err;
 
-	return clk_set_parent(c, p);
+	err = clk_set_parent(c, p);
+	if (!err) {
+               list_del(&c->dev->sibling_node);
+               list_add_tail(&c->dev->sibling_node, &p->dev->child_head);
+               c->dev->parent = p->dev;
+       } else {
+               printf("%s: %s %s: %d failed\n", __func__,
+                               c->dev->name, p->dev->name, err);
+       }
+       debug("%s(#%lu)%s, parent: (%lu)%s\n", __func__, clk->id, c->dev->name,
+                       parent->id, p->dev->name);
+       return err;
 }
 
 static int ccf_clk_endisable(struct clk *clk, bool enable)
