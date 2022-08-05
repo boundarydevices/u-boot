@@ -390,7 +390,12 @@ int board_return_to_bootrom(struct spl_image_info *spl_image,
 		puts("ROMAPI: failure at query_boot_info\n");
 		return -1;
 	}
+#ifdef CONFIG_IMX8ULP
+	void __iomem *mr0 = (void __iomem *)(CMC1_BASE_ADDR + 0xa0);
 
+	if (readl(mr0) & BIT(30))
+		boot |= 1;
+#endif
 	if (is_boot_from_stream_device(boot))
 		return spl_romapi_load_image_stream(spl_image, bootdev);
 
