@@ -543,7 +543,7 @@
 				interrupts = <GIC_SPI 107 IRQ_TYPE_LEVEL_HIGH>;
 				clocks = <&pcc4 IMX8ULP_CLK_ENET>,
 					 <&pcc4 IMX8ULP_CLK_ENET>,
-					 <&cgc1 IMX8ULP_CLK_ENETSTAMP_SEL>,
+					 <&cgc1 IMX8ULP_CLK_ENET_TS_SEL>,
 					 <&pcc4 IMX8ULP_CLK_ENET>,
 					 <&pcc4 IMX8ULP_CLK_ENET>;
 				clock-names = "ipg", "ahb", "ptp",
