@@ -21,7 +21,7 @@
 
 #define UBOOT_DM_CLK_COMPOSITE "clk_composite"
 
-static u8 clk_composite_get_parent(struct clk *clk)
+static int clk_composite_get_parent(struct clk *clk)
 {
 	struct clk_composite *composite = to_clk_composite(clk_dev_binded(clk) ?
 		(struct clk *)dev_get_clk_ptr(clk->dev) : clk);
@@ -110,7 +110,7 @@ struct clk *clk_register_composite(struct device *dev, const char *name,
 {
 	struct clk *clk;
 	struct clk_composite *composite;
-	int ret;
+	int ret, i;
 
 	if (!num_parents || (num_parents != 1 && !mux))
 		return ERR_PTR(-EINVAL);
@@ -149,8 +149,13 @@ struct clk *clk_register_composite(struct device *dev, const char *name,
 
 	clk = &composite->clk;
 	clk->flags = flags;
+	i = clk_composite_get_parent(clk);
+	if (i < 0) {
+		printf("%s: parent not found ret=%d\n", __func__, ret);
+		i = 0;
+	}
 	ret = clk_register(clk, UBOOT_DM_CLK_COMPOSITE, name,
-			   parent_names[clk_composite_get_parent(clk)]);
+			   parent_names[i]);
 	if (ret) {
 		clk = ERR_PTR(ret);
 		goto err;
