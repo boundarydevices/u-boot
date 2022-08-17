@@ -172,7 +172,62 @@
 };
 #endif
 
+&cgc1 {
+	u-boot,dm-pre-reloc;
+	u-boot,dm-spl;
+};
+
+&cgc2 {
+	u-boot,dm-pre-reloc;
+	u-boot,dm-spl;
+};
+
+&dummy {
+	u-boot,dm-pre-reloc;
+	u-boot,dm-spl;
+};
+
+&ext_ts_clk {
+	u-boot,dm-pre-reloc;
+	u-boot,dm-spl;
+};
+
+&frosc {
+	u-boot,dm-pre-reloc;
+	u-boot,dm-spl;
+};
+
 &iomuxc1 {
+	u-boot,dm-spl;
+};
+
+&lposc {
+	u-boot,dm-pre-reloc;
+	u-boot,dm-spl;
+};
+
+&pcc3 {
+	u-boot,dm-pre-reloc;
+	u-boot,dm-spl;
+};
+
+&pcc4 {
+	u-boot,dm-pre-reloc;
+	u-boot,dm-spl;
+};
+
+&pcc5 {
+	u-boot,dm-pre-reloc;
+	u-boot,dm-spl;
+};
+
+&rosc {
+	u-boot,dm-pre-reloc;
+	u-boot,dm-spl;
+};
+
+&sosc {
+	u-boot,dm-pre-reloc;
 	u-boot,dm-spl;
 };
 
