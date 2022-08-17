@@ -33,6 +33,7 @@
 #define STAT_LBKDIF	(1 << 31)
 #define STAT_RXEDGIF	(1 << 30)
 #define STAT_TDRE	(1 << 23)
+#define STAT_TC		(1 << 22)
 #define STAT_RDRF	(1 << 21)
 #define STAT_IDLE	(1 << 20)
 #define STAT_OR		(1 << 19)
@@ -359,7 +360,7 @@ static void _lpuart32_serial_putc(struct lpuart_serial_plat *plat,
 	while (true) {
 		lpuart_read32(plat->flags, &base->stat, &stat);
 
-		if ((stat & STAT_TDRE))
+		if (stat & STAT_TDRE)
 			break;
 
 		WATCHDOG_RESET();
@@ -479,7 +480,7 @@ static int lpuart_serial_pending(struct udevice *dev, bool input)
 			return _lpuart32_serial_tstc(plat);
 		} else {
 			lpuart_read32(plat->flags, &reg32->stat, &stat);
-			return stat & STAT_TDRE ? 0 : 1;
+			return stat & STAT_TC ? 0 : 1;
 		}
 	}
 
@@ -496,14 +497,14 @@ static int lpuart_serial_probe(struct udevice *dev)
 	int ret;
 
 	ret = clk_get_by_name(dev, "per", &per_clk);
-	if (!ret) {
-		ret = clk_enable(&per_clk);
-		if (ret) {
-			dev_err(dev, "Failed to get per clk: %d\n", ret);
-			return ret;
-		}
-	} else {
-		debug("%s: Failed to get per clk: %d\n", __func__, ret);
+	if (ret) {
+		dev_err(dev, "Failed to get per clk: %d\n", ret);
+		return ret;
+	}
+	ret = clk_enable(&per_clk);
+	if (ret) {
+		dev_err(dev, "Failed to enable per clk: %d\n", ret);
+		return ret;
 	}
 #endif
 
@@ -516,8 +517,7 @@ static int lpuart_serial_probe(struct udevice *dev)
 static int lpuart_serial_of_to_plat(struct udevice *dev)
 {
 	struct lpuart_serial_plat *plat = dev_get_plat(dev);
-	const void *blob = gd->fdt_blob;
-	int node = dev_of_offset(dev);
+	ofnode np = dev_ofnode(dev);
 	fdt_addr_t addr;
 
 	addr = dev_read_addr(dev);
@@ -530,18 +530,18 @@ static int lpuart_serial_of_to_plat(struct udevice *dev)
 	plat->reg = (void *)addr;
 	plat->flags = dev_get_driver_data(dev);
 
-	if (fdtdec_get_bool(blob, node, "little-endian"))
+	if (ofnode_read_bool(np, "little-endian"))
 		plat->flags &= ~LPUART_FLAG_REGMAP_ENDIAN_BIG;
 
-	if (!fdt_node_check_compatible(blob, node, "fsl,ls1021a-lpuart"))
+	if (ofnode_device_is_compatible(np, "fsl,ls1021a-lpuart"))
 		plat->devtype = DEV_LS1021A;
-	else if (!fdt_node_check_compatible(blob, node, "fsl,imx7ulp-lpuart"))
+	else if (ofnode_device_is_compatible(np, "fsl,imx7ulp-lpuart"))
 		plat->devtype = DEV_MX7ULP;
-	else if (!fdt_node_check_compatible(blob, node, "fsl,vf610-lpuart"))
+	else if (ofnode_device_is_compatible(np, "fsl,vf610-lpuart"))
 		plat->devtype = DEV_VF610;
-	else if (!fdt_node_check_compatible(blob, node, "fsl,imx8qm-lpuart"))
+	else if (ofnode_device_is_compatible(np, "fsl,imx8qm-lpuart"))
 		plat->devtype = DEV_IMX8;
-	else if (!fdt_node_check_compatible(blob, node, "fsl,imxrt-lpuart"))
+	else if (ofnode_device_is_compatible(np, "fsl,imxrt-lpuart"))
 		plat->devtype = DEV_IMXRT;
 
 	return 0;
