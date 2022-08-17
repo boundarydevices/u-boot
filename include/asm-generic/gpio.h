@@ -422,6 +422,7 @@ struct gpio_dev_priv {
 	const char *bank_name;
 	unsigned gpio_count;
 	unsigned gpio_base;
+	unsigned desired_gpio_base;
 	char **name;
 };
 
