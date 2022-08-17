@@ -82,6 +82,9 @@ static void serial_find_console_or_panic(void)
 	int ret;
 #endif
 
+	serial_flush();
+	gd->cur_serial_dev = NULL;
+
 	if (CONFIG_IS_ENABLED(OF_PLATDATA)) {
 		uclass_first_device(UCLASS_SERIAL, &dev);
 		if (dev) {
@@ -228,6 +231,18 @@ static int __serial_tstc(struct udevice *dev)
 	return 1;
 }
 
+static void __serial_flush(struct udevice *dev)
+{
+	struct dm_serial_ops *ops = serial_get_ops(dev);
+
+	if (ops->pending) {
+		while (ops->pending(dev, false)) {
+			WATCHDOG_RESET();
+		}
+	}
+}
+
+
 #if CONFIG_IS_ENABLED(SERIAL_RX_BUFFER)
 static int _serial_tstc(struct udevice *dev)
 {
@@ -295,6 +310,12 @@ int serial_tstc(void)
 		return 0;
 
 	return _serial_tstc(gd->cur_serial_dev);
+}
+
+void serial_flush(void)
+{
+	if (gd->cur_serial_dev)
+		__serial_flush(gd->cur_serial_dev);
 }
 
 void serial_setbrg(void)
