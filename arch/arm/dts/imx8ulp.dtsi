@@ -24,6 +24,7 @@
 		spi0 = &flexspi0;
 		spi2 = &flexspi2;
 		ethernet0 = &fec;
+		i2c6 = &lpi2c6;
 		i2c7 = &lpi2c7;
 		usbphy0 = &usbphy0;
 		usb0 = &usbotg0;
@@ -126,32 +127,46 @@
 			     <GIC_PPI 10 IRQ_TYPE_LEVEL_LOW>; /* Hypervisor */
 	};
 
-	frosc: clock-frosc {
+	dummy: dummy {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <0>;
+		clock-output-names = "dummy";
+	};
+
+	frosc: frosc {
 		compatible = "fixed-clock";
 		clock-frequency = <192000000>;
 		clock-output-names = "frosc";
 		#clock-cells = <0>;
 	};
 
-	lposc: clock-lposc {
+	lposc: lposc {
 		compatible = "fixed-clock";
 		clock-frequency = <1000000>;
 		clock-output-names = "lposc";
 		#clock-cells = <0>;
 	};
 
-	rosc: clock-rosc {
+	rosc: rosc {
 		compatible = "fixed-clock";
 		clock-frequency = <32768>;
 		clock-output-names = "rosc";
 		#clock-cells = <0>;
 	};
 
-	sosc: clock-sosc {
+	sosc: sosc {
 		compatible = "fixed-clock";
 		clock-frequency = <24000000>;
 		clock-output-names = "sosc";
 		#clock-cells = <0>;
+	};
+
+	ext_ts_clk: ext_ts_clk {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <0>;
+		clock-output-names = "ext_ts_clk";
 	};
 
 	sram@0x2201f000 {
@@ -338,12 +353,20 @@
 			cgc1: clock-controller@292c0000 {
 				compatible = "fsl,imx8ulp-cgc1";
 				reg = <0x292c0000 0x10000>;
-				clocks = <&rosc>, <&sosc>, <&frosc>, <&lposc>;
-				clock-names = "rosc", "sosc", "frosc", "lposc";
+				clocks = <&dummy>, <&rosc>, <&sosc>, <&frosc>, <&lposc>;
+				clock-names = "dummy", "rosc", "sosc", "frosc", "lposc";
 				#clock-cells = <1>;
 			};
 
 			pcc3: clock-controller@292d0000 {
+				assigned-clocks = <&pcc3 IMX8ULP_CLK_LPI2C4>,
+						  <&pcc3 IMX8ULP_CLK_LPI2C5>,
+						  <&pcc3 IMX8ULP_CLK_LPUART4>,
+						  <&pcc3 IMX8ULP_CLK_LPUART5>;
+				assigned-clock-parents = <&cgc1 IMX8ULP_CLK_FROSC_DIV2>,
+							 <&cgc1 IMX8ULP_CLK_FROSC_DIV2>,
+							 <&cgc1 IMX8ULP_CLK_SOSC_DIV2>,
+							 <&cgc1 IMX8ULP_CLK_SOSC_DIV2>;
 				compatible = "fsl,imx8ulp-pcc3";
 				reg = <0x292d0000 0x10000>;
 				#clock-cells = <1>;
@@ -414,9 +437,19 @@
 			ranges;
 
 			pcc4: clock-controller@29800000 {
+				assigned-clocks = <&pcc4 IMX8ULP_CLK_LPI2C6>,
+						  <&pcc4 IMX8ULP_CLK_LPI2C7>,
+						  <&pcc4 IMX8ULP_CLK_LPUART6>,
+						  <&pcc4 IMX8ULP_CLK_LPUART7>;
+				assigned-clock-parents = <&cgc1 IMX8ULP_CLK_FROSC_DIV2>,
+							 <&cgc1 IMX8ULP_CLK_FROSC_DIV2>,
+							 <&cgc1 IMX8ULP_CLK_SOSC_DIV2>,
+							 <&cgc1 IMX8ULP_CLK_SOSC_DIV2>;
 				compatible = "fsl,imx8ulp-pcc4";
 				reg = <0x29800000 0x10000>;
 				#clock-cells = <1>;
+				clocks = <&cgc1 IMX8ULP_CLK_DUMMY>;
+				clock-names = "dummy";
 			};
 
 			lpi2c6: lpi2c6@29840000 {
