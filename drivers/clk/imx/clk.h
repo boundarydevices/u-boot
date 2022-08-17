@@ -125,6 +125,13 @@ static inline struct clk *imx_clk_divider(const char *name, const char *parent,
 			reg, shift, width, 0);
 }
 
+static inline struct clk *imx_clk_divider_closest(const char *name,
+		const char *parent, void __iomem *reg, u8 shift, u8 width)
+{
+	return clk_register_divider(NULL, name, parent, 0,
+				       reg, shift, width, CLK_DIVIDER_ROUND_CLOSEST);
+}
+
 static inline struct clk *
 imx_clk_busy_divider(const char *name, const char *parent, void __iomem *reg,
 		     u8 shift, u8 width, void __iomem *busy_reg, u8 busy_shift)
@@ -139,6 +146,14 @@ static inline struct clk *imx_clk_divider2(const char *name, const char *parent,
 	return clk_register_divider(NULL, name, parent,
 			CLK_SET_RATE_PARENT | CLK_OPS_PARENT_ENABLE,
 			reg, shift, width, 0);
+}
+
+static inline struct clk *imx_clk_divider_flags(const char *name, const char *parent,
+		void __iomem *reg, u8 shift, u8 width, unsigned long flags)
+{
+	return clk_register_divider(NULL, name, parent,
+			CLK_SET_RATE_PARENT | CLK_OPS_PARENT_ENABLE,
+			reg, shift, width, flags);
 }
 
 struct clk *imx_clk_pfd(const char *name, const char *parent_name,
@@ -212,6 +227,13 @@ static inline struct clk *imx_clk_gate(const char *name, const char *parent,
 			shift, 0, NULL);
 }
 
+static inline struct clk *imx_clk_gate_dis(const char *name, const char *parent,
+		void __iomem *reg, u8 shift)
+{
+	return clk_register_gate(NULL, name, parent, CLK_SET_RATE_PARENT, reg,
+			shift, CLK_GATE_SET_TO_DISABLE, NULL);
+}
+
 static inline struct clk *imx_dev_clk_gate(struct udevice *dev,
 		const char *name, const char *parent,
 		void __iomem *reg, u8 shift)
@@ -257,5 +279,28 @@ struct clk *imx8m_clk_composite_flags(const char *name,
 
 #define imx8m_clk_composite_critical(name, parent_names, reg) \
 	__imx8m_clk_composite(name, parent_names, reg, CLK_IS_CRITICAL)
+
+struct clk *imx8ulp_clk_composite(const char *name,
+				     const char * const *parent_names,
+				     int num_parents, bool mux_present,
+				     bool rate_present, bool gate_present,
+				     void __iomem *reg, bool has_swrst);
+
+enum imx_pllv4_type {
+	IMX_PLLV4_IMX7ULP,
+	IMX_PLLV4_IMX8ULP,
+};
+
+struct clk *imx_clk_pllv4(enum imx_pllv4_type type, const char *name,
+		 const char *parent_name, void __iomem *base);
+
+enum imx_pfdv2_type {
+	IMX_PFDV2_IMX7ULP,
+	IMX_PFDV2_IMX8ULP,
+};
+
+struct clk *imx_clk_pfdv2(enum imx_pfdv2_type type, const char *name,
+	 const char *parent_name, void __iomem *reg, u8 idx);
+
 
 #endif /* __MACH_IMX_CLK_H */
