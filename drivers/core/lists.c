@@ -222,7 +222,11 @@ int lists_bind_fdt(struct udevice *parent, ofnode node, struct udevice **devp,
 		log_debug("   - attempt to match compatible string '%s'\n",
 			  compat);
 
-		for (entry = driver; entry != driver + n_ents; entry++) {
+		entry = driver;
+#if defined(CONFIG_DM_ALLOW_MULTIPLE_DRIVERS)
+allow_more_matches:
+#endif
+		for (; entry != driver + n_ents; entry++) {
 			if (drv) {
 				if (drv != entry)
 					continue;
@@ -263,6 +267,12 @@ int lists_bind_fdt(struct udevice *parent, ofnode node, struct udevice **devp,
 			found = true;
 			if (devp)
 				*devp = dev;
+#if defined(CONFIG_DM_ALLOW_MULTIPLE_DRIVERS)
+			else {
+				entry++;
+				goto allow_more_matches;
+			}
+#endif
 		}
 		break;
 	}
