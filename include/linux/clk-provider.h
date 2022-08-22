@@ -256,6 +256,7 @@ ulong clk_generic_get_rate(struct clk *clk);
 struct clk *dev_get_clk_ptr(struct udevice *dev);
 
 ulong ccf_clk_get_rate(struct clk *clk);
+ulong ccf_clk_round_rate(struct clk *clk, unsigned long rate);
 ulong ccf_clk_set_rate(struct clk *clk, unsigned long rate);
 int ccf_clk_set_parent(struct clk *clk, struct clk *parent);
 int ccf_clk_enable(struct clk *clk);

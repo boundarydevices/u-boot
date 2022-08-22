@@ -87,6 +87,16 @@ ulong ccf_clk_get_rate(struct clk *clk)
 	return clk_get_rate(c);
 }
 
+ulong ccf_clk_round_rate(struct clk *clk, unsigned long rate)
+{
+	struct clk *c;
+	int err = clk_get_by_id(clk->id, &c);
+
+	if (err)
+		return err;
+	return clk_round_rate(c, rate);
+}
+
 ulong ccf_clk_set_rate(struct clk *clk, unsigned long rate)
 {
 	struct clk *c;
@@ -144,6 +154,7 @@ int ccf_clk_disable(struct clk *clk)
 }
 
 const struct clk_ops ccf_clk_ops = {
+	.round_rate = ccf_clk_round_rate,
 	.set_rate = ccf_clk_set_rate,
 	.get_rate = ccf_clk_get_rate,
 	.set_parent = ccf_clk_set_parent,
