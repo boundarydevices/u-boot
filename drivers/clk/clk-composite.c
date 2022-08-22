@@ -72,6 +72,18 @@ static ulong clk_composite_set_rate(struct clk *clk, unsigned long rate)
 		return clk_get_rate(clk);
 }
 
+static ulong clk_composite_round_rate(struct clk *clk, unsigned long rate)
+{
+	struct clk_composite *composite = to_clk_composite(clk_dev_binded(clk) ?
+		(struct clk *)dev_get_clk_ptr(clk->dev) : clk);
+	const struct clk_ops *rate_ops = composite->rate_ops;
+	struct clk *clk_rate = composite->rate;
+
+	if (rate && rate_ops && rate_ops->round_rate)
+		return rate_ops->round_rate(clk_rate, rate);
+	return -ENOSYS;
+}
+
 static int clk_composite_enable(struct clk *clk)
 {
 	struct clk_composite *composite = to_clk_composite(clk_dev_binded(clk) ?
@@ -178,6 +190,7 @@ err:
 static const struct clk_ops clk_composite_ops = {
 	.set_parent = clk_composite_set_parent,
 	.get_rate = clk_composite_recalc_rate,
+	.round_rate = clk_composite_round_rate,
 	.set_rate = clk_composite_set_rate,
 	.enable = clk_composite_enable,
 	.disable = clk_composite_disable,
