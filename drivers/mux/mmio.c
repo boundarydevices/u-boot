@@ -91,7 +91,6 @@ static int mmio_mux_probe(struct udevice *dev)
 
 	ret = dev_read_u32_array(dev, "idle-states", idle_states, num_fields);
 	if (ret < 0) {
-		log_err("idle-states");
 		devm_kfree(dev, idle_states);
 		idle_states = NULL;
 	}
