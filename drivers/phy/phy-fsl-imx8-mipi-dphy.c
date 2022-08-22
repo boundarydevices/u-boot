@@ -13,8 +13,10 @@
 #include <generic-phy.h>
 #include <phy-mipi-dphy.h>
 #include <regmap.h>
+#include <linux/rational.h>
 
 /* DPHY registers */
+#define REG_NA				0xff
 #define DPHY_PD_DPHY			0x00
 #define DPHY_M_PRG_HS_PREPARE		0x04
 #define DPHY_MC_PRG_HS_PREPARE		0x08
@@ -22,13 +24,6 @@
 #define DPHY_MC_PRG_HS_ZERO		0x10
 #define DPHY_M_PRG_HS_TRAIL		0x14
 #define DPHY_MC_PRG_HS_TRAIL		0x18
-#define DPHY_PD_PLL			0x1c
-#define DPHY_TST			0x20
-#define DPHY_CN				0x24
-#define DPHY_CM				0x28
-#define DPHY_CO				0x2c
-#define DPHY_LOCK			0x30
-#define DPHY_LOCK_BYP			0x34
 #define DPHY_REG_BYPASS_PLL		0x4C
 
 #define MBPS(x) ((x) * 1000000)
@@ -57,9 +52,19 @@ enum mixel_dphy_devtype {
 	MIXEL_IMX8MQ,
 	MIXEL_IMX8QM,
 	MIXEL_IMX8QX,
+	MIXEL_IMX8ULP,
 };
 
 struct mixel_dphy_devdata {
+	u8 reg_mc_prg_rxhs_settle;
+	u8 reg_m_prg_rxhs_settle;
+	u8 reg_pd_pll;
+	u8 reg_tst;
+	u8 reg_cn;
+	u8 reg_cm;
+	u8 reg_co;
+	u8 reg_lock;
+	u8 reg_lock_byp;
 	u8 reg_tx_rcal;
 	u8 reg_auto_pd_en;
 	u8 reg_rxlprp;
@@ -104,43 +109,6 @@ static int phy_write(struct phy *phy, u32 value, unsigned int reg)
 	return ret;
 }
 
-/*
- * Find a ratio close to the desired one using continued fraction
- * approximation ending either at exact match or maximum allowed
- * nominator, denominator.
- * continued fraction
- *      2  1  2  1  2
- * 0 1  2  3  8 11 30
- * 1 0  1  1  3  4 11
- */
-static void get_best_ratio(unsigned long *pnum, unsigned long *pdenom, u32 max_n, u32 max_d)
-{
-	unsigned long a = *pnum;
-	unsigned long b = *pdenom;
-	unsigned long c;
-	u32 n[] = {0, 1};
-	u32 d[] = {1, 0};
-	u32 whole;
-	unsigned int i = 1;
-
-	while (b) {
-		i ^= 1;
-		whole = a / b;
-		n[i] += (n[i ^ 1] * whole);
-		d[i] += (d[i ^ 1] * whole);
-//		printf("cf=%i n=%i d=%i\n", whole, n[i], d[i]);
-		if ((n[i] > max_n) || (d[i] > max_d)) {
-			i ^= 1;
-			break;
-		}
-		c = a - (b * whole);
-		a = b;
-		b = c;
-	}
-	*pnum = n[i];
-	*pdenom = d[i];
-}
-
 static int mixel_dphy_config_from_opts(struct phy *phy,
 	       struct phy_configure_opts_mipi_dphy *dphy_opts,
 	       struct mixel_dphy_cfg *cfg)
@@ -166,7 +134,7 @@ static int mixel_dphy_config_from_opts(struct phy *phy,
 	do {
 		numerator = bit_clk << i;
 		denominator = ref_clk;
-		get_best_ratio(&numerator, &denominator, 255, max_d >> i);
+		rational_best_ratio_bigger(&numerator, &denominator, 255, max_d >> i);
 		denominator <<= i;
 		i++;
 	} while ((denominator >> __ffs(denominator)) > 32);
@@ -267,20 +235,31 @@ static int mixel_dphy_config_from_opts(struct phy *phy,
 	cfg->mc_prg_hs_trail = n;
 
 	/* rxhs_settle: formula from NXP BSP */
-	if (bit_clk < MBPS(80))
-		cfg->rxhs_settle = 0x0d;
-	else if (bit_clk < MBPS(90))
-		cfg->rxhs_settle = 0x0c;
-	else if (bit_clk < MBPS(125))
-		cfg->rxhs_settle = 0x0b;
-	else if (bit_clk < MBPS(150))
-		cfg->rxhs_settle = 0x0a;
-	else if (bit_clk < MBPS(225))
-		cfg->rxhs_settle = 0x09;
-	else if (bit_clk < MBPS(500))
-		cfg->rxhs_settle = 0x08;
-	else
-		cfg->rxhs_settle = 0x07;
+	if (priv->devdata->reg_rxhs_settle != REG_NA) {
+		if (bit_clk < MBPS(80))
+			cfg->rxhs_settle = 0x0d;
+		else if (bit_clk < MBPS(90))
+			cfg->rxhs_settle = 0x0c;
+		else if (bit_clk < MBPS(125))
+			cfg->rxhs_settle = 0x0b;
+		else if (bit_clk < MBPS(150))
+			cfg->rxhs_settle = 0x0a;
+		else if (bit_clk < MBPS(225))
+			cfg->rxhs_settle = 0x09;
+		else if (bit_clk < MBPS(500))
+			cfg->rxhs_settle = 0x08;
+		else
+			cfg->rxhs_settle = 0x07;
+	} else if (priv->devdata->reg_m_prg_rxhs_settle != REG_NA) {
+		if (dphy_opts->hs_clk_rate < MBPS(80))
+			cfg->rxhs_settle = 0x01;
+		else if (dphy_opts->hs_clk_rate < MBPS(250))
+			cfg->rxhs_settle = 0x06;
+		else if (dphy_opts->hs_clk_rate < MBPS(500))
+			cfg->rxhs_settle = 0x08;
+		else
+			cfg->rxhs_settle = 0x0a;
+	}
 
 	debug("phy_config: %u %u %u %u %u %u %u\n",
 		cfg->m_prg_hs_prepare, cfg->mc_prg_hs_prepare,
@@ -301,7 +280,15 @@ static void mixel_phy_set_hs_timings(struct phy *phy)
 	phy_write(phy, priv->cfg.mc_prg_hs_zero, DPHY_MC_PRG_HS_ZERO);
 	phy_write(phy, priv->cfg.m_prg_hs_trail, DPHY_M_PRG_HS_TRAIL);
 	phy_write(phy, priv->cfg.mc_prg_hs_trail, DPHY_MC_PRG_HS_TRAIL);
-	phy_write(phy, priv->cfg.rxhs_settle, priv->devdata->reg_rxhs_settle);
+	if (priv->devdata->reg_rxhs_settle != REG_NA)
+		phy_write(phy, priv->cfg.rxhs_settle,
+			  priv->devdata->reg_rxhs_settle);
+	else if (priv->devdata->reg_m_prg_rxhs_settle != REG_NA)
+		phy_write(phy, priv->cfg.rxhs_settle,
+			  priv->devdata->reg_m_prg_rxhs_settle);
+
+	if (priv->devdata->reg_mc_prg_rxhs_settle != REG_NA)
+		phy_write(phy, 0x10, priv->devdata->reg_mc_prg_rxhs_settle);
 }
 
 static int mixel_dphy_set_pll_params(struct phy *phy)
@@ -317,9 +304,9 @@ static int mixel_dphy_set_pll_params(struct phy *phy)
 	}
 	debug("Using CM:%u CN:%u CO:%u\n",
 		priv->cfg.cm, priv->cfg.cn, priv->cfg.co);
-	phy_write(phy, CM(priv->cfg.cm), DPHY_CM);
-	phy_write(phy, CN(priv->cfg.cn), DPHY_CN);
-	phy_write(phy, CO(priv->cfg.co), DPHY_CO);
+	phy_write(phy, CM(priv->cfg.cm), priv->devdata->reg_cm);
+	phy_write(phy, CN(priv->cfg.cn), priv->devdata->reg_cn);
+	phy_write(phy, CO(priv->cfg.co), priv->devdata->reg_co);
 	return 0;
 }
 
@@ -347,12 +334,12 @@ static int mixel_dphy_configure(struct phy *phy, union phy_configure_opts *opts)
 	debug("%s:%ld ref_clk=%ld, cm=%d, co=%d cn=%d\n",
 		__func__, priv->frequency, ref_clk, cfg.cm, cfg.co, cfg.cn);
 
-	phy_write(phy, 0x00, DPHY_LOCK_BYP);
+	phy_write(phy, 0x00, priv->devdata->reg_lock_byp);
 	phy_write(phy, 0x01, priv->devdata->reg_tx_rcal);
 	phy_write(phy, 0x00, priv->devdata->reg_auto_pd_en);
 	phy_write(phy, 0x02, priv->devdata->reg_rxlprp);
 	phy_write(phy, 0x02, priv->devdata->reg_rxcdrp);
-	phy_write(phy, 0x25, DPHY_TST);
+	phy_write(phy, 0x25, priv->devdata->reg_tst);
 
 	mixel_phy_set_hs_timings(phy);
 	ret = mixel_dphy_set_pll_params(phy);
@@ -376,8 +363,10 @@ static int mixel_dphy_validate(struct phy *phy, enum phy_mode mode, int submode,
 
 static int mixel_dphy_init(struct phy *phy)
 {
+	struct mixel_dphy_priv *priv = dev_get_priv(phy->dev);
+
 	debug("%s:\n", __func__);
-	phy_write(phy, PWR_OFF, DPHY_PD_PLL);
+	phy_write(phy, PWR_OFF, priv->devdata->reg_pd_pll);
 	phy_write(phy, PWR_OFF, DPHY_PD_DPHY);
 
 	return 0;
@@ -385,9 +374,11 @@ static int mixel_dphy_init(struct phy *phy)
 
 static int mixel_dphy_exit(struct phy *phy)
 {
-	phy_write(phy, 0, DPHY_CM);
-	phy_write(phy, 0, DPHY_CN);
-	phy_write(phy, 0, DPHY_CO);
+	struct mixel_dphy_priv *priv = dev_get_priv(phy->dev);
+
+	phy_write(phy, 0, priv->devdata->reg_cm);
+	phy_write(phy, 0, priv->devdata->reg_cn);
+	phy_write(phy, 0, priv->devdata->reg_co);
 
 	return 0;
 }
@@ -403,9 +394,9 @@ static int mixel_dphy_power_on(struct phy *phy)
 	if (ret < 0)
 		return ret;
 
-	phy_write(phy, PWR_ON, DPHY_PD_PLL);
-	ret = regmap_read_poll_timeout(priv->regmap, DPHY_LOCK, locked,
-				       locked, PLL_LOCK_SLEEP,
+	phy_write(phy, PWR_ON, priv->devdata->reg_pd_pll);
+	ret = regmap_read_poll_timeout(priv->regmap, priv->devdata->reg_lock,
+				       locked, locked, PLL_LOCK_SLEEP,
 				       PLL_LOCK_TIMEOUT);
 	if (ret < 0) {
 		debug("Could not get DPHY lock (%d)!\n", ret);
@@ -424,7 +415,7 @@ static int mixel_dphy_power_off(struct phy *phy)
 	struct mixel_dphy_priv *priv = dev_get_priv(phy->dev);
 
 	debug("%s:\n", __func__);
-	phy_write(phy, PWR_OFF, DPHY_PD_PLL);
+	phy_write(phy, PWR_OFF, priv->devdata->reg_pd_pll);
 	phy_write(phy, PWR_OFF, DPHY_PD_DPHY);
 
 	clk_disable_unprepare(priv->phy_ref_clk);
@@ -457,6 +448,15 @@ static const struct phy_ops mixel_dphy_ops = {
 
 static const struct mixel_dphy_devdata mixel_dphy_devdata[] = {
 	[MIXEL_IMX8MQ] = {
+		.reg_mc_prg_rxhs_settle = REG_NA,
+		.reg_m_prg_rxhs_settle = REG_NA,
+		.reg_pd_pll = 0x1c,
+		.reg_tst = 0x20,
+		.reg_cn = 0x24,
+		.reg_cm = 0x28,
+		.reg_co = 0x2c,
+		.reg_lock = 0x30,
+		.reg_lock_byp = 0x34,
 		.reg_tx_rcal = 0x38,
 		.reg_auto_pd_en = 0x3c,
 		.reg_rxlprp = 0x40,
@@ -464,6 +464,15 @@ static const struct mixel_dphy_devdata mixel_dphy_devdata[] = {
 		.reg_rxhs_settle = 0x48,
 	},
 	[MIXEL_IMX8QM] = {
+		.reg_mc_prg_rxhs_settle = REG_NA,
+		.reg_m_prg_rxhs_settle = REG_NA,
+		.reg_pd_pll = 0x1c,
+		.reg_tst = 0x20,
+		.reg_cn = 0x24,
+		.reg_cm = 0x28,
+		.reg_co = 0x2c,
+		.reg_lock = 0x30,
+		.reg_lock_byp = 0x34,
 		.reg_tx_rcal = 0x00,
 		.reg_auto_pd_en = 0x38,
 		.reg_rxlprp = 0x3c,
@@ -471,11 +480,36 @@ static const struct mixel_dphy_devdata mixel_dphy_devdata[] = {
 		.reg_rxhs_settle = 0x44,
 	},
 	[MIXEL_IMX8QX] = {
+		.reg_mc_prg_rxhs_settle = REG_NA,
+		.reg_m_prg_rxhs_settle = REG_NA,
+		.reg_pd_pll = 0x1c,
+		.reg_tst = 0x20,
+		.reg_cn = 0x24,
+		.reg_cm = 0x28,
+		.reg_co = 0x2c,
+		.reg_lock = 0x30,
+		.reg_lock_byp = 0x34,
 		.reg_tx_rcal = 0x00,
 		.reg_auto_pd_en = 0x38,
 		.reg_rxlprp = 0x3c,
 		.reg_rxcdrp = 0x40,
 		.reg_rxhs_settle = 0x44,
+	},
+	[MIXEL_IMX8ULP] = {
+		.reg_mc_prg_rxhs_settle = 0x1c,
+		.reg_m_prg_rxhs_settle = 0x20,
+		.reg_pd_pll = 0x24,
+		.reg_tst = 0x28,
+		.reg_cn = 0x2c,
+		.reg_cm = 0x30,
+		.reg_co = 0x34,
+		.reg_lock = 0x38,
+		.reg_lock_byp = 0x3c,
+		.reg_tx_rcal = 0x00,
+		.reg_auto_pd_en = 0x40,
+		.reg_rxlprp = 0x44,
+		.reg_rxcdrp = 0x48,
+		.reg_rxhs_settle = REG_NA,
 	},
 };
 
@@ -515,6 +549,7 @@ static const struct udevice_id mixel_dphy_ids[] = {
 	{ .compatible = "fsl,imx8mq-mipi-dphy", .data = MIXEL_IMX8MQ },
 	{ .compatible = "fsl,imx8qm-mipi-dphy", .data = MIXEL_IMX8QM },
 	{ .compatible = "fsl,imx8qx-mipi-dphy", .data = MIXEL_IMX8QX },
+	{ .compatible = "fsl,imx8ulp-mipi-dphy", .data = MIXEL_IMX8ULP },
 	{ /* sentinel */ },
 };
 
