@@ -112,10 +112,13 @@ static int clk_fetch_parent_index(struct clk *clk,
 		return -EINVAL;
 
 	for (i = 0; i < mux->num_parents; i++) {
-		if (!strcmp(parent->dev->name, mux->parent_names[i]))
+		if (!strcmp(parent->dev->name, mux->parent_names[i])) {
+			debug("%s: %s, parent %s found, index %d\n", __func__, clk->dev->name, parent->dev->name, i);
 			return i;
+		}
 	}
 
+	printf("%s: %s, parent %s not found\n", __func__, clk->dev->name, parent->dev->name);
 	return -EINVAL;
 }
 
@@ -126,6 +129,7 @@ static int clk_mux_set_parent(struct clk *clk, struct clk *parent)
 	u32 val;
 	u32 reg;
 
+	debug("%s: %s, parent %s\n", __func__, clk->dev->name, parent->dev->name);
 	index = clk_fetch_parent_index(clk, parent);
 	if (index < 0) {
 		log_err("Could not fetch index\n");
