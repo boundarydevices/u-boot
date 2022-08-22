@@ -86,6 +86,7 @@ static ulong clk_fd_recalc_rate(struct clk *hw)
 	ret = (u64)parent_rate * m;
 	do_div(ret, n);
 
+	debug("%s: %s: parent_rate=%ld rate=%ld m=%ld n=%ld\n", __func__, hw->dev->name, parent_rate, (unsigned long)ret, m, n);
 	return ret;
 }
 
@@ -95,6 +96,7 @@ void clk_fractional_divider_general_approximation(struct clk *hw,
 						  unsigned long *m, unsigned long *n)
 {
 	struct clk_fractional_divider *fd = to_clk_fd(hw);
+	int min = (fd->flags & CLK_FRAC_DIVIDER_ZERO_BASED) ? 1 : 0;
 
 	/*
 	 * Get rate closer to *parent_rate to guarantee there is no overflow
@@ -110,9 +112,16 @@ void clk_fractional_divider_general_approximation(struct clk *hw,
 			rate <<= scale - fd->nwidth;
 	}
 
+#if 0
+	*m = rate;
+	*n = *parent_rate;
+	rational_best_ratio_bigger(m, n,
+			GENMASK(fd->mwidth - 1, 0) + min, GENMASK(fd->nwidth - 1, 0) + min);
+#else
 	rational_best_approximation(rate, *parent_rate,
-			GENMASK(fd->mwidth - 1, 0), GENMASK(fd->nwidth - 1, 0),
+			GENMASK(fd->mwidth - 1, 0) + min, GENMASK(fd->nwidth - 1, 0) + min,
 			m, n);
+#endif
 }
 
 static ulong clk_fd_round_rate(struct clk *hw, ulong rate)
@@ -132,6 +141,7 @@ static ulong clk_fd_round_rate(struct clk *hw, ulong rate)
 
 	ret = (u64)parent_rate * m;
 	do_div(ret, n);
+	debug("%s: %s :parent_rate=%ld rate=%ld m=%ld n=%ld\n", __func__, hw->dev->name, parent_rate, (unsigned long)ret, m, n);
 
 	return ret;
 }
@@ -143,14 +153,25 @@ static ulong clk_fd_set_rate(struct clk *hw, unsigned long rate)
 	unsigned long m, n;
 	u64 temp64;
 	u32 val;
+	int min = (fd->flags & CLK_FRAC_DIVIDER_ZERO_BASED) ? 1 : 0;
 
+#if 0
+	m = rate;
+	n = parent_rate;
+	rational_best_ratio_bigger(&m, &n,
+			GENMASK(fd->mwidth - 1, 0) + min, GENMASK(fd->nwidth - 1, 0) + min);
+#else
 	rational_best_approximation(rate, parent_rate,
-			GENMASK(fd->mwidth - 1, 0), GENMASK(fd->nwidth - 1, 0),
+			GENMASK(fd->mwidth - 1, 0) + min, GENMASK(fd->nwidth - 1, 0) + min,
 			&m, &n);
+#endif
+	debug("%s: %s: rate=%ld parent_rate=%ld m=%ld n=%ld\n", __func__, hw->dev->name, rate, parent_rate, m, n);
 
 	if (fd->flags & CLK_FRAC_DIVIDER_ZERO_BASED) {
-		m--;
-		n--;
+		if (m)
+			m--;
+		if (n)
+			n--;
 	}
 
 	val = clk_fd_readl(fd);
@@ -164,6 +185,7 @@ static ulong clk_fd_set_rate(struct clk *hw, unsigned long rate)
 	}
 	temp64 = (u64)parent_rate * m;
 	do_div(temp64, n);
+	debug("%s: %s: parent_rate=%ld rate=%ld m=%ld n=%ld\n", __func__, hw->dev->name, parent_rate, (ulong)temp64, m, n);
 
 	return (ulong)temp64;
 }
