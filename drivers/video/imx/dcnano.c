@@ -27,10 +27,16 @@
 #include <dm.h>
 #include <dm/device-internal.h>
 #include <dm/device_compat.h>
+#if CONFIG_IS_ENABLED(CLK)
+#include <clk.h>
+#endif
 
 struct dcnano_priv {
 	fdt_addr_t reg_base;
 	struct udevice *disp_dev;
+#if CONFIG_IS_ENABLED(CLK)
+	struct clk pixel_clk;
+#endif
 };
 
 static int dcnano_check_chip_info(struct dcnano_priv *dcnano)
@@ -118,6 +124,33 @@ static void dcnano_disable_controller(struct dcnano_priv *priv)
 	writel(0, (ulong)(priv->reg_base + DCNANO_FRAMEBUFFERCONFIG));
 }
 
+int set_pixel_clk(struct dcnano_priv *priv, struct display_timing *timing)
+{
+#if CONFIG_IS_ENABLED(CLK)
+	int ret;
+	struct clk *cp;
+
+	cp = clk_get_parent(&priv->pixel_clk);
+	if (!IS_ERR(cp)) {
+		ret = clk_set_rate(cp, timing->pixelclock.typ);
+	}
+	ret = clk_set_rate(&priv->pixel_clk, timing->pixelclock.typ);
+	debug("%s: desired %d, got %ld\n", __func__, timing->pixelclock.typ, clk_get_rate(&priv->pixel_clk));
+	if (ret < 0) {
+		printf("Failed to set pix clk rate\n");
+	} else {
+		ret = clk_enable(&priv->pixel_clk);
+		if (!ret)
+			return 0;
+		printf("unable to enable lcdif_pix clock\n");
+	}
+#else
+	/* Kick in the LCDIF clock */
+	mxs_set_lcdclk(priv->reg_base, timing->pixelclock.typ / 1000);
+#endif
+	return 0;
+}
+
 static void dcnano_init(struct udevice *dev,
 			struct display_timing *timing, unsigned int format)
 {
@@ -125,9 +158,7 @@ static void dcnano_init(struct udevice *dev,
 	struct dcnano_priv *priv = dev_get_priv(dev);
 	u32 primary_fb_fmt = 0, val = 0;
 
-	/* Kick in the LCDIF clock */
-	mxs_set_lcdclk(priv->reg_base, timing->pixelclock.typ / 1000);
-
+	set_pixel_clk(priv, timing);
 	dcnano_check_chip_info(priv);
 
 	dcnano_set_mode(priv, timing);
@@ -170,25 +201,35 @@ static int dcnano_of_get_timings(struct udevice *dev,
 			      struct display_timing *timings)
 {
 	int ret = 0;
+	u32 display_phandle;
+	ofnode display_node;
 	struct dcnano_priv *priv = dev_get_priv(dev);
 
-	priv->disp_dev = video_link_get_next_device(dev);
-	if (!priv->disp_dev ||
-		(device_get_uclass_id(priv->disp_dev) != UCLASS_VIDEO_BRIDGE
-		&& device_get_uclass_id(priv->disp_dev) != UCLASS_DISPLAY)) {
-
-		printf("fail to find output device\n");
-		return -ENODEV;
-	}
-
-	debug("disp_dev %s\n", priv->disp_dev->name);
-
-	ret = video_link_get_display_timings(timings);
+	ret = ofnode_read_u32(dev_ofnode(dev), "display", &display_phandle);
 	if (ret) {
-		printf("fail to get display timings\n");
-		return ret;
+		dev_err(dev, "required display property isn't provided\n");
+		return -EINVAL;
 	}
 
+	display_node = ofnode_get_by_phandle(display_phandle);
+	if (!ofnode_valid(display_node)) {
+		dev_err(dev, "failed to find display subnode\n");
+		return -EINVAL;
+	}
+
+	ret = ofnode_decode_display_timing(display_node, 0, timings);
+	if (ret) {
+		dev_info(dev, "failed to get display timings\n");
+	}
+
+	priv->disp_dev = video_link_get_next_device(dev);
+	if (priv->disp_dev && ret) {
+		ret = video_link_get_display_timings(timings);
+		if (ret) {
+			printf("fail to get display timings\n");
+			return ret;
+		}
+	}
 	return ret;
 }
 
@@ -216,6 +257,13 @@ static int dcnano_video_probe(struct udevice *dev)
 	if (ret)
 		return ret;
 
+#if CONFIG_IS_ENABLED(CLK)
+	ret = clk_get_by_name(dev, "pixel", &priv->pixel_clk);
+	if (ret) {
+		printf("Failed to get pix clk\n");
+		return ret;
+	}
+#endif
 	reset_lcdclk();
 
 	if (priv->disp_dev) {
