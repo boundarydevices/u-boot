@@ -38,6 +38,10 @@
 #include <clk.h>
 #include <usb/usb_mx6_common.h>
 
+#if CONFIG_IS_ENABLED(PHY) && !defined(CONFIG_IMX8)  && !defined(CONFIG_IMX8ULP)  && !defined(CONFIG_IMX8MM)
+#define USE_USB_PHY	1
+#endif
+
 DECLARE_GLOBAL_DATA_PTR;
 
 #define USB_OTGREGS_OFFSET	0x000
@@ -228,7 +232,7 @@ struct ehci_mx6_priv_data {
 	enum usb_init_type init_type;
 	enum usb_phy_interface phy_type;
 	int portnr;
-#if !CONFIG_IS_ENABLED(PHY) || defined(CONFIG_IMX8)
+#if !defined(USE_USB_PHY)
 	struct udevice phy_dev;
 	struct ehci_mx6_phy_data phy_data;
 #if CONFIG_IS_ENABLED(POWER_DOMAIN)
@@ -278,7 +282,7 @@ static int mx6_init_after_reset(struct ehci_ctrl *dev)
 		return ret;
 	}
 
-#if !CONFIG_IS_ENABLED(PHY) || defined(CONFIG_IMX8)
+#if !defined(USE_USB_PHY)
 	ehci_mx6_phy_init(ehci, &priv->phy_data, priv->portnr);
 #endif
 
@@ -452,7 +456,7 @@ static int mx6_parse_dt_addrs(struct udevice *dev)
 		if (ret < 0)
 			return ret;
 	}
-#if !CONFIG_IS_ENABLED(PHY) || defined(CONFIG_IMX8)
+#if !defined(USE_USB_PHY)
 	dev_set_ofnode(&priv->phy_dev, phy);
 #endif
 
@@ -462,7 +466,7 @@ static int mx6_parse_dt_addrs(struct udevice *dev)
 
 	priv->portnr = dev_seq(dev);
 
-#if !CONFIG_IS_ENABLED(PHY) || defined(CONFIG_IMX8)
+#if !defined(USE_USB_PHY)
 	void *__iomem addr;
 	struct ehci_mx6_phy_data *phy_data = &priv->phy_data;
 	addr = (void __iomem *)ofnode_get_addr(phy);
@@ -495,7 +499,7 @@ static int mx6_parse_dt_addrs(struct udevice *dev)
 	return 0;
 }
 
-#if !CONFIG_IS_ENABLED(PHY) || defined(CONFIG_IMX8)
+#if !defined(USE_USB_PHY)
 static int ehci_mx6_phy_prepare(struct ehci_mx6_priv_data *priv)
 {
 #if CONFIG_IS_ENABLED(POWER_DOMAIN)
@@ -598,7 +602,7 @@ static int ehci_usb_probe(struct udevice *dev)
 		return ret;
 	}
 
-#if !CONFIG_IS_ENABLED(PHY) || defined(CONFIG_IMX8)
+#if !defined(USE_USB_PHY)
 	ret = ehci_mx6_phy_prepare(priv);
 	if (ret) {
 		printf("Failed to prepare USB phy\n");
@@ -627,7 +631,7 @@ static int ehci_usb_probe(struct udevice *dev)
 		debug("%s: No vbus supply\n", dev->name);
 #endif
 
-#if !CONFIG_IS_ENABLED(PHY) || defined(CONFIG_IMX8)
+#if !defined(USE_USB_PHY)
 	ehci_mx6_phy_init(ehci, &priv->phy_data, priv->portnr);
 #else
 	ret = ehci_setup_phy(dev, &priv->phy, priv->portnr);
@@ -683,14 +687,14 @@ err_regulator:
 		regulator_set_enable(priv->vbus_supply, false);
 err_phy:
 #endif
-#if CONFIG_IS_ENABLED(PHY) && !defined(CONFIG_IMX8)
+#if defined(USE_USB_PHY)
 	ehci_shutdown_phy(dev, &priv->phy);
 #endif
 err_clk:
 #if CONFIG_IS_ENABLED(CLK)
 	clk_disable(&priv->clk);
 #endif
-#if !CONFIG_IS_ENABLED(PHY) || defined(CONFIG_IMX8)
+#if !defined(USE_USB_PHY)
 	ehci_mx6_phy_remove(priv);
 #endif
 
@@ -710,7 +714,7 @@ int ehci_usb_remove(struct udevice *dev)
 	}
 	ret = board_usb_cleanup(dev_seq(dev), priv->init_type);
 
-#if CONFIG_IS_ENABLED(PHY) && !defined(CONFIG_IMX8)
+#if defined(USE_USB_PHY)
 	ehci_shutdown_phy(dev, &priv->phy);
 #endif
 
@@ -723,7 +727,7 @@ int ehci_usb_remove(struct udevice *dev)
 	clk_disable(&priv->clk);
 #endif
 
-#if !CONFIG_IS_ENABLED(PHY) || defined(CONFIG_IMX8)
+#if !defined(USE_USB_PHY)
 	ehci_mx6_phy_remove(priv);
 #endif
 

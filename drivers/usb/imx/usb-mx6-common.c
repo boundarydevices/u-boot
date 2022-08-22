@@ -22,6 +22,10 @@
 #include <asm/arch/sys_proto.h>
 #include <usb/usb_mx6_common.h>
 
+#if CONFIG_IS_ENABLED(PHY) && !defined(CONFIG_IMX8)  && !defined(CONFIG_IMX8ULP)
+#define USE_USB_PHY	1
+#endif
+
 #define ANADIG_USB2_CHRG_DETECT_EN_B		0x00100000
 #define ANADIG_USB2_CHRG_DETECT_CHK_CHRG_B	0x00080000
 
@@ -162,7 +166,7 @@ int usb_phy_mode(int port)
 }
 #endif
 
-#if defined(CONFIG_MX6) && !CONFIG_IS_ENABLED(PHY)
+#if defined(CONFIG_MX6) && !defined(USE_USB_PHY)
 static void usb_power_config_mx6(void __iomem *anatop_base,
 				 int anatop_bits_index)
 {
@@ -213,7 +217,7 @@ static void __maybe_unused
 usb_power_config_mx6(void __iomem *anatop_base, int anatop_bits_index) { }
 #endif
 
-#if defined(CONFIG_USB_EHCI_MX7) && !CONFIG_IS_ENABLED(PHY)
+#if defined(CONFIG_USB_EHCI_MX7) && !defined(USE_USB_PHY)
 static void usb_power_config_mx7(void __iomem *usbnc_base)
 {
 	struct usbnc_regs __iomem *usbnc = (struct usbnc_regs __iomem *)usbnc_base;
@@ -233,7 +237,7 @@ static void __maybe_unused
 usb_power_config_mx7(void __iomem *usbnc_base) { }
 #endif
 
-#if (defined(CONFIG_MX7ULP) || defined(CONFIG_IMX8ULP)) && !CONFIG_IS_ENABLED(PHY)
+#if (defined(CONFIG_MX7ULP) || defined(CONFIG_IMX8ULP)) && !defined(USE_USB_PHY)
 static void usb_power_config_mx7ulp(void __iomem *usbphy_base)
 {
 	struct usbphy_regs __iomem *usbphy = (struct usbphy_regs __iomem *)usbphy_base;
