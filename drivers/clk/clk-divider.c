@@ -72,6 +72,7 @@ unsigned long divider_recalc_rate(struct clk *hw, unsigned long parent_rate,
 		return parent_rate;
 	}
 
+	debug("%s: %s: parent_rate=%ld, div=%d  =%lld\n", __func__, hw->dev->name, parent_rate, div, DIV_ROUND_UP_ULL((u64)parent_rate, div));
 	return DIV_ROUND_UP_ULL((u64)parent_rate, div);
 }
 
