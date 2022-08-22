@@ -650,7 +650,7 @@ static int _panel_set_backlight(struct panel_common *p, int percent)
 {
 	int ret;
 
-	debug("%s: start, backlight = '%s'\n", __func__, p->backlight->name);
+	debug("%s: start, backlight = '%s'\n", __func__, p->backlight ? p->backlight->name : "none");
 	if (p->gd_enable)
 		dm_gpio_set_value(p->gd_enable, (percent > 0) ? true : false);
 	if (p->backlight) {
@@ -841,7 +841,8 @@ static int common_panel_enable(struct udevice *dev)
 	struct panel_common *p = dev_get_priv(dev);
 	int ret;
 
-	debug("%s: start, backlight = '%s'\n", __func__, p->backlight->name);
+	debug("%s: start, backlight = '%s'\n", __func__,
+		p->backlight ? p->backlight->name : "none");
 	p->dsi = dsi;
 	ret = panel_common_prepare(p);
 	if (ret)
@@ -1183,7 +1184,7 @@ static int common_panel_ofdata_to_platdata(struct udevice *dev)
 			ret = sn65dsi83_ofdata_to_platdata(dev, &panel->sn65, np, sn65_np);
 		}
 	}
-	return ret;
+	return 0;
 }
 
 static int common_panel_probe(struct udevice *dev)
