@@ -7,6 +7,7 @@
 #include <cpu_func.h>
 #include <asm/io.h>
 #include <asm/arch/imx-regs.h>
+#include <watchdog.h>
 
 /*
  * MX7ULP WDOG Register Map
@@ -48,14 +49,35 @@ void hw_watchdog_set_timeout(u16 val)
 	writel(val, &wdog->toval);
 }
 
+#ifdef CONFIG_HW_WATCHDOG
+poll_rtn_t g_poll_rtn = (poll_rtn_t)1;
+poll_rtn_t g_poll_rtn_backup = (poll_rtn_t)1;
+
+void set_poll_rtn(poll_rtn_t poll_rtn)
+{
+	g_poll_rtn_backup = g_poll_rtn = poll_rtn;
+}
+#endif
+
 void hw_watchdog_reset(void)
 {
 	struct wdog_regs *wdog = (struct wdog_regs *)WDOG_BASE_ADDR;
+#ifdef CONFIG_HW_WATCHDOG
+	poll_rtn_t poll_rtn = g_poll_rtn;
+#endif
 
 	dmb();
 	__raw_writel(REFRESH_WORD0, &wdog->cnt);
 	__raw_writel(REFRESH_WORD1, &wdog->cnt);
 	dmb();
+
+#ifdef CONFIG_HW_WATCHDOG
+	if ((unsigned long)poll_rtn > 1) {
+		g_poll_rtn = NULL;
+		poll_rtn();
+		g_poll_rtn = g_poll_rtn_backup;
+	}
+#endif
 }
 
 void hw_watchdog_init(void)

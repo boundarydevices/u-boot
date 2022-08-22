@@ -59,6 +59,7 @@ config OMAP_WATCHDOG
 
 config ULP_WATCHDOG
 	bool "i.MX7ULP watchdog"
+	select HW_WATCHDOG if !WDT
 	help
 	  Say Y here to enable i.MX7ULP watchdog driver.
 
