@@ -133,6 +133,13 @@
 			     <GIC_PPI 10 IRQ_TYPE_LEVEL_LOW>; /* Hypervisor */
 	};
 
+	dsi_phy_ref: dsi_phy_ref {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <24000000>;
+		clock-output-names = "dsi_phy_ref";
+	};
+
 	dummy: dummy {
 		compatible = "fixed-clock";
 		#clock-cells = <0>;
@@ -832,7 +839,10 @@
 			avd_sim: syscon@2da50000 {
 				compatible = "nxp,imx8ulp-avd-sim", "syscon", "simple-mfd";
 				reg = <0x2da50000 0x38>;
+				ranges;
 				clocks = <&pcc5 IMX8ULP_CLK_AVD_SIM>;
+				#address-cells = <1>;
+				#size-cells = <1>;
 
 				mux: mux-controller {
 					compatible = "mmio-mux";
@@ -842,6 +852,7 @@
 
 				avd_sim_rst: reset-controller {
 					compatible = "nxp,imx8ulp-avd-sim-reset";
+					reg = <0x2da50000 0x38>;
 					#reset-cells = <1>;
 				};
 			};
@@ -849,8 +860,8 @@
 			cgc2: clock-controller@2da60000 {
 				compatible = "fsl,imx8ulp-cgc2";
 				reg = <0x2da60000 0x10000>;
-				clocks = <&sosc>, <&frosc>;
-				clock-names = "sosc", "frosc";
+				clocks = <&sosc>, <&frosc>, <&dsi_phy_ref>;
+				clock-names = "sosc", "frosc", "dsi_phy_ref";
 				#clock-cells = <1>;
 			};
 
@@ -858,6 +869,11 @@
 				compatible = "fsl,imx8ulp-pcc5";
 				reg = <0x2da70000 0x10000>;
 				#clock-cells = <1>;
+			};
+
+			reset_pcc5: reset_pcc5@2da70000 {
+				compatible = "nxp,imx8ulp-pcc5-reset";
+				reg = <0x2da70000 0x10000>;
 				#reset-cells = <1>;
 			};
 
@@ -869,11 +885,13 @@
 				clocks = <&cgc2 IMX8ULP_CLK_LPAV_BUS_DIV>,
 					 <&pcc5 IMX8ULP_CLK_DSI>,
 					 <&pcc5 IMX8ULP_CLK_DSI_TX_ESC>,
-					 <&cgc2 IMX8ULP_CLK_DSI_PHY_REF>;
-				clock-names = "core", "rx_esc", "tx_esc", "phy_ref";
-				assigned-clocks = <&pcc5 IMX8ULP_CLK_DSI>;
+					 <&cgc2 IMX8ULP_CLK_DSI_PHY_REF>,
+					 <&cgc2 IMX8ULP_CLK_PLL4>,
+					 <&pcc5 IMX8ULP_CLK_DC_NANO>;
+				clock-names = "core", "rx_esc", "tx_esc", "phy_ref", "video_pll", "lcdif";
+				assigned-clocks = <&pcc5 IMX8ULP_CLK_DSI>, <&cgc2 IMX8ULP_CLK_PLL4_PFD0>;
 				assigned-clock-parents = <&cgc2 IMX8ULP_CLK_PLL4_PFD3_DIV2>;
-				assigned-clock-rates = <79200000>;
+				assigned-clock-rates = <79200000>, <316800000>;
 				interrupts = <GIC_SPI 114 IRQ_TYPE_LEVEL_HIGH>;
 				data-lanes-num = <4>;
 				mux-controls = <&mux 0>;
@@ -883,7 +901,7 @@
 				resets = <&avd_sim_rst IMX8ULP_SIM_RESET_MIPI_DSI_RST_BYTE_N>,
 					 <&avd_sim_rst IMX8ULP_SIM_RESET_MIPI_DSI_RST_DPI_N>,
 					 <&avd_sim_rst IMX8ULP_SIM_RESET_MIPI_DSI_RST_ESC_N>,
-					 <&pcc5 PCC5_DSI_SWRST>;
+					 <&reset_pcc5 PCC5_DSI_SWRST>;
 				reset-names = "byte", "dpi", "esc", "pclk";
 				status = "disabled";
 
@@ -896,9 +914,9 @@
 						#size-cells = <0>;
 						reg = <0>;
 
-						mipi_dsi_to_dcnano_dpi: endpoint@0 {
+						mipi_dsi_dcnano_in: endpoint@0 {
 							reg = <0>;
-							remote-endpoint = <&dcnano_dpi_to_mipi_dsi>;
+							remote-endpoint = <&dcnano_mipi_dsi>;
 						};
 					};
 				};
@@ -907,9 +925,25 @@
 			dphy: phy@2db00300 {
 				compatible = "fsl,imx8ulp-mipi-dphy";
 				reg = <0x2db00300 0x100>;
-				clocks = <&cgc2 IMX8ULP_CLK_DSI_PHY_REF>;
-				clock-names = "phy_ref";
+				clocks = <&cgc2 IMX8ULP_CLK_DSI_PHY_REF>,
+					<&dsim_clk 0>;
+				clock-names = "phy_ref", "result";
 				#phy-cells = <0>;
+				status = "disabled";
+			};
+
+			dsim_clk: dsim-clk {
+				#clock-cells = <1>;
+				#size-cells = <0>;
+				compatible = "generic,clk";
+				clocks = <&cgc2 IMX8ULP_CLK_DSI_PHY_REF>;
+				clock-names = "parent";
+				clock-output-names = "dsim-clk";
+				status = "okay";
+			};
+
+			mipi_dsi_bridge: mipi-dsi-bridge {
+				compatible = "fsl,imx8mq-mipi-dsi";
 				status = "disabled";
 			};
 		};
@@ -940,19 +974,12 @@
 			assigned-clock-parents = <&cgc2 IMX8ULP_CLK_PLL4_PFD0_DIV1>;
 			status = "disabled";
 
-			ports {
+			port {
 				#address-cells = <1>;
 				#size-cells = <0>;
 
-				dcnano_dpi: port@0 {
-					#address-cells = <1>;
-					#size-cells = <0>;
-					reg = <0>;
-
-					dcnano_dpi_to_mipi_dsi: endpoint@0 {
-						reg = <0>;
-						remote-endpoint = <&mipi_dsi_to_dcnano_dpi>;
-					};
+				dcnano_mipi_dsi: endpoint {
+					remote-endpoint = <&mipi_dsi_dcnano_in>;
 				};
 			};
 		};
