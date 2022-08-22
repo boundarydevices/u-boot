@@ -90,9 +90,7 @@ static void dcnano_set_mode(struct dcnano_priv *priv,
 
 	val = HSYNC_START(htotal - timing->hback_porch.typ - timing->hsync_len.typ) |
 	      HSYNC_END(htotal - timing->hback_porch.typ) | HSYNC_PULSE_ENABLE;
-	if (timing->flags & DISPLAY_FLAGS_HSYNC_HIGH)
-		val |= HSYNC_POL_POSITIVE;
-	else
+	if (timing->flags & DISPLAY_FLAGS_HSYNC_LOW)
 		val |= HSYNC_POL_NEGATIVE;
 	writel(val, (ulong)(priv->reg_base + DCNANO_HSYNC));
 
@@ -103,9 +101,7 @@ static void dcnano_set_mode(struct dcnano_priv *priv,
 
 	val = VSYNC_START(vtotal - timing->vback_porch.typ - timing->vsync_len.typ) |
 	      VSYNC_END(vtotal - timing->vback_porch.typ) | VSYNC_PULSE_ENABLE;
-	if (timing->flags & DISPLAY_FLAGS_VSYNC_HIGH)
-		val |= VSYNC_POL_POSITIVE;
-	else
+	if (timing->flags & DISPLAY_FLAGS_VSYNC_LOW)
 		val |= VSYNC_POL_NEGATIVE;
 	writel(val, (ulong)(priv->reg_base + DCNANO_VSYNC));
 
@@ -239,6 +235,10 @@ static int dcnano_video_probe(struct udevice *dev)
 		}
 #endif
 	}
+
+	/* mipi needs active low */
+	timings.flags &= ~(DISPLAY_FLAGS_HSYNC_HIGH | DISPLAY_FLAGS_VSYNC_HIGH);
+	timings.flags |= (DISPLAY_FLAGS_HSYNC_LOW | DISPLAY_FLAGS_VSYNC_LOW);
 
 	dcnano_init(dev, &timings, GDF_32BIT_X888RGB);
 
