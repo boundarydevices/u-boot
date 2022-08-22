@@ -223,4 +223,11 @@ config RESET_DISPMIX
 config RESET_IMX_HDMIMIX
 	bool
 
+config RESET_REGMAP
+	bool "Regmap based Reset Driver"
+	depends on DM_RESET
+	default n
+	help
+	  Support for generic regmap based reset controller
+
 endmenu
