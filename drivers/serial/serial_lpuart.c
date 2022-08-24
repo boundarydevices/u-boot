@@ -334,7 +334,8 @@ static int _lpuart32_serial_getc(struct lpuart_serial_plat *plat)
 
 	lpuart_read32(plat->flags, &base->stat, &stat);
 	while ((stat & STAT_RDRF) == 0) {
-		lpuart_write32(plat->flags, &base->stat, STAT_FLAGS);
+		if (stat & STAT_FLAGS)
+			lpuart_write32(plat->flags, &base->stat, STAT_FLAGS);
 		WATCHDOG_RESET();
 		lpuart_read32(plat->flags, &base->stat, &stat);
 	}
@@ -373,14 +374,14 @@ static void _lpuart32_serial_putc(struct lpuart_serial_plat *plat,
 static int _lpuart32_serial_tstc(struct lpuart_serial_plat *plat)
 {
 	struct lpuart_fsl_reg32 *base = plat->reg;
-	u32 water;
+	u32 stat;
 
-	lpuart_read32(plat->flags, &base->water, &water);
-
-	if ((water >> 24) == 0)
-		return 0;
-
-	return 1;
+	lpuart_read32(plat->flags, &base->stat, &stat);
+	if (stat & STAT_RDRF)
+		return 1;
+	if (stat & STAT_FLAGS)
+		lpuart_write32(plat->flags, &base->stat, STAT_FLAGS);
+	return 0;
 }
 
 /*
