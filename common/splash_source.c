@@ -65,6 +65,31 @@ static int splash_nand_read_raw(u32 bmp_load_addr, int offset, size_t read_size)
 }
 #endif
 
+#ifdef CONFIG_CMD_MMC
+static int splash_mmc_read_raw(u32 bmp_load_addr, struct splash_location *location,
+			       size_t read_size)
+{
+	struct disk_partition partition;
+	struct blk_desc *desc;
+	int ret, n;
+
+	ret = part_get_info_by_dev_and_name_or_num("mmc", location->devpart, &desc,
+						   &partition, 1);
+	if (ret < 0)
+		return ret;
+
+	n = blk_dread(desc, partition.start, read_size, (void *)(uintptr_t)bmp_load_addr);
+
+	return (n == read_size) ? 0 : -EINVAL;
+}
+#else
+static int splash_mmc_read_raw(u32 bmp_load_addr, int offset, size_t read_size)
+{
+	debug("%s: mmc support not available\n", __func__);
+	return -ENOSYS;
+}
+#endif
+
 static int splash_storage_read_raw(struct splash_location *location,
 			       u32 bmp_load_addr, size_t read_size)
 {
@@ -75,6 +100,8 @@ static int splash_storage_read_raw(struct splash_location *location,
 
 	offset = location->offset;
 	switch (location->storage) {
+	case SPLASH_STORAGE_MMC:
+		return splash_mmc_read_raw(bmp_load_addr, location, read_size);
 	case SPLASH_STORAGE_NAND:
 		return splash_nand_read_raw(bmp_load_addr, offset, read_size);
 	case SPLASH_STORAGE_SF:
