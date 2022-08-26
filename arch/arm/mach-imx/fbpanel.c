@@ -309,6 +309,7 @@ static const char rgb24[] = "RGB24";
 static const char rgb565[] = "RGB565";
 static const char rgb666[] = "RGB666";
 static const char yuyv16[] = "YUYV16";
+static const char str_m101nwwb[] = "m101nwwb";
 
 static char lvds_enabled;
 static const char brightness_levels_low_active[] = "<10 9 8 7 6 5 4 3 2 1 0>";
@@ -724,7 +725,8 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		mode_name[i] = 0;
 		while (i) {
 			i--;
-			if ((mode_name[i] < '0') || (mode_name[i] > '9')) {
+			if ((mode_name[i] < '0') || (mode_name[i] > '9') ||
+					(mode_name[i] == 'd')) {
 				if (mode_name[i] == '-')
 					mode_name[i] = 0;
 				break;
@@ -732,6 +734,8 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		}
 		if (di->fbflags & FBF_MODESTR)
 			mode_str = mode_name;
+		if (strcmp(mode_name, "tm070jdhg30") == 0)
+			strncpy(mode_name, str_m101nwwb, sizeof(str_m101nwwb));
 	}
 
 	if (fb == FB_LVDS)
