@@ -264,6 +264,10 @@
 	"dtbaddr=0x50000000\0" \
 	"dtboaddr=0x50C00000\0" \
 	"fdt_addr_r=0x52000000\0" \
+	"splashimage=0x60000000\0" \
+	"splashsource=mmc_raw\0" \
+	"splashdevpart=0#splashscreen\0" \
+	"splashpos=m,m\0" \
 	"fdt_size=0xC0000\0 " \
 	BOOTENV
 
