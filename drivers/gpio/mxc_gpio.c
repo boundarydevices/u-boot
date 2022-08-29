@@ -302,6 +302,7 @@ static int mxc_gpio_probe(struct udevice *dev)
 		return -ENOMEM;
 	uc_priv->bank_name = str;
 	uc_priv->gpio_count = GPIO_PER_BANK;
+	uc_priv->desired_gpio_base = banknum * 32;
 	bank->regs = plat->regs;
 
 	return 0;
