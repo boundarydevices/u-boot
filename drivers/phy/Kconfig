@@ -292,6 +292,7 @@ config PHY_MIXEL_MIPI_DPHY
 	bool "Mixel MIPI DSI PHY support"
 	depends on PHY
 	select MIPI_DPHY_HELPERS
+	select LIB_RATIONAL
 	help
 	  Enable this to add support for the Mixel DSI PHY as found
 	  on NXP's i.MX8 family of SOCs.
