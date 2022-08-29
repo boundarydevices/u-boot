@@ -114,7 +114,7 @@ int board_detect_hdmi(struct display_info_t const *di)
 
 static const struct display_info_t displays[] = {
 	VD_MIPI_G156HCE_L01(MIPI, board_detect_pca9546, fbp_bus_gp(1 | (0 << 4), GP_I2C2A_SN65DSI83_EN, 0, 0), 0x2c, FBP_MIPI_TO_LVDS),
-	VD_MIPI_M101NWWB(MIPI, NULL, fbp_bus_gp(1 | (0 << 4), GP_I2C2A_SN65DSI83_EN, 0, 0), 0x2c, FBP_MIPI_TO_LVDS, FBTS_FT5X06),
+	VD_MIPI_M101NWWB_x("m101nwwb-1", B, MIPI, NULL, fbp_bus_gp(1 | (0 << 4), GP_I2C2A_SN65DSI83_EN, 0, 0), 0x2c, FBP_MIPI_TO_LVDS, FBTS_FT5X06),
 
 	/* hdmi */
 	VD_1920_1080M_60(HDMI, board_detect_hdmi, 0, 0x50),
