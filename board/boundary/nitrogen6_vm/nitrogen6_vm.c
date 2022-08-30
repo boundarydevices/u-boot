@@ -407,6 +407,8 @@ static const struct display_info_t displays[] = {
 	VD_SHARP_LQ101K1LY04(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
 	VD_WXGA(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
 	VD_WVGA(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
+
+	VD_LTK069WXBCT02(LCD, NULL, fbp_bus_gp(2, 0, 0, 0), 0x0e, FBTS_GOODIX),
 };
 #define display_cnt	ARRAY_SIZE(displays)
 #else
