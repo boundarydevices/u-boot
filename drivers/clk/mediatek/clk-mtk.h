@@ -164,6 +164,15 @@ struct mtk_composite {
 		.flags = _flags,					\
 	}
 
+#define GATE_MTK_FLAGS(_id, _parent, _regs, _shift, _flags)	\
+	{							\
+		.id = _id,					\
+		.parent = _parent,				\
+		.regs = _regs,					\
+		.shift = _shift,				\
+		.flags = _flags,				\
+	}
+
 struct mtk_gate_regs {
 	u32 sta_ofs;
 	u32 clr_ofs;
