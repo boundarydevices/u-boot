@@ -1,0 +1,12 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# Copyright (C) 2022 BayLibre, SAS
+#
+# Author: Julien Masson <jmasson@baylibre.com>
+
+config VIDEO_MEDIATEK
+	bool "Enable Mediatek video support"
+	depends on DM_VIDEO
+	select DISPLAY
+	help
+	  Enable Mediatek video support.
