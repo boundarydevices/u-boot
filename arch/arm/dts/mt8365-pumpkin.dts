@@ -84,6 +84,14 @@
 	status = "okay";
 };
 
+&dpi0 {
+	dpi_dual_edge;
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&dpi_pin_func>;
+	pinctrl-1 = <&dpi_pin_gpio>;
+	status = "okay";
+};
+
 &i2c1 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&i2c1_pins_default>;
@@ -92,6 +100,16 @@
 };
 
 &pio {
+	dpi_pin_func: dpi_pin_func {
+		function = "dpi";
+		groups =  "dpi_enable";
+	};
+
+	dpi_pin_gpio: dpi_pin_gpio {
+		function = "dpi";
+		groups =  "dpi_sleep";
+	};
+
 	i2c1_pins_default: i2c1_pins_default {
 		function = "i2c";
 		groups = "i2c1";
