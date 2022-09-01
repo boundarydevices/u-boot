@@ -384,10 +384,18 @@ static const struct mtk_pin_desc mt8365_pins[] = {
 	MTK_PIN(144, "CONN_WF_CTRL2",  DRV_GRP4),
 };
 
+/* I2C */
+static int mt8365_i2c1_pins[] = { 59, 60, };
+static int mt8365_i2c1_funcs[] = { 1, 1, };
+
+static const char *const mt8365_i2c_groups[] = { "i2c1"};
+
 static const struct mtk_group_desc mt8365_groups[] = {
+	PINCTRL_PIN_GROUP("i2c1",	mt8365_i2c1),
 };
 
 static const struct mtk_function_desc mt8365_functions[] = {
+	{"i2c", mt8365_i2c_groups, ARRAY_SIZE(mt8365_i2c_groups)},
 };
 
 static struct mtk_pinctrl_soc mt8365_data = {
