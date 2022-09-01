@@ -97,6 +97,17 @@
 	pinctrl-0 = <&i2c1_pins_default>;
 	clock-frequency = <100000>;
 	status = "okay";
+
+	it66121hdmitx {
+		compatible = "ite,it66121";
+		reg = <0x4c>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&ite_pins_default>;
+		vcn33-supply = <&mt6357_vcn33_bt_reg>;
+		vcn18-supply = <&mt6357_vcn18_reg>;
+		vrf12-supply = <&mt6357_vrf12_reg>;
+		reset-gpios = <&gpio 69 GPIO_ACTIVE_LOW>;
+	};
 };
 
 &pio {
@@ -113,5 +124,17 @@
 	i2c1_pins_default: i2c1_pins_default {
 		function = "i2c";
 		groups = "i2c1";
+	};
+
+	ite_pins_default: ite_pins_default {
+		pins_rst_ite {
+			pinmux = <MT8365_PIN_69_CMDAT1__FUNC_GPIO69>;
+			output-high;
+		};
+
+		pins_irq_ite {
+			pinmux = <MT8365_PIN_68_CMDAT0__FUNC_GPIO68>;
+			input-enable;
+		};
 	};
 };
