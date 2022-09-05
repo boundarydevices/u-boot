@@ -71,6 +71,7 @@ static int splash_mmc_read_raw(u32 bmp_load_addr, struct splash_location *locati
 {
 	struct disk_partition partition;
 	struct blk_desc *desc;
+	lbaint_t blkcnt;
 	int ret, n;
 
 	ret = part_get_info_by_dev_and_name_or_num("mmc", location->devpart, &desc,
@@ -78,9 +79,10 @@ static int splash_mmc_read_raw(u32 bmp_load_addr, struct splash_location *locati
 	if (ret < 0)
 		return ret;
 
-	n = blk_dread(desc, partition.start, read_size, (void *)(uintptr_t)bmp_load_addr);
+	blkcnt = DIV_ROUND_UP(read_size, partition.blksz);
+	n = blk_dread(desc, partition.start, blkcnt, (void *)(uintptr_t)bmp_load_addr);
 
-	return (n == read_size) ? 0 : -EINVAL;
+	return (n == blkcnt) ? 0 : -EINVAL;
 }
 #else
 static int splash_mmc_read_raw(u32 bmp_load_addr, int offset, size_t read_size)
