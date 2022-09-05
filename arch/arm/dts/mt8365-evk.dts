@@ -1,0 +1,140 @@
+// SPDX-License-Identifier: GPL-2.0 OR MIT
+/*
+ * Copyright (C) 2022 BayLibre SAS.
+ * Author: Julien Masson <jmasson@baylibre.com>
+ */
+
+/dts-v1/;
+
+#include <config.h>
+#include "mt8365.dtsi"
+#include "mt6357.dtsi"
+
+/ {
+	model = "MediaTek MT8365 Open Platform EVK";
+	compatible = "mediatek,mt8365-evk", "mediatek,mt8365";
+
+	memory@40000000 {
+		device_type = "memory";
+		reg = <0 0x40000000 0 0x40000000>;
+	};
+
+	firmware: firmware {
+		optee {
+			compatible = "linaro,optee-tz";
+			method = "smc";
+		};
+	};
+
+	reserved-memory {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		/* 192 KiB reserved for ARM Trusted Firmware (BL31) */
+		bl31_secmon_reserved: secmon@43000000 {
+			no-map;
+			reg = <0 0x43000000 0 0x30000>;
+		};
+
+		/* 12 MiB reserved for OP-TEE (BL32)
+		 * +-----------------------+ 0x43e0_0000
+		 * |      SHMEM 2MiB       |
+		 * +-----------------------+ 0x43c0_0000
+		 * |        | TA_RAM  8MiB |
+		 * + TZDRAM +--------------+ 0x4340_0000
+		 * |        | TEE_RAM 2MiB |
+		 * +-----------------------+ 0x4320_0000
+		 */
+		optee_reserved: optee@43200000 {
+			no-map;
+			reg = <0 0x43200000 0 0x00c00000>;
+		};
+	};
+
+	chosen {
+		stdout-path = &uart0;
+	};
+};
+
+&uart0 {
+	status = "okay";
+};
+
+&mmc0 {
+	bus-width = <4>;
+	max-frequency = <200000000>;
+	cap-mmc-highspeed;
+	mmc-hs200-1_8v;
+	cap-mmc-hw-reset;
+	vmmc-supply = <&mt6357_vemc_reg>;
+	vqmmc-supply = <&mt6357_vio18_reg>;
+	non-removable;
+	status = "okay";
+};
+
+&usb {
+	status = "okay";
+};
+
+&ssusb {
+	mediatek,force-vbus;
+	maximum-speed = "high-speed";
+	dr_mode = "peripheral";
+	status = "okay";
+};
+
+&dpi0 {
+	dpi_dual_edge;
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&dpi_pin_func>;
+	pinctrl-1 = <&dpi_pin_gpio>;
+	status = "okay";
+};
+
+&i2c1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c1_pins_default>;
+	clock-frequency = <100000>;
+	status = "okay";
+
+	it66121hdmitx {
+		compatible = "ite,it66121";
+		reg = <0x4c>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&ite_pins_default>;
+		vcn33-supply = <&mt6357_vibr_reg>;
+		vcn18-supply = <&mt6357_vsim2_reg>;
+		vrf12-supply = <&mt6357_vrf12_reg>;
+		reset-gpios = <&gpio 69 GPIO_ACTIVE_LOW>;
+	};
+};
+
+&pio {
+	dpi_pin_func: dpi_pin_func {
+		function = "dpi";
+		groups =  "dpi_enable";
+	};
+
+	dpi_pin_gpio: dpi_pin_gpio {
+		function = "dpi";
+		groups =  "dpi_sleep";
+	};
+
+	i2c1_pins_default: i2c1_pins_default {
+		function = "i2c";
+		groups = "i2c1";
+	};
+
+	ite_pins_default: ite_pins_default {
+		pins_rst_ite {
+			pinmux = <MT8365_PIN_69_CMDAT1__FUNC_GPIO69>;
+			output-high;
+		};
+
+		pins_irq_ite {
+			pinmux = <MT8365_PIN_68_CMDAT0__FUNC_GPIO68>;
+			input-enable;
+		};
+	};
+};
