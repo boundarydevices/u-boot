@@ -11,13 +11,10 @@
 
 #ifdef CONFIG_TARGET_MT8183
 #include <configs/mt8183.h>
-#define SERIAL_ANDROID  "i500Pumpkin"
 #elif CONFIG_TARGET_MT8516
 #include <configs/mt8516.h>
-#define SERIAL_ANDROID "i300aPumpkin"
 #elif CONFIG_TARGET_MT8365
 #include <configs/mt8365.h>
-#define SERIAL_ANDROID "i350pumpkin"
 #endif
 
 #ifndef CONTROL_PARTITION
@@ -259,7 +256,7 @@
 	ANDROIDBOOT_GET_CURRENT_SLOT_CMD   \
 	"dtb_index=0\0" \
 	"dtbo_index=0\0" \
-	"serial#=" SERIAL_ANDROID "\0" \
+	"serial#=" CONFIG_SERIAL_ANDROID "\0" \
 	"hardware=" CONFIG_SYS_BOARD "\0" \
 	"dtbaddr=0x50000000\0" \
 	"dtboaddr=0x50C00000\0" \
