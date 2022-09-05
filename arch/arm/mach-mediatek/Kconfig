@@ -137,4 +137,10 @@ config MTK_BROM_HEADER_INFO
 	default "media=emmc" if TARGET_MT8516 || TARGET_MT8365 || TARGET_MT8183 || TARGET_MT8195
 	default "lk=1" if TARGET_MT7623
 
+config SERIAL_ANDROID
+	string "Android serial name"
+	default ""
+	help
+	  This option contains information about the serial name used by Android.
+
 endif
