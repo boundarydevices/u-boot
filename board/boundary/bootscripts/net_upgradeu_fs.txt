@@ -5,9 +5,16 @@
 setenv a_script
 
 a_script=0x1000c000
-if itest.s x6SX == "x${imx_cpu}" || itest.s x6ULL == "x${imx_cpu}" || itest.s x7D == "x${imx_cpu}"; then
+#grab 1st 2/3 characters of string
+setexpr cpu2 sub "^(..?).*" "\\1" "${imx_cpu}"
+setexpr cpu3 sub "^(..?.?).*" "\\1" "${imx_cpu}"
+if itest.s x51 == "x${cpu2}"; then
+	a_script=0x9000c000
+elif itest.s x53 == "x${cpu2}"; then
+	a_script=0x7000c000
+elif itest.s x6SX == "x${cpu3}" || itest.s x6U == "x${cpu2}" || itest.s x7D == "x${cpu2}"; then
 	a_script=0x8000c000
-elif itest.s x8MQ == "x${imx_cpu}" || itest.s x8MM == "x${imx_cpu}" || itest.s x8MMQ == "x${imx_cpu}" || itest.s x8MNano == "x${imx_cpu}"; then
+elif itest.s x8M == "x${cpu2}"; then
 	a_script=0x4000c000
 fi
 # uncomment below to force upgrade to eMMC,
