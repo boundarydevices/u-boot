@@ -497,7 +497,9 @@ enum boot_device get_boot_device(void)
 
 	return boot_dev;
 }
+#endif
 
+#if defined(CONFIG_MX7) || defined(CONFIG_IMX8M)
 bool is_usb_boot(void)
 {
 	return get_boot_device() == USB_BOOT;
