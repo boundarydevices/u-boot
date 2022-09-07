@@ -484,6 +484,11 @@ bool is_usb_boot(void)
 {
 	return get_boot_device() == USB_BOOT;
 }
+#elif defined(CONFIG_IMX8MN) || defined(CONFIG_IMX8MP)
+bool is_usb_boot(void)
+{
+	return get_boot_device() == USB_BOOT;
+}
 #elif defined(CONFIG_MX6)
 bool is_usb_boot(void)
 {
