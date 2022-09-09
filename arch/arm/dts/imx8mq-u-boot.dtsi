@@ -163,7 +163,11 @@
 
 		binman_uboot: uboot {
 			filename = "u-boot.itb";
+#if defined(CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_USE_OFFSET)
+			offset = <CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_OFFSET>;
+#else
 			offset = <0x57c00>;
+#endif
 			type = "blob-ext";
 		};
 	};
