@@ -72,6 +72,10 @@ static __maybe_unused unsigned long spl_mmc_raw_uboot_offset(int part)
 #if IS_ENABLED(CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_USE_SECTOR)
 	if (part == 0)
 		return CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_DATA_PART_OFFSET;
+#elif defined(CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_USE_OFFSET)
+	if (part == 0)
+		return CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SPL_OFFSET_PART0 / 512;
+	return CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SPL_OFFSET_PART1 / 512;
 #endif
 
 	return 0;
@@ -387,6 +391,7 @@ int spl_mmc_load(struct spl_image_info *spl_image,
 	int err = 0;
 	__maybe_unused int part = 0;
 
+	debug("%s: raw_sect=0x%lx\n", __func__, raw_sect);
 	/* Perform peripheral init only once */
 	if (!mmc) {
 		err = spl_mmc_find_device(&mmc, bootdev->boot_device);
@@ -439,7 +444,7 @@ int spl_mmc_load(struct spl_image_info *spl_image,
 		if (!err)
 			return err;
 #endif
-#ifdef CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_USE_SECTOR
+#if defined(CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_USE_SECTOR) || defined(CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_USE_OFFSET)
 		err = mmc_load_image_raw_sector(spl_image, bootdev, mmc,
 				raw_sect + spl_mmc_raw_uboot_offset(part));
 		if (!err)
@@ -478,10 +483,13 @@ int spl_mmc_load_image(struct spl_image_info *spl_image,
 			    0,
 #endif
 #ifdef CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR
-			    CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR);
+			    CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR
+#elif defined(CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_OFFSET)
+			    CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_OFFSET / 512
 #else
-			    0);
+			    0
 #endif
+			    );
 }
 
 SPL_LOAD_IMAGE_METHOD("MMC1", 0, BOOT_DEVICE_MMC1, spl_mmc_load_image);

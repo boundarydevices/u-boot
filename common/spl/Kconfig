@@ -366,6 +366,33 @@ config SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR
 	  Address on the MMC to load U-Boot from, when the MMC is being used
 	  in raw mode. Units: MMC sectors (1 sector = 512 bytes).
 
+config SYS_MMCSD_RAW_MODE_U_BOOT_USE_OFFSET
+	bool "MMC raw mode: by byte"
+	default n if SYS_MMCSD_RAW_MODE_U_BOOT_USE_SECTOR
+	default y if ARCH_IMX8M
+
+config SYS_MMCSD_RAW_MODE_U_BOOT_SPL_OFFSET_PART0
+	hex
+	depends on SYS_MMCSD_RAW_MODE_U_BOOT_USE_OFFSET
+	default 0x8400 if IMX8MM || IMX8MQ
+	default 0x8000 if ARCH_IMX8M
+	default 0x0
+
+config SYS_MMCSD_RAW_MODE_U_BOOT_SPL_OFFSET_PART1
+	hex
+	depends on SYS_MMCSD_RAW_MODE_U_BOOT_USE_OFFSET
+	default 0x8400 if IMX8MM || IMX8MQ
+	default 0x0
+
+config SYS_MMCSD_RAW_MODE_U_BOOT_OFFSET
+	hex "Byte offset from spl U-Boot to main U-boot load address"
+	depends on SYS_MMCSD_RAW_MODE_U_BOOT_USE_OFFSET
+	default 0x58000 if ARCH_IMX8M
+	help
+	  Byte offset from SYS_MMCSD_RAW_MODE_U_BOOT_SPL_OFFSET_PART0/1 to the
+	  main U-boot load address. This allows the same u-boot to be loaded on
+	  the user partition or hw partition of eMMC.
+
 config SYS_MMCSD_RAW_MODE_U_BOOT_DATA_PART_OFFSET
 	hex "U-Boot main hardware partition image offset"
 	depends on SYS_MMCSD_RAW_MODE_U_BOOT_USE_SECTOR

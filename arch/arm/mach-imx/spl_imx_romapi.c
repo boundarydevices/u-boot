@@ -40,10 +40,16 @@ ulong __weak spl_romapi_get_uboot_base(u32 image_offset, u32 rom_bt_dev)
 {
 	u32 offset;
 
+#ifdef CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR
 	if (((rom_bt_dev >> 16) & 0xff) ==  BT_DEV_TYPE_FLEXSPINOR)
 		offset = CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR * 512;
 	else
 		offset = image_offset + CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR * 512 - 0x8000;
+#elif defined(CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_OFFSET)
+	offset = image_offset + CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_OFFSET;
+#else
+	offset = image_offset;
+#endif
 
 	return offset;
 }
