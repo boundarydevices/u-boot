@@ -186,6 +186,9 @@
 
 		uboot: blob-ext@2 {
 			filename = "u-boot.itb";
+#if defined(CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_USE_OFFSET)
+			offset = <CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_OFFSET>;
+#else
 			/* imx8mm's offset is 0x57c00 because its programming starts at 0x8400, even for hw partition */
 #ifdef CONFIG_SPL_BOOTROM_SUPPORT
 			offset = <0x58000>;	/* Bootrom handles the changing offset */
@@ -198,6 +201,7 @@
 #endif
 #else
 #error Offset needs modified,  CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR * 0x200 - start offset
+#endif
 #endif
 #endif
 		};
