@@ -158,6 +158,9 @@ static const struct display_info_t displays[] = {
 
 	VD_DMT050WVNXCMI(MIPI, fbp_detect_i2c, fbp_bus_gp(3, GP_SC18IS602B_RESET, 0, 30), fbp_addr_gp(0x2f, 0, 6, 0), FBP_SPI_LCD, FBTS_GOODIX),
 	VD_LTK080A60A004T(MIPI, board_detect_gt911, fbp_bus_gp(3, GP_LTK08_MIPI_EN, GP_LTK08_MIPI_EN, 0), 0x5d, FBTS_GOODIX),	/* Goodix touchscreen */
+
+	VD_MIPI_CS005_0004_03(MIPI, fbp_detect_i2c, fbp_bus_gp(3, GP_TS_ATMEL_RESET, GP_CS005_0004_03_DISPLAY_EN, 0), fbp_addr_gp(0x4a, GP_CS005_0004_03_BKL_EN, 0, 0), FBTS_ATMEL_MT),
+
 	VD_LCM_JM430_MINI(MIPI, fbp_detect_i2c, fbp_bus_gp(3, GP_ST1633_RESET, GP_TC358762_EN, 30), fbp_addr_gp(0x55, 0, 0, 0), FBTS_ST1633I),		/* Sitronix touch */
 
 	VD_LTK0680YTMDB(MIPI, NULL, fbp_bus_gp(3, GP_MIPI_RESET, GP_MIPI_RESET, 0), 0x5d, FBTS_GOODIX),
@@ -181,8 +184,6 @@ static const struct display_info_t displays[] = {
 
 	VD_MIPI_VTFT101RPFT20(MIPI, fbp_detect_i2c, 3, 0x70, FBP_PCA9540),
 	VD_DMT055FHNMCMI(MIPI, board_detect_gt911, fbp_bus_gp(1, 0, GP_DMT055FHNMCMI_EN, 0), fbp_addr_gp(0x5d, 0, 0, 0), FBTS_GOODIX2),
-
-	VD_MIPI_CS005_0004_03(MIPI, fbp_detect_i2c, fbp_bus_gp(3, GP_TS_ATMEL_RESET, GP_CS005_0004_03_DISPLAY_EN, 0), fbp_addr_gp(0x4a, GP_CS005_0004_03_BKL_EN, 0, 0), FBTS_ATMEL_MT),
 };
 #define display_cnt	ARRAY_SIZE(displays)
 #else
