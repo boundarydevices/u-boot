@@ -130,8 +130,24 @@ static ulong imx8m_clk_composite_divider_set_rate(struct clk *clk,
 	return clk_get_rate(&composite->clk);
 }
 
+static ulong imx8m_clk_composite_divider_round_rate(struct clk *clk, ulong rate)
+{
+	struct clk_composite *composite = (struct clk_composite *)clk->data;
+	ulong parent_rate = clk_get_parent_rate(&composite->clk);
+	int prediv_value;
+	int div_value;
+	int ret;
+
+	ret = imx8m_clk_composite_compute_dividers(rate, parent_rate,
+						   &prediv_value, &div_value);
+	div_value *= prediv_value;
+	parent_rate += (div_value >> 1);
+	return parent_rate /= div_value;
+}
+
 static const struct clk_ops imx8m_clk_composite_divider_ops = {
 	.get_rate = imx8m_clk_composite_divider_recalc_rate,
+	.round_rate = imx8m_clk_composite_divider_round_rate,
 	.set_rate = imx8m_clk_composite_divider_set_rate,
 };
 
