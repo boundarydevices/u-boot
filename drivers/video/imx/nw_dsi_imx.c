@@ -123,7 +123,7 @@ static int nw_dsi_imx_remove(struct udevice *dev)
 
 	ret = dsi_host_disable(priv->dsi_host);
 	if (ret) {
-		dev_err(dev, "failed to enable mipi dsi host\n");
+		dev_err(dev, "failed to disable mipi dsi host\n");
 		return ret;
 	}
 
