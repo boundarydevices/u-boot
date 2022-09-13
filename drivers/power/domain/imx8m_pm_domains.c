@@ -78,13 +78,13 @@ static int imx8m_pm_domain_on(struct power_domain *power_domain)
 	return 0;
 }
 
-static int imx8m_pm_domain_off(struct power_domain *power_domain)
+static int _imx8m_pm_domain_off(struct udevice *dev)
 {
-	struct udevice *dev = power_domain->dev;
 	struct imx8m_pm_domain_platdata *pd = dev_get_plat(dev);
 	struct arm_smccc_res res;
 	int index, ret = 0;
 
+	debug("%s: %d cnt=%d\n", __func__, pd->domain_index, pd->enable_count);
 	if (--pd->enable_count)
 		return 0;
 	debug("%s: %d\n", __func__, pd->domain_index);
@@ -110,6 +110,11 @@ static int imx8m_pm_domain_off(struct power_domain *power_domain)
 	return ret;
 };
 
+static int imx8m_pm_domain_off(struct power_domain *power_domain)
+{
+	return _imx8m_pm_domain_off(power_domain->dev);
+}
+
 static int imx8m_pm_domain_of_xlate(struct power_domain *power_domain,
 				      struct ofnode_phandle_args *args)
 {
@@ -131,6 +136,17 @@ static int imx8m_pd_get_clocks(struct imx8m_pm_domain_platdata *pd, struct udevi
 		}
 	}
 	pd->num_clks = i;
+	return 0;
+}
+
+static int imx8m_pm_domain_remove(struct udevice *dev)
+{
+	struct imx8m_pm_domain_platdata *pd = dev_get_plat(dev);
+
+	if (pd->enable_count) {
+		pd->enable_count = 1;
+		_imx8m_pm_domain_off(dev);
+	}
 	return 0;
 }
 
@@ -211,6 +227,7 @@ U_BOOT_DRIVER(imx8m_pm_domain) = {
 	.id = UCLASS_POWER_DOMAIN,
 	.of_match = imx8m_pm_domain_ids,
 	.probe = imx8m_pm_domain_probe,
+	.remove = imx8m_pm_domain_remove,
 	.of_to_plat = imx8m_pm_domain_ofdata_to_platdata,
 	.plat_auto = sizeof(struct imx8m_pm_domain_platdata),
 	.ops = &imx8m_pm_domain_ops,
