@@ -1175,10 +1175,10 @@ void fbp_setup_env_cmds(void);
 /* ft5x06 touch screen */
 /* Tianma panel TM070JDHG30 is a 24 bit spwg panel */
 /*		freq		hbp		hfp		hs		hb		vbp		vfp		vs		vb
- * TM070JDHG30	62.6:68.2:78.1	5		15:64:159	1		21:70:165	2:2:101-vfp	3:40:99		1:1:128		6:43:229
+ * TM070JDHG30	62.6:68.2:78.1	5		15:64:159	2:256		21:70:165	2:2:101-vfp	3:40:99		1:1:128		6:43:229
  * M101GWWF	70.0:72.4:76.6							130:160:190							28:38:68
  * M101NWWB	68.9:71.1:73.4							60:160:190							15:23:33
- * common	70.0:71.7:73.4	5		154		1		130:160:165	2		28		1		28:31:33
+ * common	70.0:71.7:73.4	5		151		4		130:160:165	2		28		1		28:31:33
  */
 #define VDF_TM070JDHG30(_mode, _name, _fmt, _flags, args...) \
 {\
@@ -1191,10 +1191,10 @@ void fbp_setup_env_cmds(void);
 		.yres           = 800,\
 		.pixclock       = 1000000000000ULL/71700000,\
 		.left_margin    = 5,\
-		.right_margin   = 154,\
+		.right_margin   = 151,\
 		.upper_margin   = 2,\
 		.lower_margin   = 28,\
-		.hsync_len      = 1,\
+		.hsync_len      = 4,\
 		.vsync_len      = 1,\
 		.sync           = FB_SYNC_EXT,\
 		.vmode          = FB_VMODE_NONINTERLACED\
