@@ -1087,6 +1087,15 @@ void dwc3_of_parse(struct dwc3 *dwc)
 		dwc->incrx_mode = INCRX_UNDEF_LENGTH_BURST_MODE;
 		dwc->incrx_size = max(dwc->incrx_size, val);
 	}
+#ifdef CONFIG_DM_GPIO
+	gpio_request_by_name(dev, "reset-gpios", 0, &dwc->reset_gpio,
+			GPIOD_IS_OUT | GPIOD_IS_OUT_ACTIVE);
+	if (dm_gpio_is_valid(&dwc->reset_gpio)) {
+		udelay(500);
+		/* release reset */
+		dm_gpio_set_value(&dwc->reset_gpio, 0);
+	}
+#endif
 }
 
 int dwc3_init(struct dwc3 *dwc)

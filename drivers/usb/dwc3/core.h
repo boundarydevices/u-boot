@@ -17,6 +17,7 @@
 #ifndef __DRIVERS_USB_DWC3_CORE_H
 #define __DRIVERS_USB_DWC3_CORE_H
 
+#include <asm-generic/gpio.h>
 #include <linux/bitops.h>
 #include <linux/ioport.h>
 
@@ -758,6 +759,9 @@ struct dwc3 {
 	struct udevice		*dev;
 #else
 	struct device		*dev;
+#endif
+#ifdef CONFIG_DM_GPIO
+	struct gpio_desc	reset_gpio;
 #endif
 
 	struct platform_device	*xhci;
