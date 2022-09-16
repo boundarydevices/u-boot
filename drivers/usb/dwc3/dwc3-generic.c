@@ -19,6 +19,7 @@
 #include <linux/delay.h>
 #include <linux/usb/ch9.h>
 #include <linux/usb/gadget.h>
+#include <power/regulator.h>
 #include <malloc.h>
 #include <usb.h>
 #include "core.h"
@@ -38,6 +39,9 @@ struct dwc3_generic_plat {
 	fdt_addr_t base;
 	u32 maximum_speed;
 	enum usb_dr_mode dr_mode;
+#if CONFIG_IS_ENABLED(DM_REGULATOR)
+	struct udevice		*vbus_supply;
+#endif
 };
 
 struct dwc3_generic_priv {
@@ -140,6 +144,9 @@ static int dwc3_generic_of_to_plat(struct udevice *dev)
 {
 	struct dwc3_generic_plat *plat = dev_get_plat(dev);
 	ofnode node = dev_ofnode(dev);
+#if CONFIG_IS_ENABLED(DM_REGULATOR)
+	int ret;
+#endif
 
 	if (!strncmp(dev->name, "port", 4) || !strncmp(dev->name, "hub", 3)) {
 		/* This is a leaf so check the parent */
@@ -154,7 +161,8 @@ static int dwc3_generic_of_to_plat(struct udevice *dev)
 		plat->maximum_speed = USB_SPEED_SUPER;
 	}
 
-	plat->dr_mode = usb_get_dr_mode(node);
+	if (plat->dr_mode == USB_DR_MODE_UNKNOWN)
+		plat->dr_mode = usb_get_dr_mode(node);
 	if (plat->dr_mode == USB_DR_MODE_UNKNOWN) {
 		/* might be a leaf so check the parent for mode */
 		node = dev_ofnode(dev->parent);
@@ -164,6 +172,14 @@ static int dwc3_generic_of_to_plat(struct udevice *dev)
 			return -ENODEV;
 		}
 	}
+#if CONFIG_IS_ENABLED(DM_REGULATOR)
+	ret = device_get_supply_regulator(dev, "vbus-supply",
+					  &plat->vbus_supply);
+	if (ret && ret != -ENOENT) {
+		pr_err("Failed to get PHY regulator\n");
+		return ret;
+	}
+#endif
 
 	return 0;
 }
@@ -181,8 +197,13 @@ static int dwc3_generic_peripheral_handle_interrupts(struct udevice *dev)
 
 static int dwc3_generic_peripheral_probe(struct udevice *dev)
 {
+	struct dwc3_generic_plat *plat = dev_get_plat(dev);
 	struct dwc3_generic_priv *priv = dev_get_priv(dev);
 
+#if CONFIG_IS_ENABLED(DM_REGULATOR)
+	if (plat->vbus_supply)
+		regulator_set_enable(plat->vbus_supply, false);
+#endif
 	return dwc3_generic_probe(dev, priv);
 }
 
@@ -211,6 +232,7 @@ static int dwc3_generic_host_probe(struct udevice *dev)
 {
 	struct xhci_hcor *hcor;
 	struct xhci_hccr *hccr;
+	struct dwc3_generic_plat *plat = dev_get_plat(dev);
 	struct dwc3_generic_host_priv *priv = dev_get_priv(dev);
 	int rc;
 
@@ -222,7 +244,13 @@ static int dwc3_generic_host_probe(struct udevice *dev)
 	hcor = (struct xhci_hcor *)(priv->gen_priv.base +
 			HC_LENGTH(xhci_readl(&(hccr)->cr_capbase)));
 
-	return xhci_register(dev, hccr, hcor);
+	rc = xhci_register(dev, hccr, hcor);
+#if CONFIG_IS_ENABLED(DM_REGULATOR)
+	if (plat->vbus_supply) {
+		regulator_set_enable(plat->vbus_supply, true);
+	}
+#endif
+	return rc;
 }
 
 static int dwc3_generic_host_remove(struct udevice *dev)
@@ -253,6 +281,7 @@ U_BOOT_DRIVER(dwc3_generic_host) = {
 struct dwc3_glue_ops {
 	void (*glue_configure)(struct udevice *dev, int index,
 			       enum usb_dr_mode mode);
+	enum usb_dr_mode (*get_dr_mode)(struct udevice *dev);
 };
 
 void dwc3_imx8mp_glue_configure(struct udevice *dev, int index,
@@ -261,6 +290,7 @@ void dwc3_imx8mp_glue_configure(struct udevice *dev, int index,
 /* USB glue registers */
 #define USB_CTRL0		0x00
 #define USB_CTRL1		0x04
+#define PHY_CTRL2		0x48
 
 #define USB_CTRL0_PORTPWR_EN	BIT(12) /* 1 - PPC enabled (default) */
 #define USB_CTRL0_USB3_FIXED	BIT(22) /* 1 - USB3 permanent attached */
@@ -268,6 +298,9 @@ void dwc3_imx8mp_glue_configure(struct udevice *dev, int index,
 
 #define USB_CTRL1_OC_POLARITY	BIT(16) /* 0 - HIGH / 1 - LOW */
 #define USB_CTRL1_PWR_POLARITY	BIT(17) /* 0 - HIGH / 1 - LOW */
+
+#define PHY_CTRL2_ID_PULLUP	BIT(14)
+
 	fdt_addr_t regs = dev_read_addr_index(dev, 1);
 	void *base = map_physmem(regs, 0x8, MAP_NOCACHE);
 	u32 value;
@@ -302,8 +335,34 @@ void dwc3_imx8mp_glue_configure(struct udevice *dev, int index,
 	unmap_physmem(base, MAP_NOCACHE);
 }
 
+enum usb_dr_mode dwc3_imx8mp_get_dr_mode(struct udevice *dev)
+{
+	fdt_addr_t regs0 = dev_read_addr_index(dev, 0);
+	fdt_addr_t regs1 = dev_read_addr_index(dev, 1);
+	void *base0 = map_physmem(regs0, 0x8, MAP_NOCACHE);
+	void *base1 = map_physmem(regs1, 0x20, MAP_NOCACHE);
+	u32 ctrl2, status;
+
+#define USB_WAKEUP_STATUS		0x04
+#define USB_WAKEUP_STATUS_IDDIG0	BIT(6)
+
+	ctrl2 = readl(base1 + PHY_CTRL2);
+	writel(ctrl2 | PHY_CTRL2_ID_PULLUP, base1 + PHY_CTRL2);
+	udelay(1);
+
+	status = readl(base0 + USB_WAKEUP_STATUS);
+	writel(ctrl2, base1 + PHY_CTRL2);	/* Restore value */
+	if (status & USB_WAKEUP_STATUS_IDDIG0) {
+		debug("%s: peripheral\n", __func__);
+		return USB_DR_MODE_PERIPHERAL;
+	}
+	debug("%s: host\n", __func__);
+	return USB_DR_MODE_HOST;
+}
+
 struct dwc3_glue_ops imx8mp_ops = {
 	.glue_configure = dwc3_imx8mp_glue_configure,
+	.get_dr_mode = dwc3_imx8mp_get_dr_mode,
 };
 
 void dwc3_ti_glue_configure(struct udevice *dev, int index,
@@ -392,6 +451,7 @@ struct dwc3_glue_ops ti_ops = {
 
 static int dwc3_glue_bind(struct udevice *parent)
 {
+	struct dwc3_glue_ops *ops = (struct dwc3_glue_ops *)dev_get_driver_data(parent);
 	ofnode node;
 	int ret;
 	enum usb_dr_mode dr_mode;
@@ -401,6 +461,7 @@ static int dwc3_glue_bind(struct udevice *parent)
 	ofnode_for_each_subnode(node, dev_ofnode(parent)) {
 		const char *name = ofnode_get_name(node);
 		struct udevice *dev;
+		struct dwc3_generic_plat *plat;
 		const char *driver = NULL;
 
 		debug("%s: subnode name: %s\n", __func__, name);
@@ -410,8 +471,13 @@ static int dwc3_glue_bind(struct udevice *parent)
 			dr_mode = usb_get_dr_mode(node);
 
 		switch (dr_mode) {
-		case USB_DR_MODE_PERIPHERAL:
 		case USB_DR_MODE_OTG:
+			if (ops && ops->get_dr_mode) {
+				dr_mode = ops->get_dr_mode(parent);
+				if (dr_mode == USB_DR_MODE_HOST)
+					goto host;
+			}
+		case USB_DR_MODE_PERIPHERAL:
 #if CONFIG_IS_ENABLED(DM_USB_GADGET)
 			debug("%s: dr_mode: OTG or Peripheral\n", __func__);
 			driver = "dwc3-generic-peripheral";
@@ -419,6 +485,7 @@ static int dwc3_glue_bind(struct udevice *parent)
 			break;
 #if defined(CONFIG_SPL_USB_HOST) || !defined(CONFIG_SPL_BUILD)
 		case USB_DR_MODE_HOST:
+host:
 			debug("%s: dr_mode: HOST\n", __func__);
 			driver = "dwc3-generic-host";
 			break;
@@ -438,6 +505,8 @@ static int dwc3_glue_bind(struct udevice *parent)
 			      __func__);
 			return ret;
 		}
+		plat = dev_get_plat(dev);
+		plat->dr_mode = dr_mode;
 	}
 
 	return 0;
