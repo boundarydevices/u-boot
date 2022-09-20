@@ -107,7 +107,7 @@
 					sizeof(CONFIG_SYS_PROMPT) + 16)
 
 /* USDHC */
-#define CONFIG_SYS_FSL_USDHC_NUM	2
+#define CONFIG_SYS_FSL_USDHC_NUM	1
 #define CONFIG_SYS_FSL_ESDHC_ADDR       0
 
 #ifndef CONFIG_DM_I2C
@@ -143,7 +143,7 @@
 #endif
 
 #ifdef CONFIG_CMD_MMC
-#define DISTRO_BOOT_DEV_MMC(func) func(MMC, mmc, 1) func(MMC, mmc, 0)
+#define DISTRO_BOOT_DEV_MMC(func) func(MMC, mmc, 0)
 #else
 #define DISTRO_BOOT_DEV_MMC(func)
 #endif
