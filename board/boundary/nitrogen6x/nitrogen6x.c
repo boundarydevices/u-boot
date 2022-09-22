@@ -76,6 +76,10 @@ DECLARE_GLOBAL_DATA_PTR;
 /* Prevent compiler error if gpio number 08 or 09 is used */
 #define not_octal(gp) ((((0x##gp >> 4) & 0xf) * 10) + ((0x##gp & 0xf)))
 
+#undef IOMUX_PAD_CTRL
+#undef _I2C_PADS_INFO_CPU
+#undef I2C_PADS_INFO_CPU
+#undef I2C_PADS_INFO_ENTRY
 #define _I2C_PADS_INFO_CPU(cpu, i2cnum, scl_pad, scl_bank, scl_gp,	       \
 		sda_pad, sda_bank, sda_gp, pad_ctrl, join_io) {		       \
 	.scl = {							       \
