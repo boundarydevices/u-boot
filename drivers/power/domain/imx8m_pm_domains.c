@@ -143,7 +143,8 @@ static int imx8m_pm_domain_remove(struct udevice *dev)
 {
 	struct imx8m_pm_domain_platdata *pd = dev_get_plat(dev);
 
-	if (pd->enable_count) {
+	/* mediamix_pd does not like to turn off when only lvds panel is used */
+	if (pd->enable_count && (pd->domain_index != 13)) {
 		pd->enable_count = 1;
 		_imx8m_pm_domain_off(dev);
 	}
