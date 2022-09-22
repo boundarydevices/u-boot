@@ -107,9 +107,11 @@ int board_early_init_f(void)
 	gpio_request(GP_SN65DSI83_EN, "sn65en");
 	gpio_request(GP_B_MODEM_COEX1, "modem_coex1");
 	gpio_request(GP_B_MODEM_COEX2, "modem_coex2");
+	gpio_request(GP_PCIE0_RESET, "pcie0_reset");
 	gpio_direction_output(GP_SN65DSI83_EN, 0);
 	gpio_direction_output(GP_B_MODEM_COEX1, 0);
 	gpio_direction_output(GP_B_MODEM_COEX2, 0);
+	gpio_direction_output(GP_PCIE0_RESET,0);
 	imx_iomux_v3_setup_multiple_pads(init_pads, ARRAY_SIZE(init_pads));
 
 	gpio_direction_output(GP_USB_RESET, 1);
