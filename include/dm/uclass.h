@@ -231,6 +231,7 @@ int uclass_get_device_by_name(enum uclass_id id, const char *name,
  * Return: 0 if OK, -ve on error
  */
 int uclass_get_device_by_seq(enum uclass_id id, int seq, struct udevice **devp);
+int uclass_get_next_device_by_seq(enum uclass_id id, int seq, struct udevice **devp);
 
 /**
  * uclass_get_device_by_of_offset() - Get a uclass device by device tree node

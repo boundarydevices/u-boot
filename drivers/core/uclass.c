@@ -347,6 +347,38 @@ int uclass_find_device_by_seq(enum uclass_id id, int seq, struct udevice **devp)
 	return -ENODEV;
 }
 
+int uclass_get_next_device_by_seq(enum uclass_id id, int seq, struct udevice **devp)
+{
+	struct uclass *uc;
+	struct udevice *dev;
+	unsigned next = seq;
+	int ret;
+
+	*devp = NULL;
+	ret = uclass_get(id, &uc);
+	if (ret)
+		return ret;
+
+	while (next != 0xffffffff) {
+		seq = next;
+		next = 0xffffffff;
+		uclass_foreach_dev(dev, uc) {
+			log_debug("   - %d '%s'\n", dev->seq_, dev->name);
+			if (dev->seq_ == seq) {
+				log_debug("   - found\n");
+				ret = uclass_get_device_tail(dev, 0, devp);
+				if (!ret)
+					return 0;
+			}
+			if ((unsigned)seq < (unsigned)dev->seq_)
+				if (next > (unsigned)dev->seq_)
+					next = dev->seq_;
+		}
+	}
+	log_debug("   - not found\n");
+	return -ENODEV;
+}
+
 int uclass_find_device_by_of_offset(enum uclass_id id, int node,
 				    struct udevice **devp)
 {
