@@ -1450,7 +1450,7 @@ static int fecmxc_probe(struct udevice *dev)
 {
 	struct eth_pdata *pdata = dev_get_platdata(dev);
 	struct fec_priv *priv = dev_get_priv(dev);
-	struct mii_dev *bus = NULL;
+	struct mii_dev *bus = pdata->priv_pdata;
 	uint32_t start;
 	int ret;
 
@@ -1551,7 +1551,8 @@ static int fecmxc_probe(struct udevice *dev)
 	priv->dev_id = dev->seq;
 
 #ifdef CONFIG_DM_ETH_PHY
-	bus = eth_phy_get_mdio_bus(dev);
+	if (!bus)
+		bus = eth_phy_get_mdio_bus(dev);
 #endif
 
 	if (!bus) {
@@ -1560,6 +1561,8 @@ static int fecmxc_probe(struct udevice *dev)
 #else
 		bus = fec_get_miibus((ulong)priv->eth, dev->seq);
 #endif
+	} else {
+		fec_mii_setspeed(bus->priv);
 	}
 	if (!bus) {
 		ret = -ENOMEM;
@@ -1570,7 +1573,7 @@ static int fecmxc_probe(struct udevice *dev)
 	eth_phy_set_mdio_bus(dev, bus);
 #endif
 
-	priv->bus = bus;
+	pdata->priv_pdata = priv->bus = bus;
 	priv->interface = pdata->phy_interface;
 	switch (priv->interface) {
 	case PHY_INTERFACE_MODE_MII:
@@ -1602,6 +1605,7 @@ err_phy:
 #if 0
 	mdio_unregister(bus);
 	free(bus);
+	pdata->priv_pdata = priv->bus = NULL;
 #endif
 err_mii:
 err_timeout:
@@ -1612,11 +1616,13 @@ err_timeout:
 static int fecmxc_remove(struct udevice *dev)
 {
 	struct fec_priv *priv = dev_get_priv(dev);
+	struct eth_pdata *pdata = dev_get_platdata(dev);
 
 	free(priv->phydev);
 	fec_free_descs(priv);
 	mdio_unregister(priv->bus);
 	mdio_free(priv->bus);
+	pdata->priv_pdata = priv->bus = NULL;
 
 #ifdef CONFIG_DM_REGULATOR
 	if (priv->phy_supply)
