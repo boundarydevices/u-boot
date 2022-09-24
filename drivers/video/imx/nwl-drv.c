@@ -123,6 +123,8 @@ static u32 get_pixclock(struct nwl_dsi *dsi, unsigned long pixclock)
 {
 	u32 video_pll;
 	int ret;
+	unsigned long pix = -EINVAL;
+	u32 n;
 
 	video_pll = pixclock;
 	/* Video pll must be from 500MHz to 2000 MHz */
@@ -146,7 +148,6 @@ static u32 get_pixclock(struct nwl_dsi *dsi, unsigned long pixclock)
 		debug("rate is %d\n", video_pll);
 	}
 	if (dsi->lcdif_clk) {
-		unsigned long pix;
 		struct clk *cp;
 
 		cp = clk_get_parent(dsi->lcdif_clk);
@@ -154,14 +155,18 @@ static u32 get_pixclock(struct nwl_dsi *dsi, unsigned long pixclock)
 			ret = clk_set_rate(cp, pixclock);
 		}
 		pix = clk_round_rate(dsi->lcdif_clk, pixclock);
-		debug("%s: %s: desired=%ld, got=%ld\n", __func__, dsi->lcdif_clk->dev->name, pixclock, pix);
-		pixclock = pix;
-	} else {
-		u32 n = (video_pll + (pixclock >> 1)) / pixclock;
-		pixclock = video_pll / n;
+		if (IS_ERR_VALUE(pix)) {
+			clk_set_rate(dsi->lcdif_clk, pixclock);
+			pix = clk_get_rate(dsi->lcdif_clk);
+		}
 	}
-	dsi->pixclock = pixclock;
-	return pixclock;
+	if (IS_ERR_VALUE(pix)) {
+		n = (video_pll + (pixclock >> 1)) / pixclock;
+		pix = video_pll / n;
+	}
+	dsi->pixclock = pix;
+	debug("%s: %s: desired=%ld, got=%ld\n", __func__, dsi->lcdif_clk->dev->name, pixclock, pix);
+	return pix;
 }
 
 /*
