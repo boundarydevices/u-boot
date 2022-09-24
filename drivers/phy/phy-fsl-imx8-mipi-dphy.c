@@ -125,8 +125,11 @@ static int mixel_dphy_config_from_opts(struct phy *phy,
 
 	bit_clk = dphy_opts->hs_clk_rate;
 	if (bit_clk > DATA_RATE_MAX_SPEED ||
-	    bit_clk < DATA_RATE_MIN_SPEED)
+	    bit_clk < DATA_RATE_MIN_SPEED) {
+		debug("%s: %ld out of range %d - %d\n",
+			__func__, bit_clk, DATA_RATE_MIN_SPEED, DATA_RATE_MAX_SPEED);
 		return -EINVAL;
+	}
 
 	/* CM ranges between 16 and 255 */
 	/* CN ranges between 1 and 32 */
