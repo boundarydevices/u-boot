@@ -127,6 +127,12 @@ int devm_mux_chip_register(struct udevice *dev,
 	return res;
 }
 
+/**
+ * mux_control_states() - Query the number of multiplexer states.
+ * @mux: The mux-control to query.
+ *
+ * Return: The number of multiplexer states.
+ */
 unsigned int mux_control_states(struct mux_control *mux)
 {
 	return mux->states;
@@ -193,6 +199,30 @@ int mux_control_select(struct mux_control *mux, unsigned int state)
 	mux->in_use = true;
 
 	return 0;
+}
+
+/**
+ * mux_control_try_select() - Try to select the given multiplexer state.
+ * @mux: The mux-control to request a change of state from.
+ * @state: The new requested state.
+ *
+ * On successfully selecting the mux-control state, it will be locked until
+ * mux_control_deselect() called.
+ *
+ * Therefore, make sure to call mux_control_deselect() when the operation is
+ * complete and the mux-control is free for others to use, but do not call
+ * mux_control_deselect() if mux_control_try_select() fails.
+ *
+ * Return: 0 when the mux-control state has the requested state or a negative
+ * errno on error. Specifically -EBUSY if the mux-control is contended.
+ */
+int mux_control_try_select(struct mux_control *mux, unsigned int state)
+{
+	int ret;
+
+	ret = __mux_control_select(mux, state);
+
+	return ret;
 }
 
 /**
@@ -315,7 +345,8 @@ int mux_control_get(struct udevice *dev, const char *name,
 	debug("%s(dev=%p, name=%s, mux=%p)\n", __func__, dev, name, mux);
 
 	if (name) {
-		index = dev_read_stringlist_search(dev, "mux-control-names", name);
+		index = dev_read_stringlist_search(dev, "mux-control-names",
+						   name);
 		if (index < 0) {
 			debug("fdt_stringlist_search() failed: %d %s\n", index, dev->name);
 			return index;
@@ -435,5 +466,5 @@ UCLASS_DRIVER(mux) = {
 	.id		= UCLASS_MUX,
 	.name		= "mux",
 	.post_probe	= mux_uclass_post_probe,
-	.per_device_auto	= sizeof(struct mux_chip),
+	.per_device_auto = sizeof(struct mux_chip),
 };
