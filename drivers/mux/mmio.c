@@ -43,14 +43,14 @@ static int mmio_mux_probe(struct udevice *dev)
 {
 	struct regmap_field **fields;
 	struct mux_chip *mux_chip = dev_get_uclass_priv(dev);
-	struct regmap *regmap;
-	u32 *mux_reg_masks;
-	u32 *idle_states;
+	struct regmap *regmap = NULL;
 	int num_fields;
 	int ret;
 	int i;
 
-	regmap = syscon_node_to_regmap(dev_ofnode(dev->parent));
+	if (device_is_compatible(dev, "mmio-mux"))
+		regmap = syscon_node_to_regmap(dev_ofnode(dev->parent));
+
 	if (IS_ERR(regmap)) {
 		ret = PTR_ERR(regmap);
 		dev_err(dev, "failed to get regmap: %d\n", ret);
@@ -63,7 +63,7 @@ static int mmio_mux_probe(struct udevice *dev)
 
 	num_fields /= sizeof(u32);
 	if (num_fields == 0 || num_fields % 2)
-		ret = -EINVAL;
+		return log_msg_ret("mux-reg-masks wrong size", -EINVAL);
 	num_fields = num_fields / 2;
 
 	ret = mux_alloc_controllers(dev, num_fields);
@@ -75,34 +75,20 @@ static int mmio_mux_probe(struct udevice *dev)
 		return -ENOMEM;
 	dev_set_priv(dev, fields);
 
-	mux_reg_masks = devm_kmalloc(dev, num_fields * 2 * sizeof(u32),
-				     __GFP_ZERO);
-	if (!mux_reg_masks)
-		return -ENOMEM;
-
-	ret = dev_read_u32_array(dev, "mux-reg-masks", mux_reg_masks,
-				 num_fields * 2);
-	if (ret < 0)
-		return log_msg_ret("mux-reg-masks read", ret);
-
-	idle_states = devm_kmalloc(dev, num_fields * sizeof(u32), __GFP_ZERO);
-	if (!idle_states)
-		return -ENOMEM;
-
-	ret = dev_read_u32_array(dev, "idle-states", idle_states, num_fields);
-	if (ret < 0) {
-		devm_kfree(dev, idle_states);
-		idle_states = NULL;
-	}
-
 	for (i = 0; i < num_fields; i++) {
 		struct mux_control *mux = &mux_chip->mux[i];
 		struct reg_field field;
+		u32 idle_state = MUX_IDLE_AS_IS;
 		u32 reg, mask;
 		int bits;
 
-		reg = mux_reg_masks[2 * i];
-		mask = mux_reg_masks[2 * i + 1];
+		ret = dev_read_u32_index(dev, "mux-reg-masks",
+						2 * i, &reg);
+		if (!ret)
+			ret = dev_read_u32_index(dev, "mux-reg-masks",
+							 2 * i + 1, &mask);
+		if (ret < 0)
+			return log_msg_ret("mux-reg-masks read", ret);
 
 		field.reg = reg;
 		field.msb = fls(mask) - 1;
@@ -120,20 +106,14 @@ static int mmio_mux_probe(struct udevice *dev)
 		bits = 1 + field.msb - field.lsb;
 		mux->states = 1 << bits;
 
-		if (!idle_states)
-			continue;
-
-		if (idle_states[i] != MUX_IDLE_AS_IS &&
-		    idle_states[i] >= mux->states)
+		dev_read_u32_index(dev, "idle-states", i,
+				   &idle_state);
+		if (idle_state != MUX_IDLE_AS_IS &&
+		    idle_state >= mux->states)
 			return log_msg_ret("idle-states range", -EINVAL);
 
-		mux->idle_state = idle_states[i];
+		mux->idle_state = idle_state;
 	}
-
-	devm_kfree(dev, mux_reg_masks);
-	if (idle_states)
-		devm_kfree(dev, idle_states);
-
 	return 0;
 }
 
