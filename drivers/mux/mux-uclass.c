@@ -24,7 +24,6 @@
 #include <errno.h>
 
 #include <linux/err.h>
-#include <linux/mux/driver.h>
 #include <mux.h>
 
 /*
@@ -62,46 +61,6 @@ static int mux_control_set(struct mux_control *mux, int state)
 }
 
 /**
- * mux_chip_alloc() - Allocate a mux-chip.
- * @dev: The parent device implementing the mux interface.
- * @controllers: The number of mux controllers to allocate for this chip.
- * @sizeof_priv: Size of extra memory area for private use by the caller.
- *
- * After allocating the mux-chip with the desired number of mux controllers
- * but before registering the chip, the mux driver is required to configure
- * the number of valid mux states in the mux_chip->mux[N].states members and
- * the desired idle state in the returned mux_chip->mux[N].idle_state members.
- * The default idle state is MUX_IDLE_AS_IS. The mux driver also needs to
- * provide a pointer to the operations struct in the mux_chip->ops member
- * before registering the mux-chip with mux_chip_register.
- *
- * Return: A pointer to the new mux-chip, or an ERR_PTR with a negative errno.
- */
-struct mux_chip *mux_chip_alloc(struct udevice *dev,
-				unsigned int controllers)
-{
-	struct mux_chip *mux_chip = dev_get_uclass_priv(dev);
-	struct mux_control *mux;
-	int i;
-
-	mux = kzalloc(controllers * sizeof(*mux_chip->mux), GFP_KERNEL);
-	if (!mux_chip)
-		return ERR_PTR(-ENOMEM);
-
-	mux_chip->mux = mux;
-	mux_chip->controllers = controllers;
-
-	for (i = 0; i < controllers; ++i) {
-		struct mux_control *mc = &mux[i];
-
-		mc->cached_state = MUX_CACHE_UNKNOWN;
-		mc->idle_state = MUX_IDLE_AS_IS;
-	}
-
-	return mux_chip;
-}
-
-/**
  * mux_chip_register() - Register a mux-chip, thus readying the controllers
  *			 for use.
  * @mux_chip: The mux-chip to register.
@@ -131,54 +90,6 @@ int mux_chip_register(struct mux_chip *mux_chip)
 	}
 
 	return ret;
-}
-
-/**
- * mux_chip_free() - Free the mux-chip for good.
- * @mux_chip: The mux-chip to free.
- *
- * mux_chip_free() reverses the effects of mux_chip_alloc().
- */
-void mux_chip_free(struct mux_chip *mux_chip)
-{
-}
-
-static void devm_mux_chip_release(struct udevice *dev, void *res)
-{
-	struct mux_chip *mux_chip = *(struct mux_chip **)res;
-
-	mux_chip_free(mux_chip);
-}
-
-/**
- * devm_mux_chip_alloc() - Resource-managed version of mux_chip_alloc().
- * @dev: The parent device implementing the mux interface.
- * @controllers: The number of mux controllers to allocate for this chip.
- * @sizeof_priv: Size of extra memory area for private use by the caller.
- *
- * See mux_chip_alloc() for more details.
- *
- * Return: A pointer to the new mux-chip, or an ERR_PTR with a negative errno.
- */
-struct mux_chip *devm_mux_chip_alloc(struct udevice *dev,
-				     unsigned int controllers)
-{
-	struct mux_chip **ptr, *mux_chip;
-
-	ptr = devres_alloc(devm_mux_chip_release, sizeof(*ptr), GFP_KERNEL);
-	if (!ptr)
-		return ERR_PTR(-ENOMEM);
-
-	mux_chip = mux_chip_alloc(dev, controllers);
-	if (IS_ERR(mux_chip)) {
-		devres_free(ptr);
-		return mux_chip;
-	}
-
-	*ptr = mux_chip;
-	devres_add(dev, ptr);
-
-	return mux_chip;
 }
 
 static void devm_mux_chip_reg_release(struct udevice *dev, void *res)

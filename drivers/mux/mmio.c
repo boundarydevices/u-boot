@@ -20,7 +20,7 @@
 #include <dt-bindings/mux/mux.h>
 #include <linux/bitops.h>
 #include <linux/err.h>
-#include <linux/mux/driver.h>
+#include <mux.h>
 
 static int mux_mmio_set(struct mux_control *mux, int state)
 {
