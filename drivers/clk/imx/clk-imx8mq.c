@@ -16,7 +16,9 @@
 
 #include "clk.h"
 
-static struct clk *clks[IMX8MQ_CLK_END];
+struct clk8mq_data {
+	struct clk *clks[IMX8MQ_CLK_END];
+};
 
 static u32 share_count_sai1;
 static u32 share_count_sai2;
@@ -360,15 +362,14 @@ static void check_assigned_clocks(ofnode np)
 	}
 }
 
-static inline void clk_dm1(ulong id, struct clk *clk)
+static inline void _clk_dm1(struct clk8mq_data *priv, ulong id, struct clk *clk)
 {
 	if (!IS_ERR(clk))
 		clk->id = id;
-	clks[id] = clk;
+	priv->clks[id] = clk;
 }
 
-
-static inline void clk_dm2(ulong id, ofnode np, const char *name)
+static inline void _clk_dm2(struct clk8mq_data *priv, ulong id, ofnode np, const char *name)
 {
 	struct clk clk_tmp;
 	struct clk *pclk;
@@ -377,12 +378,17 @@ static inline void clk_dm2(ulong id, ofnode np, const char *name)
 	if (!ret) {
 		pclk = dev_get_clk_ptr(clk_tmp.dev);
 		pclk->id = id;
-		clks[id] = pclk;
+		priv->clks[id] = pclk;
 	}
 }
 
+#define clk_dm1(id, clk) _clk_dm1(priv, id, clk)
+#define clk_dm2(id, np, name) _clk_dm2(priv, id, np, name)
+
 static int imx8mq_clocks_probe(struct udevice *dev)
 {
+	struct clk8mq_data *priv = dev_get_priv(dev);
+	struct clk** clks = &priv->clks[0];
 	ofnode np = dev_ofnode(dev);
 	void __iomem *base;
 	int i;
@@ -715,4 +721,5 @@ U_BOOT_DRIVER(imx8mq_clk) = {
 	.ops = &ccf_clk_ops,
 	.probe = imx8mq_clocks_probe,
 	.flags = DM_FLAG_PRE_RELOC,
+	.priv_auto = sizeof(struct clk8mq_data),
 };
