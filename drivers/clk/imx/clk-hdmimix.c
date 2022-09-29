@@ -14,7 +14,9 @@
 
 #include "clk.h"
 
-static struct clk *clks[IMX8MP_CLK_HDMIMIX_END];
+struct clk_hdmimix_data {
+	struct clk *clks[IMX8MP_CLK_HDMIMIX_END];
+};
 
 static const char *imx_hdmi_phy_clks_sels[] = { "hdmi_glb_24m", "dummy",};
 static const char *imx_lcdif_clks_sels[] = { "dummy", "hdmi_glb_pix", };
@@ -22,13 +24,13 @@ static const char *imx_hdmi_pipe_clks_sels[] = {"dummy","hdmi_glb_pix", };
 
 #define BASE_HDMI_CLK	(IMX8MP_CLK_END + IMX8MP_CLK_AUDIOMIX_END)
 
-struct clk *get_clock(unsigned id)
+static struct clk *get_clock(struct clk_hdmimix_data *priv, unsigned id)
 {
 	struct clk *c;
 	int ret;
 
 	if ((id >= BASE_HDMI_CLK) && (id < (BASE_HDMI_CLK + IMX8MP_CLK_HDMIMIX_END))) {
-		c = clks[id - BASE_HDMI_CLK];
+		c = priv->clks[id - BASE_HDMI_CLK];
 		if (c)
 			return c;
 	}
@@ -51,11 +53,12 @@ int imx8mp_hdmi_clk_of_xlate(struct clk *clk, struct ofnode_phandle_args *args)
 
 static ulong imx8mp_hdmi_clk_get_rate(struct clk *clk)
 {
+	struct clk_hdmimix_data *priv = dev_get_priv(clk->dev);
 	struct clk *c;
 
 	debug("%s(#%lu)\n", __func__, clk->id);
 
-	c = get_clock(clk->id);
+	c = get_clock(priv, clk->id);
 	if (IS_ERR(c))
 		return PTR_ERR(c);
 
@@ -64,11 +67,12 @@ static ulong imx8mp_hdmi_clk_get_rate(struct clk *clk)
 
 static ulong imx8mp_hdmi_clk_set_rate(struct clk *clk, unsigned long rate)
 {
+	struct clk_hdmimix_data *priv = dev_get_priv(clk->dev);
 	struct clk *c;
 
 	debug("%s(#%lu), rate: %lu\n", __func__, clk->id, rate);
 
-	c = get_clock(clk->id);
+	c = get_clock(priv, clk->id);
 	if (IS_ERR(c))
 		return PTR_ERR(c);
 
@@ -77,12 +81,13 @@ static ulong imx8mp_hdmi_clk_set_rate(struct clk *clk, unsigned long rate)
 
 static int __imx8mp_hdmi_clk_enable(struct clk *clk, bool enable)
 {
+	struct clk_hdmimix_data *priv = dev_get_priv(clk->dev);
 	struct clk *c;
 	int ret;
 
 	debug("%s(#%lu) en: %d\n", __func__, clk->id, enable);
 
-	c = get_clock(clk->id);
+	c = get_clock(priv, clk->id);
 	if (IS_ERR(c))
 		return PTR_ERR(c);
 
@@ -122,15 +127,16 @@ static int hdmi_clk_set_parent(struct clk *c, struct clk *cp)
 
 static int imx8mp_hdmi_clk_set_parent(struct clk *clk, struct clk *parent)
 {
+	struct clk_hdmimix_data *priv = dev_get_priv(clk->dev);
 	struct clk *c, *cp;
 	int ret;
 
 	debug("%s(#%lu), parent: %lu\n", __func__, clk->id, parent->id);
 
-	c = get_clock(clk->id);
+	c = get_clock(priv, clk->id);
 	if (IS_ERR(c))
 		return PTR_ERR(c);
-	cp = get_clock(parent->id);
+	cp = get_clock(priv, parent->id);
 	if (IS_ERR(cp))
 		return PTR_ERR(cp);
 
@@ -138,15 +144,18 @@ static int imx8mp_hdmi_clk_set_parent(struct clk *clk, struct clk *parent)
 	return ret;
 }
 
-static inline void clk_dm1(ulong id, struct clk *clk)
+static inline void _clk_dm1(struct clk_hdmimix_data *priv, ulong id, struct clk *clk)
 {
 	if (!IS_ERR(clk))
 		clk->id = id + BASE_HDMI_CLK;
-	clks[id] = clk;
+	priv->clks[id] = clk;
 }
+
+#define clk_dm1(id, clk) _clk_dm1(priv, id, clk)
 
 static int imx_hdmimix_clk_probe(struct udevice *dev)
 {
+	struct clk_hdmimix_data *priv = dev_get_priv(dev);
 	ofnode np = dev_ofnode(dev);
 	struct clk clk_tmp;
 	void __iomem *base;
@@ -206,10 +215,10 @@ static int imx_hdmimix_clk_probe(struct udevice *dev)
 	clk_dm1(IMX8MP_CLK_HDMIMIX_TX_PIPE_CLK_SEL, imx_dev_clk_mux(dev, "hdmi_pipe_sel", base + 0x50, 12, 1, imx_hdmi_pipe_clks_sels, ARRAY_SIZE(imx_hdmi_pipe_clks_sels)));
 
 	/* hdmi/lcdif pixel clock parent to hdmi phy */
-	hdmi_clk_set_parent(clks[IMX8MP_CLK_HDMIMIX_TX_PIPE_CLK_SEL], clks[IMX8MP_CLK_HDMIMIX_GLOBAL_TX_PIX_CLK]);
-	hdmi_clk_set_parent(clks[IMX8MP_CLK_HDMIMIX_LCDIF_CLK_SEL], clks[IMX8MP_CLK_HDMIMIX_GLOBAL_TX_PIX_CLK]);
+	hdmi_clk_set_parent(priv->clks[IMX8MP_CLK_HDMIMIX_TX_PIPE_CLK_SEL], priv->clks[IMX8MP_CLK_HDMIMIX_GLOBAL_TX_PIX_CLK]);
+	hdmi_clk_set_parent(priv->clks[IMX8MP_CLK_HDMIMIX_LCDIF_CLK_SEL], priv->clks[IMX8MP_CLK_HDMIMIX_GLOBAL_TX_PIX_CLK]);
 	/* hdmi ref clock from 24MHz */
-	hdmi_clk_set_parent(clks[IMX8MP_CLK_HDMIMIX_HTXPHY_CLK_SEL], clks[IMX8MP_CLK_HDMIMIX_GLOBAL_XTAL24M_CLK]);
+	hdmi_clk_set_parent(priv->clks[IMX8MP_CLK_HDMIMIX_HTXPHY_CLK_SEL], priv->clks[IMX8MP_CLK_HDMIMIX_GLOBAL_XTAL24M_CLK]);
 
 	return 0;
 }
@@ -234,4 +243,5 @@ U_BOOT_DRIVER(imx_hdmimix_clk) = {
 	.of_match = imx_hdmimix_clk_of_match,
 	.ops = &imx8mp_hdmi_clk_ops,
 	.probe = imx_hdmimix_clk_probe,
+	.priv_auto = sizeof(struct clk_hdmimix_data),
 };
