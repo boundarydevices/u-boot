@@ -152,6 +152,7 @@ struct imx8m_power_domain_plat {
 	void __iomem *base;
 	int resource_id;
 	int has_pd;
+	int active_cnt;
 };
 
 #if defined(CONFIG_IMX8MM) || defined(CONFIG_IMX8MN) || defined(CONFIG_IMX8MQ)
@@ -366,7 +367,11 @@ static int imx8m_power_domain_on(struct power_domain *power_domain)
 	u32 pgc;
 	int ret;
 
-	debug("%s: resource_id %d\n", __func__, pdata->resource_id);
+	debug("%s: resource_id %d %d\n", __func__, pdata->resource_id, pdata->active_cnt);
+	if (pdata->active_cnt) {
+		pdata->active_cnt++;
+		return 0;
+	}
 	if (pdata->has_pd)
 		power_domain_on(&pdata->pd);
 
@@ -411,6 +416,7 @@ static int imx8m_power_domain_on(struct power_domain *power_domain)
 	if (!domain->keep_clocks && pdata->clk.count)
 		clk_disable_bulk(&pdata->clk);
 
+	pdata->active_cnt++;
 	return 0;
 
 out_clk_disable:
@@ -429,6 +435,12 @@ static int imx8m_power_domain_off(struct power_domain *power_domain)
 	u32 pgc;
 	int ret;
 
+	debug("%s: resource_id %d %d\n", __func__, pdata->resource_id, pdata->active_cnt);
+	if (pdata->active_cnt != 1) {
+		if (pdata->active_cnt)
+			pdata->active_cnt--;
+		return 0;
+	}
 	/* Enable reset clocks for all devices in the domain */
 	if (!domain->keep_clocks && pdata->clk.count) {
 		ret = clk_enable_bulk(&pdata->clk);
@@ -436,6 +448,7 @@ static int imx8m_power_domain_off(struct power_domain *power_domain)
 			return ret;
 	}
 
+	pdata->active_cnt = 0;;
 	/* request the ADB400 to power down */
 	if (domain->bits.hskreq) {
 		clrbits_le32(base + regs->hsk, domain->bits.hskreq);
@@ -549,6 +562,9 @@ static int imx8m_power_domain_probe(struct udevice *dev)
 		dev_err(dev, "Failed to get domain clock (%d)\n", ret);
 		return ret;
 	}
+
+	if (pdata->domain->bits.map)
+		setbits_le32(pdata->base + pdata->regs->map, pdata->domain->bits.map);
 
 	return 0;
 }
