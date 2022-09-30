@@ -32,6 +32,7 @@ DECLARE_GLOBAL_DATA_PTR;
 #define IMX8M_OTG2_A53_DOMAIN			BIT(5)
 #define IMX8M_OTG1_A53_DOMAIN			BIT(4)
 #define IMX8M_PCIE1_A53_DOMAIN			BIT(3)
+#define IMX8M_MIPI_A53_DOMAIN			BIT(2)
 
 #define IMX8MM_OTG2_A53_DOMAIN			BIT(5)
 #define IMX8MM_OTG1_A53_DOMAIN			BIT(4)
@@ -55,6 +56,7 @@ DECLARE_GLOBAL_DATA_PTR;
 #define IMX8M_OTG2_SW_Pxx_REQ			BIT(3)
 #define IMX8M_OTG1_SW_Pxx_REQ			BIT(2)
 #define IMX8M_PCIE1_SW_Pxx_REQ			BIT(1)
+#define IMX8M_MIPI_SW_Pxx_REQ			BIT(0)
 
 #define IMX8MM_OTG2_SW_Pxx_REQ			BIT(3)
 #define IMX8MM_OTG1_SW_Pxx_REQ			BIT(2)
@@ -88,6 +90,7 @@ DECLARE_GLOBAL_DATA_PTR;
  * GPC_PGC memory map are incorrect, below offset
  * values are from design RTL.
  */
+#define IMX8M_PGC_MIPI			16
 #define IMX8M_PGC_PCIE1			17
 #define IMX8M_PGC_OTG1			18
 #define IMX8M_PGC_OTG2			19
@@ -156,6 +159,14 @@ static const struct imx_pgc_regs imx7_pgc_regs = {
 
 #ifdef CONFIG_IMX8MQ
 static const struct imx_pgc_domain imx8m_pgc_domains[] = {
+	[IMX8M_POWER_DOMAIN_MIPI] = {
+		.bits  = {
+			.pxx = IMX8M_MIPI_SW_Pxx_REQ,
+			.map = IMX8M_MIPI_A53_DOMAIN,
+		},
+		.pgc   = BIT(IMX8M_PGC_MIPI),
+	},
+
 	[IMX8M_POWER_DOMAIN_PCIE1] = {
 		.bits  = {
 			.pxx = IMX8M_PCIE1_SW_Pxx_REQ,
@@ -330,6 +341,7 @@ static int imx8m_power_domain_on(struct power_domain *power_domain)
 	u32 pgc;
 	int ret;
 
+	debug("%s: resource_id %d\n", __func__, pdata->resource_id);
 	if (pdata->has_pd)
 		power_domain_on(&pdata->pd);
 
@@ -505,6 +517,7 @@ static int imx8m_power_domain_probe(struct udevice *dev)
 	if (!strstr(dev->name, "power-domain"))
 		return 0;
 
+	debug("%s: resource_id %d\n", __func__, pdata->resource_id);
 	/* Grab optional power domain clock. */
 	ret = clk_get_bulk(dev, &pdata->clk);
 	if (ret && ret != -ENOENT) {
@@ -524,7 +537,12 @@ static int imx8m_power_domain_of_to_plat(struct udevice *dev)
 	int ret;
 
 	ret = dev_read_u32(dev, "reg", &val);
-	pdata->resource_id = ret ? -1 : val;
+	if (ret || (val >= domain_data->domains_num)) {
+		pdata->resource_id = -1;
+		return 0;
+	}
+	pdata->resource_id = val;
+	debug("%s: resource_id %d\n", __func__, pdata->resource_id);
 
 	pdata->domain = &domain_data->domains[pdata->resource_id];
 	pdata->regs = domain_data->pgc_regs;
