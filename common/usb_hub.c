@@ -194,7 +194,7 @@ static void usb_hub_power_on(struct usb_hub_device *hub)
 #ifdef CONFIG_SPL_BUILD
 	delay = 2000;
 #else
-	delay = env_get_ulong("usb_pgood_delay", 10, 0);
+	delay = env_get_ulong("usb_pgood_delay", 10, CONFIG_USB_PGOOD_DELAY);
 #endif
 	pgood_delay = max(pgood_delay, delay);
 	debug("pgood_delay=%dms\n", pgood_delay);
