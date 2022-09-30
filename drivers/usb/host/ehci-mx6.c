@@ -38,7 +38,7 @@
 #include <clk.h>
 #include <usb/usb_mx6_common.h>
 
-#if CONFIG_IS_ENABLED(PHY) && !defined(CONFIG_IMX8)  && !defined(CONFIG_IMX8ULP)  && !defined(CONFIG_IMX8MM)
+#if CONFIG_IS_ENABLED(PHY) && !defined(CONFIG_IMX8) && !defined(CONFIG_IMX8ULP) && !defined(CONFIG_IMX8MM) && !defined(CONFIG_IMX8MN)
 #define USE_USB_PHY	1
 #endif
 
