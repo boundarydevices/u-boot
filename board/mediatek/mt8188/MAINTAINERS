@@ -1,0 +1,6 @@
+MT8188 Evk
+M:	Macpaul Lin <macpaul.lin@mediatek.com>
+S:	Maintained
+F:	board/mediatek/mt8188
+F:	include/configs/mt8188.h
+F:	configs/genio_700_evk_defconfig
