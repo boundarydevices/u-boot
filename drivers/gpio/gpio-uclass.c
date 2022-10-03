@@ -462,10 +462,13 @@ int gpio_requestf(unsigned gpio, const char *fmt, ...)
 
 int _dm_gpio_free(struct udevice *dev, uint offset)
 {
-	const struct dm_gpio_ops *ops = gpio_get_ops(dev);
+	const struct dm_gpio_ops *ops;
 	struct gpio_dev_priv *uc_priv;
 	int ret;
 
+	if (!dev)
+		return -ENODEV;
+	ops = gpio_get_ops(dev);
 	uc_priv = dev_get_uclass_priv(dev);
 	if (!uc_priv->name[offset])
 		return -ENXIO;
