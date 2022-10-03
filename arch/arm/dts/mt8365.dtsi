@@ -193,13 +193,55 @@
 			status = "disabled";
 		};
 
+		i2c0: i2c@11007000 {
+			compatible = "mediatek,mt8365-i2c";
+			reg = <0 0x11007000 0 0xa0>,
+			      <0 0x11000080 0 0x80>;
+			clock-div = <1>;
+			clocks = <&infracfg CLK_IFR_I2C0_AXI>,
+				 <&infracfg CLK_IFR_AP_DMA>;
+			clock-names = "main", "dma";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			status = "disabled";
+		};
+
 		i2c1: i2c@11008000 {
 			compatible = "mediatek,mt8365-i2c";
 			reg = <0 0x11008000 0 0xa0>,
 			      <0 0x11000100 0 0x80>;
 			clock-div = <1>;
-			clocks = <&infracfg CLK_IFR_I2C1_AXI>;
-			clock-names = "main";
+			clocks = <&infracfg CLK_IFR_I2C1_AXI>,
+				 <&infracfg CLK_IFR_AP_DMA>;
+			clock-names = "main", "dma";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			status = "disabled";
+		};
+
+		i2c2: i2c@11009000 {
+			compatible = "mediatek,mt8365-i2c";
+			reg = <0 0x11009000 0 0xa0>,
+			      <0 0x11000180 0 0x80>;
+			clock-div = <1>;
+			clocks = <&infracfg CLK_IFR_I2C2_AXI>,
+				 <&infracfg CLK_IFR_AP_DMA>;
+			clock-names = "main", "dma";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			status = "disabled";
+		};
+
+		i2c3: i2c@1100f000 {
+			compatible = "mediatek,mt8365-i2c";
+			reg = <0 0x1100f000 0 0xa0>,
+			      <0 0x11000200 0 0x80>;
+			clock-div = <1>;
+			clocks = <&infracfg CLK_IFR_I2C3_AXI>,
+				 <&infracfg CLK_IFR_AP_DMA>;
+			clock-names = "main", "dma";
+			#address-cells = <1>;
+			#size-cells = <0>;
 			status = "disabled";
 		};
 
