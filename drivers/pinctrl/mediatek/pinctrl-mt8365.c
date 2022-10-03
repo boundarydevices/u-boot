@@ -398,15 +398,24 @@ static int mt8365_dpi_sleep_funcs[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 static const char *const mt8365_dpi_groups[] = { "dpi_enable", "dpi_sleep"};
 
 /* I2C */
+static int mt8365_i2c0_pins[] = { 57, 58, };
+static int mt8365_i2c0_funcs[] = { 1, 1, };
 static int mt8365_i2c1_pins[] = { 59, 60, };
 static int mt8365_i2c1_funcs[] = { 1, 1, };
+static int mt8365_i2c2_pins[] = { 61, 62, };
+static int mt8365_i2c2_funcs[] = { 1, 1, };
+static int mt8365_i2c3_pins[] = { 63, 64, };
+static int mt8365_i2c3_funcs[] = { 1, 1, };
 
-static const char *const mt8365_i2c_groups[] = { "i2c1"};
+static const char *const mt8365_i2c_groups[] = { "i2c0", "i2c1", "i2c2", "i2c3" };
 
 static const struct mtk_group_desc mt8365_groups[] = {
 	PINCTRL_PIN_GROUP("dpi_enable", mt8365_dpi_enable),
 	PINCTRL_PIN_GROUP("dpi_sleep",	mt8365_dpi_sleep),
+	PINCTRL_PIN_GROUP("i2c0",	mt8365_i2c0),
 	PINCTRL_PIN_GROUP("i2c1",	mt8365_i2c1),
+	PINCTRL_PIN_GROUP("i2c2",	mt8365_i2c2),
+	PINCTRL_PIN_GROUP("i2c3",	mt8365_i2c3),
 };
 
 static const struct mtk_function_desc mt8365_functions[] = {
