@@ -591,6 +591,8 @@ int sn65_init(struct panel_sn65dsi83 *sn)
 {
 	int ret, i, j;
 
+	if (!sn->dev)
+		return -ENODEV;
 	ret = pinctrl_select_state(sn->dev, "sn65dsi83");
 	sn_enable_gp(sn);
 
@@ -615,8 +617,14 @@ int sn65_init(struct panel_sn65dsi83 *sn)
 				break;
 			/* enable might be used for something else, change to input */
 			dm_gpio_set_dir_flags(sn->gp_en[i], GPIOD_IS_IN);
+			sn->gp_en[i] = NULL;
 		}
 		debug("i2c read failed\n");
+		gpio_free_list_nodev(sn->gds_en, ARRAY_SIZE(sn->gds_en));
+		for (i = 0; i < ARRAY_SIZE(sn->gp_irq); i++) {
+			sn->gp_irq[i] = NULL;
+		}
+		gpio_free_list_nodev(sn->gds_irq, ARRAY_SIZE(sn->gds_irq));
 		return -ENODEV;
 	}
 	sn_init(sn);
