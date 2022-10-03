@@ -444,6 +444,8 @@ int _dm_gpio_free(struct udevice *dev, uint offset)
 	struct gpio_dev_priv *uc_priv;
 	int ret;
 
+	if (!dev)
+		return -ENODEV;
 	uc_priv = dev_get_uclass_priv(dev);
 	if (!uc_priv->name[offset])
 		return -ENXIO;
