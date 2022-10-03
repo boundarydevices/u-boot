@@ -92,6 +92,13 @@
 	status = "okay";
 };
 
+&i2c0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c0_pins_default>;
+	clock-frequency = <100000>;
+	status = "okay";
+};
+
 &i2c1 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&i2c1_pins_default>;
@@ -110,6 +117,13 @@
 	};
 };
 
+&i2c2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c2_pins_default>;
+	clock-frequency = <100000>;
+	status = "okay";
+};
+
 &pio {
 	dpi_pin_func: dpi_pin_func {
 		function = "dpi";
@@ -121,9 +135,19 @@
 		groups =  "dpi_sleep";
 	};
 
+	i2c0_pins_default: i2c0_pins_default {
+		function = "i2c";
+		groups = "i2c0";
+	};
+
 	i2c1_pins_default: i2c1_pins_default {
 		function = "i2c";
 		groups = "i2c1";
+	};
+
+	i2c2_pins_default: i2c2_pins_default {
+		function = "i2c";
+		groups = "i2c2";
 	};
 
 	ite_pins_default: ite_pins_default {
