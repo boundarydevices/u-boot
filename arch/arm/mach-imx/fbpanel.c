@@ -511,6 +511,38 @@ static int set_property_u32_env_2parms(char *buf, int size, const char *path,
 	return sz;
 }
 
+#if CONFIG_IS_ENABLED(DM_VIDEO) && CONFIG_IS_ENABLED(OF_LIVE)
+int process_values(const char *s, fdt32_t *dst, int cnt)
+{
+	int found = 0;
+
+	while (*s) {
+		unsigned long tmp;
+		const char *start;
+		char *end;
+
+		while (*s == ' ')
+			s++;
+		if (*s == '>')
+			break;
+		while (*s == ' ')
+			s++;
+		start = s;
+		tmp = simple_strtoul(s, &end, 0);
+		s = end;
+		if (dst) {
+			if (found < cnt)
+				*dst++ = cpu_to_fdt32(tmp);
+		}
+		found++;
+		/* If the ptr didn't advance, something went wrong */
+		if (s <= start)
+			break;
+	}
+	return found;
+}
+#endif
+
 static int set_property_str(char *buf, int size, const char *path,
 		const char *propname, const char *val)
 {
@@ -520,7 +552,20 @@ static int set_property_str(char *buf, int size, const char *path,
 
 	if (!ofnode_valid(node))
 		return sz;
-	ofnode_write_string(node, propname, val);
+	if (val[0] == '<') {
+		int cnt;
+		__be32 *pvalue;
+
+		val++;
+		cnt = process_values(val, NULL, 0);
+		if (cnt) {
+			pvalue = get_space(sizeof(u32) * cnt);
+			process_values(val, pvalue, cnt);
+			ofnode_write_prop(node, propname, sizeof(u32) * cnt, pvalue);
+		}
+	} else {
+		ofnode_write_string(node, propname, val);
+	}
 #endif
 	return sz;
 }
