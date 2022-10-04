@@ -15,8 +15,6 @@
 
 #include "clk.h"
 
-static u32 share_count_media;
-
 static const char *pll_ref_sels[] = { "clock-osc-24m", "dummy", "dummy", "dummy", };
 static const char *video_pll1_bypass_sels[] = {"video_pll1", "video_pll1_ref_sel", };
 static const char *dram_pll_bypass_sels[] = {"dram_pll", "dram_pll_ref_sel", };
@@ -231,6 +229,7 @@ static inline void clk_dm2(ulong id, ofnode np, const char *name)
 
 static int imx8mp_clk_probe(struct udevice *dev)
 {
+	u32 share_count_media;	/* unused */
 	struct clk osc_24m_clk, osc_32k_clk;
 	ofnode np = dev_ofnode(dev);
 	void __iomem *base;
