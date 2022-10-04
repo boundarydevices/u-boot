@@ -1425,8 +1425,9 @@ static int fec_phy_init(struct fec_priv *priv, struct udevice *dev)
 #endif
 	phydev = eth_phy_connect(dev, priv->bus, DEFAULT_MASK, priv->interface);
 	priv->phydev = phydev;
-	if (phydev)
-		phy_config(phydev);
+	if (!phydev)
+		return -ENODEV;
+	phy_config(phydev);
 	return 0;
 }
 
