@@ -525,8 +525,6 @@ int process_values(const char *s, fdt32_t *dst, int cnt)
 			s++;
 		if (*s == '>')
 			break;
-		while (*s == ' ')
-			s++;
 		start = s;
 		tmp = simple_strtoul(s, &end, 0);
 		s = end;
@@ -534,10 +532,10 @@ int process_values(const char *s, fdt32_t *dst, int cnt)
 			if (found < cnt)
 				*dst++ = cpu_to_fdt32(tmp);
 		}
-		found++;
 		/* If the ptr didn't advance, something went wrong */
 		if (s <= start)
 			break;
+		found++;
 	}
 	return found;
 }
