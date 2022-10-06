@@ -109,8 +109,19 @@ int ft_board_setup(void *blob, struct bd_info *bd)
 #endif
 
 #if defined(CONFIG_IMX8MM)
+int __weak board_usb_hub_gpio_init(void)
+{
+	return 0;
+}
+
 int board_usb_init(int port, enum usb_init_type init)
 {
+	int gp = board_usb_hub_gpio_init();
+	/* Release HUB reset */
+	if ((port == 1) && gp) {
+		gpio_request(gp, "usb1_rst");
+		gpio_direction_output(gp, 1);
+	}
 #ifdef CONFIG_MAX77823
 	if (port)
 		return 0;
