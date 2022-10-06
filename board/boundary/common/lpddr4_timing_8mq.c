@@ -20,7 +20,7 @@ static struct dram_cfg_param lpddr4_ddrc_cfg[] = {
 	{ DDRC_PWRCTL(0), 1 },
 	{ DDRC_MSTR(0), 0xa0080020 | (CH2_LPDDR4_CS << 24) },
 	{ DDRC_MSTR2(0), 0 },
-	{ DDRC_DERATEEN(0), 0x0203 },
+	{ DDRC_DERATEEN(0), 0x0202 },
 	{ DDRC_DERATEINT(0), 0x0003e800 },
 	{ DDRC_RFSHTMG(0), 0x003000e0 },
 	{ DDRC_INIT0(0), 0xc003061c },
@@ -68,7 +68,7 @@ static struct dram_cfg_param lpddr4_ddrc_cfg[] = {
 	/* addrmap_row_b15, addrmap_row_b14, addrmap_row_b13, addrmap_row_b12 */
 	{ DDRC_ADDRMAP6(0), CH2_VAL_DDRC_ADDRMAP6 },
 	{ DDRC_ADDRMAP7(0), 0x0f0f },
-	{ DDRC_FREQ1_DERATEEN(0), 1 },
+	{ DDRC_FREQ1_DERATEEN(0), 0 },
 	{ DDRC_FREQ1_DERATEINT(0), 0xd0c0 },
 	{ DDRC_FREQ1_RFSHCTL0(0), 0x0020d040 },
 	{ DDRC_FREQ1_RFSHTMG(0), 0x000a002f },
