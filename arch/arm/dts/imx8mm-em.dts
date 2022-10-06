@@ -64,7 +64,6 @@
 		fsl,pins = <
 			MX8MM_IOMUXC_SPDIF_RX_GPIO5_IO4			0x180	/* BGM Coex 1 */
 			MX8MM_IOMUXC_SPDIF_EXT_CLK_GPIO5_IO5		0x180	/* BGM Coex 2 */
-			MX8MM_IOMUXC_SAI5_RXFS_GPIO3_IO19		0x140	/* 5V_BOOST_EN */
 			/* test points */
 			MX8MM_IOMUXC_SAI1_RXD2_GPIO4_IO4		0x1c0	/* tp2 */
 			MX8MM_IOMUXC_SAI1_RXD4_GPIO4_IO6		0x1c0	/* tp7 */
@@ -307,7 +306,10 @@
 	pinctrl_usbotg2: usbotg2grp {
 		fsl,pins = <
 #define GP_OTG2_HUB_RESET		<&gpio5 0 GPIO_ACTIVE_LOW>
-			MX8MM_IOMUXC_SAI3_TXC_GPIO5_IO0			0x180
+			MX8MM_IOMUXC_SAI3_TXC_GPIO5_IO0			0x100
+	/* active low because in reset group */
+#define GP_5V_BOOST_EN			<&gpio3 19 GPIO_ACTIVE_LOW>
+			MX8MM_IOMUXC_SAI5_RXFS_GPIO3_IO19		0x100
 		>;
 	};
 
@@ -1034,7 +1036,7 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usbotg2>;
 	power-active-high;
-	reset-gpios = GP_OTG2_HUB_RESET;
+	reset-gpios = GP_OTG2_HUB_RESET, GP_5V_BOOST_EN;
 	status = "okay";
 };
 

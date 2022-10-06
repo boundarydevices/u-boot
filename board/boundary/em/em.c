@@ -94,14 +94,20 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IOMUX_PAD_CTRL(NAND_RE_B__GPIO3_IO15, 0),	/* Old rev */
 #endif
 
-#ifdef CONFIG_IMX8MM
-#define GP_USB_RESET	IMX_GPIO_NR(5, 0)
+#define GP_OTG2_HUB_RESET	IMX_GPIO_NR(5, 0)
 	IOMUX_PAD_CTRL(SAI3_TXC__GPIO5_IO0, WEAK_PULLUP),
-#endif
 
 #define GP_EMMC_RESET	IMX_GPIO_NR(2, 10)
-	IOMUX_PAD_CTRL(SD1_RESET_B__GPIO2_IO10, 0x41),
+	IOMUX_PAD_CTRL(SD1_RESET_B__GPIO2_IO10, 0x100),
+#define GP_5V_BOOST_EN	IMX_GPIO_NR(3, 19)
+	IOMUX_PAD_CTRL(SAI5_RXFS__GPIO3_IO19, 0x100),
 };
+
+int board_usb_hub_gpio_init(void)
+{
+	gpio_direction_output(GP_5V_BOOST_EN, 1);
+	return GP_OTG2_HUB_RESET;
+}
 
 int board_early_init_f(void)
 {
@@ -112,13 +118,15 @@ int board_early_init_f(void)
 	gpio_request(GP_B_MODEM_COEX1, "modem_coex1");
 	gpio_request(GP_B_MODEM_COEX2, "modem_coex2");
 	gpio_request(GP_PCIE0_RESET, "pcie0_reset");
+	gpio_request(GP_5V_BOOST_EN, "5v_boost");
 	gpio_direction_output(GP_SN65DSI83_EN, 0);
 	gpio_direction_output(GP_B_MODEM_COEX1, 0);
 	gpio_direction_output(GP_B_MODEM_COEX2, 0);
 	gpio_direction_output(GP_PCIE0_RESET,0);
+	gpio_direction_output(GP_5V_BOOST_EN,0);
 	imx_iomux_v3_setup_multiple_pads(init_pads, ARRAY_SIZE(init_pads));
 
-	gpio_direction_output(GP_USB_RESET, 1);
+	gpio_direction_output(GP_OTG2_HUB_RESET, 0);
 	gpio_direction_output(GP_EMMC_RESET, 1);
 	set_wdog_reset(wdog);
 	gpio_direction_output(GP_SN65DSI83_EN, 0);
@@ -172,6 +180,7 @@ int board_init(void)
 	gpio_request(GP_SN65DSI83_EN, "sn65dsi83_enable");
 	gpio_request(GP_LTK08_MIPI_EN, "lkt08_mipi_en");
 #endif
+	gpio_request(GP_5V_BOOST_EN, "5v_boost");
 	gpio_direction_output(GP_TS_GT911_RESET, 0);
 #if defined(CONFIG_MXC_SPI) && !defined(CONFIG_DM_SPI)
 	setup_spi();
