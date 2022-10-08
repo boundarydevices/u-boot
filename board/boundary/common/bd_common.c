@@ -423,7 +423,11 @@ int splash_screen_prepare(void)
 {
 	char *env_loadsplash;
 
-	if (!env_get("splashimage") || !env_get("splashsize")) {
+	if (!env_get("splashimage")
+#ifdef CONFIG_CMD_SF
+			|| !env_get("splashsize")
+#endif
+			) {
 		return -1;
 	}
 
