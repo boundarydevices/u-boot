@@ -324,14 +324,14 @@ int board_ehci_hcd_init(int port)
 	return 0;
 }
 
-int board_ehci_power(int port, int on)
+#if defined(CONFIG_DM_USB) && !defined(CONFIG_DM_REGULATOR)
+int board_usb_power_gpio(int port)
 {
-	if (port)
-		return 0;
-	gpio_set_value(GP_REG_USBOTG, on);
+	if (!port)
+		return GP_REG_USBOTG;
 	return 0;
 }
-
+#endif
 #endif
 
 #ifdef CONFIG_FSL_ESDHC_IMX
@@ -452,57 +452,58 @@ static const struct display_info_t displays[] = {
 #define display_cnt	0
 #endif
 
-static const unsigned short gpios_out_low[] = {
-GP_RGMII2_PHY_RESET,
-GP_RGMII_PHY_RESET,
-GP_BACKLIGHT_LVDS,
-GP_BACKLIGHT_RGB,
-/* Disable wl1271 */
-GP_REG_WLAN_EN,
-GP_BT_RFKILL_RESET,
-GP_REG_USBOTG,
-#ifndef CONFIG_REV_AG
-GP_OV5642_RESET,
-#endif
-GP_USB_HUB_RESET, };
+static const struct gpio_reserve gpios_to_reserve[] = {
+	{ GP_GPIOKEY_BACK, GPIOD_IN, 0, "back", },
+	{ GP_GPIOKEY_HOME, GPIOD_IN, 0, "home", },
+	{ GP_GPIOKEY_MENU, GPIOD_IN, 0, "menu", },
+	{ GP_GPIOKEY_POWER, GPIOD_IN, 0, "power", },
+	{ GP_GPIOKEY_VOL_DOWN, GPIOD_IN, 0, "vol_down", },
+	{ GP_GPIOKEY_VOL_UP, GPIOD_IN, 0, "vol_up", },
+	{ GPIRQ_ENET_PHY, GPIOD_IN, 0, "irq_enet", },
+	{ GPIRQ_RTC_ISL1208, GPIOD_IN, 0, "irq_rtc", },
+	{ GPIRQ_TC3587, GPIOD_IN, 0, "irq_tc3587", },
+	{ GP_LVDS_BKL_EN, GPIOD_IN, 0, "lvds_bkl_en", },
+	{ GPIRQ_WL1271_WL, GPIOD_IN, 0, "irq_wl1271", },
+	{ GP_USDHC3_CD, GPIOD_IN, GRF_FREE, "usdhc3_cd", },
+	{ GP_USDHC4_CD, GPIOD_IN, GRF_FREE, "usdhc4_cd", },
 
-static const unsigned short gpios_out_high[] = {
-	GP_ECSPI1_NOR_CS,
-	GP_SGTL5000_HP_MUTE,
-	GP_OV5642_POWER_DOWN,
-	GP_OV5640_MIPI_POWER_DOWN,
+	{ GP_ECSPI1_NOR_CS, GPIOD_OUT_HIGH, GRF_FREE, "nor-cs", },
+	{ GP_SGTL5000_HP_MUTE, GPIOD_OUT_HIGH, 0, "hp_mute", },
+	{ GP_OV5642_POWER_DOWN, GPIOD_OUT_HIGH, 0, "ov5462_power_down", },
+	{ GP_OV5640_MIPI_POWER_DOWN, GPIOD_OUT_HIGH, 0, "ov5640_mipi_power_down", },
 #ifdef CONFIG_REV_AG
-	GP_LED_BLUE1,
-	GP_LED_GREEN1,
-	GP_LED_RED1,
-	GP_LED_BLUE2,
-	GP_LED_GREEN2,
-	GP_LED_RED2,
-	GP_LED_BLUE3,
-	GP_LED_GREEN3,
-	GP_LED_RED3,
+	{ GP_LED_BLUE1, GPIOD_OUT_HIGH, 0, "blue1", },
+	{ GP_LED_GREEN1, GPIOD_OUT_HIGH, 0, "green1", },
+	{ GP_LED_RED1, GPIOD_OUT_HIGH, 0, "red1", },
+	{ GP_LED_BLUE2, GPIOD_OUT_HIGH, 0, "blue2", },
+	{ GP_LED_GREEN2, GPIOD_OUT_HIGH, 0, "green2", },
+	{ GP_LED_RED2, GPIOD_OUT_HIGH, 0, "red2", },
+	{ GP_LED_BLUE3, GPIOD_OUT_HIGH, 0, "blue3", },
+	{ GP_LED_GREEN3, GPIOD_OUT_HIGH, 0, "green3", },
+	{ GP_LED_RED3, GPIOD_OUT_HIGH, 0, "red3", },
 #endif
+
+	{ GP_RGMII2_PHY_RESET, GPIOD_OUT_LOW, 0, "rgmii2_phy_rest", },
+	{ GP_RGMII_PHY_RESET, GPIOD_OUT_LOW, 0, "rgmii_phy_rest", },
+	{ GP_BACKLIGHT_LVDS, GPIOD_OUT_LOW, 0, "backlight_lvds", },
+	{ GP_BACKLIGHT_RGB, GPIOD_OUT_LOW, 0, "backlight_rgb", },
+/* Disable wl1271 */
+	{ GP_REG_WLAN_EN, GPIOD_OUT_LOW, 0, "wlan_en", },
+	{ GP_BT_RFKILL_RESET, GPIOD_OUT_LOW, 0, "bt_rfkill", },
+#if defined(CONFIG_DM_USB) && !defined(CONFIG_DM_REGULATOR)
+	{ GP_REG_USBOTG, GPIOD_OUT_LOW, 0, "usbotg power", },
+#else
+	{ GP_REG_USBOTG, GPIOD_OUT_LOW, GRF_FREE, "usbotg power", },
+#endif
+#ifndef CONFIG_REV_AG
+	{ GP_OV5642_RESET, GPIOD_OUT_LOW, 0, "ov5642_reset", },
+#endif
+	{ GP_USB_HUB_RESET, GPIOD_OUT_LOW, GRF_FREE, "usb_hub_reset", },
 };
 
-static const unsigned short gpios_in[] = {
-GP_GPIOKEY_BACK,
-GP_GPIOKEY_HOME,
-GP_GPIOKEY_MENU,
-GP_GPIOKEY_POWER,
-GP_GPIOKEY_VOL_DOWN,
-GP_GPIOKEY_VOL_UP,
-GPIRQ_ENET_PHY,
-GPIRQ_RTC_ISL1208,
-GPIRQ_TC3587,
-GP_LVDS_BKL_EN,
-GPIRQ_WL1271_WL,
-GP_USDHC3_CD,
-GP_USDHC4_CD, };
-
 int board_early_init_f(void) {
-	set_gpios_in(gpios_in, ARRAY_SIZE(gpios_in));
-	set_gpios(gpios_out_high, ARRAY_SIZE(gpios_out_high), 1);
-	set_gpios(gpios_out_low, ARRAY_SIZE(gpios_out_low), 0);
+	gpios_reserve(gpios_to_reserve, ARRAY_SIZE(gpios_to_reserve));
+
 	SETUP_IOMUX_PADS(init_pads);
 	SETUP_IOMUX_PADS(rgb_gpio_pads);
 	return 0;
@@ -542,19 +543,7 @@ void board_env_init(void) {
 }
 
 int board_init(void) {
-	gpio_request(GP_BACKLIGHT_RGB, "rgb backlight");
-	gpio_request(GP_BACKLIGHT_LVDS, "lvds backlight");
-	gpio_request(GP_LVDS_BKL_EN, "lvds bkl n");
-	gpio_request(GP_REG_USBOTG, "usbotg power");
-#ifndef CONFIG_DM_USB
-	gpio_request(GP_USB_HUB_RESET, "usbh1 hub reset");
-#endif
-	gpio_request(GP_GPIOKEY_BACK, "back");
-	gpio_request(GP_GPIOKEY_HOME, "home");
-	gpio_request(GP_GPIOKEY_MENU, "menu");
-	gpio_request(GP_GPIOKEY_POWER, "power");
-	gpio_request(GP_GPIOKEY_VOL_UP, "volup");
-	gpio_request(GP_GPIOKEY_VOL_DOWN, "voldown");
+	gpios_reserve(gpios_to_reserve, ARRAY_SIZE(gpios_to_reserve));
 
 	common_board_init(i2c_pads, I2C_BUS_CNT, IOMUXC_GPR1_OTG_ID_GPIO1,
 	displays, display_cnt, 0);
