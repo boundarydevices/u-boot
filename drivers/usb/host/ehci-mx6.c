@@ -432,6 +432,27 @@ int __weak board_ehci_power(int port, int on)
 	return 0;
 }
 
+#if defined(CONFIG_DM_USB) && !defined(CONFIG_DM_REGULATOR)
+int __weak board_usb_power_gpio(int port)
+{
+	return 0;
+}
+
+int board_usb_power(int port, enum usb_init_type init)
+{
+	enum usb_init_type type = board_usb_phy_mode(port);
+	int gp = board_usb_power_gpio(port);
+
+	if (gp) {
+		debug("%s: %d %d %d\n", __func__, port, init, type);
+		if ((type == init) || (type == USB_INIT_DEVICE)) {
+			gpio_direction_output(gp, (type == USB_INIT_DEVICE) ? 0 : 1);
+		}
+	}
+	return 0;
+}
+#endif
+
 int ehci_mx6_common_init(struct usb_ehci *ehci, int index)
 {
 	int ret;
@@ -561,6 +582,8 @@ static int mx6_init_after_reset(struct ehci_ctrl *dev)
 			return ret;
 		}
 	}
+#else
+	ret = board_usb_power(priv->portnr, priv->init_type);
 #endif
 
 	if (type == USB_INIT_DEVICE)
