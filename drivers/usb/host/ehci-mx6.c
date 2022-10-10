@@ -264,6 +264,24 @@ static u32 mx6_portsc(enum usb_phy_interface phy_type)
 	}
 }
 
+#if CONFIG_IS_ENABLED(DM_USB) && !CONFIG_IS_ENABLED(DM_REGULATOR)
+int __weak board_usb_power_gpio(int port)
+{
+	return 0;
+}
+
+int board_usb_power(int port, enum usb_init_type init)
+{
+	int gp = board_usb_power_gpio(port);
+
+	if (gp) {
+		debug("%s: %d %d\n", __func__, port, init);
+		gpio_direction_output(gp, (init == USB_INIT_DEVICE) ? 0 : 1);
+	}
+	return 0;
+}
+#endif
+
 static int mx6_init_after_reset(struct ehci_ctrl *dev)
 {
 	struct ehci_mx6_priv_data *priv = dev->priv;
@@ -297,6 +315,8 @@ static int mx6_init_after_reset(struct ehci_ctrl *dev)
 			return ret;
 		}
 	}
+#else
+	ret = board_usb_power(priv->portnr, priv->init_type);
 #endif
 
 	if (is_mx6dqp() || is_mx6dq() || is_mx6sdl() ||
