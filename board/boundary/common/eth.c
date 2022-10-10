@@ -1029,6 +1029,9 @@ int board_eth_init(struct bd_info *bis)
 #ifdef GP_PHY_RXC
 	gpio_request(GP_PHY_RXC, "fec_rxc");
 #endif
+#ifdef GP_PHY_REF_CLK
+	gpio_request(GP_PHY_REF_CLK, "fec_ref_clk");
+#endif
 #ifdef CONFIG_PHY_MICREL_KSZ8XXX
 	gpio_request(GP_PHY_RX_EN, "fec_rx_en");
 	gpio_request(GP_PHY_ER, "fec_er");
@@ -1048,6 +1051,9 @@ int board_eth_init(struct bd_info *bis)
 #endif
 #ifdef GP_PHY2_RXC
 	gpio_request(GP_PHY2_RXC, "fec2_rxc");
+#endif
+#ifdef GP_PHY2_REF_CLK
+	gpio_request(GP_PHY2_REF_CLK, "fec2_ref_clk");
 #endif
 #ifdef CONFIG_PHY_MICREL_KSZ8XXX
 	gpio_request(GP_PHY2_RX_EN, "fec2_rx_en");
