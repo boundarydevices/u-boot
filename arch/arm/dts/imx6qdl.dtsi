@@ -951,6 +951,7 @@
 
 			usbotg: usb@2184000 {
 				compatible = "fsl,imx6q-usb", "fsl,imx27-usb";
+				dr_mode = "otg";
 				reg = <0x02184000 0x200>;
 				interrupts = <0 43 IRQ_TYPE_LEVEL_HIGH>;
 				clocks = <&clks IMX6QDL_CLK_USBOH3>;
