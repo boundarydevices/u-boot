@@ -376,7 +376,8 @@ static int ehci_usb_phy_mode(struct udevice *dev)
 	ret = board_usb_otg_mode(dev);
 	if (ret >= 0) {
 		priv->init_type = ret;
-		return 0;
+		if (ret != USB_INIT_UNKNOWN)
+			return 0;
 	}
 	/*
 	 * About fsl,usbphy, Refer to
