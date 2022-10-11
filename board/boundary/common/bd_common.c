@@ -49,7 +49,15 @@ int board_phys_sdram_size(phys_size_t *sdram_size)
 
 ulong board_get_usable_ram_top(ulong total_size)
 {
-	return MEM_SIZE + CONFIG_SYS_SDRAM_BASE;
+	// In the case of a TEE, rom_pointer[0] contains the TEE base addr
+	// and rom_pointer[1] contains the TEE size
+	if ((rom_pointer[0] > CONFIG_SYS_SDRAM_BASE) &&
+		(rom_pointer[0] < (CONFIG_SYS_SDRAM_BASE + MEM_SIZE)) &&
+		((rom_pointer[0] + rom_pointer[1]) <= (CONFIG_SYS_SDRAM_BASE + MEM_SIZE))) {
+		return rom_pointer[0];
+	} else {
+		return CONFIG_SYS_SDRAM_BASE + MEM_SIZE;
+	}
 }
 #endif
 
