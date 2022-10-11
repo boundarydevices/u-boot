@@ -611,7 +611,7 @@ static int ehci_usb_probe(struct udevice *dev)
 	enable_usboh3_clk(1);
 	imx8m_usb_power(priv->portnr, true);
 #endif
-	priv->init_type = type = plat->init_type;
+	type = plat->init_type;
 
 	priv->phy_type = usb_get_phy_mode(dev_ofnode(dev));
 
