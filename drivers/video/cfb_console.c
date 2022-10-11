@@ -199,6 +199,11 @@ void console_cursor(int state);
 #else
 #define SWAP16(x)		(x)
 #define SWAP32(x)		(x)
+
+#if defined(CONFIG_VIDEO_MX3) || defined(CONFIG_VIDEO_IPUV3)
+#define VIDEO_FB_16BPP_WORD_SWAP
+#endif
+
 #if defined(VIDEO_FB_16BPP_WORD_SWAP)
 #define SHORTSWAP32(x)		(((x) >> 16) | ((x) << 16))
 #else
