@@ -109,28 +109,38 @@ int board_usb_hub_gpio_init(void)
 	return GP_OTG2_HUB_RESET;
 }
 
+static const struct gpio_reserve gpios_to_reserve[] = {
+	{ GP_BACKLIGHT_MIPI, GPIOD_OUT_LOW, GRF_FREE, "backlight_mipi", },
+#ifdef CONFIG_DM_VIDEO
+	{ GP_SN65DSI83_EN, GPIOD_OUT_LOW, GRF_FREE, "sn65en", },
+	{ GP_LTK08_MIPI_EN, GPIOD_OUT_LOW, GRF_FREE, "lkt08_mipi_en", },
+#else
+	{ GP_SN65DSI83_EN, GPIOD_OUT_LOW, 0, "sn65en", },
+	{ GP_LTK08_MIPI_EN, GPIOD_OUT_LOW, 0, "lkt08_mipi_en", },
+#endif
+	{ GP_B_MODEM_COEX1, GPIOD_OUT_LOW, 0, "modem_coex1", },
+	{ GP_B_MODEM_COEX2, GPIOD_OUT_LOW, 0, "modem_coex2", },
+	{ GP_PCIE0_RESET, GPIOD_OUT_LOW, 0, "pcie0_reset", },
+	{ GP_PCIE0_DISABLE, GPIOD_OUT_LOW, 0, "pcie0_disable", },
+	{ GP_5V_BOOST_EN, GPIOD_OUT_LOW, 0, "5v_boost", },
+	{ GP_OTG2_HUB_RESET, GPIOD_OUT_LOW, GRF_FREE, "otg2_hub_reset", },
+	{ GP_EMMC_RESET, GPIOD_OUT_HIGH, 0, "emmc_reset", },
+#ifdef CONFIG_FEC_PHY_BITBANG
+	{ GP_MII_MDC, GPIOD_IN, 0, "mii_mdc", },
+	{ GP_MII_MDIO, GPIOD_IN, 0, "mii_mdio", },
+#endif
+	{ GP_TS_GT911_RESET, GPIOD_OUT_LOW, 0, "gt911_reset", },
+	{ GPIRQ_TS_GT911, GPIOD_IN, 0, "gt911_irq", },
+};
+
 int board_early_init_f(void)
 {
 	struct wdog_regs *wdog = (struct wdog_regs *)WDOG1_BASE_ADDR;
 
-	gpio_direction_output(GP_BACKLIGHT_MIPI, 0);
-	gpio_request(GP_SN65DSI83_EN, "sn65en");
-	gpio_request(GP_B_MODEM_COEX1, "modem_coex1");
-	gpio_request(GP_B_MODEM_COEX2, "modem_coex2");
-	gpio_request(GP_PCIE0_RESET, "pcie0_reset");
-	gpio_request(GP_5V_BOOST_EN, "5v_boost");
-	gpio_direction_output(GP_SN65DSI83_EN, 0);
-	gpio_direction_output(GP_B_MODEM_COEX1, 0);
-	gpio_direction_output(GP_B_MODEM_COEX2, 0);
-	gpio_direction_output(GP_PCIE0_RESET,0);
-	gpio_direction_output(GP_5V_BOOST_EN,0);
+	gpios_reserve(gpios_to_reserve, ARRAY_SIZE(gpios_to_reserve));
 	imx_iomux_v3_setup_multiple_pads(init_pads, ARRAY_SIZE(init_pads));
 
-	gpio_direction_output(GP_OTG2_HUB_RESET, 0);
-	gpio_direction_output(GP_EMMC_RESET, 1);
 	set_wdog_reset(wdog);
-	gpio_direction_output(GP_SN65DSI83_EN, 0);
-
 	return 0;
 }
 
@@ -170,18 +180,7 @@ static const struct display_info_t displays[] = {
 
 int board_init(void)
 {
-#ifdef CONFIG_FEC_PHY_BITBANG
-	gpio_request(GP_MII_MDC, "mii_mdc");
-	gpio_request(GP_MII_MDIO, "mii_mdio");
-#endif
-	gpio_request(GP_TS_GT911_RESET, "gt911_reset");
-	gpio_request(GPIRQ_TS_GT911, "gt911_irq");
-#ifndef CONFIG_DM_VIDEO
-	gpio_request(GP_SN65DSI83_EN, "sn65dsi83_enable");
-	gpio_request(GP_LTK08_MIPI_EN, "lkt08_mipi_en");
-#endif
-	gpio_request(GP_5V_BOOST_EN, "5v_boost");
-	gpio_direction_output(GP_TS_GT911_RESET, 0);
+	gpios_reserve(gpios_to_reserve, ARRAY_SIZE(gpios_to_reserve));
 #if defined(CONFIG_MXC_SPI) && !defined(CONFIG_DM_SPI)
 	setup_spi();
 #endif
