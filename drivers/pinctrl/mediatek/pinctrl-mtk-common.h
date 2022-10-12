@@ -256,6 +256,8 @@ int mtk_pinconf_bias_set_v0(struct udevice *dev, u32 pin, bool disable,
 			    bool pullup, u32 val);
 int mtk_pinconf_bias_set_v1(struct udevice *dev, u32 pin, bool disable,
 			    bool pullup, u32 val);
+int mtk_pinconf_bias_set_combo(struct udevice *dev, u32 pin, bool disable,
+			       bool pullup, u32 val);
 int mtk_pinconf_input_enable_v1(struct udevice *dev, u32 pin, u32 arg);
 int mtk_pinconf_drive_set_v0(struct udevice *dev, u32 pin, u32 arg);
 int mtk_pinconf_drive_set_v1(struct udevice *dev, u32 pin, u32 arg);

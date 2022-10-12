@@ -360,6 +360,25 @@ int mtk_pinconf_bias_set_v1(struct udevice *dev, u32 pin, bool disable,
 	return err;
 }
 
+int mtk_pinconf_bias_set_combo(struct udevice *dev, u32 pin, bool disable,
+			       bool pullup, u32 val)
+{
+	int err;
+
+	err = mtk_pinconf_bias_set_pu_pd(dev, pin, disable, pullup, val);
+	if (!err)
+		return err;
+
+	err =
+	    mtk_pinconf_bias_set_pullen_pullsel(dev, pin, disable, pullup, val);
+	if (!err)
+		return err;
+
+	err = mtk_pinconf_bias_set_pupd_r1_r0(dev, pin, disable, pullup, val);
+
+	return err;
+}
+
 int mtk_pinconf_bias_set_pu_pd(struct udevice *dev, u32 pin, bool disable,
 			       bool pullup, u32 val)
 {
