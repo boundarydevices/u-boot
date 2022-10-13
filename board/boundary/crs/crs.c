@@ -117,7 +117,7 @@ int board_early_init_f(void)
 	return 0;
 }
 
-#if defined(CONFIG_USB_DWC3) || defined(CONFIG_USB_XHCI_IMX8M)
+#if !CONFIG_IS_ENABLED(USB_DWC3_GENERIC) && (defined(CONFIG_USB_DWC3) || defined(CONFIG_USB_XHCI_IMX8M))
 int board_usb_hub_gpio_init(void)
 {
 	return GP_USB3_1_HUB_RESET;
@@ -162,7 +162,9 @@ int board_init(void)
 #ifdef CONFIG_CMD_FBPANEL
 	fbp_setup_display(displays, display_cnt);
 #endif
+#if !CONFIG_IS_ENABLED(USB_DWC3_GENERIC) && (defined(CONFIG_USB_DWC3) || defined(CONFIG_USB_XHCI_IMX8M))
 	board_usb_reset(0, USB_INIT_DEVICE);
+#endif
 
 	return 0;
 }
