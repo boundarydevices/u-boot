@@ -9,6 +9,7 @@
 #include <asm/arch/clock.h>
 #include <asm/arch/imx-regs.h>
 #include <asm/arch/sys_proto.h>
+#include <asm/global_data.h>
 #include <asm/io.h>
 #include <div64.h>
 #include <errno.h>
@@ -20,6 +21,8 @@ DECLARE_GLOBAL_DATA_PTR;
 
 static struct anamix_pll *ana_pll = (struct anamix_pll *)ANATOP_BASE_ADDR;
 
+static u32 get_root_clk(enum clk_root_index clock_id);
+
 #ifdef CONFIG_IMX_HAB
 void hab_caam_clock_enable(unsigned char enable)
 {
@@ -27,7 +30,6 @@ void hab_caam_clock_enable(unsigned char enable)
 }
 #endif
 
-static u32 get_root_clk(enum clk_root_index clock_id);
 void enable_ocotp_clk(unsigned char enable)
 {
 	clock_enable(CCGR_OCOTP, !!enable);
