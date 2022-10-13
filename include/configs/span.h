@@ -165,7 +165,6 @@
 #endif
 
 #include <config_distro_bootcmd.h>
-#define CONFIG_CMD_FBPANEL
 
 #define BD_RAM_BASE	0x80000000
 #define BD_RAM_SCRIPT	"40020000"
