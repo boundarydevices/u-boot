@@ -96,6 +96,13 @@ static const struct gpio_reserve gpios_to_reserve[] = {
 	{ GP_LED4_BLUE, GPIOD_OUT_HIGH, 0, "led4-blue", },
 	{ GP_LED4_GREEN, GPIOD_OUT_HIGH, 0, "led4-green", },
 	{ GP_LED4_RED, GPIOD_OUT_HIGH, 0, "led4-red", },
+	{ GP_EQOS_MII_MDC, GPIOD_IN, 0, "eqos_mdc", },
+	{ GP_EQOS_MII_MDIO, GPIOD_IN, 0, "eqos_mdio", },
+#if !CONFIG_IS_ENABLED(USB_DWC3_GENERIC) && (defined(CONFIG_USB_DWC3) || defined(CONFIG_USB_XHCI_IMX8M))
+	{ GP_USB3_1_HUB_RESET, GPIOD_OUT_LOW, 0, "usb3_1_hub_reset", },
+#else
+	{ GP_USB3_1_HUB_RESET, GPIOD_OUT_LOW, GRF_FREE, "usb3_1_hub_reset", },
+#endif
 };
 
 int board_early_init_f(void)
@@ -148,10 +155,6 @@ static const struct display_info_t displays[] = {
 int board_init(void)
 {
 	gpios_reserve(gpios_to_reserve, ARRAY_SIZE(gpios_to_reserve));
-	gpio_request(GP_EQOS_MII_MDC, "eqos_mdc");
-	gpio_request(GP_EQOS_MII_MDIO, "eqos_mdio");
-	gpio_request(GP_USB3_1_HUB_RESET, "usb3_1_hub_reset");
-	gpio_direction_output(GP_USB3_1_HUB_RESET, 0);
 
 #ifdef CONFIG_DM_ETH
 	board_eth_init(gd->bd);
