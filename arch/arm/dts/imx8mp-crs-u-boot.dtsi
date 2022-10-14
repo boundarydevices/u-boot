@@ -44,6 +44,22 @@
 	u-boot,dm-spl;
 };
 
+&blob_1 {
+	filename = "lpddr4_pmu_train_1d_imem.bin";
+};
+
+&blob_2 {
+	filename = "lpddr4_pmu_train_1d_dmem.bin";
+};
+
+&blob_3 {
+	filename = "lpddr4_pmu_train_2d_imem.bin";
+};
+
+&blob_4 {
+	filename = "lpddr4_pmu_train_2d_dmem.bin";
+};
+
 &clk {
 	u-boot,dm-spl;
 	u-boot,dm-pre-reloc;
