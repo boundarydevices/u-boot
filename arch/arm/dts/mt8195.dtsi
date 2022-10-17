@@ -190,6 +190,12 @@
 			#clock-cells = <1>;
 		};
 
+		infracfg_ao: infracfg_ao@10001000 {
+			compatible = "mediatek,mt8195-infracfg_ao";
+			reg = <0 0x10001000 0 0x1000>;
+			#clock-cells = <1>;
+		};
+
 		apmixedsys: apmixedsys@1000c000 {
 			compatible = "mediatek,mt8195-apmixedsys";
 			reg = <0 0x1000c000 0 0x1000>;
