@@ -8,6 +8,7 @@
  */
 
 #include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/clock/mt8195-clk.h>
 #include <dt-bindings/interrupt-controller/irq.h>
 #include <dt-bindings/interrupt-controller/arm-gic.h>
 #include <dt-bindings/phy/phy.h>
@@ -177,20 +178,20 @@
 			reg = <0 0x0c530a80 0 0x50>;
 		};
 
-		topckgen: syscon@10000000 {
-			compatible = "mediatek,mt8195-topckgen", "syscon";
+		topckgen: topckgen@10000000 {
+			compatible = "mediatek,mt8195-topckgen";
 			reg = <0 0x10000000 0 0x1000>;
 			#clock-cells = <1>;
 		};
 
-		infracfg: syscon@10001000 {
-			compatible = "mediatek,mt8195-infracfg", "syscon";
-			reg = <0 0x10001000 0 0x1000>;
+		topckgen_cg: topckgen-cg@10000000 {
+			compatible = "mediatek,mt8195-topckgen-cg";
+			reg = <0 0x10000000 0 0x1000>;
 			#clock-cells = <1>;
 		};
 
-		apmixedsys: syscon@1000c000 {
-			compatible = "mediatek,mt8195-apmixedsys", "syscon";
+		apmixedsys: apmixedsys@1000c000 {
+			compatible = "mediatek,mt8195-apmixedsys";
 			reg = <0 0x1000c000 0 0x1000>;
 			#clock-cells = <1>;
 		};
