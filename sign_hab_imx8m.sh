@@ -66,7 +66,7 @@ fi
 BLOCK_LEN="0x200"
 IVTOFFSET="0x1000"
 IVTSIZE="0x20"
-FIT_OFFSET=`awk '/File.*uboot.*image-pos/{print $9}' flash.log | tail -n 1`
+FIT_OFFSET=`awk '/File.*image-pos/{print $9}' flash.log | tail -n 1`
 FIT_SIZE="0x`awk '/fit/{print $3}' itb.map | head -n 1`"
 FIT_UBOOT_OFFSET="0x`awk '/uboot/{print $2}' itb.map | head -n 1`"
 FIT_UBOOT_SIZE="0x`awk '/uboot/{print $3}' itb.map | head -n 1`"
