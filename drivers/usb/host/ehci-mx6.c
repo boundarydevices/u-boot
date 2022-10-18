@@ -386,8 +386,12 @@ static int ehci_usb_phy_mode(struct udevice *dev)
 	if (is_mx6() || is_mx7ulp() || is_imxrt() || is_imx8() || is_imx8ulp()) {
 		ret = dev_read_phandle_with_args(dev, "fsl,usbphy",
 				NULL, 0, 0, &arg);
-		if (ret)
-			return -EINVAL;
+		if (ret) {
+			ret = dev_read_phandle_with_args(dev, "phys",
+					NULL, 0, 0, &arg);
+			if (ret)
+				return -EINVAL;
+		}
 
 		addr = (void __iomem *)ofnode_get_addr(arg.node);
 		if ((fdt_addr_t)addr == FDT_ADDR_T_NONE)
