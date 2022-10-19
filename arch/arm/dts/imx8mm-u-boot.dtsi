@@ -157,7 +157,7 @@
 
 				binman_configuration: @config-SEQ {
 					description = "NAME";
-					fdt = "fdt-SEQ";
+					fdt = "fdt";
 					firmware = "uboot";
 #ifdef CONFIG_OPTEE_FIRMWARE_SET
 					loadables = "atf", "tee";
