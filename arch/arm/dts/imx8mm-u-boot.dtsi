@@ -140,7 +140,7 @@
 					type = "firmware";
 				};
 
-				@fdt-SEQ {
+				fdt {
 					compression = "none";
 					description = "NAME";
 					type = "flat_dt";
