@@ -72,7 +72,7 @@ FIT_UBOOT_OFFSET="0x`awk '/uboot/{print $2}' itb.map | head -n 1`"
 FIT_UBOOT_SIZE="0x`awk '/uboot/{print $3}' itb.map | head -n 1`"
 FIT_ATF_OFFSET="0x`awk '/atf/{print $2}' itb.map | head -n 1`"
 FIT_ATF_SIZE="0x`awk '/atf/{print $3}' itb.map | head -n 1`"
-FIT_DTB_OFFSET="0x`awk '/fip/{print $2}' itb.map | head -n 1`"
+FIT_DTB_OFFSET="0x`awk '/fdt/{print $2}' itb.map | head -n 1`"
 printf -v FIT_START_ADDR '%#x' "$((CONFIG_SYS_TEXT_BASE - BLOCK_LEN - CONFIG_CSF_SIZE - IVTOFFSET - CONFIG_SYS_CACHELINE_SIZE))"
 printf -v FIT_LENGTH '%#x' "$((IVTOFFSET + IVTSIZE))"
 sed -i "s|_FIT_START_ADDR_|$FIT_START_ADDR|g" csf_fit.txt
