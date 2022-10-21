@@ -108,3 +108,7 @@
 &xhci0 {
 	status = "okay";
 };
+
+&xhci3 {
+	status = "okay";
+};
