@@ -1,0 +1,13 @@
+if TARGET_MT8195
+
+config SYS_BOARD
+	default "mt8195"
+
+config SYS_CONFIG_NAME
+	default "mt8195"
+
+config MTK_BROM_HEADER_INFO
+	string
+	default "media=emmc"
+
+endif
