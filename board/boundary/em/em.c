@@ -43,9 +43,9 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IOMUX_PAD_CTRL(UART2_RXD__UART2_DCE_RX, UART_PAD_CTRL),
 	IOMUX_PAD_CTRL(UART2_TXD__UART2_DCE_TX, UART_PAD_CTRL),
 
-#define GP_B_MODEM_COEX1		IMX_GPIO_NR(5, 28)
+#define GP_B_MODEM_COEX1_RXD		IMX_GPIO_NR(5, 28)
 	IOMUX_PAD_CTRL(UART4_RXD__GPIO5_IO28, 0x100),	/* B_MODEM_COEX1 pull-down */
-#define GP_B_MODEM_COEX2		IMX_GPIO_NR(5, 29)
+#define GP_B_MODEM_COEX2_TXD		IMX_GPIO_NR(5, 29)
 	IOMUX_PAD_CTRL(UART4_TXD__GPIO5_IO29, 0x100),	/* B_MODEM_COEX2 pull-down */
 
 #define GPIRQ_SN65DSI83			IMX_GPIO_NR(1, 1)
@@ -118,8 +118,8 @@ static const struct gpio_reserve gpios_to_reserve[] = {
 	{ GP_SN65DSI83_EN, GPIOD_OUT_LOW, 0, "sn65en", },
 	{ GP_LTK08_MIPI_EN, GPIOD_OUT_LOW, 0, "lkt08_mipi_en", },
 #endif
-	{ GP_B_MODEM_COEX1, GPIOD_OUT_LOW, 0, "modem_coex1", },
-	{ GP_B_MODEM_COEX2, GPIOD_OUT_LOW, 0, "modem_coex2", },
+	{ GP_B_MODEM_COEX1_RXD, GPIOD_IN, 0, "modem_coex1_rxd", },
+	{ GP_B_MODEM_COEX2_TXD, GPIOD_OUT_LOW, 0, "modem_coex2_txd", },
 	{ GP_PCIE0_RESET, GPIOD_OUT_LOW, 0, "pcie0_reset", },
 	{ GP_PCIE0_DISABLE, GPIOD_OUT_LOW, 0, "pcie0_disable", },
 	{ GP_5V_BOOST_EN, GPIOD_OUT_LOW, 0, "5v_boost", },
