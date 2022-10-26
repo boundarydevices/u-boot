@@ -367,7 +367,7 @@ int __weak board_usb_otg_mode(struct udevice *dev)
 static int ehci_usb_phy_mode(struct udevice *dev)
 {
 	struct ehci_mx6_priv_data *priv = dev_get_priv(dev);
-	void *__iomem addr = (void *__iomem)devfdt_get_addr(dev);
+	void *__iomem addr = (void *__iomem)ofnode_get_addr(dev_ofnode(dev));
 	void *__iomem phy_ctrl, *__iomem phy_status;
 	struct ofnode_phandle_args arg;
 	int ret;
