@@ -32,6 +32,7 @@
 #define MAX77975_CHG_CNFG_02	0x18
 #define MAX77975_CHG_CNFG_04	0x1a
 #define MAX77975_CHG_CNFG_06	0x1c
+#define MAX77975_CHG_CNFG_08	0x1e
 #define MAX77975_CHG_CNFG_09	0x1f
 #define MAX77975_CHG_CNFG_10	0x20
 #define MAX77975_CHG_CNFG_11	0x21
@@ -329,7 +330,8 @@ static const struct reg_val charger_init_data[] = {
 	{MAX77975_CHG_CNFG_11, 0x00,},	/* Vbyp=5V */
 	{MAX77975_CHG_CNFG_06, 0x0c,},	/* Write capability unlocked */
 	{MAX77975_CHG_CNFG_02, 0x14,},	/* 1.0 amp fast-charge */
-	{MAX77975_CHG_CNFG_04, 0x14,},	/* Charge termination 4.35V */
+	{MAX77975_CHG_CNFG_04, 0x05,},	/* Charge termination 4.20V */
+	{MAX77975_CHG_CNFG_08, 0x00,},	/* 2.6M FSW */
 	{MAX77975_CHG_CNFG_10, 0x03,},  /* OTG output 800ma limit */
 	{MAX77975_CHG_CNFG_01, 0x00,},  /* fast charge timer disable, restart threshold 100mV below CHG_CV_PRM */
 	/*
