@@ -26,9 +26,9 @@ It is based on the main-line upstream at [http://git.denx.de][denx].
 
 Latest stable branch is:
 
-* [boundary-v2020.10](https://github.com/boundarydevices/u-boot-imx6/tree/boundary-v2020.10): Based on v2020.10.
+* [boundary-v2022.04](https://github.com/boundarydevices/u-boot/tree/boundary-v2022.04): Based on v2022.04.
 
-[Other branches](http://github.com/boundarydevices/u-boot-imx6/branches) are used for work in progress, sharing experimental code and to
+[Other branches](http://github.com/boundarydevices/u-boot/branches) are used for work in progress, sharing experimental code and to
 preserve the history for customers who base their efforts on ours.
 
 [denx]: http://git.denx.de "U-Boot Mainline Git repository"
