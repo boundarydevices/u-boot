@@ -1072,6 +1072,25 @@ ofnode ofnode_by_prop_value(ofnode from, const char *propname,
 	}
 }
 
+ofnode ofnode_get_child_by_name(ofnode parent, const char *name)
+{
+	ofnode child;
+	const char *child_name;
+
+	for (child = ofnode_first_subnode(parent);
+	     ofnode_valid(child);
+	     child = ofnode_next_subnode(child)) {
+
+		child_name = ofnode_get_name(child);
+
+		if (!strncmp(child_name, name, strlen(name))) {
+			break;
+		}
+
+	}
+	return child;
+}
+
 int ofnode_remove_prop(ofnode node, const char *propname)
 {
 	const struct device_node *np = ofnode_to_np(node);
