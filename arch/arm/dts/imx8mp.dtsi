@@ -614,23 +614,26 @@
 						  <&clk IMX8MP_CLK_AUDIO_AXI_SRC>,
 						  <&clk IMX8MP_CLK_IPG_AUDIO_ROOT>,
 						  <&clk IMX8MP_AUDIO_PLL1>,
-						  <&clk IMX8MP_AUDIO_PLL2>;
-				assigned-clock-parents = <&clk IMX8MP_SYS_PLL1_800M>,
-							 <&clk IMX8MP_ARM_PLL_OUT>,
-							 <&clk IMX8MP_SYS_PLL2_1000M>,
-							 <&clk IMX8MP_SYS_PLL1_800M>,
-							 <&clk IMX8MP_SYS_PLL2_500M>,
-							 <&clk IMX8MP_SYS_PLL1_800M>,
-							 <&clk IMX8MP_SYS_PLL1_800M>;
-				assigned-clock-rates = <0>, <0>,
-						       <1000000000>,
-						       <800000000>,
-						       <500000000>,
-						       <400000000>,
-						       <800000000>,
-						       <400000000>,
-						       <393216000>,
-						       <361267200>;
+						  <&clk IMX8MP_AUDIO_PLL2>,
+						  <&clk IMX8MP_CLK_HDMI_24M>;
+				assigned-clock-parents = <&clk IMX8MP_SYS_PLL1_800M>,	/* SRC */
+							 <&clk IMX8MP_ARM_PLL_OUT>,	/* CORE */
+							 <&clk IMX8MP_SYS_PLL2_1000M>,	/* NOC */
+							 <&clk IMX8MP_SYS_PLL1_800M>,	/* NOC_IO */
+							 <&clk IMX8MP_SYS_PLL2_500M>,	/* GIC */
+							 <&clk IMX8MP_SYS_PLL1_800M>,	/* AHB */
+							 <&clk IMX8MP_SYS_PLL1_800M>;	/* SRC */
+				assigned-clock-rates = <0>,		/* SRC */
+						       <0>,		/* CORE */
+						       <1000000000>,	/* NOC */
+						       <800000000>,	/* NOC_IO */
+						       <500000000>,	/* GIC */
+						       <400000000>,	/* AHB */
+						       <800000000>,	/* SRC */
+						       <400000000>,	/* IPG_AUDIO_ROOT */
+						       <393216000>,	/* AUDIO_PLL1 */
+						       <361267200>,	/* AUDIO_PLL2 */
+						       <24000000>;	/* HDMI_24M */
 			};
 
 			src: reset-controller@30390000 {
@@ -1282,8 +1285,8 @@
 			hdmimix_clk: clock-controller {
 				compatible = "fsl,imx8mp-hdmimix-clk";
 				#clock-cells = <1>;
-				clocks = <&hdmiphy_clk 0>;
-				clock-names = "hdmi_phy";
+				clocks = <&osc_24m>, <&hdmiphy_clk 0>;
+				clock-names = "osc_24m", "hdmi_phy";
 				reg = <0x32fc0000 0x1000>;
 				status = "disabled";
 			};
@@ -1390,12 +1393,10 @@
 				clock-names = "iahb", "isfr", "phy_int", "prep_clk", "skp_clk", "sfr_clk", "pix_clk",
 								"cec_clk", "apb_clk", "hpi_clk", "fdcc_ref", "pipe_clk";
 				assigned-clocks = <&clk IMX8MP_CLK_HDMI_APB>,
-							<&clk IMX8MP_CLK_HDMI_AXI>,
-							<&clk IMX8MP_CLK_HDMI_24M>;
+							<&clk IMX8MP_CLK_HDMI_AXI>;
 				assigned-clock-parents = <&clk IMX8MP_SYS_PLL1_133M>,
-							<&clk IMX8MP_SYS_PLL2_500M>,
-							<&clk IMX8MP_CLK_24M>;
-				assigned-clock-rates = <133000000>, <500000000>, <24000000>;
+							<&clk IMX8MP_SYS_PLL2_500M>;
+				assigned-clock-rates = <133000000>, <500000000>;
 				ddc-i2c-bus = <&hdmi_i2c>;
 				phys = <&hdmiphy>, <&hdmi_pavi 0>, <&hdmi_pavi 1>, <&hdmi_pavi 2>;
 				phy-names = "hdmi", "pavi", "pvi", "pai";
@@ -1426,7 +1427,7 @@
 			hdmiphy: hdmiphy@32fdff00 {
 				compatible = "fsl,samsung-hdmi-phy";
 				clocks = <&hdmimix_clk IMX8MP_CLK_HDMIMIX_TX_PHY_APB_CLK>,
-						<&hdmimix_clk IMX8MP_CLK_HDMIMIX_GLOBAL_XTAL24M_CLK>,
+						<&hdmimix_clk IMX8MP_CLK_HDMIMIX_TX_PHY_INT_CLK>,
 						<&hdmiphy_clk 0>;
 				clock-names = "apb", "ref", "hdmi_phy";
 				#phy-cells = <0>;
@@ -1440,7 +1441,7 @@
 				#size-cells = <0>;
 				reg = <0x32fdff00 0x100>;
 				compatible = "fsl,samsung-hdmi-phy-clk";
-				clocks = <&hdmimix_clk IMX8MP_CLK_HDMIMIX_GLOBAL_XTAL24M_CLK>;
+				clocks = <&hdmimix_clk IMX8MP_CLK_HDMIMIX_TX_PHY_INT_CLK>;
 				clock-names = "parent";
 				clock-output-names = "hdmi_phy";
 				status = "disabled";

@@ -18,7 +18,7 @@ struct clk_hdmimix_data {
 	struct clk *clks[IMX8MP_CLK_HDMIMIX_END];
 };
 
-static const char *imx_hdmi_phy_clks_sels[] = { "hdmi_glb_24m", "dummy",};
+static const char *imx_hdmi_phy_clks_sels[] = { "clock-osc-24m", "video_pll1_out",};
 static const char *imx_lcdif_clks_sels[] = { "dummy", "hdmi_glb_pix", };
 static const char *imx_hdmi_pipe_clks_sels[] = {"dummy","hdmi_glb_pix", };
 
@@ -158,6 +158,7 @@ static int imx_hdmimix_clk_probe(struct udevice *dev)
 	struct clk_hdmimix_data *priv = dev_get_priv(dev);
 	ofnode np = dev_ofnode(dev);
 	struct clk clk_tmp;
+	struct clk clk_24m;
 	void __iomem *base;
 	int ret;
 
@@ -168,23 +169,21 @@ static int imx_hdmimix_clk_probe(struct udevice *dev)
 
 	clk_dm1(IMX8MP_CLK_HDMIMIX_GLOBAL_XTAL24M_CLK, imx_dev_clk_gate(dev, "hdmi_glb_24m",     "hdmi_24m",      base + 0x40, 4));
 
-	/* probe parent of hdmi_glb_pix, child of above hdmi_glb_24m */
-	ret = clk_get_by_name_nodev(np, "hdmi_phy", &clk_tmp);
+	ret = clk_get_by_name_nodev(np, "osc_24m", &clk_24m);
 	if (ret)
-		debug("%s: hdmi_phy clock failed\n", __func__);
+		debug("%s: osc_24m clock failed\n", __func__);
 
 	clk_dm1(IMX8MP_CLK_HDMIMIX_GLOBAL_APB_CLK, imx_dev_clk_gate(dev, "hdmi_glb_apb",     "hdmi_apb",      base + 0x40, 0));
 	clk_dm1(IMX8MP_CLK_HDMIMIX_GLOBAL_B_CLK, imx_dev_clk_gate(dev, "hdmi_glb_b",       "hdmi_axi",      base + 0x40, 1));
 	clk_dm1(IMX8MP_CLK_HDMIMIX_GLOBAL_REF266M_CLK, imx_dev_clk_gate(dev, "hdmi_glb_ref_266m","hdmi_ref_266m", base + 0x40, 2));
 	clk_dm1(IMX8MP_CLK_HDMIMIX_GLOBAL_XTAL32K_CLK, imx_dev_clk_gate(dev, "hdmi_glb_32k",     "clock-osc-32k", base + 0x40, 5));
-	clk_dm1(IMX8MP_CLK_HDMIMIX_GLOBAL_TX_PIX_CLK, imx_dev_clk_gate(dev, "hdmi_glb_pix",     "hdmi_phy",      base + 0x40, 7));
+
 	clk_dm1(IMX8MP_CLK_HDMIMIX_IRQS_STEER_CLK, imx_dev_clk_gate(dev, "hdmi_irq_steer",   "hdmi_glb_apb",  base + 0x40, 9));
 	clk_dm1(IMX8MP_CLK_HDMIMIX_NOC_HDMI_CLK, imx_dev_clk_gate(dev, "hdmi_noc",         "hdmi_glb_apb",  base + 0x40, 10));
 	clk_dm1(IMX8MP_CLK_HDMIMIX_NOC_HDCP_CLK, imx_dev_clk_gate(dev, "hdcp_noc",         "hdmi_glb_apb",  base + 0x40, 11));
 	clk_dm1(IMX8MP_CLK_HDMIMIX_LCDIF_APB_CLK, imx_dev_clk_gate(dev, "lcdif3_apb",       "hdmi_glb_apb",  base + 0x40, 16));
 	clk_dm1(IMX8MP_CLK_HDMIMIX_LCDIF_B_CLK, imx_dev_clk_gate(dev, "lcdif3_b",         "hdmi_glb_b",    base + 0x40, 17));
 	clk_dm1(IMX8MP_CLK_HDMIMIX_LCDIF_PDI_CLK, imx_dev_clk_gate(dev, "lcdif3_pdi",       "hdmi_glb_apb",  base + 0x40, 18));
-	clk_dm1(IMX8MP_CLK_HDMIMIX_LCDIF_PIX_CLK, imx_dev_clk_gate(dev, "lcdif3_pxl",       "hdmi_glb_pix",  base + 0x40, 19));
 	clk_dm1(IMX8MP_CLK_HDMIMIX_LCDIF_SPU_CLK, imx_dev_clk_gate(dev, "lcdif3_spu",       "hdmi_glb_apb",  base + 0x40, 20));
 
 	clk_dm1(IMX8MP_CLK_HDMIMIX_FDCC_REF_CLK, imx_dev_clk_gate(dev, "hdmi_fdcc_ref",    "hdmi_fdcc_tst", base + 0x50, 2));
@@ -199,26 +198,35 @@ static int imx_hdmimix_clk_probe(struct udevice *dev)
 	clk_dm1(IMX8MP_CLK_HDMIMIX_TX_CEC_CLK, imx_dev_clk_gate(dev, "hdmi_cec",          "hdmi_glb_32k", base + 0x50, 15));
 	clk_dm1(IMX8MP_CLK_HDMIMIX_TX_ESM_CLK, imx_dev_clk_gate(dev, "hdmi_esm",     "hdmi_glb_ref_266m", base + 0x50, 16));
 	clk_dm1(IMX8MP_CLK_HDMIMIX_TX_GPA_CLK, imx_dev_clk_gate(dev, "hdmi_tx_gpa",       "hdmi_glb_apb", base + 0x50, 17));
-	clk_dm1(IMX8MP_CLK_HDMIMIX_TX_PIXEL_CLK, imx_dev_clk_gate(dev, "hdmi_tx_pix",       "hdmi_glb_pix", base + 0x50, 18));
 	clk_dm1(IMX8MP_CLK_HDMIMIX_TX_SFR_CLK, imx_dev_clk_gate(dev, "hdmi_tx_sfr",       "hdmi_glb_apb", base + 0x50, 19));
 	clk_dm1(IMX8MP_CLK_HDMIMIX_TX_SKP_CLK, imx_dev_clk_gate(dev, "hdmi_tx_skp",       "hdmi_glb_apb", base + 0x50, 20));
 	clk_dm1(IMX8MP_CLK_HDMIMIX_TX_PREP_CLK, imx_dev_clk_gate(dev, "hdmi_tx_prep",      "hdmi_glb_apb", base + 0x50, 21));
 	clk_dm1(IMX8MP_CLK_HDMIMIX_TX_PHY_APB_CLK, imx_dev_clk_gate(dev, "hdmi_phy_apb",      "hdmi_glb_apb", base + 0x50, 22));
-	clk_dm1(IMX8MP_CLK_HDMIMIX_TX_PHY_INT_CLK, imx_dev_clk_gate(dev, "hdmi_phy_int",      "hdmi_glb_apb", base + 0x50, 24));
 	clk_dm1(IMX8MP_CLK_HDMIMIX_TX_SEC_MEM_CLK, imx_dev_clk_gate(dev, "hdmi_sec_mem", "hdmi_glb_ref_266m", base + 0x50, 25));
 	clk_dm1(IMX8MP_CLK_HDMIMIX_TX_TRNG_SKP_CLK, imx_dev_clk_gate(dev, "hdmi_trng_skp",     "hdmi_glb_apb", base + 0x50, 27));
-	clk_dm1(IMX8MP_CLK_HDMIMIX_TX_VID_LINK_PIX_CLK, imx_dev_clk_gate(dev, "hdmi_vid_pix",     "hdmi_glb_pix", base + 0x50, 28));
 	clk_dm1(IMX8MP_CLK_HDMIMIX_TX_TRNG_APB_CLK, imx_dev_clk_gate(dev, "hdmi_trng_apb",     "hdmi_glb_apb", base + 0x50, 30));
 
 	clk_dm1(IMX8MP_CLK_HDMIMIX_HTXPHY_CLK_SEL, imx_dev_clk_mux(dev, "hdmi_phy_sel", base + 0x50, 10, 1, imx_hdmi_phy_clks_sels, ARRAY_SIZE(imx_hdmi_phy_clks_sels)));
-	clk_dm1(IMX8MP_CLK_HDMIMIX_LCDIF_CLK_SEL, imx_dev_clk_mux(dev, "lcdif_clk_sel", base + 0x50, 11, 1, imx_lcdif_clks_sels, ARRAY_SIZE(imx_hdmi_phy_clks_sels)));
+	clk_dm1(IMX8MP_CLK_HDMIMIX_TX_PHY_INT_CLK, imx_dev_clk_gate(dev, "hdmi_phy_int",      "hdmi_phy_sel", base + 0x50, 24));
+
+	/* probe parent of hdmi_glb_pix, child of above hdmi_glb_24m */
+	ret = clk_get_by_name_nodev(np, "hdmi_phy", &clk_tmp);
+	if (ret)
+		debug("%s: hdmi_phy clock failed\n", __func__);
+
+	clk_dm1(IMX8MP_CLK_HDMIMIX_GLOBAL_TX_PIX_CLK, imx_dev_clk_gate(dev, "hdmi_glb_pix",     "hdmi_phy",      base + 0x40, 7));
+	clk_dm1(IMX8MP_CLK_HDMIMIX_LCDIF_PIX_CLK, imx_dev_clk_gate(dev, "lcdif3_pxl",       "hdmi_glb_pix",  base + 0x40, 19));
+	clk_dm1(IMX8MP_CLK_HDMIMIX_TX_PIXEL_CLK, imx_dev_clk_gate(dev, "hdmi_tx_pix",       "hdmi_glb_pix", base + 0x50, 18));
+	clk_dm1(IMX8MP_CLK_HDMIMIX_TX_VID_LINK_PIX_CLK, imx_dev_clk_gate(dev, "hdmi_vid_pix",     "hdmi_glb_pix", base + 0x50, 28));
+
+	clk_dm1(IMX8MP_CLK_HDMIMIX_LCDIF_CLK_SEL, imx_dev_clk_mux(dev, "lcdif_clk_sel", base + 0x50, 11, 1, imx_lcdif_clks_sels, ARRAY_SIZE(imx_lcdif_clks_sels)));
 	clk_dm1(IMX8MP_CLK_HDMIMIX_TX_PIPE_CLK_SEL, imx_dev_clk_mux(dev, "hdmi_pipe_sel", base + 0x50, 12, 1, imx_hdmi_pipe_clks_sels, ARRAY_SIZE(imx_hdmi_pipe_clks_sels)));
 
 	/* hdmi/lcdif pixel clock parent to hdmi phy */
 	hdmi_clk_set_parent(priv->clks[IMX8MP_CLK_HDMIMIX_TX_PIPE_CLK_SEL], priv->clks[IMX8MP_CLK_HDMIMIX_GLOBAL_TX_PIX_CLK]);
 	hdmi_clk_set_parent(priv->clks[IMX8MP_CLK_HDMIMIX_LCDIF_CLK_SEL], priv->clks[IMX8MP_CLK_HDMIMIX_GLOBAL_TX_PIX_CLK]);
 	/* hdmi ref clock from 24MHz */
-	hdmi_clk_set_parent(priv->clks[IMX8MP_CLK_HDMIMIX_HTXPHY_CLK_SEL], priv->clks[IMX8MP_CLK_HDMIMIX_GLOBAL_XTAL24M_CLK]);
+	hdmi_clk_set_parent(priv->clks[IMX8MP_CLK_HDMIMIX_HTXPHY_CLK_SEL], &clk_24m);
 
 	return 0;
 }
