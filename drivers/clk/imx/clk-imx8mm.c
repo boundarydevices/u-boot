@@ -176,10 +176,10 @@ static int imx8mm_clk_probe(struct udevice *dev)
 			   pll_ref_sels, ARRAY_SIZE(pll_ref_sels)));
 
 	clk_dm(IMX8MM_VIDEO_PLL1,
-	       imx_clk_pll14xx("video_pll1", "video_pll1_ref_sel",
+	       imx_dev_clk_hw_pll14xx(dev, "video_pll1", "video_pll1_ref_sel",
 			       base + 0x28, &imx_1443x_pll));
 	clk_dm(IMX8MM_DRAM_PLL,
-	       imx_clk_pll14xx("dram_pll", "dram_pll_ref_sel",
+	       imx_dev_clk_hw_pll14xx(dev, "dram_pll", "dram_pll_ref_sel",
 			       base + 0x50, &imx_1443x_dram_pll));
 	clk_dm(IMX8MM_ARM_PLL,
 	       imx_clk_pll14xx("arm_pll", "arm_pll_ref_sel",
