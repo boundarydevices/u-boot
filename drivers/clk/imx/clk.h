@@ -48,9 +48,11 @@ struct clk *imx_clk_cpu(const char *name, const char *parent_name,
 		struct clk *div, struct clk *mux, struct clk *pll,
 		struct clk *step);
 
-struct clk *imx_clk_pll14xx(const char *name, const char *parent_name,
-			    void __iomem *base,
+struct clk *imx_dev_clk_hw_pll14xx(struct udevice *dev, const char *name,
+			    const char *parent_name, void __iomem *base,
 			    const struct imx_pll14xx_clk *pll_clk);
+#define imx_clk_pll14xx(name, parent_name, base, pll_clk) \
+	imx_dev_clk_hw_pll14xx(NULL, name, parent_name, base, pll_clk)
 
 struct clk *imx_clk_frac_pll(const char *name, const char *parent_name,
 			     void __iomem *base);

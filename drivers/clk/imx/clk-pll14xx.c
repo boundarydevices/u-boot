@@ -48,6 +48,11 @@ struct clk_pll14xx {
 	enum imx_pll14xx_type		type;
 	const struct imx_pll14xx_rate_table *rate_table;
 	int rate_count;
+	u32 ss_en;
+	u32 ss_sel;	/* 0 - down, 1 - up, 2 - center */
+	u32 ss_mf;
+	u32 ss_mr;
+	u32 ss_init_done;
 };
 
 #define to_clk_pll14xx(_clk) container_of(_clk, struct clk_pll14xx, clk)
@@ -82,18 +87,23 @@ static const struct imx_pll14xx_rate_table imx_pll1416x_tbl[] = {
 	PLL_1416X_RATE(600000000U,  300, 3, 2),
 };
 
+/* fout = (24M * (m + k/65536)/ p) >> s */
 const struct imx_pll14xx_rate_table imx_pll1443x_tbl[] = {
 	PLL_1443X_RATE(1039500000U, 173, 2, 1, 16384),
-	PLL_1443X_RATE(650000000U, 325, 3, 2, 0),	/* 12M * 325 / 6 = 650M */
-	PLL_1443X_RATE(594000000U, 198, 2, 2, 0),	/* 12M * 198 / 4 = 594M */
-	PLL_1443X_RATE(519750000U, 173, 2, 2, 16384),
-	PLL_1443X_RATE(497755966U, 166, 2, 2, -5331),	/* 12M * (166 - 5331/65536) / 4 = 497.7M */
-	PLL_1443X_RATE(453000000U, 151, 2, 2, 0),	/* 12M * 151 / 4 = 453M */
-	PLL_1443X_RATE(452900000U, 151, 2, 2, -2185),	/* 12M * (151 - 2185/65536) / 4 = 452.9M */
-	PLL_1443X_RATE(393216000U, 262, 2, 3, 9437),
-	PLL_1443X_RATE(384000000U, 192, 3, 2, 0),	/* 12M * 192 / 6 = 384M */
-	PLL_1443X_RATE(364000000U, 182, 3, 2, 0),	/* 12M * 182 / 6 = 364M */
-	PLL_1443X_RATE(361267200U, 361, 3, 3, 17511),
+	PLL_1443X_RATE(650000000U, 325, 3, 2, 0),	/* (24M * 325 / 3) >> 2 = 650M */
+	PLL_1443X_RATE(594000000U, 198, 2, 2, 0),	/* (24M * 198 / 2) >> 2 = 594M */
+	PLL_1443X_RATE(519750000U, 173, 2, 2, 16384),	/* (24M * (173 + 16384/65536) / 2) >> 2 = 519.75M */
+	PLL_1443X_RATE(497755966U, 166, 2, 2, -5331),	/* (24M * (166 - 5331/65536) / 2) >> 2 = 497.7M */
+	PLL_1443X_RATE(453000000U, 151, 2, 2, 0),	/* (24M * 151 / 2) >> 2 = 453M */
+	PLL_1443X_RATE(452900000U, 151, 2, 2, -2185),	/* (24M * (151 - 2185/65536) / 2) >> 2 = 452.9M */
+	PLL_1443X_RATE(393216000U, 262, 2, 3, 9437),	/* (24M * (262 + 9437/65536) / 2) >> 3 = 393.2M */
+	PLL_1443X_RATE(384000000U, 192, 3, 2, 0),	/* (24M * 192 / 3) >> 2 = 384M */
+	PLL_1443X_RATE(364000000U, 182, 3, 2, 0),	/* (24M * 182 / 3) >> 2 = 364M */
+	PLL_1443X_RATE(361267200U, 361, 3, 3, 17511),	/* (24M * (361 + 17511/65536) / 3) >> 3 = 361.2M */
+	PLL_1443X_RATE(360000000U, 180, 3, 2, 0),	/* (24M * 180 / 3) >> 4 = 360M */
+	PLL_1443X_RATE(148500000U, 149, 3, 3, -32768),	/* (24M * (148.5) / 3) >> 3 = 148.5M */
+	PLL_1443X_RATE(135000000U, 135, 3, 3, 0),	/* (24M * 135 / 3) >> 3 = 135M */
+	PLL_1443X_RATE(24000000U, 128, 2, 6, 0),	/* (24M * 128 / 2) >> 6 = 24M */
 };
 
 struct imx_pll14xx_clk imx_1443x_pll __initdata = {
@@ -298,8 +308,8 @@ static ulong clk_pll1443x_set_rate(struct clk *clk, unsigned long drate)
 
 		tmp = rate->kdiv << KDIV_SHIFT;
 		writel_relaxed(tmp, pll->base + 8);
-
-		return clk_pll1443x_recalc_rate(clk);
+		if (pll->ss_init_done || !pll->ss_en)
+			return clk_pll1443x_recalc_rate(clk);
 	}
 
 	/* Enable RST */
@@ -316,6 +326,23 @@ static ulong clk_pll1443x_set_rate(struct clk *clk, unsigned long drate)
 	writel(div_val, pll->base + 0x4);
 	writel(rate->kdiv << KDIV_SHIFT, pll->base + 0x8);
 
+	if (pll->ss_en) {
+		unsigned long mfr, mrr;
+
+		mfr = (24000000 / (rate->pdiv * pll->ss_mf)) >> 5;
+		mrr = ((pll->ss_mr << 6) * rate->mdiv) / (mfr * 100);
+		if (mrr && mfr && (mfr < 256) && (mrr < 64)) {
+			unsigned long v = BIT(31) + (mfr << 12) + (mrr << 4) +
+					pll->ss_sel;
+
+			writel_relaxed(v, pll->base + 0x0c);
+		} else {
+			printf("%s: invalid mfr(%ld) or mrr(%ld) for %d\n", __func__,
+				mfr, mrr, rate->rate);
+			writel_relaxed(0, pll->base + 0x0c);
+		}
+		pll->ss_init_done = 1;
+	}
 	/*
 	 * According to SPEC, t3 - t2 need to be greater than
 	 * 1us and 1/FREF, respectively.
@@ -398,14 +425,15 @@ static const struct clk_ops clk_pll1443x_ops = {
 	.get_rate	= clk_pll1443x_recalc_rate,
 };
 
-struct clk *imx_clk_pll14xx(const char *name, const char *parent_name,
-			    void __iomem *base,
+struct clk *imx_dev_clk_hw_pll14xx(struct udevice *dev, const char *name,
+			    const char *parent_name, void __iomem *base,
 			    const struct imx_pll14xx_clk *pll_clk)
 {
 	struct clk_pll14xx *pll;
 	struct clk *clk;
 	char *type_name;
 	int ret;
+	ofnode np = dev ? ofnode_get_child_by_name(dev_ofnode(dev), name) : ofnode_null();
 
 	pll = kzalloc(sizeof(*pll), GFP_KERNEL);
 	if (!pll)
@@ -429,6 +457,22 @@ struct clk *imx_clk_pll14xx(const char *name, const char *parent_name,
 	pll->rate_table = pll_clk->rate_table;
 	pll->rate_count = pll_clk->rate_count;
 
+	if (ofnode_valid(np)) {
+		u32 value;
+
+		if (!ofnode_read_u32(np,
+			"spread-spectrum", &value)) {
+			pll->ss_sel = value & 3;
+			pll->ss_en = 1;
+		}
+		ofnode_read_u32(np, "modulation-frequency",
+			&pll->ss_mf);
+		ofnode_read_u32(np, "modulation-range",
+			&pll->ss_mr);
+		if (!pll->ss_mf || !pll->ss_mr)
+			pll->ss_en = 0;
+		debug("%s: %s en:%d, sel:%d, mf:%d, mr:%d\n", __func__, name, pll->ss_en, pll->ss_sel, pll->ss_mf, pll->ss_mr);
+	}
 	clk = &pll->clk;
 
 	ret = clk_register(clk, type_name, name, parent_name);
