@@ -8,6 +8,7 @@
 #include <dt-bindings/gpio/gpio.h>
 #include <dt-bindings/interrupt-controller/irq.h>
 #include <dt-bindings/interrupt-controller/arm-gic.h>
+#include <dt-bindings/pinctrl/mediatek,mt8188-pinfunc.h>
 #include <dt-bindings/phy/phy.h>
 
 / {
@@ -190,6 +191,22 @@
 			compatible = "mediatek,mt8195-apmixedsys", "syscon";
 			reg = <0 0x1000c000 0 0x1000>;
 			#clock-cells = <1>;
+		};
+
+		pio: pinctrl@10005000 {
+			compatible = "mediatek,mt8188-pinctrl";
+			reg = <0 0x10005000 0 0x1000>,
+			<0 0x11c00000 0 0x1000>,
+			<0 0x11e10000 0 0x1000>,
+			<0 0x11e20000 0 0x1000>,
+			<0 0x11ea0000 0 0x1000>,
+			<0 0x1000b000 0 0x1000>;
+			reg-names = "iocfg0", "iocfg_rm", "iocfg_lt",
+				    "iocfg_lm", "iocfg_rt", "eint";
+			gpio: gpio-controller {
+				gpio-controller;
+				#gpio-cells = <2>;
+			};
 		};
 
 		uart0: serial@11001100 {
