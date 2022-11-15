@@ -135,6 +135,14 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IOMUX_PAD_CTRL(SAI1_TXD0__GPIO4_IO12, 0x80),	/* 108, LTE_NET_MODE */
 #define GP_EC21_RI		IMX_GPIO_NR(4, 0)
 	IOMUX_PAD_CTRL(SAI1_RXFS__GPIO4_IO0, 0x80),	/*  96, LTE_RI */
+#define GP_12VEN		IMX_GPIO_NR(4, 5)
+	IOMUX_PAD_CTRL(SAI1_RXD3__GPIO4_IO5, 0x100),
+#define GP_J55P1		IMX_GPIO_NR(4, 31)
+	IOMUX_PAD_CTRL(SAI3_TXFS__GPIO4_IO31, 0x100),	/* J55, Pin 1 12V off */
+#define GP_J55P2		IMX_GPIO_NR(5, 0)
+	IOMUX_PAD_CTRL(SAI3_TXC__GPIO5_IO0, 0x100),	/* J55, Pin 2 12V off */
+#define GP_J55P3		IMX_GPIO_NR(5, 1)
+	IOMUX_PAD_CTRL(SAI3_TXD__GPIO5_IO1, 0x100),	/* J55, Pin 3 12V off */
 };
 
 static const struct gpio_reserve gpios_to_reserve[] = {
@@ -164,6 +172,10 @@ static const struct gpio_reserve gpios_to_reserve[] = {
 	{ GP_LCD133_070_RESET, GPIOD_IN, GRF_FREE, "lcd133_070_reset", },
 	{ GPIRQ_CSI1_TC3587, GPIOD_IN, 0, "tc3587_irq", },	/* also "csi1_mipi_pwdn" */
 	{ GP_OV5640_MIPI_RESET, GPIOD_OUT_LOW, 0, "csi1_mipi_reset", },
+	{ GP_12VEN, GPIOD_OUT_LOW, 0, "12VEN", },
+	{ GP_J55P1, GPIOD_OUT_LOW, 0, "J55P1", },
+	{ GP_J55P2, GPIOD_OUT_LOW, 0, "J55P2", },
+	{ GP_J55P3, GPIOD_OUT_LOW, 0, "J55P3", },
 };
 
 int board_early_init_f(void)
