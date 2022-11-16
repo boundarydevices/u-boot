@@ -17,9 +17,9 @@
 	#size-cells = <2>;
 
 	aliases {
-		gpio0 = &gpiod;
-		gpio1 = &gpioe;
-		gpio2 = &gpiof;
+		gpio4 = &gpiod;
+		gpio5 = &gpioe;
+		gpio6 = &gpiof;
 		serial0 = &lpuart5;
 		mmc0 = &usdhc0;
 		mmc1 = &usdhc1;
