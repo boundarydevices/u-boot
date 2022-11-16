@@ -139,7 +139,7 @@ static int imx_rgpio2p_probe(struct udevice *dev)
 	char name[18], *str;
 
 	banknum = plat->bank_index;
-	sprintf(name, "GPIO%d_", banknum + 1);
+	sprintf(name, "GPIO%c_", banknum ? (banknum + 'A' - 1)  : '0');
 	str = strdup(name);
 	if (!str)
 		return -ENOMEM;
