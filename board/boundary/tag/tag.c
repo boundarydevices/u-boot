@@ -170,6 +170,9 @@ static void mipi_dsi_panel_backlight(void)
 
 int board_init(void)
 {
+	printf("m33 booted: %d\n", m33_image_booted());
+	printf("m33 handshake: %d\n", m33_image_handshake(1000));
+
 	gpio_request(GP_TS_ATMEL_RESET, "atmel_reset");
 	gpio_request(GP_I2C6_HAPTICS_EN, "haptic_en");
 	gpio_direction_output(GP_TS_ATMEL_RESET, 0);
