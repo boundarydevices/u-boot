@@ -19,11 +19,12 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
+static iomux_cfg_t const init_pads[] = {
 #if IS_ENABLED(CONFIG_FEC_MXC)
 #define ENET_CLK_PAD_CTRL	(PAD_CTL_PUS_UP | PAD_CTL_DSE | PAD_CTL_IBE_ENABLE)
-static iomux_cfg_t const init_pads[] = {
 	IMX8ULP_PAD_PTF7__ENET0_REFCLK | MUX_PAD_CTRL(ENET_CLK_PAD_CTRL),
 	IMX8ULP_PAD_PTE13__ENET0_1588_CLKIN | MUX_PAD_CTRL(ENET_CLK_PAD_CTRL),
+#endif
 
 	IMX8ULP_PAD_PTE4__LPI2C5_SCL | MUX_PAD_CTRL(PAD_CTL_PUS_UP | PAD_CTL_ODE),
 	IMX8ULP_PAD_PTE5__LPI2C5_SDA | MUX_PAD_CTRL(PAD_CTL_PUS_UP | PAD_CTL_ODE),
@@ -91,7 +92,7 @@ static iomux_cfg_t const init_pads[] = {
 	IMX8ULP_PAD_PTE2__PTE2 | MUX_PAD_CTRL(PAD_CTL_PUS_UP),
 	IMX8ULP_PAD_PTE3__PTE3 | MUX_PAD_CTRL(PAD_CTL_PUS_UP),
 	IMX8ULP_PAD_PTE6__PTE6 | MUX_PAD_CTRL(PAD_CTL_PUS_UP),
-#define GP_LCM_RST		IMX_GPIO_NR(2, 7)
+#define GP_LCD_RESET		IMX_GPIO_NR(2, 7)
 	IMX8ULP_PAD_PTE7__PTE7 | MUX_PAD_CTRL(PAD_CTL_PUS_DOWN),
 #define GP_BACKLIGHT_PWM	IMX_GPIO_NR(2, 8)
 	IMX8ULP_PAD_PTE8__PTE8 | MUX_PAD_CTRL(PAD_CTL_PUS_DOWN),
@@ -121,6 +122,7 @@ static iomux_cfg_t const init_pads[] = {
 	IMX8ULP_PAD_PTF28__PTF28 | MUX_PAD_CTRL(PAD_CTL_PUS_UP),
 };
 
+#if IS_ENABLED(CONFIG_FEC_MXC)
 static int setup_fec(void)
 {
 	/* Select enet time stamp clock: 001 - External Timestamp Clock */
@@ -146,6 +148,7 @@ static const iomux_cfg_t mipi_pads[] = {
 
 static const struct display_info_t displays[] = {
 	VD_Q035_014(MIPI, NULL, fbp_bus_gp(0, 0, 0, 0), 0x0),
+	VD_MIPI_COM35H3R04ULY(MIPI, NULL, fbp_bus_gp(0, 0, GP_LCD_RESET, 0), 0x0),
 };
 #define display_cnt	ARRAY_SIZE(displays)
 
@@ -183,10 +186,10 @@ int board_init(void)
 	gpio_direction_output(GP_PTF21, 0);
 #endif
 
-	gpio_request(GP_LCM_RST, "lcm_rst");
+	gpio_request(GP_LCD_RESET, "lcd_rst");
 	gpio_request(GP_BACKLIGHT_PWM, "backlight_pwm");
 	gpio_request(GP_BACKLIGHT_EN, "backlight_en");
-	gpio_direction_output(GP_LCM_RST, 1);
+	gpio_direction_output(GP_LCD_RESET, 1);
 	gpio_direction_output(GP_BACKLIGHT_PWM, 1);
 	gpio_direction_output(GP_BACKLIGHT_EN, 1);
 
