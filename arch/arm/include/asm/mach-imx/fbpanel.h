@@ -144,6 +144,7 @@ struct display_info_t {
 #define FBF_U_M101NWWB		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_SYNC_PULSE | FBF_MIPI_CMDS | FBF_DSI_LANES_4)
 #define FBF_U_TM070JDHG30	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_SYNC_PULSE | FBF_MIPI_CMDS | FBF_DSI_LANES_4)
 #define FBF_DLC0350GEV06	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_PINCTRL | FBF_ENABLE_GPIOS_DTB | FBF_ENABLE_GPIOS_OPEN_DRAIN)
+#define FBF_COM35H3R04ULY	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_SYNC_PULSE | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_PINCTRL | FBF_ENABLE_GPIOS_DTB)
 #define FBF_LCD133_070		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_PINCTRL | FBF_ENABLE_GPIOS_DTB)
 #define FBF_TCXD070		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_PINCTRL | FBF_BKLIT_EN_DTB | FBF_ENABLE_GPIOS_DTB)
 #define FBF_ZWT055AZH		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_PINCTRL | FBF_BKLIT_EN_DTB | FBF_ENABLE_GPIOS_DTB)
@@ -302,6 +303,7 @@ void fbp_setup_env_cmds(void);
 #define VD_MIPI_AM_TFT1280X800W(_mode, args...)	VDF_AM_TFT1280X800W(_mode, "am-tft1280x800w", RGB24, FBF_AM_TFT1280X800W, args)
 #define VD_MIPI_MTD0900DCP27KF(_mode, args...)	VDF_MIPI_MTD0900DCP27KF(_mode, "mtd0900dcp27kf", RGB24, FBF_MTD0900DCP27KF, args)
 #define VD_MIPI_DLC0350GEV06(_mode, args...)	VDF_MIPI_DLC0350GEV06(_mode, "dlc0350gev06", RGB24, FBF_DLC0350GEV06, args)
+#define VD_MIPI_COM35H3R04ULY(_mode, args...)	VDF_MIPI_COM35H3R04ULY(_mode, "com35h3r04uly", RGB24, FBF_COM35H3R04ULY, args)
 #define VD_MIPI_LCD133_070(_mode, args...)	VDF_MIPI_LCD133_070(_mode, "lcd133_070", RGB24, FBF_LCD133_070, args)
 #define VD_MIPI_X090DTLNC01(_mode, args...)	VDF_MIPI_X090DTLNC01(_mode, "x090dtlnc01", RGB24, FBF_B_M101NWWB, args)
 #define VD_MIPI_WVGA_TX23D200_24H(_mode, args...) VDF_WVGA_TX23D200(_mode, "tx23d200_24h", RGB24, FBF_MIPI_LT8912, args)
@@ -1761,6 +1763,27 @@ void fbp_setup_env_cmds(void);
 	}\
 }
 #endif
+
+/* COM35H3R04ULY 640x960 */
+#define VDF_MIPI_COM35H3R04ULY(_mode, _name, _fmt, _flags, args...) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, args),\
+	.mode	= {\
+		.name		= _name,\
+		.refresh	= 60,\
+		.xres		= 640,\
+		.yres		= 960,\
+		.pixclock	= 1000000000000ULL / (640+32+28+36) / (960+14+8+2) / 60,\
+		.left_margin	= 32,\
+		.right_margin	= 28,\
+		.upper_margin	= 14,\
+		.lower_margin	= 8,\
+		.hsync_len	= 36,\
+		.vsync_len	= 2,\
+		.sync           = FB_SYNC_EXT | FB_SYNC_CLK_LAT_FALL,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
 
 #define VDF_MIPI_LCD133_070(_mode, _name, _fmt, _flags, args...) \
 {\
