@@ -119,17 +119,68 @@ static void phyref_set_rate(struct nwl_dsi *dsi, unsigned long rate)
 	}
 }
 
-static u32 get_pixclock(struct nwl_dsi *dsi, unsigned long pixclock)
-{
-	u32 video_pll;
-	int ret;
-	unsigned long pix = -EINVAL;
-	u32 n;
+#define DCNANO_CRTC_PLL_MIN_RATE	271500000
+#define DCNANO_CRTC_PLL_MAX_RATE	792000000
 
-	video_pll = pixclock;
+static unsigned long find_best_pll_rate_imx8ulp(struct nwl_dsi *dsi, unsigned long pixclock)
+{
+	unsigned n = (pixclock + DCNANO_CRTC_PLL_MIN_RATE - 1) / pixclock;
+	unsigned long video_pll = pixclock * n;
+	unsigned long min = pixclock - (pixclock >> 3);
+	unsigned long best_diff = ~0;
+	unsigned long best_pll_rate = 0;
+	int ret;
+
+	while (video_pll <= DCNANO_CRTC_PLL_MAX_RATE) {
+		unsigned long rounded_pll_clk_rate = clk_round_rate(
+				dsi->pll_clk, video_pll);
+		unsigned long div = (rounded_pll_clk_rate + (pixclock >> 1)) / pixclock;
+		unsigned long rate = rounded_pll_clk_rate / div;
+		unsigned long diff;
+
+		if (div > 64)
+			break;
+		debug("%s: requested %lu, got %lu \n", __func__,
+				video_pll, rounded_pll_clk_rate);
+		if (rate > pixclock)
+			diff = rate - pixclock;
+		else
+			diff = pixclock - rate;
+		if ((rate >= min) && (best_diff > diff)) {
+			best_pll_rate = rounded_pll_clk_rate;
+			best_diff = diff;
+			debug("%s: %ld = %lu / %ld\n", __func__,
+				rate, rounded_pll_clk_rate, div);
+			if (diff < 5)
+				break;
+		}
+		video_pll += pixclock;
+	}
+
+	if (!best_pll_rate) {
+		debug("%s: failed to find pll clock rate\n", __func__);
+		ret = -EINVAL;
+	} else {
+		ret = clk_set_rate(dsi->pll_clk, best_pll_rate);
+	}
+	if (ret < 0) {
+		debug("clk_set_rate %ld failed(%d)\n", best_pll_rate, ret);
+		best_pll_rate = clk_get_rate(dsi->pll_clk);
+		debug("rate is %ld\n", best_pll_rate);
+	}
+	debug("%s: pll requested %ld, got %ld\n", __func__,
+			best_pll_rate, clk_get_rate(dsi->pll_clk));
+	return best_pll_rate;
+}
+
+static unsigned long find_best_pll_rate(struct nwl_dsi *dsi, unsigned long pixclock)
+{
+	unsigned long video_pll = pixclock;
+	int ret;
+
 	/* Video pll must be from 500MHz to 2000 MHz */
 	if (video_pll < 500000000) {
-		int n = (500000000 + video_pll - 1) / video_pll;
+		u32 n = (500000000 + video_pll - 1) / video_pll;
 		int bit;
 
 		do {
@@ -139,21 +190,38 @@ static u32 get_pixclock(struct nwl_dsi *dsi, unsigned long pixclock)
 			n += (1 << bit);
 		} while (1);
 		video_pll *= n;
-		debug("%s: %d = %ld * %d\n", __func__, video_pll, pixclock, n);
+		debug("%s: %ld = %ld * %d\n", __func__, video_pll, pixclock, n);
 	}
 	ret = clk_set_rate(dsi->pll_clk, video_pll);
 	if (ret < 0) {
-		debug("clk_set_rate %d failed(%d)\n", video_pll, ret);
+		debug("clk_set_rate %ld failed(%d)\n", video_pll, ret);
 		video_pll = clk_get_rate(dsi->pll_clk);
-		debug("rate is %d\n", video_pll);
+		debug("rate is %ld\n", video_pll);
 	}
-	if (dsi->lcdif_clk) {
-		struct clk *cp;
+	return video_pll;
+}
 
-		cp = clk_get_parent(dsi->lcdif_clk);
+static u32 get_pixclock(struct nwl_dsi *dsi, unsigned long pixclock)
+{
+	unsigned long video_pll;
+	unsigned long pix = -EINVAL;
+
+	if (device_is_compatible(dsi->dev, "fsl,imx8ulp-nwl-dsi"))
+		video_pll = find_best_pll_rate_imx8ulp(dsi, pixclock);
+	else
+		video_pll = find_best_pll_rate(dsi, pixclock);
+
+	if (dsi->lcdif_clk) {
+		struct clk *cp = clk_get_parent(dsi->lcdif_clk);
+
 		if (!IS_ERR(cp)) {
-			ret = clk_set_rate(cp, pixclock);
+			int ret = clk_set_rate(cp, pixclock);
+			if (ret)
+				debug("%s: failed to set parent clock rate\n", __func__);
 		}
+		debug("%s: lcdif parent requested %ld, got %ld\n", __func__,
+				pixclock, clk_get_rate(cp));
+
 		pix = clk_round_rate(dsi->lcdif_clk, pixclock);
 		if (IS_ERR_VALUE(pix)) {
 			clk_set_rate(dsi->lcdif_clk, pixclock);
@@ -161,7 +229,7 @@ static u32 get_pixclock(struct nwl_dsi *dsi, unsigned long pixclock)
 		}
 	}
 	if (IS_ERR_VALUE(pix)) {
-		n = (video_pll + (pixclock >> 1)) / pixclock;
+		int n = (video_pll + (pixclock >> 1)) / pixclock;
 		pix = video_pll / n;
 	}
 	dsi->pixclock = pix;
