@@ -99,38 +99,25 @@ static unsigned long clk_pfdv2_recalc_rate(struct clk *hw)
 
 static ulong clk_pfdv2_determine_rate(struct clk *hw, ulong rate)
 {
-	unsigned long parent_rates[] = {
-					480000000,
-					528000000,
-				       };
-	unsigned long best_rate = -1UL;
-	unsigned long best_parent_rate = parent_rates[0];
+	unsigned long parent_rate = clk_get_parent_rate(hw);
 	u64 tmp;
-	u8 frac;
-	int i;
+	unsigned frac;
 
-	for (i = 0; i < ARRAY_SIZE(parent_rates); i++) {
-		tmp = parent_rates[i];
-		tmp = tmp * 18 + rate / 2;
-		do_div(tmp, rate);
-		frac = tmp;
+	tmp = parent_rate;
+	tmp = tmp * 18 + rate / 2;
+	do_div(tmp, rate);
+	frac = tmp;
 
-		if (frac < 12)
-			frac = 12;
-		else if (frac > 35)
-			frac = 35;
+	if (frac < 12)
+		frac = 12;
+	else if (frac > 35)
+		frac = 35;
 
-		tmp = parent_rates[i];
-		tmp *= 18;
-		do_div(tmp, frac);
+	tmp = parent_rate;
+	tmp *= 18;
+	do_div(tmp, frac);
 
-		if (abs(tmp - rate) < abs(best_rate - rate)) {
-			best_rate = tmp;
-			best_parent_rate = parent_rates[i];
-		}
-	}
-
-	return best_rate;
+	return tmp;
 }
 
 static int clk_pfdv2_is_enabled(struct clk *hw)
