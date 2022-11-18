@@ -831,6 +831,11 @@ static int common_panel_init(struct udevice *dev)
 
 	if (!ret && p->linked_panel)
 		panel_init(p->linked_panel);
+
+	p->dsi = dsi;
+	ret = panel_common_prepare(p);
+	if (ret)
+		return ret;
 	return ret;
 }
 
@@ -844,9 +849,6 @@ static int common_panel_enable(struct udevice *dev)
 	debug("%s: start, backlight = '%s'\n", __func__,
 		p->backlight ? p->backlight->name : "none");
 	p->dsi = dsi;
-	ret = panel_common_prepare(p);
-	if (ret)
-		return ret;
 	ret = mipi_dsi_enable_lpm(dsi);
 	if (ret && (ret != -ENOSYS))
 		return ret;
