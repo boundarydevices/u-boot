@@ -151,7 +151,7 @@ static const iomux_cfg_t mipi_pads[] = {
 };
 
 static const struct display_info_t displays[] = {
-	VD_Q035_014(MIPI, NULL, fbp_bus_gp(0, 0, 0, 0), 0x0),
+	VD_Q035_014(MIPI, NULL, fbp_bus_gp(0, 0, GP_LCD_RESET, 0), 0x0),
 	VD_MIPI_COM35H3R04ULY(MIPI, NULL, fbp_bus_gp(0, 0, GP_LCD_RESET, 0), 0x0),
 };
 #define display_cnt	ARRAY_SIZE(displays)
@@ -190,10 +190,8 @@ int board_init(void)
 	gpio_direction_output(GP_PTF21, 0);
 #endif
 
-	gpio_request(GP_LCD_RESET, "lcd_rst");
 	gpio_request(GP_BACKLIGHT_PWM, "backlight_pwm");
 	gpio_request(GP_BACKLIGHT_EN, "backlight_en");
-	gpio_direction_output(GP_LCD_RESET, 1);
 	gpio_direction_output(GP_BACKLIGHT_PWM, 1);
 	gpio_direction_output(GP_BACKLIGHT_EN, 1);
 
@@ -214,5 +212,7 @@ int board_init(void)
 int board_early_init_f(void)
 {
 	imx8ulp_iomux_setup_multiple_pads(init_pads, ARRAY_SIZE(init_pads));
+	gpio_request(GP_LCD_RESET, "lcd_rst");
+	gpio_direction_output(GP_LCD_RESET, 0);
 	return 0;
 }
