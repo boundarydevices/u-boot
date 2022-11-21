@@ -45,6 +45,7 @@
  * s : display uses SPLITMODE, fdt set ldb split-mode 1
  * b : pix_fmt = IPU_PIX_FMT_BGR24
  * S : This display requires SPI initialization
+ * A : use alternate pwm
  * D : Change dtb backlight level, fdt set backlight_lvds brightness-levels <0 1 2 3 4 5 6 7 8 9 10>
  * b : Change dtb backlight level, low active, fdt set backlight_lvds brightness-levels <10 9 8 7 6 5 4 3 2 1 0>
  * P : Set pinctrl, fdt get value pin pinctrl_##[mode_str_name] phandle; fdt set fb_mipi pinctrl-0 <${pin}>; fdt set fb_mipi pinctrl-names default
@@ -184,6 +185,8 @@ static const char *const backlight_names[] = {
 [FB_LVDS2] = "backlight_lvds2",
 [FB_MIPI] = "backlight_mipi",
 };
+
+static const char backlight_alt[] = "backlight_alt";
 
 static const char *const pwm_names[] = {
 [FB_HDMI] = "pwm_hdmi",
@@ -786,7 +789,14 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 	if (fb == FB_LVDS)
 		lvds_enabled = 1;
 
-	if (fb != FB_HDMI) {
+	if (di->fbflags & FBF_ALT_PWM) {
+		sz = set_status(buf, size, backlight_names[fb], false);
+		buf += sz;
+		size -= sz;
+		sz = set_status(buf, size, backlight_alt, true);
+		buf += sz;
+		size -= sz;
+	} else if (fb != FB_HDMI) {
 		if ((fb != FB_MIPI) || scan_for_alias(di, FBP_BACKLIGHT_MIPI2)) {
 			sz = set_status(buf, size, backlight_names[fb], true);
 			buf += sz;
@@ -1790,6 +1800,7 @@ static struct flags_check fc1[] = {
 
 static struct flags_check fc2[] = {
 	{ 'S', FBF_SPI},
+	{ 'A', FBF_ALT_PWM},
 	{ 'D', FBF_BKLIT_DTB},
 	{ 'b', FBF_BKLIT_LOW_ACTIVE},
 	{ 'P', FBF_PINCTRL},

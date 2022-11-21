@@ -114,8 +114,9 @@ struct display_info_t {
 #define FBF_USE_IPU_CLOCK	BIT(20)
 #define FBF_MODESTR_IPU		(FBF_MODESTR | FBF_USE_IPU_CLOCK)
 #define FBF_ENABLE_GPIOS_OPEN_DRAIN BIT(21)
+#define FBF_ALT_PWM		BIT(22)
 
-#define FBF_DSI_LANE_SHIFT	28
+#define FBF_DSI_LANE_SHIFT	29
 #define FBF_DSI_LANES_1		(0x1 << FBF_DSI_LANE_SHIFT)
 #define FBF_DSI_LANES_2		(0x2 << FBF_DSI_LANE_SHIFT)
 #define FBF_DSI_LANES_3		(0x3 << FBF_DSI_LANE_SHIFT)
@@ -163,7 +164,7 @@ struct display_info_t {
 #define FBF_AM_TFT1280X800W	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_SYNC_PULSE | FBF_DSI_LANES_4)
 #define FBF_OSD050T		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_2)
 
-	int	fbflags;
+	unsigned fbflags;
 	unsigned char enable_alias[2];
 	struct	fb_videomode mode;
 };
@@ -273,6 +274,7 @@ void fbp_setup_env_cmds(void);
 #define VD_ASIT500MA6F5D(_mode, args...)	VDF_ASIT500MA6F5D(_mode, "ASIT500MA6F5D", RGB24, FBF_MODESTR, args)
 #define VD_FUSION7(_mode, args...)		VDF_FUSION7(_mode, "fusion7", RGB666, FBF_MODESTR, args)
 #define VD_HANNSTAR(_mode, args...)		VDF_HANNSTAR(_mode, "hannstar", RGB666, 0, args)
+#define VD_TCG104XGLPAPNN(_mode, args...)	VDF_HANNSTAR(_mode, "tcg104xglpapnn", RGB24, FBF_ALT_PWM, args)
 #define VD_1024_600(_mode, args...)		VDF_1024_600(_mode, "1024x600", RGB666, 0, args)
 #define VD_AFK1024600A02(_mode, args...)	VDF_AFK1024600A02(_mode, "AFK1024600A02", RGB24, 0, args)
 #define VD_LG9_7(_mode, args...)		VDF_LG9_7(_mode, "lg9.7", RGB666, 0, args)
