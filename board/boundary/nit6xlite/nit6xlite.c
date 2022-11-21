@@ -228,6 +228,12 @@ static const iomux_v3_cfg_t init_pads[] = {
 	IOMUX_PAD_CTRL(NANDF_CS1__GPIO6_IO14, WEAK_PULLDN),
 };
 
+static const iomux_v3_cfg_t alt_pwm_pads[] = {
+	IOMUX_PAD_CTRL(GPIO_17__GPIO7_IO12, WEAK_PULLUP),
+#define GP_ALT_ROTATE	IMX_GPIO_NR(1, 18)
+	IOMUX_PAD_CTRL(SD1_CMD__GPIO1_IO18, WEAK_PULLDN),
+};
+
 #ifdef CONFIG_CMD_FBPANEL
 static const iomux_v3_cfg_t rgb_pads[] = {
 	IOMUX_PAD_CTRL(DI0_DISP_CLK__IPU1_DI0_DISP_CLK, RGB_PAD_CTRL),
@@ -332,7 +338,13 @@ int board_spi_cs_gpio(unsigned bus, unsigned cs)
 #ifdef CONFIG_CMD_FBPANEL
 void board_enable_lvds(const struct display_info_t *di, int enable)
 {
-	gpio_direction_output(GP_BACKLIGHT_LVDS, enable);
+	if (di->fbflags & FBF_ALT_PWM) {
+		SETUP_IOMUX_PADS(alt_pwm_pads);			/* pin 19 high: 24 bit color */
+		gpio_direction_output(GP_ALT_ROTATE, 0);	/* pin 20 low: don't rotate 180*/
+	} else {
+		gpio_direction_output(GP_BACKLIGHT_LVDS, enable);
+
+	}
 	gpio_direction_output(GP_BACKLIGHT_LVDS_EN, enable);
 }
 
@@ -374,6 +386,7 @@ static const struct display_info_t displays[] = {
 	VD_WSVGA(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
 
 	VD_HANNSTAR(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x04, FBTS_EGALAX),
+	VD_TCG104XGLPAPNN(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, 0, 0), 0x04),
 	VD_LG9_7(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x04, FBTS_EGALAX),
 	VD_SHARP_LQ101K1LY04(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
 
