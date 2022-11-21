@@ -13,7 +13,6 @@
 
 #define CONFIG_MACH_TYPE	3769
 
-#define CONFIG_VIDEO_LOGO
 
 #define CONFIG_ARP_TIMEOUT     200UL
 
