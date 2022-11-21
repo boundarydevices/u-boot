@@ -18,7 +18,6 @@
 
 /* Size of malloc() pool */
 
-#define CONFIG_VIDEO_LOGO
 
 #define CONFIG_IMX_HDMI
 #define CONFIG_SYS_FSL_USDHC_NUM	2
