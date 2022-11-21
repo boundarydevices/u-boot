@@ -21,7 +21,6 @@
 #define CONFIG_USB_MAX_CONTROLLER_COUNT 2
 #define BD_CONSOLE	"ttymxc1"
 #define BD_LOG_LEVEL	"7"
-#define CONFIG_VIDEO_LOGO
 
 #include "boundary.h"
 #define CONFIG_EXTRA_ENV_SETTINGS BD_BOUNDARY_ENV_SETTINGS
