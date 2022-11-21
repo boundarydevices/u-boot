@@ -92,7 +92,6 @@
 #endif
 
 #if 1
-#define CONFIG_VIDEO_LOGO
 #endif
 #define BD_CONSOLE "ttymxc0"
 #define BD_MMC_DISKS "0"
