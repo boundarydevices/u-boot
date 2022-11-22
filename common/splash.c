@@ -112,7 +112,7 @@ void splash_get_pos(int *x, int *y)
 }
 #endif /* CONFIG_SPLASH_SCREEN_ALIGN */
 
-#if defined(CONFIG_DM_VIDEO) && !defined(CONFIG_HIDE_LOGO_VERSION)
+#if !defined(CONFIG_HIDE_LOGO_VERSION)
 
 #ifdef CONFIG_VIDEO_LOGO
 #include <bmp_logo.h>
@@ -120,16 +120,24 @@ void splash_get_pos(int *x, int *y)
 #include <dm.h>
 #include <video_console.h>
 #include <video_font.h>
+#if !defined(CONFIG_DM_VIDEO)
+#include <stdio_dev.h>
+#endif
 
 void splash_display_banner(ulong addr)
 {
-	struct udevice *dev;
 	char buf[DISPLAY_OPTIONS_BANNER_LENGTH];
-	int col, row, ret;
+	int col, row;
+#if defined(CONFIG_DM_VIDEO)
+	struct udevice *dev;
+	int ret;
 
 	ret = uclass_get_device(UCLASS_VIDEO_CONSOLE, 0, &dev);
 	if (ret)
 		return;
+#else
+	struct stdio_dev *dev = stdio_get_by_name("vga");
+#endif
 
 #ifdef CONFIG_VIDEO_LOGO
 	if (addr) {
@@ -145,9 +153,15 @@ void splash_display_banner(ulong addr)
 #endif
 
 	display_options_get_banner(false, buf, sizeof(buf));
+#if defined(CONFIG_DM_VIDEO)
 	vidconsole_position_cursor(dev, col, 1);
 	vidconsole_put_string(dev, buf);
 	vidconsole_position_cursor(dev, 0, row);
+#else
+	video_position_cursor(col, 1);
+	dev->puts(dev, buf);
+	video_position_cursor(0, row);
+#endif
 }
 #endif /* CONFIG_DM_VIDEO && !CONFIG_HIDE_LOGO_VERSION */
 
@@ -170,7 +184,7 @@ int splash_display(void)
 		if (ret)
 			addr = 0;
 	} else {
-#if defined(CONFIG_DM_VIDEO) && defined(CONFIG_VIDEO_LOGO)
+#if defined(CONFIG_VIDEO_LOGO)
 		addr = (ulong)bmp_logo_bitmap;
 #else
 		addr = 0;
@@ -185,7 +199,7 @@ int splash_display(void)
 			goto end;
 	}
 
-#if defined(CONFIG_DM_VIDEO) && !defined(CONFIG_HIDE_LOGO_VERSION)
+#if !defined(CONFIG_HIDE_LOGO_VERSION)
 	splash_display_banner(addr);
 #endif
 end:

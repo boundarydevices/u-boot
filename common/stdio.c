@@ -374,6 +374,9 @@ int stdio_add_devices(void)
 		    IS_ENABLED(CONFIG_CFB_CONSOLE) ||
 		    IS_ENABLED(CONFIG_VIDEO_VCXK))
 			drv_video_init();
+#if defined(CONFIG_SPLASH_SCREEN) && defined(CONFIG_CMD_BMP)
+		splash_display();
+#endif
 	}
 
 #if defined(CONFIG_KEYBOARD) && !defined(CONFIG_DM_KEYBOARD)

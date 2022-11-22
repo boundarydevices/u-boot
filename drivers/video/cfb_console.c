@@ -164,16 +164,17 @@ void console_cursor(int state);
 #define VIDEO_BURST_LEN		(VIDEO_COLS/8)
 
 #ifdef	CONFIG_VIDEO_LOGO
-#define CONSOLE_ROWS		((VIDEO_ROWS - video_logo_height) / VIDEO_FONT_HEIGHT)
+#define CONSOLE_TOP_OF_SCROLL	(video_logo_height * VIDEO_LINE_LEN)
+#define CONSOLE_SIZE_OF_SCROLL	((VIDEO_VISIBLE_ROWS - video_logo_height) * VIDEO_LINE_LEN)
 #else
-#define CONSOLE_ROWS		(VIDEO_ROWS / VIDEO_FONT_HEIGHT)
+#define CONSOLE_TOP_OF_SCROLL	0
+#define CONSOLE_SIZE_OF_SCROLL	(VIDEO_VISIBLE_ROWS * VIDEO_LINE_LEN)
 #endif
 
 #define CONSOLE_COLS		(VIDEO_COLS / VIDEO_FONT_WIDTH)
+#define CONSOLE_ROWS		(VIDEO_ROWS / VIDEO_FONT_HEIGHT)
 #define CONSOLE_ROW_SIZE	(VIDEO_FONT_HEIGHT * VIDEO_LINE_LEN)
 #define CONSOLE_ROW_FIRST	(video_console_address)
-#define CONSOLE_ROW_SECOND	(video_console_address + CONSOLE_ROW_SIZE)
-#define CONSOLE_ROW_LAST	(video_console_address + CONSOLE_SIZE - CONSOLE_ROW_SIZE)
 #define CONSOLE_SIZE		(CONSOLE_ROW_SIZE * CONSOLE_ROWS)
 
 /* By default we scroll by a single line */
@@ -504,7 +505,7 @@ static inline void video_drawstring(int xx, int yy, unsigned char *s)
 
 static void video_putchar(int xx, int yy, unsigned char c)
 {
-	video_drawchars(xx, yy + video_logo_height, &c, 1);
+	video_drawchars(xx, yy, &c, 1);
 }
 
 #if defined(CONFIG_VIDEO_SW_CURSOR)
@@ -624,8 +625,8 @@ static void console_scrollup(void)
 			- VIDEO_FONT_HEIGHT * rows	/* frame height */
 		);
 #else
-	memcpyl(CONSOLE_ROW_FIRST, CONSOLE_ROW_FIRST + rows * CONSOLE_ROW_SIZE,
-		(CONSOLE_SIZE - CONSOLE_ROW_SIZE * rows) >> 2);
+	void *p = CONSOLE_ROW_FIRST + CONSOLE_TOP_OF_SCROLL;
+	memcpyl(p, p + rows * CONSOLE_ROW_SIZE, (CONSOLE_SIZE_OF_SCROLL) >> 2);
 #endif
 	/* clear the last one */
 	for (i = 1; i <= rows; i++)
