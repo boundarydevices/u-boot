@@ -793,6 +793,9 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		sz = set_status(buf, size, backlight_names[fb], false);
 		buf += sz;
 		size -= sz;
+		sz = set_status(buf, size, pwm_names[fb], false);
+		buf += sz;
+		size -= sz;
 		sz = set_status(buf, size, backlight_alt, true);
 		buf += sz;
 		size -= sz;
