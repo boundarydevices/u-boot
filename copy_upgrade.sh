@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ $# -lt 1 ]; then
 	echo "Error, missing a parameter:"
@@ -13,18 +13,27 @@ else
 	ARCH=arm
 fi
 
-uboot_defconfig=`grep CONFIG_DEFCONFIG include/config.h|sed -e 's/#define CONFIG_DEFCONFIG[^"]\{1,\}"\([^"]\{1,\}\)"/\1/'`
+uboot_defconfig=`grep CONFIG_DEFCONFIG .config|sed -e 's/CONFIG_DEFCONFIG[^"]\{1,\}"\([^"]\{1,\}\)"/\1/'`
+
+if [ "${ARCH}" == "arm64" ] ; then
+	uboot=flash.bin
+else
+	cnt=`sed -n "/CONFIG_OF_CONTROL=/=" .config`
+	if [ "${cnt}" != "" ] ; then
+		uboot=u-boot-dtb.imx
+	else
+		uboot=u-boot.imx
+	fi
+fi
 
 ./tools/mkimage -A $ARCH -O linux -T script -C none \
 	-a 0 -e 0 -n "update script" \
 	-d board/boundary/bootscripts/upgrade.txt upgrade.scr
 
-if [ -f u-boot.imx ]; then
-	cp u-boot.imx u-boot.$uboot_defconfig
-fi
-
-if [ -f flash.bin ]; then
-	cp flash.bin u-boot.$uboot_defconfig
+if [ -f $uboot ]; then
+	cp $uboot u-boot.$uboot_defconfig
+else
+	echo "Couldn't find $uboot!"
 fi
 
 if [ ! -f u-boot.$uboot_defconfig ]; then
