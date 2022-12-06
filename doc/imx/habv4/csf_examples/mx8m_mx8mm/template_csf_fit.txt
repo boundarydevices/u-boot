@@ -32,4 +32,5 @@
     Blocks = _FIT_START_ADDR_ _FIT_OFFSET_ _FIT_LENGTH_ "flash.bin", \
              _UBOOT_START_ADDR_ _UBOOT_OFFSET_ _UBOOT_LENGTH_ "flash.bin", \
              _DTB_START_ADDR_ _DTB_OFFSET_ _DTB_LENGTH_ "flash.bin", \
+             _TEE_START_ADDR_ _TEE_OFFSET_ _TEE_LENGTH_ "flash.bin", \
              _ATF_START_ADDR_ _ATF_OFFSET_ _ATF_LENGTH_ "flash.bin"
