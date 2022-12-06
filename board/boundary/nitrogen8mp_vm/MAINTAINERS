@@ -1,0 +1,6 @@
+i.MX8MP Nitrogen8mp_vm BOARD
+M:	Troy Kisky <troy.kisky@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/nitrogen8mp_vm/
+F:	include/configs/nitrogen8mp_vm.h
+F:	configs/nitrogen8mp_vm_4g_defconfig

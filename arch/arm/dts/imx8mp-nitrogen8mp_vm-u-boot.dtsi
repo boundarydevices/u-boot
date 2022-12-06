@@ -1,0 +1,243 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2019 NXP
+ */
+#include "imx8mp-u-boot.dtsi"
+
+/ {
+	aliases {
+		t_hdmi = &t_hdmi;
+	};
+
+	wdt-reboot {
+		compatible = "wdt-reboot";
+		wdt = <&wdog1>;
+		u-boot,dm-spl;
+	};
+};
+
+&{/soc@0} {
+	u-boot,dm-pre-reloc;
+	u-boot,dm-spl;
+};
+
+&aips1 {
+	u-boot,dm-spl;
+	u-boot,dm-pre-reloc;
+};
+
+&aips2 {
+	u-boot,dm-spl;
+};
+
+&aips3 {
+	u-boot,dm-spl;
+};
+
+&clk {
+	u-boot,dm-spl;
+	u-boot,dm-pre-reloc;
+};
+
+&eqos {
+	compatible = "fsl,imx-eqos";
+	/delete-property/ assigned-clocks;
+	/delete-property/ assigned-clock-parents;
+	/delete-property/ assigned-clock-rates;
+};
+
+&gpio1 {
+	u-boot,dm-spl;
+};
+
+&gpio2 {
+	u-boot,dm-spl;
+};
+
+&gpio3 {
+	u-boot,dm-spl;
+};
+
+&gpio4 {
+	u-boot,dm-spl;
+};
+
+&gpio5 {
+	u-boot,dm-spl;
+};
+
+&hdmi {
+	display-timings {
+		t_hdmi: t-hdmi-default {
+			/* m101nwwb by default */
+			clock-frequency = <148500000>;
+			hactive = <1920>;
+			vactive = <1080>;
+			hback-porch = <148>;
+			hfront-porch = <88>;
+			vback-porch = <36>;
+			vfront-porch = <4>;
+			hsync-len = <44>;
+			vsync-len = <5>;
+			hsync-active = <1>;
+			vsync-active = <1>;
+			de-active = <1>;
+		};
+	};
+};
+
+&hdmimix_clk {
+	status = "okay";
+};
+
+&hdmimix_reset {
+	status = "okay";
+};
+
+&hdmi_hpd {
+	status = "okay";
+};
+
+&i2c1 {
+	u-boot,dm-spl;
+};
+
+&i2c2 {
+	u-boot,dm-spl;
+};
+
+&i2c3 {
+	u-boot,dm-spl;
+};
+
+&i2c4 {
+	u-boot,dm-spl;
+};
+
+&i2c5 {
+	u-boot,dm-spl;
+};
+
+&i2c6 {
+	u-boot,dm-spl;
+};
+
+&iomuxc {
+	u-boot,dm-spl;
+};
+
+&lcdif1 {
+	display = <&fb_mipi>;
+	status = "okay";
+};
+
+&lcdif3 {
+	status = "okay";
+};
+
+&mipi_dsi {
+	fb_mipi: panel@0 {
+		bits-per-pixel = <24>;
+		bus-width = <24>;
+		clocks = <&dsim_clk 0>,
+			 <&clk IMX8MP_CLK_MEDIA_DISP1_PIX_ROOT>;
+
+		port@1 {
+			panel_from_dsim: endpoint {
+				remote-endpoint = <&dsim_to_panel>;
+			};
+		};
+	};
+
+	dsim_clk: dsim-clk {
+		#clock-cells = <1>;
+		#size-cells = <0>;
+		compatible = "generic,clk";
+		clocks = <&clk IMX8MP_CLK_MEDIA_MIPI_PHY1_REF>;
+		clock-names = "parent";
+		clock-output-names = "dsim-clk";
+		status = "okay";
+	};
+
+	dsi_host: dsi-host {
+		compatible = "samsung,sec-mipi-dsi";
+		clocks = <&dsim_clk 0>,
+			<&clk IMX8MP_CLK_MEDIA_APB_ROOT>,
+			<&clk IMX8MP_CLK_MEDIA_MIPI_PHY1_REF>,
+			<&clk IMX8MP_CLK_MEDIA_DISP1_PIX_ROOT>;
+		clock-names = "dsim-clk", "cfg", "pll-ref", "pixel_clock";
+		status = "okay";
+	};
+
+	port@1 {
+		dsim_to_panel: endpoint {
+			remote-endpoint = <&panel_from_dsim>;
+		};
+	};
+};
+
+&osc_32k {
+	u-boot,dm-spl;
+	u-boot,dm-pre-reloc;
+};
+
+&osc_24m {
+	u-boot,dm-spl;
+	u-boot,dm-pre-reloc;
+};
+
+&pinctrl_uart2 {
+	u-boot,dm-spl;
+};
+
+&pinctrl_usdhc1 {
+	u-boot,dm-spl;
+};
+
+&pinctrl_usdhc1_100mhz {
+	u-boot,dm-spl;
+};
+
+&pinctrl_usdhc1_200mhz {
+	u-boot,dm-spl;
+};
+
+&pinctrl_usdhc2 {
+	u-boot,dm-spl;
+};
+
+&pinctrl_usdhc2_100mhz {
+	u-boot,dm-spl;
+};
+
+&pinctrl_usdhc2_200mhz {
+	u-boot,dm-spl;
+};
+
+&reg_vref_3v3 {
+	u-boot,dm-spl;
+};
+
+&uart2 {
+	u-boot,dm-spl;
+};
+
+&usdhc1 {
+	cap-mmc-highspeed;
+	mmc-ddr-1_8v;
+	mmc-hs200-1_8v;
+	u-boot,dm-spl;
+};
+
+&usdhc2 {
+	cap-sd-highspeed;
+	sd-uhs-ddr50;
+	sd-uhs-sdr104;
+	sd-uhs-sdr12;
+	sd-uhs-sdr25;
+	u-boot,dm-spl;
+};
+
+&wdog1 {
+	u-boot,dm-spl;
+};

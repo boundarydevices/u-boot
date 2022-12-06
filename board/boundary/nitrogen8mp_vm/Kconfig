@@ -1,0 +1,14 @@
+if TARGET_NITROGEN8MP_VM
+
+config SYS_BOARD
+	default "nitrogen8mp_vm"
+
+config SYS_VENDOR
+	default "boundary"
+
+config SYS_CONFIG_NAME
+	default "nitrogen8mp_vm"
+
+source "board/boundary/common/Kconfig"
+
+endif

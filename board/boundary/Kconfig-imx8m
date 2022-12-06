@@ -134,6 +134,12 @@ config TARGET_NITROGEN8MP
 	select IMX8MP
 	select SUPPORT_SPL
 
+config TARGET_NITROGEN8MP_VM
+	bool "Nitrogen8mp_vm board"
+	select BINMAN
+	select IMX8MP
+	select SUPPORT_SPL
+
 config TARGET_SON
 	bool "son"
 	select BINMAN
@@ -168,5 +174,6 @@ source "board/boundary/nitrogen8mm/Kconfig"
 source "board/boundary/nitrogen8mm_som/Kconfig"
 source "board/boundary/nitrogen8mm_tab/Kconfig"
 source "board/boundary/nitrogen8mp/Kconfig"
+source "board/boundary/nitrogen8mp_vm/Kconfig"
 source "board/boundary/son/Kconfig"
 source "board/boundary/span/Kconfig"
