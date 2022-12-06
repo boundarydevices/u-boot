@@ -74,6 +74,8 @@ FIT_ATF_OFFSET="0x`awk '/atf/{print $2}' itb.map | head -n 1`"
 FIT_ATF_SIZE="0x`awk '/atf/{print $3}' itb.map | head -n 1`"
 FIT_DTB_OFFSET="0x`awk '/fdt/{print $2}' itb.map | head -n 1`"
 FIT_DTB_SIZE="0x`awk '/fdt/{print $3}' itb.map | head -n 1`"
+FIT_TEE_OFFSET="0x`awk '/tee/{print $2}' itb.map | head -n 1`"
+FIT_TEE_SIZE="0x`awk '/tee/{print $3}' itb.map | head -n 1`"
 printf -v FIT_START_ADDR '%#x' "$((CONFIG_SYS_TEXT_BASE - BLOCK_LEN - CONFIG_CSF_SIZE - IVTOFFSET - CONFIG_SYS_CACHELINE_SIZE))"
 printf -v FIT_LENGTH '%#x' "$((IVTOFFSET + IVTSIZE))"
 sed -i "s|_FIT_START_ADDR_|$FIT_START_ADDR|g" csf_fit.txt
@@ -92,6 +94,14 @@ printf -v ATF_OFFSET '%#x' "$((FIT_OFFSET + FIT_ATF_OFFSET))"
 sed -i "s|_ATF_START_ADDR_|$ATF_LOAD_ADDR|g" csf_fit.txt
 sed -i "s|_ATF_OFFSET_|$ATF_OFFSET|g" csf_fit.txt
 sed -i "s|_ATF_LENGTH_|$FIT_ATF_SIZE|g" csf_fit.txt
+if [ "$FIT_TEE_OFFSET" != "0x" ]; then
+	printf -v TEE_OFFSET '%#x' "$((FIT_OFFSET + FIT_TEE_OFFSET))"
+	sed -i "s|_TEE_START_ADDR_|$TEE_LOAD_ADDR|g" csf_fit.txt
+	sed -i "s|_TEE_OFFSET_|$TEE_OFFSET|g" csf_fit.txt
+	sed -i "s|_TEE_LENGTH_|$FIT_TEE_SIZE|g" csf_fit.txt
+else
+	sed -i "/.*_TEE_START_ADDR.*/d" csf_fit.txt
+fi
 
 echo Generating IVT header for FIT...
 printf -v IVTADDRESS '%#x' "$((FIT_START_ADDR + IVTOFFSET))"
