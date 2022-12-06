@@ -73,6 +73,7 @@ FIT_UBOOT_SIZE="0x`awk '/uboot/{print $3}' itb.map | head -n 1`"
 FIT_ATF_OFFSET="0x`awk '/atf/{print $2}' itb.map | head -n 1`"
 FIT_ATF_SIZE="0x`awk '/atf/{print $3}' itb.map | head -n 1`"
 FIT_DTB_OFFSET="0x`awk '/fdt/{print $2}' itb.map | head -n 1`"
+FIT_DTB_SIZE="0x`awk '/fdt/{print $3}' itb.map | head -n 1`"
 printf -v FIT_START_ADDR '%#x' "$((CONFIG_SYS_TEXT_BASE - BLOCK_LEN - CONFIG_CSF_SIZE - IVTOFFSET - CONFIG_SYS_CACHELINE_SIZE))"
 printf -v FIT_LENGTH '%#x' "$((IVTOFFSET + IVTSIZE))"
 sed -i "s|_FIT_START_ADDR_|$FIT_START_ADDR|g" csf_fit.txt
@@ -84,10 +85,9 @@ sed -i "s|_UBOOT_OFFSET_|$UBOOT_OFFSET|g" csf_fit.txt
 sed -i "s|_UBOOT_LENGTH_|$FIT_UBOOT_SIZE|g" csf_fit.txt
 printf -v DTB_START_ADDR '%#x' "$((CONFIG_SYS_TEXT_BASE + FIT_UBOOT_SIZE))"
 printf -v DTB_OFFSET '%#x' "$((FIT_OFFSET + FIT_DTB_OFFSET))"
-printf -v DTB_LENGTH '%#x' "$((FIT_SIZE - FIT_DTB_OFFSET))"
 sed -i "s|_DTB_START_ADDR_|$DTB_START_ADDR|g" csf_fit.txt
 sed -i "s|_DTB_OFFSET_|$DTB_OFFSET|g" csf_fit.txt
-sed -i "s|_DTB_LENGTH_|$DTB_LENGTH|g" csf_fit.txt
+sed -i "s|_DTB_LENGTH_|$FIT_DTB_SIZE|g" csf_fit.txt
 printf -v ATF_OFFSET '%#x' "$((FIT_OFFSET + FIT_ATF_OFFSET))"
 sed -i "s|_ATF_START_ADDR_|$ATF_LOAD_ADDR|g" csf_fit.txt
 sed -i "s|_ATF_OFFSET_|$ATF_OFFSET|g" csf_fit.txt
