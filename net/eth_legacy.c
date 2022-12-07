@@ -104,45 +104,10 @@ int eth_get_dev_index(void)
 	return eth_current->index;
 }
 
-static int on_ethaddr(const char *name, const char *value, enum env_op op,
-	int flags)
+static int eth_write_hwaddr_env(struct eth_device *dev, const char *base_name,
+				int eth_number, unsigned char *env_enetaddr)
 {
-	int index;
-	struct eth_device *dev;
-
-	if (!eth_devices)
-		return 0;
-
-	/* look for an index after "eth" */
-	index = dectoul(name + 3, NULL);
-
-	dev = eth_devices;
-	do {
-		if (dev->index == index) {
-			switch (op) {
-			case env_op_create:
-			case env_op_overwrite:
-				string_to_enetaddr(value, dev->enetaddr);
-				eth_write_hwaddr(dev, "eth", dev->index);
-				break;
-			case env_op_delete:
-				memset(dev->enetaddr, 0, ARP_HLEN);
-			}
-		}
-		dev = dev->next;
-	} while (dev != eth_devices);
-
-	return 0;
-}
-U_BOOT_ENV_CALLBACK(ethaddr, on_ethaddr);
-
-int eth_write_hwaddr(struct eth_device *dev, const char *base_name,
-		   int eth_number)
-{
-	unsigned char env_enetaddr[ARP_HLEN];
 	int ret = 0;
-
-	eth_env_get_enetaddr_by_index(base_name, eth_number, env_enetaddr);
 
 	if (!is_zero_ethaddr(env_enetaddr)) {
 		if (!is_zero_ethaddr(dev->enetaddr) &&
@@ -187,6 +152,48 @@ int eth_write_hwaddr(struct eth_device *dev, const char *base_name,
 	}
 
 	return ret;
+}
+
+static int on_ethaddr(const char *name, const char *value, enum env_op op,
+	int flags)
+{
+	int index;
+	struct eth_device *dev;
+
+	if (!eth_devices)
+		return 0;
+
+	/* look for an index after "eth" */
+	index = dectoul(name + 3, NULL);
+
+	dev = eth_devices;
+	do {
+		if (dev->index == index) {
+			switch (op) {
+			case env_op_create:
+			case env_op_overwrite:
+				string_to_enetaddr(value, dev->enetaddr);
+				eth_write_hwaddr_env(dev, "eth", dev->index, dev->enetaddr);
+				break;
+			case env_op_delete:
+				memset(dev->enetaddr, 0, ARP_HLEN);
+			}
+		}
+		dev = dev->next;
+	} while (dev != eth_devices);
+
+	return 0;
+}
+U_BOOT_ENV_CALLBACK(ethaddr, on_ethaddr);
+
+int eth_write_hwaddr(struct eth_device *dev, const char *base_name,
+		   int eth_number)
+{
+	unsigned char env_enetaddr[ARP_HLEN];
+
+	eth_env_get_enetaddr_by_index(base_name, eth_number, env_enetaddr);
+
+	return eth_write_hwaddr_env(dev, base_name, eth_number, env_enetaddr);
 }
 
 int eth_register(struct eth_device *dev)
