@@ -204,7 +204,7 @@ static int eth_write_hwaddr(struct udevice *dev)
 	int ret = 0;
 
 	if (!dev || !device_active(dev))
-		return -EINVAL;
+		return 0;
 
 	/* seq is valid since the device is active */
 	if (eth_get_ops(dev)->write_hwaddr && !eth_mac_skip(dev_seq(dev))) {
@@ -247,8 +247,7 @@ static int on_ethaddr(const char *name, const char *value, enum env_op op,
 		case env_op_create:
 		case env_op_overwrite:
 			string_to_enetaddr(value, pdata->enetaddr);
-			eth_write_hwaddr(dev);
-			break;
+			return eth_write_hwaddr(dev);
 		case env_op_delete:
 			memset(pdata->enetaddr, 0, ARP_HLEN);
 		}
