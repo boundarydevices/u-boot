@@ -7,6 +7,8 @@
 / {
 	aliases {
 		t_hdmi = &t_hdmi;
+		ethernet0 = &eqos;
+		/delete-property/ ethernet1;
 	};
 
 	wdt-reboot {

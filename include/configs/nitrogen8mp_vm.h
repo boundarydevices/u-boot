@@ -51,7 +51,7 @@
 /* ENET Config */
 /* ENET1 */
 #if defined(CONFIG_CMD_NET)
-#define CONFIG_ETHPRIME			"eth1" /* nitrogen8mp_vm only has 1 ethernet */
+#define CONFIG_ETHPRIME			"eth0" /* nitrogen8mp_vm only has 1 ethernet */
 
 #define CONFIG_FEC_MXC_PHYADDR		7
 #define DWC_NET_PHYADDR			7
