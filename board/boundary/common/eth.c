@@ -987,16 +987,17 @@ free_slave:
 void board_eth_addresses(void)
 {
 #if defined(CONFIG_USB_ETHER)
-#if defined(CONFIG_FEC_MXC) && defined(CONFIG_FEC_ENET1) \
-	&& defined(CONFIG_FEC_ENET2)
+#if defined(CONFIG_FEC_MXC) || defined(CONFIG_DWC_ETH_QOS)
+#if defined(CONFIG_FEC_ENET1) && defined(CONFIG_FEC_ENET2)
 #define USB_ETH "eth2addr"
-#elif defined(CONFIG_FEC_MXC)
+#else
 #define USB_ETH "eth1addr"
+#endif
 #else
 #define USB_ETH "ethaddr"
 #endif
 	/* For otg ethernet*/
-#ifndef CONFIG_FEC_MXC
+#if !defined(CONFIG_FEC_MXC) && !defined(CONFIG_DWC_ETH_QOS)
 	/* ethaddr should be set from fuses */
 	if (!env_get(USB_ETH)) {
 		unsigned char mac[8];
