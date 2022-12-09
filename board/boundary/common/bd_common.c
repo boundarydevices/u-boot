@@ -573,7 +573,7 @@ static void print_time_rv4162(void)
 static void print_time_rv4162(void) {}
 #endif
 
-#ifdef CONFIG_FEC_MXC
+#if defined(CONFIG_FEC_MXC) || defined(CONFIG_DWC_ETH_QOS)
 #define ADDMAC_OFFSET	0x800000
 #else
 #define ADDMAC_OFFSET	0
