@@ -11,6 +11,7 @@
 #include <dt-bindings/clock/mt8195-clk.h>
 #include <dt-bindings/interrupt-controller/irq.h>
 #include <dt-bindings/interrupt-controller/arm-gic.h>
+#include <dt-bindings/pinctrl/mediatek,mt8195-pinfunc.h>
 #include <dt-bindings/phy/phy.h>
 
 / {
