@@ -580,13 +580,13 @@ static int mtk_image_verify_ufs_header(const uint8_t *ptr, int print)
 	if (print)
 		printf("Boot Media:   %s\n", bootmedia);
 
-	devh_size = sizeof(struct gen_device_header);
+	devh_size = sizeof(struct ufs_device_header);
 
 	if (le32_to_cpu(gbh->version) != 1 ||
 	    le32_to_cpu(gbh->size) != devh_size)
 		return -1;
 
-	bh = (struct brom_layout_header *)(ptr + le32_to_cpu(gbh->size));
+	bh = (struct brom_layout_header *)(ptr + sizeof(union gen_boot_header));
 
 	if (strcmp(bh->name, BRLYT_NAME))
 		return -1;
