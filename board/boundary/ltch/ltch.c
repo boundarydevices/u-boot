@@ -368,9 +368,9 @@ int board_fbp_detect_i2c(struct display_info_t const *di)
 static const struct display_info_t displays[] = {
 	/* ft5x06 */
 	VD_PM9598(LVDS2, board_fbp_detect_i2c, fbp_bus_gp(0, GP_I2C1_TCA9546_RESET, 0, 0), 0x38, FBTS_FT5X06),
-	VD_PM9598(LVDS, board_fbp_detect_i2c, fbp_bus_gp(0, GP_I2C1_TCA9546_RESET, 0, 0), 0x38, FBTS_FT5X06),
+	VD_PM9598(LVDS, board_fbp_detect_i2c, fbp_bus_gp(0, GP_I2C1_TCA9546_RESET, 0, 0), 0x38, FBTS_FT5X06_2),
 	VD_DT070BTFT(LVDS2, NULL, fbp_bus_gp(0, GP_I2C1_TCA9546_RESET, 0, 0), 0x38, FBTS_FT5X06),
-	VD_DT070BTFT(LVDS, NULL, fbp_bus_gp(0, GP_I2C1_TCA9546_RESET, 0, 0), 0x38, FBTS_FT5X06),
+	VD_DT070BTFT(LVDS, NULL, fbp_bus_gp(0, GP_I2C1_TCA9546_RESET, 0, 0), 0x38, FBTS_FT5X06_2),
 };
 #define display_cnt	ARRAY_SIZE(displays)
 #else
