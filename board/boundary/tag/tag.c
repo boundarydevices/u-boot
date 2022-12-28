@@ -90,6 +90,7 @@ static iomux_cfg_t const init_pads[] = {
 	IMX8ULP_PAD_PTC22__PTC22 | MUX_PAD_CTRL(PAD_CTL_PUS_UP),
 	IMX8ULP_PAD_PTD16__PTD16 | MUX_PAD_CTRL(PAD_CTL_PUS_UP),
 	IMX8ULP_PAD_PTD17__PTD17 | MUX_PAD_CTRL(PAD_CTL_PUS_DOWN),
+#define GP_AUX_BACKLIGHT_EN	GPIO_NR(D, 18)
 	IMX8ULP_PAD_PTD18__PTD18 | MUX_PAD_CTRL(PAD_CTL_PUS_UP),
 	IMX8ULP_PAD_PTD19__PTD19 | MUX_PAD_CTRL(PAD_CTL_PUS_UP),
 	IMX8ULP_PAD_PTE0__PTE0 | MUX_PAD_CTRL(PAD_CTL_PUS_UP),
@@ -177,6 +178,9 @@ int board_init(void)
 	gpio_request(GP_I2C6_HAPTICS_EN, "haptic_en");
 	gpio_direction_output(GP_TS_ATMEL_RESET, 0);
 	gpio_direction_output(GP_I2C6_HAPTICS_EN, 0);
+	gpio_request(GP_AUX_BACKLIGHT_EN, "aux-blen");
+	gpio_direction_output(GP_AUX_BACKLIGHT_EN, 0);
+
 #ifdef GP_PTE16
 	gpio_request(GP_PTE16, "pte16");
 	gpio_request(GP_PTE17, "pte17");
