@@ -201,7 +201,17 @@ void board_init_f(ulong dummy)
 
 	enable_tzc380();
 	gpio_request(GP_USDHC2_VSEL, "usdhc2_vsel");
+#if 0
+	/* The is commented out in order to leave as an input for now.
+	 * If the sd card is initialized as 1.8V, then upon reset
+	 * the 3.3v supply to the SD card is maintained by an always on supply
+	 * and the sd card does not reset.
+	 * The boot ROM already read from the SD card at 1.8V, so
+	 * leave it alone for now.
+	 * This fixes booting from some UHS sd cards.
+	 */
 	gpio_direction_output(GP_USDHC2_VSEL, 0);
+#endif
 	imx_iomux_v3_setup_multiple_pads(init_pads, ARRAY_SIZE(init_pads));
 
 	for (i = 0; i < ARRAY_SIZE(i2c_pad_info1); i++)
