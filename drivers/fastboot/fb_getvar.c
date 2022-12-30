@@ -4,6 +4,7 @@
  */
 
 #include <common.h>
+#include <android_ab.h>
 #include <asm/global_data.h>
 #include <env.h>
 #include <fastboot.h>
@@ -12,6 +13,7 @@
 #include <fb_nand.h>
 #include <fs.h>
 #include <inttypes.h>
+#include <linux/stringify.h>
 #include <mmc.h>
 #include <part.h>
 #include <version.h>
@@ -190,8 +192,33 @@ static void getvar_platform(char *var_parameter, char *response)
 
 static void getvar_current_slot(char *var_parameter, char *response)
 {
+#if (CONFIG_IS_ENABLED(FASTBOOT_FLASH_MMC) && CONFIG_IS_ENABLED(ANDROID_AB))
+#define FB_MMC_DEV __stringify(CONFIG_FASTBOOT_FLASH_MMC_DEV)
+	int ret;
+	struct blk_desc *dev_desc;
+	struct disk_partition part_info;
+	char slot[2];
+
+	/* Lookup the "misc" partition */
+	if (part_get_info_by_dev_and_name_or_num("mmc", FB_MMC_DEV"#misc",
+					&dev_desc, &part_info, false) < 0) {
+		fastboot_okay("a", response);
+		return;
+	}
+
+	ret = ab_select_slot(dev_desc, &part_info);
+	if (ret < 0) {
+		fastboot_okay("a", response);
+		return;
+	}
+
+	slot[0] = BOOT_SLOT_NAME(ret);
+	slot[1] = '\0';
+	fastboot_okay(slot, response);
+#else
 	/* A/B not implemented, for now always return "a" */
 	fastboot_okay("a", response);
+#endif
 }
 
 #if CONFIG_IS_ENABLED(FASTBOOT_FLASH)
