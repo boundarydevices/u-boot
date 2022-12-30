@@ -158,6 +158,22 @@ int power_init_boundary(void)
 	return ret;
 }
 
+int check_inited(void)
+{
+#if CONFIG_SYS_MMC_ENV_DEV == 1
+	int ret;
+	unsigned char buf[4];
+
+	i2c_set_bus_num(0);
+	ret = i2c_read(PF8100, 0x46, 1, &buf[0], 1);
+	if (!ret) {
+		if (buf[0] & 0xf)
+			return 1;
+	}
+#endif
+	return 0;
+}
+
 void spl_board_init(void)
 {
 #ifndef CONFIG_SPL_USB_SDP_SUPPORT
@@ -201,22 +217,22 @@ void board_init_f(ulong dummy)
 
 	enable_tzc380();
 	gpio_request(GP_USDHC2_VSEL, "usdhc2_vsel");
-#if 0
-	/* The is commented out in order to leave as an input for now.
-	 * If the sd card is initialized as 1.8V, then upon reset
-	 * the 3.3v supply to the SD card is maintained by an always on supply
-	 * and the sd card does not reset.
-	 * The boot ROM already read from the SD card at 1.8V, so
-	 * leave it alone for now.
-	 * This fixes booting from some UHS sd cards.
-	 */
-	gpio_direction_output(GP_USDHC2_VSEL, 0);
-#endif
 	imx_iomux_v3_setup_multiple_pads(init_pads, ARRAY_SIZE(init_pads));
 
 	for (i = 0; i < ARRAY_SIZE(i2c_pad_info1); i++)
 		setup_i2c(i, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info1[i]);
 
+	/*
+	 * If the sd card is initialized as 1.8V, then upon reset
+	 * the 3.3v supply to the SD card is maintained by an always
+	 * on supply and the sd card does not reset.
+	 * The boot ROM already read from the SD card at 1.8V, so
+	 * leave it alone if already inited.
+	 * This fixes booting from some UHS sd cards.
+	 */
+	if (!check_inited()) {
+		gpio_direction_output(GP_USDHC2_VSEL, 0); /* select 3.3V for sd2 data */
+	}
 	power_init_boundary();
 	/* DDR initialization */
 	spl_dram_init();
