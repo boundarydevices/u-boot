@@ -1102,6 +1102,15 @@ static const struct mtk_i2c_soc_data mt8183_soc_data = {
 	.max_dma_support = 32,
 };
 
+static const struct mtk_i2c_soc_data mt8365_soc_data = {
+	.regs = mt_i2c_regs_v1,
+	.dma_sync = 1,
+	.timing_adjust = 1,
+	.ltiming_adjust = 0,
+	.apdma_sync = 0,
+	.max_dma_support = 33,
+};
+
 static const struct mtk_i2c_soc_data mt8195_soc_data = {
 	.regs = mt_i2c_regs_v2,
 	.dma_sync = 1,
@@ -1157,6 +1166,9 @@ static const struct udevice_id mtk_i2c_ids[] = {
 	}, {
 		.compatible = "mediatek,mt8195-i2c",
 		.data = (ulong)&mt8195_soc_data,
+	}, {
+		.compatible = "mediatek,mt8365-i2c",
+		.data = (ulong)&mt8365_soc_data,
 	}, {
 		.compatible = "mediatek,mt8512-i2c",
 		.data = (ulong)&mt8512_soc_data,
