@@ -13,6 +13,7 @@
 #include <asm/mach-imx/boot_mode.h>
 #include <asm/mach-imx/fbpanel.h>
 #include <asm/io.h>
+#include <dm/device.h>
 #include <linux/sizes.h>
 #include <common.h>
 #include <fsl_esdhc_imx.h>
@@ -360,46 +361,39 @@ static const struct display_info_t displays[] = {
 #define display_cnt	0
 #endif
 
-static const unsigned short gpios_out_low[] = {
-	GP_RGMII_PHY_RESET,
-	GP_I2C2A_EN,
-	GP_MIPI_BACKLIGHT,
-	GP_PCIE_DISABLE,
-	GP_PCIE_RESET,
-	GP_BACKLIGHT_RGB,
-	GP_UART3_RS485_TX,
-	GP_PMIC_SD1_VSEL,
-	GP_BT_REG_ON,
-	GP_WL_REG_ON,
-	GP_EMMC_RESET,
-};
+static const struct gpio_reserve gpios_to_reserve[] = {
+	{ GPIRQ_ENET_PHY, GPIOD_IN, 0, "phy-irq", },
+	{ GP_PMIC_INT_B, GPIOD_IN, 0, "pmic", },
+	{ GP_RTC, GPIOD_IN, 0, "rtc", },
+	{ GP_MIPI, GPIOD_IN, 0, "mipi", },
+	{ GP_I2C_TOUCH, GPIOD_IN, 0, "i2c-touch", },
+	{ GP_USDHC1_CD, GPIOD_IN, 0, "sd1-cd", },
+	{ GP_WL_HOST_WAKE, GPIOD_IN, 0, "wl-host-wake", },
+	{ GP_OTG1_ID, GPIOD_IN, 0, "otg1-id", },
 
-static const unsigned short gpios_out_high[] = {
-	GP_CAN_STANDBY,
+	{ GP_CAN_STANDBY, GPIOD_OUT_HIGH, 0, "can-stdby", },
 #ifdef GP_SPI_nWP
-	GP_SPI_nWP,
+	{ GP_SPI_nWP, GPIOD_OUT_HIGH, 0, "spi-wp", },
 #endif
 #ifdef GP_SPI_nHOLD
-	GP_SPI_nHOLD,
+	{ GP_SPI_nHOLD, GPIOD_OUT_HIGH, 0, "spi-hold", },
 #endif
-};
-
-static const unsigned short gpios_in[] = {
-	GPIRQ_ENET_PHY,
-	GP_PMIC_INT_B,
-	GP_RTC,
-	GP_MIPI,
-	GP_I2C_TOUCH,
-	GP_USDHC1_CD,
-	GP_WL_HOST_WAKE,
-	GP_OTG1_ID,
+	{ GP_RGMII_PHY_RESET, GPIOD_OUT_LOW, 0, "phy-reset", },
+	{ GP_I2C2A_EN, GPIOD_OUT_LOW, 0, "i2c2a-en", },
+	{ GP_MIPI_BACKLIGHT, GPIOD_OUT_LOW, 0, "backlight-mipi", },
+	{ GP_PCIE_DISABLE, GPIOD_OUT_LOW, 0, "pcie-disable", },
+	{ GP_PCIE_RESET, GPIOD_OUT_LOW, 0, "pcie-reset", },
+	{ GP_BACKLIGHT_RGB, GPIOD_OUT_LOW, 0, "backlight-lcd", },
+	{ GP_UART3_RS485_TX, GPIOD_OUT_LOW, 0, "rs485-tx", },
+	{ GP_PMIC_SD1_VSEL, GPIOD_OUT_LOW, 0, "sd1-vsel", },
+	{ GP_BT_REG_ON, GPIOD_OUT_LOW, 0, "bt-reg", },
+	{ GP_WL_REG_ON, GPIOD_OUT_LOW, 0, "wl-reg", },
+	{ GP_EMMC_RESET, GPIOD_OUT_LOW, 0, "emmc-reset", },
 };
 
 int board_early_init_f(void)
 {
-	set_gpios_in(gpios_in, ARRAY_SIZE(gpios_in));
-	set_gpios(gpios_out_high, ARRAY_SIZE(gpios_out_high), 1);
-	set_gpios(gpios_out_low, ARRAY_SIZE(gpios_out_low), 0);
+	gpios_reserve(gpios_to_reserve, ARRAY_SIZE(gpios_to_reserve));
 	SETUP_IOMUX_PADS(init_pads);
 	SETUP_IOMUX_PADS(rgb_gpio_pads);
 	return 0;
@@ -407,6 +401,7 @@ int board_early_init_f(void)
 
 int board_init(void)
 {
+	gpios_reserve(gpios_to_reserve, ARRAY_SIZE(gpios_to_reserve));
 #ifdef CONFIG_FSL_QSPI
 	/* Set the clock */
 	set_clk_qspi(20000000);
@@ -470,6 +465,11 @@ int board_usb_phy_mode(int port)
 	if (port)
 		return USB_INIT_HOST;
 	return gpio_get_value(GP_OTG1_ID) ? USB_INIT_DEVICE : USB_INIT_HOST;
+}
+
+int board_usb_otg_mode(struct udevice *dev)
+{
+	return board_usb_phy_mode(dev_seq(dev));
 }
 
 int board_ehci_hcd_init(int port)
