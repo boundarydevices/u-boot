@@ -727,12 +727,6 @@ config SYS_I2C_MTK
 	help
 	  Support for Mediatek I2C driver.
 
-config SYS_I2C_MT65XX
-	bool "Enable Mediatek I2C driver"
-	depends on DM_I2C
-	help
-	  Support for Mediatek I2C driver.
-
 source "drivers/i2c/muxes/Kconfig"
 
 endif
