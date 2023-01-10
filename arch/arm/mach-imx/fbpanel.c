@@ -1537,6 +1537,9 @@ static void setup_clock(struct display_info_t const *di)
 		(lvds ? MXC_CCM_CCGR3_LDB_DI0_MASK : 0));
 
 #elif defined(CONFIG_MX7D)
+	writel(CCM_ANALOG_PLL_VIDEO_CLR_ENABLE_CLK_MASK,
+			&ccm_anatop->pll_video_set);
+
 	target = CLK_ROOT_ON | LCDIF_PIXEL_CLK_ROOT_FROM_PLL_VIDEO_MAIN_CLK |
 		 CLK_ROOT_PRE_DIV((ipu_div - 1)) | CLK_ROOT_POST_DIV((x - 1));
 	clock_set_target_val(LCDIF_PIXEL_CLK_ROOT, target);
@@ -1562,10 +1565,7 @@ static void setup_clock(struct display_info_t const *di)
 			 : 0));
 #endif
 	/* Enable PLL out */
-#if defined(CONFIG_MX7D)
-	writel(CCM_ANALOG_PLL_VIDEO_CLR_ENABLE_CLK_MASK,
-			&ccm_anatop->pll_video_set);
-#else
+#if !defined(CONFIG_MX7D)
 	pll_video &= ~BM_ANADIG_PLL_VIDEO_BYPASS;
 	pll_video |= BM_ANADIG_PLL_VIDEO_ENABLE;
 	writel(pll_video, &ccm->analog_pll_video);
