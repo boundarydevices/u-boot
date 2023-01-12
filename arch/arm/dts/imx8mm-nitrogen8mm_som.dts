@@ -4,7 +4,7 @@
  */
 
 #define TOUCHSCREEN_I2C_BUS	i2c4
-#include "imx8mm-nitrogen8mm.dts"
+#include "imx8mm-nitrogen8mm_rev2.dts"
 
 #ifndef SKIP_MIPI_PANELS
 #include "panel-dmt055fhnmcmi.dtsi"
@@ -139,17 +139,25 @@
 			MX8MMN(IOMUXC_GPIO1_IO08_GPIO1_IO8, 0x140)
 		>;
 	};
+
+	pinctrl_wdog_gpio: wdog-gpiogrp {
+		fsl,pins = <
+#define GP_WDOG_RESET	<&gpio1 2 GPIO_ACTIVE_LOW>
+			MX8MMN(IOMUXC_GPIO1_IO02_GPIO1_IO2, 0x140)
+		>;
+	};
 };
 
 / {
 	model = "Boundary Devices i.MX8MMini Nitrogen8MM Som";
 	compatible = "boundary,imx8mm-nitrogen8mm_som", "fsl,imx8mm";
 
-#ifndef SKIP_MIPI_PANELS
 	aliases {
+		reg_sw4 = &reg_buck4;
+#ifndef SKIP_MIPI_PANELS
 		ts_goodix2 = &ts_goodix2;
-	};
 #endif
+	};
 
 #if 0
 	mipi_xclk: mipi-xclk {
@@ -163,12 +171,6 @@
 	};
 #endif
 };
-
-#if 0
-&A53_0 {
-	cpu-supply = <&reg_sw3>;
-};
-#endif
 
 &ecspi2 {
 	/delete-node/ can@0;
@@ -246,11 +248,9 @@
 };
 #endif
 
-#if 0
-&reg_sw4 {
-	/delete-property/ dual-phase;
+&reg_buck4 {
+	alias = <&reg_buck4>;
 };
-#endif
 
 #ifndef SKIP_MIPI_PANELS
 &spi_lcd {
@@ -263,6 +263,11 @@
 };
 
 &wdog1 {
-	/delete-property/ reset-gpios;
-	/delete-property/ pinctrl-1;
+	/*
+	 * a very few boards need gpio mode, done by cmd_board
+	 * fdt get value gp gpio0 phandle;
+	 * fdt set wdog0 reset-gpios <${gp} 2 1>
+	 */
+	pinctrl-names = "default", "gpio";
+	pinctrl-1 = <&pinctrl_wdog_gpio>;
 };
