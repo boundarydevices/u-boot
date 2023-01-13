@@ -69,7 +69,7 @@
 			MX8MMN(IOMUXC_SAI5_RXD3_GPIO3_IO24, 0x1c0)	/* can2_tx1rts */
 			MX8MMN(IOMUXC_SAI3_MCLK_GPIO5_IO2, 0x16)	/* can2_tx2rts */
 #define GPIRQ_MCP25625_2	<&gpio1 8 IRQ_TYPE_LEVEL_LOW>
-			MX8MMN(IOMUXC_GPIO1_IO08_GPIO1_IO8, 0x19)
+			MX8MMN(IOMUXC_GPIO1_IO08_GPIO1_IO8, 0x1c0)
 #define GP_MCP25625_2_RESET	<&gpio1 3 GPIO_ACTIVE_LOW>
 			MX8MMN(IOMUXC_GPIO1_IO03_GPIO1_IO3, 0x100)
 		>;
@@ -82,18 +82,19 @@
 			MX8MMN(IOMUXC_ENET_MDC_GPIO1_IO16, 0x00)
 #define GP_MII_MDIO	<&gpio1 17 GPIO_ACTIVE_HIGH>
 			MX8MMN(IOMUXC_ENET_MDIO_GPIO1_IO17, 0x00)
-			MX8MMN(IOMUXC_ENET_RD0_ENET1_RGMII_RD0, 0x91)
-			MX8MMN(IOMUXC_ENET_RD1_ENET1_RGMII_RD1, 0x91)
-			MX8MMN(IOMUXC_ENET_RD2_ENET1_RGMII_RD2, 0x91)
-			MX8MMN(IOMUXC_ENET_RD3_ENET1_RGMII_RD3, 0x91)
-			MX8MMN(IOMUXC_ENET_RXC_ENET1_RGMII_RXC, 0x91)
-			MX8MMN(IOMUXC_ENET_RX_CTL_ENET1_RGMII_RX_CTL, 0x91)
-			MX8MMN(IOMUXC_ENET_TD0_ENET1_RGMII_TD0, 0x1f)
-			MX8MMN(IOMUXC_ENET_TD1_ENET1_RGMII_TD1, 0x1f)
-			MX8MMN(IOMUXC_ENET_TD2_ENET1_RGMII_TD2, 0x1f)
-			MX8MMN(IOMUXC_ENET_TD3_ENET1_RGMII_TD3, 0x1f)
-			MX8MMN(IOMUXC_ENET_TXC_ENET1_RGMII_TXC, 0x1f)
-			MX8MMN(IOMUXC_ENET_TX_CTL_ENET1_RGMII_TX_CTL, 0x1f)
+			MX8MMN(IOMUXC_ENET_RD0_ENET1_RGMII_RD0, 0x80)
+			MX8MMN(IOMUXC_ENET_RD1_ENET1_RGMII_RD1, 0x80)
+			MX8MMN(IOMUXC_ENET_RD2_ENET1_RGMII_RD2, 0x80)
+			MX8MMN(IOMUXC_ENET_RD3_ENET1_RGMII_RD3, 0x80)
+			MX8MMN(IOMUXC_ENET_RXC_ENET1_RGMII_RXC, 0x80)
+			MX8MMN(IOMUXC_ENET_RX_CTL_ENET1_RGMII_RX_CTL, 0x80)
+			/* 10/100 only, never gigabit speeds */
+			MX8MMN(IOMUXC_ENET_TD0_ENET1_RGMII_TD0, 0x00)
+			MX8MMN(IOMUXC_ENET_TD1_ENET1_RGMII_TD1, 0x00)
+			MX8MMN(IOMUXC_ENET_TD2_ENET1_RGMII_TD2, 0x00)
+			MX8MMN(IOMUXC_ENET_TD3_ENET1_RGMII_TD3, 0x00)
+			MX8MMN(IOMUXC_ENET_TXC_ENET1_RGMII_TXC, 0x00)
+			MX8MMN(IOMUXC_ENET_TX_CTL_ENET1_RGMII_TX_CTL, 0x00)
 #define GP_FEC1_RESET	<&gpio3 15 GPIO_ACTIVE_LOW>
 			MX8MMN(IOMUXC_NAND_RE_B_GPIO3_IO15, 0x159)
 #define GPIRQ_FEC1_PHY	<&gpio3 16 IRQ_TYPE_LEVEL_LOW>
@@ -116,9 +117,8 @@
 			MX8MMN(IOMUXC_SAI3_RXC_GPIO4_IO29, 0x1c0)	/* GPO1_STAT */
 			MX8MMN(IOMUXC_SAI3_RXD_GPIO4_IO30, 0x1c0)	/* GPO2_STAT */
 			MX8MMN(IOMUXC_SAI1_RXD7_GPIO4_IO9, 0x1c0)	/* GPO3_STAT */
-
-			MX8MMN(IOMUXC_SAI5_MCLK_GPIO3_IO25, 0x100)	/* LIN_EN */
-			MX8MMN(IOMUXC_SAI5_RXFS_GPIO3_IO19, 0x100)	/* LIN_RESET */
+#define GP_UART4_LIN_RESET        <&gpio3 19 GPIO_ACTIVE_LOW>
+			MX8MMN(IOMUXC_SAI5_RXFS_GPIO3_IO19, 0x0)	/* LIN_RESET, input to imx */
 
 			MX8MMN(IOMUXC_SAI1_RXD3_GPIO4_IO5, 0x100)	/* 12V_EN */
 
@@ -418,6 +418,8 @@
 		fsl,pins = <
 			MX8MMN(IOMUXC_UART4_RXD_UART4_DCE_RX, 0x140)
 			MX8MMN(IOMUXC_UART4_TXD_UART4_DCE_TX, 0x140)
+#define GP_UART4_LIN_EN        <&gpio3 25 GPIO_ACTIVE_HIGH>
+			MX8MMN(IOMUXC_SAI5_MCLK_GPIO3_IO25, 0x100)	/* LIN_EN */
 		>;
 	};
 
@@ -756,7 +758,7 @@
 
 #if 0
 &A53_0 {
-	cpu-supply = <&reg_sw3>;
+	cpu-supply = <&reg_buck3>;
 };
 
 &csi1_bridge {
@@ -788,6 +790,7 @@
 		reg = <0>;
 		reset-gpios = GP_MCP25625_1_RESET;
 		spi-max-frequency = <10000000>;
+		wakeup-source;
 	};
 };
 
@@ -812,6 +815,7 @@
 		reg = <0>;
 		reset-gpios = GP_MCP25625_2_RESET;
 		spi-max-frequency = <10000000>;
+		wakeup-source;
 	};
 };
 #endif
@@ -857,99 +861,252 @@
 	status = "okay";
 
 	pf8100@8 {
-		compatible = "nxp,pf8x00";
+		compatible = "nxp,pf8100";
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_i2c1_pf8100>;
 		reg = <0x08>;
 
 		regulators {
 			reg_ldo1: ldo1 {
-				regulator-always-on;
-				regulator-boot-on;
+				/* LDO1_3P3V, unused */
 				regulator-max-microvolt = <5000000>;
 				regulator-min-microvolt = <1500000>;
+
+				regulator-state-standby {
+					regulator-off-in-suspend;
+				};
+
+				regulator-state-mem {
+					regulator-off-in-suspend;
+				};
+
+				regulator-state-disk {
+					regulator-off-in-suspend;
+				};
 			};
 
 			reg_ldo2: ldo2 {
-				regulator-always-on;
-				regulator-boot-on;
+				/* NVCC_SD2, SD Card */
 				regulator-max-microvolt = <5000000>;
 				regulator-min-microvolt = <1500000>;
 #if 0
 				/* vselect low is 3.3V, high is 1.8V */
 				vselect-en;
 #endif
+
+				regulator-state-standby {
+					regulator-off-in-suspend;
+				};
+
+				regulator-state-mem {
+					regulator-off-in-suspend;
+				};
+
+				regulator-state-disk {
+					regulator-off-in-suspend;
+				};
 			};
 
 			reg_ldo3: ldo3 {
-				regulator-always-on;
-				regulator-boot-on;
+				/* LDO3_1P8V_TO_3P3V, unused */
 				regulator-max-microvolt = <5000000>;
 				regulator-min-microvolt = <1500000>;
+
+				regulator-state-standby {
+					regulator-off-in-suspend;
+				};
+
+				regulator-state-mem {
+					regulator-off-in-suspend;
+				};
+
+				regulator-state-disk {
+					regulator-off-in-suspend;
+				};
 			};
 
 			reg_ldo4: ldo4 {
+				/* VDDA_1V8 */
 				regulator-always-on;
 				regulator-boot-on;
 				regulator-max-microvolt = <5000000>;
 				regulator-min-microvolt = <1500000>;
+
+				regulator-state-standby {
+					regulator-off-in-suspend;
+				};
+
+				regulator-state-mem {
+					regulator-off-in-suspend;
+				};
+
+				regulator-state-disk {
+					regulator-off-in-suspend;
+				};
 			};
 
-			reg_sw1: sw1 {
-				phase = <0>;
-				ilim-ma = <4500>;
+			reg_buck1: buck1 {
+				/* VDD_SOC */
+				nxp,phase-shift = <0>;
+				regulator-max-microamp = <4500000>;
 				regulator-always-on;
 				regulator-boot-on;
 				regulator-max-microvolt = <1800000>;
 				regulator-min-microvolt =  <400000>;
+
+				regulator-state-standby {
+					regulator-on-in-suspend;
+					regulator-suspend-max-microvolt = <1800000>;
+					regulator-suspend-microvolt = <781250>;
+					regulator-suspend-min-microvolt =  <400000>;
+				};
+
+				regulator-state-mem {
+					regulator-on-in-suspend;
+					regulator-suspend-max-microvolt = <1800000>;
+					regulator-suspend-microvolt = <781250>;
+					regulator-suspend-min-microvolt =  <400000>;
+				};
+
+				regulator-state-disk {
+					regulator-on-in-suspend;
+					regulator-suspend-max-microvolt = <1800000>;
+					regulator-suspend-microvolt = <781250>;
+					regulator-suspend-min-microvolt =  <400000>;
+				};
 			};
 
-			reg_sw2: sw2 {
+			reg_buck2: buck2 {
+				/* VDD_GPU_DRAM, processor only */
 				regulator-always-on;
 				regulator-boot-on;
 				regulator-max-microvolt = <1800000>;
 				regulator-min-microvolt =  <400000>;
+
+				regulator-state-standby {
+					regulator-off-in-suspend;
+				};
+
+				regulator-state-mem {
+					regulator-off-in-suspend;
+				};
+
+				regulator-state-disk {
+					regulator-off-in-suspend;
+				};
 			};
 
-			reg_sw3: sw3 {
+			reg_buck3: buck3 {
+				/* VDD_ARM */
 				regulator-always-on;
 				regulator-boot-on;
 				regulator-max-microvolt = <1800000>;
 				regulator-min-microvolt =  <400000>;
 				fast-slew = <1>;
+
+				regulator-state-standby {
+					regulator-off-in-suspend;
+				};
+
+				regulator-state-mem {
+					regulator-off-in-suspend;
+				};
+
+				regulator-state-disk {
+					regulator-off-in-suspend;
+				};
 			};
 
-			reg_sw4: sw4 {
-				alias = <&reg_sw4>;
-				regulator-always-on;
-				regulator-boot-on;
+			reg_buck4: buck4 {
+				/* AUX_0P8V, unused */
 				regulator-max-microvolt = <1800000>;
 				regulator-min-microvolt =  <400000>;
 				fast-slew = <1>;
+
+				regulator-state-standby {
+					regulator-off-in-suspend;
+				};
+
+				regulator-state-mem {
+					regulator-off-in-suspend;
+				};
+
+				regulator-state-disk {
+					regulator-off-in-suspend;
+				};
 			};
 
-			reg_sw5: sw5 {
+			reg_buck5: buck5 {
+				/* VDD_VPU */
 				regulator-always-on;
 				regulator-boot-on;
 				regulator-max-microvolt = <1800000>;
 				regulator-min-microvolt =  <400000>;
+
+				regulator-state-standby {
+					regulator-off-in-suspend;
+				};
+
+				regulator-state-mem {
+					regulator-off-in-suspend;
+				};
+
+				regulator-state-disk {
+					regulator-off-in-suspend;
+				};
 			};
 
-			reg_sw6: sw6 {
+			reg_buck6: buck6 {
+				/* NVCC_DRAM_1P1V */
 				regulator-always-on;
 				regulator-boot-on;
 				regulator-max-microvolt = <1800000>;
 				regulator-min-microvolt =  <400000>;
+
+				regulator-state-standby {
+					regulator-on-in-suspend;
+					regulator-suspend-max-microvolt = <1800000>;
+					regulator-suspend-microvolt = <1062500>;
+					regulator-suspend-min-microvolt =  <400000>;
+				};
+
+				regulator-state-mem {
+					regulator-on-in-suspend;
+					regulator-suspend-max-microvolt = <1800000>;
+					regulator-suspend-microvolt = <1062500>;
+					regulator-suspend-min-microvolt =  <400000>;
+				};
+
+				regulator-state-disk {
+					regulator-on-in-suspend;
+					regulator-suspend-max-microvolt = <1800000>;
+					regulator-suspend-microvolt = <1062500>;
+					regulator-suspend-min-microvolt =  <400000>;
+				};
 			};
 
-			reg_sw7: sw7 {
+			reg_buck7: buck7 {
+				/* 3P3V */
 				regulator-always-on;
 				regulator-boot-on;
 				regulator-max-microvolt = <4100000>;
 				regulator-min-microvolt = <1000000>;
+
+				regulator-state-standby {
+					regulator-on-in-suspend;
+				};
+
+				regulator-state-mem {
+					regulator-on-in-suspend;
+				};
+
+				regulator-state-disk {
+					regulator-on-in-suspend;
+				};
 			};
 
 			reg_vsnvs: vsnvs {
+				/* NVCC_SNVS_1P8V */
 				regulator-always-on;
 				regulator-boot-on;
 				regulator-max-microvolt = <3300000>;
@@ -1198,10 +1355,11 @@
 	};
 
 	wm8960: codec@1a {
+		clock-names = "mclk";
+		clocks = <&clk IMX8MMN(CLK_SAI1_ROOT)>;
 		compatible = "wlf,wm8960";
 		reg = <0x1a>;
-		clocks = <&clk IMX8MMN(CLK_SAI1_ROOT)>;
-		clock-names = "mclk";
+		wlf,gpio-cfg = <1 3>;
 		wlf,shared-lrclk;
 	};
 };
@@ -1353,11 +1511,20 @@
 };
 
 &uart4 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_uart4>;
 	assigned-clocks = <&clk IMX8MMN(CLK_UART4)>;
 	assigned-clock-parents = <&clk IMX8MMN(SYS_PLL1_80M)>;
+	control-gpios = GP_UART4_LIN_EN;
+	linux,rs485-enabled-at-boot-time;
+#define M_EN		1
+        off_levels = <0>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart4>;
+	rs232_levels = <M_EN>;
+	rs485_levels = <M_EN>;
+	rts-gpios; /* Not really, but needed for half-duplex */
 	status = "okay";
+	uart-has-rs485-half-duplex;
+	wakeup-source;
 };
 
 &usbotg1 {
@@ -1410,6 +1577,7 @@
 
 &usdhc3 {
 	bus-width = <4>;
+	fsl,sdio-async-interrupt-enabled;
 	keep-power-in-suspend;
 	no-sd-uhs-sdr104;
 	non-removable;
@@ -1421,6 +1589,7 @@
 	status = "okay";
 	vmmc-supply = <&reg_wlan_vmmc>;
 	vqmmc-1-8-v;
+	vqmmc-supply = <&reg_vref_1v8>;
 };
 
 #if 0
@@ -1437,8 +1606,12 @@
 };
 
 &vpumix_pd {
-	dvfs-supply = <&reg_sw5>;
+	dvfs-supply = <&reg_buck5>;
 	idle-microvolt = <850000 805000 900000>;
+};
+
+&vpu_v4l2 {
+	status = "okay";
 };
 #endif
 
