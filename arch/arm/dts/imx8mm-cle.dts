@@ -530,7 +530,6 @@
 		pca9540_2 = &pca9540_2;
 		pca9546 = &pca9546;
 		pwm_mipi = &pwm3;
-		reg_sw4 = &reg_sw4;
 		spi_lcd = &spi_lcd;
 		t_mipi = &t_mipi;
 		ts_ft5x06 = &ts_ft5x06;
@@ -751,7 +750,6 @@
 			};
 
 			reg_sw4: sw4 {
-				alias = <&reg_sw4>;
 				regulator-always-on;
 				regulator-boot-on;
 				regulator-max-microvolt = <1800000>;
