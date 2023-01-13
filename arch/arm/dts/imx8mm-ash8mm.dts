@@ -618,6 +618,7 @@
 		amp-standby-exit-delay-ms = <100>;
 		amp-standby-gpios = GP_TDA7991_STDBY;
 		audio-codec = <&wm8960>;
+		audio-cpu = <&sai1>;
 		audio-routing =
 			"Ext Spk", "HP_L",
 			"Ext Spk", "HP_R",
@@ -625,8 +626,7 @@
 			"Main MIC", "MICB";
 		codec-master;
 		compatible = "fsl,imx-audio-wm8960";
-		cpu-dai = <&sai1>;
-		mic-det-gpios = GP_WM8960_MIC_DET;
+		mic-det-gpio = GP_WM8960_MIC_DET;
 		model = "wm8960-audio";
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_sound_wm8960>;
@@ -636,7 +636,7 @@
 
 #if 0
 &A53_0 {
-	cpu-supply = <&reg_sw3>;
+	cpu-supply = <&reg_buck3>;
 };
 #endif
 
@@ -673,7 +673,7 @@
 };
 
 &gpumix_pd {
-	dvfs-supply = <&reg_sw4>;
+	dvfs-supply = <&reg_buck4>;
 	idle-microvolt = <850000 805000 900000>;
 };
 #endif
@@ -688,7 +688,7 @@
 	status = "okay";
 
 	pf8100@8 {
-		compatible = "nxp,pf8x00";
+		compatible = "nxp,pf8100";
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_i2c1_pf8100>;
 		reg = <0x08>;
@@ -726,31 +726,23 @@
 				regulator-min-microvolt = <1500000>;
 			};
 
-			reg_sw1: sw1 {
-				phase = <0>;
-				ilim-ma = <4500>;
+			reg_buck1: buck1 {
+				nxp,phase-shift = <0>;
+				regulator-max-microamp = <4500000>;
 				regulator-always-on;
 				regulator-boot-on;
 				regulator-max-microvolt = <1800000>;
 				regulator-min-microvolt =  <400000>;
 			};
 
-			reg_sw2: sw2 {
+			reg_buck2: buck2 {
 				regulator-always-on;
 				regulator-boot-on;
 				regulator-max-microvolt = <1800000>;
 				regulator-min-microvolt =  <400000>;
 			};
 
-			reg_sw3: sw3 {
-				regulator-always-on;
-				regulator-boot-on;
-				regulator-max-microvolt = <1800000>;
-				regulator-min-microvolt =  <400000>;
-				fast-slew = <1>;
-			};
-
-			reg_sw4: sw4 {
+			reg_buck3: buck3 {
 				regulator-always-on;
 				regulator-boot-on;
 				regulator-max-microvolt = <1800000>;
@@ -758,21 +750,29 @@
 				fast-slew = <1>;
 			};
 
-			reg_sw5: sw5 {
+			reg_buck4: buck4 {
+				regulator-always-on;
+				regulator-boot-on;
+				regulator-max-microvolt = <1800000>;
+				regulator-min-microvolt =  <400000>;
+				fast-slew = <1>;
+			};
+
+			reg_buck5: buck5 {
 				regulator-always-on;
 				regulator-boot-on;
 				regulator-max-microvolt = <1800000>;
 				regulator-min-microvolt =  <400000>;
 			};
 
-			reg_sw6: sw6 {
+			reg_buck6: buck6 {
 				regulator-always-on;
 				regulator-boot-on;
 				regulator-max-microvolt = <1800000>;
 				regulator-min-microvolt =  <400000>;
 			};
 
-			reg_sw7: sw7 {
+			reg_buck7: buck7 {
 				regulator-always-on;
 				regulator-boot-on;
 				regulator-max-microvolt = <4100000>;
@@ -950,10 +950,11 @@
 	status = "okay";
 
 	wm8960: codec@1a {
+		clock-names = "mclk";
+		clocks = <&clk IMX8MMN(CLK_SAI1_ROOT)>;
 		compatible = "wlf,wm8960";
 		reg = <0x1a>;
-		clocks = <&clk IMX8MMN(CLK_SAI1_ROOT)>;
-		clock-names = "mclk";
+		wlf,gpio-cfg = <1 3>;
 		wlf,shared-lrclk;
 	};
 };
@@ -1139,6 +1140,7 @@
 
 &usdhc3 {
 	bus-width = <4>;
+	fsl,sdio-async-interrupt-enabled;
 	keep-power-in-suspend;
 	no-sd-uhs-sdr104;
 	non-removable;
@@ -1150,6 +1152,7 @@
 	status = "okay";
 	vmmc-supply = <&reg_wlan_vmmc>;
 	vqmmc-1-8-v;
+	vqmmc-supply = <&reg_vref_1v8>;
 };
 
 #if 0
@@ -1166,7 +1169,7 @@
 };
 
 &vpumix_pd {
-	dvfs-supply = <&reg_sw5>;
+	dvfs-supply = <&reg_buck5>;
 	idle-microvolt = <850000 805000 900000>;
 };
 #endif
