@@ -458,7 +458,6 @@
 		mipi = &fb_mipi;
 		mipi_dsi = &mipi_dsi;
 		pwm_mipi = &pwm3;
-		reg_sw4 = &reg_sw4;
 		t_mipi = &t_mipi;
 		ts_cyttsp5 = &ts_cyttsp5;
 		ts_ft5x06 = &ts_ft5x06;
@@ -752,7 +751,6 @@
 			};
 
 			reg_sw4: sw4 {
-				alias = <&reg_sw4>;
 				regulator-always-on;
 				regulator-boot-on;
 				regulator-max-microvolt = <1800000>;
