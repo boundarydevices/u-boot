@@ -683,11 +683,8 @@
 	};
 
 	sound-wm8960 {
-		compatible = "fsl,imx-audio-wm8960";
-		model = "wm8960-audio";
-		cpu-dai = <&sai1>;
-		codec-master;
 		audio-codec = <&wm8960>;
+		audio-cpu = <&sai1>;
 		audio-routing =
 			"Headphone Jack", "HP_L",
 			"Headphone Jack", "HP_R",
@@ -697,8 +694,10 @@
 			"Ext Spk", "SPK_RN",
 			"LINPUT1", "Main MIC",
 			"Main MIC", "MICB";
-		/* JD2: hp detect high for headphone*/
+		codec-master;
+		compatible = "fsl,imx-audio-wm8960";
 		hp-det = <2 0>;
+		model = "wm8960-audio";
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_sound_wm8960>;
 	};
@@ -719,19 +718,19 @@
 
 #if 0
 &A53_0 {
-	cpu-supply = <&reg_sw3>;
+	cpu-supply = <&reg_buck3>;
 };
 
 &A53_1 {
-	cpu-supply = <&reg_sw3>;
+	cpu-supply = <&reg_buck3>;
 };
 
 &A53_2 {
-	cpu-supply = <&reg_sw3>;
+	cpu-supply = <&reg_buck3>;
 };
 
 &A53_3 {
-	cpu-supply = <&reg_sw3>;
+	cpu-supply = <&reg_buck3>;
 };
 
 &csi1_bridge {
@@ -796,7 +795,7 @@
 
 #if 0
 	pf8100@8 {
-		compatible = "nxp,pf8x00";
+		compatible = "nxp,pf8100";
 		reg = <0x08>;
 
 		regulators {
@@ -832,51 +831,51 @@
 				regulator-min-microvolt = <1500000>;
 			};
 
-			reg_sw1: sw1 {
-				phase = <0>;
-				ilim-ma = <4500>;
+			reg_buck1: buck1 {
+				nxp,phase-shift = <0>;
+				regulator-max-microamp = <4500000>;
 				regulator-always-on;
 				regulator-boot-on;
 				regulator-max-microvolt = <1800000>;
 				regulator-min-microvolt =  <400000>;
 			};
 
-			reg_sw2: sw2 {
+			reg_buck2: buck2 {
 				regulator-always-on;
 				regulator-boot-on;
 				regulator-max-microvolt = <1800000>;
 				regulator-min-microvolt =  <400000>;
 			};
 
-			reg_sw3: sw3 {
+			reg_buck3: buck3 {
 				regulator-always-on;
 				regulator-boot-on;
 				regulator-max-microvolt = <1800000>;
 				regulator-min-microvolt =  <400000>;
 			};
 
-			reg_sw4: sw4 {
+			reg_buck4: buck4 {
 				regulator-always-on;
 				regulator-boot-on;
 				regulator-max-microvolt = <1800000>;
 				regulator-min-microvolt =  <400000>;
 			};
 
-			reg_sw5: sw5 {
+			reg_buck5: buck5 {
 				regulator-always-on;
 				regulator-boot-on;
 				regulator-max-microvolt = <1800000>;
 				regulator-min-microvolt =  <400000>;
 			};
 
-			reg_sw6: sw6 {
+			reg_buck6: buck6 {
 				regulator-always-on;
 				regulator-boot-on;
 				regulator-max-microvolt = <1800000>;
 				regulator-min-microvolt =  <400000>;
 			};
 
-			reg_sw7: sw7 {
+			reg_buck7: buck7 {
 				regulator-always-on;
 				regulator-boot-on;
 				regulator-max-microvolt = <4100000>;
@@ -953,10 +952,13 @@
 	};
 
 	wm8960: codec@1a {
-		clocks = <&clk IMX8MQ_CLK_SAI1_ROOT>;
 		clock-names = "mclk";
+		clocks = <&clk IMX8MQ_CLK_SAI1_ROOT>;
 		compatible = "wlf,wm8960";
 		reg = <0x1a>;
+		wlf,gpio-cfg = <1 3>;
+		/* JD2: hp detect high for headphone*/
+		wlf,hp-cfg = <2 0 3>;
 		wlf,shared-lrclk;
 	};
 };
@@ -1176,7 +1178,7 @@
 		#power-domain-cells = <0>;
 		#size-cells = <0>;
 		domain-name = "VPUGPU_PD";
-		dvfs-supply = <&reg_sw5>;
+		dvfs-supply = <&reg_buck5>;
 		idle-microvolt = <900000 837000 990000>;
 
 		pgc_gpu: power-domain@5 {
@@ -1306,23 +1308,29 @@
 
 &usdhc2 {
 	bus-width = <4>;
+	fsl,sdio-async-interrupt-enabled;
+	keep-power-in-suspend;
 	no-sd-uhs-sdr104;
+	non-removable;
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
 	pinctrl-0 = <&pinctrl_usdhc2>;
 	pinctrl-1 = <&pinctrl_usdhc2_100mhz>;
 	pinctrl-2 = <&pinctrl_usdhc2_200mhz>;
 	pm-ignore-notify;
-	keep-power-in-suspend;
-	non-removable;
 	status = "okay";
 	vmmc-supply = <&reg_wlan_vmmc>;
 	vqmmc-1-8-v;
+	vqmmc-supply = <&reg_vref_1v8>;
 };
 
 #if 0
 &vpu {
 	power-domains = <&pgc_vpu>;
 	regulator-supply = <&reg_vref_0v9>;
+	status = "okay";
+};
+
+&vpu_v4l2 {
 	status = "okay";
 };
 #endif
