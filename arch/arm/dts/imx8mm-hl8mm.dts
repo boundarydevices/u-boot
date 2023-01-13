@@ -81,9 +81,9 @@
 
 	pinctrl_i2c1_1: i2c1_1grp {
 		fsl,pins = <
-#define GP_I2C1_SCL	<&gpio5 14 GPIO_ACTIVE_HIGH>
+#define GP_I2C1_SCL	<&gpio5 14 GPIO_OPEN_DRAIN>
 			MX8MM_IOMUXC_I2C1_SCL_GPIO5_IO14		0x400001c3
-#define GP_I2C1_SDA	<&gpio5 15 GPIO_ACTIVE_HIGH>
+#define GP_I2C1_SDA	<&gpio5 15 GPIO_OPEN_DRAIN>
 			MX8MM_IOMUXC_I2C1_SDA_GPIO5_IO15		0x400001c3
 		>;
 	};
@@ -106,9 +106,9 @@
 
 	pinctrl_i2c2_1: i2c2_1grp {
 		fsl,pins = <
-#define GP_I2C2_SCL	<&gpio5 16 GPIO_ACTIVE_HIGH>
+#define GP_I2C2_SCL	<&gpio5 16 GPIO_OPEN_DRAIN>
 			MX8MM_IOMUXC_I2C2_SCL_GPIO5_IO16		0x400001c3
-#define GP_I2C2_SDA	<&gpio5 17 GPIO_ACTIVE_HIGH>
+#define GP_I2C2_SDA	<&gpio5 17 GPIO_OPEN_DRAIN>
 			MX8MM_IOMUXC_I2C2_SDA_GPIO5_IO17		0x400001c3
 		>;
 	};
@@ -129,9 +129,9 @@
 
 	pinctrl_i2c3_1: i2c3_1grp {
 		fsl,pins = <
-#define GP_I2C3_SCL	<&gpio5 18 GPIO_ACTIVE_HIGH>
+#define GP_I2C3_SCL	<&gpio5 18 GPIO_OPEN_DRAIN>
 			MX8MM_IOMUXC_I2C3_SCL_GPIO5_IO18		0x400001c3
-#define GP_I2C3_SDA	<&gpio5 19 GPIO_ACTIVE_HIGH>
+#define GP_I2C3_SDA	<&gpio5 19 GPIO_OPEN_DRAIN>
 			MX8MM_IOMUXC_I2C3_SDA_GPIO5_IO19		0x400001c3
 		>;
 	};
@@ -170,9 +170,9 @@
 
 	pinctrl_i2c4_1: i2c4_1grp {
 		fsl,pins = <
-#define GP_I2C4_SCL	<&gpio5 20 GPIO_ACTIVE_HIGH>
+#define GP_I2C4_SCL	<&gpio5 20 GPIO_OPEN_DRAIN>
 			MX8MM_IOMUXC_I2C4_SCL_GPIO5_IO20		0x400001c3
-#define GP_I2C4_SDA	<&gpio5 21 GPIO_ACTIVE_HIGH>
+#define GP_I2C4_SDA	<&gpio5 21 GPIO_OPEN_DRAIN>
 			MX8MM_IOMUXC_I2C4_SDA_GPIO5_IO21		0x400001c3
 		>;
 	};
@@ -260,7 +260,7 @@
 	pinctrl_usbotg1: usbotg1grp {
 		fsl,pins = <
 			MX8MM_IOMUXC_GPIO1_IO12_USB1_OTG_PWR		0x16
-			MX8MM_IOMUXC_GPIO1_IO13_USB1_OTG_OC		0x16
+			MX8MM_IOMUXC_GPIO1_IO13_USB1_OTG_OC		0x156
 		>;
 	};
 
@@ -399,6 +399,18 @@
 	model = "Boundary Devices i.MX8MMini HL8MM";
 	compatible = "boundary,imx8mm-hl8mm", "fsl,imx8mm";
 
+	aliases {
+		a53 = &A53_0;
+		backlight_mipi = &backlight_mipi;
+		fb_mipi = &fb_mipi;
+		lcdif = &lcdif;
+		mipi = &fb_mipi;
+		mipi_dsi = &mipi_dsi;
+		pwm_mipi = &pwm4;
+		t_mipi = &t_mipi;
+		ts_ft5x06 = &ts_ft5x06;
+	};
+
 	chosen {
 		bootargs = "console=ttymxc1,115200 earlycon=ec_imx6q,0x30890000,115200";
 		stdout-patch = &uart2;
@@ -491,12 +503,7 @@
 
 #if 0
 &A53_0 {
-	arm-supply = <&reg_sw3>;
-};
-
-&clk {
-	assigned-clocks = <&clk IMX8MM_AUDIO_PLL1>, <&clk IMX8MM_AUDIO_PLL2>;
-	assigned-clock-rates = <786432000>, <722534400>;
+	cpu-supply = <&reg_buck3>;
 };
 
 &csi1_bridge {
@@ -528,10 +535,10 @@
 		#address-cells = <1>;
 		#size-cells = <0>;
 
-		ethphy0: ethernet-phy@4 {
+		ethphy0: ethernet-phy {
 			compatible = "ethernet-phy-ieee802.3-c22";
-			reg = <4>;
 			interrupts-extended = GPIRQ_FEC1_PHY;
+			reg-mask = <0x90>;
 		};
 	};
 };
@@ -552,8 +559,8 @@
 	status = "okay";
 
 #if 0
-	pf8100@08 {
-		compatible = "nxp,pf8x00";
+	pf8100@8 {
+		compatible = "nxp,pf8100";
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_i2c1_pf8100>;
 		reg = <0x08>;
@@ -591,23 +598,23 @@
 				regulator-min-microvolt = <1500000>;
 			};
 
-			reg_sw1: sw1 {
-				phase = <0>;
-				ilim-ma = <4500>;
+			reg_buck1: buck1 {
+				nxp,phase-shift = <0>;
+				regulator-max-microamp = <4500000>;
 				regulator-always-on;
 				regulator-boot-on;
 				regulator-max-microvolt = <1800000>;
 				regulator-min-microvolt =  <400000>;
 			};
 
-			reg_sw2: sw2 {
+			reg_buck2: buck2 {
 				regulator-always-on;
 				regulator-boot-on;
 				regulator-max-microvolt = <1800000>;
 				regulator-min-microvolt =  <400000>;
 			};
 
-			reg_sw3: sw3 {
+			reg_buck3: buck3 {
 				regulator-always-on;
 				regulator-boot-on;
 				regulator-max-microvolt = <1800000>;
@@ -615,28 +622,28 @@
 				fast-slew = <1>;
 			};
 
-			reg_sw4: sw4 {
+			reg_buck4: buck4 {
 				regulator-always-on;
 				regulator-boot-on;
 				regulator-max-microvolt = <1800000>;
 				regulator-min-microvolt =  <400000>;
 			};
 
-			reg_sw5: sw5 {
+			reg_buck5: buck5 {
 				regulator-always-on;
 				regulator-boot-on;
 				regulator-max-microvolt = <1800000>;
 				regulator-min-microvolt =  <400000>;
 			};
 
-			reg_sw6: sw6 {
+			reg_buck6: buck6 {
 				regulator-always-on;
 				regulator-boot-on;
 				regulator-max-microvolt = <1800000>;
 				regulator-min-microvolt =  <400000>;
 			};
 
-			reg_sw7: sw7 {
+			reg_buck7: buck7 {
 				regulator-always-on;
 				regulator-boot-on;
 				regulator-max-microvolt = <4100000>;
@@ -683,7 +690,7 @@
 	status = "okay";
 
 	i2cmux@70 {
-		compatible = "pca9546";
+		compatible = "nxp,pca9546";
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_i2c3_pca9546>;
 		reg = <0x70>;
@@ -736,16 +743,16 @@
 		DOVDD-supply = <&reg_vref_1v8>;
 		DVDD-supply = <&reg_vref_3v3>;
 		clocks = <&csi_mclk>;
-		clock-names = "csi_mclk";
-		compatible = "ov5640_mipisubdev";
+		clock-names = "xclk";
+		compatible = "ovti,ov5640_mipisubdev";
 		csi_id = <0>;
 		mclk = <20000000>;
 		mipi_csi;
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_i2c3b_ov5640_mipi>;
-		pwn-gpios = GP_OV5640_MIPI_POWER_DOWN;
+		powerdown-gpios = GP_OV5640_MIPI_POWER_DOWN;
 		reg = <0x3c>;
-		rst-gpios = GP_OV5640_MIPI_RESET;
+		reset-gpios = GP_OV5640_MIPI_RESET;
 		status = "okay";
 
 		port {
@@ -766,8 +773,8 @@
 	sda-gpios = GP_I2C4_SDA;
 	status = "okay";
 
-	touchscreen@38 {
-		compatible = "ft5x06-ts";
+	ts_ft5x06: touchscreen@38 {
+		compatible = "edt,ft5x06-ts";
 		interrupts-extended = GPIRQ_I2C4_FT5X06;
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_i2c4_ft5x06>;
@@ -786,7 +793,7 @@
 	#size-cells = <0>;
 	status = "okay";
 	port {
-		mipi1_ov5640_ep: endpoint1 {
+		mipi1_ov5640_ep: endpoint@1 {
 			remote-endpoint = <&ov5640_mipi1_ep>;
 			data-lanes = <2>;
 			csis-hs-settle = <13>;
@@ -794,7 +801,7 @@
 			csis-wclk;
 		};
 
-		csi1_mipi_ep: endpoint2 {
+		csi1_mipi_ep: endpoint@2 {
 			remote-endpoint = <&csi1_ep>;
 		};
 	};
@@ -817,6 +824,7 @@
 	status = "okay";
 
 	fb_mipi: panel@0 {
+		backlight = <&backlight_mipi>;
 		bits-per-color = <8>;
 		bridge-de-active = <0>;
 		bus-format = "rgb888";
@@ -881,16 +889,13 @@
 	status = "okay";
 };
 
-&resmem {
-	limit3g@0x100000000 {
-		no-map;
-		reg = <1 0x00000000 0 0x40000000>;
-	};
-};
-
 &sai2 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_sai2>;
+	status = "okay";
+};
+
+&snvs_pwrkey {
 	status = "okay";
 };
 
@@ -899,7 +904,7 @@
 	pinctrl-0 = <&pinctrl_uart1>;
 	assigned-clocks = <&clk IMX8MM_CLK_UART1>;
 	assigned-clock-parents = <&clk IMX8MM_SYS_PLL1_80M>;
-	fsl,uart-has-rtscts;
+	uart-has-rtscts;
 	status = "okay";
 };
 #endif
@@ -931,14 +936,16 @@
 #endif
 
 &usbotg1 {
+	dr_mode = "otg";
+	over-current-active-low;
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usbotg1>;
 	power-active-high;
-	dr_mode = "otg";
 	status = "okay";
 };
 
 &usbotg2 {
+	disable-over-current;
 	dr_mode = "host";
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usbotg2>;
@@ -948,17 +955,13 @@
 };
 
 &usdhc1 {
-	cap-mmc-highspeed;
 	bus-width = <8>;
-	mmc-ddr-1_8v;
-	mmc-hs200-1_8v;
 	no-mmc-hs400;
 	non-removable;
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
 	pinctrl-0 = <&pinctrl_usdhc1>;
 	pinctrl-1 = <&pinctrl_usdhc1_100mhz>;
 	pinctrl-2 = <&pinctrl_usdhc1_200mhz>;
-	reset-gpios = GP_EMMC_RESET;
 	status = "okay";
 	vmmc-supply = <&reg_vref_3v3>;
 	vqmmc-1-8-v;
@@ -967,16 +970,11 @@
 
 &usdhc2 {
 	bus-width = <4>;
-	cap-sd-highspeed;
 	cd-gpios = GP_USDHC2_CD;
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
 	pinctrl-0 = <&pinctrl_usdhc2>;
 	pinctrl-1 = <&pinctrl_usdhc2_100mhz>;
 	pinctrl-2 = <&pinctrl_usdhc2_200mhz>;
-	sd-uhs-ddr50;
-	sd-uhs-sdr104;
-	sd-uhs-sdr12;
-	sd-uhs-sdr25;
 	status = "okay";
 #if 1
 	vqmmc-supply = <&reg_usdhc2_vqmmc>;
@@ -988,15 +986,19 @@
 #if 0
 &usdhc3 {
 	bus-width = <4>;
+	fsl,sdio-async-interrupt-enabled;
+	keep-power-in-suspend;
 	no-sd-uhs-sdr104;
 	non-removable;
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
 	pinctrl-0 = <&pinctrl_usdhc3>;
 	pinctrl-1 = <&pinctrl_usdhc3_100mhz>;
 	pinctrl-2 = <&pinctrl_usdhc3_200mhz>;
+	pm-ignore-notify;
 	status = "okay";
 	vmmc-supply = <&reg_wlan_vmmc>;
 	vqmmc-1-8-v;
+	vqmmc-supply = <&reg_vref_1v8>;
 };
 
 &vpu_g1 {
@@ -1008,6 +1010,15 @@
 };
 
 &vpu_h1 {
+	status = "okay";
+};
+
+&vpumix_pd {
+	dvfs-supply = <&reg_buck5>;
+	idle-microvolt = <850000 805000 900000>;
+};
+
+&vpu_v4l2 {
 	status = "okay";
 };
 #endif
