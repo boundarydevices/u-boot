@@ -160,10 +160,19 @@
 };
 
 &usdhc1 {
+	cap-mmc-highspeed;
+	mmc-ddr-1_8v;
+	mmc-hs200-1_8v;
+	reset-gpios = GP_EMMC_RESET;
 	u-boot,dm-spl;
 };
 
 &usdhc2 {
+	cap-sd-highspeed;
+	sd-uhs-ddr50;
+	sd-uhs-sdr104;
+	sd-uhs-sdr12;
+	sd-uhs-sdr25;
 	u-boot,dm-spl;
 };
 
