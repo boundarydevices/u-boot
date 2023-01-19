@@ -371,6 +371,11 @@ static const struct display_info_t displays[] = {
 	VD_PM9598(LVDS, board_fbp_detect_i2c, fbp_bus_gp(0, GP_I2C1_TCA9546_RESET, 0, 0), 0x38, FBTS_FT5X06_2),
 	VD_DT070BTFT(LVDS2, NULL, fbp_bus_gp(0, GP_I2C1_TCA9546_RESET, 0, 0), 0x38, FBTS_FT5X06),
 	VD_DT070BTFT(LVDS, NULL, fbp_bus_gp(0, GP_I2C1_TCA9546_RESET, 0, 0), 0x38, FBTS_FT5X06_2),
+
+	/* hdmi */
+	VD_1280_720M_60(HDMI, board_detect_pca9546, fbp_bus_gp((1 | (3 << 4)), GP_I2C2_TCA9546_RESET, 0, 0), 0x50),
+	VD_1920_1080M_60(HDMI, NULL, 1, 0x50),
+	VD_1024_768M_60(HDMI, NULL, 1, 0x50),
 };
 #define display_cnt	ARRAY_SIZE(displays)
 #else
