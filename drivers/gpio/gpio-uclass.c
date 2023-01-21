@@ -379,8 +379,10 @@ int dm_gpio_request(struct gpio_desc *desc, const char *label)
 	int ret;
 
 	uc_priv = dev_get_uclass_priv(dev);
-	if (uc_priv->name[desc->offset])
+	if (uc_priv->name[desc->offset]) {
+		debug("%s: %s: %d busy %s\n", __func__, label, desc->offset, uc_priv->name[desc->offset]);
 		return -EBUSY;
+	}
 	str = strdup(label);
 	if (!str)
 		return -ENOMEM;
