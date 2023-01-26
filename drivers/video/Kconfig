@@ -16,7 +16,7 @@ config DM_VIDEO
 
 config VIDEO_LOGO
 	bool "Show the U-Boot logo on the display"
-	default y if !SPLASH_SCREEN
+	default y if !SPLASH_SCREEN && (DM_VIDEO || CFB_CONSOLE)
 	select VIDEO_BMP_RLE8
 	help
 	  This enables showing the U-Boot logo on the display when a video
