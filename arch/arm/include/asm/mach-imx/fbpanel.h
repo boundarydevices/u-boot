@@ -1734,8 +1734,8 @@ void fbp_setup_env_cmds(void);
 		.xres		= 480,\
 		.yres		= 1280,\
 		.pixclock	= 1000000000000ULL/((480+50+50+4)*(1280+16+16+4)*60), \
-		.left_margin	= 50,\
-		.right_margin	= 50,\
+		.left_margin	= 48,\
+		.right_margin	= 48,\
 		.upper_margin	= 16,\
 		.lower_margin	= 16,\
 		.hsync_len	= 4,\
