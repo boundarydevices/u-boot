@@ -1240,7 +1240,8 @@ dtb-$(CONFIG_ARCH_MEDIATEK) += \
 	mt8512-bm1-emmc.dtb \
 	mt8516-pumpkin.dtb \
 	mt8518-ap1-emmc.dtb \
-	genio-700-evk.dtb
+	genio-700-evk.dtb \
+	mt8195-evk-ufs.dtb
 
 dtb-$(CONFIG_ARCH_NPCM7xx) += nuvoton-npcm750-evb.dtb
 dtb-$(CONFIG_XEN) += xenguest-arm64.dtb
