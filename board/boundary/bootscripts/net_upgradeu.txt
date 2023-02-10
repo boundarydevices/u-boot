@@ -17,6 +17,10 @@ qspi_offset=0x0
 a_base=0x10100000
 block_size=0x200
 
+if itest.s "x" == "x${tftpserverip}"; then
+	tftpserverip = ${serverip}
+fi
+
 #grab 1st 2 characters of string
 setexpr cpu2 sub "^(..?).*" "\\1" "${imx_cpu}"
 setexpr cpu3 sub "^(..?.?).*" "\\1" "${imx_cpu}"
@@ -64,7 +68,7 @@ if itest.s "x${env_dev}" == "x" || itest.s "x${env_part}" == "x"; then
 fi
 
 # Load bootloader binary for this board
-if tftp ${a_uImage1} u-boot.${uboot_defconfig} ; then
+if tftp ${a_uImage1} ${tftpserverip}:u-boot.${uboot_defconfig} ; then
 else
 	echo "File u-boot.${uboot_defconfig} not found on TFTP server" ;
 	exit
@@ -117,7 +121,7 @@ fi
 
 if itest.s x7D == "x${imx_cpu}"; then
 	echo "check qspi parameter block" ;
-	if tftp ${a_qspi1} qspi-${sfname}.${uboot_defconfig} ; then
+	if tftp ${a_qspi1} ${tftpserverip}:qspi-${sfname}.${uboot_defconfig} ; then
 	else
 		echo "parameter file qspi-${sfname}.${uboot_defconfig} not found on TFTP server"
 		exit
@@ -146,7 +150,7 @@ fi
 
 echo "check U-Boot" ;
 
-if tftp ${a_uImage1} u-boot.${uboot_defconfig} ; then
+if tftp ${a_uImage1} ${tftpserverip}:u-boot.${uboot_defconfig} ; then
 else
 	echo "File u-boot.${uboot_defconfig} not found on TFTP server" ;
 	exit
@@ -163,7 +167,7 @@ if cmp.b ${a_uImage1} ${a_uImage2} ${filesize} ; then
 	if itest.s "${qspi_match}" == "1" ; then
 		echo "------- u-boot upgrade not needed" ;
 		if itest.s x != "x${net_upgrade_fs}" ; then
-			if tftp ${a_base} ${net_upgrade_fs} ; then
+			if tftp ${a_base} ${tftpserverip}:${net_upgrade_fs} ; then
 				echo "------- running ${net_upgrade_fs}" ;
 				source ${a_base}
 			else
@@ -226,7 +230,7 @@ if itest.s x7D == "x${imx_cpu}"; then
 fi
 
 if itest.s "x" != "x${next}" ; then
-	if tftp ${a_script} ${next} ; then
+	if tftp ${a_script} ${tftpserverip}:${next} ; then
 		source ${a_script}
 	else
 		echo "${next} not found"
