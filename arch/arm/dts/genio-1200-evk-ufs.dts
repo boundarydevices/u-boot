@@ -10,8 +10,8 @@
 #include "mt8195.dtsi"
 
 / {
-	model = "MediaTek MT8195 EVK with UFS storage";
-	compatible = "mediatek,mt8195-evk-ufs", "mediatek,mt8195";
+	model = "MediaTek Genio-1200 EVK with UFS storage";
+	compatible = "mediatek,mt8395-evk", "mediatek,mt8195";
 
 	memory@40000000 {
 		device_type = "memory";
@@ -135,10 +135,6 @@
 };
 
 &xhci0 {
-	status = "okay";
-};
-
-&xhci3 {
 	status = "okay";
 };
 
