@@ -18,7 +18,7 @@ a_base=0x10100000
 block_size=0x200
 
 if itest.s "x" == "x${tftpserverip}"; then
-	tftpserverip = ${serverip}
+	tftpserverip=${serverip}
 fi
 
 #grab 1st 2 characters of string
