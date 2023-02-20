@@ -1394,6 +1394,14 @@ int gpio_get_number(const struct gpio_desc *desc)
 	return uc_priv->gpio_base + desc->offset;
 }
 
+static int gpio_pre_probe(struct udevice *dev)
+{
+	struct gpio_dev_priv *uc_priv = dev_get_uclass_priv(dev);
+
+	uc_priv->desired_gpio_base = -1;
+	return 0;
+}
+
 static int gpio_post_probe(struct udevice *dev)
 {
 	struct gpio_dev_priv *uc_priv = dev_get_uclass_priv(dev);
@@ -1506,12 +1514,9 @@ void devm_gpiod_put(struct udevice *dev, struct gpio_desc *desc)
 static int gpio_post_bind(struct udevice *dev)
 {
 	struct dm_gpio_ops *ops = (struct dm_gpio_ops *)device_get_ops(dev);
-	struct gpio_dev_priv *uc_priv = dev_get_uclass_priv(dev);
 	struct udevice *child;
 	ofnode node;
 
-	if (uc_priv)
-		uc_priv->desired_gpio_base = -1;
 #if defined(CONFIG_NEEDS_MANUAL_RELOC)
 	static int reloc_done;
 
@@ -1569,6 +1574,7 @@ UCLASS_DRIVER(gpio) = {
 	.flags		= DM_UC_FLAG_SEQ_ALIAS,
 	.post_probe	= gpio_post_probe,
 	.post_bind	= gpio_post_bind,
+	.pre_probe	= gpio_pre_probe,
 	.pre_remove	= gpio_pre_remove,
 	.per_device_auto	= sizeof(struct gpio_dev_priv),
 };
