@@ -11,9 +11,9 @@
 #endif
 
 #ifdef WR_POST_EXT_3200
-#define CH2_VAL_INIT4	((LPDDR4_MR3 << 16) | 0x00020008)
+#define CH2_VAL_INIT4	((LPDDR4_MR3 << 16) | 0x00020000)
 #else
-#define CH2_VAL_INIT4	((LPDDR4_MR3 << 16) | 8)
+#define CH2_VAL_INIT4	((LPDDR4_MR3 << 16) | 0)
 #endif
 
 #if CONFIG_DDR_MB == 1024
