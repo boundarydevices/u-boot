@@ -138,6 +138,10 @@
 	status = "okay";
 };
 
+&xhci1 {
+	status = "okay";
+};
+
 &i2c0 {
 	clock-frequency = <100000>;
 	pinctrl-0 = <&i2c0_pins>;
