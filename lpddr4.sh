@@ -69,7 +69,7 @@ fi
 #stage 3
 echo stage 3
 sed -E -i \
- -e 's/ DDRC_INIT4\(0\), 0x00310008 / DDRC_INIT4\(0\), CH2_VAL_INIT4 /' \
+ -e 's/ DDRC_INIT4\(0\), 0x00310000 / DDRC_INIT4\(0\), CH2_VAL_INIT4 /' \
  -e 's/ DDRC_FREQ1_INIT4\(0\), 0x00310000 / DDRC_FREQ1_INIT4\(0\), CH2_VAL_INIT4 /' \
  -e 's/ DDRC_FREQ2_INIT4\(0\), 0x00310000 / DDRC_FREQ2_INIT4\(0\), CH2_VAL_INIT4 /' \
  -e 's/ 0x54006, 0x11 / 0x54006, LPDDR4_PHY_VREF_VALUE /' \
@@ -82,7 +82,6 @@ sed -E -i \
  -e '/DDRC_ADDRMAP1\(0\), 0x00080808/ i \\t/* addrmap_bank_b2, addrmap_bank_b1, addrmap_bank_b0 */' \
  -e '/DDRC_ADDRMAP5\(0\), 0x07070707/ i \\t/* addrmap_row_b11, addrmap_row_b10_b2, addrmap_row_b1, addrmap_row_b0 */' \
  -e '/DDRC_ADDRMAP6\(0\),/ i \\t/* addrmap_row_b15, addrmap_row_b14, addrmap_row_b13, addrmap_row_b12 */' \
- -e '/DDRC_ADDRMAP6\(0\),/ a \\t{ DDRC_ADDRMAP7(0), 0x0f0f },' \
  -e 's/ dram_timing / dram_timing_ch2 /' \
 $1
 
