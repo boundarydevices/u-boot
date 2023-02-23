@@ -98,6 +98,9 @@ static const iomux_v3_cfg_t init_pads[] = {
 #define GPIRQ_ENET_PHY		IMX_GPIO_NR(1, 28)
 	IOMUX_PAD_CTRL(ENET_TX_EN__GPIO1_IO28, WEAK_PULLUP),
 
+	/* gpio_keys */
+	IOMUX_PAD_CTRL(EIM_EB1__GPIO2_IO29, WEAK_PULLDN),
+
 	/* GP - Hogs */
 #define GP_BT_CLK_REQ		IMX_GPIO_NR(2, 0)
 	IOMUX_PAD_CTRL(NANDF_D0__GPIO2_IO00, WEAK_PULLUP),
