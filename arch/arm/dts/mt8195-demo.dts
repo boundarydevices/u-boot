@@ -14,8 +14,10 @@
 	compatible = "mediatek,mt8195-demo", "mediatek,mt8195";
 
 	memory@40000000 {
+		/* 8GB */
 		device_type = "memory";
-		reg = <0 0x40000000 0 0x80000000>;
+		reg = <0 0x40000000 0 0x80000000>,
+		      <2 0x80000000 1 0x80000000>;
 	};
 
 	firmware: firmware {
