@@ -63,7 +63,7 @@ static struct mm_region mt8195_mem_map[] = {
 		/* DDR */
 		.virt = 0x40000000UL,
 		.phys = 0x40000000UL,
-		.size = 0x80000000UL,
+		.size = 0x200000000UL,
 		.attrs = PTE_BLOCK_MEMTYPE(MT_NORMAL) | PTE_BLOCK_OUTER_SHARE,
 	}, {
 		.virt = 0x00000000UL,
