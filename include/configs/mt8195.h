@@ -26,6 +26,12 @@
 #define BOOT_TARGET_MMC(func)
 #endif
 
+#ifdef CONFIG_CMD_USB
+#define BOOT_TARGET_USB(func) func(USB, usb, 0)
+#else
+#define BOOT_TARGET_USB(func)
+#endif
+
 #ifdef CONFIG_CMD_SCSI
 #define BOOT_TARGET_SCSI(func) func(SCSI, scsi, 2)
 #else
@@ -34,6 +40,7 @@
 
 #define BOOT_TARGET_DEVICES(func) \
 	BOOT_TARGET_MMC(func) \
+	BOOT_TARGET_USB(func) \
 	BOOT_TARGET_SCSI(func)
 
 #if !defined(CONFIG_EXTRA_ENV_SETTINGS)
