@@ -110,16 +110,11 @@ static void swap_packet(uint32_t *packet, int length)
 static void bangout(unsigned val, int cnt)
 {
 	int bit_val;
-	int prev_bit_val = 1;
-
-	gpio_direction_input(GP_MII_MDIO);
-	udelay(1);
-	gpio_direction_output(GP_MII_MDC, 1);
+	int prev_bit_val = 2;
 
 	while (cnt) {
 		cnt--;
-		udelay(1);
-		gpio_set_value(GP_MII_MDC, 0);
+		gpio_direction_output(GP_MII_MDC, 0);
 		bit_val = (val >> cnt) & 1;
 		if (prev_bit_val != bit_val) {
 			prev_bit_val = bit_val;
@@ -128,40 +123,60 @@ static void bangout(unsigned val, int cnt)
 			else
 				gpio_direction_output(GP_MII_MDIO, 0);
 		}
-		udelay(1);
 		gpio_set_value(GP_MII_MDC, 1);
+		gpio_direction_input(GP_MII_MDC);
 	}
 }
 
-static int fec_mdio_read(struct ethernet_regs *eth, uint8_t phyaddr,
-		uint8_t regaddr)
+static int phy_preamble(struct ethernet_regs *eth)
 {
-	int val;
+	bangout(0xffffffff, 32);
+	if (gpio_get_value(GP_MII_MDIO) != 1) {
+		bangout(0xffffffff, 32);
+		if (gpio_get_value(GP_MII_MDIO) != 1) {
+			printf("mdio is still low!\n");
+			return -EIO;
+		}
+	}
+	return 0;
+}
+
+static int fec_mdio_read(struct ethernet_regs *eth, uint8_t mii_id,
+		uint8_t regnum)
+{
+	int val, ret;
 	int i;
 
 	val = FEC_MII_DATA_ST | FEC_MII_DATA_OP_RD | FEC_MII_DATA_TA |
-			(phyaddr << FEC_MII_DATA_PA_SHIFT) | regaddr << FEC_MII_DATA_RA_SHIFT;
+			(mii_id << FEC_MII_DATA_PA_SHIFT) | regnum << FEC_MII_DATA_RA_SHIFT;
 
-	bangout(0xffffffff, 32);
+	ret = phy_preamble(eth);
+	if (ret)
+		return ret;
 	bangout(val >> 17, 32 - 17);
 	gpio_direction_input(GP_MII_MDIO);
 
 	val = 0;
 	for (i = 0; i < 17; i++) {
 		val <<= 1;
-		udelay(1);
+		gpio_direction_output(GP_MII_MDC, 0);
+		/* transferred with rising edge of MDC, sample on falling */
 		if (gpio_get_value(GP_MII_MDIO))
 			val |= 1;
-		gpio_set_value(GP_MII_MDC, 0);
-		udelay(1);
 		gpio_set_value(GP_MII_MDC, 1);
+		gpio_direction_input(GP_MII_MDC);
 	}
-	val &= 0xffff;
 
-	gpio_direction_input(GP_MII_MDC);
-
-	debug("%s: phy: %02x reg:%02x val:%#x\n", __func__, phyaddr,
-	      regaddr, val);
+	if (val & BIT(16)) {
+		if ((regnum != 2) && (regnum != 3)) {
+			printf("%s: phy not responding: adr=0x%02x regnum:0x%02x val:0x%x\n",
+				__func__, mii_id, regnum, val);
+			mdelay(1);
+		}
+		val = 0xffff; /* could return -EIO, but mii-tool looks for 0xffff */
+	}
+	debug("%s: phy: %02x reg:%02x val:%#x\n", __func__, mii_id,
+	      regnum, val);
 	return val;
 }
 #else
@@ -281,16 +296,18 @@ static int fec_mdio_write(struct ethernet_regs *eth, uint8_t phyaddr,
 		uint8_t regaddr, uint16_t data)
 {
 	uint32_t val;
+	int ret;
 
 	val = FEC_MII_DATA_ST | FEC_MII_DATA_OP_WR |FEC_MII_DATA_TA |
 		(phyaddr << FEC_MII_DATA_PA_SHIFT) |
 		(regaddr << FEC_MII_DATA_RA_SHIFT) | data;
 
 
-	bangout(0xffffffff, 32);
+	ret = phy_preamble(eth);
+	if (ret)
+		return ret;
 	bangout(val, 32);
 
-	gpio_direction_input(GP_MII_MDC);
 	gpio_direction_input(GP_MII_MDIO);
 	return 0;
 }
