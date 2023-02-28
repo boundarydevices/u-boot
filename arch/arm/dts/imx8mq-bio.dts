@@ -769,9 +769,9 @@
 #endif
 
 &hdmi {
-	assigned-clocks = <&clk IMX8MQ_CLK_CLK2>;
+	assigned-clocks = <&clk IMX8MQ_CLK_MON_SEL>;
 	assigned-clock-parents = <&clk IMX8MQ_CLK_27M>;
-	clocks = <&clk IMX8MQ_CLK_CLK2_CG>;
+	clocks = <&clk IMX8MQ_CLK_MON_CLK2_OUT>;
 	clock-names = "refclk";
 	compatible = "cdn,imx8mq-hdmi";
 	lane-mapping = <0xe4>;
