@@ -86,7 +86,6 @@ static u32 decode_sscg_pll(enum clk_root_src sscg_pll)
 	u32 divr1, divr2, divf1, divf2, divq, div;
 	u32 sse;
 	u32 pll_clke;
-	u32 pllout_div_shift, pllout_div_mask, pllout_div;
 	u32 pllout;
 
 	switch (sscg_pll) {
@@ -102,8 +101,6 @@ static u32 decode_sscg_pll(enum clk_root_src sscg_pll)
 		pll_cfg0 = readl(&ana_pll->sys_pll1_cfg0);
 		pll_cfg1 = readl(&ana_pll->sys_pll1_cfg1);
 		pll_cfg2 = readl(&ana_pll->sys_pll1_cfg2);
-		pllout_div_shift = HW_SSCG_SYSTEM_PLL1_DIV_SHIFT;
-		pllout_div_mask = HW_SSCG_SYSTEM_PLL1_DIV_MASK;
 		break;
 	case SYSTEM_PLL2_1000M_CLK:
 	case SYSTEM_PLL2_500M_CLK:
@@ -117,22 +114,16 @@ static u32 decode_sscg_pll(enum clk_root_src sscg_pll)
 		pll_cfg0 = readl(&ana_pll->sys_pll2_cfg0);
 		pll_cfg1 = readl(&ana_pll->sys_pll2_cfg1);
 		pll_cfg2 = readl(&ana_pll->sys_pll2_cfg2);
-		pllout_div_shift = HW_SSCG_SYSTEM_PLL2_DIV_SHIFT;
-		pllout_div_mask = HW_SSCG_SYSTEM_PLL2_DIV_MASK;
 		break;
 	case SYSTEM_PLL3_CLK:
 		pll_cfg0 = readl(&ana_pll->sys_pll3_cfg0);
 		pll_cfg1 = readl(&ana_pll->sys_pll3_cfg1);
 		pll_cfg2 = readl(&ana_pll->sys_pll3_cfg2);
-		pllout_div_shift = HW_SSCG_SYSTEM_PLL3_DIV_SHIFT;
-		pllout_div_mask = HW_SSCG_SYSTEM_PLL3_DIV_MASK;
 		break;
 	case DRAM_PLL1_CLK:
 		pll_cfg0 = readl(&ana_pll->dram_pll_cfg0);
 		pll_cfg1 = readl(&ana_pll->dram_pll_cfg1);
 		pll_cfg2 = readl(&ana_pll->dram_pll_cfg2);
-		pllout_div_shift = HW_SSCG_DRAM_PLL_DIV_SHIFT;
-		pllout_div_mask = HW_SSCG_DRAM_PLL_DIV_MASK;
 		break;
 	default:
 		printf("sscg pll %d not supporte\n", sscg_pll);
@@ -206,9 +197,6 @@ static u32 decode_sscg_pll(enum clk_root_src sscg_pll)
 	if ((pll_cfg0 & pll_clke) == 0)
 		return 0;
 
-	pllout_div = readl(&ana_pll->sscg_pllout_div_cfg);
-	pllout_div = (pllout_div & pllout_div_mask) >> pllout_div_shift;
-
 	pll_refclk_sel = pll_cfg0 & SSCG_PLL_REFCLK_SEL_MASK;
 
 	if (pll_refclk_sel == SSCG_PLL_REFCLK_SEL_OSC_25M)
@@ -245,7 +233,7 @@ static u32 decode_sscg_pll(enum clk_root_src sscg_pll)
 	pllout = pll_refclk / (divr1 + 1) * sse * (divf1 + 1) /
 		(divr2 + 1) * (divf2 + 1) / (divq + 1);
 
-	return pllout / (pllout_div + 1) / div;
+	return pllout / div;
 }
 
 static u32 get_root_src_clk(enum clk_root_src root_src)
