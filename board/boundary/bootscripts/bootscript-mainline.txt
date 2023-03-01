@@ -35,38 +35,40 @@ if itest.s "x" == "x${board}" ; then
 	exit;
 fi
 
-if itest.s "x" == "x${fdt_file}" ; then
-	if itest.s x51 == "x${cpu2}" ; then
-		fdt_file=imx51-${board}.dtb;
-	elif itest.s x53 == "x${cpu2}" ; then
-		fdt_file=imx53-${board}.dtb;
-	elif itest.s x6DL == "x${cpu3}" || itest.s x6SO == "x${cpu3}" ; then
-		fdt_file=imx6dl-${board}.dtb;
-	elif itest.s x6QP == "x${cpu3}" ; then
-		fdt_file=imx6qp-${board}.dtb;
-	elif itest.s x6SX == "x${cpu3}" ; then
-		fdt_file=imx6sx-${board}.dtb;
-	elif itest.s x6UL == "x${cpu3}" ; then
-		fdt_file=imx6ull-${board}.dtb;
-	elif itest.s x7D == "x${cpu2}" ; then
-		fdt_file=imx7d-${board}.dtb;
-	elif itest.s x8MM == "x${cpu3}" ; then
-		fdt_file=imx8mm-${board}.dtb;
-	elif itest.s x8MN == "x${cpu3}" ; then
-		fdt_file=imx8mn-${board}.dtb;
-	elif itest.s x8MP == "x${cpu3}" ; then
-		if itest *0x30360800 == 0x00824310 ; then
-			fdt_file=imx8mp-a0-${board}.dtb;
-		else
-			fdt_file=imx8mp-${board}.dtb;
-		fi
-	elif itest.s x8MQ == "x${cpu3}" ; then
-		fdt_file=imx8mq-${board}.dtb;
-	elif itest.s x8ULP == "x${imx_cpu}" ; then
-		fdt_file=imx8ulp-${board}.dtb;
+if itest.s x51 == "x${cpu2}" ; then
+	dtb_prefix=imx51;
+elif itest.s x53 == "x${cpu2}" ; then
+	dtb_prefix=imx53;
+elif itest.s x6DL == "x${cpu3}" || itest.s x6SO == "x${cpu3}" ; then
+	dtb_prefix=imx6dl;
+elif itest.s x6QP == "x${cpu3}" ; then
+	dtb_prefix=imx6qp;
+elif itest.s x6SX == "x${cpu3}" ; then
+	dtb_prefix=imx6sx;
+elif itest.s x6UL == "x${cpu3}" ; then
+	dtb_prefix=imx6ull;
+elif itest.s x7D == "x${cpu2}" ; then
+	dtb_prefix=imx7d;
+elif itest.s x8MM == "x${cpu3}" ; then
+	dtb_prefix=imx8mm;
+elif itest.s x8MN == "x${cpu3}" ; then
+	dtb_prefix=imx8mn;
+elif itest.s x8MP == "x${cpu3}" ; then
+	if itest *0x30360800 == 0x00824310 ; then
+		dtb_prefix=imx8mp-a0;
 	else
-		fdt_file=imx6q-${board}.dtb;
+		dtb_prefix=imx8mp;
 	fi
+elif itest.s x8MQ == "x${cpu3}" ; then
+	dtb_prefix=imx8mq;
+elif itest.s x8ULP == "x${imx_cpu}" ; then
+	dtb_prefix=imx8ulp;
+else
+	dtb_prefix=imx6q;
+fi
+
+if itest.s "x" == "x${fdt_file}" ; then
+	fdt_file=${dtb_prefix}-${board}${board_rv}${board_carrier}${board_modifier}.dtb;
 fi
 
 if load ${devtype} ${devnum}:1 ${a_script} uEnv.txt ; then
