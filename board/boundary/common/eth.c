@@ -884,6 +884,8 @@ static void phy_micrel_config(struct phy_device *phydev)
 }
 #endif
 
+void __weak board_eth_type(int index, int ksz) {}
+
 int board_phy_config(struct phy_device *phydev)
 {
 #if defined(CONFIG_FEC_ENET2) && defined(CONFIG_DM_ETH)
@@ -898,8 +900,10 @@ int board_phy_config(struct phy_device *phydev)
 #ifdef CONFIG_PHY_ATHEROS
 	if (((phydev->drv->uid ^ PHY_ID_AR8031) & 0xffffffef) == 0) {
 		phy_ar8031_config(phydev);
+		board_eth_type(PHY_INDEX, 0);
 	} else if (((phydev->drv->uid ^ PHY_ID_AR8035) & 0xffffffef) == 0) {
 		phy_ar8035_config(phydev);
+		board_eth_type(PHY_INDEX, 0);
 	} else if (is_micrel_part(phydev)) {
 		/* found KSZ, reinit phy for KSZ */
 		setup_iomux_enet(1, (PHY_INDEX ? 2 : 1));
@@ -908,6 +912,7 @@ int board_phy_config(struct phy_device *phydev)
 #endif
 #ifndef CONFIG_PHY_MICREL_KSZ8XXX
 		phy_micrel_config(phydev);
+		board_eth_type(PHY_INDEX, 1);
 #endif
 	}
 	if (phydev->drv->config)
