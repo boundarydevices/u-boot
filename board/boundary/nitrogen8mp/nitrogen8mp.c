@@ -310,7 +310,31 @@ static void check_usb_mux(void)
 	env_set("cmd_board", "fdt set usb_mux reg <0x60>");
 }
 
+static int board_carrier = -1;
+static int board_rv = -1;
+
+static void check_board_env(void)
+{
+	if (board_rv == 20)
+		env_set("board_rv", "_r20");
+	if (board_carrier >= 0)
+		env_set("board_carrier", board_carrier ? "-enc" : NULL);
+}
+
+void board_eth_type(int index, int ksz)
+{
+	if (index == 0)
+		board_carrier = 0;	/* EVK */
+	else if (index == 1) {
+		board_rv = ksz ? 20 : 0;
+		if (board_carrier < 0)
+			board_carrier = 1;	/* enc */
+	}
+	check_board_env();
+}
+
 void board_env_init(void)
 {
 	check_usb_mux();
+	check_board_env();
 }
