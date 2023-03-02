@@ -216,6 +216,7 @@
 		"dcache flush; bootaux ${m4loadaddr}\0" \
 	"m4image=m4_fw.bin\0" \
 	"m4loadaddr="__stringify(CONFIG_IMX_MCORE_TCM_ADDR)"\0" \
+	"mcore_bootargs=clk-imx8mm.mcore_booted\0" \
 	"net_upgradeu=dhcp " BD_RAM_SCRIPT " net_upgradeu.scr && source " BD_RAM_SCRIPT "\0" \
 	"otg_upgradeu=run usbnetwork; tftp " BD_RAM_SCRIPT " net_upgradeu.scr && source " BD_RAM_SCRIPT "\0" \
 	"upgradeu=setenv boot_scripts upgrade.scr; boot;" \
