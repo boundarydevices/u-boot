@@ -104,6 +104,7 @@ if test -z "${fdt_file}" ; then
             fi
     else
             fdt_file=${bn}.dtb
+    fi
 fi
 if test ! -z "${mcore_dtb}" ; then
     setenv bootargs ${bootargs} ${mcore_bootargs}
