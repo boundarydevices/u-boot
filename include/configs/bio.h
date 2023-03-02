@@ -4,8 +4,8 @@
  * SPDX-License-Identifier:	GPL-2.0+
  */
 
-#ifndef __NITROGEN8M_H
-#define __NITROGEN8M_H
+#ifndef __BIO_H
+#define __BIO_H
 
 #include <linux/sizes.h>
 #include <asm/arch/imx-regs.h>
@@ -177,6 +177,7 @@
 		"dcache flush; bootaux ${m4loadaddr}\0" \
 	"m4image=m4_fw.bin\0" \
 	"m4loadaddr="__stringify(CONFIG_IMX_MCORE_TCM_ADDR)"\0" \
+	"mcore_bootargs=clk-imx8mq.mcore_booted\0" \
 	"netargs=setenv bootargs console=${console},115200 root=/dev/nfs rw " \
 		"ip=dhcp nfsroot=${tftpserverip}:${nfsroot},v3,tcp\0" \
 	"netboot=run netargs; " \
