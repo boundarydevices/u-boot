@@ -14,4 +14,6 @@
 #define APHW_VER		0x08
 #define APSW_VER		0x0c
 
+void mediatek_capsule_update_board_setup(void);
+
 #endif /* __MEDIATEK_MISC_H_ */
