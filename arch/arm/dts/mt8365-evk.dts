@@ -11,8 +11,8 @@
 #include "mt6357.dtsi"
 
 / {
-	model = "MediaTek MT8365 Open Platform EVK";
-	compatible = "mediatek,mt8365-evk", "mediatek,mt8365";
+	model = "MediaTek Genio-350 EVK";
+	compatible = "mediatek,genio-350-evk", "mediatek,mt8365";
 
 	memory@40000000 {
 		device_type = "memory";
