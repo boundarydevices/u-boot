@@ -17,11 +17,33 @@
 #define CONFIG_SYS_NS16550_COM1		0x11005200
 #define CONFIG_SYS_NS16550_CLK		26000000
 
+
+#define GENIO_350_EVK_FIT_IMAGE_GUID \
+	EFI_GUID(0xa073e5d4, 0xafcb, 0x49de, 0x86, 0xa2, \
+		 0xd6, 0x93, 0x5c, 0xf4, 0xce, 0xb0)
+
+#define GENIO_350_EVK_FIP_IMAGE_GUID \
+	EFI_GUID(0x82175ae7, 0xf97e, 0x44e0, 0x82, 0x98, \
+		 0xdc, 0xf2, 0x23, 0xc9, 0x4e, 0x8f)
+
 /* Environment settings */
 #include <config_distro_bootcmd.h>
 
+#ifdef CONFIG_CMD_MMC
+#define BOOT_TARGET_MMC(func) func(MMC, mmc, 0)
+#else
+#define BOOT_TARGET_MMC(func)
+#endif
+
+#ifdef CONFIG_CMD_USB
+#define BOOT_TARGET_USB(func) func(USB, usb, 0)
+#else
+#define BOOT_TARGET_USB(func)
+#endif
+
 #define BOOT_TARGET_DEVICES(func) \
-	func(MMC, mmc, 0)
+	BOOT_TARGET_MMC(func) \
+	BOOT_TARGET_USB(func)
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	"scriptaddr=0x40000000\0" \
