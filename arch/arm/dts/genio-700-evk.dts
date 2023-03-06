@@ -10,7 +10,7 @@
 #include "mt8188.dtsi"
 
 / {
-	model = "MediaTek MT8188 demo board";
+	model = "MediaTek Genio-700 EVK";
 	compatible = "mediatek,genio-700-evk", "mediatek,mt8188";
 
 	memory@40000000 {
