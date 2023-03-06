@@ -11,7 +11,7 @@
 
 / {
 	model = "MediaTek Genio-1200 EVK with UFS storage";
-	compatible = "mediatek,mt8395-evk", "mediatek,mt8195";
+	compatible = "mediatek,genio-1200-evk-ufs", "mediatek,mt8195";
 
 	memory@40000000 {
 		/* 8GB */
