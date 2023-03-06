@@ -36,7 +36,13 @@ static bool board_is_genio_1200_evk(void)
 		of_machine_is_compatible("mediatek,genio-1200-evk");
 }
 
-void rockchip_capsule_update_board_setup(void)
+static bool board_is_genio_1200_evk_ufs(void)
+{
+	return CONFIG_IS_ENABLED(TARGET_MT8195) &&
+		of_machine_is_compatible("mediatek,genio-1200-evk-ufs");
+}
+
+void mediatek_capsule_update_board_setup(void)
 {
 	if (board_is_mt8195_demo()) {
 		efi_guid_t image_type_guid =
@@ -58,6 +64,16 @@ void rockchip_capsule_update_board_setup(void)
 
 		fw_images[0].fw_name = u"GENIO-1200-EVK-FIT";
 		fw_images[1].fw_name = u"GENIO-1200-EVK-FIP";
+	} else if (board_is_genio_1200_evk_ufs()) {
+		efi_guid_t image_type_guid =
+			GENIO_1200_EVK_UFS_FIT_IMAGE_GUID;
+		efi_guid_t uboot_image_type_guid = GENIO_1200_EVK_UFS_FIP_IMAGE_GUID;
+
+		guidcpy(&fw_images[0].image_type_id, &image_type_guid);
+		guidcpy(&fw_images[1].image_type_id, &uboot_image_type_guid);
+
+		fw_images[0].fw_name = u"GENIO-1200-EVK-UFS-FIT";
+		fw_images[1].fw_name = u"GENIO-1200-EVK-UFS-FIP";
 	}
 }
 #endif /* CONFIG_EFI_HAVE_CAPSULE_SUPPORT && CONFIG_EFI_PARTITION */
