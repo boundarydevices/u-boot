@@ -183,7 +183,7 @@ static const struct display_info_t displays[] = {
 	VD_TM070JDHG30_LT8912(MIPI, NULL, fbp_bus_gp((3 | (3 << 4)), 0, 0, 0), fbp_addr_gp(0x68, GP_LT8912_DISPLAY_EN, 0, 0), FBP_PCA9546),
 
 	VD_MIPI_VTFT101RPFT20(MIPI, fbp_detect_i2c, 3, 0x70, FBP_PCA9540),
-	VD_DMT055FHNMCMI(MIPI, board_detect_gt911, fbp_bus_gp(1, 0, GP_DMT055FHNMCMI_EN, 0), fbp_addr_gp(0x5d, 0, 0, 0), FBTS_GOODIX2),
+	VD_DMT055FHNMCMI(MIPI, board_detect_gt911, fbp_bus_gp(1, 0, GP_DMT055FHNMCMI_EN, 0), fbp_addr_gp(0x5d, 0, 0, 0), FBTS_GOODIX2, FBTS_GOODIX3),	/* old expects 2, new 3 */
 };
 #define display_cnt	ARRAY_SIZE(displays)
 #else
