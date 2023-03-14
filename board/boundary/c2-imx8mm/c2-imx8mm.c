@@ -48,7 +48,7 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IOMUX_PAD_CTRL(GPIO1_IO01__GPIO1_IO1, 0x146),
 
 #define GP_DLC0350_ENABLE		IMX_GPIO_NR(1, 3)
-	IOMUX_PAD_CTRL(GPIO1_IO03__GPIO1_IO3, 0x16),
+	IOMUX_PAD_CTRL(GPIO1_IO03__GPIO1_IO3, 0x100),
 
 	/* Touch screen on J8 and J22, same pins used */
 #define GPIRQ_GT911 			IMX_GPIO_NR(5, 22)
