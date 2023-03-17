@@ -25,7 +25,20 @@ int dram_init(void)
 	if (ret)
 		return ret;
 
-	return fdtdec_setup_mem_size_base();
+	fdtdec_setup_mem_size_base();
+
+	/*
+	 * Limit gd->ram_top not exceeding SZ_4G.
+	 * Because some periphals like mmc requires DMA buffer
+	 * allocaed below SZ_4G.
+	 *
+	 * Note: SZ_1M is for adjusting gd->relocaddr,
+	 *       the reserved memory for u-boot itself.
+	 */
+	if (gd->ram_base + gd->ram_size >= SZ_4G)
+		gd->mon_len = (gd->ram_base + gd->ram_size + SZ_1M) - SZ_4G;
+
+	return 0;
 }
 
 int dram_init_banksize(void)
