@@ -818,8 +818,18 @@ int arch_cpu_init(void)
 
 		spl_pass_boot_info();
 	} else {
+		int ret;
 		/* reconfigure core0 reset vector to ROM */
 		set_core0_reset_vector(0x1000);
+
+		if (is_m33_handshake_necessary()) {
+			/* Start handshake with M33 to ensure TRDC configuration completed */
+			ret = m33_image_handshake(3000);
+			if (!ret)
+				gd->arch.m33_handshake_done = true;
+			else /* Skip and go through to panic in checkcpu as console is ready then */
+				gd->arch.m33_handshake_done = false;
+		}
 	}
 
 	return 0;
@@ -845,17 +855,6 @@ int arch_cpu_init_dm(void)
 	int ret;
 	u32 res;
 	struct sentinel_get_info_data info;
-
-	if (!IS_ENABLED(CONFIG_SPL_BUILD) && is_m33_handshake_necessary()) {
-		/* Start handshake with M33 to ensure TRDC configuration completed */
-		ret = m33_image_handshake(1000);
-		if (!ret) {
-			gd->arch.m33_handshake_done = true;
-		} else {
-			gd->arch.m33_handshake_done = false;
-			return 0; /* Skip and go through to panic in checkcpu as console is ready then */
-		}
-	}
 
 	node = ofnode_by_compatible(ofnode_null(), "fsl,imx8ulp-mu");
 
