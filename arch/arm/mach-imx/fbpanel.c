@@ -764,6 +764,10 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 				size -= sz;
 				sz = set_status(buf, size, "sound_hdmi", false);
 			}
+#elif defined(CONFIG_VIDEO_IMX8MP_HDMI)
+			else if (fb == FB_HDMI) {
+				sz = set_status(buf, size, "sound_hdmi", false);
+			}
 #endif
 			env_set(cmd_fbnames[fb], buf_start);
 			env_set(fbnames_name[fb], "");
