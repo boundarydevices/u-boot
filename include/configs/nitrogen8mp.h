@@ -142,10 +142,14 @@
 #endif
 
 #ifndef BD_CONSOLE
-#if CONFIG_MXC_UART_BASE == UART2_BASE_ADDR
-#define BD_CONSOLE	"ttymxc1"
-#elif CONFIG_MXC_UART_BASE == UART1_BASE_ADDR
+#if CONFIG_MXC_UART_BASE == UART1_BASE_ADDR
 #define BD_CONSOLE	"ttymxc0"
+#elif CONFIG_MXC_UART_BASE == UART2_BASE_ADDR
+#define BD_CONSOLE	"ttymxc1"
+#elif CONFIG_MXC_UART_BASE == UART3_BASE_ADDR
+#define BD_CONSOLE	"ttymxc2"
+#elif CONFIG_MXC_UART_BASE == UART4_BASE_ADDR
+#define BD_CONSOLE	"ttymxc3"
 #endif
 #endif
 
