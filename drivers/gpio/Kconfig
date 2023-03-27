@@ -213,6 +213,10 @@ config MCP230XX_GPIO
 	   - MCP23017
 	   - MCP23018
 
+config SPL_MCP230XX_GPIO
+	bool "SPL MCP230XX GPIO driver"
+	depends on DM
+
 config MSCC_SGPIO
 	bool "Microsemi Serial GPIO driver"
 	depends on DM_GPIO && SOC_VCOREIII
