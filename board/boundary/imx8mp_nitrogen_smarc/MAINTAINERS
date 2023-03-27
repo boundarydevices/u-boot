@@ -1,0 +1,11 @@
+i.MX8MP Nitrogen smarc BOARD
+M:	Gary Bisson <gary.bisson@lairdconnect.com>
+S:	Maintained
+F:	board/boundary/imx8mp_nitrogen_smarc/
+F:	include/configs/imx8mp_nitrogen_smarc.h
+F:	configs/imx8mp_nitrogen_smarc_2gr0_defconfig
+F:	arch/arm/dts/imx8mp-nitrogen_smarc.dts
+F:	arch/arm/dts/imx8mp-nitrogen_smarc-som.dtsi
+F:	arch/arm/dts/nitrogen-lvds.dtsi
+F:	arch/arm/dts/nitrogen-mipi-dsi.dtsi
+F:	arch/arm/dts/nitrogen_smarc-carrier.dtsi

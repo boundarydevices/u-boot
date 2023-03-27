@@ -1,0 +1,14 @@
+if TARGET_IMX8MP_NITROGEN_SMARC
+
+config SYS_BOARD
+	default "imx8mp_nitrogen_smarc"
+
+config SYS_VENDOR
+	default "boundary"
+
+config SYS_CONFIG_NAME
+	default "imx8mp_nitrogen_smarc"
+
+source "board/boundary/common/Kconfig"
+
+endif
