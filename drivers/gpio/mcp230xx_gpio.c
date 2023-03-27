@@ -213,6 +213,9 @@ static int mcp230xx_probe(struct udevice *dev)
 
 	uc_priv->bank_name = str;
 	uc_priv->gpio_count = gpio_count;
+	uc_priv->desired_gpio_base = dev_read_u32_default(dev,
+		"desired-gpio-base", 7 * 32);
+	devm_gpiod_get_optional(dev, "reset", GPIOD_IS_OUT);
 
 	dev_dbg(dev, "%s is ready\n", str);
 
