@@ -4,8 +4,6 @@
  */
 #include "imx8mp-u-boot.dtsi"
 
-#define GP_SN65DSI83_IRQ <&gpio4 0 GPIO_ACTIVE_HIGH>
-
 / {
 	aliases {
 		t_hdmi = &t_hdmi;
@@ -149,7 +147,7 @@
 			 <&clk IMX8MP_CLK_MEDIA_DISP1_PIX_ROOT>;
 
 		mipi_to_lvds: mipi-to-lvds {
-			interrupts-gpios = GP_SN65DSI83_IRQ;
+			interrupts-gpios = GP_MIPI_IRQ(GPIO_ACTIVE_HIGH);
 		};
 
 		port@1 {
