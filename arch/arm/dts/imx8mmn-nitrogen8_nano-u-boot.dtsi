@@ -2,8 +2,6 @@
 /*
  * Copyright 2021 Boundary Devices
  */
-#define GP_SN65DSI83_IRQ <&gpio1 1 GPIO_ACTIVE_HIGH>
-
 &lcdif {
 	display = <&fb_mipi>;
 };
@@ -24,7 +22,7 @@
 				<&clk IMX8MMN(CLK_LCDIF_PIXEL)>;
 
 		mipi_to_lvds: mipi-to-lvds {
-			interrupts-gpios = GP_SN65DSI83_IRQ;
+			interrupts-gpios = GP_MIPI_IRQ(GPIO_ACTIVE_HIGH);
 		};
 
 		port@1 {
