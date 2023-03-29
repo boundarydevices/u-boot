@@ -180,6 +180,10 @@
 	u-boot,dm-pre-reloc;
 };
 
+&ecspi2 {
+	status = "disabled";
+};
+
 &gpio1 {
 	u-boot,dm-spl;
 };
