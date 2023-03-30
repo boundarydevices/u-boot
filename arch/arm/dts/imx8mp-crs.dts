@@ -324,7 +324,7 @@
 
 	pinctrl_usb3_0: usb3-0grp {
 		fsl,pins = <
-			MX8MP_IOMUXC_GPIO1_IO13__USB1_OTG_OC		0x100
+			MX8MP_IOMUXC_GPIO1_IO13__USB1_OTG_OC		0x1c0
 		>;
 	};
 
@@ -625,7 +625,7 @@
 	};
 
 	sound_hdmi: sound-hdmi {
-		compatible = "fsl,imx-audio-cdnhdmi";
+		compatible = "fsl,imx-audio-hdmi";
 		model = "audio-hdmi";
 #if 0
 		audio-cpu = <&aud2htx>;
@@ -652,6 +652,7 @@
 		amp-standby-exit-delay-ms = <100>;
 		amp-standby-gpios = GP_WM8960_AMP_STDBY;
 		audio-codec = <&wm8960>;
+		audio-cpu = <&sai1>;
 		audio-routing =
 			"Ext Spk", "HP_L",
 			"Ext Spk", "HP_R",
@@ -659,7 +660,6 @@
 			"Main MIC", "MICB";
 		codec-master;
 		compatible = "fsl,imx-audio-wm8960";
-		cpu-dai = <&sai1>;
 		model = "wm8960-audio";
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_sound_wm8960>;
@@ -749,7 +749,17 @@
 			reset-gpios = GP_EQOS_RESET;
 #endif
 			rxc-skew-ps = <3000>;
+			rxd0-skew-ps = <0>;
+			rxd1-skew-ps = <0>;
+			rxd2-skew-ps = <0>;
+			rxd3-skew-ps = <0>;
+			rxdv-skew-ps = <0>;
 			txc-skew-ps = <3000>;
+			txd0-skew-ps = <0>;
+			txd1-skew-ps = <0>;
+			txd2-skew-ps = <0>;
+			txd3-skew-ps = <0>;
+			txen-skew-ps = <0>;
 		};
 	};
 };
@@ -772,9 +782,11 @@
 	status = "okay";
 };
 
-&hdmiphy_clk {
+#if 0
+&hdmi_blk_ctrl {
 	status = "okay";
 };
+#endif
 
 &hdmi_pavi {
 	status = "okay";
@@ -1016,12 +1028,13 @@
 	status = "okay";
 
 	wm8960: codec@1a {
-		compatible = "wlf,wm8960";
-		reg = <0x1a>;
+		clock-names = "mclk";
 #if 0
 		clocks = <&audio_blk_ctrl IMX8MP_CLK_AUDIO_BLK_CTRL_SAI1_MCLK1>;
 #endif
-		clock-names = "mclk";
+		compatible = "wlf,wm8960";
+		reg = <0x1a>;
+		wlf,gpio-cfg = <1 3>;
 		wlf,shared-lrclk;
 	};
 };
@@ -1282,6 +1295,10 @@
 };
 
 &vpu_vc8000e {
+	status = "okay";
+};
+
+&vpu_v4l2 {
 	status = "okay";
 };
 #endif
