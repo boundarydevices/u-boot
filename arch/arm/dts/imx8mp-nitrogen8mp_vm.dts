@@ -19,19 +19,6 @@
 		>;
 	};
 
-	pinctrl_ecspi1: ecspi1grp {
-		fsl,pins = <
-			/* J6 */
-			MX8MP_IOMUXC_ECSPI1_SCLK__ECSPI1_SCLK		0x82	/* Pin 7 */
-			MX8MP_IOMUXC_ECSPI1_MOSI__ECSPI1_MOSI		0x82	/* Pin 6 */
-			MX8MP_IOMUXC_ECSPI1_MISO__ECSPI1_MISO		0x82	/* Pin 5 */
-#define GP_ECSPI1_CS	<&gpio5 9 GPIO_ACTIVE_LOW>
-			MX8MP_IOMUXC_ECSPI1_SS0__GPIO5_IO09		0x143	/* Pin 4 */
-			MX8MP_IOMUXC_GPIO1_IO04__GPIO1_IO04		0x100	/* Pin 8 */
-			MX8MP_IOMUXC_GPIO1_IO05__GPIO1_IO05		0x100	/* Pin 9 */
-		>;
-	};
-
 	pinctrl_eqos: eqosgrp {
 		fsl,pins = <
 			MX8MP_IOMUXC_ENET_MDC__ENET_QOS_MDC		0x20
@@ -62,6 +49,15 @@
 			MX8MP_IOMUXC_HDMI_DDC_SDA__HDMIMIX_HDMI_SDA	0x400001c3
 			MX8MP_IOMUXC_HDMI_HPD__HDMIMIX_HDMI_HPD		0x40000019
 			MX8MP_IOMUXC_HDMI_CEC__HDMIMIX_HDMI_CEC		0x40000019
+			/* J6 */
+			MX8MP_IOMUXC_ECSPI2_MISO__GPIO5_IO12		0x1c0   /* Pin 2 */
+			MX8MP_IOMUXC_ECSPI2_SCLK__GPIO5_IO10		0x1c0   /* Pin 3 */
+			MX8MP_IOMUXC_ECSPI1_SS0__GPIO5_IO09		0x1c0	/* Pin 4 */
+			MX8MP_IOMUXC_ECSPI1_MISO__GPIO5_IO08		0x1c0   /* Pin 5 */
+			MX8MP_IOMUXC_ECSPI1_MOSI__GPIO5_IO07		0x1c0   /* Pin 6 */
+			MX8MP_IOMUXC_ECSPI1_SCLK__GPIO5_IO06		0x1c0   /* Pin 7 */
+			MX8MP_IOMUXC_GPIO1_IO04__GPIO1_IO04		0x1c0	/* Pin 8 */
+			MX8MP_IOMUXC_GPIO1_IO05__GPIO1_IO05		0x1c0	/* Pin 9 */
 		>;
 	};
 
@@ -383,8 +379,8 @@
 #include "panel-ltk069wxict11.dtsi"
 
 / {
-	model = "Boundary i.MX8MPlus nitrogen8mp board";
-	compatible = "boundary,imx8mp-nitrogen8mp", "fsl,imx8mp";
+	model = "Boundary i.MX8MPlus nitrogen8mp_vm board";
+	compatible = "boundary,imx8mp-nitrogen8mp_vm", "fsl,imx8mp";
 
 	aliases {
 		backlight_mipi = &backlight_mipi;
@@ -533,6 +529,9 @@
 		asrc-controller = <&easrc>;
 #endif
 		audio-codec = <&wm8960>;
+#if 0
+		audio-cpu = <&sai3>;
+#endif
 		audio-routing =
 			"Headphone Jack", "HP_L",
 			"Headphone Jack", "HP_R",
@@ -552,12 +551,8 @@
 #endif
 		codec-master;
 		compatible = "fsl,imx-audio-wm8960";
-#if 0
-		cpu-dai = <&sai3>;
-#endif
-		/* JD2: hp detect high for headphone*/
 		hp-det = <2 0>;
-		hp-det-gpios = GP_WM8960_HP_DET;
+		hp-det-gpio = GP_WM8960_HP_DET;
 		model = "wm8960-audio";
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_sound_wm8960>;
@@ -581,6 +576,26 @@
 	cpu-supply = <&buck2>;
 };
 
+&aips3 {
+	sas: sas@30a60000 {
+		compatible = "boundary,sas";
+		reg = <0x30a60000 0x10000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_uart4>;
+		interrupts = <GIC_SPI 29 IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&clk IMX8MP_CLK_UART4_ROOT>,
+			 <&clk IMX8MP_CLK_UART4_ROOT>;
+		clock-names = "ipg", "per";
+		status = "okay";
+		baud = <19200>;
+		interbyte_delay = <5>;
+		rxbufsize = <4096>;
+		txbufsize = <4096>;
+		maxtxmsg = <512>;
+		flush_on_mark = <0>;
+	};
+};
+
 &aud2htx {
 	status = "okay";
 };
@@ -600,22 +615,6 @@
 	status = "okay";
 };
 #endif
-
-&ecspi1 {
-	#address-cells = <1>;
-	#size-cells = <0>;
-	fsl,spi-num-chipselects = <1>;
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_ecspi1>;
-	cs-gpios = GP_ECSPI1_CS;
-	status = "okay";
-
-	spidev1: spi@0 {
-		compatible = "spidev";
-		reg = <0>;
-		spi-max-frequency = <500000>;
-	};
-};
 
 &eqos {
 	pinctrl-names = "default";
@@ -660,9 +659,11 @@
 	status = "okay";
 };
 
-&hdmiphy_clk {
+#if 0
+&hdmi_blk_ctrl {
 	status = "okay";
 };
+#endif
 
 &hdmi_pavi {
 	status = "okay";
@@ -783,12 +784,15 @@
 	status = "okay";
 
 	wm8960: codec@1a {
-		compatible = "wlf,wm8960";
-		reg = <0x1a>;
+		clock-names = "mclk";
 #if 0
 		clocks = <&audio_blk_ctrl IMX8MP_CLK_AUDIO_BLK_CTRL_SAI3_MCLK1>;
 #endif
-		clock-names = "mclk";
+		compatible = "wlf,wm8960";
+		reg = <0x1a>;
+		wlf,gpio-cfg = <1 3>;
+		/* JD2: hp detect high for headphone*/
+		wlf,hp-cfg = <2 0 3>;
 		wlf,shared-lrclk;
 	};
 };
@@ -911,10 +915,6 @@
 #endif
 
 &mipi_dsi {
-	clocks = <&clk IMX8MP_CLK_MEDIA_APB_ROOT>,
-		 <&clk IMX8MP_CLK_MEDIA_MIPI_PHY1_REF>,
-		 <&clk IMX8MP_CLK_MEDIA_DISP1_PIX_ROOT>;
-	clock-names = "cfg", "pll-ref", "pixel_clock";
 	status = "disabled";
 
 	fb_mipi: panel@0 {
@@ -1026,11 +1026,7 @@
 };
 
 &uart4 { /* J2 */
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_uart4>;
-	assigned-clocks = <&clk IMX8MP_CLK_UART4>;
-	assigned-clock-parents = <&clk IMX8MP_SYS_PLL1_80M>;
-	status = "okay";
+	status = "disabled";
 };
 
 &usb3_0 {
@@ -1112,6 +1108,7 @@
 &usdhc2 {
 	bus-width = <4>;
 	cd-gpios = GP_USDHC2_CD;
+	fsl,wp-controller;
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
 	pinctrl-0 = <&pinctrl_usdhc2>;
 	pinctrl-1 = <&pinctrl_usdhc2_100mhz>;
