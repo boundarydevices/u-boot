@@ -14,3 +14,17 @@
 	model = "Boundary Devices i.MX8M Nano Nitrogen8_nano";
 	compatible = "boundary,imx8mn-nitrogen8_nano", "fsl,imx8mn";
 };
+
+#if 0
+&cameradev {
+	status = "okay";
+};
+
+&isi_0 {
+	status = "okay";
+
+	cap_device {
+		status = "okay";
+	};
+};
+#endif
