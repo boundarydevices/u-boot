@@ -3,7 +3,7 @@
  * Copyright 2019 NXP
  */
 #include "imx8mm-u-boot.dtsi"
-#include "imx8mmn-nitrogen8mm-u-boot.dtsi"
+#include "imx8mmn-nitrogen8mm_rev2-u-boot.dtsi"
 
 / {
 	wdt-reboot {
