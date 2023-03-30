@@ -2784,9 +2784,9 @@ static int mmc_power_off(struct mmc *mmc)
 	mmc_set_clock(mmc, 0, MMC_CLK_DISABLE);
 #if CONFIG_IS_ENABLED(DM_MMC) && CONFIG_IS_ENABLED(DM_REGULATOR)
 	if (mmc->vmmc_supply) {
-		int ret = regulator_set_enable(mmc->vmmc_supply, false);
+		int ret = regulator_set_enable_if_allowed(mmc->vmmc_supply, false);
 
-		if (ret && ret != -EACCES) {
+		if (ret) {
 			pr_debug("Error disabling VMMC supply : %d\n", ret);
 			return ret;
 		}
