@@ -253,7 +253,7 @@ static int fec_get_clk_rate(void *udev, int idx)
 	}
 }
 
-static void fec_mii_setspeed(struct ethernet_regs *eth)
+static void fec_mii_setspeed(struct ethernet_regs *eth, int dev_id)
 {
 	/*
 	 * Set MII_SPEED = (1/(mii_speed * 2)) * System Clock
@@ -275,9 +275,9 @@ static void fec_mii_setspeed(struct ethernet_regs *eth)
 	u32 hold;
 	int ret;
 
-	ret = fec_get_clk_rate(NULL, 0);
+	ret = fec_get_clk_rate(NULL, dev_id);
 	if (ret <= 0) {
-		printf("Can't find FEC0 clk rate: %d\n", ret);
+		printf("Can't find FEC%d clk rate: %d\n", dev_id, ret);
 		return;
 	}
 	pclk = ret;
@@ -732,7 +732,7 @@ static int fec_init(struct eth_device *dev, struct bd_info *bd)
 	fec_reg_setup(fec);
 
 	if (fec->xcv_type != SEVENWIRE)
-		fec_mii_setspeed(fec->bus->priv);
+		fec_mii_setspeed(fec->bus->priv, fec->dev_id);
 
 	/* Set Opcode/Pause Duration Register */
 	writel(0x00010020, &fec->eth->op_pause);	/* FIXME 0xffff0020; */
@@ -1212,7 +1212,7 @@ struct mii_dev *fec_get_miibus(ulong base_addr, int dev_id)
 		free(bus);
 		return NULL;
 	}
-	fec_mii_setspeed(eth);
+	fec_mii_setspeed(eth, dev_id < 0 ? 0 : dev_id);
 	return bus;
 }
 
@@ -1314,7 +1314,7 @@ static int fec_probe(struct bd_info *bd, int dev_id, uint32_t base_addr,
 	fec_set_dev_name(edev->name, dev_id);
 	fec->dev_id = (dev_id == -1) ? 0 : dev_id;
 	fec->bus = bus;
-	fec_mii_setspeed(bus->priv);
+	fec_mii_setspeed(bus->priv), fec->dev_id;
 #ifdef CONFIG_PHYLIB
 	fec->phydev = phydev;
 	phy_connect_dev(phydev, edev);
@@ -1596,7 +1596,7 @@ static int fecmxc_probe(struct udevice *dev)
 		bus = fec_get_miibus((ulong)priv->eth, dev_seq(dev));
 #endif
 	} else {
-		fec_mii_setspeed(bus->priv);
+		fec_mii_setspeed(bus->priv, priv->dev_id);
 	}
 	if (!bus) {
 		ret = -ENOMEM;
