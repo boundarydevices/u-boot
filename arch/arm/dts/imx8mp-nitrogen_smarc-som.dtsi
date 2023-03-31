@@ -14,8 +14,8 @@
 
 	pinctrl_bt_rfkill: bt-rfkillgrp {
 		fsl,pins = <
-#define GP_BT_RFKILL_RESET	<&gpio3 5 GPIO_ACTIVE_LOW>
-			MX8MP_IOMUXC_NAND_CE2_B__USDHC3_DATA5	0x100
+#define GP_BT_RFKILL_RESET	<&gpio3 3 GPIO_ACTIVE_LOW>
+			MX8MP_IOMUXC_NAND_CE2_B__GPIO3_IO03		0x100
 		>;
 	};
 
@@ -137,8 +137,8 @@
 
 	pinctrl_reg_wlan_vmmc: reg-wlan-vmmcgrp {
 		fsl,pins = <
-#define GP_REG_WLAN_VMMC	<&gpio3 6 GPIO_ACTIVE_HIGH>
-			MX8MP_IOMUXC_NAND_CE3_B__USDHC3_DATA6		0x100
+#define GP_REG_WLAN_VMMC	<&gpio3 4 GPIO_ACTIVE_HIGH>
+			MX8MP_IOMUXC_NAND_CE3_B__GPIO3_IO04		0x100
 		>;
 	};
 
