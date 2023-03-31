@@ -323,12 +323,10 @@ static void check_board_env(void)
 
 void board_eth_type(int index, int ksz)
 {
-	if (index == 0)
-		board_carrier = 0;	/* EVK */
-	else if (index == 1) {
+	if (index == 0) {
 		board_rv = ksz ? 20 : 0;
-		if (board_carrier < 0)
-			board_carrier = 1;	/* enc */
+	} else if (index == 1) {
+		board_carrier = 0;	/* EVK */
 	}
 	check_board_env();
 }
