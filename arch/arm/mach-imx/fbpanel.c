@@ -953,6 +953,10 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 					"split-mode", "1");
 			buf += sz;
 			size -= sz;
+			sz = set_property_str(buf, size, "ldb",
+					"fsl,dual-channel", "1");
+			buf += sz;
+			size -= sz;
 		}
 	} else if (fb == FB_MIPI) {
 		sz = set_property_str(buf, size, fbnames[fb], "dsi-format",
