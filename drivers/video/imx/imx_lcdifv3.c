@@ -252,6 +252,10 @@ static int lcdifv3_of_get_timings(struct udevice *dev,
 
 #if CONFIG_IS_ENABLED(CLK)
 u32 pll_rates[] = {
+	  24000000U,
+	 135000000U,
+	 148500000U,
+	 360000000U,
 	 361267200U,
 	 364000000U,
 	 384000000U,
@@ -262,6 +266,7 @@ u32 pll_rates[] = {
 	 519750000U,
 	 594000000U,
 	 650000000U,
+	 756000000U,
 	1039500000U,
 };
 
