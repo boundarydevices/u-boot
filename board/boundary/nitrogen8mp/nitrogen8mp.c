@@ -154,6 +154,7 @@ static const struct display_info_t displays[] = {
 	VD_1024_768M_60(HDMI, NULL, 0, 0x50),
 	VD_640_480M_60(HDMI, NULL, 0, 0x50),
 
+#ifdef CONFIG_VIDEO_IMX_SEC_DSI
 	/* mipi */
 	VD_MIPI_TM070JDHG30_x("tm070jdhg30-1",	B, MIPI, board_detect_gt911_sn65, fbp_bus_gp((1 | (3 << 4)), GP_SN65DSI83_EN, 0, 0), 0x5d, FBP_MIPI_TO_LVDS, FBTS_GOODIX),
 	VD_MIPI_TM070JDHG30_x("tm070jdhg30-2",	U, MIPI, NULL, fbp_bus_gp((1 | (3 << 4)), GP_SN65DSI83_EN, 0, 0), 0x5d, FBP_MIPI_TO_LVDS, FBTS_GOODIX),
@@ -185,6 +186,9 @@ static const struct display_info_t displays[] = {
 	VD_LXD_M8509A(MIPI, board_detect_pca9546, fbp_bus_gp((1 | (3 << 4)), 0, 0, 0), 0x66, FBP_BACKLIGHT_MIPI2, FBTS_FT5X06_3),
 
 	VD_MIPI_VTFT101RPFT20(MIPI, NULL, (1 | (3 << 4)), 0x70, FBP_PCA9540),
+#else
+	VD_LTK190L3027T(LVDS, NULL, 0, 0, 0),
+#endif
 
 	/* lvds */
 	/* goodix */
@@ -317,8 +321,10 @@ static void check_board_env(void)
 {
 	if (board_rv == 20)
 		env_set("board_rv", "_r20");
+#ifdef CONFIG_FEC_MXC	/* bm has only 1 phy as well */
 	if (board_carrier >= 0)
 		env_set("board_carrier", board_carrier ? "-enc" : NULL);
+#endif
 }
 
 void board_eth_type(int index, int ksz)
