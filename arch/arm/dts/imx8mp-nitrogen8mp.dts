@@ -495,9 +495,11 @@
 	status = "okay";
 };
 
-&hdmiphy_clk {
+#if 0
+&hdmi_blk_ctrl {
 	status = "okay";
 };
+#endif
 
 &hdmi_pavi {
 	status = "okay";

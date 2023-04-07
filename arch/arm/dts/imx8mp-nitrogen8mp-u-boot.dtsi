@@ -94,6 +94,10 @@
 	status = "okay";
 };
 
+&hdmiphy_clk {
+	status = "okay";
+};
+
 &hdmi_hpd {
 	status = "okay";
 };
