@@ -292,6 +292,7 @@ void fbp_setup_env_cmds(void);
 #define VD_1080P60(_mode, args...)		VDF_1080P60(_mode, "1080P60", RGB24, FBF_SPLITMODE, args)
 #define VD_1080P60_J(_mode, args...)		VDF_1080P60(_mode, "1080P60_J", RGB24, FBF_SPLITMODE | FBF_JEIDA, args)
 #define VD_DV210FBM(_mode, args...)		VDF_DV210FBM(_mode, "dv210fbm", RGB24, FBF_SPLITMODE, args)
+#define VD_LTK190L3027T(_mode, args...)		VDF_LTK190L3027T(_mode, "ltk190l3027t", RGB24, FBF_SPLITMODE | FBF_BKLIT_EN_DTB, args)
 #define VD_SHARP_LQ101K1LY04(_mode, args...)	VDF_SHARP_LQ101K1LY04(_mode, "sharp-LQ101K1LY04", RGB24, FBF_JEIDA, args)
 #define VD_WXGA(_mode, args...)			VDF_WXGA(_mode, "wxga", RGB24, 0, args)
 #define VD_WXGA_J(_mode, args...)		VDF_WXGA(_mode, "wxga_j", RGB24, FBF_JEIDA, args)
@@ -1589,6 +1590,26 @@ void fbp_setup_env_cmds(void);
 		.lower_margin   = 22,\
 		.hsync_len      = 44,\
 		.vsync_len      = 1,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
+#define VDF_LTK190L3027T(_mode, _name, _fmt, _flags, args...) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, args),\
+	.mode	= {\
+		.name           = _name,\
+		.refresh        = 60,\
+		.xres           = 1280,\
+		.yres           = 1024, \
+		.pixclock       = 1000000000000ULL/108000000 /* ((1280+200+200+8)*(1024+16+16+8)*60) */, \
+		.left_margin    = 200,\
+		.right_margin   = 200,\
+		.upper_margin   = 16,\
+		.lower_margin   = 16,\
+		.hsync_len      = 8,\
+		.vsync_len      = 8,\
 		.sync           = FB_SYNC_EXT,\
 		.vmode          = FB_VMODE_NONINTERLACED\
 	}\
