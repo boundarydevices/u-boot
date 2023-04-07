@@ -72,7 +72,7 @@ static void imx8mp_ldb_enable(struct imx8mp_ldb *imx8mp_ldb)
 
 		if (imx8mp_ldb_ch->base.is_valid || ldb->dual) {
 			ldb->ldb_ctrl &= ~en_masks[i];
-			ldb->ldb_ctrl |= di_masks[ldb->dual ? 0 : i];
+			ldb->ldb_ctrl |= di_masks[i];
 			generic_phy_power_on(&imx8mp_ldb_ch->phy);
 			imx8mp_ldb_ch->phy_is_on = true;
 		}
@@ -180,6 +180,7 @@ static int imx8mp_ldb_attach(struct udevice *dev)
 		debug("decode display timing error %d\n", ret);
 		return ret;
 	}
+#if 0
 	/*
 	 * Due to limited video PLL frequency points on i.MX8mp,
 	 * we do mode fixup here in case any mode is unsupported.
@@ -188,6 +189,7 @@ static int imx8mp_ldb_attach(struct udevice *dev)
 		timings.pixelclock.typ = timings.pixelclock.typ > 100000000 ? 148500000 : 74250000;
 	else
 		timings.pixelclock.typ = 74250000;
+#endif
 
 	imx8mp_ldb->flags = timings.flags;
 	imx8mp_ldb_set_clock(imx8mp_ldb, timings.pixelclock.typ);
