@@ -103,6 +103,7 @@ config VIDEO_IMX8MP_LVDS
 	bool "i.MX8MP LVDS support"
 	depends on DM_VIDEO && IMX8MP
 	select PHY_IMX8MP_LVDS
+	select VIDEO_BRIDGE
 	help
 	  Support for i.MX8MP LVDS controller.
 
