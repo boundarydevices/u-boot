@@ -368,6 +368,8 @@ struct msdc_tune_para {
 	u32 iocon;
 	u32 pad_tune;
 	u32 pad_cmd_tune;
+	u32 emmc_top_control;
+	u32 emmc_top_cmd;
 };
 
 struct msdc_host {
@@ -819,6 +821,7 @@ static int msdc_dma_done(struct msdc_host *host, int events)
 {
 	int ret = 0;
 	u32 rawcmd, arg;
+	u32 opcode;
 
 	if (!(events & MSDC_INT_XFER_COMPL)) {
 		rawcmd = readl(&host->base->sdc_cmd);
@@ -831,8 +834,11 @@ static int msdc_dma_done(struct msdc_host *host, int events)
 		else
 			ret = -EBADRQC;
 
-		pr_err("MSDC: start data failure with %d, INT(0x%x), rawcmd=0x%x, arg=0x%x\n",
-		       ret, events, rawcmd, arg);
+		opcode = rawcmd & SDC_CMD_CMD_M;
+		if (opcode != MMC_CMD_SEND_TUNING_BLOCK_HS200 &&
+		    opcode != MMC_CMD_SEND_TUNING_BLOCK)
+			pr_err("MSDC: start data failure with %d, INT(0x%x), rawcmd=0x%x, arg=0x%x\n",
+			       ret, events, rawcmd, arg);
 	}
 
 	/* Clear DAT interrupt */
@@ -1075,10 +1081,25 @@ static void msdc_set_mclk(struct udevice *dev,
 		writel(host->def_tune_para.iocon, &host->base->msdc_iocon);
 		writel(host->def_tune_para.pad_tune,
 		       &host->base->pad_tune);
+		if (host->top_base) {
+			writel(host->def_tune_para.emmc_top_control,
+			       &host->top_base->emmc_top_control);
+			writel(host->def_tune_para.emmc_top_cmd,
+			       &host->top_base->emmc_top_cmd);
+		} else
+			writel(host->def_tune_para.pad_tune, &host->base->pad_tune);
 	} else {
 		writel(host->saved_tune_para.iocon, &host->base->msdc_iocon);
-		writel(host->saved_tune_para.pad_tune,
-		       &host->base->pad_tune);
+		writel(host->saved_tune_para.pad_cmd_tune,
+		       &host->base->pad_cmd_tune);
+		if (host->top_base) {
+			writel(host->saved_tune_para.emmc_top_control,
+			       &host->top_base->emmc_top_control);
+			writel(host->saved_tune_para.emmc_top_cmd,
+			       &host->top_base->emmc_top_cmd);
+		} else
+			writel(host->saved_tune_para.pad_tune,
+			       &host->base->pad_tune);
 	}
 
 	dev_dbg(dev, "sclk: %d, timing: %d\n", host->sclk, timing);
@@ -1546,13 +1567,20 @@ static int msdc_execute_tuning(struct udevice *dev, uint opcode)
 			return ret;
 		}
 
-		if (mmc->selected_mode == MMC_HS_400) {
+		if (mmc->selected_mode == MMC_HS_400 ||
+		    mmc->hs400_tuning) {
 			clrbits_le32(&host->base->msdc_iocon,
 				     MSDC_IOCON_DSPL | MSDC_IOCON_W_DSPL);
-			clrsetbits_le32(&host->base->pad_tune,
-					MSDC_PAD_TUNE_DATRRDLY_M, 0);
+			if (host->top_base) {
+				clrsetbits_le32(&host->top_base->emmc_top_control,
+						PAD_DAT_RD_RXDLY, 0);
+				writel(host->hs400_ds_delay, &host->top_base->emmc50_pad_ds_tune);
+			} else {
+				clrsetbits_le32(&host->base->pad_tune,
+						MSDC_PAD_TUNE_DATRRDLY_M, 0);
+				writel(host->hs400_ds_delay, &host->base->pad_ds_tune);
+			}
 
-			writel(host->hs400_ds_delay, &host->base->pad_ds_tune);
 			/* for hs400 mode it must be set to 0 */
 			clrbits_le32(&host->base->patch_bit2,
 				     MSDC_PB2_CFGCRCSTS);
@@ -1582,6 +1610,11 @@ tune_done:
 	host->saved_tune_para.iocon = readl(&host->base->msdc_iocon);
 	host->saved_tune_para.pad_tune = readl(&host->base->pad_tune);
 	host->saved_tune_para.pad_cmd_tune = readl(&host->base->pad_cmd_tune);
+
+	if (host->top_base) {
+		host->saved_tune_para.emmc_top_control = readl(&host->top_base->emmc_top_control);
+		host->saved_tune_para.emmc_top_cmd = readl(&host->top_base->emmc_top_cmd);
+	}
 
 	return ret;
 }
@@ -1681,7 +1714,7 @@ static void msdc_init_hw(struct msdc_host *host)
 		/* use async fifo to avoid tune internal delay */
 		clrbits_le32(&host->base->patch_bit2,
 			     MSDC_PB2_CFGRESP);
-		clrbits_le32(&host->base->patch_bit2,
+		setbits_le32(&host->base->patch_bit2,
 			     MSDC_PB2_CFGCRCSTS);
 	}
 
@@ -1760,7 +1793,16 @@ static void msdc_init_hw(struct msdc_host *host)
 			3 << SDC_CFG_DTOC_S);
 
 	host->def_tune_para.iocon = readl(&host->base->msdc_iocon);
-	host->def_tune_para.pad_tune = readl(&host->base->pad_tune);
+	host->saved_tune_para.iocon = readl(&host->base->msdc_iocon);
+	if (host->top_base) {
+		host->def_tune_para.emmc_top_control = readl(&host->top_base->emmc_top_control);
+		host->def_tune_para.emmc_top_cmd = readl(&host->top_base->emmc_top_cmd);
+		host->saved_tune_para.emmc_top_control = readl(&host->top_base->emmc_top_control);
+		host->saved_tune_para.emmc_top_cmd = readl(&host->top_base->emmc_top_cmd);
+	} else {
+		host->def_tune_para.pad_tune = readl(&host->base->pad_tune);
+		host->saved_tune_para.pad_tune = readl(&host->base->pad_tune);
+	}
 }
 
 static void msdc_ungate_clock(struct msdc_host *host)
