@@ -946,6 +946,14 @@ static int mmc_set_card_speed(struct mmc *mmc, enum bus_mode mode,
 	 * Extended CSD. Reconfigure the controller to run at HS mode.
 	 */
 	if (hsdowngrade) {
+		/* Switch BUS_WIDTH to remove DDR */
+		if (mmc->selected_mode == MMC_HS_400) {
+			err = __mmc_switch(mmc, EXT_CSD_CMD_SET_NORMAL, EXT_CSD_BUS_WIDTH,
+					EXT_CSD_BUS_WIDTH_8, false);
+			if (err)
+				return err;
+		}
+
 		mmc_select_mode(mmc, MMC_HS);
 		mmc_set_clock(mmc, mmc_mode2freq(mmc, MMC_HS), false);
 	}
