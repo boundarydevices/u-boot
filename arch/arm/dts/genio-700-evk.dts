@@ -24,6 +24,11 @@
 			compatible = "linaro,optee-tz";
 			method = "smc";
 		};
+
+		psci: psci {
+			compatible = "arm,psci-1.0";
+			method = "smc";
+		};
 	};
 
 	reserved-memory {
