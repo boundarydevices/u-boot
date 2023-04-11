@@ -17,6 +17,8 @@
 static struct efi_fw_image fw_images[MT8390_UPDATABLE_IMAGES] = {0};
 
 struct efi_capsule_update_info update_info = {
+	.dfu_string = "mmc 0=bl2.img raw 0x0 0x100 mmcpart 1;"
+			"fip.bin part 0 1",
 	.images = fw_images,
 };
 
