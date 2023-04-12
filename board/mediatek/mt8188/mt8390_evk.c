@@ -11,7 +11,7 @@
 #include <asm/io.h>
 #include <linux/kernel.h>
 
-#define MT8390_UPDATABLE_IMAGES	2
+#define MT8390_UPDATABLE_IMAGES	3
 
 #if CONFIG_IS_ENABLED(EFI_HAVE_CAPSULE_SUPPORT)
 static struct efi_fw_image fw_images[MT8390_UPDATABLE_IMAGES] = {0};
@@ -38,12 +38,15 @@ void mediatek_capsule_update_board_setup(void)
 		efi_guid_t image_type_guid =
 			GENIO_700_EVK_FIT_IMAGE_GUID;
 		efi_guid_t uboot_image_type_guid = GENIO_700_EVK_FIP_IMAGE_GUID;
+		efi_guid_t bl2_image_type_guid = GENIO_700_EVK_BL2_IMAGE_GUID;
 
 		guidcpy(&fw_images[0].image_type_id, &image_type_guid);
 		guidcpy(&fw_images[1].image_type_id, &uboot_image_type_guid);
+		guidcpy(&fw_images[2].image_type_id, &bl2_image_type_guid);
 
 		fw_images[0].fw_name = u"GENIO-700-EVK-FIT";
 		fw_images[1].fw_name = u"GENIO-700-EVK-FIP";
+		fw_images[2].fw_name = u"GENIO-700-EVK-BL2";
 	}
 }
 #endif /* CONFIG_EFI_HAVE_CAPSULE_SUPPORT && CONFIG_EFI_PARTITION */
