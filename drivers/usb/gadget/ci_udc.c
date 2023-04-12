@@ -1315,22 +1315,20 @@ static int ci_udc_phy_setup(struct udevice *dev, struct ci_udc_priv_data *priv)
 			if (power_domain_on(&priv->phy_pd))
 				return -EINVAL;
 		}
-	}
-#endif
 
 #if CONFIG_IS_ENABLED(CLK)
-	int ret;
+		ret = clk_get_by_index(&phy_dev, 0, &priv->phy_clk);
+		if (ret) {
+			printf("Failed to get phy_clk\n");
+			return ret;
+		}
 
-	ret = clk_get_by_index(&phy_dev, 0, &priv->phy_clk);
-	if (ret) {
-		printf("Failed to get phy_clk\n");
-		return ret;
-	}
-
-	ret = clk_enable(&priv->phy_clk);
-	if (ret) {
-		printf("Failed to enable phy_clk\n");
-		return ret;
+		ret = clk_enable(&priv->phy_clk);
+		if (ret) {
+			printf("Failed to enable phy_clk\n");
+			return ret;
+		}
+#endif
 	}
 #endif
 
@@ -1398,7 +1396,7 @@ static int ci_udc_otg_phy_mode(struct udevice *dev)
 	if (ret < 0)
 		return ret;
 	if (!phy_base)
-		return -EINVAL;
+		phy_base = (void __iomem *)ofnode_get_addr(dev_ofnode(dev));
 
 	if (is_mx6() || is_mx7ulp() || is_imx8() || is_imx8ulp()) {
 		void *__iomem phy_ctrl;
