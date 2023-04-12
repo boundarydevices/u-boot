@@ -7,6 +7,13 @@
 	binman: binman {
 		multiple-images;
 	};
+
+	usbg0: usbg0 {
+		compatible = "fsl,imx27-usb-gadget";
+		dr_mode = "peripheral";
+		chipidea,usb = <&usbotg1>;
+		status = "okay";
+	};
 };
 
 &{/soc@0} {
