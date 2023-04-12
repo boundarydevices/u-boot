@@ -78,7 +78,7 @@
 
 #ifndef SKIP_LONTIUM_DAUGHTER_BOARDS
 &pca9546 {
-	TOUCHSCREEN_I2C_BUS@0 {
+	MIPI_I2C_BUS@0 {
 		lt8912@48 {
 			port@0 {
 				lt8912_from_panel: endpoint {
