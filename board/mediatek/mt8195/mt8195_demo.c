@@ -11,7 +11,7 @@
 #include <asm/io.h>
 #include <linux/kernel.h>
 
-#define MT8195_UPDATABLE_IMAGES	2
+#define MT8195_UPDATABLE_IMAGES	3
 
 #if CONFIG_IS_ENABLED(EFI_HAVE_CAPSULE_SUPPORT)
 static struct efi_fw_image fw_images[MT8195_UPDATABLE_IMAGES] = {0};
@@ -50,32 +50,41 @@ void mediatek_capsule_update_board_setup(void)
 		efi_guid_t image_type_guid =
 			MT8195_DEMO_FIT_IMAGE_GUID;
 		efi_guid_t uboot_image_type_guid = MT8195_DEMO_FIP_IMAGE_GUID;
+		efi_guid_t bl2_image_type_guid = MT8195_DEMO_BL2_IMAGE_GUID;
 
 		guidcpy(&fw_images[0].image_type_id, &image_type_guid);
 		guidcpy(&fw_images[1].image_type_id, &uboot_image_type_guid);
+		guidcpy(&fw_images[2].image_type_id, &bl2_image_type_guid);
 
 		fw_images[0].fw_name = u"MT8195-DEMO-FIT";
 		fw_images[1].fw_name = u"MT8195-DEMO-FIP";
+		fw_images[2].fw_name = u"MT8195-DEMO-BL2";
 	} else if (board_is_genio_1200_evk()) {
 		efi_guid_t image_type_guid =
 			GENIO_1200_EVK_FIT_IMAGE_GUID;
 		efi_guid_t uboot_image_type_guid = GENIO_1200_EVK_FIP_IMAGE_GUID;
+		efi_guid_t bl2_image_type_guid = GENIO_1200_EVK_BL2_IMAGE_GUID;
 
 		guidcpy(&fw_images[0].image_type_id, &image_type_guid);
 		guidcpy(&fw_images[1].image_type_id, &uboot_image_type_guid);
+		guidcpy(&fw_images[2].image_type_id, &bl2_image_type_guid);
 
 		fw_images[0].fw_name = u"GENIO-1200-EVK-FIT";
 		fw_images[1].fw_name = u"GENIO-1200-EVK-FIP";
+		fw_images[2].fw_name = u"GENIO-1200-EVK-BL2";
 	} else if (board_is_genio_1200_evk_ufs()) {
 		efi_guid_t image_type_guid =
 			GENIO_1200_EVK_UFS_FIT_IMAGE_GUID;
 		efi_guid_t uboot_image_type_guid = GENIO_1200_EVK_UFS_FIP_IMAGE_GUID;
+		efi_guid_t bl2_image_type_guid = GENIO_1200_EVK_UFS_BL2_IMAGE_GUID;
 
 		guidcpy(&fw_images[0].image_type_id, &image_type_guid);
 		guidcpy(&fw_images[1].image_type_id, &uboot_image_type_guid);
+		guidcpy(&fw_images[2].image_type_id, &bl2_image_type_guid);
 
 		fw_images[0].fw_name = u"GENIO-1200-EVK-UFS-FIT";
 		fw_images[1].fw_name = u"GENIO-1200-EVK-UFS-FIP";
+		fw_images[2].fw_name = u"GENIO-1200-EVK-UFS-BL2";
 	}
 }
 #endif /* CONFIG_EFI_HAVE_CAPSULE_SUPPORT && CONFIG_EFI_PARTITION */
