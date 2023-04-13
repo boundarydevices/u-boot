@@ -1806,13 +1806,13 @@ void fbp_setup_env_cmds(void);
 		.refresh	= 60,\
 		.xres		= 640,\
 		.yres		= 960,\
-		.pixclock	= 1000000000000ULL / (640+100+100+33) / (960+30+20+2) / 60,\
-		.left_margin	= 100,\
-		.right_margin	= 100,\
-		.upper_margin	= 30,\
-		.lower_margin	= 20,\
-		.hsync_len	= 33,\
-		.vsync_len	= 2,\
+		.pixclock	= 1000000000000ULL / (640+60+40+4) / (960+16+13+1) / 60,\
+		.left_margin	= 60,\
+		.right_margin	= 40,\
+		.upper_margin	= 16,\
+		.lower_margin	= 13,\
+		.hsync_len	= 4,\
+		.vsync_len	= 1,\
 		.sync           = FB_SYNC_EXT | FB_SYNC_CLK_LAT_FALL,\
 		.vmode          = FB_VMODE_NONINTERLACED\
 	}\
