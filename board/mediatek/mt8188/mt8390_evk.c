@@ -17,7 +17,7 @@
 static struct efi_fw_image fw_images[MT8390_UPDATABLE_IMAGES] = {0};
 
 struct efi_capsule_update_info update_info = {
-	.dfu_string = "mmc 0=bl2.img raw 0x0 0x100 mmcpart 1;"
+	.dfu_string = "mmc 0=bl2.img raw 0x0 0x400000 mmcpart 1;"
 			"fip.bin part 0 1",
 	.images = fw_images,
 };
@@ -26,6 +26,12 @@ u8 num_image_type_guids = MT8390_UPDATABLE_IMAGES;
 #endif
 
 #if defined(CONFIG_EFI_HAVE_CAPSULE_SUPPORT) && defined(CONFIG_EFI_PARTITION)
+enum mt8390_updatable_images {
+	MT8390_BL2_IMAGE = 1,
+	MT8390_FIP_IMAGE,
+	MT8390_FIT_IMAGE,
+};
+
 static bool board_is_genio_700_evk(void)
 {
 	return CONFIG_IS_ENABLED(TARGET_MT8390) &&
@@ -34,9 +40,12 @@ static bool board_is_genio_700_evk(void)
 
 void mediatek_capsule_update_board_setup(void)
 {
+	fw_images[0].image_index = MT8390_FIT_IMAGE;
+	fw_images[1].image_index = MT8390_FIP_IMAGE;
+	fw_images[2].image_index = MT8390_BL2_IMAGE;
+
 	if (board_is_genio_700_evk()) {
-		efi_guid_t image_type_guid =
-			GENIO_700_EVK_FIT_IMAGE_GUID;
+		efi_guid_t image_type_guid = GENIO_700_EVK_FIT_IMAGE_GUID;
 		efi_guid_t uboot_image_type_guid = GENIO_700_EVK_FIP_IMAGE_GUID;
 		efi_guid_t bl2_image_type_guid = GENIO_700_EVK_BL2_IMAGE_GUID;
 
@@ -76,5 +85,8 @@ int board_init(void)
 		writel(val, 0x1072102C);
 	}
 
+#if defined(CONFIG_EFI_HAVE_CAPSULE_SUPPORT) && defined(CONFIG_EFI_PARTITION)
+	mediatek_capsule_update_board_setup();
+#endif
 	return 0;
 }
