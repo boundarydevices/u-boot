@@ -33,6 +33,11 @@ struct dwc3_glue_data {
 	struct clk_bulk		clks;
 	struct reset_ctl_bulk	resets;
 	fdt_addr_t regs;
+	u32	usb_ctrl0_clr;
+	u32	usb_ctrl0_set;
+	u32	usb_ctrl1_clr;
+	u32	usb_ctrl1_set;
+	int	vbus_oc_combined;
 };
 
 struct dwc3_generic_plat {
@@ -184,6 +189,20 @@ static int dwc3_generic_of_to_plat(struct udevice *dev)
 	return 0;
 }
 
+struct dwc3_glue_ops {
+	void (*glue_configure)(struct udevice *dev, int index,
+			       enum usb_dr_mode mode);
+	enum usb_dr_mode (*get_dr_mode)(struct udevice *dev);
+};
+
+static void dwc3_glue_configure(struct udevice *dev, int index, enum usb_dr_mode dr_mode)
+{
+	struct dwc3_glue_ops *ops = (struct dwc3_glue_ops *)dev_get_driver_data(dev);
+
+	if (ops && ops->glue_configure)
+		ops->glue_configure(dev, index, dr_mode);
+}
+
 #if CONFIG_IS_ENABLED(DM_USB_GADGET)
 static int dwc3_generic_peripheral_handle_interrupts(struct udevice *dev)
 {
@@ -204,6 +223,7 @@ static int dwc3_generic_peripheral_probe(struct udevice *dev)
 	if (plat->vbus_supply)
 		regulator_set_enable(plat->vbus_supply, false);
 #endif
+	dwc3_glue_configure(dev->parent, 0, USB_DR_MODE_PERIPHERAL);
 	return dwc3_generic_probe(dev, priv);
 }
 
@@ -236,6 +256,7 @@ static int dwc3_generic_host_probe(struct udevice *dev)
 	struct dwc3_generic_host_priv *priv = dev_get_priv(dev);
 	int rc;
 
+	dwc3_glue_configure(dev->parent, 0, USB_DR_MODE_HOST);
 	rc = dwc3_generic_probe(dev, &priv->gen_priv);
 	if (rc)
 		return rc;
@@ -278,14 +299,8 @@ U_BOOT_DRIVER(dwc3_generic_host) = {
 };
 #endif
 
-struct dwc3_glue_ops {
-	void (*glue_configure)(struct udevice *dev, int index,
-			       enum usb_dr_mode mode);
-	enum usb_dr_mode (*get_dr_mode)(struct udevice *dev);
-};
-
-void dwc3_imx8mp_glue_configure(struct udevice *dev, int index,
-				enum usb_dr_mode mode)
+void dwc3_imx8mp_ctrl0_1(struct udevice *dev, u32 clr0, u32 set0,
+			 u32 clr1, u32 set1)
 {
 /* USB glue registers */
 #define USB_CTRL0		0x00
@@ -305,34 +320,72 @@ void dwc3_imx8mp_glue_configure(struct udevice *dev, int index,
 	void *base = map_physmem(regs, 0x8, MAP_NOCACHE);
 	u32 value;
 
-	value = readl(base + USB_CTRL0);
+	if (clr0 || set0) {
+		value = readl(base + USB_CTRL0);
+		value &= ~clr0;
+		value |= set0;
+		writel(value, base + USB_CTRL0);
+	}
+	if (clr1 || set1) {
+		value = readl(base + USB_CTRL1);
+		value &= ~clr1;
+		value |= set1;
+		writel(value, base + USB_CTRL1);
+	}
+	debug("%s: base=%p %x %x\n", __func__, base, clr1, set1);
+	unmap_physmem(base, MAP_NOCACHE);
+}
+
+void dwc3_glue_dt_parse(struct udevice *dev, struct dwc3_glue_data *glue)
+{
+	u32 clr0 = 0, set0 = 0;
+	u32 clr1 = 0, set1 = 0;
+	u32 vbus_oc_combined = 0;
 
 	if (dev_read_bool(dev, "fsl,permanently-attached"))
-		value |= (USB_CTRL0_USB2_FIXED | USB_CTRL0_USB3_FIXED);
+		set0 = (USB_CTRL0_USB2_FIXED | USB_CTRL0_USB3_FIXED);
 	else
-		value &= ~(USB_CTRL0_USB2_FIXED | USB_CTRL0_USB3_FIXED);
+		clr0 = (USB_CTRL0_USB2_FIXED | USB_CTRL0_USB3_FIXED);
 
 	if (dev_read_bool(dev, "fsl,disable-port-power-control"))
-		value &= ~(USB_CTRL0_PORTPWR_EN);
+		clr0 |= USB_CTRL0_PORTPWR_EN;
 	else
-		value |= USB_CTRL0_PORTPWR_EN;
+		set0 |= USB_CTRL0_PORTPWR_EN;
 
-	writel(value, base + USB_CTRL0);
-
-	value = readl(base + USB_CTRL1);
 	if (dev_read_bool(dev, "fsl,over-current-active-low"))
-		value |= USB_CTRL1_OC_POLARITY;
+		set1 = USB_CTRL1_OC_POLARITY;
 	else
-		value &= ~USB_CTRL1_OC_POLARITY;
+		clr1 = USB_CTRL1_OC_POLARITY;
 
 	if (dev_read_bool(dev, "fsl,power-active-low"))
-		value |= USB_CTRL1_PWR_POLARITY;
+		set1 |= USB_CTRL1_PWR_POLARITY;
 	else
-		value &= ~USB_CTRL1_PWR_POLARITY;
+		clr1 |= USB_CTRL1_PWR_POLARITY;
 
-	writel(value, base + USB_CTRL1);
+	if (dev_read_bool(dev, "fsl,vbus-oc-combined"))
+		vbus_oc_combined = 1;
 
-	unmap_physmem(base, MAP_NOCACHE);
+	glue->usb_ctrl0_clr = clr0;
+	glue->usb_ctrl0_set = set0;
+	glue->usb_ctrl1_clr = clr1;
+	glue->usb_ctrl1_set = set1;
+	glue->vbus_oc_combined = vbus_oc_combined;
+	debug("%s: %s: %x %x, %x %x, %d\n", __func__, ofnode_get_name(dev_ofnode(dev)), clr0, set0, clr1, set1, vbus_oc_combined);
+}
+
+void dwc3_imx8mp_glue_configure(struct udevice *dev, int index,
+				enum usb_dr_mode mode)
+{
+	struct dwc3_glue_data *glue = dev_get_plat(dev);
+	u32 clr1 = glue->usb_ctrl1_clr;
+	u32 set1 = glue->usb_ctrl1_set;
+
+	debug("%s: %s: %d, %d\n", __func__, ofnode_get_name(dev_ofnode(dev)), mode, glue->vbus_oc_combined);
+	if ((mode == USB_DR_MODE_PERIPHERAL) && glue->vbus_oc_combined) {
+		clr1 ^= USB_CTRL1_OC_POLARITY;
+		set1 ^= USB_CTRL1_OC_POLARITY;
+	}
+	dwc3_imx8mp_ctrl0_1(dev, glue->usb_ctrl0_clr, glue->usb_ctrl0_set, clr1, set1);
 }
 
 enum usb_dr_mode dwc3_imx8mp_get_dr_mode(struct udevice *dev)
@@ -556,7 +609,6 @@ static int dwc3_glue_clk_init(struct udevice *dev,
 
 static int dwc3_glue_probe(struct udevice *dev)
 {
-	struct dwc3_glue_ops *ops = (struct dwc3_glue_ops *)dev_get_driver_data(dev);
 	struct dwc3_glue_data *glue = dev_get_plat(dev);
 	struct udevice *child = NULL;
 	int index = 0;
@@ -601,13 +653,14 @@ static int dwc3_glue_probe(struct udevice *dev)
 			return ret;
 	}
 
+	dwc3_glue_dt_parse(dev, glue);
+
 	while (child) {
 		enum usb_dr_mode dr_mode;
 
 		dr_mode = usb_get_dr_mode(dev_ofnode(child));
 		device_find_next_child(&child);
-		if (ops && ops->glue_configure)
-			ops->glue_configure(dev, index, dr_mode);
+		dwc3_glue_configure(dev, index, dr_mode);
 		index++;
 	}
 
