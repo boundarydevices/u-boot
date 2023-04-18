@@ -51,16 +51,16 @@
 		PINS_END
 	};
 
-	pinctrl4(reg, usbotg, vbus, oc) {
-		PINS_START
-			/* power enable/ over-current */
-			PD_SM_USB0_EN_OC_USB(PAD_PULLUPIRQ)
-		PINS_END
-	};
-
 	pinctrl4(reg, usbotg, vbus, off) {
 		PINS_START
 			PD_SM_USB0_EN_OC(PAD_PULLDN)
+		PINS_END
+	};
+
+	pinctrl4(reg, usbotg, vbus, on) {
+		PINS_START
+			/* power enable/ over-current */
+			PD_SM_USB0_EN_OC_USB(PAD_PULLUPIRQ)
 		PINS_END
 	};
 
@@ -359,11 +359,10 @@
 	};
 
 	reg_usb_otg_vbus: regulator-usb-otg-vbus {
-		/* todo: make driver support this */
 		compatible = "regulator-fixed";
-		pinctrl-names = "default", "off";
-		pinctrl-1 = pinctrl_ref(reg_usbotg_vbus_oc);
-		pinctrl-0 = pinctrl_ref(reg_usbotg_vbus_off);
+		pinctrl-names = "off", "on";
+		pinctrl-0 = pinctrl_ref4(reg, usbotg, vbus, off);
+		pinctrl-1 = pinctrl_ref4(reg, usbotg, vbus, on);
 		regulator-name = "usb_otg_vbus";
 		regulator-min-microvolt = <5000000>;
 		regulator-max-microvolt = <5000000>;
@@ -728,6 +727,7 @@
 
 &SM_USBOTG {
 	fsl,over-current-active-low;
+	fsl,vbus-oc-combined;
 	status = "okay";
 };
 
