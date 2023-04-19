@@ -6,6 +6,7 @@
 
 #include <common.h>
 #include <dm.h>
+#include <dm/pinctrl.h>
 #include <log.h>
 #include <linux/delay.h>
 #include <power/regulator.h>
@@ -73,12 +74,16 @@ int regulator_common_set_enable(const struct udevice *dev,
 		return 0;
 	}
 
+	if (!enable)
+		pinctrl_select_state((struct udevice *)dev, "off");
 	ret = dm_gpio_set_value(&dev_pdata->gpio, enable);
 	if (ret) {
 		pr_err("Can't set regulator : %s gpio to: %d\n", dev->name,
 		      enable);
 		return ret;
 	}
+	if (enable)
+		pinctrl_select_state((struct udevice *)dev, "on");
 
 	if (enable && dev_pdata->startup_delay_us)
 		udelay(dev_pdata->startup_delay_us);
