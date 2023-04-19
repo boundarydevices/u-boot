@@ -166,21 +166,23 @@ fi
 
 #stage 4
 #!/bin/bash
-echo stage 4
-sed -E \
- -e '\|^/\* ddr phy trained csr |,/};/!d' $1 >t1.tmp
-sed -E -i \
- -e 's/static struct dram_cfg_param lpddr4_ddrphy_trained_csr/struct dram_cfg_param ddrphy_trained_csr/' \
- -e 's/0x0080,/0x80,/' t1.tmp
+if [ ${processor} != "8ulp" ] ; then
+	echo stage 4
+	sed -E \
+	 -e '\|^/\* ddr phy trained csr |,/};/!d' $1 >t1.tmp
+	sed -E -i \
+	 -e 's/static struct dram_cfg_param lpddr4_ddrphy_trained_csr/struct dram_cfg_param ddrphy_trained_csr/' \
+	 -e 's/0x0080,/0x80,/' t1.tmp
 
-sed -E \
- -e '\|^/\* ddr phy trained csr |,/};/!d' drivers/ddr/imx/imx8m/ddrphy_csr.c >t2.tmp
-diff -u t1.tmp t2.tmp
-if [ $? -ne 0 ]; then
-	echo aborting
-	exit 1
+	sed -E \
+	 -e '\|^/\* ddr phy trained csr |,/};/!d' drivers/ddr/imx/imx8m/ddrphy_csr.c >t2.tmp
+	diff -u t1.tmp t2.tmp
+	if [ $? -ne 0 ]; then
+		echo aborting
+		exit 1
+	fi
+	rm t1.tmp t2.tmp
 fi
-rm t1.tmp t2.tmp
 
 sed -E -i \
  -e '/ddrphy_trained_csr =/d' \
