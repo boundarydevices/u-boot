@@ -86,23 +86,3 @@
 		};
 	};
 };
-
-&crypto {
-	u-boot,dm-spl;
-};
-
-&sec_jr0 {
-	u-boot,dm-spl;
-};
-
-&sec_jr1 {
-	u-boot,dm-spl;
-};
-
-&sec_jr2 {
-	u-boot,dm-spl;
-};
-
-&sec_jr3 {
-	u-boot,dm-spl;
-};
