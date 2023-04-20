@@ -18,9 +18,7 @@
 #include <log.h>
 #include <video.h>
 #include <panel.h>
-#ifdef CONFIG_CMD_FBPANEL
 #include <linux/fb.h>
-#endif
 
 struct of_endpoint {
 	unsigned int port;
