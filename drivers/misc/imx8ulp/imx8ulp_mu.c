@@ -185,7 +185,7 @@ static int imx8ulp_mu_probe(struct udevice *dev)
 
 	debug("%s(dev=%p) (priv=%p)\n", __func__, dev, priv);
 
-	addr = devfdt_get_addr(dev);
+	addr = dev_read_addr_index(dev, 0);
 	if (addr == FDT_ADDR_T_NONE)
 		return -EINVAL;
 
