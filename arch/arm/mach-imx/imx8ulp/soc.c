@@ -715,13 +715,14 @@ int arch_cpu_init(void)
 int arch_cpu_init_dm(void)
 {
 	struct udevice *devp;
-	int node, ret;
+	ofnode node;
+	int ret;
 	u32 res;
 	struct sentinel_get_info_data info;
 
-	node = fdt_node_offset_by_compatible(gd->fdt_blob, -1, "fsl,imx8ulp-mu");
+	node = ofnode_by_compatible(ofnode_null(), "fsl,imx8ulp-mu");
 
-	ret = uclass_get_device_by_of_offset(UCLASS_MISC, node, &devp);
+	ret = uclass_get_device_by_ofnode(UCLASS_MISC, node, &devp);
 	if (ret) {
 		printf("could not get S400 mu %d\n", ret);
 		return ret;
@@ -760,11 +761,12 @@ int arch_misc_init(void)
 int arch_early_init_r(void)
 {
 	struct udevice *devp;
-	int node, ret;
+	ofnode node;
+	int ret;
 
-	node = fdt_node_offset_by_compatible(gd->fdt_blob, -1, "fsl,imx8ulp-mu");
+	node = ofnode_by_compatible(ofnode_null(), "fsl,imx8ulp-mu");
 
-	ret = uclass_get_device_by_of_offset(UCLASS_MISC, node, &devp);
+	ret = uclass_get_device_by_ofnode(UCLASS_MISC, node, &devp);
 	if (ret) {
 		printf("could not get S400 mu %d\n", ret);
 		return ret;
