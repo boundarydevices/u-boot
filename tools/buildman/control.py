@@ -3,6 +3,11 @@
 #
 
 import multiprocessing
+try:
+    import importlib.resources
+except ImportError:
+    # for Python 3.6
+    import importlib_resources
 import os
 import shutil
 import subprocess
