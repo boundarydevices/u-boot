@@ -12,8 +12,8 @@
 	compatible = "fsl,imx8ulp-evk", "fsl,imx8ulp";
 
 	chosen {
-		stdout-path = &lpuart5;
-		bootargs = "console=ttyLP1,115200 earlycon";
+		stdout-path = &lpuart7;
+		bootargs = "console=ttyLP3,115200 earlycon";
 	};
 
 	reserved-memory {
@@ -88,11 +88,11 @@
 	};
 };
 
-&lpuart5 {
+&lpuart7 {
 	/* console */
 	pinctrl-names = "default", "sleep";
-	pinctrl-0 = <&pinctrl_lpuart5>;
-	pinctrl-1 = <&pinctrl_lpuart5>;
+	pinctrl-0 = <&pinctrl_lpuart7>;
+	pinctrl-1 = <&pinctrl_lpuart7>;
 	status = "okay";
 };
 
@@ -243,6 +243,13 @@
 		fsl,pins = <
 			MX8ULP_PAD_PTF14__LPUART5_TX	0x3
 			MX8ULP_PAD_PTF15__LPUART5_RX	0x3
+		>;
+	};
+
+	pinctrl_lpuart7: lpuart7grp {
+		fsl,pins = <
+			MX8ULP_PAD_PTF22__LPUART7_TX	0x03
+			MX8ULP_PAD_PTF23__LPUART7_RX	0x03
 		>;
 	};
 

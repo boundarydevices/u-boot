@@ -19,6 +19,14 @@
 	u-boot,dm-spl;
 };
 
+&pinctrl_lpuart7 {
+	u-boot,dm-spl;
+};
+
+&lpuart7 {
+	u-boot,dm-spl;
+};
+
 &usdhc0 {
 	u-boot,dm-spl;
 	mmc-hs400-1_8v;
