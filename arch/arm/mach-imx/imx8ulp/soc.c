@@ -336,7 +336,7 @@ void init_wdog(void)
 	disable_wdog((void __iomem *)WDG3_RBASE);
 }
 
-static struct mm_region imx8ulp_arm64_mem_map[] = {
+static struct mm_region imx8ulp_arm64_mem_map[8 + CONFIG_NR_DRAM_BANKS + 2] = {
 	{
 		/* ROM */
 		.virt = 0x0,
@@ -409,15 +409,6 @@ static struct mm_region imx8ulp_arm64_mem_map[] = {
 		.size = PHYS_SDRAM_SIZE,
 		.attrs = PTE_BLOCK_MEMTYPE(MT_NORMAL) |
 			 PTE_BLOCK_OUTER_SHARE
-	}, {
-		/*
-		 * empty entrie to split table entry 5
-		 * if needed when TEEs are used
-		 */
-		0,
-	}, {
-		/* List terminator */
-		0,
 	}
 };
 
@@ -465,28 +456,25 @@ u64 get_page_table_size(void)
 
 void enable_caches(void)
 {
-	/* If OPTEE runs, remove OPTEE memory from MMU table to avoid speculative prefetch */
-	if (rom_pointer[1]) {
-		/*
-		 * TEE are loaded, So the ddr bank structures
-		 * have been modified update mmu table accordingly
-		 */
-		int i = 0;
-		int entry = imx8ulp_find_dram_entry_in_mem_map();
-		u64 attrs = imx8ulp_arm64_mem_map[entry].attrs;
+	int i = 0;
+	/*
+	 * please make sure that entry initial value matches
+	 * imx8ulp_arm64_mem_map for DRAM1
+	 */
+	int entry = imx8ulp_find_dram_entry_in_mem_map();
+	u64 attrs = imx8ulp_arm64_mem_map[entry].attrs;
 
-		while (i < CONFIG_NR_DRAM_BANKS &&
-		       entry < ARRAY_SIZE(imx8ulp_arm64_mem_map)) {
-			if (gd->bd->bi_dram[i].start == 0)
-				break;
-			imx8ulp_arm64_mem_map[entry].phys = gd->bd->bi_dram[i].start;
-			imx8ulp_arm64_mem_map[entry].virt = gd->bd->bi_dram[i].start;
-			imx8ulp_arm64_mem_map[entry].size = gd->bd->bi_dram[i].size;
-			imx8ulp_arm64_mem_map[entry].attrs = attrs;
-			debug("Added memory mapping (%d): %llx %llx\n", entry,
-			      imx8ulp_arm64_mem_map[entry].phys, imx8ulp_arm64_mem_map[entry].size);
-			i++; entry++;
-		}
+	while (i < CONFIG_NR_DRAM_BANKS &&
+	       entry < ARRAY_SIZE(imx8ulp_arm64_mem_map)) {
+		if (gd->bd->bi_dram[i].start == 0)
+			break;
+		imx8ulp_arm64_mem_map[entry].phys = gd->bd->bi_dram[i].start;
+		imx8ulp_arm64_mem_map[entry].virt = gd->bd->bi_dram[i].start;
+		imx8ulp_arm64_mem_map[entry].size = gd->bd->bi_dram[i].size;
+		imx8ulp_arm64_mem_map[entry].attrs = attrs;
+		debug("Added memory mapping (%d): %llx %llx\n", entry,
+		      imx8ulp_arm64_mem_map[entry].phys, imx8ulp_arm64_mem_map[entry].size);
+		i++; entry++;
 	}
 
 	icache_enable();
