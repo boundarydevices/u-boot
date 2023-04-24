@@ -867,6 +867,8 @@ enum env_location env_get_location(enum env_operation op, int prio)
 	default:
 #if defined(CONFIG_ENV_IS_NOWHERE)
 		env_loc = ENVL_NOWHERE;
+#elif defined(CONFIG_ENV_IS_IN_MMC)
+		env_loc =  ENVL_MMC;
 #endif
 		break;
 	}
