@@ -798,6 +798,10 @@ int board_late_init(void)
 	}
 #endif
 #endif
+#ifdef CONFIG_AHAB_BOOT
+	env_set("sec_boot", "yes");
+#endif
+
 	/*
 	 * Bash has started to turn on bracketed paste mode by default,
 	 * turn it back off
