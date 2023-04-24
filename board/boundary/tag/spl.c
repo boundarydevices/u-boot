@@ -9,7 +9,6 @@
 #include <asm/io.h>
 #include <errno.h>
 #include <asm/arch/sys_proto.h>
-#include <asm/arch/clock.h>
 #include <asm/arch/imx8ulp-pins.h>
 #include <asm/mach-imx/s400_api.h>
 #include <fsl_sec.h>
@@ -34,24 +33,6 @@ u32 spl_boot_device(void)
 
 int power_init_board(void)
 {
-	u32 pmic_reg;
-
-	/* PMIC set bucks1-4 to PWM mode */
-	upower_pmic_i2c_read(0x10, &pmic_reg);
-	upower_pmic_i2c_read(0x14, &pmic_reg);
-	upower_pmic_i2c_read(0x21, &pmic_reg);
-	upower_pmic_i2c_read(0x2e, &pmic_reg);
-
-	upower_pmic_i2c_write(0x10, 0x3d);
-	upower_pmic_i2c_write(0x14, 0x7d);
-	upower_pmic_i2c_write(0x21, 0x7d);
-	upower_pmic_i2c_write(0x2e, 0x3d);
-
-	upower_pmic_i2c_read(0x10, &pmic_reg);
-	upower_pmic_i2c_read(0x14, &pmic_reg);
-	upower_pmic_i2c_read(0x21, &pmic_reg);
-	upower_pmic_i2c_read(0x2e, &pmic_reg);
-
 	if (IS_ENABLED(CONFIG_IMX8ULP_LD_MODE)) {
 		/* Set buck3 to 0.9v LD */
 		upower_pmic_i2c_write(0x22, 0x18);
@@ -67,18 +48,32 @@ int power_init_board(void)
 	return 0;
 }
 
+void display_ele_fw_version(void)
+{
+	u32 fw_version, sha1, res;
+	int ret;
+
+	ret = ahab_get_fw_version(&fw_version, &sha1, &res);
+	if (ret) {
+		printf("ahab get firmware version failed %d, 0x%x\n", ret, res);
+	} else {
+		printf("ELE firmware version %u.%u.%u-%x",
+		       (fw_version & (0x00ff0000)) >> 16,
+		       (fw_version & (0x0000ff00)) >> 8,
+		       (fw_version & (0x000000ff)), sha1);
+		((fw_version & (0x80000000)) >> 31) == 1 ? puts("-dirty\n") : puts("\n");
+	}
+}
+
 void spl_board_init(void)
 {
 	struct udevice *dev;
 	u32 res;
-	int node, ret;
+	int ret;
 
-	node = fdt_node_offset_by_compatible(gd->fdt_blob, -1, "fsl,imx8ulp-mu");
-	ret = uclass_get_device_by_of_offset(UCLASS_MISC, node, &dev);
-	if (ret) {
+	ret = arch_cpu_init_dm();
+	if (ret)
 		return;
-	}
-	device_probe(dev);
 
 	board_early_init_f();
 
@@ -86,12 +81,12 @@ void spl_board_init(void)
 
 	puts("Normal Boot\n");
 
-	/* After AP set iomuxc0, the i2c can't work, Need M33 to set it now */
+	display_ele_fw_version();
 
-	/* Load the lposc fuse for single boot to work around ROM issue,
+	/* Load the lposc fuse to work around ROM issue,
 	 *  The fuse depends on S400 to read.
 	 */
-	if (is_soc_rev(CHIP_REV_1_0) && get_boot_mode() == SINGLE_BOOT)
+	if (is_soc_rev(CHIP_REV_1_0))
 		load_lposc_fuse();
 
 	upower_init();
@@ -100,15 +95,17 @@ void spl_board_init(void)
 
 	clock_init_late();
 
-	/* DDR initialization */
-	spl_dram_init();
-
 	/* This must place after upower init, so access to MDA and MRC are valid */
 	/* Init XRDC MDA  */
 	xrdc_init_mda();
 
 	/* Init XRDC MRC for VIDEO, DSP domains */
 	xrdc_init_mrc();
+
+	xrdc_init_pdac_msc();
+
+	/* DDR initialization */
+	spl_dram_init();
 
 	/* Call it after PS16 power up */
 	set_lpav_qos();
@@ -126,6 +123,16 @@ void spl_board_init(void)
 			if (ret)
 				printf("Failed to initialize caam_jr: %d\n", ret);
 		}
+	}
+
+	/*
+	 * RNG start only available on the A1 soc revision.
+	 * Check some JTAG register for the SoC revision.
+	 */
+	if (!is_soc_rev(CHIP_REV_1_0)) {
+		ret = ahab_start_rng();
+		if (ret)
+			printf("Fail to start RNG: %d\n", ret);
 	}
 }
 
