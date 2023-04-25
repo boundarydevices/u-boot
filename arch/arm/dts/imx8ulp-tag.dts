@@ -7,10 +7,7 @@
 
 #include "imx8ulp.dtsi"
 #include <dt-bindings/input/linux-event-codes.h>
-#if 0
 #include <dt-bindings/input/ti-drv260x.h>
-#include "imx8ulp-rpmsg.dtsi"
-#endif
 
 &iomuxc1 {
 	pinctrl-names = "default";
@@ -18,19 +15,21 @@
 
 	pinctrl_hog: hoggrp {
 		fsl,pins = <
+			MX8ULP_PAD_PTD13__PTD13		0x7
 			MX8ULP_PAD_PTD15__PTD15		0x7	/* IMU_IRQ */
 			MX8ULP_PAD_PTD16__PTD16		0x7	/* 29 */
-			MX8ULP_PAD_PTD17__PTD17		0x6	/* 30 */
+			MX8ULP_PAD_PTD17__PTD17		0x7	/* 30 */
 			MX8ULP_PAD_PTD18__PTD18		0x7	/* 39 */
 			MX8ULP_PAD_PTD19__PTD19		0x7	/* 26 */
 			MX8ULP_PAD_PTD20__PTD20		0x7	/* 33 */
 			MX8ULP_PAD_PTE0__PTE0		0x7	/* 64 */
-			MX8ULP_PAD_PTE1__PTE1		0x7	/* TUSB_IRQ */
 			MX8ULP_PAD_PTE2__PTE2		0x7	/* BACK */
 			MX8ULP_PAD_PTE3__PTE3		0x7	/* 19 */
 			MX8ULP_PAD_PTE6__PTE6		0x7	/* 34 */
-			MX8ULP_PAD_PTE10__PTE10		0x6	/* 55 */
-			MX8ULP_PAD_PTE14__PTE14		0x6	/* 41 */
+			MX8ULP_PAD_PTE8__TPM4_CH0	0x7	/* 20 */
+			MX8ULP_PAD_PTE9__PTE9		0x7	/* 31 */
+			MX8ULP_PAD_PTE10__PTE10		0x7	/* 55 */
+			MX8ULP_PAD_PTE14__PTE14		0x7	/* 41 */
 			MX8ULP_PAD_PTE16__PTE16		0x7	/* Start */
 			MX8ULP_PAD_PTE17__PTE17		0x7	/* Up */
 			MX8ULP_PAD_PTE18__PTE18		0x7	/* Right */
@@ -41,10 +40,9 @@
 			MX8ULP_PAD_PTF20__PTF20		0x7	/* 48 */
 			MX8ULP_PAD_PTF21__PTF21		0x7	/* 37 */
 			MX8ULP_PAD_PTF24__PTF24		0x7	/* 49 */
-			MX8ULP_PAD_PTF25__PTF25		0x6	/* 27 */
-			MX8ULP_PAD_PTF26__PTF26		0x6	/* 51 */
+			MX8ULP_PAD_PTF25__PTF25		0x7	/* 27 */
+			MX8ULP_PAD_PTF26__PTF26		0x7	/* 51 */
 			MX8ULP_PAD_PTF27__PTF27		0x7	/* 57 */
-			MX8ULP_PAD_PTF28__PTF28		0x7	/*  5 */
 			MX8ULP_PAD_PTF29__PTF29		0x7	/* pmic_mode0 */
 			MX8ULP_PAD_PTF30__PTF30		0x7	/* pmic_mode1 */
 			MX8ULP_PAD_PTF31__PTF31		0x7	/* pmic_mode2 */
@@ -62,6 +60,14 @@
 		fsl,pins = <
 			MX8ULP_PAD_PTF16__LPI2C6_SCL	0x27
 			MX8ULP_PAD_PTF17__LPI2C6_SDA	0x27
+		>;
+	};
+
+	pinctrl_lpi2c6_hd3ss3220: lpi2c6-hd3ss3220grp {
+		fsl,pins = <
+#define GPIRQ_HD3SS3220		<&gpioe 1 IRQ_TYPE_LEVEL_LOW>
+			MX8ULP_PAD_PTE1__PTE1		0x7
+			MX8ULP_PAD_PTD12__PTD12		0x3
 		>;
 	};
 
@@ -116,6 +122,13 @@
 		>;
 	};
 
+	pinctrl_reg_usbotg1_vbus: reg-usbotg1-vbusgrp {
+		fsl,pins = <
+#define GP_REG_USB_OTG1_VBUS	<&gpiof 28 GPIO_ACTIVE_LOW>
+			MX8ULP_PAD_PTF28__PTF28		0x03
+		>;
+	};
+
 	pinctrl_ts_atmel: ts-atmelgrp {
 		fsl,pins = <
 #define GPIRQ_TS_ATMEL	<&gpioe 15 IRQ_TYPE_EDGE_FALLING>
@@ -128,8 +141,6 @@
 
 	pinctrl_usbotg1: usbotg1grp {
 		fsl,pins = <
-			MX8ULP_PAD_PTD13__USB0_PWR	0x00003
-			MX8ULP_PAD_PTD12__USB0_ID	0x10003
 			MX8ULP_PAD_PTD14__USB0_OC	0x10003
 		>;
 	};
@@ -163,23 +174,39 @@
 #include "panel-q035-014.dtsi"
 
 / {
-	model = "FSL i.MX8ULP tag";
+	model = "NXP i.MX 8ULP tag";
 	compatible = "boundary,imx8ulp-tag", "fsl,imx8ulp";
 
 	aliases {
 		backlight_mipi = &backlight_mipi;
 		fb_mipi = &fb_mipi;
-		lcdif = &dcnano;
 		mipi = &fb_mipi;
 		mipi_dsi = &dsi;
 		mipi_dsi_bridge = &dsi;
 		mipi_dsi_phy = &dphy;
-		pwm_mipi = &tpm5;
+		pwm_mipi = &tpm4;
 		t_mipi = &t_mipi;
 	};
 
 	backlight_mipi: backlight-mipi {
-		status = "disabled";
+		compatible = "pwm-backlight";
+		enable-gpios = <&gpioe 9 GPIO_ACTIVE_HIGH>;
+		pwms = <&tpm4 0 50000 0>;
+		brightness-levels = <
+				0  /*1  2  3  4  5  6  7  8  9
+				10 11 12 13 14 15 16 17 18 19*/
+				20 21 22 23 24 25 26 27 28 29
+				30 31 32 33 34 35 36 37 38 39
+				40 41 42 43 44 45 46 47 48 49
+				50 51 52 53 54 55 56 57 58 59
+				60 61 62 63 64 65 66 67 68 69
+				70 71 72 73 74 75 76 77 78 79
+				80 81 82 83 84 85 86 87 88 89
+				90 91 92 93 94 95 96 97 98 99
+				100
+				>;
+		default-brightness-level = <81>;
+		status = "okay";
 	};
 
 	chosen {
@@ -187,9 +214,45 @@
 		bootargs = "console=ttyLP3,115200 earlycon";
 	};
 
+	connector {
+		compatible = "usb-c-connector";
+		label = "USB-C";
+		data-role = "dual";
+
+		ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			port@0 {
+				reg = <0>;
+				hs_ep: endpoint {
+					remote-endpoint = <&usb3_hs_ep>;
+				};
+			};
+
+			port@1 {
+				reg = <1>;
+				ss_ep: endpoint {
+					remote-endpoint = <&hd3ss3220_in_ep>;
+				};
+			};
+		};
+	};
+
 	memory@40000000 {
 		device_type = "memory";
 		reg = <0x0 0x80000000 0 0x80000000>;
+	};
+
+	reg_usbotg1_vbus: regulator-usbotg1-vbus {
+		compatible = "regulator-fixed";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_reg_usbotg1_vbus>;
+		regulator-name = "usb_otg1_vbus";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		gpio = GP_REG_USB_OTG1_VBUS;
+		enable-active-high;
 	};
 
 	reg_vref_3p3v: regulator-vref-3p3v {
@@ -234,11 +297,6 @@
 			linux,cma-default;
 		};
 
-		rsc_table: rsc_table@1fff8000{
-			reg = <0 0x1fff8000 0 0x1000>;
-			no-map;
-		};
-
 		dsp_reserved: dsp_reserved@8e000000 {
 			reg = <0 0x8e000000 0 0x1000000>;
 			no-map;
@@ -261,45 +319,20 @@
 			no-map;
 		};
 
-		vdev0vring0: vdev0vring0@aff00000 {
-			reg = <0 0xaff00000 0 0x8000>;
-			no-map;
-		};
-
-		vdev0vring1: vdev0vring1@aff08000 {
-			reg = <0 0xaff08000 0 0x8000>;
-			no-map;
-		};
-
-		vdev1vring0: vdev1vring0@aff10000 {
-			reg = <0 0xaff10000 0 0x8000>;
-			no-map;
-		};
-
-		vdev1vring1: vdev1vring1@aff18000 {
-			reg = <0 0xaff18000 0 0x8000>;
-			no-map;
-		};
-
-		vdevbuffer: vdevbuffer@a8400000 {
-			compatible = "shared-dma-pool";
-			reg = <0 0xa8400000 0 0x100000>;
-			no-map;
-		};
-
 		audio_reserved: audio@0xa8500000 {
 			compatible = "shared-dma-pool";
 			no-map;
 			reg = <0 0xa8500000 0 0x100000>;
 		};
-
-		m33_reserved: m33_noncacheable_section@a8600000 {
-			no-map;
-			reg = <0 0xa8600000 0 0x1000000>;
-		};
 	};
 
 };
+
+#if 0
+&crypto {
+	status = "disabled";
+};
+#endif
 
 &dcnano {
 	status = "okay";
@@ -381,18 +414,6 @@
 			<&dsp_vdev0vring1>, <&dsp_reserved>;
 	status = "okay";
 };
-
-&imx8ulp_cm33 {
-	ipc-only;
-	rsc-da=<0x1fff8000>;
-	mbox-names = "tx", "rx", "rxdb";
-	mboxes = <&mu 0 1
-			&mu 1 1
-			&mu 3 1>;
-	memory-region = <&vdevbuffer>, <&vdev0vring0>, <&vdev0vring1>,
-			<&vdev1vring0>, <&vdev1vring1>, <&rsc_table>;
-	status = "okay";
-};
 #endif
 
 &lpi2c5 {
@@ -423,7 +444,34 @@
 	pinctrl-1 = <&pinctrl_lpi2c6>;
 	status = "okay";
 
-#if 0
+	hd3ss3220@60 {
+		/* tusb320 is compatible with hd3ss3220 */
+		compatible = "ti,hd3ss3220";
+		interrupts-extended = GPIRQ_HD3SS3220;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_lpi2c6_hd3ss3220>;
+		reg = <0x60>;
+
+		ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			port@0 {
+				reg = <0>;
+				hd3ss3220_in_ep: endpoint {
+					remote-endpoint = <&ss_ep>;
+				};
+			};
+
+			port@1 {
+				reg = <1>;
+				hd3ss3220_out_ep: endpoint {
+					remote-endpoint = <&usb3_role_switch>;
+				};
+			};
+		};
+	};
+
 	haptics: haptics@5a {
 		compatible = "ti,drv2605";
 		reg = <0x5a>;
@@ -436,7 +484,6 @@
 		vib-rated-mv = <3200>;
 		vib-overdrive-mv = <3200>;
 	};
-#endif
 };
 
 &lpspi5 {
@@ -463,6 +510,9 @@
 
 &lpuart7 {
 	/* console */
+	/* Let probe happen earlier */
+	/delete-property/ dmas;
+	/delete-property/ dma-names;
 	pinctrl-names = "default", "sleep";
 	pinctrl-0 = <&pinctrl_lpuart7>;
 	pinctrl-1 = <&pinctrl_lpuart7>;
@@ -479,21 +529,42 @@
 };
 #endif
 
+&tpm4 {
+	status = "okay";
+};
+
 &usbmisc1 {
 	status = "okay";
 };
 
 &usbotg1 {
-	adp-disable;
 	dr_mode = "otg";
-	hnp-disable;
 	over-current-active-low;
 	pinctrl-names = "default", "sleep";
 	pinctrl-0 = <&pinctrl_usbotg1>;
 	pinctrl-1 = <&pinctrl_usbotg1>;
 	power-active-high;
-	srp-disable;
 	status = "okay";
+	vbus-supply = <&reg_usbotg1_vbus>;
+
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		port@0 {
+			reg = <0>;
+			usb3_hs_ep: endpoint {
+				remote-endpoint = <&hs_ep>;
+			};
+		};
+
+		port@1 {
+			reg = <1>;
+			usb3_role_switch: endpoint {
+				remote-endpoint = <&hd3ss3220_out_ep>;
+			};
+		};
+	};
 };
 
 &usbphy1 {
