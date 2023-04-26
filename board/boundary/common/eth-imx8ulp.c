@@ -3,18 +3,23 @@
  *
  * SPDX-License-Identifier:	GPL-2.0+
  */
-#define IMX_GPIO_NR(port, index)	((((port)-1)*32)+((index)&31))
-#define GP_PHY_RD0	IMX_GPIO_NR(3, 1)
-#define GP_PHY_RD1	IMX_GPIO_NR(3, 0)
-#define GP_PHY_ER	IMX_GPIO_NR(3, 5)
-#define GP_PHY_CRS	IMX_GPIO_NR(3, 6)
+#define GPIOD	4	/* From dts aliases gpio4 = &gpiod */
+#define GPIOE	5	/* From dts aliases gpio5 = &gpioe */
+#define GPIOF	6	/* From dts aliases gpio6 = &gpiof */
+
+#define GPIO_NR(port, index)	(((GPIO##port)*32)+((index)&31))
+
+#define GP_PHY_RD0	GPIO_NR(F, 1)
+#define GP_PHY_RD1	GPIO_NR(F, 0)
+#define GP_PHY_ER	GPIO_NR(F, 5)
+#define GP_PHY_CRS	GPIO_NR(F, 6)
 
 #ifndef STRAP_AR8035
 #define STRAP_AR8035	(0x28 | (CONFIG_FEC_MXC_PHYADDR & 3))
 #endif
 
 #ifndef GP_RGMII_PHY_RESET
-#define GP_RGMII_PHY_RESET	IMX_GPIO_NR(3, 15)
+#define GP_RGMII_PHY_RESET	GPIO_NR(F, 11)
 #endif
 
 #define IOMUX_PAD_CTRL(name, ctrl)	NEW_PAD_CTRL(IMX8ULP_PAD_##name, ctrl)
@@ -29,6 +34,9 @@
 
 #ifdef CONFIG_PHY_MICREL
 static const iomux_cfg_t enet_ksz8863_gpio_pads[] = {
+#if GP_RGMII_PHY_RESET == GPIO_NR(F, 11)
+	IOMUX_PAD_CTRL(PTF11__PTF11, WEAK_PULLDN_OUTPUT),
+#endif
 	IOMUX_PAD_CTRL(PTF1__PTF1, PULL_GP(STRAP_KSZ8863, 0)),
 	IOMUX_PAD_CTRL(PTF0__PTF0, PULL_GP(STRAP_KSZ8863, 1)),
 	IOMUX_PAD_CTRL(PTF5__PTF5, PULL_GP(STRAP_KSZ8863, 2)),
