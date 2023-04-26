@@ -9,6 +9,10 @@
 #include <linux/sizes.h>
 #include <asm/arch/imx-regs.h>
 
+#ifdef CONFIG_BOARD_TYPE_SET
+#undef CONFIG_SYS_BOARD
+#define CONFIG_SYS_BOARD CONFIG_BOARD_TYPE
+#endif
 #define CONFIG_SYS_BOOTM_LEN		(SZ_64M)
 #define CONFIG_SPL_MAX_SIZE		(148 * 1024)
 #define CONFIG_SYS_MONITOR_LEN		(512 * 1024)
@@ -33,7 +37,7 @@
 #define PHY_ANEG_TIMEOUT		20000
 
 #define CONFIG_FEC_XCV_TYPE		RMII
-#define CONFIG_FEC_MXC_PHYADDR		1
+#define CONFIG_FEC_MXC_PHYADDR		7
 
 #define IMX_FEC_BASE			0x29950000
 #endif

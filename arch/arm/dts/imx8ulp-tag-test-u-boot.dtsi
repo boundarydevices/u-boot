@@ -1,0 +1,87 @@
+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
+/*
+ * Copyright 2021 NXP
+ */
+#include "imx8ulp-u-boot.dtsi"
+
+/ {
+	aliases {
+		mipi_dsi_bridge = &mipi_dsi_bridge;
+	};
+};
+
+&lpuart7 {
+	u-boot,dm-spl;
+};
+
+&pinctrl_lpuart7 {
+	u-boot,dm-spl;
+};
+
+&pinctrl_usbotg1 {
+	fsl,pins = <
+		MX8ULP_PAD_PTD12__USB0_ID	0x10003
+		MX8ULP_PAD_PTD14__USB0_OC	0x10003
+	>;
+};
+
+&pinctrl_usdhc0 {
+	u-boot,dm-spl;
+};
+
+&usdhc0 {
+	u-boot,dm-spl;
+};
+
+&dcnano {
+	display = <&fb_mipi>;
+	status = "okay";
+
+	port {
+		dcnano_out: endpoint {
+			remote-endpoint = <&mipi_dsi_bridge_in>;
+		};
+	};
+};
+
+&dsi {
+	input-source = "dcnano";
+
+	fb_mipi: panel@0 {
+		bits-per-pixel = <24>;
+		bus-width = <24>;
+		clocks = <&dsim_clk 0>,
+			 <&pcc5 IMX8ULP_CLK_DC_NANO>;
+
+		port {
+			panel1_in: endpoint {
+				remote-endpoint = <&mipi_dsi_bridge_out>;
+			};
+		};
+	};
+
+	/delete-node/ ports;
+};
+
+&mipi_dsi_bridge {
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		port@0 {
+			reg = <0>;
+
+			mipi_dsi_bridge_in: endpoint {
+				remote-endpoint = <&dcnano_out>;
+			};
+		};
+
+		port@1 {
+			reg = <1>;
+
+			mipi_dsi_bridge_out: endpoint {
+				remote-endpoint = <&panel1_in>;
+			};
+		};
+	};
+};
