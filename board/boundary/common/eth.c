@@ -67,7 +67,7 @@
 #endif
 
 #ifdef CONFIG_PHY_MICREL_KSZ8XXX
-#define KSZ8XXX_MASK(a) 2
+#define KSZ8XXX_MASK(a) (1 << (a))
 #else
 #define KSZ8XXX_MASK(a) 0
 #endif
