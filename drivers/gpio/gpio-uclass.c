@@ -929,9 +929,9 @@ int gpio_get_status(struct udevice *dev, int offset, char *buf, int buffsize)
 	if (ret < 0)
 		return ret;
 	func = ret;
-	len = snprintf(str, buffsize, "%s%d: %s",
+	len = snprintf(str, buffsize, "%s%d(%d): %s",
 		       priv->bank_name ? priv->bank_name : "",
-		       offset, gpio_function[func]);
+		       offset, priv->gpio_base + offset, gpio_function[func]);
 	if (func == GPIOF_INPUT || func == GPIOF_OUTPUT ||
 	    func == GPIOF_UNUSED) {
 		const char *label;
