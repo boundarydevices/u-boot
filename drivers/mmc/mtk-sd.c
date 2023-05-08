@@ -821,6 +821,7 @@ static int msdc_dma_done(struct msdc_host *host, int events)
 {
 	int ret = 0;
 	u32 rawcmd, arg;
+	u32 opcode;
 
 	if (!(events & MSDC_INT_XFER_COMPL)) {
 		rawcmd = readl(&host->base->sdc_cmd);
@@ -833,8 +834,11 @@ static int msdc_dma_done(struct msdc_host *host, int events)
 		else
 			ret = -EBADRQC;
 
-		pr_err("MSDC: start data failure with %d, INT(0x%x), rawcmd=0x%x, arg=0x%x\n",
-		       ret, events, rawcmd, arg);
+		opcode = rawcmd & SDC_CMD_CMD_M;
+		if (opcode != MMC_CMD_SEND_TUNING_BLOCK_HS200 &&
+		    opcode != MMC_CMD_SEND_TUNING_BLOCK)
+			pr_err("MSDC: start data failure with %d, INT(0x%x), rawcmd=0x%x, arg=0x%x\n",
+			       ret, events, rawcmd, arg);
 	}
 
 	/* Clear DAT interrupt */
@@ -1708,15 +1712,29 @@ static void msdc_init_hw(struct msdc_host *host)
 	}
 
 	if (host->dev_comp->data_tune) {
-		setbits_le32(tune_reg,
-			     MSDC_PAD_TUNE_RD_SEL | MSDC_PAD_TUNE_CMD_SEL);
+		if (host->top_base) {
+			setbits_le32(&host->top_base->emmc_top_control,
+				     PAD_DAT_RD_RXDLY_SEL);
+			clrbits_le32(&host->top_base->emmc_top_control,
+				     DATA_K_VALUE_SEL);
+			setbits_le32(&host->top_base->emmc_top_cmd,
+				     PAD_CMD_RD_RXDLY_SEL);
+		} else {
+			setbits_le32(tune_reg,
+				     MSDC_PAD_TUNE_RD_SEL | MSDC_PAD_TUNE_CMD_SEL);
+		}
+
 		clrsetbits_le32(&host->base->patch_bit0,
 				MSDC_INT_DAT_LATCH_CK_SEL_M,
 				host->latch_ck <<
 				MSDC_INT_DAT_LATCH_CK_SEL_S);
 	} else {
 		/* choose clock tune */
-		setbits_le32(tune_reg, MSDC_PAD_TUNE_RXDLYSEL);
+		if (host->top_base)
+			setbits_le32(&host->top_base->emmc_top_control,
+				     PAD_RXDLY_SEL);
+		else
+			setbits_le32(tune_reg, MSDC_PAD_TUNE_RXDLYSEL);
 	}
 
 	if (host->dev_comp->builtin_pad_ctrl) {
