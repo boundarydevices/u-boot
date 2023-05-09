@@ -138,17 +138,17 @@ static iomux_v3_cfg_t const init_pads[] = {
 #define GP_12VEN		IMX_GPIO_NR(4, 5)
 	IOMUX_PAD_CTRL(SAI1_RXD3__GPIO4_IO5, 0x140),
 #define GP_RELAY1_EN		IMX_GPIO_NR(4, 8)
-	IOMUX_PAD_CTRL(SAI1_RXD6__GPIO4_IO8, 0x140),
+	IOMUX_PAD_CTRL(SAI1_RXD6__GPIO4_IO8, 0x100),
 #define GP_RELAY2_EN		IMX_GPIO_NR(4, 7)
-	IOMUX_PAD_CTRL(SAI1_RXD5__GPIO4_IO7, 0x140),
+	IOMUX_PAD_CTRL(SAI1_RXD5__GPIO4_IO7, 0x100),
 #define GP_RELAY3_EN		IMX_GPIO_NR(4, 6)
-	IOMUX_PAD_CTRL(SAI1_RXD4__GPIO4_IO6, 0x140),
+	IOMUX_PAD_CTRL(SAI1_RXD4__GPIO4_IO6, 0x100),
 #define GP_J55P1		IMX_GPIO_NR(4, 31)
-	IOMUX_PAD_CTRL(SAI3_TXFS__GPIO4_IO31, 0x100),	/* J55, Pin 1 12V off */
+	IOMUX_PAD_CTRL(SAI3_TXFS__GPIO4_IO31, 0x0),	/* J55, Pin 1 12V on if external pullup */
 #define GP_J55P2		IMX_GPIO_NR(5, 0)
-	IOMUX_PAD_CTRL(SAI3_TXC__GPIO5_IO0, 0x100),	/* J55, Pin 2 12V off */
+	IOMUX_PAD_CTRL(SAI3_TXC__GPIO5_IO0, 0x0),	/* J55, Pin 2 12V on if external pullup */
 #define GP_J55P3		IMX_GPIO_NR(5, 1)
-	IOMUX_PAD_CTRL(SAI3_TXD__GPIO5_IO1, 0x100),	/* J55, Pin 3 12V off */
+	IOMUX_PAD_CTRL(SAI3_TXD__GPIO5_IO1, 0x0),	/* J55, Pin 3 12V on if external pullup */
 };
 
 static const struct gpio_reserve gpios_to_reserve[] = {
@@ -172,12 +172,12 @@ static const struct gpio_reserve gpios_to_reserve[] = {
 	{ GPIRQ_CSI1_TC3587, GPIOD_IN, 0, "tc3587_irq", },	/* also "csi1_mipi_pwdn" */
 	{ GP_OV5640_MIPI_RESET, GPIOD_OUT_LOW, 0, "csi1_mipi_reset", },
 	{ GP_12VEN, GPIOD_OUT_HIGH, 0, "12VEN", },
-	{ GP_RELAY1_EN, GPIOD_OUT_HIGH, 0, "RELAY1_EN", },
-	{ GP_RELAY2_EN, GPIOD_OUT_HIGH, 0, "RELAY2_EN", },
-	{ GP_RELAY3_EN, GPIOD_OUT_HIGH, 0, "RELAY3_EN", },
-	{ GP_J55P1, GPIOD_OUT_LOW, 0, "J55P1", },
-	{ GP_J55P2, GPIOD_OUT_LOW, 0, "J55P2", },
-	{ GP_J55P3, GPIOD_OUT_LOW, 0, "J55P3", },
+	{ GP_RELAY1_EN, GPIOD_OUT_LOW, 0, "RELAY1_EN", },
+	{ GP_RELAY2_EN, GPIOD_OUT_LOW, 0, "RELAY2_EN", },
+	{ GP_RELAY3_EN, GPIOD_OUT_LOW, 0, "RELAY3_EN", },
+	{ GP_J55P1, GPIOD_IN, 0, "J55P1", },
+	{ GP_J55P2, GPIOD_IN, 0, "J55P2", },
+	{ GP_J55P3, GPIOD_IN, 0, "J55P3", },
 };
 
 int board_early_init_f(void)
