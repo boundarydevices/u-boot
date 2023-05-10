@@ -115,8 +115,8 @@
 		reg = <0x4c>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&ite_pins_default>;
-		vcn33-supply = <&mt6357_vibr_reg>;
-		vcn18-supply = <&mt6357_vsim2_reg>;
+		vcn33-supply = <&mt6357_vcn33_bt_reg>;
+		vcn18-supply = <&mt6357_vcn18_reg>;
 		vrf12-supply = <&mt6357_vrf12_reg>;
 		reset-gpios = <&gpio 69 GPIO_ACTIVE_LOW>;
 	};
