@@ -491,32 +491,58 @@ static int set_property_u32_env(char *buf, int size, const char *path,
 	return sz;
 }
 
-static int set_property_u32_env_2parms(char *buf, int size, const char *path,
-		const char *propname, u32 val, const char *env, u32 p1, u32 p2)
+static int set_property_u32_env_parms(char *buf, int size, const char *path,
+		const char *propname, u32 val, const char *env, u32 p1, u32 p2, u32 p3)
 {
-	int sz = snprintf(buf, size, "fdt set %s %s <${%s} %u %u>;", path,
-			propname, env, p1, p2);
+	int sz;
+	int cnt;
+	char parm_buf[36];
+
+	if (p3 != 0xffffffff) {
+		snprintf(parm_buf, sizeof(parm_buf), " %u %u %u", p1, p2, p3);
+		cnt = 4;
+	} else if (p2 != 0xffffffff) {
+		snprintf(parm_buf, sizeof(parm_buf), " %u %u", p1, p2);
+		cnt = 3;
+	} else if (p1 != 0xffffffff) {
+		snprintf(parm_buf, sizeof(parm_buf), " %u", p1);
+		cnt = 2;
+	} else {
+		parm_buf[0] = 0;
+		cnt = 1;
+	}
+	sz = snprintf(buf, size, "fdt set %s %s <${%s}%s>;", path,
+			propname, env, parm_buf);
 #if CONFIG_IS_ENABLED(DM_VIDEO) && CONFIG_IS_ENABLED(OF_LIVE)
-	u32 old[] = {0, 0, 0};
+	u32 old[] = {0, 0, 0, 0};
+	u32 new[] = {val, p1, p2, p3};
+	int space;
 	int ret;
+	int i;
 	ofnode node = ofnode_path_err(path);
 	__be32 *pvalue;
 
 	if (!ofnode_valid(node))
 		return sz;
-	ret = ofnode_read_u32_array(node, propname, old, 3);
-	if (!ret && (old[0] == val) && (old[1] == p1) && (old[2] == p2))
-		return sz;
+	ret = ofnode_read_u32_array(node, propname, old, cnt);
+	if (!ret) {
+		i = 0;
+		while (old[i] == new[i]) {
+			i++;
+			if (i >= cnt)
+				return sz;
+		}
+	}
 
-	debug("%s:old %u %u %u, new %u %u %u\n", __func__, old[0], old[1], old[2], val, p1, p2);
-	pvalue = get_space(sizeof(u32) * 3);;
+	debug("%s:old %u %u %u %u, new %u %u %u %u\n", __func__, old[0], old[1], old[2], old[3], val, p1, p2, p3);
+	space = sizeof(u32) * cnt;
+	pvalue = get_space(space);
 	if (!pvalue)
 		return sz;
-	pvalue[0] = cpu_to_be32(val);
-	pvalue[1] = cpu_to_be32(p1);
-	pvalue[2] = cpu_to_be32(p2);
+	for (i = 0; i < cnt; i++)
+		pvalue[i] = cpu_to_be32(new[i]);
 
-	ofnode_write_prop(node, propname, sizeof(u32) * 3, pvalue);
+	ofnode_write_prop(node, propname, space, pvalue);
 #endif
 	return sz;
 }
@@ -690,8 +716,8 @@ static int set_property_gpio(char *buf, int size, const char *path, const char *
 			(i >> 5), "phandle");
 	buf += sz;
 	size -= sz;
-	sz += set_property_u32_env_2parms(buf, size, path,
-			propname, gp, "gp", i & 0x1f, flags);
+	sz += set_property_u32_env_parms(buf, size, path,
+			propname, gp, "gp", i & 0x1f, flags, -1);
 	return sz;
 }
 
@@ -1006,12 +1032,12 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 				(i >> 5), "phandle");
 		buf += sz;
 		size -= sz;
-		sz = set_property_u32_env_2parms(buf, size, fbnames[fb],
+		sz = set_property_u32_env_parms(buf, size, fbnames[fb],
 			"enable-gpios", gp, "gp", i & 0x1f,
 			((di->fbflags & FBF_ENABLE_GPIOS_ACTIVE_LOW) ?
 				GPIO_ACTIVE_LOW : GPIO_ACTIVE_HIGH) |
 			((di->fbflags & FBF_ENABLE_GPIOS_OPEN_DRAIN) ?
-				GPIO_OPEN_DRAIN : 0));
+				GPIO_OPEN_DRAIN : 0), -1);
 		buf += sz;
 		size -= sz;
 	}
@@ -1098,8 +1124,8 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 				"", "phandle");
 		buf += sz;
 		size -= sz;
-		sz = set_property_u32_env_2parms(buf, size, backlight_names[fb],
-			"pwms", pwm, "pwm", 0, di->pwm_period);
+		sz = set_property_u32_env_parms(buf, size, backlight_names[fb],
+			"pwms", pwm, "pwm", 0, di->pwm_period, 0);
 		buf += sz;
 		size -= sz;
 	}
