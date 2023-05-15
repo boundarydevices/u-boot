@@ -499,7 +499,7 @@ int sn65dsi83_ofdata_to_platdata(struct udevice *dev, struct panel_sn65dsi83 *sn
 	ret = uclass_get_device_by_ofnode_prop(UCLASS_I2C, np,
 			"i2c-bus", &sn->i2c);
 	if (ret)
-		printf("!!!i2c-bus not found %d\n", ret);
+		printf("!!!sn65 i2c-bus not found %d\n", ret);
 	ofnode_read_u32(np, "i2c-address", &sn->i2c_address);
 	ofnode_read_u32(np, "i2c-max-frequency", &sn->i2c_max_frequency);
 
