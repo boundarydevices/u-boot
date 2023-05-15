@@ -682,7 +682,8 @@ static int panel_common_disable(struct panel_common *p)
 	dsi = p->dsi;
 	dsi->mode_flags |= MIPI_DSI_MODE_LPM;
 	send_all_cmd_lists(p, &p->cmds_disable);
-	sn65_disable(&p->sn65);
+	if (p->sn65.i2c)
+		sn65_disable(&p->sn65);
 
 	p->enabled = false;
 
@@ -773,7 +774,8 @@ static int panel_common_enable(struct panel_common *p)
 		goto fail;
 	if (p->delay.enable)
 		mdelay(p->delay.enable);
-	sn65_enable(&p->sn65);
+	if (p->sn65.i2c)
+		sn65_enable(&p->sn65);
 	p->enabled = true;
 
 	return 0;
@@ -796,7 +798,8 @@ static int panel_common_enable2(struct panel_common *p)
 	if (ret < 0)
 		goto fail;
 
-	sn65_enable2(&p->sn65);
+	if (p->sn65.i2c)
+		sn65_enable2(&p->sn65);
 	if (p->gpd_display_enable)
 		dm_gpio_set_value(p->gpd_display_enable, true);
 	return 0;
@@ -1224,7 +1227,8 @@ static int common_panel_disable(struct udevice *dev)
 	panel_common_unprepare(p);
 	if (p->linked_panel)
 		panel_uninit(p->linked_panel);
-	sn65_remove(&p->sn65);
+	if (p->sn65.i2c)
+		sn65_remove(&p->sn65);
 	return 0;
 }
 
