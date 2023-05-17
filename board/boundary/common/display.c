@@ -33,11 +33,14 @@ static int detect_common(struct display_info_t const *di, int sub_bus,
 #ifdef CONFIG_DM_VIDEO
 	int req_bus;
 	int req_en;
+	int req_irq;
 
 	if (di->bus_gp)
 		req_bus = gpio_request(di->bus_gp, "bus_gp");
 	if (di->enable_gp)
 		req_en = gpio_request(di->enable_gp, "enable_gp");
+	if (gp_irq)
+		req_irq = gpio_request(gp_irq, "ts_irq");
 #endif
 	if (gp_reset) {
 		gpio_direction_output(gp_reset, 0);
@@ -170,6 +173,9 @@ static int detect_common(struct display_info_t const *di, int sub_bus,
 	}
 	if (di->enable_gp && !req_en) {
 		gpio_free(di->enable_gp);
+	}
+	if (gp_irq && !req_irq) {
+		gpio_free(gp_irq);
 	}
 #endif
 	return (ret == 0);
