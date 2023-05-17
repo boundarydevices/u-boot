@@ -35,7 +35,9 @@ DECLARE_GLOBAL_DATA_PTR;
 #define WDOG_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_ODE | PAD_CTL_PUE | PAD_CTL_PE)
 
 static iomux_v3_cfg_t const init_pads[] = {
-#define GP_PWM2_MIPI		IMX_GPIO_NR(5, 4)
+#define GP_LVDS2_BACKLIGHT	IMX_GPIO_NR(3, 5)
+	IOMUX_PAD_CTRL(NAND_CLE__GPIO3_IO05, 0x100),
+
 	IOMUX_PAD_CTRL(GPIO1_IO01__GPIO1_IO01, 0x100),
 	IOMUX_PAD_CTRL(GPIO1_IO02__WDOG1_WDOG_B, WDOG_PAD_CTRL),
 	IOMUX_PAD_CTRL(UART1_RXD__UART1_DCE_RX, UART_PAD_CTRL),
@@ -55,11 +57,12 @@ static iomux_v3_cfg_t const init_pads[] = {
 #define GP_LTK08_MIPI_EN	IMX_GPIO_NR(1, 6)
 	IOMUX_PAD_CTRL(GPIO1_IO06__GPIO1_IO06, 0x100),
 
+#define GP_LVDS_BACKLIGHT	IMX_GPIO_NR(3, 15)
 #define GPIRQ_TS_GT911		IMX_GPIO_NR(3, 15)
 #define GP_TS_GT911_IRQ		IMX_GPIO_NR(3, 15)
 #define GPIRQ_TS_FT5X06		IMX_GPIO_NR(3, 15)
 #define GP_TS_FT5X06_WAKE	IMX_GPIO_NR(3, 15)
-	IOMUX_PAD_CTRL(NAND_RE_B__GPIO3_IO15, 0x180),
+	IOMUX_PAD_CTRL(NAND_RE_B__GPIO3_IO15, 0x100),
 
 #define MCP23018 8
 #define GP_TS_GT911_RESET	IMX_GPIO_NR(MCP23018, 7)
@@ -70,21 +73,19 @@ static iomux_v3_cfg_t const init_pads[] = {
 #define GP_TC358762_EN		IMX_GPIO_NR(4, 3)
 #define GP_SC18IS602B_RESET	IMX_GPIO_NR(4, 3)
 #define GP_SN65DSI83_EN		IMX_GPIO_NR(4, 3)
-#define GP_MIPI_RESET		IMX_GPIO_NR(4, 3)
+#define GP_MIPI_ENABLE		IMX_GPIO_NR(4, 3)
 	/* enable for TPS65132 Single Inductor - Dual Output Power Supply */
 #define GP_LCD133_070_ENABLE	IMX_GPIO_NR(4, 3)
 	IOMUX_PAD_CTRL(SAI1_RXD1__GPIO4_IO03, 0x100),
+	IOMUX_PAD_CTRL(GPIO1_IO05__GPIO1_IO05, 0x100),
 
-#define GP_BACKLIGHT_LVDS	IMX_GPIO_NR(3, 15)
-	IOMUX_PAD_CTRL(NAND_RE_B__GPIO3_IO15, 0x100),	/* enable */
-
-#define GP_BACKLIGHT_LVDS2	IMX_GPIO_NR(3, 5)
-	IOMUX_PAD_CTRL(NAND_CLE__GPIO3_IO05, 0x100),	/* enable */
-
+#define GP_PWM2_MIPI		IMX_GPIO_NR(5, 4)
 #define GP_LVDS_PWM		IMX_GPIO_NR(5, 4)
-	IOMUX_PAD_CTRL(SPDIF_RX__GPIO5_IO04, 0x100),	/* PWM */
-#define GP_LVDS2_PWM		IMX_GPIO_NR(1, 5)
-	IOMUX_PAD_CTRL(GPIO1_IO05__GPIO1_IO05, 0x100),	/* PWM */
+	IOMUX_PAD_CTRL(SPDIF_RX__GPIO5_IO04, 0x100),		/* PWM2 */
+
+#define GP_LVDS2_PWM		IMX_GPIO_NR(5, 5)
+	IOMUX_PAD_CTRL(SPDIF_EXT_CLK__GPIO5_IO05, 0x100),	/* PWM1 */
+
 	/* eqos */
 	IOMUX_PAD_CTRL(ENET_MDC__ENET_QOS_MDC, 0x20),
 	IOMUX_PAD_CTRL(ENET_MDIO__ENET_QOS_MDIO, 0xa0),
@@ -169,8 +170,8 @@ static const struct display_info_t displays[] = {
 	VD_DMT050WVNXCMI(MIPI, board_detect_pca9546, fbp_bus_gp((2 | (2 << 4)), GP_SC18IS602B_RESET, 0, 30), fbp_addr_gp(0x2f, 0, 6, 0), FBP_SPI_LCD, FBTS_GOODIX),
 	VD_LTK080A60A004T(MIPI, board_detect_gt911, fbp_bus_gp((2 | (2 << 4)), GP_LTK08_MIPI_EN, GP_LTK08_MIPI_EN, 0), 0x5d, FBTS_GOODIX),	/* Goodix touchscreen */
 	VD_LCM_JM430_MINI(MIPI, board_detect_pca9546, fbp_bus_gp((2 | (2 << 4)), GP_ST1633_RESET, GP_TC358762_EN, 30), fbp_addr_gp(0x55, 0, 0, 0), FBTS_ST1633I),	/* Sitronix touch */
-	VD_LTK0680YTMDB_2(MIPI, NULL, fbp_bus_gp((2 | (2 << 4)), GP_MIPI_RESET, GP_MIPI_RESET, 0), 0x5d, FBTS_GOODIX),
-	VD_MIPI_COM50H5N03ULC(MIPI, NULL, fbp_bus_gp((2 | (2 << 4)), GP_MIPI_RESET, GP_MIPI_RESET, 0), 0x00),
+	VD_LTK0680YTMDB_2(MIPI, NULL, fbp_bus_gp((2 | (2 << 4)), GP_MIPI_ENABLE, GP_MIPI_ENABLE, 0), 0x5d, FBTS_GOODIX),
+	VD_MIPI_COM50H5N03ULC(MIPI, NULL, fbp_bus_gp((2 | (2 << 4)), GP_MIPI_ENABLE, GP_MIPI_ENABLE, 0), 0x00),
 	/* 0x3e is the TPS65132 power chip on our adapter board */
 	VD_MIPI_LCD133_070(MIPI, board_detect_lcd133, fbp_bus_gp((2 | (2 << 4)), GP_LCD133_070_ENABLE, GP_LCD133_070_ENABLE, 1), fbp_addr_gp(0x3e, 0, 0, 0), FBTS_FT7250),
 	VD_MIPI_640_480M_60(MIPI, NULL, fbp_bus_gp((2 | (2 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
@@ -221,9 +222,9 @@ static const struct display_info_t displays[] = {
 	VD_ND1024_600(	LVDS2, NULL, fbp_bus_gp(3, 0, 0, 0), 0x38, FBTS_FT5X06_2, FBTS_LVDS_FT5X06),
 
 	/* ili251x */
-	VD_HDA800XPT(LVDS, fbp_detect_i2c, fbp_bus_gp(3, 0, 0, 0), fbp_addr_gp(0x41, GP_BACKLIGHT_LVDS, 0, 0), FBTS_ILI251X, FBTS_LVDS_ILI251X),
+	VD_HDA800XPT(LVDS, fbp_detect_i2c, fbp_bus_gp(3, 0, 0, 0), fbp_addr_gp(0x41, GP_LVDS_BACKLIGHT, 0, 0), FBTS_ILI251X, FBTS_LVDS_ILI251X),
 
-	VD_HDA800XPT(LVDS2, NULL, fbp_bus_gp(3, 0, 0, 0), fbp_addr_gp(0x41, GP_BACKLIGHT_LVDS2, 0, 0), FBTS_ILI251X, FBTS_LVDS_ILI251X),
+	VD_HDA800XPT(LVDS2, NULL, fbp_bus_gp(3, 0, 0, 0), fbp_addr_gp(0x41, GP_LVDS2_BACKLIGHT, 0, 0), FBTS_ILI251X, FBTS_LVDS_ILI251X),
 
 	/* egalax_ts */
 	VD_HANNSTAR(LVDS, fbp_detect_i2c, fbp_bus_gp(3, 0, 0, 0), 0x04, FBTS_EGALAX, FBTS_LVDS_EGALAX),
@@ -239,7 +240,6 @@ static const struct display_info_t displays[] = {
 int board_init(void)
 {
 	gpio_request(GP_TS_GT911_RESET, "gt11_reset");
-	gpio_request(GPIRQ_TS_GT911, "gt11_irq");
 //	gpio_request(GP_SN65DSI83_EN, "sn65en");
 //	gpio_request(GP_LTK08_MIPI_EN, "ltk08_mipi_en");
 #if !CONFIG_IS_ENABLED(USB_DWC3_GENERIC)
