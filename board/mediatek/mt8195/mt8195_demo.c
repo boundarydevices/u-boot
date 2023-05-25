@@ -118,6 +118,29 @@ void mediatek_capsule_update_board_setup(void)
 }
 #endif /* CONFIG_EFI_HAVE_CAPSULE_SUPPORT && CONFIG_EFI_PARTITION */
 
+/**
+ * mediatek_part_name - get the part name
+ *
+ * Retrieve the part name of platform description.
+ *
+ * Return:
+ * * > 0 - the part name invoked
+ * * 0   - error or no part name invoked
+ */
+u32 mediatek_part_name(void)
+{
+	struct arm_smccc_res res __maybe_unused;
+	u32 ret = 0;
+
+	arm_smccc_smc(MTK_SIP_PARTNAME_ID, 0, 0, 0, 0, 0, 0, 0, &res);
+	ret = res.a1;
+
+	if (res.a0)
+		return 0;
+	else
+		return ret;
+}
+
 int board_init(void)
 {
 	struct udevice *dev;

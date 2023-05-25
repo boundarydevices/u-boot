@@ -114,4 +114,8 @@
 	BOOTENV
 #endif
 
+#ifdef CONFIG_ARM64
+#define MTK_SIP_PARTNAME_ID		0xC2000529
+#endif
+
 #endif
