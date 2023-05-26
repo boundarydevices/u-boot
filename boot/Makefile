@@ -49,3 +49,5 @@ endif
 
 obj-$(CONFIG_$(SPL_TPL_)BOOTMETH_VBE) += vbe.o
 obj-$(CONFIG_$(SPL_TPL_)BOOTMETH_VBE_SIMPLE) += vbe_simple.o
+
+obj-$(CONFIG_MEDIATEK_IOT_AB_BOOT_SUPPORT) += iot_ab.o

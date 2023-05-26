@@ -1385,4 +1385,12 @@ config SAVE_PREV_BL_INITRAMFS_START_ADDR
 	  If no initramfs was provided by previous bootloader, no env variables
 	  will be created.
 
+config MEDIATEK_IOT_AB_BOOT_SUPPORT
+	bool "MediaTek IoT Yocto A/B updates"
+	depends on EFI_HAVE_CAPSULE_SUPPORT
+	help
+	  Add support for MediaTek IoT Yocto A/B updates. This allows the bootloader
+	  to select which slot to boot from based on the information provided by
+	  boot_ctrl.
+
 endmenu		# Booting
