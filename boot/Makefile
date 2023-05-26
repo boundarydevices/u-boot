@@ -35,3 +35,5 @@ obj-$(CONFIG_CMD_ADTIMG) += image-android-dt.o
 ifdef CONFIG_SPL_BUILD
 obj-$(CONFIG_SPL_LOAD_FIT) += common_fit.o
 endif
+
+obj-$(CONFIG_MEDIATEK_IOT_AB_BOOT_SUPPORT) += iot_ab.o

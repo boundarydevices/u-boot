@@ -1068,4 +1068,11 @@ config DEFAULT_FDT_FILE
 	help
 	  This option is used to set the default fdt file to boot OS.
 
+config MEDIATEK_IOT_AB_BOOT_SUPPORT
+	bool "MediaTek IoT Yocto A/B updates"
+	help
+	  Add support for MediaTek IoT Yocto A/B updates. This allows the bootloader
+	  to select which slot to boot from based on the information provided by
+	  boot_ctrl.
+
 endmenu		# Booting
