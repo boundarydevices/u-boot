@@ -10,6 +10,7 @@
 #include <net.h>
 #include <asm/io.h>
 #include <linux/kernel.h>
+#include <linux/arm-smccc.h>
 
 #define MT8195_UPDATABLE_IMAGES	5
 
