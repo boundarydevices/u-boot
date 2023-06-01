@@ -133,14 +133,14 @@ int board_detect_hdmi(struct display_info_t const *di)
 	return (ret > 0) ? 1 : 0;
 }
 #endif
-int board_detect_gt911(struct display_info_t const *di)
+int board_detect_gt911_x73(struct display_info_t const *di)
 {
-	return board_detect_gt911_common(di, 1 << (di->bus_num >> 4), 0, GP_TS_GT911_RESET, GPIRQ_TS_GT911);
+	return board_detect_gt911_common(di, (1 << (di->bus_num >> 4)) | 0x7300, 0, GP_TS_GT911_RESET, GPIRQ_TS_GT911);
 }
 
-int board_detect_gt911_sn65(struct display_info_t const *di)
+int board_detect_gt911_sn65_x73(struct display_info_t const *di)
 {
-	return board_detect_gt911_sn65_common(di, 1 << (di->bus_num >> 4), 0, GP_TS_GT911_RESET, GPIRQ_TS_GT911);
+	return board_detect_gt911_sn65_common(di, (1 << (di->bus_num >> 4)) | 0x7300, 0, GP_TS_GT911_RESET, GPIRQ_TS_GT911);
 }
 
 static const struct display_info_t displays[] = {
@@ -156,34 +156,34 @@ static const struct display_info_t displays[] = {
 	VD_640_480M_60(HDMI, NULL, 0, 0x50),
 
 	/* mipi */
-	VD_MIPI_TM070JDHG30_x("tm070jdhg30-1",	B, MIPI, board_detect_gt911_sn65, fbp_bus_gp((2 | (2 << 4)), GP_SN65DSI83_EN, 0, 0), 0x5d, FBP_MIPI_TO_LVDS, FBTS_GOODIX),
+	VD_MIPI_TM070JDHG30_x("tm070jdhg30-1",	B, MIPI, board_detect_gt911_sn65_x73, fbp_bus_gp((2 | (2 << 4)), GP_SN65DSI83_EN, 0, 0), 0x5d, FBP_MIPI_TO_LVDS, FBTS_GOODIX),
 	VD_MIPI_TM070JDHG30_x("tm070jdhg30-2",	U, MIPI, NULL, fbp_bus_gp((2 | (2 << 4)), GP_SN65DSI83_EN, 0, 0), 0x5d, FBP_MIPI_TO_LVDS, FBTS_GOODIX),
 	VD_MIPI_TM070JDHG30_x("tm070jdhg30-3",	E, MIPI, NULL, fbp_bus_gp((2 | (2 << 4)), GP_SN65DSI83_EN, 0, 0), 0x5d, FBP_MIPI_TO_LVDS, FBTS_GOODIX),
 	VD_MIPI_M101NWWB_x("m101nwwb-1",	B, MIPI, NULL, fbp_bus_gp((2 | (2 << 4)), GP_SN65DSI83_EN, 0, 0), 0x5d, FBP_MIPI_TO_LVDS, FBTS_GOODIX),
 	VD_MIPI_M101NWWB_x("m101nwwb-2",	U, MIPI, NULL, fbp_bus_gp((2 | (2 << 4)), GP_SN65DSI83_EN, 0, 0), 0x5d, FBP_MIPI_TO_LVDS, FBTS_GOODIX),
 	VD_MIPI_M101NWWB_x("m101nwwb-3",	E, MIPI, NULL, fbp_bus_gp((2 | (2 << 4)), GP_SN65DSI83_EN, 0, 0), 0x5d, FBP_MIPI_TO_LVDS, FBTS_GOODIX),
 
-	VD_MIPI_TM070JDHG30_x("tm070jdhg30-4",	B, MIPI, board_detect_pca9546_sn65, fbp_bus_gp((2 | (2 << 4)), GP_SN65DSI83_EN, GP_TS_FT5X06_RESET, 0), 0x38, FBP_MIPI_TO_LVDS, FBTS_FT5X06),
+	VD_MIPI_TM070JDHG30_x("tm070jdhg30-4",	B, MIPI, board_detect_pca9546_sn65_x73, fbp_bus_gp((2 | (2 << 4)), GP_SN65DSI83_EN, GP_TS_FT5X06_RESET, 0), 0x38, FBP_MIPI_TO_LVDS, FBTS_FT5X06),
 	VD_MIPI_M101NWWB_x("m101nwwb-4",	B, MIPI, NULL, fbp_bus_gp((2 | (2 << 4)), GP_SN65DSI83_EN, GP_TS_FT5X06_RESET, 0), 0x38, FBP_MIPI_TO_LVDS, FBTS_FT5X06),
 
-	VD_MIPI_MTD0900DCP27KF(MIPI, board_detect_pca9546, fbp_bus_gp((2 | (2 << 4)), 0, 0, 0), 0x41, FBP_MIPI_TO_LVDS, FBTS_ILI251X),
-	VD_DMT050WVNXCMI(MIPI, board_detect_pca9546, fbp_bus_gp((2 | (2 << 4)), GP_SC18IS602B_RESET, 0, 30), fbp_addr_gp(0x2f, 0, 6, 0), FBP_SPI_LCD, FBTS_GOODIX),
-	VD_LTK080A60A004T(MIPI, board_detect_gt911, fbp_bus_gp((2 | (2 << 4)), GP_LTK08_MIPI_EN, GP_LTK08_MIPI_EN, 0), 0x5d, FBTS_GOODIX),	/* Goodix touchscreen */
-	VD_LCM_JM430_MINI(MIPI, board_detect_pca9546, fbp_bus_gp((2 | (2 << 4)), GP_ST1633_RESET, GP_TC358762_EN, 30), fbp_addr_gp(0x55, 0, 0, 0), FBTS_ST1633I),	/* Sitronix touch */
+	VD_MIPI_MTD0900DCP27KF(MIPI, board_detect_pca9546_x73, fbp_bus_gp((2 | (2 << 4)), 0, 0, 0), 0x41, FBP_MIPI_TO_LVDS, FBTS_ILI251X),
+	VD_DMT050WVNXCMI(MIPI, board_detect_pca9546_x73, fbp_bus_gp((2 | (2 << 4)), GP_SC18IS602B_RESET, 0, 30), fbp_addr_gp(0x2f, 0, 6, 0), FBP_SPI_LCD, FBTS_GOODIX),
+	VD_LTK080A60A004T(MIPI, board_detect_gt911_x73, fbp_bus_gp((2 | (2 << 4)), GP_LTK08_MIPI_EN, GP_LTK08_MIPI_EN, 0), 0x5d, FBTS_GOODIX),	/* Goodix touchscreen */
+	VD_LCM_JM430_MINI(MIPI, board_detect_pca9546_x73, fbp_bus_gp((2 | (2 << 4)), GP_ST1633_RESET, GP_TC358762_EN, 30), fbp_addr_gp(0x55, 0, 0, 0), FBTS_ST1633I),	/* Sitronix touch */
 	VD_LTK0680YTMDB_2(MIPI, NULL, fbp_bus_gp((2 | (2 << 4)), GP_MIPI_ENABLE, GP_MIPI_ENABLE, 0), 0x5d, FBTS_GOODIX),
 	VD_MIPI_COM50H5N03ULC(MIPI, NULL, fbp_bus_gp((2 | (2 << 4)), GP_MIPI_ENABLE, GP_MIPI_ENABLE, 0), 0x00),
 	/* 0x3e is the TPS65132 power chip on our adapter board */
-	VD_MIPI_LCD133_070(MIPI, board_detect_lcd133, fbp_bus_gp((2 | (2 << 4)), GP_LCD133_070_ENABLE, GP_LCD133_070_ENABLE, 1), fbp_addr_gp(0x3e, 0, 0, 0), FBTS_FT7250),
+	VD_MIPI_LCD133_070(MIPI, board_detect_lcd133_x73, fbp_bus_gp((2 | (2 << 4)), GP_LCD133_070_ENABLE, GP_LCD133_070_ENABLE, 1), fbp_addr_gp(0x3e, 0, 0, 0), FBTS_FT7250),
 	VD_MIPI_640_480M_60(MIPI, NULL, fbp_bus_gp((2 | (2 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
 	VD_MIPI_1280_800M_60(MIPI, NULL, fbp_bus_gp((2 | (2 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
 	VD_MIPI_1280_720M_60(MIPI, NULL, fbp_bus_gp((2 | (2 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
 
 	/* Looking for the max7323 gpio chip on the Lontium daughter board */
-	VD_MIPI_1920_1080M_60(MIPI, board_detect_pca9546_2, fbp_bus_gp((2 | (2 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
+	VD_MIPI_1920_1080M_60(MIPI, board_detect_pca9546_2_x73, fbp_bus_gp((2 | (2 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
 	VD_MIPI_1024_768M_60(MIPI, NULL, fbp_bus_gp((2 | (2 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
 	VD_MIPI_800_600MR_60(MIPI, NULL, fbp_bus_gp((2 | (2 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
 	VD_MIPI_720_480M_60(MIPI, NULL, fbp_bus_gp((2 | (2 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
-	VD_LXD_M8509A(MIPI, board_detect_pca9546, fbp_bus_gp((2 | (2 << 4)), 0, 0, 0), 0x66, FBP_BACKLIGHT_MIPI2, FBTS_FT5X06_3),
+	VD_LXD_M8509A(MIPI, board_detect_pca9546_x73, fbp_bus_gp((2 | (2 << 4)), 0, 0, 0), 0x66, FBP_BACKLIGHT_MIPI2, FBTS_FT5X06_3),
 
 	VD_MIPI_VTFT101RPFT20(MIPI, NULL, (2 | (2 << 4)), 0x70, FBP_PCA9540),
 
