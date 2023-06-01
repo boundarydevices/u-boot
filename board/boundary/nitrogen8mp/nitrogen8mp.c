@@ -95,6 +95,7 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IOMUX_PAD_CTRL(SAI1_RXD0__GPIO4_IO02, 0x00),	/* float for OTG1 mode */
 #define GP_FASTBOOT_KEY		IMX_GPIO_NR(5, 9)
 	IOMUX_PAD_CTRL(ECSPI1_SS0__GPIO5_IO09, WEAK_PULLUP),
+	IOMUX_PAD_CTRL(ECSPI1_MISO__GPIO5_IO08, WEAK_PULLDN_OUTPUT),
 };
 
 int board_early_init_f(void)
