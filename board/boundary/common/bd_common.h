@@ -75,11 +75,15 @@ int otg_power_detect(void);
 int bdcommon_env_init(void);
 void spl_dram_init(void);
 int board_detect_lcd133(struct display_info_t const *di);
+int board_detect_lcd133_x73(struct display_info_t const *di);
 int board_detect_pca9540(struct display_info_t const *di);
 int board_detect_pca9546(struct display_info_t const *di);
+int board_detect_pca9546_x73(struct display_info_t const *di);
 int board_detect_sn65_and_ts(struct display_info_t const *di);
 int board_detect_pca9546_sn65(struct display_info_t const *di);
+int board_detect_pca9546_sn65_x73(struct display_info_t const *di);
 int board_detect_pca9546_2(struct display_info_t const *di);
+int board_detect_pca9546_2_x73(struct display_info_t const *di);
 int board_detect_gt911_common(struct display_info_t const *di,
 	int sub_bus, int sub_bus2, int gp_reset, int gp_irq);
 int board_detect_gt911_sn65_common(struct display_info_t const *di,
