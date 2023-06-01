@@ -106,7 +106,7 @@ fi
 echo Generating IVT header for FIT...
 printf -v IVTADDRESS '%#x' "$((FIT_START_ADDR + IVTOFFSET))"
 printf -v CSFADDRESS '%#x' "$((IVTADDRESS + IVTSIZE))"
-cp doc/imx/habv4/csf_examples/mx8m_mx8mm/template_genIVT.txt genIVT.pl
+cp $SCRIPT_PATH/doc/imx/habv4/csf_examples/mx8m_mx8mm/template_genIVT.txt genIVT.pl
 sed -i "s|_LOADADDR_|$FIT_START_ADDR|g" genIVT.pl
 sed -i "s|_IVTADDRESS_|$IVTADDRESS|g" genIVT.pl
 sed -i "s|_CSFADDRESS_|$CSFADDRESS|g" genIVT.pl
