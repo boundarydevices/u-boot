@@ -42,6 +42,12 @@ static int detect_common(struct display_info_t const *di, int sub_bus,
 	if (gp_irq)
 		req_irq = gpio_request(gp_irq, "ts_irq");
 #endif
+
+	if (sub_bus && !(sub_bus >> 8))
+		sub_bus |= 0x7000;
+	if (sub_bus2 && !(sub_bus2 >> 8))
+		sub_bus2 |= 0x7000;
+
 	if (gp_reset) {
 		gpio_direction_output(gp_reset, 0);
 		debug("%s: assert reset gpio%d\n", __func__, gp_reset);
@@ -77,18 +83,19 @@ static int detect_common(struct display_info_t const *di, int sub_bus,
 		printf("%s: Can't find bus %d\n", __func__, di->bus_num & 0xf);
 	} else {
 		ops = i2c_get_ops(bus);
-		msg.addr = 0x70;
 		msg.flags = 0;
 		msg.len = 1;
 		msg.buf = buf;
 		if (sub_bus) {
-			buf[0] = sub_bus;
+			msg.addr = sub_bus >> 8;
+			buf[0] = sub_bus & 0xff;
 			ret = ops->xfer(bus, &msg, 1);
 			debug("%s: sub_bus=0x%x ret=%d\n", __func__, sub_bus, ret);
 		}
 		/* write control register, select sub bus */
 		if (!ret && sub_bus2) {
-			buf[0] = sub_bus2;
+			msg.addr = sub_bus2 >> 8;
+			buf[0] = sub_bus2 & 0xff;
 			ret = ops->xfer(bus, &msg, 1);
 			debug("%s: sub_bus2=0x%x ret=%d\n", __func__, sub_bus2, ret);
 		}
@@ -137,9 +144,9 @@ static int detect_common(struct display_info_t const *di, int sub_bus,
 	ret = i2c_set_bus_num(di->bus_num & 0x0f);
 	/* write control register, select sub bus */
 	if (!ret && sub_bus)
-		ret = i2c_write(0x70, sub_bus, 1, NULL, 0);
+		ret = i2c_write(sub_bus >> 8, sub_bus & 0xff, 1, NULL, 0);
 	if (!ret && sub_bus2)
-		ret = i2c_write(0x70, sub_bus2, 1, NULL, 0);
+		ret = i2c_write(sub_bus2 >> 8, sub_bus2 & 0xff, 1, NULL, 0);
 	if (!ret)
 		ret = i2c_probe(di->addr_num);
 
@@ -188,6 +195,13 @@ int board_detect_lcd133(struct display_info_t const *di)
 	return detect_common(di, 1 << (di->bus_num >> 4), 0, 0, 0xf, 1, 0xf, 0, 0, 0);
 }
 
+int board_detect_lcd133_x73(struct display_info_t const *di)
+{
+	/* 0 - 0xf : VPOS 5.5V output */
+	/* 1 - 0xf : VNEG -5.5V output */
+	return detect_common(di, (1 << (di->bus_num >> 4)) | 0x7300, 0, 0, 0xf, 1, 0xf, 0, 0, 0);
+}
+
 /* pca9540 mux */
 int board_detect_pca9540(struct display_info_t const *di)
 {
@@ -198,6 +212,11 @@ int board_detect_pca9540(struct display_info_t const *di)
 int board_detect_pca9546(struct display_info_t const *di)
 {
 	return detect_common(di, 1 << (di->bus_num >> 4), 0, -1, 0x0, -1, 0x0, 0, 0, 0);
+}
+
+int board_detect_pca9546_x73(struct display_info_t const *di)
+{
+	return detect_common(di, (1 << (di->bus_num >> 4)) | 0x7300, 0, -1, 0x0, -1, 0x0, 0, 0, 0);
 }
 
 int board_detect_sn65_and_ts(struct display_info_t const *di)
@@ -211,9 +230,19 @@ int board_detect_pca9546_sn65(struct display_info_t const *di)
 	return detect_common(di, 1 << (di->bus_num >> 4), 0, -1, 0x0, -1, 0x0, 0, 0, 0x2c);
 }
 
+int board_detect_pca9546_sn65_x73(struct display_info_t const *di)
+{
+	return detect_common(di, (1 << (di->bus_num >> 4)) | 0x7300, 0, -1, 0x0, -1, 0x0, 0, 0, 0x2c);
+}
+
 int board_detect_pca9546_2(struct display_info_t const *di)
 {
 	return detect_common(di, 1 << (di->bus_num >> 4), 8, -1, 0x0, -1, 0x0, 0, 0, 0);
+}
+
+int board_detect_pca9546_2_x73(struct display_info_t const *di)
+{
+	return detect_common(di, (1 << (di->bus_num >> 4)) | 0x7300, 8, -1, 0x0, -1, 0x0, 0, 0, 0);
 }
 
 int board_detect_gt911_common(struct display_info_t const *di, int sub_bus, int sub_bus2, int gp_reset, int gp_irq)
