@@ -52,14 +52,13 @@
 #define ENET2_BASE_ADDR		EQOS_BASE_ADDR
 #endif
 
-#ifdef CONFIG_PHY_ATHEROS
-
 #ifdef CONFIG_FEC_RESET_PULLUP
 #define RESET_PINCTRL	WEAK_PULLUP_OUTPUT
 #else
 #define RESET_PINCTRL	WEAK_PULLDN_OUTPUT
 #endif
 
+#ifdef CONFIG_PHY_ATHEROS
 #ifdef CONFIG_FEC_ENET1
 static const iomux_v3_cfg_t enet_ar8035_gpio_pads[] = {
 #if GP_RGMII_PHY_RESET == IMX_GPIO_NR(5, 8)
