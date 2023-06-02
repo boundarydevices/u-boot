@@ -75,9 +75,9 @@ static u32 get_pixclock(struct clk *pll, unsigned long pixclock)
 	int ret;
 
 	video_pll = pixclock;
-	/* Video pll must be from 500MHz to 2000 MHz */
-	if (video_pll < 500000000) {
-		int n = (500000000 + video_pll - 1) / video_pll;
+	/* Video pll must be from 580MHz to 2000 MHz */
+	if (video_pll < 580000000) {
+		int n = (580000000 + video_pll - 1) / video_pll;
 		int bit;
 
 		do {
