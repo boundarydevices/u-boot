@@ -475,7 +475,7 @@
 		regulator-type = "voltage";
 		regulator-boot-on;
 		regulator-always-on;
-		gpio = GP_USDHC2_VSEL;
+		gpios = GP_USDHC2_VSEL;
 		states = <1800000 0x1
 			  3300000 0x0>;
 	};
