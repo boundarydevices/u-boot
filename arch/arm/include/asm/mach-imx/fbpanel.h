@@ -59,6 +59,24 @@ enum alias_names {
 	FBP_BACKLIGHT_MIPI2,
 };
 
+/* keep beginning of structure synced with fb_videomode, memcpy is used */
+struct fb_videomode_f {
+        const char *name;       /* optional */
+        u32 refresh;            /* optional */
+        u32 xres;
+        u32 yres;
+        u32 pixclock_f;
+        u32 left_margin;
+        u32 right_margin;
+        u32 upper_margin;
+        u32 lower_margin;
+        u32 hsync_len;
+        u32 vsync_len;
+        u32 sync;
+        u32 vmode;
+        u32 flag;
+};
+
 struct display_info_t {
 	union {
 		u64	bus;
@@ -159,6 +177,7 @@ struct display_info_t {
 #define FBF_COM35H3R04ULY	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_SYNC_PULSE | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_PINCTRL | FBF_ENABLE_GPIOS_DTB)
 #define FBF_LCD133_070		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_PINCTRL | FBF_ENABLE_GPIOS_DTB)
 #define FBF_TCXD070		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_PINCTRL | FBF_BKLIT_EN_DTB | FBF_ENABLE_GPIOS_DTB)
+#define FBF_ET055FH06		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_PINCTRL | FBF_BKLIT_EN_DTB | FBF_ENABLE_GPIOS_DTB)
 #define FBF_ZWT055AZH		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4 | FBF_PINCTRL | FBF_BKLIT_EN_DTB | FBF_ENABLE_GPIOS_DTB)
 #define FBF_MIPI_TO_HDMI	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_DSI_LANES_4)
 #define FBF_VTFT101		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_DSI_LANES_4)
@@ -177,7 +196,7 @@ struct display_info_t {
 
 	unsigned fbflags;
 	unsigned char enable_alias[2];
-	struct	fb_videomode mode;
+	struct	fb_videomode_f mode;
 };
 int ipu_set_ldb_clock(int rate);
 
@@ -221,6 +240,7 @@ void fbp_setup_env_cmds(void);
 #define VD_MIPI_MQ_VTFT101RPFT20_3(_mode, args...) VDF_MIPI_VTFT101RPFT20(_mode, "vtft101rpft20-3", RGB24, FBF_MQ_VTFT101, args)
 #define VD_MIPI_TCXD070IBLMAT77(_mode, args...) VDF_MIPI_TCXD070IBLMAT77(_mode, "tcxd070iblmat77", RGB24, FBF_TCXD070, args)
 #define VD_MIPI_ZWT055AZH(_mode, args...)	VDF_MIPI_ZWT055AZH(_mode, "zwt055azh", RGB24, FBF_ZWT055AZH, args)
+#define VD_MIPI_ET055FH06(_mode, args...)	VDF_MIPI_ET055FH06(_mode, "et055fh06", RGB24, FBF_ET055FH06, args)
 
 #define VD_MIPI_MQ_1920_1080M_60(_mode, args...) VDF_1920_1080M_60(_mode, "dsi-mq1920x1080M@60", RGB24, FBF_MIPI_MQ_TO_HDMI, args)
 #define VD_MIPI_MQ_1280_800M_60(_mode, args...) VDF_1280_800M_60(_mode, "dsi-mq1280x800M@60", RGB24, FBF_MIPI_MQ_TO_HDMI, args)
@@ -362,6 +382,8 @@ void fbp_setup_env_cmds(void);
 	.fbflags = _flags, \
 	.enable_alias = {args} \
 
+#define _to_freq(period)	(1000000000000ULL/period)
+
 /* hdmi settings */
 #define VDF_1280_800M_60(_mode, _name, _fmt, _flags, args...) \
 {\
@@ -371,7 +393,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 1280,\
 		.yres           = 800,\
-		.pixclock       = 1000000000000ULL/((1280+8+64+8)*(800+2+39+1)*60),\
+		.pixclock_f	= ((1280+8+64+8)*(800+2+39+1)*60),\
 		.left_margin    = 8,\
 		.right_margin   = 64,\
 		.upper_margin   = 2,\
@@ -391,7 +413,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 1280,\
 		.yres           = 720,\
-		.pixclock       = 1000000000000ULL/((1280+216+72+80)*(720+22+3+5)*60),\
+		.pixclock_f	= ((1280+216+72+80)*(720+22+3+5)*60),\
 		.left_margin    = 220,\
 		.right_margin   = 110,\
 		.upper_margin   = 20,\
@@ -411,7 +433,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 1920,\
 		.yres           = 1080,\
-		.pixclock       = 1000000000000ULL/((1920+148+88+44)*(1080+36+4+5)*60),\
+		.pixclock_f	= ((1920+148+88+44)*(1080+36+4+5)*60),\
 		.left_margin    = 148,\
 		.right_margin   = 88,\
 		.upper_margin   = 36,\
@@ -431,7 +453,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 800,\
 		.yres           = 480,\
-		.pixclock       = 1000000000000ULL/((800+30+110+10)*(480+8+8+4)*60),\
+		.pixclock_f	= ((800+30+110+10)*(480+8+8+4)*60),\
 		.left_margin    = 30,\
 		.right_margin   = 110,\
 		.upper_margin   = 8,\
@@ -451,13 +473,34 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 1280,\
 		.yres           = 800,\
-		.pixclock       = 1000000000000ULL/((1280+16+16+16)*(800+8+2+2)*60),\
+		.pixclock_f	= ((1280+16+16+16)*(800+8+2+2)*60),\
 		.left_margin    = 16,\
 		.right_margin   = 16,\
 		.upper_margin   = 8,\
 		.lower_margin   = 2,\
 		.hsync_len      = 16,\
 		.vsync_len      = 2,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
+/* HX8398 mipi controller */
+#define VDF_MIPI_ET055FH06(_mode, _name, _fmt, _flags, args...) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, args),\
+	.mode	= {\
+		.name           = _name,\
+		.refresh        = 60,\
+		.xres           = 1080,\
+		.yres           = 1920,\
+		.pixclock_f	= 146250000 /* ((1080+60+90+20)*(1920+3+9+4)*60) */, \
+		.left_margin    = 60,\
+		.right_margin   = 90,\
+		.upper_margin   = 3,\
+		.lower_margin   = 9,\
+		.hsync_len      = 20,\
+		.vsync_len      = 4,\
 		.sync           = FB_SYNC_EXT,\
 		.vmode          = FB_VMODE_NONINTERLACED\
 	}\
@@ -472,7 +515,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 1088,\
 		.yres           = 1920,\
-		.pixclock       = 1000000000000ULL/((1088+60+90+20)*(1920+3+9+4)*60), \
+		.pixclock_f	= ((1088+60+90+20)*(1920+3+9+4)*60), \
 		.left_margin    = 60,\
 		.right_margin   = 90,\
 		.upper_margin   = 3,\
@@ -493,7 +536,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 800,\
 		.yres           = 1280,\
-		.pixclock       = 1000000000000ULL/((800+100+20+33)*(1280+30+20+2)*60),\
+		.pixclock_f	= ((800+100+20+33)*(1280+30+20+2)*60),\
 		.left_margin	= 100,\
 		.right_margin	= 20,\
 		.upper_margin	= 30,\
@@ -513,7 +556,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 1024,\
 		.yres           = 768,\
-		.pixclock       = 1000000000000ULL/((1024+220+40+60)*(768+21+7+10)*60),\
+		.pixclock_f	= ((1024+220+40+60)*(768+21+7+10)*60),\
 		.left_margin    = 220,\
 		.right_margin   = 40,\
 		.upper_margin   = 21,\
@@ -533,7 +576,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 800,\
 		.yres           = 600,\
-		.pixclock       = 1000000000000ULL/((800+88+40+128)*(600+23+2+3)*60),\
+		.pixclock_f	= ((800+88+40+128)*(600+23+2+3)*60),\
 		.left_margin    = 88,\
 		.right_margin   = 40,\
 		.upper_margin   = 23,\
@@ -553,7 +596,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 640,\
 		.yres           = 480,\
-		.pixclock       = 1000000000000ULL/((640+48+16+96)*(480+33+10+2)*60),\
+		.pixclock_f	= ((640+48+16+96)*(480+33+10+2)*60),\
 		.left_margin    = 48,\
 		.right_margin   = 16,\
 		.upper_margin   = 33,\
@@ -573,7 +616,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 720,\
 		.yres           = 480,\
-		.pixclock       = 1000000000000ULL/((720+60+16+62)*(480+30+9+6)*60),\
+		.pixclock_f	= ((720+60+16+62)*(480+30+9+6)*60),\
 		.left_margin    = 60,\
 		.right_margin   = 16,\
 		.upper_margin   = 30,\
@@ -594,7 +637,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 57,\
 		.xres           = 800,\
 		.yres           = 480,\
-		.pixclock       = 37037,\
+		.pixclock_f	= _to_freq(37037),\
 		.left_margin    = 40,\
 		.right_margin   = 60,\
 		.upper_margin   = 10,\
@@ -616,7 +659,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 800,\
 		.yres           = 480,\
-		.pixclock       = 1000000000000ULL/((800+40+40+48)*(480+31+11+3)*60),\
+		.pixclock_f	= ((800+40+40+48)*(480+31+11+3)*60),\
 		.left_margin    = 40,\
 		.right_margin   = 40,\
 		.upper_margin   = 31,\
@@ -636,7 +679,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 800,\
 		.yres           = 480,\
-		.pixclock       = 1000000000000ULL/((800+40+40+48)*(480+29+13+3)*60),\
+		.pixclock_f	= ((800+40+40+48)*(480+29+13+3)*60),\
 		.left_margin    = 40,\
 		.right_margin   = 40,\
 		.upper_margin   = 29,\
@@ -663,7 +706,7 @@ void fbp_setup_env_cmds(void);
 		.refresh	= 60,\
 		.xres		= 800,\
 		.yres		= 300,\
-		.pixclock	= 1000000000000ULL / (800+50+1+110) / (300+8+3+1) / 60,\
+		.pixclock_f	= (800+50+1+110)*(300+8+3+1)*60,\
 		.left_margin	= 50,\
 		.right_margin	= 1,\
 		.upper_margin	= 8,\
@@ -683,7 +726,7 @@ void fbp_setup_env_cmds(void);
 		.refresh	= 60,\
 		.xres		= 640,\
 		.yres		= 960,\
-		.pixclock	= 1000000000000ULL / 46000000,\
+		.pixclock_f	= 46000000,\
 		.left_margin	= 35,\
 		.right_margin	= 45,\
 		.upper_margin	= 21,\
@@ -709,7 +752,7 @@ void fbp_setup_env_cmds(void);
 		.refresh	= 60,\
 		.xres		= 640,\
 		.yres		= 240,\
-		.pixclock	= 1000000000000ULL / (640+34+1+125) / (240+8+3+9) / 60,\
+		.pixclock_f	= (640+34+1+125)*(240+8+3+9)*60,\
 		.left_margin	= 34,\
 		.right_margin	= 1,\
 		.upper_margin	= 8,\
@@ -729,7 +772,7 @@ void fbp_setup_env_cmds(void);
 		.refresh	= 60,\
 		.xres		= 640,\
 		.yres		= 240,\
-		.pixclock	= 1000000000000ULL / (640+34+1+125) / (240+8+3+9) / 60,\
+		.pixclock_f	= (640+34+1+125)*(240+8+3+9)*60,\
 		.left_margin	= 34,\
 		.right_margin	= 1,\
 		.upper_margin	= 8,\
@@ -750,7 +793,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 800,\
 		.yres           = 480,\
-		.pixclock       = 33898,\
+		.pixclock_f	= _to_freq(33898),\
 		.left_margin    = 96,\
 		.right_margin   = 24,\
 		.upper_margin   = 3,\
@@ -772,7 +815,7 @@ void fbp_setup_env_cmds(void);
 		.refresh	= 60,\
 		.xres		= 1366,\
 		.yres		= 768,\
-		.pixclock	= 1000000000000ULL / (1366+108+108+10) / (768+8+8+16) / 60,\
+		.pixclock_f	= (1366+108+108+10)*(768+8+8+16)*60,\
 		.left_margin	= 108,\
 		.right_margin	= 108,\
 		.upper_margin	= 8,\
@@ -793,7 +836,7 @@ void fbp_setup_env_cmds(void);
 		.refresh	= 60,\
 		.xres		= 1366,\
 		.yres		= 768,\
-		.pixclock	= 1000000000000ULL / (1366+67+67+100) / (768+10+10+6) / 60,\
+		.pixclock_f	= (1366+67+67+100)*(768+10+10+6)*60,\
 		.left_margin	= 67,\
 		.right_margin	= 67,\
 		.upper_margin	= 10,\
@@ -814,7 +857,7 @@ void fbp_setup_env_cmds(void);
 		.refresh	= 60,\
 		.xres		= 1024,\
 		.yres		= 600,\
-		.pixclock	= 1000000000000ULL / (1024+45+210+1) / (600+22+132+1) / 60,\
+		.pixclock_f	= (1024+45+210+1)*(600+22+132+1)*60,\
 		.left_margin	= 45,\
 		.right_margin	= 210,\
 		.upper_margin	= 22,\
@@ -835,7 +878,7 @@ void fbp_setup_env_cmds(void);
 		.refresh	= 60,\
 		.xres		= 800,\
 		.yres		= 480,\
-		.pixclock	= 1000000000000ULL / (800+45+16+1) / (480+22+125+1) / 60,\
+		.pixclock_f	= (800+45+16+1)*(480+22+125+1)*60,\
 		.left_margin	= 45,\
 		.right_margin	= 16,\
 		.upper_margin	= 22,\
@@ -855,7 +898,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 57,\
 		.xres           = 480,\
 		.yres           = 800,\
-		.pixclock       = 37037,\
+		.pixclock_f	= _to_freq(37037),\
 		.left_margin    = 40,\
 		.right_margin   = 60,\
 		.upper_margin   = 10,\
@@ -875,7 +918,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 480,\
 		.yres           = 800,\
-		.pixclock       = 1000000000000ULL/28875000, /*((480+60+10+20)*(800+10+10+10)*60),*/\
+		.pixclock_f	= 28875000, /*((480+60+10+20)*(800+10+10+10)*60),*/\
 		.left_margin    = 40,\
 		.right_margin   = 60,\
 		.upper_margin   = 10,\
@@ -895,7 +938,7 @@ void fbp_setup_env_cmds(void);
 		.refresh	= 57,\
 		.xres		= 480,\
 		.yres		= 272,\
-		.pixclock	= 97786,\
+		.pixclock_f	= _to_freq(97786),\
 		.left_margin	= 2,\
 		.right_margin	= 1,\
 		.upper_margin	= 3,\
@@ -915,7 +958,7 @@ void fbp_setup_env_cmds(void);
 		.refresh	= 57,\
 		.xres		= 480,\
 		.yres		= 272,\
-		.pixclock	= 97786,\
+		.pixclock_f	= _to_freq(97786),\
 		.left_margin	= 2,\
 		.right_margin	= 1,\
 		.upper_margin	= 3,\
@@ -935,7 +978,7 @@ void fbp_setup_env_cmds(void);
 		.refresh	= 60,\
 		.xres		= 480,\
 		.yres		= 272,\
-		.pixclock	= 1000000000000ULL/((480+40+4+4)*(272+8+8+1)*60),\
+		.pixclock_f	= ((480+40+4+4)*(272+8+8+1)*60),\
 		.left_margin	= 40,\
 		.right_margin	= 4,\
 		.upper_margin	= 8,\
@@ -955,7 +998,7 @@ void fbp_setup_env_cmds(void);
 		.refresh	= 60,\
 		.xres		= 480,\
 		.yres		= 854,\
-		.pixclock	= 1000000000000ULL/32000000,\
+		.pixclock_f	= 32000000,\
 		.left_margin	= 8,\
 		.right_margin	= 64,\
 		.upper_margin	= 20,\
@@ -975,7 +1018,7 @@ void fbp_setup_env_cmds(void);
 		.refresh	= 60,\
 		.xres		= 1080,\
 		.yres		= 1920,\
-		.pixclock	= 1000000000000ULL/((1080+16+16+8)*(1920+20+10+8)*60),\
+		.pixclock_f	= ((1080+16+16+8)*(1920+20+10+8)*60),\
 		.left_margin	= 16,\
 		.right_margin	= 16,\
 		.upper_margin	= 20,\
@@ -995,7 +1038,7 @@ void fbp_setup_env_cmds(void);
 		.refresh	= 60,\
 		.xres		= 800,\
 		.yres		= 480,\
-		.pixclock	= 1000000000000ULL/((800+46+158+40)*(480+23+22+1)*60),\
+		.pixclock_f	= ((800+46+158+40)*(480+23+22+1)*60),\
 		.left_margin	= 46,\
 		.right_margin	= 158,\
 		.upper_margin	= 23,\
@@ -1015,7 +1058,7 @@ void fbp_setup_env_cmds(void);
 		.refresh	= 60,\
 		.xres		= 480,\
 		.yres		= 272,\
-		.pixclock	= 1000000000000ULL/13000000,\
+		.pixclock_f	= 13000000,\
 		.left_margin	= 40,\
 		.right_margin	= 4,\
 		.upper_margin	= 8,\
@@ -1036,7 +1079,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 320,\
 		.yres           = 240,\
-		.pixclock       = 1000000000000ULL/((320+38+37+30)*(240+16+15+3)*60),\
+		.pixclock_f	= ((320+38+37+30)*(240+16+15+3)*60),\
 		.left_margin    = 38,\
 		.right_margin   = 37,\
 		.upper_margin   = 16,\
@@ -1056,7 +1099,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 320,\
 		.yres           = 240,\
-		.pixclock       = 1000000000000ULL/((320+16+20+52)*(240+16+4+2)*60),\
+		.pixclock_f	= ((320+16+20+52)*(240+16+4+2)*60),\
 		.left_margin    = 16,\
 		.right_margin   = 20,\
 		.upper_margin   = 16,\
@@ -1077,7 +1120,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 320,\
 		.yres           = 240,\
-		.pixclock       = 1000000000000ULL/((320+40+18+30)*(240+10+9+3)*60),\
+		.pixclock_f	= ((320+40+18+30)*(240+10+9+3)*60),\
 		.left_margin    = 40,\
 		.right_margin   = 18,\
 		.upper_margin   = 10,\
@@ -1097,7 +1140,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 320,\
 		.yres           = 240,\
-		.pixclock       = 1000000000000ULL/((320+40+18+30)*(240+10+9+3)*60),\
+		.pixclock_f	= ((320+40+18+30)*(240+10+9+3)*60),\
 		.left_margin    = 40,\
 		.right_margin   = 18,\
 		.upper_margin   = 10,\
@@ -1118,7 +1161,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 320,\
 		.yres           = 240,\
-		.pixclock       = 1000000000000ULL/((320+64+20+4)*(240+16+4+2)*60),\
+		.pixclock_f	= ((320+64+20+4)*(240+16+4+2)*60),\
 		.left_margin    = 64,\
 		.right_margin   = 20,\
 		.upper_margin   = 16,\
@@ -1138,7 +1181,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 320,\
 		.yres           = 240,\
-		.pixclock       = 1000000000000ULL/((320+69+18+1)*(240+12+10+1)*60),\
+		.pixclock_f	= ((320+69+18+1)*(240+12+10+1)*60),\
 		.left_margin    = 69,\
 		.right_margin   = 18,\
 		.upper_margin   = 12,\
@@ -1159,7 +1202,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 1024,\
 		.yres           = 600,\
-		.pixclock       = 1000000000000ULL/((1024+220+40+60)*(600+21+7+10)*60),\
+		.pixclock_f	= ((1024+220+40+60)*(600+21+7+10)*60),\
 		.left_margin    = 220,\
 		.right_margin   = 40,\
 		.upper_margin   = 21,\
@@ -1180,7 +1223,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 1024,\
 		.yres           = 600,\
-		.pixclock       = 1000000000000ULL/((1024+160+80+80)*(600+19+8+8)*60),\
+		.pixclock_f	= ((1024+160+80+80)*(600+19+8+8)*60),\
 		.left_margin    = 160,\
 		.right_margin   = 80,\
 		.upper_margin   = 19,\
@@ -1201,7 +1244,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 1280,\
 		.yres           = 800,\
-		.pixclock       = 1000000000000ULL/((1280+5+64+1)*(800+2+40+1)*60),\
+		.pixclock_f	= ((1280+5+64+1)*(800+2+40+1)*60),\
 		.left_margin    = 5,\
 		.right_margin   = 64,\
 		.upper_margin   = 2,\
@@ -1230,7 +1273,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 1280,\
 		.yres           = 800,\
-		.pixclock       = 1000000000000ULL/71700000,\
+		.pixclock_f	= 71700000,\
 		.left_margin    = 5,\
 		.right_margin   = 151,\
 		.upper_margin   = 2,\
@@ -1252,7 +1295,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 1280,\
 		.yres           = 800,\
-		.pixclock       = 1000000000000ULL/74250000,\
+		.pixclock_f	= 74250000,\
 		.left_margin    = 5,\
 		.right_margin   = 67,\
 		.upper_margin   = 2,\
@@ -1272,7 +1315,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 1280,\
 		.yres           = 800,\
-		.pixclock       = 1000000000000ULL/((1280+64+48+16)*(800+8+6+2)*60),\
+		.pixclock_f	= ((1280+64+48+16)*(800+8+6+2)*60),\
 		.left_margin    = 64,\
 		.right_margin   = 48,\
 		.upper_margin   = 8,\
@@ -1292,7 +1335,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 1280,\
 		.yres           = 800,\
-		.pixclock       = 1000000000000ULL/((1280+48+48+32)*(800+8+2+6)*60),\
+		.pixclock_f	= ((1280+48+48+32)*(800+8+2+6)*60),\
 		.left_margin    = 48,\
 		.right_margin   = 48,\
 		.upper_margin   = 8,\
@@ -1312,7 +1355,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 1280,\
 		.yres           = 800,\
-		.pixclock       = 1000000000000ULL/((1280+80+48+32)*(800+15+2+21)*60),\
+		.pixclock_f	= ((1280+80+48+32)*(800+15+2+21)*60),\
 		.left_margin    = 80,\
 		.right_margin   = 48,\
 		.upper_margin   = 15,\
@@ -1335,7 +1378,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 1280,\
 		.yres           = 800,\
-		.pixclock       = 1000000000000ULL/((1280+80+48+32)*(800+15+2+6)*60),\
+		.pixclock_f	= ((1280+80+48+32)*(800+15+2+6)*60),\
 		.left_margin    = 80,\
 		.right_margin   = 48,\
 		.upper_margin   = 15,\
@@ -1356,7 +1399,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 1024,\
 		.yres           = 600,\
-		.pixclock       = 1000000000000ULL/((1024+220+40+60)*(600+21+4+10)*60),\
+		.pixclock_f	= ((1024+220+40+60)*(600+21+4+10)*60),\
 		.left_margin    = 220,\
 		.right_margin   = 40,\
 		.upper_margin   = 21,\
@@ -1376,7 +1419,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 1024,\
 		.yres           = 600,\
-		.pixclock       = 1000000000000ULL/((1024+140+160+20)*(600+20+12+3)*60),\
+		.pixclock_f	= ((1024+140+160+20)*(600+20+12+3)*60),\
 		.left_margin    = 140,\
 		.right_margin   = 160,\
 		.upper_margin   = 20,\
@@ -1397,7 +1440,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 1024,\
 		.yres           = 600,\
-		.pixclock       = 1000000000000ULL/((1024+220+40+60)*(600+21+7+10)*60),\
+		.pixclock_f	= ((1024+220+40+60)*(600+21+7+10)*60),\
 		.left_margin    = 220,\
 		.right_margin   = 40,\
 		.upper_margin   = 21,\
@@ -1419,7 +1462,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 800,\
 		.yres           = 480,\
-		.pixclock       = 1000000000000ULL / (800+88+40+48) / (480+32+13+3) / 60,\
+		.pixclock_f	= (800+88+40+48)*(480+32+13+3)*60,\
 		.left_margin    = 88,\
 		.right_margin   = 40,\
 		.upper_margin   = 32,\
@@ -1440,7 +1483,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 800,\
 		.yres           = 480,\
-		.pixclock       = 1000000000000ULL/((800+96+24+136)*(480+31+11+3)*60),\
+		.pixclock_f	= ((800+96+24+136)*(480+31+11+3)*60),\
 		.left_margin    = 96,\
 		.right_margin   = 24,\
 		.upper_margin   = 31,\
@@ -1461,7 +1504,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 1024,\
 		.yres           = 768,\
-		.pixclock       = 1000000000000ULL/((1024+220+40+60)*(768+21+7+10)*60),\
+		.pixclock_f	= ((1024+220+40+60)*(768+21+7+10)*60),\
 		.left_margin    = 220,\
 		.right_margin   = 40,\
 		.upper_margin   = 21,\
@@ -1482,7 +1525,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 1024,\
 		.yres           = 768,\
-		.pixclock       = 1000000000000ULL/((1024+160+80+80)*(768+22+8+8)*60),\
+		.pixclock_f	= ((1024+160+80+80)*(768+22+8+8)*60),\
 		.left_margin    = 160,\
 		.right_margin   = 80,\
 		.upper_margin   = 22,\
@@ -1502,7 +1545,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 1024,\
 		.yres           = 600,\
-		.pixclock       = 20408,\
+		.pixclock_f	= _to_freq(20408),\
 		.left_margin    = 144,\
 		.right_margin   = 40,\
 		.upper_margin   = 3,\
@@ -1522,7 +1565,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 1024,\
 		.yres           = 600,\
-		.pixclock       = 1000000000000ULL/((1024+160+80+80)*(600+19+8+8)*60),\
+		.pixclock_f	= ((1024+160+80+80)*(600+19+8+8)*60),\
 		.left_margin    = 160,\
 		.right_margin   = 80,\
 		.upper_margin   = 19,\
@@ -1543,7 +1586,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 1024,\
 		.yres           = 768,\
-		.pixclock       = 1000000000000ULL/((1024+480+260+250)*(768+16+6+10)*60),\
+		.pixclock_f	= ((1024+480+260+250)*(768+16+6+10)*60),\
 		.left_margin    = 480,\
 		.right_margin   = 260,\
 		.upper_margin   = 16,\
@@ -1563,7 +1606,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 1920,\
 		.yres           = 1080,\
-		.pixclock       = 1000000000000ULL/((1920+148+88+44)*(1080+36+4+5)*60),\
+		.pixclock_f	= ((1920+148+88+44)*(1080+36+4+5)*60),\
 		.left_margin    = 148,\
 		.right_margin   = 88,\
 		.upper_margin   = 36,\
@@ -1583,7 +1626,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 1920,\
 		.yres           = 1080, /* really 132 */\
-		.pixclock       = 1000000000000ULL/((1920+120+120+40)*(1080+22+22+1)*60),\
+		.pixclock_f	= ((1920+120+120+40)*(1080+22+22+1)*60),\
 		.left_margin    = 120,\
 		.right_margin   = 120,\
 		.upper_margin   = 22,\
@@ -1603,7 +1646,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 1280,\
 		.yres           = 1024, \
-		.pixclock       = 1000000000000ULL/108000000 /* ((1280+200+200+8)*(1024+16+16+8)*60) */, \
+		.pixclock_f	= 108000000 /* ((1280+200+200+8)*(1024+16+16+8)*60) */, \
 		.left_margin    = 200,\
 		.right_margin   = 200,\
 		.upper_margin   = 16,\
@@ -1623,7 +1666,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 50,\
 		.xres           = 1920,\
 		.yres           = 1080, \
-		.pixclock       = 1000000000000ULL/((1920+16+192+16)*(1080+3+26+1)*50),\
+		.pixclock_f	= ((1920+16+192+16)*(1080+3+26+1)*50),\
 		.left_margin    = 16,\
 		.right_margin   = 192,\
 		.upper_margin   = 3,\
@@ -1643,7 +1686,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 1280,\
 		.yres           = 800,\
-		.pixclock       = 1000000000000ULL/((1280+20+20+10)*(800+4+4+4)*60),\
+		.pixclock_f	= ((1280+20+20+10)*(800+4+4+4)*60),\
 		.left_margin    = 20,\
 		.right_margin   = 20,\
 		.upper_margin   = 4,\
@@ -1663,7 +1706,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 1280,\
 		.yres           = 800,\
-		.pixclock       = 1000000000000ULL/((1280+40+40+10)*(800+3+80+10)*60),\
+		.pixclock_f	= ((1280+40+40+10)*(800+3+80+10)*60),\
 		.left_margin    = 40,\
 		.right_margin   = 40,\
 		.upper_margin   = 3,\
@@ -1683,7 +1726,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 1088,\
 		.yres           = 1920,\
-		.pixclock       = 1000000000000ULL/((1088+50+102+10)*(1920+4+4+2)*60), \
+		.pixclock_f	= ((1088+50+102+10)*(1920+4+4+2)*60), \
 		.left_margin    = 50,\
 		.right_margin   = 102,\
 		.upper_margin   = 4,\
@@ -1703,7 +1746,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 480,\
 		.yres           = 1280,\
-		.pixclock       = 1000000000000ULL/((480+160+160+24)*(1280+10+12+2)*60), \
+		.pixclock_f	= ((480+160+160+24)*(1280+10+12+2)*60), \
 		.left_margin    = 160,\
 		.right_margin   = 160,\
 		.upper_margin   = 10,\
@@ -1723,7 +1766,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 480,\
 		.yres           = 1280,\
-		.pixclock       = 1000000000000ULL/((480+160+160+24)*(1280+10+12+2)*70), \
+		.pixclock_f	= ((480+160+160+24)*(1280+10+12+2)*70), \
 		.left_margin    = 160,\
 		.right_margin   = 160,\
 		.upper_margin   = 10,\
@@ -1744,7 +1787,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 600,\
 		.yres           = 1280,\
-		.pixclock       = 1000000000000ULL/((600+50+50+4)*(1280+16+16+4)*60), \
+		.pixclock_f	= ((600+50+50+4)*(1280+16+16+4)*60), \
 		.left_margin    = 50,\
 		.right_margin   = 50,\
 		.upper_margin   = 16,\
@@ -1764,7 +1807,7 @@ void fbp_setup_env_cmds(void);
 		.refresh	= 60,\
 		.xres		= 480,\
 		.yres		= 1280,\
-		.pixclock	= 1000000000000ULL/((480+50+50+4)*(1280+16+16+4)*60), \
+		.pixclock_f	= ((480+50+50+4)*(1280+16+16+4)*60), \
 		.left_margin	= 48,\
 		.right_margin	= 48,\
 		.upper_margin	= 16,\
@@ -1784,7 +1827,7 @@ void fbp_setup_env_cmds(void);
 		.refresh	= 60,\
 		.xres		= 480,\
 		.yres		= 1280,\
-		.pixclock	= 1000000000000ULL/((480+28+24+4)*(1280+8+16+2)*60), \
+		.pixclock_f	= ((480+28+24+4)*(1280+8+16+2)*60), \
 		.left_margin	= 28,\
 		.right_margin	= 24,\
 		.upper_margin	= 8,\
@@ -1806,7 +1849,7 @@ void fbp_setup_env_cmds(void);
 		.refresh	= 60,\
 		.xres		= 640,\
 		.yres		= 960,\
-		.pixclock	= 1000000000000ULL / (640+60+40+4) / (960+16+13+1) / 60,\
+		.pixclock_f	= (640+60+40+4)*(960+16+13+1)*60,\
 		.left_margin	= 60,\
 		.right_margin	= 40,\
 		.upper_margin	= 16,\
@@ -1827,7 +1870,7 @@ void fbp_setup_env_cmds(void);
 		.refresh	= 60,\
 		.xres		= 720,\
 		.yres		= 1280,\
-		.pixclock	= 1000000000000ULL / (720+100+100+33) / (1280+30+20+2) / 60,\
+		.pixclock_f	= (720+100+100+33)*(1280+30+20+2)*60,\
 		.left_margin	= 100,\
 		.right_margin	= 100,\
 		.upper_margin	= 30,\
@@ -1849,7 +1892,7 @@ void fbp_setup_env_cmds(void);
 		.refresh	= 60,\
 		.xres		= 640,\
 		.yres		= 960,\
-		.pixclock	= 1000000000000ULL / (640+32+28+36) / (960+14+8+2) / 60,\
+		.pixclock_f	= (640+32+28+36)*(960+14+8+2)*60,\
 		.left_margin	= 32,\
 		.right_margin	= 28,\
 		.upper_margin	= 14,\
@@ -1869,7 +1912,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 1200,\
 		.yres           = 1920,\
-		.pixclock       = 1000000000000ULL/((1200+104+73+8)*(1920+108+74+1)*60), \
+		.pixclock_f	= ((1200+104+73+8)*(1920+108+74+1)*60), \
 		.left_margin    = 104,\
 		.right_margin   = 73,\
 		.upper_margin   = 108,\
@@ -1889,7 +1932,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 1200,\
 		.yres           = 1920,\
-		.pixclock       = 1000000000000ULL/120000000, /*((1200+60+42+2)*(1920+25+35+1)*60), */\
+		.pixclock_f	= 120000000, /*((1200+60+42+2)*(1920+25+35+1)*60), */\
 		.left_margin    = 60,\
 		.right_margin   = 42,\
 		.upper_margin   = 25,\
@@ -1909,7 +1952,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 720,\
 		.yres           = 1280,\
-		.pixclock       = 1000000000000ULL/((720+70+91+15)*(1280+3+6+3)*60),\
+		.pixclock_f	= ((720+70+91+15)*(1280+3+6+3)*60),\
 		.left_margin    = 70,\
 		.right_margin   = 91,\
 		.upper_margin   = 3,\
@@ -1929,7 +1972,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 1280,\
 		.yres           = 800,\
-		.pixclock       = 1000000000000ULL/74250000,\
+		.pixclock_f	= 74250000,\
 		.left_margin    = 5,\
 		.right_margin   = 123,\
 		.upper_margin   = 3,\
@@ -1954,7 +1997,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 1280,\
 		.yres           = 800,\
-		.pixclock       = 1000000000000ULL/71700000,\
+		.pixclock_f	= 71700000,\
 		.left_margin    = 8,\
 		.right_margin   = 144,\
 		.upper_margin   = 2,\
@@ -1974,7 +2017,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 1280,\
 		.yres           = 720,\
-		.pixclock       = 1000000000000ULL/((1280+40+20+4)*(720+12+5+1)*60),\
+		.pixclock_f	= ((1280+40+20+4)*(720+12+5+1)*60),\
 		.left_margin    = 40,\
 		.right_margin   = 20,\
 		.upper_margin   = 12,\
@@ -1994,7 +2037,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 1280,\
 		.yres           = 720,\
-		.pixclock       = 1000000000000ULL/66000000,\
+		.pixclock_f	= 66000000,\
 		.left_margin    = 40,\
 		.right_margin   = 20,\
 		.upper_margin   = 12,\
@@ -2014,7 +2057,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 55,\
 		.xres           = 1024,\
 		.yres           = 600,\
-		.pixclock       = 1000000000000ULL/((1024+160+160+10)*(600+23+12+3)*55),\
+		.pixclock_f	= ((1024+160+160+10)*(600+23+12+3)*55),\
 		.left_margin    = 160,\
 		.right_margin   = 160,\
 		.upper_margin   = 23,\
@@ -2034,7 +2077,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 800,\
 		.yres           = 600,\
-		.pixclock       = 15385,\
+		.pixclock_f	= _to_freq(15385),\
 		.left_margin    = 220,\
 		.right_margin   = 40,\
 		.upper_margin   = 21,\
@@ -2060,7 +2103,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 800,\
 		.yres           = 480,\
-		.pixclock       = 1000000000000ULL/((800+220+18+18)*(480+21+14+10)*52),\
+		.pixclock_f	= ((800+220+18+18)*(480+21+14+10)*52),\
 		.left_margin    = 220,\
 		.right_margin   = 18,\
 		.upper_margin   = 21,\
@@ -2080,7 +2123,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 800,\
 		.yres           = 480,\
-		.pixclock       = 1000000000000ULL/((800+220+40+60)*(480+21+7+10)*60),\
+		.pixclock_f	= ((800+220+40+60)*(480+21+7+10)*60),\
 		.left_margin    = 220,\
 		.right_margin   = 40,\
 		.upper_margin   = 21,\
@@ -2100,7 +2143,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 70,\
 		.xres           = 640,\
 		.yres           = 480,\
-		.pixclock       = 22858,	/* 23000 works 23100 doesn't */\
+		.pixclock_f	= _to_freq(22858),	/* 23000 works 23100 doesn't */\
 		.left_margin    = 48 + 100,\
 		.right_margin   = 16 + 100,\
 		.upper_margin   = 33 + 50,\
@@ -2120,7 +2163,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 640,\
 		.yres           = 480,\
-		.pixclock       = 1000000000000ULL/((640+48+16+96)*(480+33+10+2)*60),\
+		.pixclock_f	= ((640+48+16+96)*(480+33+10+2)*60),\
 		.left_margin    = 48,\
 		.right_margin   = 16,\
 		.upper_margin   = 33,\
@@ -2140,7 +2183,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 800,\
 		.yres           = 600,\
-		.pixclock       = 1000000000000ULL/((800+46+210+10)*(600+23+12+1)*60),\
+		.pixclock_f	= ((800+46+210+10)*(600+23+12+1)*60),\
 		.left_margin    = 46,\
 		.right_margin   = 210,\
 		.upper_margin   = 23,\
@@ -2161,7 +2204,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 480,\
 		.yres           = 800,\
-		.pixclock       = 1000000000000ULL/((480+18+16+2)*(800+18+16+2)*60),\
+		.pixclock_f	= ((480+18+16+2)*(800+18+16+2)*60),\
 		.left_margin    = 18,\
 		.right_margin   = 16,\
 		.upper_margin   = 18,\
@@ -2183,7 +2226,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 640,\
 		.yres           = 480,\
-		.pixclock       = 1000000000000ULL/((960+40+48+20)*(480+27+18+1)*60),\
+		.pixclock_f	= ((960+40+48+20)*(480+27+18+1)*60),\
 		.left_margin    = 40,\
 		.right_margin   = 48,\
 		.upper_margin   = 27,\
@@ -2203,7 +2246,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 52,\
 		.xres           = 720,\
 		.yres           = 1280,\
-		.pixclock       = 1000000000000ULL/((720+31+16+1)*(1280+15+8+1)*52),\
+		.pixclock_f	= ((720+31+16+1)*(1280+15+8+1)*52),\
 		.left_margin    = 31,\
 		.right_margin   = 16,\
 		.upper_margin   = 15,\
@@ -2223,7 +2266,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 52,\
 		.xres           = 720,\
 		.yres           = 1280,\
-		.pixclock       = 1000000000000ULL/((720+31+16+1)*(1280+15+8+1)*52),\
+		.pixclock_f	= ((720+31+16+1)*(1280+15+8+1)*52),\
 		.left_margin    = 31,\
 		.right_margin   = 16,\
 		.upper_margin   = 15,\
@@ -2244,7 +2287,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 720,\
 		.yres           = 480,\
-		.pixclock       =  1000000000000ULL/((720+40+98+1)*(480+27+18+1)*60),\
+		.pixclock_f	= ((720+40+98+1)*(480+27+18+1)*60),\
 		.left_margin    = 40,\
 		.right_margin   = 98,\
 		.upper_margin   = 27,\
@@ -2266,7 +2309,7 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 240,\
 		.yres           = 320,\
-		.pixclock       =  1000000000000ULL/((240+10+38+10)*(320+4+8+4)*60),\
+		.pixclock_f	= ((240+10+38+10)*(320+4+8+4)*60),\
 		.left_margin    = 10,\
 		.right_margin   = 38,\
 		.upper_margin   = 4,\

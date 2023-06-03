@@ -258,15 +258,15 @@ static const char *const timings_properties[] = {
 };
 
 static const int timings_offsets[] = {
-	offsetof(struct fb_videomode, pixclock),
-	offsetof(struct fb_videomode, xres),
-	offsetof(struct fb_videomode, yres),
-	offsetof(struct fb_videomode, left_margin),
-	offsetof(struct fb_videomode, right_margin),
-	offsetof(struct fb_videomode, upper_margin),
-	offsetof(struct fb_videomode, lower_margin),
-	offsetof(struct fb_videomode, hsync_len),
-	offsetof(struct fb_videomode, vsync_len),
+	offsetof(struct fb_videomode_f, pixclock_f),
+	offsetof(struct fb_videomode_f, xres),
+	offsetof(struct fb_videomode_f, yres),
+	offsetof(struct fb_videomode_f, left_margin),
+	offsetof(struct fb_videomode_f, right_margin),
+	offsetof(struct fb_videomode_f, upper_margin),
+	offsetof(struct fb_videomode_f, lower_margin),
+	offsetof(struct fb_videomode_f, hsync_len),
+	offsetof(struct fb_videomode_f, vsync_len),
 };
 
 static void __board_pre_enable(const struct display_info_t *di)
@@ -327,34 +327,8 @@ static char lvds_enabled;
 static const char brightness_levels_low_active[] = "<10 9 8 7 6 5 4 3 2 1 0>";
 static const char brightness_levels_high_active[] = "<0 1 2 3 4 5 6 7 8 9 10>";
 
-static u32 period_to_freq(u32 period)
-{
-	u64 lval1 = 1000000000000ULL;
-	u64 lval2 = 1000000000000ULL;
-	u32 l1, l2, l3;
-	u32 mod = 10;
-
-	if (period < (233 * 16))
-		period = (233 * 16);	/* ensure result * 16 fits in u32 */
-	do_div(lval1, period);
-	period++;
-	do_div(lval2, period);
-	l1 = (u32)lval1;
-	l2 = (u32)lval2;
-	/*
-	 * Round down to a value of the largest multiple of 10
-	 * while still larger than frequency of period + 1
-	 */
-	while (1) {
-		l3 = l1 - (l1 % mod);
-		if (l3 <= l2)
-			break;
-		mod *= 10;
-		l1 = l3;
-	}
-	return l1;
-}
-
+#if defined(CONFIG_IMX8MM) || defined(CONFIG_IMX8MN) || defined(CONFIG_IMX8MP) || defined(CONFIG_IMX8MQ) || defined(CONFIG_IMX8ULP)
+#else
 static u32 freq_to_period(u32 val)
 {
 	u64 lval = 1000000000000ULL;
@@ -366,6 +340,7 @@ static u32 freq_to_period(u32 val)
 	do_div(lval, val);
 	return (u32)lval;
 }
+#endif
 
 static const char *get_alias(const struct display_info_t *di, unsigned fb, int i)
 {
@@ -739,7 +714,7 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 	int sz;
 	int interface_width;
 	const char *buf_start = buf;
-	const struct fb_videomode *mode;
+	const struct fb_videomode_f *mode;
 	const char * fmt;
 	char mode_name[80];
 #if defined(CONFIG_IMX8M) || defined(CONFIG_IMX8ULP)
@@ -1184,11 +1159,7 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		u32 *p = (u32 *)((char *)mode + timings_offsets[i]);
 		u32 val;
 
-		if (i == 0) {
-			val = period_to_freq(mode->pixclock);
-		} else {
-			val = *p;
-		}
+		val = *p;
 		if (!mode_str) {
 			sz = set_property_u32(buf, size, timings_names[fb], timings_properties[i], val);
 			buf += sz;
@@ -1397,7 +1368,7 @@ static void setup_clock(struct display_info_t const *di)
 	if (di->fbflags & FBF_USE_IPU_CLOCK)
 		return;
 
-	desired_freq = period_to_freq(di->mode.pixclock) * 16;
+	desired_freq = di->mode.pixclock_f * 16;
 
 	for (i = 8; i > 0 ; i--) {
 		n = pll3_freq / i;
@@ -1489,7 +1460,7 @@ static void setup_clock(struct display_info_t const *di)
 	writel(pll_video, &ccm->analog_pll_video);
 #endif
 
-	desired_freq = period_to_freq(di->mode.pixclock);
+	desired_freq = di->mode.pixclock_f;
 	pr_debug("desired_freq=%d\n", desired_freq);
 #ifdef CONFIG_VIDEO_IPUV3
 	out_freq = desired_freq;
@@ -2139,8 +2110,6 @@ static const struct display_info_t * parse_mode(
 			printf("expecting integer:%s\n", p);
 			return NULL;
 		}
-		if (i == 0)
-			val = freq_to_period(val);
 		*dest = val;
 		p = endp;
 		if (*p == ',')
@@ -2312,14 +2281,10 @@ static void str_mode(char *p, int size, const struct display_info_t *di, unsigne
 		u32 *src = (u32 *)((char *)&di->mode + timings_offsets[i]);
 		u32 val;
 
-		if (i == 0) {
-			val = period_to_freq(di->mode.pixclock);
-		} else {
-			val = *src;
-			if (size > 1) {
-				*p++ = ',';
-				size--;
-			}
+		val = *src;
+		if (i && (size > 1)) {
+			*p++ = ',';
+			size--;
 		}
 		count = snprintf(p, size, "%d", val);
 		if (size > count) {
@@ -2334,7 +2299,7 @@ static void print_mode(const struct display_info_t *di, int *len)
 {
 	int i;
 	char format_buf[16];
-	const struct fb_videomode* mode = &di->mode;
+	const struct fb_videomode_f* mode = &di->mode;
 	int fb = di->fbtype;
 	char buf[256];
 
@@ -2346,11 +2311,7 @@ static void print_mode(const struct display_info_t *di, int *len)
 		u32 *p = (u32 *)((char *)mode + timings_offsets[i]);
 		u32 val;
 
-		if (i == 0) {
-			val = period_to_freq(mode->pixclock);
-		} else {
-			val = *p;
-		}
+		val = *p;
 		snprintf(format_buf, sizeof(format_buf), " %c%du", '%', len[i]);
 		printf(format_buf, val);
 	}
@@ -2462,12 +2423,21 @@ static int init_display(const struct display_info_t *di)
 #if defined(CONFIG_IMX8MM) || defined(CONFIG_IMX8MN) || defined(CONFIG_IMX8MP) || defined(CONFIG_IMX8MQ) || defined(CONFIG_IMX8ULP)
 	ret = 0;
 #elif defined(CONFIG_VIDEO_MXS)
-	ret = mxsfb_init(&di->mode, di->pixfmt);
+	struct fb_videomode vmode;
+
+	memcpy(&vmode, &di->mode, sizeof(vmode));
+	vmode.pixclock = freq_to_period(di->mode.pixclock_f);
+	ret = mxsfb_init(&vmode, di->pixfmt);
 #else
 	ret = 0;
-	if (di->fbtype != FB_MIPI)
-		ret = ipuv3_fb_init(&di->mode, (di->fbtype == FB_LCD2) ? 1 : 0,
+	if (di->fbtype != FB_MIPI) {
+		struct fb_videomode vmode;
+
+		memcpy(&vmode, &di->mode, sizeof(vmode));
+		vmode.pixclock = freq_to_period(di->mode.pixclock_f);
+		ret = ipuv3_fb_init(&vmode, (di->fbtype == FB_LCD2) ? 1 : 0,
 			di->pixfmt);
+	}
 #endif
 	if (ret) {
 		printf("LCD %s cannot be configured: %d\n", di->mode.name, ret);
