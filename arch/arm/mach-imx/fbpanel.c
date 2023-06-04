@@ -329,6 +329,8 @@ static const char brightness_levels_high_active[] = "<0 1 2 3 4 5 6 7 8 9 10>";
 
 #if defined(CONFIG_IMX8MM) || defined(CONFIG_IMX8MN) || defined(CONFIG_IMX8MP) || defined(CONFIG_IMX8MQ) || defined(CONFIG_IMX8ULP)
 #else
+static struct fb_videomode g_vmode;
+
 static u32 freq_to_period(u32 val)
 {
 	u64 lval = 1000000000000ULL;
@@ -2423,19 +2425,15 @@ static int init_display(const struct display_info_t *di)
 #if defined(CONFIG_IMX8MM) || defined(CONFIG_IMX8MN) || defined(CONFIG_IMX8MP) || defined(CONFIG_IMX8MQ) || defined(CONFIG_IMX8ULP)
 	ret = 0;
 #elif defined(CONFIG_VIDEO_MXS)
-	struct fb_videomode vmode;
-
-	memcpy(&vmode, &di->mode, sizeof(vmode));
-	vmode.pixclock = freq_to_period(di->mode.pixclock_f);
-	ret = mxsfb_init(&vmode, di->pixfmt);
+	memcpy(&g_vmode, &di->mode, sizeof(vmode));
+	g_vmode.pixclock = freq_to_period(di->mode.pixclock_f);
+	ret = mxsfb_init(&g_vmode, di->pixfmt);
 #else
 	ret = 0;
 	if (di->fbtype != FB_MIPI) {
-		struct fb_videomode vmode;
-
-		memcpy(&vmode, &di->mode, sizeof(vmode));
-		vmode.pixclock = freq_to_period(di->mode.pixclock_f);
-		ret = ipuv3_fb_init(&vmode, (di->fbtype == FB_LCD2) ? 1 : 0,
+		memcpy(&g_vmode, &di->mode, sizeof(vmode));
+		g_vmode.pixclock = freq_to_period(di->mode.pixclock_f);
+		ret = ipuv3_fb_init(g_&vmode, (di->fbtype == FB_LCD2) ? 1 : 0,
 			di->pixfmt);
 	}
 #endif
