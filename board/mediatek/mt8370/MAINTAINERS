@@ -1,0 +1,6 @@
+Genio-510 (MT8370) Evk
+M:	Macpaul Lin <macpaul.lin@mediatek.com>
+S:	Maintained
+F:	board/mediatek/mt8370
+F:	include/configs/mt8370.h
+F:	configs/genio_510_evk_defconfig
