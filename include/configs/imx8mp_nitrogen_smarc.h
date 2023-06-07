@@ -79,8 +79,6 @@
 #define CONFIG_SYS_INIT_SP_ADDR \
 	(CONFIG_SYS_INIT_RAM_ADDR + CONFIG_SYS_INIT_SP_OFFSET)
 
-#define CONFIG_MMCROOT			"/dev/mmcblk2p2"  /* USDHC3 */
-
 /* Size of malloc() pool */
 
 /* bootm image length (Android) */
@@ -156,7 +154,7 @@
 #endif
 
 #ifdef CONFIG_CMD_MMC
-#define DISTRO_BOOT_DEV_MMC(func) func(MMC, mmc, 0) func(MMC, mmc, 2)
+#define DISTRO_BOOT_DEV_MMC(func) func(MMC, mmc, 1) func(MMC, mmc, 0)
 #else
 #define DISTRO_BOOT_DEV_MMC(func)
 #endif
@@ -183,7 +181,7 @@
 #define BD_RAM_FDT	"43000000"
 
 #define BD_FUSE1		"1 3"
-#define BD_FUSE1_VAL		"10002000"	/* USDHC3 emmc */
+#define BD_FUSE1_VAL		"10002a00"	/* USDHC1 emmc */
 
 #define BD_FUSE1_STR		"fuse1=" BD_FUSE1 "\0"
 #define BD_FUSE1_VAL_STR	"fuse1_val=" BD_FUSE1_VAL "\0"
