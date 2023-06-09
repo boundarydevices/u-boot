@@ -82,6 +82,7 @@ struct eqos_mac_regs {
 #define EQOS_MAC_MDIO_ADDRESS_PA_SHIFT			21
 #define EQOS_MAC_MDIO_ADDRESS_RDA_SHIFT			16
 #define EQOS_MAC_MDIO_ADDRESS_CR_SHIFT			8
+#define EQOS_MAC_MDIO_ADDRESS_CR_60_100			0
 #define EQOS_MAC_MDIO_ADDRESS_CR_20_35			2
 #define EQOS_MAC_MDIO_ADDRESS_CR_250_300		5
 #define EQOS_MAC_MDIO_ADDRESS_SKAP			BIT(4)
@@ -184,6 +185,56 @@ struct eqos_tegra186_regs {
 	u32 auto_cal_status;			/* 0x880c */
 };
 
+/* Peri Configuration register for MTK-specific */
+#define EQOS_MTK_PERI_ETH_CTRL0		0xFD0
+#define EQOS_MTK_RMII_CLK_SRC_INTERNAL	BIT(28)
+#define EQOS_MTK_RMII_CLK_SRC_RXC		BIT(27)
+#define EQOS_MTK_ETH_INTF_SEL		GENMASK(26, 24)
+#define EQOS_MTK_PHY_INTF_MII		0
+#define EQOS_MTK_PHY_INTF_RGMII		1
+#define EQOS_MTK_PHY_INTF_RMII		4
+#define EQOS_MTK_RGMII_TXC_PHASE_CTRL	BIT(22)
+#define EQOS_MTK_EXT_PHY_MODE		BIT(21)
+#define EQOS_MTK_DLY_GTXC_INV		BIT(12)
+#define EQOS_MTK_DLY_GTXC_ENABLE		BIT(5)
+#define EQOS_MTK_DLY_GTXC_STAGES		GENMASK(4, 0)
+
+#define EQOS_MTK_PERI_ETH_CTRL1		0xFD4
+#define EQOS_MTK_DLY_RXC_INV		BIT(25)
+#define EQOS_MTK_DLY_RXC_ENABLE		BIT(18)
+#define EQOS_MTK_DLY_RXC_STAGES		GENMASK(17, 13)
+#define EQOS_MTK_DLY_TXC_INV		BIT(12)
+#define EQOS_MTK_DLY_TXC_ENABLE		BIT(5)
+#define EQOS_MTK_DLY_TXC_STAGES		GENMASK(4, 0)
+
+#define EQOS_MTK_PERI_ETH_CTRL2		0xFD8
+#define EQOS_MTK_DLY_RMII_RXC_INV		BIT(25)
+#define EQOS_MTK_DLY_RMII_RXC_ENABLE	BIT(18)
+#define EQOS_MTK_DLY_RMII_RXC_STAGES	GENMASK(17, 13)
+#define EQOS_MTK_DLY_RMII_TXC_INV		BIT(12)
+#define EQOS_MTK_DLY_RMII_TXC_ENABLE	BIT(5)
+#define EQOS_MTK_DLY_RMII_TXC_STAGES	GENMASK(4, 0)
+
+/* These variables are mtk-specific */
+struct eqos_mtk_priv {
+	int (*eqos_mtk_config_dt)(struct udevice *dev);
+	int (*eqos_mtk_clk_init)(struct udevice *dev);
+	int (*eqos_mtk_set_phy_interface)(struct udevice *dev);
+	int (*eqos_mtk_delay_stage2ps)(struct udevice *dev);
+	int (*eqos_mtk_delay_ps2stage)(struct udevice *dev);
+	int (*eqos_mtk_set_delay)(struct udevice *dev);
+	struct regmap *peri_regmap;
+	phy_interface_t interface;
+	bool rmii_clk_from_mac;
+	bool rmii_rxc;
+	u32 rx_delay_max;
+	u32 tx_delay_max;
+	u32 tx_delay;
+	u32 rx_delay;
+	bool tx_inv;
+	bool rx_inv;
+};
+
 #define EQOS_SDMEMCOMPPADCTRL_PAD_E_INPUT_OR_E_PWRD	BIT(31)
 
 #define EQOS_AUTO_CAL_CONFIG_START			BIT(31)
@@ -242,12 +293,15 @@ struct eqos_ops {
 	int (*eqos_set_tx_clk_speed)(struct udevice *dev);
 	int (*eqos_get_enetaddr)(struct udevice *dev);
 	ulong (*eqos_get_tick_clk_rate)(struct udevice *dev);
+	int (*eqos_fix_mac_speed)(struct udevice *dev);
 };
 
 struct eqos_priv {
 	struct udevice *dev;
 	const struct eqos_config *config;
 	fdt_addr_t regs;
+	/* TODO: remove it when power driver is ready*/
+	fdt_addr_t power_regs;
 	struct eqos_mac_regs *mac_regs;
 	struct eqos_mtl_regs *mtl_regs;
 	struct eqos_dma_regs *dma_regs;
