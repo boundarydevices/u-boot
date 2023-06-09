@@ -192,7 +192,7 @@
 		};
 
 		infracfg_ao: infracfg_ao@10001000 {
-			compatible = "mediatek,mt8195-infracfg_ao";
+			compatible = "mediatek,mt8195-infracfg_ao", "syscon";
 			reg = <0 0x10001000 0 0x1000>;
 			#clock-cells = <1>;
 		};
@@ -249,6 +249,37 @@
 			compatible = "mediatek,mt8195-pericfg_ao", "syscon";
 			reg = <0 0x11003000 0 0x1000>;
 			#clock-cells = <1>;
+		};
+
+		eth: ethernet@11021000 {
+			compatible = "mediatek,mt8195-gmac", "snps,dwmac-5.10a";
+			reg = <0 0x11021000 0 0x4000>,
+			/* TODO: remove it when power driver is ready*/
+				  <0 0x10006000 0 0x1000>;
+			interrupts = <GIC_SPI 716 IRQ_TYPE_LEVEL_HIGH 0>;
+			interrupt-names = "macirq";
+			mac-address = [00 55 7b b5 7d f7];
+			clock-names = "axi",
+				      "apb",
+				      "mac_cg",
+				      "mac_main",
+				      "ptp_ref",
+				      "rmii_internal";
+			clocks = <&pericfg_ao CLK_PERI_AO_ETHERNET>,
+				 <&pericfg_ao CLK_PERI_AO_ETHERNET_BUS>,
+				 <&pericfg_ao CLK_PERI_AO_ETHERNET_MAC>,
+				 <&topckgen CLK_TOP_SNPS_ETH_250M>,
+				 <&topckgen CLK_TOP_SNPS_ETH_62P4M_PTP>,
+				 <&topckgen CLK_TOP_SNPS_ETH_50M_RMII>;
+			assigned-clocks = <&topckgen CLK_TOP_SNPS_ETH_250M>,
+					  <&topckgen CLK_TOP_SNPS_ETH_62P4M_PTP>,
+					  <&topckgen CLK_TOP_SNPS_ETH_50M_RMII>;
+			assigned-clock-parents = <&topckgen CLK_TOP_ETHPLL_D2>,
+						 <&topckgen CLK_TOP_ETHPLL_D8>,
+						 <&topckgen CLK_TOP_ETHPLL_D10>;
+			/*power-domains = <&spm MT8195_POWER_DOMAIN_ETHER>;*/
+			mediatek,pericfg = <&infracfg_ao>;
+			status = "okay";
 		};
 
 		i2c0: i2c@11e00000 {
