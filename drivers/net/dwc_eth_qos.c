@@ -662,6 +662,8 @@ static int eqos_adjust_link(struct udevice *dev)
 		return ret;
 	}
 
+	ret = eqos->config->ops->eqos_fix_mac_speed(dev);
+
 	return 0;
 }
 
@@ -1596,7 +1598,8 @@ static struct eqos_ops eqos_tegra186_ops = {
 	.eqos_disable_calibration = eqos_disable_calibration_tegra186,
 	.eqos_set_tx_clk_speed = eqos_set_tx_clk_speed_tegra186,
 	.eqos_get_enetaddr = eqos_null_ops,
-	.eqos_get_tick_clk_rate = eqos_get_tick_clk_rate_tegra186
+	.eqos_get_tick_clk_rate = eqos_get_tick_clk_rate_tegra186,
+	.eqos_fix_mac_speed = eqos_null_ops
 };
 
 static const struct eqos_config __maybe_unused eqos_tegra186_config = {
@@ -1625,7 +1628,8 @@ static struct eqos_ops eqos_stm32_ops = {
 	.eqos_disable_calibration = eqos_null_ops,
 	.eqos_set_tx_clk_speed = eqos_null_ops,
 	.eqos_get_enetaddr = eqos_null_ops,
-	.eqos_get_tick_clk_rate = eqos_get_tick_clk_rate_stm32
+	.eqos_get_tick_clk_rate = eqos_get_tick_clk_rate_stm32,
+	.eqos_fix_mac_speed = eqos_null_ops
 };
 
 static const struct eqos_config __maybe_unused eqos_stm32_config = {
@@ -1658,7 +1662,12 @@ static const struct udevice_id eqos_ids[] = {
 		.data = (ulong)&eqos_imx_config
 	},
 #endif
-
+#if IS_ENABLED(CONFIG_DWC_ETH_QOS_MTK)
+	{
+		.compatible = "mediatek,mt8195-gmac",
+		.data = (ulong)&eqos_mtk_config
+	},
+#endif
 	{ }
 };
 

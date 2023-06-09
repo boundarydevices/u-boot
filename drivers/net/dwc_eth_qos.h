@@ -82,6 +82,7 @@ struct eqos_mac_regs {
 #define EQOS_MAC_MDIO_ADDRESS_PA_SHIFT			21
 #define EQOS_MAC_MDIO_ADDRESS_RDA_SHIFT			16
 #define EQOS_MAC_MDIO_ADDRESS_CR_SHIFT			8
+#define EQOS_MAC_MDIO_ADDRESS_CR_60_100			0
 #define EQOS_MAC_MDIO_ADDRESS_CR_20_35			2
 #define EQOS_MAC_MDIO_ADDRESS_CR_250_300		5
 #define EQOS_MAC_MDIO_ADDRESS_SKAP			BIT(4)
@@ -242,6 +243,7 @@ struct eqos_ops {
 	int (*eqos_set_tx_clk_speed)(struct udevice *dev);
 	int (*eqos_get_enetaddr)(struct udevice *dev);
 	ulong (*eqos_get_tick_clk_rate)(struct udevice *dev);
+	int (*eqos_fix_mac_speed)(struct udevice *dev);
 };
 
 struct eqos_priv {
@@ -281,3 +283,4 @@ void eqos_flush_buffer_generic(void *buf, size_t size);
 int eqos_null_ops(struct udevice *dev);
 
 extern struct eqos_config eqos_imx_config;
+extern struct eqos_config eqos_mtk_config;
