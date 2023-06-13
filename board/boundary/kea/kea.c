@@ -175,9 +175,9 @@ static const struct gpio_reserve gpios_to_reserve[] = {
 	{ GP_RELAY1_EN, GPIOD_OUT_LOW, 0, "RELAY1_EN", },
 	{ GP_RELAY2_EN, GPIOD_OUT_LOW, 0, "RELAY2_EN", },
 	{ GP_RELAY3_EN, GPIOD_OUT_LOW, 0, "RELAY3_EN", },
-	{ GP_J55P1, GPIOD_IN, 0, "J55P1", },
-	{ GP_J55P2, GPIOD_IN, 0, "J55P2", },
-	{ GP_J55P3, GPIOD_IN, 0, "J55P3", },
+	{ GP_J55P1, GPIOD_OUT_LOW, 0, "J55P1", },
+	{ GP_J55P2, GPIOD_OUT_LOW, 0, "J55P2", },
+	{ GP_J55P3, GPIOD_OUT_LOW, 0, "J55P3", },
 };
 
 int board_early_init_f(void)
