@@ -72,11 +72,22 @@
 	"kernel_addr_r=0x45000000\0" \
 	"ramdisk_addr_r=0x46000000\0" \
 	"fdtfile=" CONFIG_DEFAULT_DEVICE_TREE ".dtb\0" \
+	"splashimage=0x60000000\0" \
+	"splashsource=mmc_fs\0" \
+	"splashfile=logo.bmp\0" \
+	"splashdevpart=0#bootassets\0" \
+	"splashpos=m,m\0" \
 	BOOTENV
 #endif
 
 #ifdef CONFIG_ARM64
 #define MTK_SIP_PARTNAME_ID		0xC2000529
 #endif
+
+#ifdef CONFIG_SYS_MALLOC_LEN
+#undef CONFIG_SYS_MALLOC_LEN
+#endif
+
+#define CONFIG_SYS_MALLOC_LEN		SZ_64M
 
 #endif
