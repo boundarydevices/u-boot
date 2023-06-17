@@ -1027,28 +1027,41 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 	}
 
 	if ((fb == FB_MIPI) || (di->fbflags & FBF_MODE_VIDEO)) {
+		char mipi_cmd[90];
+		char *p;
+
 		sz = set_property_set_rm(buf, size, "mipi", "mode-skip-eot",
 				(di->fbflags & FBF_MODE_SKIP_EOT));
 		buf += sz;
 		size -= sz;
 
-		if (di->fbflags & FBF_DSI_HBP_DISABLE) {
-			sz = set_property(buf, size, "mipi",
-					"mode-video-hbp-disable");
+		if (di->fbflags & FBF_MIPI_CMDS) {
+			snprintf(mipi_cmd, sizeof(mipi_cmd) - 1, "mipi_cmds_%s",
+				mode_name);
+			p = mipi_cmd;
+		} else {
+			p = "mipi";
+		}
+
+		if (di->fbflags & FBF_DSI_HBP) {
+			sz = set_property_set_rm(buf, size, p,
+				"mode-video-hbp-disable",
+				(di->fbflags & FBF_MODE_VIDEO_BURST));
+			buf += sz;
+			size -= sz;
+		}
+		if (di->fbflags & FBF_DSI_HFP) {
+			sz = set_property_set_rm(buf, size, p,
+				"mode-video-hfp-disable",
+				(di->fbflags & FBF_MODE_VIDEO_BURST));
 			buf += sz;
 			size -= sz;
 		}
 
-		if (di->fbflags & FBF_DSI_HFP_DISABLE) {
-			sz = set_property(buf, size, "mipi",
-					"mode-video-hfp-disable");
-			buf += sz;
-			size -= sz;
-		}
-
-		if (di->fbflags & FBF_DSI_HSA_DISABLE) {
-			sz = set_property(buf, size, "mipi",
-					"mode-video-hsa-disable");
+		if (di->fbflags & FBF_DSI_HSA) {
+			sz = set_property_set_rm(buf, size, p,
+				"mode-video-hsa-disable",
+				(di->fbflags & FBF_MODE_VIDEO_BURST));
 			buf += sz;
 			size -= sz;
 		}
@@ -1825,9 +1838,9 @@ static struct flags_check fc2[] = {
 	{ 'o', FBF_ENABLE_GPIOS_OPEN_DRAIN},
 	{ 'd', FBF_ENABLE_GPIOS_DTB},
 	{ 's', FBF_MODE_SKIP_EOT},
-	{ 'h', FBF_DSI_HBP_DISABLE},
-	{ 'f', FBF_DSI_HFP_DISABLE},
-	{ 'a', FBF_DSI_HSA_DISABLE},
+	{ 'h', FBF_DSI_HBP},
+	{ 'f', FBF_DSI_HFP},
+	{ 'a', FBF_DSI_HSA},
 	{ 'v', FBF_MODE_VIDEO},
 	{ 'B', FBF_MODE_VIDEO_BURST},
 	{ 'M', FBF_MODE_VIDEO_MBC},
