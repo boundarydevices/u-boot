@@ -494,13 +494,13 @@ void fbp_setup_env_cmds(void);
 		.refresh        = 60,\
 		.xres           = 1080,\
 		.yres           = 1920,\
-		.pixclock_f	= 146250000 /* ((1080+60+90+20)*(1920+3+9+4)*60) */, \
-		.left_margin    = 60,\
-		.right_margin   = 90,\
-		.upper_margin   = 3,\
-		.lower_margin   = 9,\
-		.hsync_len      = 20,\
-		.vsync_len      = 4,\
+		.pixclock_f	= 100000000, /* ((1080+30+30+50)*(1920+10+15+10)*60), */ \
+		.left_margin    = 30,\
+		.right_margin   = 30,\
+		.upper_margin   = 10,\
+		.lower_margin   = 15,\
+		.hsync_len      = 50,\
+		.vsync_len      = 10,\
 		.sync           = FB_SYNC_EXT,\
 		.vmode          = FB_VMODE_NONINTERLACED\
 	}\
