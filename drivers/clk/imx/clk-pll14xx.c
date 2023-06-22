@@ -16,6 +16,7 @@
 #include <linux/delay.h>
 #include <linux/err.h>
 #include <linux/iopoll.h>
+#include <linux/rational.h>
 #include <clk.h>
 #include <div64.h>
 
@@ -132,6 +133,74 @@ struct imx_pll14xx_clk imx_1416x_pll __initdata = {
 };
 EXPORT_SYMBOL_GPL(imx_1416x_pll);
 
+#if CONFIG_IS_ENABLED(LIB_RATIONAL)
+static int find_best(unsigned long rate, unsigned long prate,
+	struct imx_pll14xx_rate_table *t)
+{
+	unsigned long numerator;
+	unsigned long denominator, pdiv;
+	unsigned p,n;
+	u64 fvco;
+	int shift = 0;
+	int s;
+
+	do {
+		numerator = (rate << (shift + 16));
+		denominator = prate;
+#define N_MIN 0x03f8000
+#define N_MAX 0x3ff8000
+#define S_MAX 6
+#define P_MAX 63
+		rational_best_ratio_bigger(&numerator, &denominator, N_MAX, P_MAX << (S_MAX - shift));
+		denominator <<= shift;
+		s = __ffs(denominator);
+		if (s > S_MAX)
+			s = S_MAX;
+		p = denominator >> s;
+		n = numerator;
+		if (p <= P_MAX)
+			break;
+		shift = s + 1;
+	} while (shift <= S_MAX);
+
+	while (s && !(n & 1)) {
+		n >>= 1;
+		s--;
+	}
+	while (n < N_MIN) {
+		n <<= 1;
+		s++;
+	}
+	while ((s > S_MAX) & (p <= (P_MAX >> 1))) {
+		p <<= 1;
+		s--;
+	}
+	if (s > S_MAX) {
+		/* should never get here */
+		printf("%s: error rate=%ld %ld %d %d %d\n", __func__, rate, prate, n, p, s);
+		return -EINVAL;
+	}
+	if (n & 0x8000) {
+		t->kdiv = ((n & 0xffff) - 0x10000);
+		t->mdiv = (n >> 16) + 1;
+	} else {
+		t->kdiv = n & 0xffff;
+		t->mdiv = n >> 16;
+	}
+	t->pdiv = p;
+	t->sdiv = s;
+
+	fvco = prate * (t->mdiv * 65536 + t->kdiv);
+	pdiv = p << (16 + s);
+	fvco += (pdiv >> 1);
+
+	do_div(fvco, pdiv);
+	t->rate = fvco;
+	debug("%s: rate=%ld fvco=%lld = %ld*(%d*65536+%d)/%d >>(%d+16)\n", __func__, rate, fvco, prate, t->mdiv, t->kdiv, p, s);
+	return 0;
+}
+#endif
+
 static const struct imx_pll14xx_rate_table *imx_get_pll_settings(
 		struct clk_pll14xx *pll, unsigned long rate)
 {
@@ -166,22 +235,11 @@ static unsigned long clk_pll1416x_recalc_rate(struct clk *clk)
 	return fvco;
 }
 
-static unsigned long clk_pll1443x_recalc_rate(struct clk *clk)
+static long pll14xx_calc_rate(const struct imx_pll14xx_rate_table *rate_table,
+	int rate_count, int mdiv, int pdiv, int sdiv, int kdiv, unsigned long prate)
 {
-	struct clk_pll14xx *pll = to_clk_pll14xx(dev_get_clk_ptr(clk->dev));
-	const struct imx_pll14xx_rate_table *rate_table = pll->rate_table;
-	u32 mdiv, pdiv, sdiv, pll_div_ctl0, pll_div_ctl1;
-	short int kdiv;
-	u64 fvco = clk_get_parent_rate(clk);
 	long rate = 0;
 	int i;
-
-	pll_div_ctl0 = readl(pll->base + 4);
-	pll_div_ctl1 = readl(pll->base + 8);
-	mdiv = (pll_div_ctl0 & MDIV_MASK) >> MDIV_SHIFT;
-	pdiv = (pll_div_ctl0 & PDIV_MASK) >> PDIV_SHIFT;
-	sdiv = (pll_div_ctl0 & SDIV_MASK) >> SDIV_SHIFT;
-	kdiv = pll_div_ctl1 & KDIV_MASK;
 
 	/*
 	 * Sometimes, the recalculated rate has deviation due to
@@ -189,20 +247,36 @@ static unsigned long clk_pll1443x_recalc_rate(struct clk *clk)
 	 * first, if no match rate in the table, use the rate calculated
 	 * from the equation below.
 	 */
-	for (i = 0; i < pll->rate_count; i++) {
+	for (i = 0; i < rate_count; i++) {
 		if (rate_table[i].pdiv == pdiv && rate_table[i].mdiv == mdiv &&
 		    rate_table[i].sdiv == sdiv && rate_table[i].kdiv == kdiv)
 			rate = rate_table[i].rate;
 	}
 
-	/* fvco = (m * 65536 + k) * Fin / (p * 65536) */
-	fvco *= (mdiv * 65536 + kdiv);
-	pdiv *= 65536;
+	if (!rate) {
+		u64 fvco = prate * (mdiv * 65536 + kdiv);
+		pdiv *= 65536;
 
-	do_div(fvco, pdiv << sdiv);
-	pr_info("%s: rate=%ld fvco=%lld\n", __func__, rate, fvco);
+		do_div(fvco, pdiv << sdiv);
+		rate = fvco;
+		pr_info("%s: rate=%ld fvco=%lld\n", __func__, rate, fvco);
+	}
+	return rate;
+}
 
-	return rate ? (unsigned long) rate : (unsigned long)fvco;
+static unsigned long clk_pll1443x_recalc_rate(struct clk *clk)
+{
+	struct clk_pll14xx *pll = to_clk_pll14xx(dev_get_clk_ptr(clk->dev));
+	u32 mdiv, pdiv, sdiv, pll_div_ctl0, pll_div_ctl1;
+	short int kdiv;
+
+	pll_div_ctl0 = readl(pll->base + 4);
+	pll_div_ctl1 = readl(pll->base + 8);
+	mdiv = (pll_div_ctl0 & MDIV_MASK) >> MDIV_SHIFT;
+	pdiv = (pll_div_ctl0 & PDIV_MASK) >> PDIV_SHIFT;
+	sdiv = (pll_div_ctl0 & SDIV_MASK) >> SDIV_SHIFT;
+	kdiv = pll_div_ctl1 & KDIV_MASK;
+	return pll14xx_calc_rate(pll->rate_table, pll->rate_count, mdiv, pdiv, sdiv, kdiv, clk_get_parent_rate(clk));
 }
 
 static inline bool clk_pll14xx_mp_change(const struct imx_pll14xx_rate_table *rate,
@@ -293,14 +367,23 @@ static ulong clk_pll1443x_set_rate(struct clk *clk, unsigned long drate)
 {
 	struct clk_pll14xx *pll = to_clk_pll14xx(dev_get_clk_ptr(clk->dev));
 	const struct imx_pll14xx_rate_table *rate;
+	struct imx_pll14xx_rate_table r;
 	u32 tmp, div_val;
 	int ret;
 
 	rate = imx_get_pll_settings(pll, drate);
 	if (!rate) {
-		pr_err("%s: Invalid rate : %lu for pll clk %s\n", __func__,
-		       drate, "===");
-		return -EINVAL;
+#if CONFIG_IS_ENABLED(LIB_RATIONAL)
+		ret = find_best(drate, clk_get_parent_rate(clk), &r);
+#else
+		ret = -EINVAL;
+#endif
+		if (ret) {
+			printf("%s: Invalid rate : %lu for pll, %d\n", __func__,
+				drate, ret);
+			return ret;
+		}
+		rate = &r;
 	}
 
 	tmp = readl(pll->base + 4);

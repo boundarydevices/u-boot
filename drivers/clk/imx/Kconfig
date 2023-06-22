@@ -34,6 +34,7 @@ config CLK_IMX8MM
 	depends on ARCH_IMX8M
 	select CLK
 	select CLK_CCF
+	select LIB_RATIONAL
 	help
 	  This enables support clock driver for i.MX8MM platforms.
 
@@ -52,6 +53,7 @@ config CLK_IMX8MN
 	select CLK
 	select CLK_CCF
 	select CLK_COMPOSITE_CCF
+	select LIB_RATIONAL
 	help
 	  This enables support clock driver for i.MX8MN platforms.
 
@@ -68,6 +70,7 @@ config CLK_IMX8MP
 	depends on ARCH_IMX8M
 	select CLK
 	select CLK_CCF
+	select LIB_RATIONAL
 	help
 	  This enables support clock driver for i.MX8MP platforms.
 
@@ -86,6 +89,7 @@ config CLK_IMX8MQ
 	select CLK
 	select CLK_CCF
 	select CLK_COMPOSITE_CCF
+	select LIB_RATIONAL
 	help
 	  This enables support clock driver for i.MX8MQ platforms.
 
