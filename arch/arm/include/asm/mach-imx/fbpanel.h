@@ -1688,8 +1688,8 @@ void fbp_setup_env_cmds(void);
 		.pixclock	= 1000000000000ULL / (640+60+40+4) / (960+16+13+1) / 60,\
 		.left_margin	= 60,\
 		.right_margin	= 40,\
-		.upper_margin	= 16,\
-		.lower_margin	= 13,\
+		.upper_margin	= 30,\
+		.lower_margin	= 20,\
 		.hsync_len	= 4,\
 		.vsync_len	= 1,\
 		.sync           = FB_SYNC_EXT | FB_SYNC_CLK_LAT_FALL,\
