@@ -78,6 +78,19 @@
 		regulator-boot-on;
 		regulator-always-on;
 	};
+
+	dsi0: dsi0{
+		compatible = "mediatek,mt8195-dsi";
+		pinctrl-names = "default";
+		pinctrl-0 = <&panel_pins_default>;
+		reset-gpios = <&gpio 108 GPIO_ACTIVE_HIGH>;
+		dcdc-gpios = <&gpio 48 GPIO_ACTIVE_HIGH>;
+		enable-gpios = <&gpio 47 GPIO_ACTIVE_HIGH>;
+		clocks = <&topckgen CLK_TOP_DISP_PWM0>,
+			<&infracfg_ao CLK_INFRA_AO_DISP_PWM>;
+		clock-names = "main", "mm";
+		status = "okay";
+	};
 };
 
 &pio {
@@ -187,6 +200,27 @@
 			pinmux = <PINMUX_GPIO93__FUNC_GPIO93>;
 			input-disable;
 			bias-disable;
+		};
+	};
+
+	panel_pins_default: panel-pins-default {
+		panel-dcdc {
+			pinmux = <PINMUX_GPIO48__FUNC_GPIO48>;
+			output-low;
+		};
+
+		panel-en {
+			pinmux = <PINMUX_GPIO47__FUNC_GPIO47>;
+			output-low;
+		};
+
+		panel-rst {
+			pinmux = <PINMUX_GPIO108__FUNC_GPIO108>;
+			output-high;
+		};
+
+		pins-bl {
+			pinmux = <PINMUX_GPIO97__FUNC_DISP_PWM0>;
 		};
 	};
 };
