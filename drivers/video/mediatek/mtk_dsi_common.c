@@ -308,6 +308,7 @@ static int mtk_dsi_remove(struct udevice *dev)
 
 static const struct udevice_id mtk_dsi_ids[] = {
 	{ .compatible = "mediatek,mt8188-dsi" },
+	{ .compatible = "mediatek,mt8195-dsi" },
 	{}
 };
 
