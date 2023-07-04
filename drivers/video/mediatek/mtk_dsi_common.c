@@ -319,5 +319,5 @@ U_BOOT_DRIVER(mtk_dsi) = {
 	.bind	   = mtk_dsi_bind,
 	.probe	   = mtk_dsi_probe,
 	.remove    = mtk_dsi_remove,
-	.flags	   = DM_FLAG_PRE_RELOC | DM_FLAG_LEAVE_PD_ON,
+	.flags	   = DM_FLAG_PRE_RELOC | DM_FLAG_LEAVE_PD_ON | DM_FLAG_OS_PREPARE,
 };
