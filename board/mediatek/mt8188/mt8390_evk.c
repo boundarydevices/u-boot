@@ -37,7 +37,7 @@ enum mt8390_updatable_images {
 
 static bool board_is_genio_700_evk(void)
 {
-	return CONFIG_IS_ENABLED(TARGET_MT8390) &&
+	return CONFIG_IS_ENABLED(TARGET_MT8188) &&
 		of_machine_is_compatible("mediatek,genio-700-evk");
 }
 
