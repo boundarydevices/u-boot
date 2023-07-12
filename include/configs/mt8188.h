@@ -72,7 +72,7 @@
 	"kernel_addr_r=0x45000000\0" \
 	"ramdisk_addr_r=0x46000000\0" \
 	"fdtfile=" CONFIG_DEFAULT_DEVICE_TREE ".dtb\0" \
-	"splashimage=0x60000000\0" \
+	"splashimage=" __stringify(CONFIG_SYS_LOAD_ADDR) "\0" \
 	"splashsource=mmc_fs\0" \
 	"splashfile=logo.bmp\0" \
 	"splashdevpart=0#bootassets\0" \
