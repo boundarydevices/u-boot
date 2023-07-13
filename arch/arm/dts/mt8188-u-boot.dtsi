@@ -1,0 +1,17 @@
+// SPDX-License-Identifier: GPL-2.0
+
+&topckgen {
+	u-boot,dm-pre-reloc;
+};
+
+&infracfg_ao {
+	u-boot,dm-pre-reloc;
+};
+
+&apmixedsys {
+	u-boot,dm-pre-reloc;
+};
+
+&uart0 {
+	u-boot,dm-pre-reloc;
+};
