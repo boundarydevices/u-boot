@@ -55,6 +55,11 @@
 			no-map;
 			reg = <0 0x43200000 0 0x00c00000>;
 		};
+
+		dsi_reserved: dsi@60000000 {
+			reg = <0 0x60000000 0 0x02000000>;
+			no-map;
+		};
 	};
 
 	chosen {
@@ -81,6 +86,7 @@
 
 	dsi0: dsi0{
 		compatible = "mediatek,mt8195-dsi";
+		reg = <0 0x60000000 0 0x02000000>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&panel_pins_default>;
 		reset-gpios = <&gpio 108 GPIO_ACTIVE_HIGH>;
