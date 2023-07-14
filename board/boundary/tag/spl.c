@@ -46,9 +46,11 @@ int power_init_board(void)
 		buck3val = 0x28;
 	}
 
+	upower_pmic_i2c_write(0x4e, 0x5C); /* unlock */
 	upower_pmic_i2c_write(0x22, buck3val);	/* PMIC_STBY_REQ = L */
 	upower_pmic_i2c_write(0x2a, buck3val);	/* PMIC_STBY_REQ = H */
 	upower_pmic_i2c_write(0x1D, 0x20); 	/* BUCK2 DVS: 1.0V (0.6+(0x20*12.5)) = 1.000 */
+	upower_pmic_i2c_write(0x4e, 0); /* lock */
 
 	return 0;
 }
