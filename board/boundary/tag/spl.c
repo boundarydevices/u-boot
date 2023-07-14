@@ -33,17 +33,22 @@ u32 spl_boot_device(void)
 
 int power_init_board(void)
 {
+	u32 buck3val;
+
 	if (IS_ENABLED(CONFIG_IMX8ULP_LD_MODE)) {
 		/* Set buck3 to 0.9v LD */
-		upower_pmic_i2c_write(0x22, 0x18);
+		buck3val = 0x18;
 	} else if (IS_ENABLED(CONFIG_IMX8ULP_ND_MODE)) {
 		/* Set buck3 to 1.0v ND */
-		upower_pmic_i2c_write(0x22, 0x20);
+		buck3val = 0x20;
 	} else {
 		/* Set buck3 to 1.1v OD */
-		upower_pmic_i2c_write(0x22, 0x28);
-
+		buck3val = 0x28;
 	}
+
+	upower_pmic_i2c_write(0x22, buck3val);	/* PMIC_STBY_REQ = L */
+	upower_pmic_i2c_write(0x2a, buck3val);	/* PMIC_STBY_REQ = H */
+	upower_pmic_i2c_write(0x1D, 0x20); 	/* BUCK2 DVS: 1.0V (0.6+(0x20*12.5)) = 1.000 */
 
 	return 0;
 }
