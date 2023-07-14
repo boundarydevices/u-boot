@@ -30,8 +30,6 @@
 #define dsi_printf(string, args...)
 #endif
 
-unsigned char *fb;
-
 unsigned int mtk_dsi_get_bits_per_pixel(u32 format)
 {
 	switch (format) {
@@ -276,11 +274,11 @@ static int mtk_dsi_bind(struct udevice *dev)
 
 	plat->size = MTK_DSI_MAX_WIDTH * MTK_DSI_MAX_HEIGHT * VNBYTES(VIDEO_BPP32);
 
-	fb = (unsigned char *)malloc(plat->size * sizeof(unsigned char));
-	if (!fb)
-		printf("UBOOT: %s possibly use system framebuffer\n", __func__);
-
-	plat->base = (ulong)fb;
+	plat->base = dev_read_addr_ptr(dev);
+	if (!plat->base) {
+		printf("%s: No framebuffer address\n", __func__);
+		return -EINVAL;
+	}
 
 	return 0;
 }
