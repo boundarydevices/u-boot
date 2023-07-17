@@ -123,10 +123,4 @@
 #define MTK_SIP_PARTNAME_ID		0xC2000529
 #endif
 
-#ifdef CONFIG_SYS_MALLOC_LEN
-#undef CONFIG_SYS_MALLOC_LEN
-#endif
-
-#define CONFIG_SYS_MALLOC_LEN		SZ_64M
-
 #endif
