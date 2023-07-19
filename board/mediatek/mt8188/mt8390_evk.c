@@ -96,8 +96,9 @@ int board_init(void)
 		writel(val, 0x1072102C);
 	}
 
-#if defined(CONFIG_EFI_HAVE_CAPSULE_SUPPORT) && defined(CONFIG_EFI_PARTITION)
-	mediatek_capsule_update_board_setup();
-#endif
+	if (IS_ENABLED(CONFIG_EFI_HAVE_CAPSULE_SUPPORT) &&
+	    IS_ENABLED(CONFIG_EFI_PARTITION))
+		mediatek_capsule_update_board_setup();
+
 	return 0;
 }
