@@ -298,9 +298,10 @@ static int mtk_dsi_remove(struct udevice *dev)
 		dm_gpio_free(dev, &panel_desc->reset_gpio);
 	if (dm_gpio_is_valid(&panel_desc->dcdc_en_gpio))
 		dm_gpio_free(dev, &panel_desc->dcdc_en_gpio);
-	if (dm_gpio_is_valid(&panel_desc->enable_gpio))
+	if (dm_gpio_is_valid(&panel_desc->enable_gpio)) {
+		dm_gpio_clrset_flags(&panel_desc->enable_gpio, GPIOD_MASK_DIR, GPIOD_IS_IN);
 		dm_gpio_free(dev, &panel_desc->enable_gpio);
-
+	}
 	return 0;
 }
 
