@@ -305,7 +305,7 @@
 	pinctrl-0 = <&ethdefault>;
 	pinctrl-1 = <&ethsleep>;
 	mac-address = [00 55 7b b5 7d f7];
-	status = "okay";
+	status = "disabled";
 
 	mdio {
 		compatible = "snps,dwmac-mdio";
