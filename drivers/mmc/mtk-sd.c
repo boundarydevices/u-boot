@@ -20,6 +20,7 @@
 #include <linux/bitops.h>
 #include <linux/io.h>
 #include <linux/iopoll.h>
+#include <power/regulator.h>
 
 /* MSDC_CFG */
 #define MSDC_CFG_HS400_CK_MODE_EXT	BIT(22)
@@ -415,6 +416,9 @@ struct msdc_host {
 
 	struct msdc_tune_para def_tune_para;
 	struct msdc_tune_para saved_tune_para;
+	struct udevice *vqmmc_dev;
+	struct udevice *vmmc_dev;
+	int vs18_enable;
 };
 
 static void msdc_reset_hw(struct msdc_host *host)
@@ -995,6 +999,7 @@ static void msdc_set_mclk(struct udevice *dev,
 		return;
 	}
 
+	debug("%s:timing=%d, hz=%d\n", __func__, timing, hz);
 	if (host->dev_comp->clk_div_bits == 8)
 		clrbits_le32(&host->base->msdc_cfg, MSDC_CFG_HS400_CK_MODE);
 	else
@@ -1826,6 +1831,7 @@ static int msdc_drv_probe(struct udevice *dev)
 	host->dev_comp = (struct msdc_compatible *)dev_get_driver_data(dev);
 
 	host->src_clk_freq = clk_get_rate(&host->src_clk);
+	dev_dbg(dev, "%s: %d\n", __func__, host->src_clk_freq);
 
 	if (host->dev_comp->clk_div_bits == 8)
 		cfg->f_min = host->src_clk_freq / (4 * 255);
@@ -1863,6 +1869,7 @@ static int msdc_of_to_plat(struct udevice *dev)
 	struct msdc_host *host = dev_get_priv(dev);
 	struct mmc_config *cfg = &plat->cfg;
 	fdt_addr_t base, top_base;
+	struct udevice *vqmmc_dev;
 	int ret;
 
 	base = dev_read_addr(dev);
@@ -1904,6 +1911,30 @@ static int msdc_of_to_plat(struct udevice *dev)
 	host->r_smpl = dev_read_u32_default(dev, "r_smpl", 0);
 	host->builtin_cd = dev_read_u32_default(dev, "builtin-cd", 0);
 	host->cd_active_high = dev_read_bool(dev, "cd-active-high");
+	ret = device_get_supply_regulator(dev, "vqmmc-supply", &vqmmc_dev);
+	if (ret) {
+		dev_dbg(dev, "no vqmmc-supply\n");
+	} else {
+		host->vqmmc_dev = vqmmc_dev;
+		ret = regulator_set_enable(vqmmc_dev, true);
+		if (ret) {
+			dev_err(dev, "fail to enable vqmmc-supply\n");
+			return ret;
+		}
+
+		regulator_set_value(vqmmc_dev, 3100000);
+		ret = regulator_get_value(vqmmc_dev);
+		dev_dbg(dev, "%s: value: %d\n", __func__, ret);
+		if (ret == 1800000)
+			host->vs18_enable = 1;
+	}
+	ret = device_get_supply_regulator(dev, "vmmc-supply", &host->vmmc_dev);
+	if (ret)
+		dev_dbg(dev, "no vmmc-supply\n");
+	else {
+		regulator_set_value(host->vmmc_dev, 3300000);
+		dev_dbg(dev, "value:%d\n", regulator_get_value(host->vmmc_dev));
+	}
 
 	return 0;
 }
