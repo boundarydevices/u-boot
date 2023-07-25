@@ -8,6 +8,7 @@
 
 #include <config.h>
 #include "mt8188.dtsi"
+#include "mt6359.dtsi"
 
 / {
 	model = "MediaTek Genio-700 EVK";
@@ -118,7 +119,45 @@
 	status = "okay";
 };
 
+&mmc1 {
+	bus-width = <4>;
+	cap-sd-highspeed;
+	cd-gpios = <&gpio 2 GPIO_ACTIVE_LOW>;
+	max-frequency = <200000000>;
+	no-mmc;
+	no-sdio;
+	pinctrl-names = "default";
+	pinctrl-0 = <&mmc1_pins_default>;
+	status = "okay";
+	vmmc-supply = <&mt6359_vpa_buck_reg>;
+	vqmmc-supply = <&mt6359_vsim1_ldo_reg>;
+};
+
 &pio {
+	mmc1_pins_default: mmc1default {
+		pins-cmd-dat {
+			pinmux = <PINMUX_GPIO163__FUNC_B1_MSDC1_CMD>,
+				 <PINMUX_GPIO165__FUNC_B1_MSDC1_DAT0>,
+				 <PINMUX_GPIO166__FUNC_B1_MSDC1_DAT1>,
+				 <PINMUX_GPIO167__FUNC_B1_MSDC1_DAT2>,
+				 <PINMUX_GPIO168__FUNC_B1_MSDC1_DAT3>;
+			input-enable;
+			drive-strength = <MTK_DRIVE_6mA>;
+			bias-pull-up = <MTK_PUPD_SET_R1R0_01>;
+		};
+
+		pins-clk {
+			pinmux = <PINMUX_GPIO164__FUNC_B1_MSDC1_CLK>;
+			drive-strength = <MTK_DRIVE_6mA>;
+			bias-pull-down = <MTK_PUPD_SET_R1R0_10>;
+		};
+
+		pins-insert {
+			pinmux = <PINMUX_GPIO2__FUNC_B_GPIO2>;
+			bias-pull-up;
+		};
+	};
+
 	panel_pins_default: panel-pins-default {
 		panel-dcdc {
 			pinmux = <PINMUX_GPIO45__FUNC_B_GPIO45>;
