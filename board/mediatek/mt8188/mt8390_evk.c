@@ -76,6 +76,21 @@ int board_init(void)
 	struct udevice *dev;
 	int ret;
 
+#ifdef CONFIG_DM_REGULATOR
+	ret = uclass_get_device_by_driver(UCLASS_MISC,
+					  DM_DRIVER_GET(pmic_chip),
+					  &dev);
+	if (ret) {
+		printf("Can't find pmic_chip driver\n");
+	}
+	ret = uclass_get_device_by_driver(UCLASS_MISC,
+					  DM_DRIVER_GET(mt6359_regulator),
+					  &dev);
+	if (ret) {
+		printf("Can't find mt6359_regulator driver\n");
+	}
+#endif
+
 	if (CONFIG_IS_ENABLED(USB_GADGET)) {
 		ret = uclass_get_device(UCLASS_USB_GADGET_GENERIC, 0, &dev);
 		if (ret) {
