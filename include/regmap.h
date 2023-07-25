@@ -94,8 +94,14 @@ struct regmap_config {
 	u32 reg_offset_shift;
 	ulong r_start;
 	ulong r_size;
+	const struct regmap_ops* ops;
 };
 
+struct regmap;
+struct regmap_ops {
+	int	(*read)(struct regmap *map, uint offset, void *valp, size_t val_len);
+	int	(*write)(struct regmap *map, uint offset, const void *valp, size_t val_len);
+};
 /**
  * struct regmap - a way of accessing hardware/bus registers
  *
@@ -110,6 +116,8 @@ struct regmap {
 	enum regmap_endianness_t endianness;
 	enum regmap_size_t width;
 	u32 reg_offset_shift;
+	const struct regmap_ops* ops;
+	void	*priv;
 	int range_count;
 	struct regmap_range ranges[0];
 };
@@ -432,6 +440,7 @@ struct regmap *devm_regmap_init(struct udevice *dev,
 				const struct regmap_bus *bus,
 				void *bus_context,
 				const struct regmap_config *config);
+struct regmap *dev_get_regmap(struct udevice *dev, const char *name);
 /**
  * regmap_get_range() - Obtain the base memory address of a regmap range
  *

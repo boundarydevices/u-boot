@@ -312,11 +312,36 @@ struct regmap *devm_regmap_init(struct udevice *dev,
 	if (config) {
 		map->width = config->width;
 		map->reg_offset_shift = config->reg_offset_shift;
+		map->ops = config->ops;
 	}
 
 	devres_add(dev, mapp);
 	return *mapp;
 }
+
+/**
+ * dev_get_regmap() - Obtain the regmap (if any) for a device
+ *
+ * @dev: Device to retrieve the map for
+ * @name: Optional name for the register map, usually NULL.
+ *
+ * Returns the regmap for the device if one is present, or NULL.  If
+ * name is specified then it must match the name specified when
+ * registering the device, if it is NULL then the first regmap found
+ * will be used.  Devices with multiple register maps are very rare,
+ * generic code should normally not need to specify a name.
+ */
+struct regmap *dev_get_regmap(struct udevice *dev, const char *name)
+{
+	struct regmap **r = devres_find(dev, devm_regmap_release,
+                                        NULL, NULL);
+
+        if (!r)
+                return NULL;
+        return *r;
+}
+EXPORT_SYMBOL_GPL(dev_get_regmap);
+
 #endif
 
 void *regmap_get_range(struct regmap *map, unsigned int range_num)
@@ -432,6 +457,8 @@ int regmap_raw_read_range(struct regmap *map, uint range_num, uint offset,
 
 int regmap_raw_read(struct regmap *map, uint offset, void *valp, size_t val_len)
 {
+	if (map->ops)
+		return map->ops->read(map, offset, valp, val_len);
 	return regmap_raw_read_range(map, 0, offset, valp, val_len);
 }
 
@@ -572,6 +599,8 @@ int regmap_raw_write_range(struct regmap *map, uint range_num, uint offset,
 int regmap_raw_write(struct regmap *map, uint offset, const void *val,
 		     size_t val_len)
 {
+	if (map->ops)
+		return map->ops->write(map, offset, val, val_len);
 	return regmap_raw_write_range(map, 0, offset, val, val_len);
 }
 
@@ -616,8 +645,10 @@ int regmap_update_bits(struct regmap *map, uint offset, uint mask, uint val)
 		return ret;
 
 	reg &= ~mask;
+	reg |= (val & mask);
 
-	return regmap_write(map, offset, reg | (val & mask));
+	debug("%s: 0x%x: 0x%x, 0x%x 0x%x\n", __func__, offset, reg, mask, val);
+	return regmap_write(map, offset, reg);
 }
 
 int regmap_field_read(struct regmap_field *field, unsigned int *val)
