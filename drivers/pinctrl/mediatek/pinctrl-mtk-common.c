@@ -6,6 +6,7 @@
 
 #include <common.h>
 #include <dm.h>
+#include <dm/device_compat.h>
 #include <dm/device-internal.h>
 #include <dm/lists.h>
 #include <dm/pinctrl.h>
@@ -50,6 +51,8 @@ static void mtk_w32(struct udevice *dev, u8 i, u32 reg, u32 val)
 	struct mtk_pinctrl_priv *priv = dev_get_priv(dev);
 
 	__raw_writel(val, priv->base[i] + reg);
+	dev_dbg(dev, "%s: i=%d, base=0x%p, reg=0x%x, val=0x%x\n", __func__,
+		i, priv->base[i], reg, val);
 }
 
 static u32 mtk_r32(struct udevice *dev, u8 i, u32 reg)
@@ -78,6 +81,8 @@ void mtk_i_rmw(struct udevice *dev, u8 i, u32 reg, u32 mask, u32 set)
 {
 	u32 val;
 
+	dev_dbg(dev, "%s: i=%d, reg=0x%x, mask=0x%x, set=0x%x\n", __func__,
+		i, reg, mask, set);
 	val = mtk_r32(dev, i, reg);
 	val &= ~mask;
 	val |= set;
@@ -383,6 +388,8 @@ int mtk_pinconf_bias_set_pu_pd(struct udevice *dev, u32 pin, bool disable,
 {
 	int err;
 
+	dev_dbg(dev, "%s: pin=%d, disable=%d, pullup=%d, val=%d\n", __func__,
+			pin, disable, pullup, val);
 	if (disable) {
 		err = mtk_hw_set_value(dev, pin, PINCTRL_PIN_REG_PU, 0);
 		if (err)
@@ -658,6 +665,15 @@ static int mtk_pinconf_group_set(struct udevice *dev,
 }
 #endif
 
+static int mtk_pinmux_property_set(struct udevice *dev, u32 pinmux_group)
+{
+	unsigned pin = pinmux_group >> 8;
+
+	mtk_hw_set_value(dev, pin, PINCTRL_PIN_REG_MODE, pinmux_group & 0xff);
+	dev_dbg(dev, "%s(%.8x) %d\n", __func__, pinmux_group, pin);
+	return pin;
+}
+
 const struct pinctrl_ops mtk_pinctrl_ops = {
 	.get_pins_count = mtk_get_pins_count,
 	.get_pin_name = mtk_get_pin_name,
@@ -668,6 +684,7 @@ const struct pinctrl_ops mtk_pinctrl_ops = {
 	.get_function_name = mtk_get_function_name,
 	.pinmux_group_set = mtk_pinmux_group_set,
 #if CONFIG_IS_ENABLED(PINCONF)
+	.pinmux_property_set = mtk_pinmux_property_set,
 	.pinconf_num_params = ARRAY_SIZE(mtk_conf_params),
 	.pinconf_params = mtk_conf_params,
 	.pinconf_set = mtk_pinconf_set,
