@@ -5,6 +5,7 @@
  *         Macpaul Lin <macpaul.lin@mediatek.com>
  */
 
+#include <dt-bindings/clock/mediatek,mt8188-clk.h>
 #include <dt-bindings/gpio/gpio.h>
 #include <dt-bindings/interrupt-controller/irq.h>
 #include <dt-bindings/interrupt-controller/arm-gic.h>
@@ -117,11 +118,25 @@
 		};
 	};
 
-	clk26m: oscillator {
+	clk26m: clk26m {
 		compatible = "fixed-clock";
 		#clock-cells = <0>;
 		clock-frequency = <26000000>;
 		clock-output-names = "clk26m";
+	};
+
+	clk13m: clk13m {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <13000000>;
+		clock-output-names = "clk13m";
+	};
+
+	clk32k: clk32k {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <32768>;
+		clock-output-names = "clk32k";
 	};
 
 	mmc_source_clk: mmc-source-clk{
@@ -137,11 +152,38 @@
 		compatible = "simple-bus";
 		ranges;
 
+		topckgen: syscon@10000000 {
+			clocks = <&clk26m>, <&clk13m>, <&clk32k>, <&clk26m>, <&apmixedsys CLK_APMIXED_MAINPLL>;
+			clock-names = "clk26m", "clk13m", "clk32k", "ulposc_ck1", "mainpll_ck";
+			compatible = "mediatek,mt8188-topckgen", "syscon";
+			reg = <0 0x10000000 0 0x1000>;
+			#clock-cells = <1>;
+		};
+
+		infracfg_ao: syscon@10001000 {
+			clocks = <&topckgen CLK_TOP_PWRAP_ULPOSC>;
+			clock-names = "wrap_ulposc";
+			compatible = "mediatek,mt8188-infracfg_ao", "syscon", "simple-mfd";
+			reg = <0 0x10001000 0 0x1000>;
+			#clock-cells = <1>;
+#if 0
+			#reset-cells = <1>;
+#endif
+		};
+
 		watchdog: watchdog@10007000 {
 			compatible = "mediatek,mt8195-wdt",
 				      "mediatek,wdt";
 			reg = <0 0x10007000 0 0x100>;
 			status = "disabled";
+		};
+
+		apmixedsys: syscon@1000c000 {
+			clocks = <&clk26m>;
+			clock-names = "clk26m";
+			compatible = "mediatek,mt8188-apmixedsys", "syscon";
+			reg = <0 0x1000c000 0 0x1000>;
+			#clock-cells = <1>;
 		};
 
 		gic: interrupt-controller@c000000 {
@@ -175,24 +217,6 @@
 			reg = <0 0x0c530a80 0 0x50>;
 		};
 
-		topckgen: syscon@10000000 {
-			compatible = "mediatek,mt8195-topckgen", "syscon";
-			reg = <0 0x10000000 0 0x1000>;
-			#clock-cells = <1>;
-		};
-
-		infracfg: syscon@10001000 {
-			compatible = "mediatek,mt8195-infracfg", "syscon";
-			reg = <0 0x10001000 0 0x1000>;
-			#clock-cells = <1>;
-		};
-
-		apmixedsys: syscon@1000c000 {
-			compatible = "mediatek,mt8195-apmixedsys", "syscon";
-			reg = <0 0x1000c000 0 0x1000>;
-			#clock-cells = <1>;
-		};
-
 		pio: pinctrl@10005000 {
 			compatible = "mediatek,mt8188-pinctrl";
 			reg = <0 0x10005000 0 0x1000>,
@@ -206,6 +230,16 @@
 			gpio: gpio-controller {
 				gpio-controller;
 				#gpio-cells = <2>;
+			};
+
+			pmif_pin: pmif-default-pin {
+				pinmux = <PINMUX_GPIO99__FUNC_I0_RTC32K_CK>,
+					 <PINMUX_GPIO92__FUNC_O_PWRAP_SPI0_CSN>,
+					 <PINMUX_GPIO93__FUNC_O_PWRAP_SPI0_CK>,
+					 <PINMUX_GPIO94__FUNC_B0_PWRAP_SPI0_MO>,
+					 <PINMUX_GPIO95__FUNC_B0_PWRAP_SPI0_MI>,
+					 <PINMUX_GPIO175__FUNC_B0_SPMI_M_SCL>,
+					 <PINMUX_GPIO176__FUNC_B0_SPMI_M_SDA>;
 			};
 		};
 
@@ -221,16 +255,43 @@
 		};
 
 		mmc0: mmc@11230000 {
+			clocks = <&topckgen CLK_TOP_MSDC50_0>,
+				 <&infracfg_ao CLK_INFRA_AO_MSDC0>,
+				 <&infracfg_ao CLK_INFRA_AO_MSDC0_SRC>,
+				 <&infracfg_ao CLK_INFRA_AO_RG_AES_MSDCFDE_CK_0P>;
+			clock-names = "source", "hclk", "source_cg", "crypto_clk";
 			compatible = "mediatek,mt8195-mmc",
 				     "mediatek,mt8183-mmc";
+			interrupts = <GIC_SPI 77 IRQ_TYPE_LEVEL_LOW>;
 			reg = <0 0x11230000 0 0x1000>,
 			      <0 0x11f50000 0 0x1000>;
-			interrupts = <GIC_SPI 77 IRQ_TYPE_LEVEL_LOW>;
-			clocks = <&mmc_source_clk>,
-				 <&clk26m>,
-				 <&clk26m>;
-			clock-names = "source", "hclk", "source_cg";
 			status = "disabled";
+		};
+
+		mmc1: mmc@11240000 {
+			assigned-clocks = <&topckgen CLK_TOP_MSDC30_1>;
+			assigned-clock-parents = <&topckgen CLK_TOP_MSDCPLL_D2>;
+			clocks = <&topckgen CLK_TOP_MSDC30_1>,
+				<&infracfg_ao CLK_INFRA_AO_MSDC1>,
+				<&infracfg_ao CLK_INFRA_AO_MSDC1_SRC>;
+			clock-names = "source", "hclk", "source_cg";
+			compatible = "mediatek,mt8183-mmc";
+			interrupts = <GIC_SPI 135 IRQ_TYPE_LEVEL_HIGH>;
+			reg = <0 0x11240000 0 0x1000>,
+			      <0 0x11eb0000 0 0x1000>;
+			status = "disabled";
+		};
+
+		pwrap: pwrap@10024000 {
+			compatible = "mediatek,mt8188-pwrap", "syscon";
+			reg = <0 0x10024000 0 0x1000>;
+			reg-names = "pwrap";
+			interrupts = <GIC_SPI 243 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&infracfg_ao CLK_INFRA_AO_PMIC_AP>,
+				 <&infracfg_ao CLK_INFRA_AO_PMIC_TMR>;
+			clock-names = "spi", "wrap";
+			pinctrl-names = "default";
+			pinctrl-0 = <&pmif_pin>;
 		};
 	};
 };
