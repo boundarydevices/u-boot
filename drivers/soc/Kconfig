@@ -33,5 +33,6 @@ config SOC_XILINX_VERSAL
 	  matching SoC attributes.
 
 source "drivers/soc/ti/Kconfig"
+source "drivers/soc/mediatek/Kconfig"
 
 endmenu

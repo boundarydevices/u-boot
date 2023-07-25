@@ -1,0 +1,67 @@
+menuconfig SOC_MEDIATEK
+	bool "Mediatek SOC drivers support"
+
+if SOC_MEDIATEK
+config MT2701
+	bool "Enable wrap for mt2701"
+
+config MT6323
+	bool "Enable pmic mt6323"
+
+config MT6351
+	bool "Enable pmic mt6351"
+
+config MT6357
+	bool "Enable pmic mt6357"
+
+config MT6358
+	bool "Enable pmic mt6358"
+
+config MT6359
+	bool "Enable pmic mt6359"
+	default y if TARGET_MT8188
+
+config MT6380
+	bool "Enable pmic mt6380"
+
+config MT6397
+	bool "Enable pmic mt6397"
+
+config MT6765
+	bool "Enable wrap for mt6765"
+
+config MT6779
+	bool "Enable wrap for mt6779"
+
+config MT6797
+	bool "Enable wrap for mt6797"
+
+config MT6873
+	bool "Enable wrap for mt6873"
+
+config MT7622
+	bool "Enable wrap for mt7622"
+
+config MT8135
+	bool "Enable wrap for mt8135"
+
+config MT8173
+	bool "Enable wrap for mt8173"
+
+config MT8183
+	bool "Enable wrap for mt8183"
+
+config MT8188
+	bool "Enable wrap for mt8188"
+	default y if TARGET_MT8188
+
+config MT8195
+	bool "Enable wrap for mt8195"
+
+config MT8365
+	bool "Enable wrap for mt8365"
+
+config MT8516
+	bool "Enable wrap for mt8516"
+
+endif # SOC_MEDIATEK
