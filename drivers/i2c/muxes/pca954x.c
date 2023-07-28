@@ -14,6 +14,7 @@
 #include <asm/global_data.h>
 
 #include <asm-generic/gpio.h>
+#include <linux/err.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -150,7 +151,13 @@ static int pca954x_probe(struct udevice *dev)
 {
 	if (CONFIG_IS_ENABLED(DM_GPIO)) {
 		struct pca954x_priv *priv = dev_get_priv(dev);
+		struct gpio_desc *desc;
 		int err;
+
+		desc = devm_gpiod_get_optional(dev, "a0", (priv->addr & 1) ?
+			(GPIOD_IS_OUT | GPIOD_IS_OUT_ACTIVE) : GPIOD_IS_OUT);
+		if (IS_ERR(desc))
+			return PTR_ERR(desc);
 
 		err = gpio_request_by_name(dev, "reset-gpios", 0,
 				&priv->gpio_mux_reset, GPIOD_IS_OUT);
