@@ -27,7 +27,9 @@
 	pinctrl2(gpio, keys) {
 		PINS_START
 			PD_SM_CHARGER_PRESENT(PAD_PULLUPIRQ)
+#ifdef PD_SM_FORCE_RECOV
 			PD_SM_FORCE_RECOV(PAD_PULLUPIRQ)
+#endif
 			PD_SM_LID(PAD_PULLUPIRQ)
 			PD_SM_CARRIER_PWR_ON(PAD_PULLUPIRQ)
 			PD_SM_SLEEP(PAD_PULLUPIRQ)
@@ -40,6 +42,7 @@
 			PD_SM_ENET1_SDP(PAD_PULLDN)
 			PD_SM_LCD1_VDD_EN(PAD_PULLDN)
 			PD_SM_GPIO12(PAD_PULLDN)
+			PD_SM_CSI1_MCK(PAD_PULLDN)
 		PINS_END
 	};
 
@@ -165,14 +168,6 @@
 		PINS_END
 	};
 
-#ifdef SM_PWM_CSI1
-	pinctrl(SM_PWM_CSI1) {
-		PINS_START
-			PD_SM_CSI1_MCK_PWM(PAD_PULLDN)
-		PINS_END
-	};
-#endif
-
 	pinctrl(SM_SDIO) {
 		PINS_START
 			PD_SM_SDIO_CLK_SDIO(PAD_SDIO_CLK_50M)
@@ -247,6 +242,7 @@
 / {
 	aliases {
 		fb_hdmi = &SM_FB_HDMI;
+		rtc0 = &rv3028;
 		usb_mux = &usb_mux;
 	};
 
@@ -279,13 +275,11 @@
 		};
 	};
 
-#ifdef SM_PWM_CSI1
-	csi_mclk: csi-mclk {
-		compatible = "pwm-clock";
+#ifdef SM_I2C_CSI0
+	csi0_mclk: csi0-mclk {
 		#clock-cells = <0>;
-		clock-frequency = <20000000>;
-		clock-output-names = "csi_mclk";
-		pwms = <&SM_PWM_CSI1 0 50>; /* 1 / 50 ns = 20 MHz */
+		compatible = "fixed-clock";
+		clock-frequency = <24000000>;
 	};
 #endif
 
@@ -300,11 +294,13 @@
 			linux,code = <KEY_0>;
 		};
 
+#ifdef GP_SM_FORCE_RECOV
 		force-recovery {
 			label = "force recovery";
 			gpios = GP_SM_FORCE_RECOV(GPIO_ACTIVE_LOW);
 			linux,code = <KEY_1>;
 		};
+#endif
 
 		lid-open {
 			label = "lid open";
@@ -334,25 +330,27 @@
 			linux,code = <KEY_1>;
 		};
 
+#if 0	/* Temporary GP_SM_GPIO11 is used for hd3ss3220 interrupt, need something else here */
 		can2 {
 			label = "can2 detect";
 			gpios = GP_SM_GPIO11(GPIO_ACTIVE_HIGH);
 			linux,code = <KEY_2>;
 		};
+#endif
 	};
 
-	reg_can1_stby: regulator-can1-stby {
+	reg_can0_stby: regulator-can0-stby {
 		compatible = "regulator-fixed";
-		regulator-name = "can1-stby";
+		regulator-name = "can0-stby";
 		regulator-min-microvolt = <3300000>;
 		regulator-max-microvolt = <3300000>;
 		gpio = GP_SM_GPIO1(GPIO_ACTIVE_HIGH);
 		enable-active-high;
 	};
 
-	reg_can2_stby: regulator-can2-stby {
+	reg_can1_stby: regulator-can1-stby {
 		compatible = "regulator-fixed";
-		regulator-name = "can2-stby";
+		regulator-name = "can1-stby";
 		regulator-min-microvolt = <3300000>;
 		regulator-max-microvolt = <3300000>;
 		gpio = GP_SM_GPIO4(GPIO_ACTIVE_HIGH);
@@ -369,6 +367,15 @@
 		regulator-max-microvolt = <5000000>;
 		gpio = GP_SM_USB0_EN_OC(GPIO_ACTIVE_HIGH);
 		enable-active-high;
+	};
+
+	reg_vref_sdio: regulator-vref-sdio {
+		clocks = <&rv3028>;
+		compatible = "regulator-fixed-clock";
+		regulator-always-on;
+		regulator-name = "vref-3v3";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
 	};
 
 #ifdef SM_I2S0
@@ -426,13 +433,14 @@
 	pinctrl-names = "default";
 	pinctrl-0 = pinctrl_ref(SM_CAN0);
 	status = "okay";
-	xceiver-supply = <&reg_can1_stby>;
+	xceiver-supply = <&reg_can0_stby>;
 };
 
 &SM_CAN1 {
 	pinctrl-names = "default";
 	pinctrl-0 = pinctrl_ref(SM_CAN1);
 	status = "okay";
+	xceiver-supply = <&reg_can1_stby>;
 };
 
 &SM_I2C_GP {
@@ -486,8 +494,9 @@
 };
 
 &i2c_gp_a {
-	rtc@52 {
+	rv3028: rtc@52 {
 		backup-switchover-dsm;
+		#clock-cells = <0>;
 		compatible = "microcrystal,rv3028";
 		reg = <0x52>;
 		interrupts-extended = GP_SM_GPIO12(IRQ_TYPE_LEVEL_LOW);
@@ -617,21 +626,22 @@
 
 #ifdef SM_I2C_CSI0
 &SM_I2C_CSI0{
-	camera@3c {
-		DOVDD-supply = <&reg_vref_1v8>;
-		DVDD-supply = <&reg_vref_3v3>;
-		compatible = "pi2ln";
-		csi_id = <0x00>;
-		powerdown-gpios = GP_SM_GPIO0(GPIO_ACTIVE_HIGH);
-		reg = <0x3c>;
-		reset-gpios = GP_SM_GPIO2(GPIO_ACTIVE_LOW);
+	camera@10 {
+		compatible = "sony,imx219";
+		reg = <0x10>;
+		clocks = <&csi0_mclk>;
+		csi_id = <0>;
+		pwn-gpios = GP_SM_GPIO2(GPIO_ACTIVE_HIGH);
+		rst-gpios = GP_SM_GPIO0(GPIO_ACTIVE_LOW);
 		status = "okay";
 
 		port {
-			pi_2lane_mipi_ep: endpoint {
-				clock-lanes = <0>;
+			mipi_sensor0_ep: endpoint {
+				remote-endpoint = <&mipi_csi0_ep>;
 				data-lanes = <1 2>;
-				remote-endpoint = <&mipi1_csi0_ep>;
+				clock-lanes = <0>;
+				clock-noncontinuous;
+				link-frequencies = /bits/ 64 <456000000>;
 			};
 		};
 	};
@@ -640,24 +650,22 @@
 
 #ifdef SM_I2C_CSI1
 &SM_I2C_CSI1 {
-	camera@36 {
-		clocks = <&csi_mclk>;
-		clock-names = "csi_mclk";
-		compatible = "ovti,os08a20";
-		csi_id = <0x01>;
-		reg = <0x36>;
-		reset-gpios = GP_SM_GPIO3(GPIO_ACTIVE_LOW);
+	camera@10 {
+		compatible = "sony,imx219";
+		reg = <0x10>;
+		clocks = <&csi0_mclk>;
+		csi_id = <1>;
+		pwn-gpios = GP_SM_GPIO3(GPIO_ACTIVE_HIGH);
+		rst-gpios = GP_SM_CSI1_MCK(GPIO_ACTIVE_LOW);
 		status = "okay";
 
 		port {
-			os08a20_mipi_ep: endpoint {
-				clock-lanes = <0>;
-				data-lanes = <1 2 3 4>;
-				link-frequencies = /bits/ 64 <750000000>;
-				max-lane-frequency = /bits/ 64 <750000000>;
-				max-pixel-frequency = /bits/ 64 <266000000>;
-				max-data-rate = /bits/ 64 <0>;
+			mipi_sensor1_ep: endpoint {
 				remote-endpoint = <&mipi_csi1_ep>;
+				data-lanes = <1 2>;
+				clock-lanes = <0>;
+				clock-noncontinuous;
+				link-frequencies = /bits/ 64 <456000000>;
 			};
 		};
 	};
@@ -671,10 +679,9 @@
 	status = "okay";
 };
 
-#ifdef SM_PWM_CSI1
-&SM_PWM_CSI1 {
-	pinctrl-names = "default";
-	pinctrl-0 = pinctrl_ref(SM_PWM_CSI1);
+#ifdef SM_PCIE_PHY
+&SM_PCIE_PHY {
+	fsl,refclk-pad-mode = <IMX8_PCIE_REFCLK_PAD_INPUT>;
 	status = "okay";
 };
 #endif
@@ -708,7 +715,7 @@
 	pinctrl-2 = pinctrl_ref2(SM_SDIO, 200mhz);
 #endif
 	status = "okay";
-	vmmc-supply = <&reg_vref_3v3>;
+	vmmc-supply = <&reg_vref_sdio>;
 };
 
 &SM_SER0 {
