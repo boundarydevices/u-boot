@@ -568,11 +568,11 @@
 	sda-gpios = GP_I2C6_SDA;
 	status = "okay";
 
-	i2cmux9546@70 {
+	i2cmux9546@71 {
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_i2c6_pca9546>;
 		compatible = "nxp,pca9546";
-		reg = <0x70>;
+		reg = <0x71>;
 		reset-gpios = GP_I2C6_PCA9546_RESET;
 		#address-cells = <1>;
 		#size-cells = <0>;
@@ -594,7 +594,6 @@
 		};
 
 		i2c6c: i2c6@2 {
-			/* GPIO expander I2C*/
 			clock-frequency = <100000>;
 			reg = <2>;
 			#address-cells = <1>;
@@ -608,9 +607,7 @@
 			#size-cells = <0>;
 		};
 	};
-};
 
-&i2c6c {
 	mcp23018: gpio@20 {
 		compatible = "microchip,mcp23018";
 		gpio-controller;
@@ -1098,8 +1095,6 @@
 #define PD_SM_CARRIER_STANDBY(a)	MX8MP_IOMUXC_GPIO1_IO06__GPIO1_IO06 a
 #define GP_SM_CARRIER_PWR_ON(a)		<&gpio1 10 a>
 #define PD_SM_CARRIER_PWR_ON(a)		MX8MP_IOMUXC_GPIO1_IO10__GPIO1_IO10 a
-#define GP_SM_FORCE_RECOV(a)		<&gpio4 18 a>
-#define PD_SM_FORCE_RECOV(a)		MX8MP_IOMUXC_SAI1_TXD6__GPIO4_IO18 a
 #define GP_SM_BAT_LOW(a)		<&mcp23018 15 (a | GPIO_PULL_UP)>
 #define PD_SM_BAT_LOW(a)
 
@@ -1125,8 +1120,8 @@
 #define PD_SM_GPIO9(a)
 #define GP_SM_GPIO10(a)			<&mcp23018 11 (a | GPIO_PULL_UP)>
 #define PD_SM_GPIO10(a)
-#define GP_SM_GPIO11(a)			<&mcp23018 12 (a | GPIO_PULL_UP)>
-#define PD_SM_GPIO11(a)
+#define GP_SM_GPIO11(a)                        <&gpio4 18 a>
+#define PD_SM_GPIO11(a)                        MX8MP_IOMUXC_SAI1_TXD6__GPIO4_IO18 a
 #define GP_SM_RESET_OUT(a)		<&mcp23018 13 (a | GPIO_PULL_UP)>
 #define PD_SM_RESET_OUT(a)
 #define GP_SM_POWER_BTN(a)
