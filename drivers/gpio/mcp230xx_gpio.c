@@ -112,6 +112,9 @@ static int mcp230xx_set_flags(struct udevice *dev, uint offset, ulong flags)
 	ulong supported_mask;
 	int ret;
 
+	if (flags & GPIOD_IS_OUT_ACTIVE)
+		pullup |= GPIOD_PULL_UP;
+
 	/* Note: active-low is ignored (handled by core) */
 	supported_mask = GPIOD_ACTIVE_LOW | GPIOD_MASK_DIR | GPIOD_PULL_UP;
 	if (flags & ~supported_mask) {
