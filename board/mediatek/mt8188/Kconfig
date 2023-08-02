@@ -1,0 +1,11 @@
+if TARGET_MT8188
+config BOARD_TYPE
+	string "board override name"
+
+config BOARD_TYPE_SET
+	bool "BOARD_TYPE value given"
+	default y if BOARD_TYPE != ""
+
+config DEFCONFIG
+	string "defconfig name"
+endif

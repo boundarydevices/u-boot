@@ -126,4 +126,5 @@ config MTK_BROM_HEADER_INFO
 	default "media=emmc" if TARGET_MT8516 || TARGET_MT8365 || TARGET_MT8183 || TARGET_MT8188
 	default "lk=1" if TARGET_MT7623
 
+source "board/mediatek/Kconfig"
 endif

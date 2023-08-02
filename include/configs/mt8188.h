@@ -9,6 +9,10 @@
 #ifndef __MT8188_H
 #define __MT8188_H
 
+#ifdef CONFIG_BOARD_TYPE_SET
+#undef CONFIG_SYS_BOARD
+#define CONFIG_SYS_BOARD CONFIG_BOARD_TYPE
+#endif
 #include <linux/sizes.h>
 
 #define CONFIG_SYS_NS16550_SERIAL
@@ -66,7 +70,10 @@
 
 #if !defined(CONFIG_EXTRA_ENV_SETTINGS)
 #define CONFIG_EXTRA_ENV_SETTINGS \
-	"scriptaddr=0x40000000\0" \
+	"dtbos=gpu-mali apusys video\0" \
+	"env_dev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
+	"env_part=" __stringify(CONFIG_SYS_MMC_ENV_PART) "\0" \
+	"scriptaddr=" __stringify(CONFIG_SYS_LOAD_ADDR) "\0" \
 	"fdt_addr_r=0x44000000\0" \
 	"fdtoverlay_addr_r=0x44c00000\0" \
 	"kernel_addr_r=0x45000000\0" \

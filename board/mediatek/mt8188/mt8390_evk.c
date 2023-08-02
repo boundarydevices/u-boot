@@ -71,6 +71,10 @@ void mediatek_capsule_update_board_setup(void)
 }
 #endif /* CONFIG_EFI_HAVE_CAPSULE_SUPPORT && CONFIG_EFI_PARTITION */
 
+#ifdef CONFIG_DEFCONFIG
+static const char uboot_defconfig[] = CONFIG_DEFCONFIG;
+#endif
+
 int board_init(void)
 {
 	struct udevice *dev;
@@ -115,5 +119,8 @@ int board_init(void)
 	    IS_ENABLED(CONFIG_EFI_PARTITION))
 		mediatek_capsule_update_board_setup();
 
+#ifdef CONFIG_DEFCONFIG
+	env_set("uboot_defconfig", uboot_defconfig);
+#endif
 	return 0;
 }

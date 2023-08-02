@@ -1,0 +1,1 @@
+source "board/mediatek/mt8188/Kconfig"
