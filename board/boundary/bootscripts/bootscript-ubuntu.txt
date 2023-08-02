@@ -6,12 +6,17 @@ img_prefix=/
 a_base=0x10000000
 
 #grab 1st 2/3 characters of string
-if itest.s x == "x${imx_cpu}" ; then
-	cpu2="AM"
-	cpu3="AML"
+if itest.s "xmediatek" == "x${soc}" ; then
+	cpu2="MT"
+	cpu3="MTK"
 else
-	setexpr cpu2 sub "^(..?).*" "\\1" "${imx_cpu}"
-	setexpr cpu3 sub "^(..?.?).*" "\\1" "${imx_cpu}"
+	if itest.s x == "x${imx_cpu}" ; then
+		cpu2="AM"
+		cpu3="AML"
+	else
+		setexpr cpu2 sub "^(..?).*" "\\1" "${imx_cpu}"
+		setexpr cpu3 sub "^(..?.?).*" "\\1" "${imx_cpu}"
+	fi
 fi
 if itest.s x51 == "x${cpu2}" ; then
 	a_base=0x90000000
@@ -34,13 +39,21 @@ elif itest.s xAM == "x${cpu2}"; then
 	kernelimage=Image
 	bootcommand=booti
 	img_prefix=${prefix}
+elif itest.s xMT == "x${cpu2}"; then
+	# mediatek reserves 0x43200000-0x43dfffff
+	a_base=0x44000000
+	kernelimage=Image
+	bootcommand=booti
+	img_prefix=${prefix}
 fi
 
 setexpr a_script  ${a_base} + 0x00800000
 setexpr a_zImage  ${a_base} + 0x00800000
-setexpr a_fdt     ${a_base} + 0x03000000
 # i.mx8MP uses address 0x43200000 as its optee dtb overlay address
-setexpr a_initrd  ${a_base} + 0x03300000
+#kernel can be 56M, 42M for i.mx8MP
+setexpr a_fdt     ${a_base} + 0x04000000
+setexpr a_fdto    ${a_base} + 0x04100000
+setexpr a_initrd  ${a_base} + 0x04200000
 setexpr a_reset_cause_marker ${a_base} + 0x80
 setexpr a_reset_cause	     ${a_base} + 0x84
 
@@ -77,6 +90,8 @@ elif itest.s x8MQ == "x${cpu3}" ; then
 	dtb_prefix=imx8mq;
 elif itest.s x8ULP == "x${imx_cpu}" ; then
 	dtb_prefix=imx8ulp;
+elif itest.s xMT == "x${cpu2}" ; then
+	dtb_prefix="";
 else
 	dtb_prefix=imx6q;
 fi
@@ -95,7 +110,11 @@ if test ! -z "${m4enabled}"; then
 fi
 
 if test -z "${fdt_file}" ; then
-    bn=${dtb_prefix}-${board}${board_rv}${board_carrier}${board_modifier};
+    if test -z "$dtb_prefix"; then
+	bn=${board}${board_rv}${board_carrier}${board_modifier};
+    else
+	bn=${dtb_prefix}-${board}${board_rv}${board_carrier}${board_modifier};
+    fi
     if test ! -z "${mcore_dtb}" ; then
             if test -e ${devtype} ${devnum}:${distro_bootpart} ${prefix}${bn}-rpmsg.dtb; then
                     fdt_file=${bn}-rpmsg.dtb
@@ -151,7 +170,12 @@ else
 	exit;
 fi
 
-fdt resize 4096
+fdt resize 8192
+for dtbofile in ${dtbos}; do
+	load ${devtype} ${devnum}:${distro_bootpart} ${a_fdto} ${prefix}/devicetree/${dtbofile}.dtbo
+	fdt apply ${a_fdto}
+done
+
 if itest.s "x" != "x${cmd_board}" ; then
 	run cmd_board
 fi
