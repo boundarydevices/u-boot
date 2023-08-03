@@ -106,7 +106,7 @@ static int splash_load_raw(struct splash_location *location, u32 bmp_load_addr)
 		bmp_size = le32_to_cpu(bmp_hdr->file_size);
 	} else if ((bmp_hdr->signature[0] == 0x1f) &&
 			      (bmp_hdr->signature[1] == 0x8b)) {
-		char *sz = getenv("splashsize");
+		char *sz = env_get("splashsize");
 
 		bmp_size = 0;
 		if (sz)
