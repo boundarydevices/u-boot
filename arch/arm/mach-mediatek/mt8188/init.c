@@ -7,7 +7,7 @@
 #include <clk.h>
 #include <common.h>
 #include <dm.h>
-#include <fdtdec.h>
+#include <init.h>
 #include <ram.h>
 #include <asm/arch/misc.h>
 #include <asm/armv8/mmu.h>
@@ -17,16 +17,30 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
+struct mm_region *mem_map;
+
+static struct mm_region * find_dram_entry_in_mem_map(void)
+{
+	struct mm_region *mm = mem_map;
+
+	while (mm->size) {
+		if (mm->phys == 0x40000000UL)
+			return mm;
+		mm++;
+	}
+
+	panic("ddr entry not found\n");	/* Entry not found, this must never happen. */
+	return mm;
+}
+
 int dram_init(void)
 {
-	int ret;
+	struct mm_region *mm = find_dram_entry_in_mem_map();
+	long sdram_size = get_ram_size((void *)mm->phys, mm->size);
 
-	ret = fdtdec_setup_memory_banksize();
-	if (ret)
-		return ret;
-
-	fdtdec_setup_mem_size_base();
-
+	gd->ram_base = mm->phys;
+	gd->ram_size = sdram_size;
+	mm->size = sdram_size;
 	/*
 	 * Limit gd->ram_top not exceeding SZ_4G.
 	 * Because some periphals like mmc requires DMA buffer
