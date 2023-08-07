@@ -1260,7 +1260,7 @@ static int hs400_tune_response(struct udevice *dev, u32 opcode)
 	struct msdc_delay_phase final_cmd_delay = { 0, };
 	u8 final_delay;
 	void __iomem *tune_reg = &host->base->pad_cmd_tune;
-	int cmd_err;
+	int cmd_err = 0;
 	int i, j;
 
 	setbits_le32(&host->base->pad_cmd_tune, BIT(0));
@@ -1312,7 +1312,7 @@ static int msdc_tune_response(struct udevice *dev, u32 opcode)
 	u8 final_delay, final_maxlen;
 	u32 internal_delay = 0;
 	void __iomem *tune_reg = &host->base->pad_tune;
-	int cmd_err;
+	int cmd_err = 0;
 	int i, j;
 
 	if (host->dev_comp->pad_tune0)
@@ -1414,7 +1414,7 @@ static int msdc_tune_data(struct udevice *dev, u32 opcode)
 	struct msdc_delay_phase final_rise_delay, final_fall_delay = { 0, };
 	u8 final_delay, final_maxlen;
 	void __iomem *tune_reg = &host->base->pad_tune;
-	int cmd_err;
+	int cmd_err = 0;
 	int i, ret;
 
 	if (host->dev_comp->pad_tune0)
