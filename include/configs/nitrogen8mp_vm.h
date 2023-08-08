@@ -54,7 +54,6 @@
 #define CONFIG_ETHPRIME			"eth0" /* nitrogen8mp_vm only has 1 ethernet */
 
 #define CONFIG_FEC_MXC_PHYADDR		7
-#define DWC_NET_PHYADDR			7
 #ifdef CONFIG_DWC_ETH_QOS
 #define CONFIG_SYS_NONCACHED_MEMORY     (1 * SZ_1M)     /* 1M */
 #endif
