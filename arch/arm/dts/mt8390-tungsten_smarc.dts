@@ -1,0 +1,307 @@
+// SPDX-License-Identifier: GPL-2.0 OR MIT
+/*
+ * Copyright (C) 2022 MediaTek Inc.
+ * Author: Chris-QJ Chen <chris-qj.chen@mediatek.com>
+ */
+
+/dts-v1/;
+
+#include <config.h>
+#include "mt8188.dtsi"
+#include "mt6359.dtsi"
+
+&pio {
+	eth_default_pins: eth-default-pins {
+		pins-txd {
+			pinmux = <PINMUX_GPIO131__FUNC_O_GBE_TXD3>,
+				 <PINMUX_GPIO132__FUNC_O_GBE_TXD2>,
+				 <PINMUX_GPIO133__FUNC_O_GBE_TXD1>,
+				 <PINMUX_GPIO134__FUNC_O_GBE_TXD0>;
+			drive-strength = <MTK_DRIVE_8mA>;
+		};
+		pins-cc {
+			pinmux = <PINMUX_GPIO139__FUNC_B0_GBE_TXC>,
+				 <PINMUX_GPIO142__FUNC_O_GBE_TXEN>,
+				 <PINMUX_GPIO141__FUNC_I0_GBE_RXDV>,
+				 <PINMUX_GPIO140__FUNC_I0_GBE_RXC>;
+			drive-strength = <MTK_DRIVE_8mA>;
+		};
+		pins-rxd {
+			pinmux = <PINMUX_GPIO135__FUNC_I0_GBE_RXD3>,
+				 <PINMUX_GPIO136__FUNC_I0_GBE_RXD2>,
+				 <PINMUX_GPIO137__FUNC_I0_GBE_RXD1>,
+				 <PINMUX_GPIO138__FUNC_I0_GBE_RXD0>;
+			drive-strength = <MTK_DRIVE_8mA>;
+		};
+		pins-mdio {
+			pinmux = <PINMUX_GPIO143__FUNC_O_GBE_MDC>,
+				 <PINMUX_GPIO144__FUNC_B1_GBE_MDIO>;
+			drive-strength = <MTK_DRIVE_8mA>;
+			input-enable;
+		};
+		pins-power {
+#define GP_EQOS_RESET	<&gpio 27 GPIO_ACTIVE_LOW>
+			pinmux = <PINMUX_GPIO27__FUNC_B_GPIO27>;
+			output-high;
+		};
+		pins-intr {
+#define GPIRQ_EQOS_PHY	<&pio 148 IRQ_TYPE_LEVEL_LOW>
+			pinmux = <PINMUX_GPIO148__FUNC_B_GPIO148>;
+			input-enable;
+		};
+	};
+
+	eth_sleep_pins: eth-sleep-pins {
+		pins-txd {
+			pinmux = <PINMUX_GPIO131__FUNC_B_GPIO131>,
+				 <PINMUX_GPIO132__FUNC_B_GPIO132>,
+				 <PINMUX_GPIO133__FUNC_B_GPIO133>,
+				 <PINMUX_GPIO134__FUNC_B_GPIO134>;
+		};
+		pins-cc {
+			pinmux = <PINMUX_GPIO139__FUNC_B_GPIO139>,
+				 <PINMUX_GPIO142__FUNC_B_GPIO142>,
+				 <PINMUX_GPIO141__FUNC_B_GPIO141>,
+				 <PINMUX_GPIO140__FUNC_B_GPIO140>;
+		};
+		pins-rxd {
+			pinmux = <PINMUX_GPIO135__FUNC_B_GPIO135>,
+				 <PINMUX_GPIO136__FUNC_B_GPIO136>,
+				 <PINMUX_GPIO137__FUNC_B_GPIO137>,
+				 <PINMUX_GPIO138__FUNC_B_GPIO138>;
+		};
+		pins-mdio {
+			pinmux = <PINMUX_GPIO143__FUNC_B_GPIO143>,
+				 <PINMUX_GPIO144__FUNC_B_GPIO144>;
+			input-disable;
+			bias-disable;
+		};
+	};
+
+	eth_gpio_rx_pins: eth-gpio-rx-pins {
+		pins-rx-low {
+			pinmux =
+#define GP_PHY_RX_CTL		<&gpio 141 GPIO_ACTIVE_HIGH>
+				<PINMUX_GPIO141__FUNC_B_GPIO141>;
+			output-low;
+		};
+		pins-rx-high {
+			pinmux =
+#define GP_PHY_RD0		<&gpio 135 GPIO_ACTIVE_HIGH>
+				<PINMUX_GPIO135__FUNC_B_GPIO135>,
+#define GP_PHY_RD1		<&gpio 136 GPIO_ACTIVE_HIGH>
+				<PINMUX_GPIO136__FUNC_B_GPIO136>,
+#define GP_PHY_RD2		<&gpio 137 GPIO_ACTIVE_HIGH>
+				<PINMUX_GPIO137__FUNC_B_GPIO137>,
+#define GP_PHY_RD3		<&gpio 138 GPIO_ACTIVE_HIGH>
+				<PINMUX_GPIO138__FUNC_B_GPIO138>,
+#define GP_PHY_RXC		<&gpio 140 GPIO_ACTIVE_HIGH>
+				<PINMUX_GPIO140__FUNC_B_GPIO140>;
+			output-high;
+		};
+	};
+
+	mmc1_pins_default: mmc1default {
+		pins-cmd-dat {
+			pinmux = <PINMUX_GPIO163__FUNC_B1_MSDC1_CMD>,
+				 <PINMUX_GPIO165__FUNC_B1_MSDC1_DAT0>,
+				 <PINMUX_GPIO166__FUNC_B1_MSDC1_DAT1>,
+				 <PINMUX_GPIO167__FUNC_B1_MSDC1_DAT2>,
+				 <PINMUX_GPIO168__FUNC_B1_MSDC1_DAT3>;
+			input-enable;
+			drive-strength = <MTK_DRIVE_6mA>;
+			bias-pull-up = <MTK_PUPD_SET_R1R0_01>;
+		};
+
+		pins-clk {
+			pinmux = <PINMUX_GPIO164__FUNC_B1_MSDC1_CLK>;
+			drive-strength = <MTK_DRIVE_6mA>;
+			bias-pull-down = <MTK_PUPD_SET_R1R0_10>;
+		};
+
+		pins-insert {
+#define GP_MMC1_CD	<&gpio 2 GPIO_ACTIVE_LOW>
+			pinmux = <PINMUX_GPIO2__FUNC_B_GPIO2>;
+			bias-pull-up;
+		};
+	};
+
+	panel_pins_default: panel-pins-default {
+		panel-dcdc {
+			pinmux = <PINMUX_GPIO45__FUNC_B_GPIO45>;
+			output-low;
+		};
+
+		panel-en {
+			pinmux = <PINMUX_GPIO111__FUNC_B_GPIO111>;
+			output-low;
+		};
+
+		panel-rst {
+			pinmux = <PINMUX_GPIO25__FUNC_B_GPIO25>;
+			output-high;
+		};
+
+		pins-bl {
+			pinmux = <PINMUX_GPIO29__FUNC_O_DISP_PWM0>;
+		};
+	};
+};
+
+/ {
+	model = "MediaTek mt8390 Tungsten smarc";
+	compatible = "mediatek,mt8390-tungsten-smarc", "mediatek,mt8188";
+
+	aliases {
+		serial0 = &uart0;
+		ethernet0 = &eth;
+	};
+
+	memory@40000000 {
+		/* 8GB */
+		device_type = "memory";
+		reg = <0 0x40000000 2 0x00000000>;
+	};
+
+	firmware: firmware {
+		optee {
+			compatible = "linaro,optee-tz";
+			method = "smc";
+		};
+
+		psci: psci {
+			compatible = "arm,psci-1.0";
+			method = "smc";
+		};
+	};
+
+	reserved-memory {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		/* 2 MiB reserved for ARM Trusted Firmware (BL31) */
+		bl31_secmon_reserved: secmon@54600000 {
+			no-map;
+			reg = <0 0x54600000 0x0 0x200000>;
+		};
+
+		/* 12 MiB reserved for OP-TEE (BL32)
+		 * +-----------------------+ 0x43e0_0000
+		 * |      SHMEM 2MiB       |
+		 * +-----------------------+ 0x43c0_0000
+		 * |        | TA_RAM  8MiB |
+		 * + TZDRAM +--------------+ 0x4340_0000
+		 * |        | TEE_RAM 2MiB |
+		 * +-----------------------+ 0x4320_0000
+		 */
+		optee_reserved: optee@43200000 {
+			no-map;
+			reg = <0 0x43200000 0 0x00c00000>;
+		};
+
+		dsi_reserved: dsi@60000000 {
+			reg = <0 0x60000000 0 0x02000000>;
+			no-map;
+		};
+	};
+
+	chosen {
+		stdout-path = &uart0;
+	};
+
+	reg_1p8v: regulator-1p8v {
+		compatible = "regulator-fixed";
+		regulator-name = "fixed-1.8V";
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+		regulator-boot-on;
+		regulator-always-on;
+	};
+
+	reg_3p3v: regulator-3p3v {
+		compatible = "regulator-fixed";
+		regulator-name = "fixed-3.3V";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-boot-on;
+		regulator-always-on;
+	};
+
+	dsi0: dsi0{
+		compatible = "mediatek,mt8188-dsi";
+		reg = <0 0x60000000 0 0x02000000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&panel_pins_default>;
+		reset-gpios = <&gpio 25 GPIO_ACTIVE_HIGH>;
+		dcdc-gpios = <&gpio 45 GPIO_ACTIVE_HIGH>;
+		enable-gpios = <&gpio 111 GPIO_ACTIVE_HIGH>;
+		status = "okay";
+	};
+};
+
+&eth {
+	avddh-supply = <&mt6359_vpa_buck_reg>;
+	mediatek,mac-wol;
+	phy-mode ="rgmii-rxid";
+	phy-handle = <&ethernet_phy0>;
+	pinctrl-names = "default", "sleep", "gpio-rx";
+	pinctrl-0 = <&eth_default_pins>;
+	pinctrl-1 = <&eth_sleep_pins>;
+	pinctrl-2 = <&eth_gpio_rx_pins>;
+	status = "okay";
+
+	mdio {
+		compatible = "snps,dwmac-mdio";
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		ethernet_phy0: ethernet-phy@7 {
+			compatible = "ethernet-phy-ieee802.3-c22";
+			eee-broken-1000t;
+			interrupts-extended = GPIRQ_EQOS_PHY;
+			reg = <0x7>;
+#ifdef GP_EQOS_RESET
+			reset-gpios = GP_EQOS_RESET;
+#endif
+		};
+	};
+};
+
+&watchdog {
+	status = "okay";
+};
+
+&uart0 {
+	status = "okay";
+};
+
+&mmc0 {
+	bus-width = <8>;
+	cap-mmc-highspeed;
+	cap-mmc-hw-reset;
+	hs400-ds-delay = <0x1481b>;
+	max-frequency = <200000000>;
+	mmc-hs200-1_8v;
+	mmc-hs400-1_8v;
+	non-removable;
+	no-sdio;
+	no-sd;
+	status = "okay";
+	vmmc-supply = <&reg_3p3v>;
+	vqmmc-supply = <&reg_1p8v>;
+};
+
+&mmc1 {
+	bus-width = <4>;
+	cap-sd-highspeed;
+	cd-gpios = GP_MMC1_CD;
+	max-frequency = <200000000>;
+	no-mmc;
+	no-sdio;
+	pinctrl-names = "default";
+	pinctrl-0 = <&mmc1_pins_default>;
+	status = "okay";
+	vmmc-supply = <&reg_3p3v>;
+	vqmmc-supply = <&mt6359_vsim1_ldo_reg>;
+};

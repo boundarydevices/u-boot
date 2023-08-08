@@ -1,0 +1,3 @@
+if TARGET_MT8390_TUNGSTEN_SMARC
+source "board/boundary/common/Kconfig"
+endif

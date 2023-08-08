@@ -4,6 +4,7 @@ config SYS_SOC
 	default "mediatek"
 
 config SYS_VENDOR
+	default "boundary" if TARGET_MT8390_TUNGSTEN_SMARC
 	default "mediatek"
 
 config MT8512
@@ -58,6 +59,10 @@ config TARGET_MT8188
 	  SD and MMC cards, UFS, PWM, I2C, I2S, S/PDIF, and several LPDDR4
 	  and LPDDR4x options.
 
+config TARGET_MT8390_TUNGSTEN_SMARC
+	bool "Boundary Devices MT8390 based tungsten board"
+	select ARM64
+
 config TARGET_MT8512
         bool "MediaTek MT8512 M1 Board"
         select ARM64
@@ -98,6 +103,7 @@ config SYS_BOARD
 	default "mt8512" if TARGET_MT8512
 	default "mt8516" if TARGET_MT8516
 	default "mt8518" if TARGET_MT8518
+	default "mt8390-tungsten_smarc" if TARGET_MT8390_TUNGSTEN_SMARC
 	default ""
 	help
 	  This option contains information about board name.
@@ -114,6 +120,7 @@ config SYS_CONFIG_NAME
 	default "mt8512" if TARGET_MT8512
 	default "mt8516" if TARGET_MT8516
 	default "mt8518" if TARGET_MT8518
+	default "mt8390_tungsten_smarc" if TARGET_MT8390_TUNGSTEN_SMARC
 	default ""
 	help
 	  This option contains information about board configuration name.
@@ -123,8 +130,9 @@ config SYS_CONFIG_NAME
 config MTK_BROM_HEADER_INFO
 	string
 	default "media=nor" if TARGET_MT8518 || TARGET_MT8512 || TARGET_MT7629 || TARGET_MT7622
-	default "media=emmc" if TARGET_MT8516 || TARGET_MT8365 || TARGET_MT8183 || TARGET_MT8188
+	default "media=emmc" if TARGET_MT8516 || TARGET_MT8365 || TARGET_MT8183 || TARGET_MT8188 || TARGET_MT8390_TUNGSTEN_SMARC
 	default "lk=1" if TARGET_MT7623
 
 source "board/mediatek/Kconfig"
+source "board/boundary/mt8390-tungsten_smarc/Kconfig"
 endif
