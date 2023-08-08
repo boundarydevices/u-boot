@@ -240,7 +240,8 @@ static int mt6357_get_value(struct udevice *dev)
 static int mt6357_set_value(struct udevice *dev, int uvolt)
 {
 	struct mt6357_regulator_info *info = dev_get_priv(dev);
-	int selector, idx, ret = -EINVAL;
+	int idx, ret = -EINVAL;
+	int selector = 0;	/* coverity: uninitialized variable */
 	const u32 *pvol;
 
 	switch (info->desc.type) {
