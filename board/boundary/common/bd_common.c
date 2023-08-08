@@ -5,11 +5,13 @@
  */
 #include <common.h>
 #include <command.h>
+#ifndef CONFIG_ARCH_MEDIATEK
 #include <asm/arch/clock.h>
+#endif
 #if defined(CONFIG_IMX8M)
 #include <asm/arch/ddr.h>
 #endif
-#if !defined(CONFIG_MX7D) && !defined(CONFIG_MX51) && !defined(CONFIG_MX6ULL) && !defined(CONFIG_IMX8M) && !defined(CONFIG_IMX8ULP)
+#if !defined(CONFIG_MX7D) && !defined(CONFIG_MX51) && !defined(CONFIG_MX6ULL) && !defined(CONFIG_IMX8M) && !defined(CONFIG_IMX8ULP) && !defined(CONFIG_ARCH_MEDIATEK)
 #include <asm/arch/iomux.h>
 #endif
 #include <asm/arch/sys_proto.h>
@@ -61,7 +63,7 @@ ulong board_get_usable_ram_top(ulong total_size)
 }
 #endif
 
-#if !defined(CONFIG_IMX8M) && !defined(CONFIG_IMX8ULP)
+#if !defined(CONFIG_IMX8M) && !defined(CONFIG_IMX8ULP) && !defined(CONFIG_ARCH_MEDIATEK)
 int dram_init(void)
 {
 #if defined(CONFIG_MX51) || defined(CONFIG_MX7D)
@@ -521,7 +523,9 @@ int misc_init_r(void)
 	 * Not really needed as script checks for magic value in memory,
 	 * but shouldn't hurt.
 	 */
+#if !defined(CONFIG_ARCH_MEDIATEK)
 	env_set_hex("reset_cause", get_imx_reset_cause());
+#endif
 
 #ifdef CONFIG_MX7D
 	set_wdog_reset((struct wdog_regs *)WDOG1_BASE_ADDR);
@@ -579,6 +583,7 @@ static void print_time_rv4162(void) {}
 #define ADDMAC_OFFSET	0
 #endif
 
+#if !defined(CONFIG_ARCH_MEDIATEK)
 #if defined(CONFIG_ENV_WLMAC) || defined(CONFIG_ENV_BD_ADDR)
 static void addmac_env(const char* env_var)
 {
@@ -609,6 +614,7 @@ static void addserial_env(const char* env_var)
 		env_set(env_var, serialbuf);
 	}
 }
+#endif
 #endif
 
 #ifdef CONFIG_SYS_BOARD
@@ -665,17 +671,21 @@ int bdcommon_env_init(void)
 #endif
 	char *uboot_release;
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
+#if !defined(CONFIG_ARCH_MEDIATEK)
 	int cpurev = get_cpu_rev();
+#endif
 
 #if defined(CONFIG_IMX8MQ)
 	env_set("soc", "imx8mq");
 #else
 	env_set("soc", CONFIG_SYS_SOC);
 #endif
+#if !defined(CONFIG_ARCH_MEDIATEK)
 #if !defined(CONFIG_IMX8M)
 	env_set("cpu", get_imx_type((cpurev & 0x3FF000) >> 12));
 #endif
 	env_set("imx_cpu", get_imx_type((cpurev & 0x3FF000) >> 12));
+#endif
 	/*
 	 * These lines are specific to nitrogen6x, as
 	 * everyone else has board in their default environment.
@@ -745,8 +755,10 @@ int bdcommon_env_init(void)
 #endif
 	board_env_init();
 	board_eth_addresses();
+#if !defined(CONFIG_ARCH_MEDIATEK)
 #if defined(CONFIG_CMD_FASTBOOT) || defined(CONFIG_CMD_DFU)
 	addserial_env("serial#");
+#endif
 #endif
 	return 0;
 }

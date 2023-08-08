@@ -2,7 +2,7 @@
 #
 ifdef CONFIG_DEFCONFIG
 obj-y  := bd_common.o eth.o
-ifneq ($(CONFIG_ARCH_IMX8M)$(CONFIG_ARCH_IMX8ULP),y)
+ifneq ($(CONFIG_ARCH_IMX8M)$(CONFIG_ARCH_IMX8ULP)$(CONFIG_ARCH_MEDIATEK),y)
 obj-$(CONFIG_CMD_KBD)  += cmd_kbd.o
 endif
 endif

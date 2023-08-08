@@ -144,6 +144,7 @@ config DDR_CHANNEL_CNT_1_OR_2
 
 config DDR_MB
 	int "Memory size in MB"
+	depends on !ARCH_MEDIATEK
 
 config BOARD_TYPE
 	string "board override name"

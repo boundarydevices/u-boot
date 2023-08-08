@@ -4,15 +4,19 @@
  * SPDX-License-Identifier:	GPL-2.0+
  */
 #include <common.h>
+#ifndef CONFIG_ARCH_MEDIATEK
 #include <asm/arch/clock.h>
-#ifndef CONFIG_IMX8ULP
+#endif
+#if !defined(CONFIG_IMX8ULP) && !defined(CONFIG_ARCH_MEDIATEK)
 #include <asm/arch/crm_regs.h>
 #endif
+#if !defined(CONFIG_ARCH_MEDIATEK)
 #include <asm/arch/imx-regs.h>
+#endif
 #if defined(CONFIG_MX51)
 #include <asm/arch/iomux-mx51.h>
 #elif defined(CONFIG_MX7D) || defined(CONFIG_IMX8M) || defined(CONFIG_IMX8ULP)
-#else
+#elif !defined(CONFIG_ARCH_MEDIATEK)
 #include <asm/arch/iomux.h>
 #endif
 #include <asm/arch/sys_proto.h>
@@ -28,12 +32,12 @@
 #include <asm/arch/imx8mq_pins.h>
 #elif defined(CONFIG_IMX8ULP)
 #include <asm/arch/imx8ulp-pins.h>
-#elif !defined(CONFIG_MX51)
+#elif !defined(CONFIG_MX51) && !defined(CONFIG_ARCH_MEDIATEK)
 #include <asm/arch/mx6-pins.h>
 #endif
 #include <asm/gpio.h>
 #include <asm/io.h>
-#if !defined(CONFIG_IMX8ULP)
+#if !defined(CONFIG_IMX8ULP) && !defined(CONFIG_ARCH_MEDIATEK)
 #include <asm/mach-imx/iomux-v3.h>
 #endif
 #include <asm/mach-imx/spi.h>
@@ -139,14 +143,14 @@
 #include "eth-imx8mq.c"
 #elif defined(CONFIG_IMX8ULP)
 #include "eth-imx8ulp.c"
-#else
+#elif !defined(CONFIG_ARCH_MEDIATEK)
 #include "eth-mx6.c"
 #endif
 
 #if !defined(CONFIG_FEC_ENET1) && !defined(CONFIG_FEC_ENET2) && defined(CONFIG_FEC_MXC)
 #define CONFIG_FEC_ENET1
 #endif
-#if !defined(CONFIG_FEC_ENET2) && defined(CONFIG_DWC_ETH_QOS)
+#if !defined(CONFIG_FEC_ENET2) && defined(CONFIG_DWC_ETH_QOS) && !defined(CONFIG_ARCH_MEDIATEK)
 #define CONFIG_FEC_ENET2
 #endif
 
