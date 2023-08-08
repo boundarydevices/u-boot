@@ -1,0 +1,7 @@
+MT8390_TUNGSTEN_SMARC
+M:	Troy KIsky <troy.kisky@lairdconnect.com>
+S:	Maintained
+F:	board/boundary/mt8390_tungsten_smarc
+F:	include/configs/mt8390_tungsten_smarc.h
+F:	configs/mt8390_tungsten_smarc_defconfig
+F:	arch/arm/dts/mt8390-tungsten_smarc.dts
