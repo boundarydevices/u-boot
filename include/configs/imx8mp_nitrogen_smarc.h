@@ -62,7 +62,6 @@
 
 #define IMX_FEC_BASE			0x30BE0000
 
-#define DWC_NET_PHYADDR			4
 #ifdef CONFIG_DWC_ETH_QOS
 #define CONFIG_SYS_NONCACHED_MEMORY     (1 * SZ_1M)     /* 1M */
 #endif
