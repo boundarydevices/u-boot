@@ -842,6 +842,11 @@ struct gpio_desc *devm_gpiod_get_index_optional(struct udevice *dev,
 #define devm_gpiod_get_optional(dev, id, flags) \
 	devm_gpiod_get_index_optional(dev, id, 0, flags)
 
+struct gpio_desc *devm_gpiod_get_index_by_node(struct udevice *dev, ofnode node,
+		const char *id, unsigned int index, int flags);
+struct gpio_desc *devm_gpiod_get_index_by_node_optional(struct udevice *dev,
+		ofnode node, const char *id, unsigned int index, int flags);
+
 /**
  * devm_gpiod_put - Resource-managed gpiod_put()
  * @dev:	GPIO consumer
