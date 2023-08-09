@@ -1,0 +1,7 @@
+config CLK_MT8188
+	bool "Enable clock support for mediatek mt8188"
+	depends on ARCH_MEDIATEK
+	select CLK
+	select CLK_CCF
+	select CLK_COMPOSITE_CCF
+
