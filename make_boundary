@@ -14,6 +14,9 @@ for board in $boards ; do
 	if [ "${cnt}" == "" ] ; then
 		cnt=`sed -n "/CONFIG_ARCH_IMX8ULP=/=" configs/${board}_defconfig`
 	fi
+	if [ "${cnt}" == "" ] ; then
+		cnt=`sed -n "/CONFIG_ARCH_MEDIATEK=/=" configs/${board}_defconfig`
+	fi
 	if [ "${cnt}" != "" ] ; then
 		export ARCH=arm64
 		export CROSS_COMPILE=aarch64-linux-gnu-
