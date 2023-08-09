@@ -15,10 +15,10 @@
 #define CLK_TOP_BASE	0
 #define CLK_INFRA_AO_BASE	(CLK_TOP_BASE + CLK_TOP_NR_CLK)
 #define CLK_APMIXED_BASE	(CLK_INFRA_AO_BASE + CLK_INFRA_AO_NR_CLK)
+#define CLK_PERI_AO_BASE	(CLK_APMIXED_BASE  + CLK_APMIXED_NR_CLK)
+#define CLK_AUDIODSP_BASE	(CLK_PERI_AO_BASE + CLK_PERI_AO_NR_CLK)
 #if 0
-#define CLK_AUDIODSP_BASE	(CLK_APMIXED_BASE + CLK_APMIXED_NR_CLK)
-#define CLK_PERI_AO_BASE	(CLK_AUDIODSP_BASE + CLK_AUDIODSP_NR_CLK)
-#define CLK_IMP_IIC_WRAP_C_BASE	(CLK_PERI_AO_BASE + CLK_PERI_AO_NR_CLK)
+#define CLK_IMP_IIC_WRAP_C_BASE	(CLK_AUDIODSP_BASE + CLK_AUDIODSP_NR_CLK )
 #define CLK_IMP_IIC_WRAP_W_BASE	(CLK_IMP_IIC_WRAP_C_BASE + CLK_IMP_IIC_WRAP_C_NR_CLK)
 #define CLK_IMP_IIC_WRAP_EN_BASE (CLK_IMP_IIC_WRAP_W_BASE + CLK_IMP_IIC_WRAP_W_NR_CLK)
 #define CLK_MFGCFG_BASE		(CLK_IMP_IIC_WRAP_EN_BASE + CLK_IMP_IIC_WRAP_EN_NR_CLK)
@@ -46,10 +46,10 @@
 #define CLK_VDO1_BASE		(CLK_VDO0_BASE + CLK_VDO0_NR_CLK)
 #define CLK_TOTAL		(CLK_VDO1_BASE + CLK_VDO1_NR_CLK)
 #else
-#define CLK_TOTAL		(CLK_APMIXED_BASE + CLK_APMIXED_NR_CLK)
+#define CLK_TOTAL		CLK_AUDIODSP_BASE
 #endif
 
-static const u16 mt8188_bases[] = {CLK_INFRA_AO_BASE, CLK_APMIXED_BASE, CLK_TOTAL};
+static const u16 mt8188_bases[] = {CLK_INFRA_AO_BASE, CLK_APMIXED_BASE, CLK_PERI_AO_BASE, CLK_TOTAL};
 
 enum {
 	TYPE_mt_clk_external = 1,
@@ -136,6 +136,7 @@ enum {
 	dev_top,
 	dev_infracfg_ao,
 	dev_apmixedsys,
+	dev_peri_ao,
 	dev_end
 };
 struct mt8188_clk_priv *mt8188_clk_priv_devices[dev_end];
@@ -1587,10 +1588,34 @@ static const struct mt8188_clk_init mt8188_infracfg_ao = {
 	.cps = mt8188_infracfg_ao_init,
 };
 
+static const struct mt8188_clk_probe mt8188_peri_ao_init[] = {
+[CLK_PERI_AO_ETHERNET] = { MTK_GATE("peri_ao_ethernet", CLK_TOP_AXI, 0x10, 0, MTKF_CLK_GATE_SETCLR)},
+[CLK_PERI_AO_ETHERNET_BUS] = { MTK_GATE("peri_ao_ethernet_bus", CLK_TOP_AXI, 0x10, 1, MTKF_CLK_GATE_SETCLR)},
+[CLK_PERI_AO_FLASHIF_BUS] = { MTK_GATE("peri_ao_flashif_bus", CLK_TOP_AXI, 0x10, 3, MTKF_CLK_GATE_SETCLR)},
+[CLK_PERI_AO_FLASHIF_26M] = { MTK_GATE("peri_ao_flashif_26m", CLK_TOP_CLK26M, 0x10, 4, MTKF_CLK_GATE_SETCLR)},
+[CLK_PERI_AO_FLASHIFLASHCK] = { MTK_GATE("peri_ao_flashiflashck", CLK_TOP_SPINOR, 0x10, 5, MTKF_CLK_GATE_SETCLR)},
+[CLK_PERI_AO_SSUSB_2P_BUS] = { MTK_GATE("peri_ao_ssusb_2p_bus", CLK_TOP_USB_TOP_2P, 0x10, 9, MTKF_CLK_GATE_SETCLR)},
+[CLK_PERI_AO_SSUSB_2P_XHCI] = { MTK_GATE("peri_ao_ssusb_2p_xhci", CLK_TOP_SSUSB_XHCI_2P, 0x10, 10, MTKF_CLK_GATE_SETCLR)},
+[CLK_PERI_AO_SSUSB_3P_BUS] = { MTK_GATE("peri_ao_ssusb_3p_bus", CLK_TOP_USB_TOP_3P, 0x10, 11, MTKF_CLK_GATE_SETCLR)},
+[CLK_PERI_AO_SSUSB_3P_XHCI] = { MTK_GATE("peri_ao_ssusb_3p_xhci", CLK_TOP_SSUSB_XHCI_3P, 0x10, 12, MTKF_CLK_GATE_SETCLR)},
+[CLK_PERI_AO_SSUSB_BUS] = { MTK_GATE("peri_ao_ssusb_bus", CLK_TOP_USB_TOP, 0x10, 13, MTKF_CLK_GATE_SETCLR)},
+[CLK_PERI_AO_SSUSB_XHCI] = { MTK_GATE("peri_ao_ssusb_xhci", CLK_TOP_SSUSB_XHCI, 0x10, 14, MTKF_CLK_GATE_SETCLR)},
+[CLK_PERI_AO_ETHERNET_MAC] = { MTK_GATE("peri_ao_ethernet_mac_clk", CLK_TOP_SNPS_ETH_250M, 0x10, 16, MTKF_CLK_GATE_SETCLR)},
+[CLK_PERI_AO_PCIE_P0_FMEM] = { MTK_GATE("peri_ao_pcie_p0_fmem", CLK_TOP_466M_FMEM, 0x10, 24, MTKF_CLK_GATE_SETCLR)},
+};
+
+static const struct mt8188_clk_init mt8188_peri_ao = {
+	.dev_id = dev_peri_ao,
+	.base_id = CLK_PERI_AO_BASE,
+	.num_clks = CLK_PERI_AO_NR_CLK,
+	.cps = mt8188_peri_ao_init,
+};
+
 static const struct udevice_id mt8188_clk_dt_ids[] = {
 	{ .compatible = "mediatek,mt8188-topckgen", (long)&mt8188_topckgen},
 	{ .compatible = "mediatek,mt8188-apmixedsys", (long)&mt8188_apmixedsys},
 	{ .compatible = "mediatek,mt8188-infracfg_ao", (long)&mt8188_infracfg_ao},
+	{ .compatible = "mediatek,mt8188-pericfg_ao", (long)&mt8188_peri_ao},
 	{ }
 };
 
