@@ -9,7 +9,9 @@
  */
 #include <common.h>
 #include <console.h>
+#include <asm/gpio.h>
 #include <dm.h>
+#include <dm/pinctrl.h>
 #include <log.h>
 #include <malloc.h>
 #include <net.h>
@@ -1073,6 +1075,7 @@ struct phy_device *eth_phy_connect(struct udevice *dev, struct mii_dev *bus,
 {
 	struct ofnode_phandle_args phandle_args;
 	struct phy_device *phydev;
+	struct gpio_desc *desc;
 	ofnode node;
 	u32 reg;
 	u32 mask;
@@ -1092,12 +1095,24 @@ struct phy_device *eth_phy_connect(struct udevice *dev, struct mii_dev *bus,
 	if (!ofnode_is_available(node))
 		return NULL;
 
+	desc = devm_gpiod_get_index_by_node_optional(dev, node, "reset", 0, GPIOD_IS_OUT | GPIOD_IS_OUT_ACTIVE);
+
 	reg = ofnode_read_u32_default(node, "reg", 0xffffffff);
 	if (reg < 32)
 		mask = (1 << reg);
 	else
 		mask = ofnode_read_u32_default(node, "reg-mask", def_phy_mask);
 
+	if (desc) {
+		pinctrl_select_state(dev, "gpio-rx");
+		udelay(1000 * 10);
+		dm_gpio_set_value(desc, 0);
+		/*
+		 * we need a little hold time after releasing reset,
+		 */
+		udelay(100);
+		pinctrl_select_state(dev, "default");
+	}
 	phydev = phy_connect_mask(bus, mask, dev, interface);
 	if (phydev)
 		phydev->node = node;
