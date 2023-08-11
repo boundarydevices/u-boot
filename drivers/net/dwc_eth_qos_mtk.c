@@ -519,7 +519,11 @@ static int eqos_probe_resources_mtk(struct udevice *dev)
 		pr_err("dev_read_addr() gpio_regs failed");
 		return -ENODEV;
 	}
+#ifdef CONFIG_MT8195
 	writel(0xd, mtk_pdata->power_regs + 0x344);
+#elif defined(CONFIG_MT8188)
+	writel(0xd, mtk_pdata->power_regs + 0x338);
+#endif
 	debug("%s(dev=%p): OK\n", __func__, dev);
 
 	return 0;
