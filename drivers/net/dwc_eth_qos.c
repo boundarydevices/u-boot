@@ -33,6 +33,7 @@
 #include <clk.h>
 #include <cpu_func.h>
 #include <dm.h>
+#include <dm/device_compat.h>
 #include <errno.h>
 #include <eth_phy.h>
 #include <log.h>
@@ -52,6 +53,7 @@
 #include <asm/mach-imx/sys_proto.h>
 #endif
 #include <linux/delay.h>
+#include <power/regulator.h>
 
 #include "dwc_eth_qos.h"
 
@@ -1471,6 +1473,7 @@ static int eqos_remove_resources_stm32(struct udevice *dev)
 static int eqos_probe(struct udevice *dev)
 {
 	struct eqos_priv *eqos = dev_get_priv(dev);
+	struct udevice *avddh_dev;
 	int ret;
 
 	debug("%s(dev=%p):\n", __func__, dev);
@@ -1508,6 +1511,18 @@ static int eqos_probe(struct udevice *dev)
 		goto err_remove_resources_tegra;
 	}
 
+	ret = device_get_supply_regulator(dev, "avddh-supply", &avddh_dev);
+	if (ret) {
+		dev_dbg(dev, "no avddh-supply\n");
+	} else {
+		regulator_set_value(avddh_dev, 3300000);
+		dev_dbg(dev, "avddh value:%d\n", regulator_get_value(avddh_dev));
+		ret = regulator_set_enable(avddh_dev, true);
+		if (ret) {
+			dev_err(dev, "fail to enable avddh-supply\n");
+			return ret;
+		}
+	}
 #ifdef CONFIG_DM_ETH_PHY
 	eqos->mii = eth_phy_get_mdio_bus(dev);
 #endif
