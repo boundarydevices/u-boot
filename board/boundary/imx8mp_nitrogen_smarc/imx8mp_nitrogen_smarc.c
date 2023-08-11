@@ -38,6 +38,8 @@ static iomux_v3_cfg_t const init_pads[] = {
 #define GP_LVDS2_BACKLIGHT	IMX_GPIO_NR(3, 5)
 	IOMUX_PAD_CTRL(NAND_CLE__GPIO3_IO05, 0x100),
 
+#define GP_PCA9546_RESET	IMX_GPIO_NR(1, 0)
+	IOMUX_PAD_CTRL(GPIO1_IO00__GPIO1_IO00, 0x100),
 	IOMUX_PAD_CTRL(GPIO1_IO01__GPIO1_IO01, 0x100),
 	IOMUX_PAD_CTRL(GPIO1_IO02__WDOG1_WDOG_B, WDOG_PAD_CTRL),
 	IOMUX_PAD_CTRL(UART1_RXD__UART1_DCE_RX, UART_PAD_CTRL),
@@ -241,12 +243,14 @@ static const struct display_info_t displays[] = {
 int board_init(void)
 {
 	gpio_request(GP_TS_GT911_RESET, "gt11_reset");
+	gpio_request(GP_PCA9546_RESET, "pca9546_reset");
 //	gpio_request(GP_SN65DSI83_EN, "sn65en");
 //	gpio_request(GP_LTK08_MIPI_EN, "ltk08_mipi_en");
 #if !CONFIG_IS_ENABLED(USB_DWC3_GENERIC)
 	gpio_request(GP_USB3_1_HUB_RESET, "usb1_hub_reset");
 #endif
 	gpio_direction_output(GP_TS_GT911_RESET, 0);
+	gpio_direction_output(GP_PCA9546_RESET, 1);
 #if !CONFIG_IS_ENABLED(USB_DWC3_GENERIC)
 	gpio_direction_output(GP_USB3_1_HUB_RESET, 0);
 #endif
@@ -254,6 +258,7 @@ int board_init(void)
 #ifdef CONFIG_DM_ETH
 	board_eth_init(gd->bd);
 #endif
+	gpio_free(GP_PCA9546_RESET);
 #ifdef CONFIG_CMD_FBPANEL
 	fbp_setup_display(displays, display_cnt);
 #endif
