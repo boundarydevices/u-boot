@@ -415,19 +415,28 @@ static ulong clk_pll1443x_set_rate(struct clk *clk, unsigned long drate)
 
 	if (pll->ss_en) {
 		unsigned long mfr, mrr;
+		unsigned long v;
 
 		mfr = (24000000 / (rate->pdiv * pll->ss_mf)) >> 5;
-		mrr = ((pll->ss_mr << 6) * rate->mdiv) / (mfr * 100);
-		if (mrr && mfr && (mfr < 256) && (mrr < 64)) {
-			unsigned long v = BIT(31) + (mfr << 12) + (mrr << 4) +
-					pll->ss_sel;
-
-			writel_relaxed(v, pll->base + 0x0c);
-		} else {
-			printf("%s: invalid mfr(%ld) or mrr(%ld) for %d\n", __func__,
-				mfr, mrr, rate->rate);
-			writel_relaxed(0, pll->base + 0x0c);
+		if (!mfr || (mfr > 255)) {
+			debug("%s: invalid mfr(%ld) for %d\n", __func__,
+				mfr, rate->rate);
+			if (!mfr)
+				mfr = 1;
+			if (mfr > 255)
+				mfr = 255;
 		}
+		mrr = ((pll->ss_mr << 6) * rate->mdiv) / (mfr * 100);
+		if (!mrr || (mrr > 63)) {
+			debug("%s: invalid mrr(%ld) for %d\n", __func__,
+				mrr, rate->rate);
+			if (!mrr)
+				mrr = 1;
+			if (mrr > 63)
+				mrr = 63;
+		}
+		v = BIT(31) + (mfr << 12) + (mrr << 4) + pll->ss_sel;
+		writel_relaxed(v, pll->base + 0x0c);
 		pll->ss_init_done = 1;
 	}
 	/*
