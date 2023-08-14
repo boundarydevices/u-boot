@@ -290,16 +290,9 @@ void board_enable_lvds(const struct display_info_t *di, int enable)
 }
 
 static const struct display_info_t displays[] = {
-	/* IVO Default LVDS Display */
-	VD_TM070JDHG30(LVDS, fbp_detect_i2c, fbp_bus_gp(2, GP_I2C3_J7_RESET, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
-
-	/* hdmi */
-	VD_1280_720M_60(HDMI, fbp_detect_i2c, 1, 0x50),
-	VD_1920_1080M_60(HDMI, NULL, 1, 0x50),
-	VD_1024_768M_60(HDMI, NULL, 1, 0x50),
-
 	/* ft5x06 */
 	VD_AUO_B101EW05(LVDS, fbp_detect_i2c, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
+	VD_TM070JDHG30(LVDS, fbp_detect_i2c, fbp_bus_gp(2, GP_I2C3_J7_RESET, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
 	VD_HANNSTAR7(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
 	VD_LG1280_800(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
 	VD_DT070BTFT(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
@@ -329,6 +322,11 @@ static const struct display_info_t displays[] = {
 	/* uses both lvds connectors */
 	VD_1080P60(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
 	VD_1080P60_J(LVDS, NULL, fbp_bus_gp(0, 0, GP_LVDS_BKL_EN, 0), 0x00),
+
+	/* hdmi */
+	VD_1280_720M_60(HDMI, fbp_detect_i2c, 1, 0x50),
+	VD_1920_1080M_60(HDMI, NULL, 1, 0x50),
+	VD_1024_768M_60(HDMI, NULL, 1, 0x50),
 };
 #define display_cnt	ARRAY_SIZE(displays)
 #else
