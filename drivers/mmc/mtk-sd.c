@@ -1922,7 +1922,7 @@ static int msdc_of_to_plat(struct udevice *dev)
 			return ret;
 		}
 
-		regulator_set_value(vqmmc_dev, 3100000);
+		regulator_set_value(vqmmc_dev, 3000000);
 		ret = regulator_get_value(vqmmc_dev);
 		dev_dbg(dev, "%s: value: %d\n", __func__, ret);
 		if (ret == 1800000)
