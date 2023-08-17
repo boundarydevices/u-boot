@@ -1849,7 +1849,7 @@ void fbp_setup_env_cmds(void);
 		.refresh	= 60,\
 		.xres		= 640,\
 		.yres		= 960,\
-		.pixclock	= (640+80+80+12) / (960+30+20+1) / 60,\
+		.pixclock_f	= (640+80+80+12)*(960+30+20+1)*60,\
 		.left_margin	= 80,\
 		.right_margin	= 80,\
 		.upper_margin	= 30,\
