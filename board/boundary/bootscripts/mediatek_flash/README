@@ -1,0 +1,22 @@
+
+
+Flash script and binaries to flash a Tungsten 700 board
+=======================================================
+
+
+curl or wget needed
+
+# AIoT
+https://mediatek.gitlab.io/aiot/doc/aiot-dev-guide/master/sw/yocto/get-started/env-setup/flash-env-linux.html
+
+
+# Little Kernel prebuilt binaries used in AIoT as a flashing bootstrap
+https://gitlab.com/mediatek/aiot/rity/lk-prebuilt/-/raw/main/genio-700-evk/lk.bin
+
+# Ubuntu fiptool
+sudo apt install arm-trusted-firmware-tools
+
+# Fip tool and bootrom tool
+git clone https://gitlab.com/mediatek/aiot/bsp/trusted-firmware-a.git
+git checkout mtk-v2.6
+
