@@ -255,6 +255,7 @@ void fbp_setup_env_cmds(void);
 #define VD_800X300_565(_mode, args...)		VDF_800X300(_mode, "800x300rgb565", RGB565, FBF_MODESTR, args)
 #define VD_Q035_014(_mode, args...)		VDF_Q035_014(_mode, "q035_014", RGB24, FBF_MQ_Q035_014, args)
 #define VD_HITACHI_HVGA(_mode, args...)		VDF_HITACHI_HVGA(_mode, "hitachi_hvga", RGB666, FBF_MODESTR, args)
+#define VD_HITACHI_HVGA_5D(_mode, args...)	VDF_HITACHI_HVGA(_mode, "hitachi_hvga-5d", RGB666, FBF_MODESTR, args)
 #define VD_HITACHI_HVGA565(_mode, args...)	VDF_HITACHI_HVGA(_mode, "hitachi_hvga565", RGB565, FBF_MODESTR, args)
 #define VD_NEON_TOUCH640X240(_mode, args...)	VDF_NEON_TOUCH640X240(_mode, "NeonTouch640x240", RGB565, FBF_MODESTR, args)
 #define VD_DC050WX(_mode, args...)		VDF_DC050WX(_mode, "DC050WX", RGB24, FBF_MODESTR, args)
