@@ -388,6 +388,7 @@ static const struct display_info_t displays[] = {
 #ifndef CONFIG_DEFAULT_HITACHI_HVGA
 	VD_HITACHI_HVGA(LCD, fbp_detect_i2c, 2, 0x38, FBTS_FT5X06),
 #endif
+	VD_HITACHI_HVGA_5D(LCD, board_detect_gt911, 2, 0x5d, FBTS_GOODIX),
 	VD_LTK0680YTMDB(LCD, board_detect_gt911, fbp_bus_gp(2, 0, 0, 0), 0x5d, FBTS_GOODIX),
 
 	VD_HANNSTAR7(LVDS, NULL, fbp_bus_gp(2, 0, GP_LVDS_BKL_EN, 0), 0x38, FBTS_FT5X06),
