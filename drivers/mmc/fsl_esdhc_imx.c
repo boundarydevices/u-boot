@@ -1298,8 +1298,8 @@ int fsl_esdhc_initialize(struct bd_info *bis, struct fsl_esdhc_cfg *cfg)
 {
 	struct fsl_esdhc_plat *plat;
 	struct fsl_esdhc_priv *priv;
-	struct mmc_config *mmc_cfg;
 	struct mmc *mmc;
+	unsigned caps = 0;
 	int ret;
 
 	if (!cfg)
@@ -1317,18 +1317,16 @@ int fsl_esdhc_initialize(struct bd_info *bis, struct fsl_esdhc_cfg *cfg)
 	priv->c = *cfg;
 	priv->c.esdhc_regs = (struct fsl_esdhc *)(unsigned long)(cfg->esdhc_base);
 
-	mmc_cfg = &plat->cfg;
-
 	switch (cfg->bus_width) {
 	case 0: /* Not set in config; assume everything is supported */
 	case 8:
-		mmc_cfg->host_caps |= MMC_MODE_8BIT;
+		caps |= MMC_MODE_8BIT;
 		fallthrough;
 	case 4:
-		mmc_cfg->host_caps |= MMC_MODE_4BIT;
+		caps |= MMC_MODE_4BIT;
 		fallthrough;
 	case 1:
-		mmc_cfg->host_caps |= MMC_MODE_1BIT;
+		caps |= MMC_MODE_1BIT;
 		break;
 	default:
 		printf("invalid max bus width %u\n", cfg->bus_width);
@@ -1336,8 +1334,9 @@ int fsl_esdhc_initialize(struct bd_info *bis, struct fsl_esdhc_cfg *cfg)
 	}
 
 	if (IS_ENABLED(CONFIG_ESDHC_DETECT_8_BIT_QUIRK))
-		mmc_cfg->host_caps &= ~MMC_MODE_8BIT;
+		caps &= ~MMC_MODE_8BIT;
 
+	priv->caps = caps;
 	ret = fsl_esdhc_init(priv, plat);
 	if (ret) {
 		debug("%s init failure\n", __func__);
