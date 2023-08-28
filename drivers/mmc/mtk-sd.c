@@ -579,7 +579,7 @@ static bool msdc_cmd_is_ready(struct msdc_host *host)
 		return false;
 	}
 
-	if (host->last_resp_type == MMC_RSP_R1b && host->last_data_write) {
+	if (host->last_resp_type == MMC_RSP_R1b || host->last_data_write) {
 		ret = readl_poll_timeout(&host->base->msdc_ps, reg,
 					 reg & MSDC_PS_DAT0, 1000000);
 
