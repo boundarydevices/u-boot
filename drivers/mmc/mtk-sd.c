@@ -624,22 +624,17 @@ static int msdc_start_command(struct msdc_host *host, struct mmc_cmd *cmd,
 
 static void msdc_fifo_read(struct msdc_host *host, u8 *buf, u32 size)
 {
-	u32 *wbuf;
-
-	while ((size_t)buf % 4) {
-		*buf++ = readb(&host->base->msdc_rxdata);
-		size--;
-	}
-
-	wbuf = (u32 *)buf;
+	u32 *buf_32 = (u32 *)buf;
 	while (size >= 4) {
-		*wbuf++ = readl(&host->base->msdc_rxdata);
+		*buf_32++ = readl(&host->base->msdc_rxdata);
 		size -= 4;
 	}
+	if (!size)
+		return;
 
-	buf = (u8 *)wbuf;
+	u8 *buf_8 = (u8 *)buf_32;
 	while (size) {
-		*buf++ = readb(&host->base->msdc_rxdata);
+		*buf_8++ = readb(&host->base->msdc_rxdata);
 		size--;
 	}
 }
