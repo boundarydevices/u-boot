@@ -64,6 +64,41 @@ void mediatek_capsule_update_board_setup(void)
 }
 #endif /* CONFIG_EFI_HAVE_CAPSULE_SUPPORT && CONFIG_EFI_PARTITION */
 
+#ifdef CONFIG_DM_REGULATOR
+struct regulator_value {
+	const char *name;
+	unsigned val;
+};
+const struct regulator_value reg_vals[] = {
+	{ "buck_vs2", 1600000},
+#if 0
+	{ "ldo_vcn33_1_bt", 3300000},
+	{ "ldo_vcn33_1_wifi", 3300000},
+	{ "ldo_vcn33_2_bt", 3300000},
+	{ "ldo_vcn33_2_wifi", 3300000},
+#endif
+};
+void set_regulators(void)
+{
+	const struct regulator_value* p = reg_vals;
+	struct udevice *dev;
+	int ret;
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(reg_vals); i++, p++) {
+		ret = regulator_get_by_devname(p->name, &dev);
+		if (ret) {
+			printf("failed to get %s reg %d\n", p->name, ret);
+		} else {
+			debug("%s: %s %d\n", __func__, p->name, regulator_get_value(dev));
+			ret = regulator_set_value(dev, p->val);
+			if (ret)
+				printf("failed to set %s voltage to %d(%d)\n", p->name, p->val, ret);
+		}
+	}
+}
+#endif
+
 int board_init(void)
 {
 	struct udevice *dev;
@@ -82,14 +117,8 @@ int board_init(void)
 	if (ret) {
 		printf("Can't find mt6359_regulator driver\n");
 	}
-	ret = regulator_get_by_devname("buck_vs2", &dev);
-	if (ret) {
-		printf("failed to get vs2 reg %d\n", ret);
-	} else {
-		ret = regulator_set_value(dev, 1600000);
-		if (ret)
-			printf("failed to set vs2 voltage %d\n", ret);
-	}
+
+	set_regulators();
 #endif
 
 	if (CONFIG_IS_ENABLED(USB_GADGET)) {
