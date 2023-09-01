@@ -786,13 +786,15 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		}
 		mode_name[i] = 0;
 		while (i) {
+			char c;
+
 			i--;
-			if ((mode_name[i] < '0') || (mode_name[i] > '9') ||
-					(mode_name[i] == 'd')) {
-				if (mode_name[i] == '-')
-					mode_name[i] = 0;
-				break;
-			}
+			c = mode_name[i];
+			if (((c >= '0') && (c <= '9')) || (c == 'd'))
+				continue;
+			if (c == '-')
+				mode_name[i] = 0;
+			break;
 		}
 		if (di->fbflags & FBF_MODESTR)
 			mode_str = mode_name;
