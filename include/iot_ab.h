@@ -12,6 +12,7 @@
 #include <u-boot/crc.h>
 
 #define BOOT_SLOT_NAME(name)	('a' + (name))
+#define BOOT_DTS_NUM(num)	('3' + (num))
 
 #define BOOTCTRL_PART		"0#misc"
 #define BOOTCTRL_MAGIC		0x544F494D

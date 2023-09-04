@@ -29,6 +29,7 @@ static void iot_ab_handle_init(struct mtk_bl_ctrl *bctrl)
 static int iot_ab_handle_blctrl(struct blk_desc *dev_desc, struct disk_partition *part_info,
 				struct mtk_bl_ctrl *bctrl)
 {
+	struct mtk_bl_ctrl *bctrl_st = NULL;
 	u32 blocks;
 	int ret = -1;
 
@@ -39,6 +40,18 @@ static int iot_ab_handle_blctrl(struct blk_desc *dev_desc, struct disk_partition
 		log_err("Could not handle boot control.\n");
 		return ret;
 	}
+
+	bctrl_st = malloc_cache_aligned(blocks * part_info->blksz);
+	if (!bctrl_st)
+		return ret;
+
+	ret = blk_dread(dev_desc, part_info->start, blocks, bctrl_st);
+	if (ret < 0 || memcmp(bctrl, bctrl_st, sizeof(struct mtk_bl_ctrl))) {
+		log_err("Handle boot control failure.\n");
+		free(bctrl_st);
+		return ret;
+	}
+	free(bctrl_st);
 	return 0;
 }
 
@@ -92,6 +105,13 @@ int iot_ab_boot_slot(int type)
 	char slot[2];
 	int ret = -1;
 
+	if (CONFIG_IS_ENABLED(UFS_MEDIATEK)) {
+		if (scsi_scan(false)) {
+			log_err("Request failed.\n");
+			return ret;
+		}
+	}
+
 	ret = part_get_info_by_dev_and_name_or_num(BOOTCTRL_DEV, BOOTCTRL_PART,
 						   &dev_desc, &part_info, false);
 	if (ret < 0) {
@@ -108,7 +128,7 @@ int iot_ab_boot_slot(int type)
 	slot[0] = BOOT_SLOT_NAME(ret);
 	slot[1] = '\0';
 	env_set(BOOTCTRL_ENV, slot);
-	sprintf(slot, "%d", BOOTCTRL_FW_NUM + ret);
+	slot[0] = BOOT_DTS_NUM(ret);
 	env_set(BOOTCTRL_ENV_DTS, slot);
 	return ret;
 }
@@ -126,7 +146,7 @@ void iot_ab_boot_select(void)
 	slot[0] = BOOT_SLOT_NAME(ret);
 	slot[1] = '\0';
 	env_set(BOOTCTRL_ENV, slot);
-	sprintf(slot, "%d", BOOTCTRL_FW_NUM + ret);
+	slot[0] = BOOT_DTS_NUM(ret);
 	env_set(BOOTCTRL_ENV_DTS, slot);
 }
 
