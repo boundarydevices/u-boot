@@ -18,8 +18,8 @@
 static struct efi_fw_image fw_images[MT8365_UPDATABLE_IMAGES] = {0};
 
 struct efi_capsule_update_info update_info = {
-	.dfu_string = "mmc 0=bl2.img raw 0x0 0x400000 mmcpart 1;"
-			"fip.bin part 0 1;firmware.vfat part 0 3;u-boot-env.bin raw 0x0 0x400000 mmcpart 2",
+	.dfu_string = "mmc 0=bl2.img raw 0x0 0x2000 mmcpart 1;"
+			"fip.bin part 0 1;firmware.vfat part 0 3;u-boot-env.bin raw 0x0 0x2000 mmcpart 2",
 	.images = fw_images,
 };
 
