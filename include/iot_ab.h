@@ -14,7 +14,6 @@
 #define BOOT_SLOT_NAME(name)	('a' + (name))
 #define BOOT_DTS_NUM(num)	('3' + (num))
 
-#define BOOTCTRL_PART		"0#misc"
 #define BOOTCTRL_MAGIC		0x544F494D
 #define BOOTCTRL_VERSION	1
 #define BOOTCTRL_BOOT_SUCCESS	0
@@ -30,7 +29,13 @@
 #define BOOTCTRL_FIP_NUM	1
 #define BOOTCTRL_FW_NUM		3
 
+#if defined(CONFIG_UFS_MEDIATEK)
+#define BOOTCTRL_DEV		"scsi"
+#define BOOTCTRL_PART		"2#misc"
+#else
 #define BOOTCTRL_DEV		"mmc"
+#define BOOTCTRL_PART		"0#misc"
+#endif
 #define BOOTCTRL_ENV		"boot_slot"
 #define BOOTCTRL_ENV_DTS	"boot_dtb"
 
