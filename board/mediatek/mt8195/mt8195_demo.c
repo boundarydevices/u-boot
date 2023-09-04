@@ -18,8 +18,13 @@
 static struct efi_fw_image fw_images[MT8195_UPDATABLE_IMAGES] = {0};
 
 struct efi_capsule_update_info update_info = {
+#if defined(CONFIG_UFS_MEDIATEK)
+	.dfu_string = "ufs 0=bl2.img raw 0x0 0x400 dev 0;"
+			"fip.bin part 2 1;firmware.vfat part 2 3;u-boot-env.bin raw 0x0 0x400 dev 1",
+#else
 	.dfu_string = "mmc 0=bl2.img raw 0x0 0x2000 mmcpart 1;"
 			"fip.bin part 0 1;firmware.vfat part 0 3;u-boot-env.bin raw 0x0 0x2000 mmcpart 2",
+#endif
 	.images = fw_images,
 };
 
