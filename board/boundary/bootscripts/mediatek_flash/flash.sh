@@ -22,15 +22,24 @@ WDIR=""
 
 JUST_FIP=0
 
+BOOTLOADERS=1
+
+BOOTLOADERS_B=1
+
+PAUSE=1
 
 help()
 {
    echo ""
-   echo "Usage: $0 -y [-r] [PATH TO U-BOOT bin file]"
-   echo 
-   echo "-y to skip the press enter to continue"
+   echo "Usage: $0 [-a] [-b] [-r] [-y] [PATH TO U-BOOT bin file]"
+   echo
+   echo "-a to flash bootloaders partition"
+   echo "-b to flash bootloaders_b partition"
    echo "-r to just re-program fip.bin (u-boot)"
+   echo "-y to skip the press enter to continue"
    echo "PATH is optional."
+   echo
+   echo "Without -a or -b then BOTH bootloaders are flashed"
    echo
    exit 1
 }
@@ -66,12 +75,26 @@ prog_tungsten()
       fi
    fi
 
-   fastboot flash bootloaders $FIP_BIN
-   RESULT=$?
-   if [ $RESULT -ne 0 ]
+   if [ $BOOTLOADERS -eq 1 ]
    then
-      echo "Error ($RESULT) flashing FIP."
-      end_clean $RESULT
+      fastboot flash bootloaders $FIP_BIN
+      RESULT=$?
+      if [ $RESULT -ne 0 ]
+      then
+         echo "Error ($RESULT) flashing FIP."
+         end_clean $RESULT
+      fi
+   fi
+
+   if [ $BOOTLOADERS_B -eq 1 ]
+   then
+      fastboot flash bootloaders_b $FIP_BIN
+      RESULT=$?
+      if [ $RESULT -ne 0 ]
+      then
+         echo "Error ($RESULT) flashing FIP backup."
+	 end_clean $RESULT
+      fi
    fi
 
    if [ $JUST_FIP -eq 0 ]
@@ -128,24 +151,32 @@ then
    fi
 fi
 
-PAUSE=1
-if [ "$1" == "-y" ]
-then
-   PAUSE=0
-   shift
-fi
-
-if [ "$1" == "-h" ]||[ "$1" == "--help" ]
-then
-   help
-fi
-
-if [ "$1" == "-r" ]
-then
-   JUST_FIP=1
-   echo "Just re-program fip.bin (u-boot)"
-   shift
-fi
+while getopts "abhry" o; do
+    case "${o}" in
+	a)
+	    BOOTLOADERS_B=0
+	    echo "Only programming boatloaders partition. (A)"
+	    ;;
+        b)
+            BOOTLOADERS=0
+	    echo "Only programming boootloaders_b partition"
+            ;;
+	h)
+	    help
+	    ;;
+        r)
+            JUST_FIP=1
+	    echo "Just re-program fip.bin (u-boot)"
+            ;;
+	y)
+	    PAUSE=0
+	    ;;
+        *)
+            help
+            ;;
+    esac
+done
+shift $((OPTIND-1))
 
 if [ -n "$1" ]
 then
@@ -175,6 +206,7 @@ then
       exit 1
    fi
 fi
+
 
 UBOOT_BIN=`basename $PATH_TO_UBOOT_BIN`
 
