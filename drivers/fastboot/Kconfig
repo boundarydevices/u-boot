@@ -260,6 +260,51 @@ config FASTBOOT_OEM_BOARD
 	  command allows running vendor custom code defined in board/ files.
 	  Otherwise, it will do nothing and send fastboot fail.
 
+config SPL_FASTBOOT
+	bool "Support Fastboot"
+	help
+	  This feature enables Fastboot.
+
+choice
+	bool "Fastboot features"
+	depends on SPL_FASTBOOT
+
+config SPL_FASTBOOT_FLASH
+	bool "Enable FASTBOOT FLASH command"
+	depends on SPL_MMC
+	select IMAGE_SPARSE
+	help
+	  The fastboot protocol includes a "flash" command for writing
+	  the downloaded image to a non-volatile storage device. Define
+	  this to enable the "fastboot flash" command.
+
+config SPL_FASTBOOT_FLASH_MMC
+	bool "FASTBOOT on MMC"
+	depends on SPL_MMC && SPL_FASTBOOT_FLASH
+
+config SPL_FASTBOOT_MMC_BOOT_SUPPORT
+	bool "Enable EMMC_BOOT flash/erase"
+	depends on SPL_FASTBOOT_FLASH_MMC
+	help
+	  The fastboot "flash" and "erase" commands normally does operations
+	  on eMMC userdata. Define this to enable the special commands to
+	  flash/erase eMMC boot partition.
+	  The default target name for updating eMMC boot partition 1/2 is
+	  CONFIG_FASTBOOT_MMC_BOOT1_NAME/CONFIG_FASTBOOT_MMC_BOOT2_NAME.
+
+config SPL_FASTBOOT_MMC_USER_SUPPORT
+	bool "Enable eMMC userdata partition flash/erase"
+	depends on SPL_FASTBOOT_FLASH_MMC
+	help
+	  Define this to enable the support "flash" and "erase" command on
+	  eMMC userdata. The "flash" command only update the MBR and GPT
+	  header when CONFIG_EFI_PARTITION is supported.
+	  The "erase" command erase all the userdata.
+	  This occurs when the specified "partition name" on the
+	  fastboot command line matches the value CONFIG_FASTBOOT_MMC_USER_NAME.
+
+endchoice
+
 endif # FASTBOOT
 
 endmenu

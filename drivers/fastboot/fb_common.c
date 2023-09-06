@@ -140,6 +140,12 @@ void (*fastboot_get_progress_callback(void))(const char *)
  * Otherwise execute "bootm <fastboot_buf_addr>", if that fails, reset
  * the board.
  */
+#ifdef CONFIG_SPL_BUILD
+void fastboot_boot(void)
+{
+	printf("fastboot boot not support in SPL\n");
+}
+#else
 void fastboot_boot(void)
 {
 	char *s;
@@ -167,6 +173,7 @@ void fastboot_boot(void)
 		do_reset(NULL, 0, 0, NULL);
 	}
 }
+#endif
 
 /**
  * fastboot_handle_boot() - Shared implementation of system reaction to

@@ -182,6 +182,17 @@ static void getvar_platform(char *var_parameter, char *response)
 		fastboot_fail("platform not set", response);
 }
 
+#ifdef CONFIG_SPL_BUILD
+static void getvar_current_slot(char *var_parameter, char *response)
+{
+	const char *slot = env_get("current_slot");
+
+	if (slot)
+		fastboot_okay(slot, response);
+	else
+		fastboot_fail("current_slot not set", response);
+}
+#else
 static void getvar_current_slot(char *var_parameter, char *response)
 {
 	const char *c = env_get("get_current_slot");
@@ -197,6 +208,7 @@ static void getvar_current_slot(char *var_parameter, char *response)
 	else
 		fastboot_fail("get_current_slot not set", response);
 }
+#endif
 
 static void __maybe_unused getvar_has_slot(char *part_name, char *response)
 {

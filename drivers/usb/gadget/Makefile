@@ -11,6 +11,7 @@ ifdef CONFIG_SPL_BUILD
 obj-$(CONFIG_SPL_USB_GADGET) += g_dnl.o
 obj-$(CONFIG_SPL_DFU) += f_dfu.o
 obj-$(CONFIG_SPL_USB_SDP_SUPPORT) += f_sdp.o
+obj-$(CONFIG_SPL_FASTBOOT) += f_fastboot.o
 endif
 
 # new USB gadget layer dependencies
