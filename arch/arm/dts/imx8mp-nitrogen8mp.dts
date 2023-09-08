@@ -862,6 +862,9 @@
 };
 
 /* J11 mipi display */
+#define IMX			1
+#define IOMUX			iomuxc
+#define MIPI_DSI		mipi_dsi
 #define MIPI_DISPLAY		lcdif1
 #define MIPI_SUBSYSTEM		display_subsystem
 #define MIPI_I2C_BUS		i2c2d
@@ -891,8 +894,7 @@
 #define PAD_PULLUP		0x140
 #define PAD_PULLDNIRQ		0x180
 #define PAD_PULLUPIRQ		0x1c0
-#define IMX			1
-#include "nitrogen-mipi-dsi.dtsi"
+#include "bd-universal-mipi-dsi.dtsi"
 
 #define LVDS_DISPLAY		lcdif2
 #define LVDS_I2C_BUS		i2c4
