@@ -821,4 +821,4 @@
 #define GP_LVDS_TS_RESET(a)	GP_SM_ESPI_ALERT(a)
 #define PD_LVDS_TS_RESET(a)	PD_SM_ESPI_ALERT(a)	/* J23 Pin 3, S43 */
 #define LVDS_NO_TS_RESET				/* S43 not routed on 1st som run */
-#include "nitrogen-lvds.dtsi"
+#include "bd-universal-lvds.dtsi"
