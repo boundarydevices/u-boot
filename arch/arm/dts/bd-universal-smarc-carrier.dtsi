@@ -799,7 +799,7 @@
 #define GP_MIPI_ENABLE(a)	GP_SM_LCD0_VDD_EN(a)
 #define PD_MIPI_ENABLE(a)	PD_SM_LCD0_VDD_EN(a)	/* Pin 11, S133 */
 
-#include "nitrogen-mipi-dsi.dtsi"
+#include "bd-universal-mipi-dsi.dtsi"
 
 #define LVDS_DISPLAY		SM_FB_LVDS
 #define LVDS_I2C_BUS		SM_I2C_PM
