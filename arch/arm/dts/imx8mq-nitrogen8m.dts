@@ -1299,6 +1299,9 @@
 };
 
 /* J11 mipi display */
+#define IMX			1
+#define IOMUX			iomuxc
+#define MIPI_DSI		mipi_dsi
 #define MIPI_ADD_PORT	/* imx8mq needs this */
 #define MIPI_DISPLAY		lcdif
 #define MIPI_SUBSYSTEM		lcdif
@@ -1328,4 +1331,4 @@
 #define PAD_PULLDN		0x06	/* No pulldown, need external resistor */
 #define PAD_PULLUPIRQ		0xc6
 #define PAD_PULLDNIRQ		0x86
-#include "nitrogen-mipi-dsi.dtsi"
+#include "bd-universal-mipi-dsi.dtsi"
