@@ -919,6 +919,8 @@
 
 /* J2D */
 #define SM_SDIO				usdhc2
+#define SM_SDIO_UHS			state_100mhz
+#define SM_SDIO_UHS200			state_200mhz
 #define GP_SM_SDIO_WP(a)		<&gpio2 20 a>
 #define PD_SM_SDIO_WP(a)		MX8MP_IOMUXC_SD2_WP__GPIO2_IO20 a
 #define PD_SM_SDIO_WP_SDIO(a)		MX8MP_IOMUXC_SD2_WP__USDHC2_WP a
@@ -1015,6 +1017,9 @@
 #define PAD_CAN				0x154
 
 /* J2G */
+#define IMX				1
+#define IOMUX				iomuxc
+#define MIPI_DSI			mipi_dsi
 #define SM_FB_HDMI			lcdif3
 #define SM_FB_LVDS			lcdif2
 #define SM_FB_MIPI			lcdif1
@@ -1181,8 +1186,8 @@
 #define GP_SM_ESPI_IO1(a)		<&gpio5 12 a>
 #define PD_SM_ESPI_IO1(a)		MX8MP_IOMUXC_ECSPI2_MISO__GPIO5_IO12 a
 #define PD_SM_ESPI_IO1_ESPI(a)		MX8MP_IOMUXC_ECSPI2_MISO__ECSPI2_MISO a
-#define GP_SM_ESPI_ALERT(a)		<&mcp23018 8 (a | GPIO_PULL_UP)>
-#define PD_SM_ESPI_ALERT(a)
+#define GP_SM_ESPI_ALERT0(a)		<&mcp23018 8 (a | GPIO_PULL_UP)>
+#define PD_SM_ESPI_ALERT0(a)
 #define GP_SM_ESPI_IO2(a)		<&gpio1 15 a>
 #define PD_SM_ESPI_IO2(a)		MX8MP_IOMUXC_GPIO1_IO15__GPIO1_IO15 a
 #define GP_SM_ESPI_RESET(a)		<&gpio4 29 a>
