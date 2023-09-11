@@ -1,5 +1,19 @@
 // SPDX-License-Identifier: GPL-2.0
 
+/ {
+	firmware: firmware {
+		optee {
+			compatible = "linaro,optee-tz";
+			method = "smc";
+		};
+
+		psci: psci {
+			compatible = "arm,psci-1.0";
+			method = "smc";
+		};
+	};
+};
+
 &topckgen {
 	u-boot,dm-pre-reloc;
 };
