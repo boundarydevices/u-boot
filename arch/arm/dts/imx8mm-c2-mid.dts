@@ -4,22 +4,31 @@
  */
 
 /dts-v1/;
-#include "imx8mm.dtsi"
-#include "panel-ltk080a60a004t.dtsi"
-#include "panel-m101nwwb.dtsi"
+#ifdef CONFIG_DEFCONFIG
+#define UBOOT
+#endif
+#define IMX8MM
+
 #define MX8MMN(a, b)	MX8MM_##a b
 #define IMX8MMN(a)	IMX8MM_##a
+#include "imx8mm.dtsi"
+
+/* panel-ltk080a60a004t.dtsi uses our standard irq pin for enable */
+#define GP_MIPI_IRQ(a)	<&gpio3 20 a>
+#define PD_MIPI_IRQ(a)	MX8MMN(IOMUXC_SAI5_RXC_GPIO3_IO20, a)
+#ifdef UBOOT
+#include "bd-universal.h"
+#include "panel-ltk080a60a004t.dtsi"
+#include "panel-m101nwwb.dtsi"
+#else
+#include "../bd-universal.h"
+#include "../panel-ltk080a60a004t.dtsi"
+#include "../panel-m101nwwb.dtsi"
+#endif
 
 &iomuxc {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_hog>;
-
-	pinctrl_bt_rfkill: bt-rfkillgrp {
-		fsl,pins = <
-#define GP_BT_RFKILL_RESET	<&gpio3 14 GPIO_ACTIVE_LOW>
-			MX8MMN(IOMUXC_NAND_DQS_GPIO3_IO14, 0x119)
-		>;
-	};
 
 	pinctrl_hog: hoggrp {
 		fsl,pins = <
@@ -234,7 +243,6 @@
 
 	pinctrl_mipi_ltk080a60a004t: mipi-ltk080a60a004tgrp {
 		fsl,pins = <
-#define GP_LTK08_MIPI_EN	<&gpio3 20 GPIO_ACTIVE_HIGH>
 			MX8MMN(IOMUXC_SAI5_RXC_GPIO3_IO20, 0x100)	/* J8, pin8, J8_GPIO1 */
 		>;
 	};
@@ -306,6 +314,8 @@
 			MX8MMN(IOMUXC_ECSPI1_MOSI_UART3_DCE_TX, 0x140)
 			MX8MMN(IOMUXC_ECSPI1_SS0_UART3_DCE_RTS_B, 0x140)
 			MX8MMN(IOMUXC_ECSPI1_MISO_UART3_DCE_CTS_B, 0x140)
+#define GP_BT_ENABLE	<&gpio3 14 GPIO_ACTIVE_HIGH>
+			MX8MMN(IOMUXC_NAND_DQS_GPIO3_IO14, 0x119)
 		>;
 	};
 
@@ -423,18 +433,8 @@
 		compatible = "pwm-backlight";
 		default-brightness-level = <8>;
 		display = <&display_subsystem>;
-		pwms = <&pwm3 0 30000>;		/* 33.3 Khz */
+		pwms = <&pwm3 0 30000 0>;		/* 33.3 Khz */
 		status = "disabled";
-	};
-
-	bt-rfkill {
-		compatible = "net,rfkill-gpio";
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_bt_rfkill>;
-		name = "bt-rfkill";
-		type = <2>; /* Bluetooth */
-		reset-gpios = GP_BT_RFKILL_RESET;
-		status = "okay";
 	};
 
 	connector {
@@ -467,7 +467,7 @@
 		#clock-cells = <0>;
 		clock-frequency = <20000000>;
 		clock-output-names = "csi_mclk";
-		pwms = <&pwm1 0 50>; /* 1 / 50 ns = 20 MHz */
+		pwms = <&pwm1 0 50 0>; /* 1 / 50 ns = 20 MHz */
 	};
 
 	reg_usbotg2: regulator-usbotg2 {
@@ -514,7 +514,7 @@
 		enable-active-high;
 	};
 
-#if 0
+#ifndef UBOOT
 	sound-wm8960 {
 		audio-codec = <&wm8960>;
 		audio-cpu = <&sai1>;
@@ -534,7 +534,7 @@
 	cpu-supply = <&reg_buck3>;
 };
 
-#if 0
+#ifndef UBOOT
 &csi1_bridge {
 	fsl,mipi-mode;
 	status = "okay";
@@ -752,7 +752,7 @@
 };
 
 &i2c3b {
-#if 0
+#ifndef UBOOT
 	ov5640-mipi1@3c {
 		AVDD-supply = <&reg_ldo3>;
 		DOVDD-supply = <&reg_vref_1v8>;
@@ -1120,7 +1120,7 @@
 	status = "okay";
 };
 
-#if 0
+#ifndef UBOOT
 &mipi_csi_1 {
 	#address-cells = <1>;
 	#size-cells = <0>;
@@ -1150,11 +1150,6 @@
 				 <&clk IMX8MMN(VIDEO_PLL1_OUT)>,
 				 <&clk IMX8MMN(CLK_24M)>;
 	assigned-clock-rates = <266000000>, <0>, <0>, <66000000>;
-
-	clocks = <&clk IMX8MMN(CLK_DSI_CORE)>,
-		 <&clk IMX8MMN(CLK_DSI_PHY_REF)>,
-		 <&clk IMX8MMN(CLK_LCDIF_PIXEL)>;
-	clock-names = "cfg", "pll-ref", "pixel_clock";
 	status = "okay";
 
 	fb_mipi: panel@0 {
@@ -1209,9 +1204,14 @@
 	};
 };
 
-#if 0
+#ifndef UBOOT
 &mu {
 	status = "okay";
+};
+
+&pgc_vpumix {
+	dvfs-supply = <&reg_buck5>;
+	idle-microvolt = <850000 805000 900000>;
 };
 #endif
 
@@ -1271,6 +1271,12 @@
 	assigned-clock-parents = <&clk IMX8MMN(SYS_PLL1_80M)>;
 	uart-has-rtscts;
 	status = "okay";
+
+	bluetooth {
+		compatible = "qcom,qca9377-bt";
+		enable-gpios = GP_BT_ENABLE;
+		max-speed = <3000000>;
+	};
 };
 
 &usbotg1 {
@@ -1339,7 +1345,7 @@
 	vqmmc-supply = <&reg_vref_1v8>;
 };
 
-#if 0
+#ifndef UBOOT
 &vpu_g1 {
 	status = "okay";
 };
@@ -1350,11 +1356,6 @@
 
 &vpu_h1 {
 	status = "okay";
-};
-
-&vpumix_pd {
-	dvfs-supply = <&reg_buck5>;
-	idle-microvolt = <850000 805000 900000>;
 };
 
 &vpu_v4l2 {
