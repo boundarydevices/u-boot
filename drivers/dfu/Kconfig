@@ -79,6 +79,12 @@ config DFU_SF_PART
 	  This option enables the support of "part" and "partubi" target in
 	  SPI flash DFU back end.
 
+config DFU_UFS
+	bool "UFS flash back end for DFU"
+	help
+	  This option enables using DFU to read and write to UFS flash based
+	  storage.
+
 config DFU_VIRT
 	bool "VIRTUAL flash back end for DFU"
 	help

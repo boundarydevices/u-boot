@@ -24,6 +24,7 @@ enum dfu_device_type {
 	DFU_DEV_SF,
 	DFU_DEV_MTD,
 	DFU_DEV_VIRT,
+	DFU_DEV_UFS,
 };
 
 enum dfu_layout {
@@ -95,6 +96,15 @@ struct sf_internal_data {
 	unsigned int ubi;
 };
 
+struct ufs_internal_data {
+	/* RAW programming */
+	unsigned int lba_start;
+	unsigned int lba_size;
+	unsigned int lba_blk_size;
+	/* device access */
+	int device;
+};
+
 struct virt_internal_data {
 	int dev_num;
 };
@@ -121,6 +131,7 @@ struct dfu_entity {
 		struct nand_internal_data nand;
 		struct ram_internal_data ram;
 		struct sf_internal_data sf;
+		struct ufs_internal_data ufs;
 		struct virt_internal_data virt;
 	} data;
 
@@ -491,6 +502,18 @@ static inline int dfu_fill_entity_mtd(struct dfu_entity *dfu, char *devstr,
 				      char **argv, int argc)
 {
 	puts("MTD support not available!\n");
+	return -1;
+}
+#endif
+
+#if CONFIG_IS_ENABLED(DFU_UFS)
+extern int dfu_fill_entity_ufs(struct dfu_entity *dfu, char *devstr,
+			       char **argv, int argc);
+#else
+static inline int dfu_fill_entity_ufs(struct dfu_entity *dfu, char *devstr,
+				      char **argv, int argc)
+{
+	puts("UFS support not available!\n");
 	return -1;
 }
 #endif
