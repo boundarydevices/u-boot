@@ -4,19 +4,15 @@
  */
 
 /dts-v1/;
+#ifdef CONFIG_DEFCONFIG
+#define UBOOT
+#endif
 
 #include "imx8mm.dtsi"
 
 &iomuxc {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_hog>;
-
-	pinctrl_bt_rfkill: bt-rfkillgrp {
-		fsl,pins = <
-#define GP_BT_RFKILL_RESET	<&gpio3 14 GPIO_ACTIVE_LOW>
-			MX8MM_IOMUXC_NAND_DQS_GPIO3_IO14		0x119
-		>;
-	};
 
 	pinctrl_fec1: fec1grp {
 		fsl,pins = <
@@ -40,7 +36,7 @@
 #define GP_FEC1_RESET	<&gpio3 15 GPIO_ACTIVE_LOW>
 			MX8MM_IOMUXC_NAND_RE_B_GPIO3_IO15		0x159
 #define GPIRQ_FEC1_PHY	<&gpio3 16 IRQ_TYPE_LEVEL_LOW>
-			MX8MM_IOMUXC_NAND_READY_B_GPIO3_IO16		0x159
+			MX8MM_IOMUXC_NAND_READY_B_GPIO3_IO16		0x1c0
 		>;
 	};
 
@@ -233,6 +229,8 @@
 			MX8MM_IOMUXC_UART1_TXD_UART1_DCE_TX		0x140
 			MX8MM_IOMUXC_UART3_RXD_UART1_DCE_CTS_B		0x140
 			MX8MM_IOMUXC_UART3_TXD_UART1_DCE_RTS_B		0x140
+#define GP_BT_ENABLE		<&gpio3 14 GPIO_ACTIVE_HIGH>
+			MX8MM_IOMUXC_NAND_DQS_GPIO3_IO14		0x119
 		>;
 	};
 
@@ -401,43 +399,32 @@
 
 	aliases {
 		a53 = &A53_0;
+		backlight_mipi = &backlight_mipi;
+		fb_mipi = &fb_mipi;
 		lcdif = &lcdif;
+		mipi = &fb_mipi;
 		mipi_dsi = &mipi_dsi;
 		pwm_mipi = &pwm4;
+		t_mipi = &t_mipi;
 		ts_ft5x06 = &ts_ft5x06;
 	};
 
-	chosen {
-		bootargs = "console=ttymxc1,115200 earlycon=ec_imx6q,0x30890000,115200";
-		stdout-patch = &uart2;
-	};
-
-#if 0
 	backlight_mipi: backlight-mipi {
 		brightness-levels = <0 1 2 3 4 5 6 7 8 9 10>;
 		compatible = "pwm-backlight";
 		default-brightness-level = <8>;
 		display = <&display_subsystem>;
-		pwms = <&pwm4 0 30000>;		/* 33.3 Khz */
+		pwms = <&pwm4 0 30000 0>;		/* 33.3 Khz */
 		status = "okay";
 	};
 
-	bt-rfkill {
-		compatible = "net,rfkill-gpio";
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_bt_rfkill>;
-		name = "bt-rfkill";
-		type = <2>; /* Bluetooth */
-		reset-gpios = GP_BT_RFKILL_RESET;
-		status = "okay";
-	};
-
+#ifndef UBOOT
 	csi_mclk: csi-mclk {
 		compatible = "pwm-clock";
 		#clock-cells = <0>;
 		clock-frequency = <20000000>;
 		clock-output-names = "csi_mclk";
-		pwms = <&pwm2 0 50>; /* 1 / 50 ns = 20 MHz */
+		pwms = <&pwm2 0 50 0>; /* 1 / 50 ns = 20 MHz */
 	};
 #endif
 
@@ -497,7 +484,7 @@
 	};
 };
 
-#if 0
+#ifndef UBOOT
 &A53_0 {
 	cpu-supply = <&reg_buck3>;
 };
@@ -539,7 +526,7 @@
 	};
 };
 
-#if 0
+#ifndef UBOOT
 &gpu {
 	status = "okay";
 };
@@ -554,7 +541,7 @@
 	sda-gpios = GP_I2C1_SDA;
 	status = "okay";
 
-#if 0
+#ifndef UBOOT
 	pf8100@8 {
 		compatible = "nxp,pf8100";
 		pinctrl-names = "default";
@@ -721,7 +708,6 @@
 	};
 };
 
-#if 0
 &i2c3a {
 	lt8912@48 {
 		compatible = "lontium,lt8912" ;
@@ -733,6 +719,7 @@
 	};
 };
 
+#ifndef UBOOT
 &i2c3b {
 	ov5640-mipi1@3c {
 		AVDD-supply = <&reg_vref_2v5>;
@@ -779,7 +766,7 @@
 	};
 };
 
-#if 0
+#ifndef UBOOT
 &lcdif {
 	status = "okay";
 };
@@ -802,6 +789,7 @@
 		};
 	};
 };
+#endif
 
 &mipi_dsi {
 	assigned-clocks = <&clk IMX8MM_CLK_DSI_CORE>,
@@ -812,11 +800,6 @@
 				 <&clk IMX8MM_VIDEO_PLL1_OUT>,
 				 <&clk IMX8MM_CLK_24M>;
 	assigned-clock-rates = <266000000>, <0>, <0>, <66000000>;
-
-	clocks = <&clk IMX8MM_CLK_DSI_CORE>,
-		 <&clk IMX8MM_CLK_DSI_PHY_REF>,
-		 <&clk IMX8MM_CLK_LCDIF_PIXEL>;
-	clock-names = "cfg", "pll-ref", "pixel_clock";
 	status = "okay";
 
 	fb_mipi: panel@0 {
@@ -860,9 +843,16 @@
 	};
 };
 
+#ifndef UBOOT
 &mu {
 	status = "okay";
 };
+
+&pgc_vpumix {
+	dvfs-supply = <&reg_buck5>;
+	idle-microvolt = <850000 805000 900000>;
+};
+#endif
 
 &pwm1 {
 	pinctrl-names = "default";
@@ -885,6 +875,7 @@
 	status = "okay";
 };
 
+#ifndef UBOOT
 &sai2 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_sai2>;
@@ -902,6 +893,12 @@
 	assigned-clock-parents = <&clk IMX8MM_SYS_PLL1_80M>;
 	uart-has-rtscts;
 	status = "okay";
+
+	bluetooth {
+		compatible = "qcom,qca9377-bt";
+		enable-gpios = GP_BT_ENABLE;
+		max-speed = <3000000>;
+	};
 };
 #endif
 
@@ -913,7 +910,7 @@
 	status = "okay";
 };
 
-#if 0
+#ifndef UBOOT
 &uart3 { /* J15 */
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart3>;
@@ -972,14 +969,14 @@
 	pinctrl-1 = <&pinctrl_usdhc2_100mhz>;
 	pinctrl-2 = <&pinctrl_usdhc2_200mhz>;
 	status = "okay";
-#if 1
+#ifdef UBOOT
 	vqmmc-supply = <&reg_usdhc2_vqmmc>;
 #else
 	vqmmc-supply = <&reg_ldo2>;
 #endif
 };
 
-#if 0
+#ifndef UBOOT
 &usdhc3 {
 	bus-width = <4>;
 	fsl,sdio-async-interrupt-enabled;
@@ -1007,11 +1004,6 @@
 
 &vpu_h1 {
 	status = "okay";
-};
-
-&vpumix_pd {
-	dvfs-supply = <&reg_buck5>;
-	idle-microvolt = <850000 805000 900000>;
 };
 
 &vpu_v4l2 {
