@@ -4,19 +4,15 @@
  */
 
 /dts-v1/;
+#ifdef CONFIG_DEFCONFIG
+#define UBOOT
+#endif
 
 #include "imx8mm.dtsi"
 
 &iomuxc {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_hog>;
-
-	pinctrl_bt_rfkill: bt-rfkillgrp {
-		fsl,pins = <
-#define GP_BT_RFKILL_RESET	<&gpio4 27 GPIO_ACTIVE_LOW>
-			MX8MM_IOMUXC_SAI2_MCLK_GPIO4_IO27		0x100
-		>;
-	};
 
 	pinctrl_ecspi1: ecspi1grp {
 		fsl,pins = <
@@ -295,7 +291,7 @@
 #define GP_WM8960_AMP_G1	<&gpio4 9 GPIO_ACTIVE_HIGH>
 			MX8MM_IOMUXC_SAI1_RXD7_GPIO4_IO9		0x100
 	/* NC */
-#define GP_WM8960_MIC_DET	<&gpio1 10 GPIO_ACTIVE_HIGH>
+#define GP_WM8960_MIC_DET	<&gpio1 10 GPIO_ACTIVE_LOW>
 			MX8MM_IOMUXC_GPIO1_IO10_GPIO1_IO10		0x1c0
 	/* NC */
 #define GP_WM8960_HP_DET	<&gpio4 28 GPIO_ACTIVE_HIGH>
@@ -325,6 +321,8 @@
 			MX8MM_IOMUXC_UART2_TXD_UART2_DCE_TX		0x140
 			MX8MM_IOMUXC_SAI3_RXC_UART2_DCE_CTS_B		0x140
 			MX8MM_IOMUXC_SAI3_RXD_UART2_DCE_RTS_B		0x140
+#define GP_BT_ENABLE		<&gpio4 27 GPIO_ACTIVE_HIGH>
+			MX8MM_IOMUXC_SAI2_MCLK_GPIO4_IO27		0x100
 		>;
 	};
 
@@ -501,23 +499,6 @@
 	model = "Boundary Devices i.MX8MMini MOO";
 	compatible = "boundary,imx8mm-moo", "fsl,imx8mm";
 
-	chosen {
-		bootargs = "console=ttymxc0,115200 earlycon=ec_imx6q,0x30860000,115200";
-		stdout-patch = &uart2;
-	};
-
-#if 0
-	bt-rfkill {
-		compatible = "net,rfkill-gpio";
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_bt_rfkill>;
-		name = "bt-rfkill";
-		type = <2>; /* Bluetooth */
-		reset-gpios = GP_BT_RFKILL_RESET;
-		status = "okay";
-	};
-#endif
-
 	clocks {
 		clk1m8432: clk1m8432 {
 			compatible = "fixed-clock";
@@ -683,7 +664,7 @@
 		enable-active-high;
 	};
 
-#if 0
+#ifndef UBOOT
 	sound-wm8960 {
 		amp-gain-gpios = GP_WM8960_AMP_G0, GP_WM8960_AMP_G1;
 		/* amp-gain-seq = /bits/ 8 <0 1 2 3>; */ /* default */
@@ -709,7 +690,7 @@
 #endif
 };
 
-#if 0
+#ifndef UBOOT
 &A53_0 {
 	cpu-supply = <&reg_buck3>;
 };
@@ -776,8 +757,8 @@
 	};
 };
 
-#if 0
-&flexspi0 {
+#ifndef UBOOT
+&flexspi {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_flexspi>;
 	status = "okay";
@@ -797,7 +778,7 @@
 	sda-gpios = GP_I2C1_SDA;
 	status = "okay";
 
-#if 0
+#ifndef UBOOT
 	pf8100@8 {
 		compatible = "nxp,pf8100";
 		pinctrl-names = "default";
@@ -938,7 +919,7 @@
 	};
 };
 
-#if 0
+#ifndef UBOOT
 &i2c3a {
 	rtc@68 {
 		compatible = "microcrystal,rv4162";
@@ -1007,9 +988,14 @@
 	};
 };
 
-#if 0
+#ifndef UBOOT
 &mu {
 	status = "okay";
+};
+
+&pgc_vpumix {
+	dvfs-supply = <&reg_buck5>;
+	idle-microvolt = <850000 805000 900000>;
 };
 
 &sai1 {
@@ -1036,7 +1022,7 @@
 	status = "okay";
 };
 
-#if 0
+#ifndef UBOOT
 &uart2 { /* Silex */
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart2>;
@@ -1044,6 +1030,12 @@
 	assigned-clock-parents = <&clk IMX8MM_SYS_PLL1_80M>;
 	uart-has-rtscts;
 	status = "okay";
+
+	bluetooth {
+		compatible = "qcom,qca9377-bt";
+		enable-gpios = GP_BT_ENABLE;
+		max-speed = <3000000>;
+	};
 };
 
 &uart3 { /* GPS */
@@ -1113,14 +1105,14 @@
 	pinctrl-1 = <&pinctrl_usdhc2_100mhz>;
 	pinctrl-2 = <&pinctrl_usdhc2_200mhz>;
 	status = "okay";
-#if 1
+#ifdef UBOOT
 	vqmmc-supply = <&reg_usdhc2_vqmmc>;
 #else
 	vqmmc-supply = <&reg_ldo2>;
 #endif
 };
 
-#if 0
+#ifndef UBOOT
 &usdhc3 {
 	bus-width = <4>;
 	fsl,sdio-async-interrupt-enabled;
@@ -1148,11 +1140,6 @@
 
 &vpu_h1 {
 	status = "okay";
-};
-
-&vpumix_pd {
-	dvfs-supply = <&reg_buck5>;
-	idle-microvolt = <850000 805000 900000>;
 };
 
 &vpu_v4l2 {
