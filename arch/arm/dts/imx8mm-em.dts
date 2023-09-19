@@ -4,19 +4,29 @@
  */
 
 /dts-v1/;
+#ifdef CONFIG_DEFCONFIG
+#define UBOOT
+#endif
+#define IMX8MM
 
+#include <dt-bindings/phy/phy-imx8-pcie.h>
 #include "imx8mm.dtsi"
+/* panel-ltk080a60a004t.dtsi uses our standard irq pin for enable */
+#define GP_MIPI_IRQ(a)		<&gpio1 1 a>
+#define PD_MIPI_IRQ(a)	MX8MM_IOMUXC_GPIO1_IO01_GPIO1_IO1	a
+#ifdef UBOOT
+#include "bd-universal.h"
+#include "panel-ltk080a60a004t.dtsi"
+#include "panel-m101nwwb.dtsi"
+#else
+#include "../bd-universal.h"
+#include "../panel-ltk080a60a004t.dtsi"
+#include "../panel-m101nwwb.dtsi"
+#endif
 
 &iomuxc {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_hog>;
-
-	pinctrl_bt_rfkill: bt-rfkillgrp {
-		fsl,pins = <
-#define GP_BT_RFKILL_RESET	<&gpio4 25 GPIO_ACTIVE_LOW>
-			MX8MM_IOMUXC_SAI2_TXC_GPIO4_IO25	0x119
-		>;
-	};
 
 	pinctrl_bt2_rfkill: bt2-rfkillgrp {
 		fsl,pins = <
@@ -56,7 +66,7 @@
 #define GP_FEC1_RESET	<&gpio4 28 GPIO_ACTIVE_LOW>
 			MX8MM_IOMUXC_SAI3_RXFS_GPIO4_IO28		0x159
 #define GPIRQ_FEC1_PHY	<&gpio4 30 IRQ_TYPE_LEVEL_LOW>
-			MX8MM_IOMUXC_SAI3_RXD_GPIO4_IO30		0x159
+			MX8MM_IOMUXC_SAI3_RXD_GPIO4_IO30		0x1c0
 		>;
 	};
 
@@ -190,7 +200,6 @@
 
 	pinctrl_mipi_ltk080a60a004t: mipi-ltk080a60a004tgrp {
 		fsl,pins = <
-#define GP_LTK08_MIPI_EN	<&gpio1 1 GPIO_ACTIVE_HIGH>
 			MX8MM_IOMUXC_GPIO1_IO01_GPIO1_IO1		0x116
 		>;
 	};
@@ -286,6 +295,8 @@
 			MX8MM_IOMUXC_ECSPI1_MOSI_UART3_DCE_TX		0x140
 			MX8MM_IOMUXC_ECSPI1_MISO_UART3_DCE_CTS_B	0x140
 			MX8MM_IOMUXC_ECSPI1_SS0_UART3_DCE_RTS_B		0x140
+#define GP_BT_ENABLE		<&gpio4 25 GPIO_ACTIVE_HIGH>
+			MX8MM_IOMUXC_SAI2_TXC_GPIO4_IO25		0x119
 		>;
 	};
 
@@ -413,9 +424,6 @@
 	};
 };
 
-#include "panel-ltk080a60a004t.dtsi"
-#include "panel-m101nwwb.dtsi"
-
 / {
 	model = "Boundary Devices i.MX 8M Mini EM";
 	compatible = "boundary,imx8mm-em", "fsl,imx8mm";
@@ -440,17 +448,7 @@
 		compatible = "pwm-backlight";
 		default-brightness-level = <8>;
 		display = <&display_subsystem>;
-		pwms = <&pwm3 0 30000>;		/* 33.3 Khz */
-		status = "okay";
-	};
-
-	bt-rfkill {
-		compatible = "net,rfkill-gpio";
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_bt_rfkill>;
-		name = "bt-rfkill";
-		type = <2>; /* Bluetooth */
-		reset-gpios = GP_BT_RFKILL_RESET;
+		pwms = <&pwm3 0 30000 0>;	/* 33.3 Khz */
 		status = "okay";
 	};
 
@@ -462,14 +460,6 @@
 		type = <2>; /* Bluetooth */
 		reset-gpios = GP_BT2_RFKILL_RESET;
 		status = "okay";
-	};
-
-	clocks {
-		pcie0_refclk: pcie0-refclk {
-			compatible = "fixed-clock";
-			#clock-cells = <0>;
-			clock-frequency = <100000000>;
-		};
 	};
 
 	reg_usdhc2_vqmmc: regulator-usdhc2-vqmmc {
@@ -597,7 +587,7 @@
 	};
 };
 
-#if 0
+#ifndef UBOOT
 &gpu {
 	status = "okay";
 };
@@ -721,6 +711,7 @@
 
 	max1726x@36 {
 		compatible  = "maxim,max1726x";
+		config = /bits/ 16 <0xa210>;
 		reg = <0x36>;
 		interrupts-extended = GPIRQ_MAX1726X;
 		pinctrl-names = "default";
@@ -914,11 +905,6 @@
 				 <&clk IMX8MM_VIDEO_PLL1_OUT>,
 				 <&clk IMX8MM_CLK_24M>;
 	assigned-clock-rates = <266000000>, <0>, <0>, <66000000>;
-
-	clocks = <&clk IMX8MM_CLK_DSI_CORE>,
-		 <&clk IMX8MM_CLK_DSI_PHY_REF>,
-		 <&clk IMX8MM_CLK_LCDIF_PIXEL>;
-	clock-names = "cfg", "pll-ref", "pixel_clock";
 	status = "disabled";
 
 	fb_mipi: panel@0 {
@@ -974,31 +960,41 @@
 	};
 };
 
+#ifndef UBOOT
 &mu {
 	status = "okay";
 };
 
 &pcie0 {
 	assigned-clocks = <&clk IMX8MM_CLK_PCIE1_AUX>,
-			  <&clk IMX8MM_CLK_PCIE1_PHY>,
 			  <&clk IMX8MM_CLK_PCIE1_CTRL>;
-	assigned-clock-rates = <10000000>, <100000000>, <250000000>;
 	assigned-clock-parents = <&clk IMX8MM_SYS_PLL2_50M>,
-				 <&clk IMX8MM_SYS_PLL2_100M>,
 				 <&clk IMX8MM_SYS_PLL2_250M>;
+	assigned-clock-rates = <10000000>, <250000000>;
 	clocks = <&clk IMX8MM_CLK_PCIE1_ROOT>,
 		 <&clk IMX8MM_CLK_PCIE1_AUX>,
-		 <&clk IMX8MM_CLK_PCIE1_PHY>,
-		 <&pcie0_refclk>;
-	clock-names = "pcie", "pcie_aux", "pcie_phy", "pcie_bus";
+		 <&clk IMX8MM_CLK_PCIE1_PHY>;
+	clock-names = "pcie", "pcie_aux", "pcie_bus";
 	disable-gpio = GP_PCIE0_DISABLE;
-	ext_osc = <0>;
-	l1ss-disabled;
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_pcie0>;
 	reset-gpio = GP_PCIE0_RESET;
 	status = "disabled";
 };
+
+&pcie_phy {
+	fsl,clkreq-unsupported;
+	fsl,refclk-pad-mode = <IMX8_PCIE_REFCLK_PAD_OUTPUT>;
+	fsl,tx-deemph-gen1 = <0x2d>;
+	fsl,tx-deemph-gen2 = <0xf>;
+	status = "okay";
+};
+
+&pgc_vpumix {
+	dvfs-supply = <&reg_buck5>;
+	idle-microvolt = <850000 805000 900000>;
+};
+#endif
 
 &pwm3 {
 	pinctrl-names = "default";
@@ -1034,6 +1030,12 @@
 	assigned-clock-parents = <&clk IMX8MM_SYS_PLL1_80M>;
 	uart-has-rtscts;
 	status = "okay";
+
+	bluetooth {
+		compatible = "qcom,qca9377-bt";
+		enable-gpios = GP_BT_ENABLE;
+		max-speed = <3000000>;
+	};
 };
 
 &uart4 {
@@ -1041,7 +1043,7 @@
 	pinctrl-0 = <&pinctrl_uart4>;
 	assigned-clocks = <&clk IMX8MM_CLK_UART4>;
 	assigned-clock-parents = <&clk IMX8MM_CLK_24M>;
-	status = "disabled";
+	status = "okay";
 };
 
 &usbotg1 {
@@ -1095,7 +1097,7 @@
 	vqmmc-supply = <&reg_vref_1v8>;
 };
 
-#if 0
+#ifndef UBOOT
 &vpu_g1 {
 	status = "okay";
 };
@@ -1106,11 +1108,6 @@
 
 &vpu_h1 {
 	status = "okay";
-};
-
-&vpumix_pd {
-	dvfs-supply = <&reg_buck5>;
-	idle-microvolt = <850000 805000 900000>;
 };
 #endif
 
