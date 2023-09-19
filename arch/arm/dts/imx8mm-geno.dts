@@ -4,8 +4,14 @@
  */
 
 /dts-v1/;
+#ifdef CONFIG_DEFCONFIG
+#define UBOOT
+#endif
+#define IMX8MM
+
 #define MX8MMN(a, b)	MX8MM_##a b
 #define IMX8MMN(a)	IMX8MM_##a
+#include <dt-bindings/phy/phy-imx8-pcie.h>
 #include "imx8mm.dtsi"
 #include "imx8mmn-nitrogen8mm_rev2.dtsi"
 
@@ -107,12 +113,6 @@
 			#clock-cells = <0>;
 			clock-frequency = <40000000>;
 		};
-
-		pcie0_refclk: pcie0-refclk {
-			compatible = "fixed-clock";
-			#clock-cells = <0>;
-			clock-frequency = <100000000>;
-		};
 	};
 
 	sound-wm8960 {
@@ -142,7 +142,7 @@
 	};
 };
 
-#if 0
+#ifndef UBOOT
 &csi1_bridge {
 	fsl,mipi-mode;
 	status = "okay";
@@ -173,7 +173,7 @@
 		pinctrl-0 = <&pinctrl_ecspi2_mcp2518fd>;
 		reg = <0>;
 		reset-gpios = GP_MCP2518FD_RESET;
-		spi-max-frequency = <20000000>;
+		spi-max-frequency = <17000000>;
 		xceiver-gpios = GP_CAN_EN;
 	};
 };
@@ -225,32 +225,37 @@
 		reg = <0x1a>;
 		wlf,gpio-cfg = <1 3>;
 		/* JD2: hp detect high for headphone*/
-		wlf,hp-cfg = <2 0 3>;
+		wlf,hp-cfg = <2 2 3>;
 		wlf,shared-lrclk;
 	};
 };
 
+#ifndef UBOOT
 &pcie0 {
 	assigned-clocks = <&clk IMX8MM_CLK_PCIE1_AUX>,
-			  <&clk IMX8MM_CLK_PCIE1_PHY>,
 			  <&clk IMX8MM_CLK_PCIE1_CTRL>;
-	assigned-clock-rates = <10000000>, <100000000>, <250000000>;
 	assigned-clock-parents = <&clk IMX8MM_SYS_PLL2_50M>,
-				 <&clk IMX8MM_SYS_PLL2_100M>,
 				 <&clk IMX8MM_SYS_PLL2_250M>;
+	assigned-clock-rates = <10000000>, <250000000>;
 	clocks = <&clk IMX8MM_CLK_PCIE1_ROOT>,
 		 <&clk IMX8MM_CLK_PCIE1_AUX>,
-		 <&clk IMX8MM_CLK_PCIE1_PHY>,
-		 <&pcie0_refclk>;
-	clock-names = "pcie", "pcie_aux", "pcie_phy", "pcie_bus";
+		 <&clk IMX8MM_CLK_PCIE1_PHY>;
+	clock-names = "pcie", "pcie_aux", "pcie_bus";
 	disable-gpio = GP_PCIE0_DISABLE;
-	ext_osc = <0>;
-	l1ss-disabled;
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_pcie0>;
 	reset-gpio = GP_PCIE0_RESET;
 	status = "okay";
 };
+
+&pcie_phy {
+	fsl,clkreq-unsupported;
+	fsl,refclk-pad-mode = <IMX8_PCIE_REFCLK_PAD_OUTPUT>;
+	fsl,tx-deemph-gen1 = <0x2d>;
+	fsl,tx-deemph-gen2 = <0xf>;
+	status = "okay";
+};
+#endif
 
 &sai1 {
 	assigned-clocks = <&clk IMX8MMN(AUDIO_PLL1)>, <&clk IMX8MMN(AUDIO_PLL2)>, <&clk IMX8MMN(CLK_SAI1)>;
@@ -270,7 +275,7 @@
 	status = "okay";
 };
 
-#if 0
+#ifndef UBOOT
 &vpu_g1 {
 	status = "okay";
 };
@@ -283,8 +288,3 @@
 	status = "okay";
 };
 #endif
-
-&vpumix_pd {
-	dvfs-supply = <&reg_buck5>;
-	idle-microvolt = <850000 805000 900000>;
-};
