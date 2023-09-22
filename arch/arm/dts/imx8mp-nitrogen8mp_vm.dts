@@ -4,9 +4,29 @@
  */
 
 /dts-v1/;
+#ifdef CONFIG_DEFCONFIG
+#define UBOOT
+#endif
+#define IMX8MP
 
 #include <dt-bindings/usb/pd.h>
 #include "imx8mp.dtsi"
+
+#define GP_MIPI_ENABLE(a)	<&gpio3 14 a>
+#define PD_MIPI_ENABLE(a)	MX8MP_IOMUXC_NAND_DQS__GPIO3_IO14 a
+#ifdef UBOOT
+#include "bd-universal.h"
+#include "panel-ltk0680ytmdb.dtsi"
+#include "panel-ltk069wxbct02.dtsi"
+#include "panel-ltk069wxict10.dtsi"
+#include "panel-ltk069wxict11.dtsi"
+#else
+#include "../bd-universal.h"
+#include "../panel-ltk0680ytmdb.dtsi"
+#include "../panel-ltk069wxbct02.dtsi"
+#include "../panel-ltk069wxict10.dtsi"
+#include "../panel-ltk069wxict11.dtsi"
+#endif
 
 &iomuxc {
 	pinctrl-names = "default";
@@ -268,7 +288,7 @@
 
 	pinctrl_usb3_0: usb3-0grp {
 		fsl,pins = <
-			MX8MP_IOMUXC_GPIO1_IO13__USB1_OTG_OC	0x1c0
+			MX8MP_IOMUXC_GPIO1_IO13__USB1_OC	0x1c0
 		>;
 	};
 
@@ -276,23 +296,23 @@
 		fsl,pins = <
 #define GP_USB3_1_HUB_RESET	<&gpio1 6 GPIO_ACTIVE_LOW>
 			MX8MP_IOMUXC_GPIO1_IO06__GPIO1_IO06	0x100
-			MX8MP_IOMUXC_GPIO1_IO15__USB2_OTG_OC	0x1c0
+			MX8MP_IOMUXC_GPIO1_IO15__USB2_OC	0x1c0
 		>;
 	};
 
 	pinctrl_usdhc1: usdhc1grp {
 		fsl,pins = <
-			MX8MP_IOMUXC_SD1_CLK__USDHC1_CLK	0x190
-			MX8MP_IOMUXC_SD1_CMD__USDHC1_CMD	0x1d0
-			MX8MP_IOMUXC_SD1_DATA0__USDHC1_DATA0	0x1d0
-			MX8MP_IOMUXC_SD1_DATA1__USDHC1_DATA1	0x1d0
-			MX8MP_IOMUXC_SD1_DATA2__USDHC1_DATA2	0x1d0
-			MX8MP_IOMUXC_SD1_DATA3__USDHC1_DATA3	0x1d0
-			MX8MP_IOMUXC_SD1_DATA4__USDHC1_DATA4	0x1d0
-			MX8MP_IOMUXC_SD1_DATA5__USDHC1_DATA5	0x1d0
-			MX8MP_IOMUXC_SD1_DATA6__USDHC1_DATA6	0x1d0
-			MX8MP_IOMUXC_SD1_DATA7__USDHC1_DATA7	0x1d0
-			MX8MP_IOMUXC_SD1_STROBE__USDHC1_STROBE	0x190
+			MX8MP_IOMUXC_SD1_CLK__USDHC1_CLK	0x10
+			MX8MP_IOMUXC_SD1_CMD__USDHC1_CMD	0x150
+			MX8MP_IOMUXC_SD1_DATA0__USDHC1_DATA0	0x150
+			MX8MP_IOMUXC_SD1_DATA1__USDHC1_DATA1	0x150
+			MX8MP_IOMUXC_SD1_DATA2__USDHC1_DATA2	0x150
+			MX8MP_IOMUXC_SD1_DATA3__USDHC1_DATA3	0x150
+			MX8MP_IOMUXC_SD1_DATA4__USDHC1_DATA4	0x150
+			MX8MP_IOMUXC_SD1_DATA5__USDHC1_DATA5	0x150
+			MX8MP_IOMUXC_SD1_DATA6__USDHC1_DATA6	0x150
+			MX8MP_IOMUXC_SD1_DATA7__USDHC1_DATA7	0x150
+			MX8MP_IOMUXC_SD1_STROBE__USDHC1_STROBE	0x10
 #define GP_EMMC_RESET	<&gpio2 10 IRQ_TYPE_LEVEL_LOW>
 			MX8MP_IOMUXC_SD1_RESET_B__GPIO2_IO10	0x140
 		>;
@@ -300,33 +320,33 @@
 
 	pinctrl_usdhc1_100mhz: usdhc1grp-100mhz {
 		fsl,pins = <
-			MX8MP_IOMUXC_SD1_CLK__USDHC1_CLK	0x194
-			MX8MP_IOMUXC_SD1_CMD__USDHC1_CMD	0x1d4
-			MX8MP_IOMUXC_SD1_DATA0__USDHC1_DATA0	0x1d4
-			MX8MP_IOMUXC_SD1_DATA1__USDHC1_DATA1	0x1d4
-			MX8MP_IOMUXC_SD1_DATA2__USDHC1_DATA2	0x1d4
-			MX8MP_IOMUXC_SD1_DATA3__USDHC1_DATA3	0x1d4
-			MX8MP_IOMUXC_SD1_DATA4__USDHC1_DATA4	0x1d4
-			MX8MP_IOMUXC_SD1_DATA5__USDHC1_DATA5	0x1d4
-			MX8MP_IOMUXC_SD1_DATA6__USDHC1_DATA6	0x1d4
-			MX8MP_IOMUXC_SD1_DATA7__USDHC1_DATA7	0x1d4
-			MX8MP_IOMUXC_SD1_STROBE__USDHC1_STROBE	0x194
+			MX8MP_IOMUXC_SD1_CLK__USDHC1_CLK	0x14
+			MX8MP_IOMUXC_SD1_CMD__USDHC1_CMD	0x154
+			MX8MP_IOMUXC_SD1_DATA0__USDHC1_DATA0	0x154
+			MX8MP_IOMUXC_SD1_DATA1__USDHC1_DATA1	0x154
+			MX8MP_IOMUXC_SD1_DATA2__USDHC1_DATA2	0x154
+			MX8MP_IOMUXC_SD1_DATA3__USDHC1_DATA3	0x154
+			MX8MP_IOMUXC_SD1_DATA4__USDHC1_DATA4	0x154
+			MX8MP_IOMUXC_SD1_DATA5__USDHC1_DATA5	0x154
+			MX8MP_IOMUXC_SD1_DATA6__USDHC1_DATA6	0x154
+			MX8MP_IOMUXC_SD1_DATA7__USDHC1_DATA7	0x154
+			MX8MP_IOMUXC_SD1_STROBE__USDHC1_STROBE	0x14
 		>;
 	};
 
 	pinctrl_usdhc1_200mhz: usdhc1grp-200mhz {
 		fsl,pins = <
-			MX8MP_IOMUXC_SD1_CLK__USDHC1_CLK	0x196
-			MX8MP_IOMUXC_SD1_CMD__USDHC1_CMD	0x1d6
-			MX8MP_IOMUXC_SD1_DATA0__USDHC1_DATA0	0x1d6
-			MX8MP_IOMUXC_SD1_DATA1__USDHC1_DATA1	0x1d6
-			MX8MP_IOMUXC_SD1_DATA2__USDHC1_DATA2	0x1d6
-			MX8MP_IOMUXC_SD1_DATA3__USDHC1_DATA3	0x1d6
-			MX8MP_IOMUXC_SD1_DATA4__USDHC1_DATA4	0x1d6
-			MX8MP_IOMUXC_SD1_DATA5__USDHC1_DATA5	0x1d6
-			MX8MP_IOMUXC_SD1_DATA6__USDHC1_DATA6	0x1d6
-			MX8MP_IOMUXC_SD1_DATA7__USDHC1_DATA7	0x1d6
-			MX8MP_IOMUXC_SD1_STROBE__USDHC1_STROBE	0x196
+			MX8MP_IOMUXC_SD1_CLK__USDHC1_CLK	0x12
+			MX8MP_IOMUXC_SD1_CMD__USDHC1_CMD	0x152
+			MX8MP_IOMUXC_SD1_DATA0__USDHC1_DATA0	0x152
+			MX8MP_IOMUXC_SD1_DATA1__USDHC1_DATA1	0x152
+			MX8MP_IOMUXC_SD1_DATA2__USDHC1_DATA2	0x152
+			MX8MP_IOMUXC_SD1_DATA3__USDHC1_DATA3	0x152
+			MX8MP_IOMUXC_SD1_DATA4__USDHC1_DATA4	0x152
+			MX8MP_IOMUXC_SD1_DATA5__USDHC1_DATA5	0x152
+			MX8MP_IOMUXC_SD1_DATA6__USDHC1_DATA6	0x152
+			MX8MP_IOMUXC_SD1_DATA7__USDHC1_DATA7	0x152
+			MX8MP_IOMUXC_SD1_STROBE__USDHC1_STROBE	0x12
 		>;
 	};
 
@@ -373,11 +393,6 @@
 	};
 };
 
-#include "panel-ltk0680ytmdb.dtsi"
-#include "panel-ltk069wxbct02.dtsi"
-#include "panel-ltk069wxict10.dtsi"
-#include "panel-ltk069wxict11.dtsi"
-
 / {
 	model = "Boundary i.MX8MPlus nitrogen8mp_vm board";
 	compatible = "boundary,imx8mp-nitrogen8mp_vm", "fsl,imx8mp";
@@ -410,7 +425,7 @@
 		enable-gpios = GP_BACKLIGHT_MIPI_EN;
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_backlight_mipi>;
-		pwms = <&pwm1 0 30000>;		/* 33.3 Khz */
+		pwms = <&pwm1 0 30000 0>;	/* 33.3 Khz */
 		status = "disabled";
 	};
 
@@ -510,7 +525,7 @@
 	sound_hdmi: sound-hdmi {
 		compatible = "fsl,imx-audio-hdmi";
 		model = "audio-hdmi";
-#if 0
+#ifndef UBOOT
 		audio-cpu = <&aud2htx>;
 #endif
 		hdmi-out;
@@ -529,7 +544,7 @@
 		asrc-controller = <&easrc>;
 #endif
 		audio-codec = <&wm8960>;
-#if 0
+#ifndef UBOOT
 		audio-cpu = <&sai3>;
 #endif
 		audio-routing =
@@ -559,7 +574,7 @@
 	};
 };
 
-#if 0
+#ifndef UBOOT
 &A53_0 {
 	cpu-supply = <&buck2>;
 };
@@ -609,7 +624,7 @@
 	};
 };
 
-#if 0
+#ifndef UBOOT
 &easrc {
 	fsl,asrc-rate  = <48000>;
 	status = "okay";
@@ -641,7 +656,7 @@
 	};
 };
 
-#if 0
+#ifndef UBOOT
 &gpu_2d {
 	status = "okay";
 };
@@ -659,7 +674,7 @@
 	status = "okay";
 };
 
-#if 0
+#ifndef UBOOT
 &hdmi_blk_ctrl {
 	status = "okay";
 };
@@ -785,14 +800,14 @@
 
 	wm8960: codec@1a {
 		clock-names = "mclk";
-#if 0
+#ifndef UBOOT
 		clocks = <&audio_blk_ctrl IMX8MP_CLK_AUDIO_BLK_CTRL_SAI3_MCLK1>;
 #endif
 		compatible = "wlf,wm8960";
 		reg = <0x1a>;
 		wlf,gpio-cfg = <1 3>;
 		/* JD2: hp detect high for headphone*/
-		wlf,hp-cfg = <2 0 3>;
+		wlf,hp-cfg = <2 2 3>;
 		wlf,shared-lrclk;
 	};
 };
@@ -908,7 +923,7 @@
 	};
 };
 
-#if 0
+#ifndef UBOOT
 &irqsteer_hdmi {
 	status = "okay";
 };
@@ -962,7 +977,7 @@
 	};
 };
 
-#if 0
+#ifndef UBOOT
 &mix_gpu_ml {
 	status = "okay";
 };
@@ -978,7 +993,7 @@
 	status = "okay";
 };
 
-#if 0
+#ifndef UBOOT
 &sai3 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_sai3>;
@@ -1118,7 +1133,7 @@
 	vqmmc-supply = <&reg_usdhc2_vqmmc>;
 };
 
-#if 0
+#ifndef UBOOT
 &vpu_g1 {
 	status = "okay";
 };
