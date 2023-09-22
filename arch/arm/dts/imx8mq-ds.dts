@@ -4,6 +4,10 @@
  */
 
 /dts-v1/;
+#ifdef CONFIG_DEFCONFIG
+#define UBOOT
+#endif
+#define IMX8MQ
 
 #include "imx8mq.dtsi"
 
@@ -37,16 +41,16 @@
 #define GP_FEC1_RESET	<&gpio1 9 GPIO_ACTIVE_LOW>
 			MX8MQ_IOMUXC_GPIO1_IO09_GPIO1_IO9		0x19
 #define GPIRQ_FEC1_PHY	<&gpio1 11 IRQ_TYPE_LEVEL_LOW>
-			MX8MQ_IOMUXC_GPIO1_IO11_GPIO1_IO11		0x59
+			MX8MQ_IOMUXC_GPIO1_IO11_GPIO1_IO11		0xc1
 		>;
 	};
 
 	pinctrl_hog: hoggrp {
 		fsl,pins = <
 			/* SW_SYNC */
-			MX8MQ_IOMUXC_SAI5_RXD1_GPIO3_IO22		0x19
+			MX8MQ_IOMUXC_SAI5_RXD1_GPIO3_IO22		0xd9
 			/* SW_PRIV */
-			MX8MQ_IOMUXC_SAI5_RXD2_GPIO3_IO23		0x19
+			MX8MQ_IOMUXC_SAI5_RXD2_GPIO3_IO23		0xd9
 			/* FAN_ROTOLOCK */
 			MX8MQ_IOMUXC_ECSPI1_SS0_GPIO5_IO9		0x19
 			/* FAN_VOUT */
@@ -412,7 +416,7 @@
 	};
 };
 
-#if 0
+#ifndef UBOOT
 &a53_opp_table {
 	opp-800000000 {
 		opp-microvolt = <1000000>;
@@ -438,6 +442,16 @@
 &A53_3 {
 	cpu-supply = <&reg_arm_dram>;
 };
+
+&dcss {
+	status = "okay";
+
+	port {
+		dcss_out: endpoint {
+			remote-endpoint = <&hdmi_in>;
+		};
+	};
+};
 #endif
 
 &fec1 {
@@ -455,13 +469,31 @@
 		#address-cells = <1>;
 		#size-cells = <0>;
 
-		ethphy0: ethernet-phy@4 {
+		ethphy0: ethernet-phy {
 			compatible = "ethernet-phy-ieee802.3-c22";
-			reg = <4>;
 			interrupts-extended = GPIRQ_FEC1_PHY;
+			reg-mask = <0x90>;
 		};
 	};
 };
+
+#ifndef UBOOT
+&gpu3d {
+	status = "okay";
+};
+
+&hdmi {
+	compatible = "cdn,imx8mq-hdmi";
+	lane-mapping = <0xe4>;
+	status = "okay";
+
+	port {
+		hdmi_in: endpoint {
+			remote-endpoint = <&dcss_out>;
+		};
+	};
+};
+#endif
 
 &i2c1 {
 	clock-frequency = <400000>;
@@ -616,19 +648,12 @@
 	status = "okay";
 };
 
-#if 0
+#ifndef UBOOT
 &mu {
 	status = "okay";
 };
 
 &pcie0 { /* SX-PCEAC2 */
-	assigned-clocks = <&clk IMX8MQ_CLK_PCIE1_AUX>,
-			  <&clk IMX8MQ_CLK_PCIE1_PHY>,
-			  <&clk IMX8MQ_CLK_PCIE1_CTRL>;
-	assigned-clock-parents = <&clk IMX8MQ_SYS2_PLL_50M>,
-				 <&clk IMX8MQ_SYS2_PLL_100M>,
-				 <&clk IMX8MQ_SYS2_PLL_250M>;
-	assigned-clock-rates = <10000000>, <100000000>, <250000000>;
 	clocks = <&clk IMX8MQ_CLK_PCIE1_ROOT>,
 		<&clk IMX8MQ_CLK_PCIE1_AUX>,
 		<&clk IMX8MQ_CLK_PCIE1_PHY>,
@@ -644,13 +669,6 @@
 };
 
 &pcie1 { /* Edge TPU */
-	assigned-clocks = <&clk IMX8MQ_CLK_PCIE2_AUX>,
-			  <&clk IMX8MQ_CLK_PCIE2_PHY>,
-			  <&clk IMX8MQ_CLK_PCIE2_CTRL>;
-	assigned-clock-parents = <&clk IMX8MQ_SYS2_PLL_50M>,
-				 <&clk IMX8MQ_SYS2_PLL_100M>,
-				 <&clk IMX8MQ_SYS2_PLL_250M>;
-	assigned-clock-rates = <10000000>, <100000000>, <250000000>;
 	clocks = <&clk IMX8MQ_CLK_PCIE2_ROOT>,
 		<&clk IMX8MQ_CLK_PCIE2_AUX>,
 		<&clk IMX8MQ_CLK_PCIE2_PHY>,
@@ -719,9 +737,13 @@
 	vmmc-supply = <&reg_vref_3v3>;
 };
 
-#if 0
+#ifndef UBOOT
 &vpu {
 	regulator-supply = <&reg_soc_gpu_vpu>;
+	status = "okay";
+};
+
+&vpu_v4l2 {
 	status = "okay";
 };
 #endif
