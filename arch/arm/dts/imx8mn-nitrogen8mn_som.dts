@@ -56,11 +56,11 @@
 		#clock-cells = <0>;
 		clock-frequency = <20000000>;
 		clock-output-names = "mipi_pwm4";
-		pwms = <&pwm4 0 50>; /* 20 MHz */
+		pwms = <&pwm4 0 50 0>; /* 20 MHz */
 	};
 };
 
-#if 0
+#ifndef UBOOT
 &cameradev {
 	status = "okay";
 };
@@ -80,7 +80,7 @@
 &i2c3 {
 	/delete-node/ i2cmux@70;
 
-#if 0
+#ifndef UBOOT
 	ov5640-mipi1@3c {
 		AVDD-supply = <&reg_vref_2v5>;
 		DOVDD-supply = <&reg_vref_1v8>;
@@ -106,7 +106,7 @@
 #endif
 };
 
-#if 0
+#ifndef UBOOT
 &isi_0 {
 	status = "okay";
 
