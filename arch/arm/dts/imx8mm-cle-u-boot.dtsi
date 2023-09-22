@@ -71,7 +71,7 @@
 	display = <&fb_mipi>;
 };
 
-&lt8912_2 {
+&mipi_ref2(lt8912, 2) {
 	port@0 {
 		lt8912_2_from_panel: endpoint {
 			remote-endpoint = <&panel_to_lt8912_2>;
@@ -141,7 +141,7 @@
 	u-boot,dm-pre-reloc;
 };
 
-&pca9546 {
+&mipi_ref(pca9546) {
 	i2c2@0 {
 		lt8912@48 {
 			port@0 {
