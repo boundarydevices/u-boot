@@ -4,20 +4,18 @@
  */
 
 /dts-v1/;
+#ifdef CONFIG_DEFCONFIG
+#define UBOOT
+#endif
+#define IMX8MP
 
+#include <dt-bindings/phy/phy-imx8-pcie.h>
 #include <dt-bindings/usb/pd.h>
 #include "imx8mp.dtsi"
 
 &iomuxc {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_hog>, <&pinctrl_hog1>;
-
-	pinctrl_bt_rfkill: bt-rfkillgrp {
-		fsl,pins = <
-#define GP_BT_RFKILL_RESET	<&gpio3 6 GPIO_ACTIVE_LOW>
-			MX8MP_IOMUXC_NAND_DATA00__GPIO3_IO06		0x100
-		>;
-	};
 
 	pinctrl_ecspi2: ecspi2grp {
 		fsl,pins = <
@@ -300,6 +298,8 @@
 			MX8MP_IOMUXC_UART3_TXD__UART1_DCE_RTS		0x140
 #define GP_BT_UART_WH	<&gpio3 14 GPIO_ACTIVE_HIGH>		/* Wake Host */
 			MX8MP_IOMUXC_NAND_DQS__GPIO3_IO14		0x140
+#define GP_BT_ENABLE	<&gpio3 6 GPIO_ACTIVE_HIGH>
+			MX8MP_IOMUXC_NAND_DATA00__GPIO3_IO06		0x100
 		>;
 	};
 
@@ -324,7 +324,7 @@
 
 	pinctrl_usb3_0: usb3-0grp {
 		fsl,pins = <
-			MX8MP_IOMUXC_GPIO1_IO13__USB1_OTG_OC		0x1c0
+			MX8MP_IOMUXC_GPIO1_IO13__USB1_OC		0x1c0
 		>;
 	};
 
@@ -480,16 +480,6 @@
 		sound_hdmi = &sound_hdmi;
 	};
 
-	bt-rfkill {
-		compatible = "net,rfkill-gpio";
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_bt_rfkill>;
-		name = "bt-rfkill";
-		type = <2>; /* Bluetooth */
-		reset-gpios = GP_BT_RFKILL_RESET;
-		status = "okay";
-	};
-
 	chosen {
 		stdout-path = &uart2;
 	};
@@ -572,6 +562,12 @@
 		};
 	};
 
+	pcie0_refclk: pcie0-refclk {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <100000000>;
+	};
+
 	reg_usb_otg_vbus: regulator-usb-otg-vbus {
 		compatible = "regulator-fixed";
 		pinctrl-names = "default";
@@ -629,7 +625,7 @@
 	sound_hdmi: sound-hdmi {
 		compatible = "fsl,imx-audio-hdmi";
 		model = "audio-hdmi";
-#if 0
+#ifndef UBOOT
 		audio-cpu = <&aud2htx>;
 #endif
 		hdmi-out;
@@ -643,7 +639,7 @@
 		status = "okay";
 	};
 
-#if 0
+#ifndef UBOOT
 	sound-wm8960 {
 		amp-gain-gpios = GP_WM8960_AMP_G0, GP_WM8960_AMP_G1;
 		/* amp-gain-seq = /bits/ 8 <0 1 2 3>; */ /* default */
@@ -669,7 +665,7 @@
 #endif
 };
 
-#if 0
+#ifndef UBOOT
 &A53_0 {
 	cpu-supply = <&buck2>;
 };
@@ -699,7 +695,7 @@
 	init-on-array = <IMX8MP_CLK_HSIO_ROOT>;
 };
 
-#if 0
+#ifndef UBOOT
 &dewarp {
 	status = "okay";
 };
@@ -766,7 +762,7 @@
 	};
 };
 
-#if 0
+#ifndef UBOOT
 &gpu_2d {
 	status = "okay";
 };
@@ -784,7 +780,7 @@
 	status = "okay";
 };
 
-#if 0
+#ifndef UBOOT
 &hdmi_blk_ctrl {
 	status = "okay";
 };
@@ -964,8 +960,7 @@
 	};
 };
 
-
-#if 0
+#ifndef UBOOT
 &i2c3a {
 	basler_camera@36 {
 		compatible = "basler,basler-camera", "basler-camera";
@@ -1031,7 +1026,7 @@
 
 	wm8960: codec@1a {
 		clock-names = "mclk";
-#if 0
+#ifndef UBOOT
 		clocks = <&audio_blk_ctrl IMX8MP_CLK_AUDIO_BLK_CTRL_SAI1_MCLK1>;
 #endif
 		compatible = "wlf,wm8960";
@@ -1041,7 +1036,7 @@
 	};
 };
 
-#if 0
+#ifndef UBOOT
 &irqsteer_hdmi {
 	status = "okay";
 };
@@ -1087,8 +1082,7 @@
 	status = "disabled";
 };
 
-
-#if 0
+#ifndef UBOOT
 &mipi_csi_0 {
 	#address-cells = <1>;
 	#size-cells = <0>;
@@ -1124,9 +1118,7 @@
 		};
 	};
 };
-#endif
 
-#if 0
 &mix_gpu_ml {
 	status = "okay";
 };
@@ -1136,19 +1128,15 @@
 };
 #endif
 
-#if 0
+#ifndef UBOOT
 &pcie {
-	assigned-clocks = <&clk IMX8MP_CLK_HSIO_AXI>,
-			  <&clk IMX8MP_CLK_PCIE_AUX>;
-	assigned-clock-parents = <&clk IMX8MP_SYS_PLL2_500M>,
-				 <&clk IMX8MP_SYS_PLL2_50M>;
-	assigned-clock-rates = <500000000>, <10000000>;
+	assigned-clocks = <&clk IMX8MP_CLK_PCIE_AUX>;
+	assigned-clock-parents = <&clk IMX8MP_SYS_PLL2_50M>;
+	assigned-clock-rates = <10000000>;
 	clocks = <&clk IMX8MP_CLK_HSIO_ROOT>,
-		 <&clk IMX8MP_CLK_PCIE_AUX>,
-		 <&clk IMX8MP_CLK_HSIO_AXI>,
-		 <&clk IMX8MP_CLK_PCIE_ROOT>;
-	clock-names = "pcie", "pcie_aux", "pcie_phy", "pcie_bus";
-	ext_osc = <0>;
+		 <&clk IMX8MP_CLK_PCIE_ROOT>,
+		 <&clk IMX8MP_CLK_HSIO_AXI>;
+	clock-names = "pcie", "pcie_aux", "pcie_bus";
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_pcie>;
 	reset-gpio = GP_PCIE_RESET;
@@ -1156,13 +1144,15 @@
 };
 
 &pcie_phy {
-	clk_mode = <3>;
+	fsl,clkreq-unsupported;
+	fsl,refclk-pad-mode = <IMX8_PCIE_REFCLK_PAD_INPUT>;
+	clocks = <&pcie0_refclk>;
+	clock-names = "ref";
 	status = "okay";
 };
 #endif
 
-
-#if 0
+#ifndef UBOOT
 &sai1 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_sai1>;
@@ -1193,6 +1183,12 @@
 	assigned-clock-parents = <&clk IMX8MP_SYS_PLL1_80M>;
 	uart-has-rtscts;
 	status = "okay";
+
+	bluetooth {
+		compatible = "qcom,qca9377-bt";
+		enable-gpios = GP_BT_ENABLE;
+		max-speed = <3000000>;
+	};
 };
 
 &uart2 {
@@ -1287,7 +1283,7 @@
 	vqmmc-supply = <&reg_vref_1v8>;
 };
 
-#if 0
+#ifndef UBOOT
 &vpu_g1 {
 	status = "okay";
 };
@@ -1312,7 +1308,7 @@
 	status = "okay";
 };
 
-#if 0
+#ifndef UBOOT
 &xcvr {
 	#sound-dai-cells = <0>;
 	status = "okay";
