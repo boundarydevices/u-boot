@@ -4,12 +4,22 @@
  */
 
 /dts-v1/;
+#ifdef CONFIG_DEFCONFIG
+#define UBOOT
+#endif
+#define IMX8MQ
 
+#ifdef UBOOT
 /* First 128KB is for PSCI ATF. */
 /memreserve/ 0x40000000 0x00020000;
+#endif
 
 #include "imx8mq.dtsi"
+#ifdef UBOOT
 #include "panel-m101nwwb.dtsi"
+#else
+#include "../panel-m101nwwb.dtsi"
+#endif
 
 &iomuxc {
 	pinctrl-names = "default";
@@ -19,13 +29,6 @@
 		fsl,pins = <
 #define GPIRQ_BKLIT_ERR	<&gpio4 19 IRQ_TYPE_LEVEL_HIGH>
 			MX8MQ_IOMUXC_SAI1_TXD7_GPIO4_IO19		0x19
-		>;
-	};
-
-	pinctrl_bt_rfkill: bt-rfkillgrp {
-		fsl,pins = <
-#define GP_BT_RFKILL_RESET	<&gpio3 19 GPIO_ACTIVE_LOW>
-			MX8MQ_IOMUXC_SAI5_RXFS_GPIO3_IO19		0x19
 		>;
 	};
 
@@ -308,6 +311,8 @@
 			MX8MQ_IOMUXC_UART3_TXD_UART3_DCE_TX		0x45
 			MX8MQ_IOMUXC_ECSPI1_SS0_UART3_DCE_RTS_B		0x45
 			MX8MQ_IOMUXC_ECSPI1_MISO_UART3_DCE_CTS_B	0x45
+#define GP_BT_ENABLE		<&gpio3 19 GPIO_ACTIVE_HIGH>
+			MX8MQ_IOMUXC_SAI5_RXFS_GPIO3_IO19		0x19
 		>;
 	};
 
@@ -449,18 +454,8 @@
 		compatible = "pwm-backlight";
 		default-brightness-level = <8>;
 		display = <&lcdif>;
-		pwms = <&pwm2 0 30000>;		/* 33.3 Khz */
+		pwms = <&pwm2 0 30000 0>;		/* 33.3 Khz */
 		status = "disabled";
-	};
-
-	bt-rfkill {
-		compatible = "net,rfkill-gpio";
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_bt_rfkill>;
-		name = "bt-rfkill";
-		type = <2>; /* Bluetooth */
-		reset-gpios = GP_BT_RFKILL_RESET;
-		status = "okay";
 	};
 
 	gpio-keys {
@@ -666,7 +661,7 @@
 		enable-active-high;
 	};
 
-#if 0
+#ifndef UBOOT
 	resmem: reserved-memory {
 		#address-cells = <2>;
 		#size-cells = <2>;
@@ -704,9 +699,9 @@
 #endif
 
 	sound_hdmi: sound-hdmi {
-		compatible = "fsl,imx-audio-cdnhdmi";
+		compatible = "fsl,imx-audio-hdmi";
 		model = "imx-audio-hdmi";
-#if 0
+#ifndef UBOOT
 		audio-cpu = <&sai4>;
 #endif
 		constraint-rate = <32000 44100 48000 96000 192000>;
@@ -716,7 +711,7 @@
 	};
 };
 
-#if 0
+#ifndef UBOOT
 &A53_0 {
 	cpu-supply = <&reg_buck3>;
 };
@@ -756,12 +751,7 @@
 	};
 };
 
-#if 0
-&gpu {
-	power-domains = <&pgc_gpu>;
-	status = "okay";
-};
-
+#ifndef UBOOT
 &gpu3d {
 	power-domains = <&pgc_gpu>;
 	status = "okay";
@@ -793,7 +783,7 @@
 	sda-gpios = GP_I2C1_SDA;
 	status = "okay";
 
-#if 0
+#ifndef UBOOT
 	pf8100@8 {
 		compatible = "nxp,pf8100";
 		reg = <0x08>;
@@ -958,7 +948,7 @@
 		reg = <0x1a>;
 		wlf,gpio-cfg = <1 3>;
 		/* JD2: hp detect high for headphone*/
-		wlf,hp-cfg = <2 0 3>;
+		wlf,hp-cfg = <2 2 3>;
 		wlf,shared-lrclk;
 	};
 };
@@ -1010,7 +1000,7 @@
 	};
 };
 
-#if 0
+#ifndef UBOOT
 &i2c4b {
 	ov5640-mipi1@3c {
 		AVDD-supply = <&reg_ldo3>;
@@ -1052,7 +1042,7 @@
 	status = "disabled";
 };
 
-#if 0
+#ifndef UBOOT
 &mipi_csi_1 {
 	#address-cells = <1>;
 	#size-cells = <0>;
@@ -1163,13 +1153,13 @@
 	};
 };
 
-#if 0
+#ifndef UBOOT
 &mu {
 	status = "okay";
 };
 #endif
 
-#if 0
+#ifndef UBOOT
 /delete-node/ &pgc_gpu;
 /delete-node/ &pgc_vpu;
 &pgc {
@@ -1211,7 +1201,7 @@
 	status = "okay";
 };
 
-#if 0
+#ifndef UBOOT
 &sai1 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_sai1>;
@@ -1263,6 +1253,12 @@
 	assigned-clock-parents = <&clk IMX8MQ_SYS1_PLL_80M>;
 	uart-has-rtscts;
 	status = "okay";
+
+	bluetooth {
+		compatible = "qcom,qca9377-bt";
+		enable-gpios = GP_BT_ENABLE;
+		max-speed = <3000000>;
+	};
 };
 
 &usb3_phy0 {
@@ -1323,7 +1319,7 @@
 	vqmmc-supply = <&reg_vref_1v8>;
 };
 
-#if 0
+#ifndef UBOOT
 &vpu {
 	power-domains = <&pgc_vpu>;
 	regulator-supply = <&reg_vref_0v9>;
