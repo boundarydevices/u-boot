@@ -4,9 +4,15 @@
  */
 
 /dts-v1/;
+#ifdef CONFIG_DEFCONFIG
+#define UBOOT
+#endif
+#define IMX8MQ
 
+#ifdef UBOOT
 /* First 128KB is for PSCI ATF. */
 /memreserve/ 0x40000000 0x00020000;
+#endif
 
 #include "imx8mq.dtsi"
 
@@ -82,7 +88,7 @@
 #define GP_FEC1_RESET	<&gpio1 9 GPIO_ACTIVE_LOW>
 			MX8MQ_IOMUXC_GPIO1_IO09_GPIO1_IO9		0x19
 #define GPIRQ_FEC1_PHY	<&gpio1 11 IRQ_TYPE_LEVEL_LOW>
-			MX8MQ_IOMUXC_GPIO1_IO11_GPIO1_IO11		0x59
+			MX8MQ_IOMUXC_GPIO1_IO11_GPIO1_IO11		0xc1
 		>;
 	};
 
@@ -513,7 +519,7 @@
 		enable-gpios = GP_BACKLIGHT_EN;
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_backlight>;
-		pwms = <&pwm3 0 30000>;		/* 33.3 Khz */
+		pwms = <&pwm3 0 30000 0>;		/* 33.3 Khz */
 		status = "disabled";
 	};
 
@@ -691,7 +697,7 @@
 		#clock-cells = <0>;
 		clock-frequency = <22000000>;
 		clock-output-names = "mipi_mclk";
-		pwms = <&pwm1 0 45>; /* 1 / 45 ns = 22 MHz */
+		pwms = <&pwm1 0 45 0>; /* 1 / 45 ns = 22 MHz */
 	};
 
 	pcie0_refclk: pcie0-refclk {
@@ -760,7 +766,7 @@
 			  3300000 0x0>;
 	};
 
-#if 0
+#ifndef UBOOT
 	resmem: reserved-memory {
 		#address-cells = <2>;
 		#size-cells = <2>;
@@ -801,9 +807,9 @@
 #endif
 
 	sound_hdmi: sound-hdmi {
-		compatible = "fsl,imx-audio-cdnhdmi";
+		compatible = "fsl,imx-audio-hdmi";
 		model = "imx-audio-hdmi";
-#if 0
+#ifndef UBOOT
 		audio-cpu = <&sai4>;
 #endif
 		constraint-rate = <32000 44100 48000 96000 192000>;
@@ -839,7 +845,7 @@
 	};
 };
 
-#if 0
+#ifndef UBOOT
 &ecspi1 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_ecspi1>;
@@ -904,12 +910,7 @@
 	};
 };
 
-#if 0
-&gpu {
-	power-domains = <&pgc_gpu>;
-	status = "okay";
-};
-
+#ifndef UBOOT
 &gpu3d {
 	power-domains = <&pgc_gpu>;
 	status = "okay";
@@ -1241,19 +1242,12 @@
 	};
 };
 
-#if 0
+#ifndef UBOOT
 &mu {
 	status = "okay";
 };
 
 &pcie0 {
-	assigned-clocks = <&clk IMX8MQ_CLK_PCIE1_AUX>,
-			  <&clk IMX8MQ_CLK_PCIE1_PHY>,
-			  <&clk IMX8MQ_CLK_PCIE1_CTRL>;
-	assigned-clock-parents = <&clk IMX8MQ_SYS2_PLL_50M>,
-				 <&clk IMX8MQ_SYS2_PLL_100M>,
-				 <&clk IMX8MQ_SYS2_PLL_250M>;
-	assigned-clock-rates = <10000000>, <100000000>, <250000000>;
 	clkreq-gpio = GP_PCIE0_CLKREQ;
 #if 1
 	clocks = <&clk IMX8MQ_CLK_PCIE1_ROOT>,
@@ -1280,13 +1274,6 @@
 };
 
 &pcie1 {
-	assigned-clocks = <&clk IMX8MQ_CLK_PCIE2_AUX>,
-			  <&clk IMX8MQ_CLK_PCIE2_PHY>,
-			  <&clk IMX8MQ_CLK_PCIE2_CTRL>;
-	assigned-clock-parents = <&clk IMX8MQ_SYS2_PLL_50M>,
-				 <&clk IMX8MQ_SYS2_PLL_100M>,
-				 <&clk IMX8MQ_SYS2_PLL_250M>;
-	assigned-clock-rates = <10000000>, <100000000>, <250000000>;
 	clocks = <&clk IMX8MQ_CLK_PCIE2_ROOT>,
 		<&clk IMX8MQ_CLK_PCIE2_AUX>,
 		<&clk IMX8MQ_CLK_PCIE2_PHY>,
@@ -1356,7 +1343,7 @@
 	status = "okay";
 };
 
-#if 0
+#ifndef UBOOT
 &sai1 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_sai1>;
@@ -1457,7 +1444,7 @@
 #endif
 };
 
-#if 0
+#ifndef UBOOT
 &vpu {
 	power-domains = <&pgc_vpu>;
 	regulator-supply = <&reg_vref_0v9>;
