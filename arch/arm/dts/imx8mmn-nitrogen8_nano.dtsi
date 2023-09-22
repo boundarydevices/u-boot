@@ -7,13 +7,6 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_hog>;
 
-	pinctrl_bt_rfkill: bt-rfkillgrp {
-		fsl,pins = <
-#define GP_BT_RFKILL_RESET	<&gpio3 14 GPIO_ACTIVE_LOW>
-			MX8MMN(IOMUXC_NAND_DQS_GPIO3_IO14, 0x119)
-		>;
-	};
-
 	pinctrl_ecspi1: ecspi1grp {
 		fsl,pins = <
 #define GP_ECSPI1_ENC424J600	<&gpio5 9 GPIO_ACTIVE_LOW>
@@ -79,7 +72,7 @@
 #define GP_FEC1_RESET	<&gpio2 10 GPIO_ACTIVE_LOW>
 			MX8MMN(IOMUXC_SD1_RESET_B_GPIO2_IO10, 0x159)
 #define GPIRQ_FEC1_PHY	<&gpio2 6 IRQ_TYPE_LEVEL_LOW>
-			MX8MMN(IOMUXC_SD1_DATA4_GPIO2_IO6, 0x159)
+			MX8MMN(IOMUXC_SD1_DATA4_GPIO2_IO6, 0x1c0)
 		>;
 	};
 
@@ -254,7 +247,7 @@
 
 	pinctrl_sound_wm8960: sound-wm8960grp {
 		fsl,pins = <
-#define GP_WM8960_MIC_DET		<&gpio1 10 GPIO_ACTIVE_HIGH>
+#define GP_WM8960_MIC_DET		<&gpio1 10 GPIO_ACTIVE_LOW>
 			MX8MMN(IOMUXC_GPIO1_IO10_GPIO1_IO10, 0x80)
 #define GP_WM8960_HP_DET		<&gpio4 28 GPIO_ACTIVE_HIGH>
 			MX8MMN(IOMUXC_SAI3_RXFS_GPIO4_IO28, 0x80)
@@ -267,6 +260,8 @@
 			MX8MMN(IOMUXC_UART1_TXD_UART1_DCE_TX, 0x140)
 			MX8MMN(IOMUXC_UART3_RXD_UART1_DCE_CTS_B, 0x140)
 			MX8MMN(IOMUXC_UART3_TXD_UART1_DCE_RTS_B, 0x140)
+#define GP_BT_ENABLE	<&gpio3 14 GPIO_ACTIVE_HIGH>
+			MX8MMN(IOMUXC_NAND_DQS_GPIO3_IO14, 0x119)
 		>;
 	};
 
@@ -422,16 +417,6 @@
 		a53 = &A53_0;
 	};
 
-	bt-rfkill {
-		compatible = "net,rfkill-gpio";
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_bt_rfkill>;
-		name = "bt-rfkill";
-		type = <2>; /* Bluetooth */
-		reset-gpios = GP_BT_RFKILL_RESET;
-		status = "okay";
-	};
-
 	clocks {
 		clk40m: clk40m {
 			compatible = "fixed-clock";
@@ -445,7 +430,7 @@
 		#clock-cells = <0>;
 		clock-frequency = <20000000>;
 		clock-output-names = "csi_mclk";
-		pwms = <&pwm2 0 50>; /* 1 / 50 ns = 20 MHz */
+		pwms = <&pwm2 0 50 0>; /* 1 / 50 ns = 20 MHz */
 	};
 
 	reg_usdhc2_vqmmc: regulator-usdhc2-vqmmc {
@@ -503,7 +488,7 @@
 		enable-active-high;
 	};
 
-#if 0
+#ifndef UBOOT
 	sound-wm8960 {
 		audio-codec = <&wm8960>;
 		audio-cpu = <&sai3>;
@@ -532,7 +517,7 @@
 #endif
 };
 
-#if 0
+#ifndef UBOOT
 &A53_0 {
 	cpu-supply = <&reg_buck3>;
 };
@@ -572,7 +557,7 @@
 		pinctrl-0 = <&pinctrl_ecspi2_mcp2518fd>;
 		reg = <0>;
 		reset-gpios = GP_MCP2518FD_RESET;
-		spi-max-frequency = <20000000>;
+		spi-max-frequency = <17000000>;
 		xceiver-gpios = GP_CAN_EN;
 	};
 };
@@ -603,7 +588,7 @@
 	};
 };
 
-#if 0
+#ifndef UBOOT
 &flexspi {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_flexspi>;
@@ -817,7 +802,7 @@
 		reg = <0x1a>;
 		wlf,gpio-cfg = <1 3>;
 		/* JD2: hp detect high for headphone*/
-		wlf,hp-cfg = <2 0 3>;
+		wlf,hp-cfg = <2 2 3>;
 		wlf,shared-lrclk;
 	};
 };
@@ -828,7 +813,6 @@
 
 #if 0
 &mipi_csi_1 {
-#if 0
 	#address-cells = <1>;
 	#size-cells = <0>;
 	status = "okay";
@@ -844,11 +828,10 @@
 			csis-wclk;
 		};
 	};
-#endif
 };
 #endif
 
-#if 0
+#ifndef UBOOT
 &mu {
 	status = "okay";
 };
@@ -860,7 +843,7 @@
 	status = "okay";
 };
 
-#if 0
+#ifndef UBOOT
 &sai2 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_sai2>;
@@ -894,6 +877,12 @@
 	assigned-clock-parents = <&clk IMX8MMN(SYS_PLL1_80M)>;
 	uart-has-rtscts;
 	status = "okay";
+
+	bluetooth {
+		compatible = "qcom,qca9377-bt";
+		enable-gpios = GP_BT_ENABLE;
+		max-speed = <3000000>;
+	};
 };
 
 &uart2 { /* console */
@@ -988,8 +977,6 @@
 };
 
 /* J11 mipi display */
-#define IMX			1
-#define IOMUX			iomuxc
 #define MIPI_DSI		mipi_dsi
 #define MIPI_DISPLAY		lcdif
 #define MIPI_SUBSYSTEM		display_subsystem
@@ -1020,11 +1007,11 @@
 #define PD_MIPI_ENABLE(a)	MX8MMN(IOMUXC_GPIO1_IO09_GPIO1_IO9, a)	/* Pin 11 */
 #endif
 
-#define PAD_NOPULL		0x0
-#define PAD_PULLDN		0x100
-#define PAD_PULLUPIRQ		0x1c0
-#define PAD_PULLDNIRQ		0x180
+#ifdef UBOOT
 #include "bd-universal-mipi-dsi.dtsi"
+#else
+#include "../bd-universal-mipi-dsi.dtsi"
+#endif
 
 &mipi_dsi {
 	assigned-clocks = <&clk IMX8MMN(CLK_DSI_CORE)>,
@@ -1035,11 +1022,6 @@
 				 <&clk IMX8MMN(VIDEO_PLL1_OUT)>,
 				 <&clk IMX8MMN(CLK_24M)>;
 	assigned-clock-rates = <266000000>, <0>, <0>, <66000000>;
-
-	clocks = <&clk IMX8MMN(CLK_DSI_CORE)>,
-		 <&clk IMX8MMN(CLK_DSI_PHY_REF)>,
-		 <&clk IMX8MMN(CLK_LCDIF_PIXEL)>;
-	clock-names = "cfg", "pll-ref", "pixel_clock";
 	status = "okay";
 };
 
