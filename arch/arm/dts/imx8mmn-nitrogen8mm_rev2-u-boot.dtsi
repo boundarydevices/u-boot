@@ -8,7 +8,7 @@
 };
 
 #ifndef SKIP_LONTIUM_DAUGHTER_BOARDS
-&lt8912_2 {
+&mipi_ref2(lt8912, 2) {
 	port@0 {
 		lt8912_2_from_panel: endpoint {
 			remote-endpoint = <&panel_to_lt8912_2>;
@@ -77,7 +77,7 @@
 };
 
 #ifndef SKIP_LONTIUM_DAUGHTER_BOARDS
-&pca9546 {
+&mipi_ref(pca9546) {
 	MIPI_I2C_BUS@0 {
 		lt8912@48 {
 			port@0 {
