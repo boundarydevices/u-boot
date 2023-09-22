@@ -18,7 +18,7 @@
 	compatible = "boundary,imx8mm-nitrogen8mm", "fsl,imx8mm";
 };
 
-#if 0
+#ifndef UBOOT
 &A53_0 {
 	cpu-supply = <&reg_buck4>;
 };
