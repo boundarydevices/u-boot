@@ -13,14 +13,6 @@
 &iomuxc {
 	/delete-node/ ecspi2-mcp2515tgrp;
 
-	pinctrl_bt_rfkill: bt-rfkillgrp {
-		fsl,pins = <
-#undef GP_BT_RFKILL_RESET
-#define GP_BT_RFKILL_RESET	<&gpio4 25 GPIO_ACTIVE_LOW>
-			MX8MMN(IOMUXC_SAI2_TXC_GPIO4_IO25, 0x119)
-		>;
-	};
-
 	pinctrl_fec1: fec1grp {
 		fsl,pins = <
 			/* PAD_CTL_ODE is screwy on 8mm mini, avoid it */
@@ -47,7 +39,7 @@
 			MX8MMN(IOMUXC_GPIO1_IO03_GPIO1_IO3, 0x159)
 #undef GPIRQ_FEC1_PHY
 #define GPIRQ_FEC1_PHY	<&gpio1 5 IRQ_TYPE_LEVEL_LOW>
-			MX8MMN(IOMUXC_GPIO1_IO05_GPIO1_IO5, 0x159)
+			MX8MMN(IOMUXC_GPIO1_IO05_GPIO1_IO5, 0x1c0)
 		>;
 	};
 
@@ -116,6 +108,18 @@
 			MX8MMN(IOMUXC_SPDIF_TX_SPDIF1_OUT, 0xd6)
 		>;
 	};
+
+	pinctrl_uart1: uart1grp {
+		fsl,pins = <
+			MX8MMN(IOMUXC_UART1_RXD_UART1_DCE_RX, 0x140)
+			MX8MMN(IOMUXC_UART1_TXD_UART1_DCE_TX, 0x140)
+			MX8MMN(IOMUXC_UART3_RXD_UART1_DCE_CTS_B, 0x140)
+			MX8MMN(IOMUXC_UART3_TXD_UART1_DCE_RTS_B, 0x140)
+#undef GP_BT_ENABLE
+#define GP_BT_ENABLE	<&gpio4 25 GPIO_ACTIVE_HIGH>
+			MX8MMN(IOMUXC_SAI2_TXC_GPIO4_IO25, 0x119)
+		>;
+	};
 };
 
 / {
@@ -126,10 +130,6 @@
 		/delete-property/ sai2;
 		/delete-property/ sai5;
 		/delete-property/ spi1;
-	};
-
-	bt-rfkill {
-		reset-gpios = GP_BT_RFKILL_RESET;
 	};
 
 	gpio_leds: leds {
@@ -196,7 +196,7 @@
 		gpio = GP_REG_WLAN_VMMC;
 	};
 
-#if 0
+#ifndef UBOOT
 	sound-spdif {
 		compatible = "fsl,imx-audio-spdif";
 		model = "imx-spdif";
@@ -252,7 +252,7 @@
 /delete-node/ &sai2;
 /delete-node/ &sai5;
 
-#if 0
+#ifndef UBOOT
 &spdif1 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_spdif1>;
@@ -270,3 +270,9 @@
 	status = "okay";
 };
 #endif
+
+&uart1 { /* BT */
+	bluetooth {
+		enable-gpios = GP_BT_ENABLE;
+	};
+};
