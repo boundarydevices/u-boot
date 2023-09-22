@@ -4,8 +4,11 @@
  */
 
 /dts-v1/;
+#ifdef CONFIG_DEFCONFIG
+#define UBOOT
+#endif
+#define IMX8MP
 
-#include <dt-bindings/usb/pd.h>
 #include "imx8mp-nitrogen8mp-som.dtsi"
 #define TC358867_I2C_BUS	<&i2c2d>
 
@@ -212,7 +215,7 @@
 
 	pinctrl_usb3_0: usb3-0grp {
 		fsl,pins = <
-			MX8MP_IOMUXC_GPIO1_IO13__USB1_OTG_OC	0x1c0
+			MX8MP_IOMUXC_GPIO1_IO13__USB1_OC	0x1c0
 		>;
 	};
 
@@ -294,7 +297,7 @@
 		enable-gpios = GP_BACKLIGHT_LVDS;
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_backlight_lvds>;
-		pwms = <&pwm2 0 100000>;
+		pwms = <&pwm2 0 100000 0>;
 		status = "disabled";
 
 	};
@@ -333,7 +336,7 @@
 		#clock-cells = <0>;
 		clock-frequency = <20000000>;
 		clock-output-names = "csi_mclk";
-		pwms = <&pwm4 0 50>; /* 1 / 50 ns = 20 MHz */
+		pwms = <&pwm4 0 50 0>; /* 1 / 50 ns = 20 MHz */
 	};
 
 	gpio_keys: gpio-keys {
@@ -391,7 +394,7 @@
 	sound_hdmi: sound-hdmi {
 		compatible = "fsl,imx-audio-hdmi";
 		model = "audio-hdmi";
-#if 0
+#ifndef UBOOT
 		audio-cpu = <&aud2htx>;
 #endif
 		hdmi-out;
@@ -405,9 +408,11 @@
 		status = "okay";
 	};
 
-#if 0
+#ifndef UBOOT
 	sound-wm8962 {
+#if 0
 		asrc-controller = <&easrc>;
+#endif
 		audio-cpu = <&sai3>;
 		audio-codec = <&wm8962>;
 		audio-routing =
@@ -430,7 +435,7 @@
 #endif
 };
 
-#if 0
+#ifndef UBOOT
 &aud2htx {
 	status = "okay";
 };
@@ -438,9 +443,7 @@
 &cameradev {
 	status = "okay";
 };
-#endif
 
-#if 0
 &dewarp {
 	status = "okay";
 };
@@ -470,7 +473,7 @@
 	status = "okay";
 };
 
-#if 0
+#ifndef UBOOT
 &hdmi_blk_ctrl {
 	status = "okay";
 };
@@ -525,7 +528,7 @@
 };
 
 &i2c2b {
-#if 0
+#ifndef UBOOT
 	basler_camera@36 {
 		compatible = "basler,basler-camera-vvcam", "basler-camera-vvcam";
 		reg = <0x36>;
@@ -548,7 +551,7 @@
 };
 
 &i2c2c {
-#if 0
+#ifndef UBOOT
 	ov5640-mipi1@3c {
 		AVDD-supply = <&reg_vref_2v5>;
 		DOVDD-supply = <&reg_vref_1v8>;
@@ -596,7 +599,7 @@
 		PLLVDD-supply = <&reg_vref_1v8>;
 		SPKVDD1-supply = <&reg_vref_5v0>;
 		SPKVDD2-supply = <&reg_vref_5v0>;
-#if 0
+#ifndef UBOOT
 		clocks = <&audio_blk_ctrl IMX8MP_CLK_AUDIO_BLK_CTRL_SAI3_MCLK1>;
 #endif
 		compatible = "wlf,wm8962";
@@ -648,7 +651,7 @@
 	status = "okay";
 };
 
-#if 0
+#ifndef UBOOT
 &isi_0 {
 	status = "disabled";
 };
@@ -714,7 +717,7 @@
 	status = "okay";
 };
 
-#if 0
+#ifndef UBOOT
 &micfil {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_pdm>;
@@ -784,7 +787,7 @@
 	status = "okay";
 };
 
-#if 0
+#ifndef UBOOT
 &sai3 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_sai3>;
