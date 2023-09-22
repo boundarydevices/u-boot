@@ -126,7 +126,7 @@
 	u-boot,dm-pre-reloc;
 };
 
-&pca9546 {
+&mipi_ref(pca9546) {
 	MIPI_I2C_BUS@0 {
 		lt8912@48 {
 			port@0 {
