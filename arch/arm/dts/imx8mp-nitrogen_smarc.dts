@@ -12,10 +12,8 @@
 #include <dt-bindings/usb/pd.h>
 #include "imx8mp-nitrogen_smarc-som.dtsi"
 #ifdef UBOOT
-#include "bd-universal.h"
 #include "bd-universal-smarc-carrier.dtsi"
 #else
-#include "../bd-universal.h"
 #include "../bd-universal-smarc-carrier.dtsi"
 #endif
 / {
