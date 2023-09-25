@@ -1,0 +1,25 @@
+if TARGET_IMX93_BD_SMARC
+
+config SYS_BOARD
+	default "imx93_smarc"
+
+config SYS_VENDOR
+	default "boundary"
+
+config SYS_CONFIG_NAME
+	default "imx93_bd_smarc"
+
+choice
+	prompt "Select DDR Type"
+	default IMX93_BD_SMARC_LPDDR4 if TARGET_IMX93_BD_SMARC
+
+config IMX93_BD_SMARC_LPDDR4
+	bool "Using LPDDR4 Timing and PMIC voltage"
+	# IMX9_LPDDR4X is used for LPDDR4 AND LPDDR4X
+	select IMX9_LPDDR4X
+	help
+	  Select the LPDDR4 timing and 1.1V VDDQ
+
+endchoice
+
+endif

@@ -1,0 +1,6 @@
+i.MX93 SMARC BOARD
+M:	Simon Gaynor <simon.gaynor@lairdconnect.com>
+S:	Maintained
+F:	board/boundary/imx93_smarc/
+F:	include/configs/imx93_bd_smarc.h
+F:	configs/imx93_bd_smarc_defconfig
