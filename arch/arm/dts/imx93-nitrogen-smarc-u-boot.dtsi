@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0+
 /*
- * Copyright 2024 NXP
+ * Copyright 2022 NXP
  */
 
-#include "imx91-u-boot.dtsi"
+#include "imx93-u-boot.dtsi"
 
 / {
 	wdt-reboot {
@@ -15,12 +15,20 @@
 
 	aliases {
 		usbgadget0 = &usbg1;
+		usbgadget1 = &usbg2;
 	};
 
 	usbg1: usbg1 {
 		compatible = "fsl,imx27-usb-gadget";
 		dr_mode = "peripheral";
 		chipidea,usb = <&usbotg1>;
+		status = "okay";
+	};
+
+	usbg2: usbg2 {
+		compatible = "fsl,imx27-usb-gadget";
+		dr_mode = "host";
+		chipidea,usb = <&usbotg2>;
 		status = "okay";
 	};
 
@@ -33,7 +41,11 @@
 };
 
 &A55_0 {
-	clocks = <&clk IMX91_CLK_A55_SEL>;
+	clocks = <&clk IMX93_CLK_A55_SEL>;
+};
+
+&A55_1 {
+	clocks = <&clk IMX93_CLK_A55_SEL>;
 };
 
 &{/soc@0} {
@@ -133,11 +145,11 @@
 	bootph-pre-ram;
 };
 
-&{/soc@0/bus@44000000/i2c@44350000/pmic@32} {
+&{/soc@0/bus@44000000/i2c@44350000/pmic@25} {
 	bootph-pre-ram;
 };
 
-&{/soc@0/bus@44000000/i2c@44350000/pmic@32/regulators} {
+&{/soc@0/bus@44000000/i2c@44350000/pmic@25/regulators} {
 	bootph-pre-ram;
 };
 
@@ -149,15 +161,21 @@
 	bootph-pre-ram;
 };
 
+&pinctrl_lpi2c3 {
+	bootph-pre-ram;
+};
+
+
 &ethphy1 {
-	reset-gpios = <&pcal6524 15 GPIO_ACTIVE_LOW>;
+	reset-gpios = <&pcal6534 1 GPIO_ACTIVE_LOW>;
 	reset-assert-us = <15000>;
 	reset-deassert-us = <100000>;
 };
 
-&usbotg1 {
-	status = "okay";
-	extcon = <&ptn5110>;
+&ethphy2 {
+	phy-reset-gpios = <&pcal6534 0 GPIO_ACTIVE_LOW>;
+	reset-assert-us = <15000>;
+	reset-deassert-us = <100000>;
 };
 
 &s4muap {
@@ -190,11 +208,7 @@
 };
 
 &lcdif {
-	assigned-clocks = <&clk IMX91_CLK_MEDIA_AXI>, <&clk IMX91_CLK_MEDIA_APB>;
-	assigned-clock-parents = <&clk IMX91_CLK_SYS_PLL_PFD1>, <&clk IMX91_CLK_SYS_PLL_PFD1_DIV2>;
-	assigned-clock-rates = <200000000>, <133333334>;
-};
-
-&parallel_disp_fmt {
-	/delete-property/ power-domains;
+	assigned-clocks = <&clk IMX93_CLK_MEDIA_AXI>, <&clk IMX93_CLK_MEDIA_APB>;
+	assigned-clock-parents = <&clk IMX93_CLK_SYS_PLL_PFD1>, <&clk IMX93_CLK_SYS_PLL_PFD1_DIV2>;
+	assigned-clock-rates = <400000000>, <133333334>;
 };
