@@ -6,7 +6,7 @@ if [ $# -lt 1 ]; then
     exit 1;
 fi
 if [ $# -lt 2 ]; then
-    echo "missing memory size arg, 2g,2gr0,4g,8g"
+    echo "missing memory size arg, 1gr0,2g,2gr0,4g,8g"
     exit 1;
 fi
 if [ $# -lt 3 ]; then
@@ -86,6 +86,24 @@ sed -E -i \
 $1
 
 match=0
+if [ "${mem}" == "1gr0" ] ; then
+	echo 1gr0
+	sed -E -i \
+	 -e 's/0x5402c, 1 /0x5402c, CH2_LPDDR4_CS /' \
+	 -e 's/0x54012, 0x0110 /0x54012, 0x10 | (CH2_LPDDR4_CS << 8) /' \
+	 -e 's/ DDRC_MSTR\(0\), 0xa1080020 / DDRC_MSTR\(0\), 0xa0080020 | \(CH2_LPDDR4_CS << 24\) /' \
+	 -e 's/ DDRC_ADDRMAP0\(0\), 0x1f / DDRC_ADDRMAP0\(0\), CH2_VAL_DDRC_ADDRMAP0 /' \
+	 -e 's/ DDRC_ADDRMAP6\(0\), 0x0f070707 / DDRC_ADDRMAP6\(0\), CH2_VAL_DDRC_ADDRMAP6 /' \
+	 -e 's/ DDRC_ADDRMAP7\(0\), 0x0f0f / DDRC_ADDRMAP7\(0\), CH2_VAL_DDRC_ADDRMAP7 /' \
+	 -e 's/ DDRC_RFSHTMG\(0\), 0x007a00b4 / DDRC_RFSHTMG\(0\), CH2_VAL_DDRC_RFSHTMG /' \
+	 -e 's/ DDRC_DRAMTMG14\(0\), 0xbc / DDRC_DRAMTMG14\(0\), CH2_VAL_DDRC_DRAMTMG14 /' \
+	 -e 's/ DDRC_FREQ1_RFSHTMG\(0\), 0x000c0012 / DDRC_FREQ1_RFSHTMG\(0\), CH2_VAL_DDRC_FREQ1_RFSHTMG /' \
+	 -e 's/ DDRC_FREQ1_DRAMTMG14\(0\), 0x13 / DDRC_FREQ1_DRAMTMG14\(0\), CH2_VAL_DDRC_FREQ1_DRAMTMG14 /' \
+	 -e 's/ DDRC_FREQ2_RFSHTMG\(0\), 0x00030005 / DDRC_FREQ2_RFSHTMG\(0\), CH2_VAL_DDRC_FREQ2_RFSHTMG /' \
+	 -e 's/ DDRC_FREQ2_DRAMTMG14\(0\), 5 / DDRC_FREQ2_DRAMTMG14\(0\), CH2_VAL_DDRC_FREQ2_DRAMTMG14 /' \
+	$1
+	match=1
+fi
 if [ "${mem}" == "2g" ] ; then
 	echo 2g
 	sed -E -i \
