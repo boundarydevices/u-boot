@@ -1,0 +1,6 @@
+Ezurio i.MX 93 Nitrogen SMARC board
+M:	Simon Gaynor <simon.gaynor@ezurio.com>
+S:	Maintained
+F:	board/boundary/imx93_nitrogen_smarc/
+F:	include/configs/imx93_nitrogen_smarc.h
+F:	configs/imx93_nitrogen_smarc_defconfig
