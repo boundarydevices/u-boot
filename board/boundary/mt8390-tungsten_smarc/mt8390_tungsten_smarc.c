@@ -125,7 +125,6 @@ int board_init(void)
 		ret = uclass_get_device(UCLASS_USB_GADGET_GENERIC, 0, &dev);
 		if (ret) {
 			pr_err("%s: Cannot find USB device\n", __func__);
-			return ret;
 		}
 	}
 
