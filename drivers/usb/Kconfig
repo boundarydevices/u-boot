@@ -68,7 +68,7 @@ config SPL_DM_USB_GADGET
 
 config USB_PGOOD_DELAY
 	int "USB Power Good Delay ms"
-	default 600 if ARCH_MX6 || ARCH_MX7 || ARCH_MX7ULP || ARCH_IMX8M || ARCH_IMX8ULP
+	default 600 if ARCH_MX6 || ARCH_MX7 || ARCH_MX7ULP || ARCH_IMX8M || ARCH_IMX8ULP || ARCH_MEDIATEK
 	default 0
 
 source "drivers/usb/host/Kconfig"
