@@ -34,7 +34,7 @@ static int ssusb_host_enable(struct mtu3_host *u3h)
 	int u3_ports_disabed;
 	u32 check_clk;
 	u32 value;
-	int i;
+	int i, ret;
 
 	/* power on host ip */
 	mtu3_clrbits(ibase, U3D_SSUSB_IP_PW_CTRL1, SSUSB_IP_HOST_PDN);
@@ -65,7 +65,12 @@ static int ssusb_host_enable(struct mtu3_host *u3h)
 	if (num_u3p > u3_ports_disabed)
 		check_clk = SSUSB_U3_MAC_RST_B_STS;
 
-	return ssusb_check_clocks(u3h->ssusb, check_clk);
+	ret = ssusb_check_clocks(u3h->ssusb, check_clk);
+	if (!ret) {
+		mtu3_setbits(u3h->ssusb->mac_base, U3D_DEVICE_CONTROL, DC_SESSION);
+		mtu3_setbits(u3h->ssusb->mac_base, U3D_POWER_MANAGEMENT, SOFT_CONN);
+	}
+	return ret;
 }
 
 static void ssusb_host_disable(struct mtu3_host *u3h)

@@ -114,6 +114,28 @@ static void mtu3_device_disable(struct mtu3 *mtu)
 	mtu3_setbits(ibase, U3D_SSUSB_IP_PW_CTRL2, SSUSB_IP_DEV_PDN);
 }
 
+static void mtu3_dev_power_on(struct mtu3 *mtu)
+{
+	void __iomem *ibase = mtu->ippc_base;
+
+	mtu3_clrbits(ibase, U3D_SSUSB_IP_PW_CTRL2, SSUSB_IP_DEV_PDN);
+	if (mtu->is_u3_ip)
+		mtu3_clrbits(ibase, SSUSB_U3_CTRL(0), SSUSB_U3_PORT_PDN);
+
+	mtu3_clrbits(ibase, SSUSB_U2_CTRL(0), SSUSB_U2_PORT_PDN);
+}
+
+static void mtu3_dev_power_down(struct mtu3 *mtu)
+{
+	void __iomem *ibase = mtu->ippc_base;
+
+	if (mtu->is_u3_ip)
+		mtu3_setbits(ibase, SSUSB_U3_CTRL(0), SSUSB_U3_PORT_PDN);
+
+	mtu3_setbits(ibase, SSUSB_U2_CTRL(0), SSUSB_U2_PORT_PDN);
+	mtu3_setbits(ibase, U3D_SSUSB_IP_PW_CTRL2, SSUSB_IP_DEV_PDN);
+}
+
 /* reset U3D's device module. */
 static void mtu3_device_reset(struct mtu3 *mtu)
 {
@@ -216,6 +238,32 @@ void mtu3_set_speed(struct mtu3 *mtu, enum usb_device_speed speed)
 	dev_dbg(mtu->dev, "set speed: %s\n", usb_speed_string(mtu->speed));
 }
 
+/* CSR registers will be reset to default value if port is disabled */
+static void mtu3_csr_init(struct mtu3 *mtu)
+{
+	void __iomem *mbase = mtu->mac_base;
+
+	if (mtu->is_u3_ip) {
+		/* disable LGO_U1/U2 by default */
+		mtu3_clrbits(mbase, U3D_LINK_POWER_CONTROL,
+				SW_U1_REQUEST_ENABLE | SW_U2_REQUEST_ENABLE);
+		/* enable accept LGO_U1/U2 link command from host */
+		mtu3_setbits(mbase, U3D_LINK_POWER_CONTROL,
+				SW_U1_ACCEPT_ENABLE | SW_U2_ACCEPT_ENABLE);
+		/* device responses to u3_exit from host automatically */
+		mtu3_clrbits(mbase, U3D_LTSSM_CTRL, SOFT_U3_EXIT_EN);
+		/* automatically build U2 link when U3 detect fail */
+		mtu3_setbits(mbase, U3D_USB2_TEST_MODE, U2U3_AUTO_SWITCH);
+		/* auto clear SOFT_CONN when clear USB3_EN if work as HS */
+		mtu3_setbits(mbase, U3D_U3U2_SWITCH_CTRL, SOFTCON_CLR_AUTO_EN);
+	}
+
+	/* delay about 0.1us from detecting reset to send chirp-K */
+	mtu3_clrbits(mbase, U3D_LINK_RESET_INFO, WTCHRP_MSK);
+	/* enable automatical HWRW from L1 */
+	mtu3_setbits(mbase, U3D_POWER_MANAGEMENT, LPM_HRWE);
+}
+
 /* reset: u2 - data toggle, u3 - SeqN, flow control status etc */
 static void mtu3_ep_reset(struct mtu3_ep *mep)
 {
@@ -279,6 +327,10 @@ void mtu3_start(struct mtu3 *mtu)
 	dev_dbg(mtu->dev, "%s devctl 0x%x\n", __func__,
 		mtu3_readl(mbase, U3D_DEVICE_CONTROL));
 
+	mtu3_dev_power_on(mtu);
+	mtu3_csr_init(mtu);
+	mtu3_set_speed(mtu, mtu->speed);
+
 	/* Initialize the default interrupts */
 	mtu3_intr_enable(mtu);
 	mtu->is_active = 1;
@@ -297,6 +349,7 @@ void mtu3_stop(struct mtu3 *mtu)
 		mtu3_dev_on_off(mtu, 0);
 
 	mtu->is_active = 0;
+	mtu3_dev_power_down(mtu);
 }
 
 /* for non-ep0 */
@@ -550,31 +603,18 @@ static void mtu3_regs_init(struct mtu3 *mtu)
 	/* be sure interrupts are disabled before registration of ISR */
 	mtu3_intr_disable(mtu);
 
-	if (mtu->is_u3_ip) {
-		/* disable LGO_U1/U2 by default */
-		mtu3_clrbits(mbase, U3D_LINK_POWER_CONTROL,
-			     SW_U1_REQUEST_ENABLE | SW_U2_REQUEST_ENABLE);
-		/* enable accept LGO_U1/U2 link command from host */
-		mtu3_setbits(mbase, U3D_LINK_POWER_CONTROL,
-			     SW_U1_ACCEPT_ENABLE | SW_U2_ACCEPT_ENABLE);
-		/* device responses to u3_exit from host automatically */
-		mtu3_clrbits(mbase, U3D_LTSSM_CTRL, SOFT_U3_EXIT_EN);
-		/* automatically build U2 link when U3 detect fail */
-		mtu3_setbits(mbase, U3D_USB2_TEST_MODE, U2U3_AUTO_SWITCH);
-		/* auto clear SOFT_CONN when clear USB3_EN if work as HS */
-		mtu3_setbits(mbase, U3D_U3U2_SWITCH_CTRL, SOFTCON_CLR_AUTO_EN);
-	}
+	mtu3_csr_init(mtu);
 
-	/* delay about 0.1us from detecting reset to send chirp-K */
-	mtu3_clrbits(mbase, U3D_LINK_RESET_INFO, WTCHRP_MSK);
 	/* U2/U3 detected by HW */
 	mtu3_writel(mbase, U3D_DEVICE_CONF, 0);
-	/* enable automatical HWRW from L1 */
-	mtu3_setbits(mbase, U3D_POWER_MANAGEMENT, LPM_HRWE);
+	/* vbus detected by HW */
+	mtu3_clrbits(mbase, U3D_MISC_CTRL, VBUS_FRC_EN | VBUS_ON);
 
-	mtu3_set_speed(mtu, mtu->max_speed);
-	ssusb_set_force_mode(mtu->ssusb, MTU3_DR_FORCE_DEVICE);
 	ssusb_set_vbusvalid_state(mtu->ssusb);
+
+	/* use new QMU format when HW version >= 0x1003 */
+	if (mtu->gen2cp)
+		mtu3_writel(mbase, U3D_QFCR, ~0x0);
 }
 
 static irqreturn_t mtu3_link_isr(struct mtu3 *mtu)
@@ -806,11 +846,15 @@ int ssusb_gadget_init(struct ssusb_mtk *ssusb)
 		return ret;
 	}
 
+	/* power down device IP for power saving by default */
+	mtu3_stop(mtu);
+
 	ret = mtu3_gadget_setup(mtu);
 	if (ret) {
 		dev_err(dev, "mtu3 gadget init failed:%d\n", ret);
 		goto gadget_err;
 	}
+	ssusb_set_force_mode(ssusb, MTU3_DR_FORCE_DEVICE);
 
 	dev_info(dev, "%s() done...\n", __func__);
 
