@@ -585,12 +585,8 @@
 		power-off-time-sec = <0>;
 
 		power-key{
-			linux,keycodes = <116>;
+			linux,keycodes = <KEY_POWER>;
 			wakeup-source;
-		};
-
-		home-key{
-			linux,keycodes = <114>;
 		};
 	};
 };
