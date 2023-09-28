@@ -574,11 +574,7 @@ static void mtu3_regs_init(struct mtu3 *mtu)
 
 	mtu3_set_speed(mtu, mtu->max_speed);
 	ssusb_set_force_mode(mtu->ssusb, MTU3_DR_FORCE_DEVICE);
-
-	if (mtu->force_vbus)
-		mtu3_setbits(mbase, U3D_MISC_CTRL, VBUS_FRC_EN | VBUS_ON);
-	else	/* vbus detected by HW */
-		mtu3_clrbits(mbase, U3D_MISC_CTRL, VBUS_FRC_EN | VBUS_ON);
+	ssusb_set_vbusvalid_state(mtu->ssusb);
 }
 
 static irqreturn_t mtu3_link_isr(struct mtu3 *mtu)
@@ -803,7 +799,6 @@ int ssusb_gadget_init(struct ssusb_mtk *ssusb)
 	mtu->mac_base = ssusb->mac_base;
 	mtu->ssusb = ssusb;
 	mtu->max_speed = usb_get_maximum_speed(dev_ofnode(dev));
-	mtu->force_vbus = dev_read_bool(dev, "mediatek,force-vbus");
 
 	ret = mtu3_hw_init(mtu);
 	if (ret) {

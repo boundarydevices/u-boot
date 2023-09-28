@@ -110,7 +110,6 @@ int ssusb_host_init(struct ssusb_mtk *ssusb)
 	int ret;
 
 	u3h->ssusb = ssusb;
-	u3h->hcd = ssusb->mac_base;
 	u3h->ippc_base = ssusb->ippc_base;
 
 	/* optional property, ignore the error */

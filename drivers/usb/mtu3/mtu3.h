@@ -156,10 +156,13 @@ struct ssusb_mtk {
 	/* common power & clock */
 	struct udevice *vusb33_supply;
 	struct udevice *vbus_supply;
+	struct gpio_desc *reset;
 	struct clk_bulk clks;
 	struct phy_bulk phys;
 	/* otg */
 	enum usb_dr_mode dr_mode;
+	unsigned force_vbus:1;
+	unsigned force_vbus_peripheral:1;
 };
 
 /**
@@ -175,6 +178,7 @@ struct mtu3_host {
 	struct xhci_hccr *hcd;
 	void __iomem *ippc_base;
 	struct ssusb_mtk *ssusb;
+	struct udevice *vbus_supply;
 	struct udevice *dev;
 	u32 u2_ports;
 	u32 u3_ports;
@@ -333,7 +337,6 @@ struct mtu3 {
 	unsigned is_u3_ip:1;
 	unsigned delayed_status:1;
 	unsigned gen2cp:1;
-	unsigned force_vbus:1;
 
 	u8 address;
 	u8 test_mode_nr;
@@ -396,6 +399,7 @@ static inline void mtu3_clrbits(void __iomem *base, u32 offset, u32 bits)
 }
 
 int ssusb_check_clocks(struct ssusb_mtk *ssusb, u32 ex_clks);
+void ssusb_set_vbusvalid_state(struct ssusb_mtk *ssusb);
 struct usb_request *mtu3_alloc_request(struct usb_ep *ep, gfp_t gfp_flags);
 void mtu3_free_request(struct usb_ep *ep, struct usb_request *req);
 void mtu3_req_complete(struct mtu3_ep *mep,
