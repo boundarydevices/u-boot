@@ -1091,6 +1091,20 @@ ofnode ofnode_get_child_by_name(ofnode parent, const char *name)
 	return child;
 }
 
+ofnode ofnode_get_child_by_compatible(ofnode parent, const char *compat)
+{
+	ofnode child;
+
+	for (child = ofnode_first_subnode(parent);
+	     ofnode_valid(child);
+	     child = ofnode_next_subnode(child)) {
+
+		if (ofnode_device_is_compatible(child, compat))
+				break;
+	}
+	return child;
+}
+
 int ofnode_remove_prop(ofnode node, const char *propname)
 {
 	const struct device_node *np = ofnode_to_np(node);

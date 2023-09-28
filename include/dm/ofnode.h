@@ -1018,6 +1018,7 @@ ofnode ofnode_by_compatible(ofnode from, const char *compat);
 ofnode ofnode_by_prop_value(ofnode from, const char *propname,
 			    const void *propval, int proplen);
 ofnode ofnode_get_child_by_name(ofnode parent, const char *name);
+ofnode ofnode_get_child_by_compatible(ofnode parent, const char *compat);
 
 /**
  * ofnode_for_each_subnode() - iterate over all subnodes of a parent
