@@ -882,7 +882,7 @@ config FDT_SIMPLEFB
 config USB_HUB_DEBOUNCE_TIMEOUT
 	int "Timeout in milliseconds for USB HUB connection"
 	depends on USB
-	default 1000
+	default 1500
 	help
 	  Value in milliseconds of the USB connection timeout, the max delay to
 	  wait the hub port status to be connected steadily after being powered
