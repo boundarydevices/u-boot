@@ -37,20 +37,7 @@ DECLARE_GLOBAL_DATA_PTR;
 
 int spl_board_boot_device(enum boot_device boot_dev_spl)
 {
-#ifdef CONFIG_SPL_BOOTROM_SUPPORT
 	return BOOT_DEVICE_BOOTROM;
-#else
-	switch (boot_dev_spl) {
-	case SD1_BOOT:
-	case MMC1_BOOT:
-		return BOOT_DEVICE_MMC1;
-	case SD2_BOOT:
-	case MMC2_BOOT:
-		return BOOT_DEVICE_MMC2;
-	default:
-		return BOOT_DEVICE_NONE;
-	}
-#endif
 }
 
 void spl_board_init(void)
@@ -64,7 +51,6 @@ void spl_board_init(void)
 		printf("Fail to start RNG: %d\n", ret);
 }
 
-extern struct dram_timing_info dram_timing;
 void spl_dram_init(void)
 {
 	struct dram_timing_info *ptiming = &dram_timing;
@@ -78,7 +64,7 @@ int power_init_board(void)
 {
 	struct udevice *dev;
 	int ret;
-	unsigned int val = 0, buck_val;
+	unsigned int val, buck_val;
 
 	ret = pmic_get("pmic@25", &dev);
 	if (ret == -ENODEV) {
@@ -119,19 +105,20 @@ int power_init_board(void)
 		pmic_reg_write(dev, PCA9450_BUCK3OUT_DVS0, buck_val + 0x4);
 	}
 
-	if (IS_ENABLED(CONFIG_IMX93_EVK_LPDDR4)) {
-		/* Set VDDQ to 1.1V from buck2 */
-		pmic_reg_write(dev, PCA9450_BUCK2OUT_DVS0, 0x28);
-	}
-
 	/* set standby voltage to 0.65v */
 	if (val & PCA9450_REG_PWRCTRL_TOFF_DEB)
 		pmic_reg_write(dev, PCA9450_BUCK1OUT_DVS1, 0x0);
 	else
 		pmic_reg_write(dev, PCA9450_BUCK1OUT_DVS1, 0x4);
 
+	/* 1.1v for LPDDR4 */
+	pmic_reg_write(dev, PCA9450_BUCK2OUT_DVS0, 0x28);
+
 	/* I2C_LT_EN*/
 	pmic_reg_write(dev, 0xa, 0x3);
+
+	/* set WDOG_B_CFG to cold reset */
+	pmic_reg_write(dev, PCA9450_RESET_CTRL, 0xA1);
 	return 0;
 }
 #endif
@@ -185,9 +172,3 @@ void board_init_f(ulong dummy)
 
 	board_init_r(NULL, 0);
 }
-
-#ifdef CONFIG_ANDROID_SUPPORT
-int board_get_emmc_id(void) {
-	return 0;
-}
-#endif
