@@ -88,6 +88,7 @@ static const struct pca95xx_reg pca957x_regs = {
  * @gpio_count: the number of gpio pins that the device supports
  * @chip_type: indicate the chip type,PCA953X or PCA957X
  * @bank_count: the number of banks that the device supports
+ * @gpio_exp_reset: optional reset pin
  * @reg_output: array to hold the value of output registers
  * @reg_direction: array to hold the value of direction registers
  * @regs: struct to hold the registers addresses
@@ -99,6 +100,7 @@ struct pca953x_info {
 	int gpio_count;
 	int chip_type;
 	int bank_count;
+	struct gpio_desc gpio_exp_reset;
 	u8 reg_output[MAX_BANK];
 	u8 reg_direction[MAX_BANK];
 	const struct pca95xx_reg *regs;
@@ -327,6 +329,19 @@ static int pca953x_probe(struct udevice *dev)
 		return -EINVAL;
 	}
 
+	if (CONFIG_IS_ENABLED(DM_GPIO)) {
+		ret = gpio_request_by_name(dev, "reset-gpios", 0,
+				&info->gpio_exp_reset, GPIOD_IS_OUT);
+
+		/* it's optional so only bail if we get a real error */
+		if (ret && (ret != -ENOENT))
+			return ret;
+
+		/* dm will take care of polarity */
+		if (dm_gpio_is_valid(&info->gpio_exp_reset))
+			dm_gpio_set_value(&info->gpio_exp_reset, 0);
+	}
+
 	info->chip_type = PCA_CHIP_TYPE(driver_data);
 	if (info->chip_type == PCA953X_TYPE)
 		info->regs = &pca953x_regs;
@@ -376,6 +391,18 @@ static int pca953x_probe(struct udevice *dev)
 	return 0;
 }
 
+static int pca953x_remove(struct udevice *dev)
+{
+        if (CONFIG_IS_ENABLED(DM_GPIO)) {
+		struct pca953x_info *info = dev_get_plat(dev);
+
+                if (dm_gpio_is_valid(&info->gpio_exp_reset))
+                        dm_gpio_free(dev, &info->gpio_exp_reset);
+        }
+
+        return 0;
+}
+
 #define OF_953X(__nrgpio, __int) (ulong)(__nrgpio | PCA953X_TYPE | __int)
 #define OF_957X(__nrgpio, __int) (ulong)(__nrgpio | PCA957X_TYPE | __int)
 
@@ -419,6 +446,7 @@ U_BOOT_DRIVER(pca953x) = {
 	.id		= UCLASS_GPIO,
 	.ops		= &pca953x_ops,
 	.probe		= pca953x_probe,
+	.remove		= pca953x_remove,
 	.plat_auto	= sizeof(struct pca953x_info),
 	.of_match	= pca953x_ids,
 };
