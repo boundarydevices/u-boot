@@ -148,9 +148,7 @@
 
 		ethphy1: ethernet-phy@1 {
 			compatible = "ethernet-phy-ieee802.3-c22";
-			// reg = <1>;
-			reg-mask = <0x90>;
-			reg = <3>;
+			reg = <3>; /* SimonG note reg-mask (0x90) is not in mainline u-boot */
 			eee-broken-1000t;
 			at803x,hib-disabled;
 			interrupts-extended = <&gpio2 29 GPIO_ACTIVE_LOW>;
@@ -178,7 +176,7 @@
 			reset-assert-us = <10000>;
 			reset-deassert-us = <80000>;
 			interrupts-extended = <&gpio2 16 IRQ_TYPE_LEVEL_LOW>;
-			reg = <7>; /* SimonG note reg-mask (0x90) is not in mainline u-boot */
+			reg = <3>; /* SimonG note reg-mask (0x90) is not in mainline u-boot */
                 };
         };
 };
