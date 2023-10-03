@@ -127,6 +127,7 @@ struct usb_ep_ops {
 	int (*set_wedge)(struct usb_ep *ep);
 	int (*fifo_status) (struct usb_ep *ep);
 	void (*fifo_flush) (struct usb_ep *ep);
+	int (*max_transfer) (struct usb_ep *ep);
 };
 
 /**
