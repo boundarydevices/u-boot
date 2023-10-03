@@ -47,6 +47,12 @@ int board_phy_config(struct phy_device *phydev)
 	return 0;
 }
 
+
+static int setup_fec(void)
+{
+	return set_clk_enet(ENET_125MHZ);
+}
+
 static int setup_eqos(void)
 {
 	struct blk_ctrl_wakeupmix_regs *bctrl =
@@ -92,6 +98,10 @@ static void board_gpio_init(void)
 
 int board_init(void)
 {
+	if (IS_ENABLED(CONFIG_FEC_MXC)) {
+                setup_fec();
+        }
+
 	if (CONFIG_IS_ENABLED(DWC_ETH_QOS) && !is_imx91p0())
 		setup_eqos();
 #if 0

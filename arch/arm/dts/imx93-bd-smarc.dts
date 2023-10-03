@@ -150,6 +150,7 @@
 			compatible = "ethernet-phy-ieee802.3-c22";
 			// reg = <1>;
 			reg-mask = <0x90>;
+			reg = <7>;
 			eee-broken-1000t;
 			at803x,hib-disabled;
 			interrupts-extended = <&gpio2 29 GPIO_ACTIVE_LOW>;
@@ -161,7 +162,6 @@
 &fec {
         pinctrl-names = "default";
         pinctrl-0 = <&pinctrl_fec>;
-        phy-reset-gpios = <&pcal6534 0 GPIO_ACTIVE_LOW>;
         phy-mode = "rgmii-id";
         phy-handle = <&ethphy2>;
         fsl,magic-packet;
@@ -172,10 +172,13 @@
                 #size-cells = <0>;
 
                 ethphy2: ethernet-phy@2 {
-                        compatible = "ethernet-phy-ieee802.3-c22";
-                        eee-broken-1000t;
-                        interrupts-extended = <&gpio2 16 IRQ_TYPE_LEVEL_LOW>;
-                        reg-mask = <0x90>;
+			compatible = "ethernet-phy-ieee802.3-c22";
+			eee-broken-1000t;
+			reset-gpios = <&pcal6534 0 GPIO_ACTIVE_LOW>;
+			reset-assert-us = <10000>;
+			reset-deassert-us = <80000>;
+			interrupts-extended = <&gpio2 16 IRQ_TYPE_LEVEL_LOW>;
+			reg = <7>; /* SimonG note reg-mask (0x90) is not in mainline u-boot */
                 };
         };
 };
@@ -296,7 +299,7 @@
 		reset-gpios = <&gpio2 28 GPIO_ACTIVE_LOW>; /* GPIO_IO28 */
 	};
 
-	i2cmux9546@70 {
+	i2cmuxsom@70 {
                 pinctrl-names = "default";
                 compatible = "nxp,pca9546";
                 reg = <0x70>;
@@ -304,7 +307,7 @@
                 #address-cells = <1>;
                 #size-cells = <0>;
 
-                lpi2c2a: lpi2c2@csi0 {
+                i2cmuxsoma: i2cmuxsom@csi0 {
                         /* CSI0 I2C */
                         clock-frequency = <100000>;
                         reg = <0>;
@@ -312,7 +315,7 @@
                         #size-cells = <0>;
                 };
 
-                lpi2c2b: lpi2c2@lcd {
+                i2cmuxsomb: i2cmuxsom@lcd {
                         /* LCD I2C */
                         clock-frequency = <100000>;
                         reg = <1>;
@@ -320,26 +323,18 @@
                         #size-cells = <0>;
                 };
 
-                lpi2c2c: lpi2c2@csi1 {
+                i2cmuxsomc: i2cmuxsom@csi1 {
                         /* CSI1 I2C */
                         clock-frequency = <100000>;
                         reg = <2>;
                         #address-cells = <1>;
                         #size-cells = <0>;
                 };
-
-                lpi2c2d: lpi2c2@nc {
-			/* NC */
-                        clock-frequency = <100000>;
-                        reg = <3>;
-                        #address-cells = <1>;
-                        #size-cells = <0>;
-                };
         };
 };
 
-&lpi2c2b { /* LCD I2C */
-	i2cmuxlcd9546@70 { /* On SMARC carrier */
+&i2cmuxsomb { /* LCD I2C */
+	i2cmuxsmarc-lcd@70 { /* On SMARC carrier */
                 pinctrl-names = "default";
                 compatible = "nxp,pca9546";
                 reg = <0x70>;
@@ -347,7 +342,7 @@
                 #address-cells = <1>;
                 #size-cells = <0>;
 
-                muxlcda: muxlcd@exp1 {
+                i2cmuxlcda: i2cmuxlcd@exp1 {
                         /* EXP1 I2C */
                         clock-frequency = <100000>;
                         reg = <0>;
@@ -355,7 +350,7 @@
                         #size-cells = <0>;
                 };
 
-                muxlcdb: muxlcd@exp2 {
+                i2cmuxlcdb: i2cmuxlcd@exp2 {
                         /* EXP2 I2C */
                         clock-frequency = <100000>;
                         reg = <1>;
@@ -363,7 +358,7 @@
                         #size-cells = <0>;
                 };
 
-                muxlcdc: muxlcd@dsi0 {
+                i2cmuxlcdc: i2cmuxlcd@dsi0 {
                         /* DSI0 I2C */
                         clock-frequency = <100000>;
                         reg = <2>;
@@ -371,7 +366,7 @@
                         #size-cells = <0>;
                 };
 
-                muxlcdd: muxlcd@dsi1 {
+                i2cmuxlcdd: i2cmuxlcd@dsi1 {
                         /* DSI1 I2C */
                         clock-frequency = <100000>;
                         reg = <3>;
@@ -392,14 +387,14 @@
         status = "okay";
 
 	/* On bd-universal-smarc-carrier */
-	mux9546-gp@73 {
+	i2cmuxsmarc-gp@73 {
                 compatible = "nxp,pca9546";
                 reg = <0x73>;
                 reset-gpios = <&gpio2 2 GPIO_ACTIVE_LOW>; /* SMARC GPIO6*/
                 #address-cells = <1>;
                 #size-cells = <0>;
 
-                i2c_gp_a: SM_I2C_GP@rtc {
+                i2cmuxsmarcgpa: i2cmuxsmarc-gp@rtc {
                         /* RTC */
                         clock-frequency = <100000>;
                         reg = <0>;
@@ -407,7 +402,7 @@
                         #size-cells = <0>;
                 };
 
-                i2c_gp_b: SM_I2C_GP@usb-c {
+                i2cmuxsmarcgpb: i2cmuxsmarc-gp@usb-c {
                         /* USB C */
                         clock-frequency = <100000>;
                         reg = <1>;
@@ -415,7 +410,7 @@
                         #size-cells = <0>;
                 };
 
-                i2c_gp_c: SM_I2C_GP@audio {
+                i2cmuxsmarcgpc: i2cmuxsmarc-gp@audio {
                         /* audio */
                         clock-frequency = <100000>;
                         reg = <2>;
@@ -423,7 +418,7 @@
                         #size-cells = <0>;
                 };
 
-                i2c_gp_d: SM_I2C_GP@pcie {
+                i2cmuxsmarcgpd: i2cmuxsmarc-gp@pcie {
                         /* pcie */
                         clock-frequency = <100000>;
                         reg = <3>;
@@ -433,7 +428,7 @@
         };
 };
 
-&i2c_gp_a {
+&i2cmuxsmarcgpa {
         rv3028: rtc@52 {
                 backup-switchover-dsm;
                 #clock-cells = <0>;
@@ -444,7 +439,7 @@
         };
 };
 
-&i2c_gp_c {
+&i2cmuxsmarcgpc {
 	codec: wm8962@1a {
 		compatible = "wlf,wm8962";
 		reg = <0x1a>;
@@ -479,6 +474,25 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart5>;
 	status = "disabled";
+};
+
+&usbotg1 {
+        dr_mode = "otg";
+        hnp-disable;
+        srp-disable;
+        adp-disable;
+        disable-over-current;
+        samsung,picophy-pre-emp-curr-control = <3>;
+        samsung,picophy-dc-vol-level-adjust = <7>;
+        status = "okay";
+};
+
+&usbotg2 {
+        dr_mode = "host";
+        disable-over-current;
+        samsung,picophy-pre-emp-curr-control = <3>;
+        samsung,picophy-dc-vol-level-adjust = <7>;
+        status = "okay";
 };
 
 &mu1 {
