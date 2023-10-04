@@ -251,7 +251,8 @@ void mtu3_free_request(struct usb_ep *ep, struct usb_request *req)
 
 static int mtu3_gadget_ep_max_transfer(struct usb_ep *ep)
 {
-	return GPD_BUF_SIZE & ~0x1ff;
+	struct mtu3_ep *mep = to_mtu3_ep(ep);
+	return (mep->mtu->gen2cp ? GPD_BUF_SIZE_EL : GPD_BUF_SIZE) & ~0x1ff;
 }
 
 static int mtu3_gadget_queue(struct usb_ep *ep,
@@ -273,10 +274,11 @@ static int mtu3_gadget_queue(struct usb_ep *ep,
 		__func__, mep->is_in ? "TX" : "RX", mreq->epnum, ep->name,
 		mreq, ep->maxpacket, mreq->request.length);
 
-	if (req->length > GPD_BUF_SIZE) {
-		dev_dbg(mtu->dev,
-			 "req length > supported MAX:%d requested:%d\n",
-			 GPD_BUF_SIZE, req->length);
+	if (req->length > (mtu->gen2cp ? GPD_BUF_SIZE_EL : GPD_BUF_SIZE)) {
+		dev_warn(mtu->dev,
+			"req length > supported MAX:%d requested:%d\n",
+			mtu->gen2cp ? GPD_BUF_SIZE_EL : GPD_BUF_SIZE,
+			req->length);
 		return -EOPNOTSUPP;
 	}
 
