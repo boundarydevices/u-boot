@@ -312,6 +312,7 @@ static int mtu3_gadget_queue(struct usb_ep *ep,
 
 error:
 	spin_unlock_irqrestore(&mtu->lock, flags);
+	udelay(1);	/* This or "dcache off" makes it work */
 
 	return ret;
 }
