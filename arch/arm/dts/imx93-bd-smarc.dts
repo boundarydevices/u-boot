@@ -9,10 +9,16 @@
 
 / {
 	model = "NXP i.MX93 Boundary SMARC Board";
-	compatible = "fsl,imx93-9x9-qsb", "fsl,imx93";
+	compatible = "fsl,imx93";
 
 	chosen {
 		stdout-path = &lpuart1;
+	};
+
+	/* Our board swaps the ports */
+	aliases {
+		ethernet0 = &eqos;
+		ethernet1 = &fec;
 	};
 
 	reserved-memory {
@@ -181,13 +187,6 @@
         };
 };
 
-&flexspi1 { /* TODO SimonG This is SD3 SDIO NOT SPI. Check the Linux dts */
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_flexspi>;
-	assigned-clock-rates = <80000000>;
-	status = "okay";
-};
-
 &lpi2c1 { /* PMIC I2C bus, but the PMIC is on lpi2c2 !!! */
 	#address-cells = <1>;
 	#size-cells = <0>;
@@ -297,10 +296,10 @@
 		reset-gpios = <&gpio2 28 GPIO_ACTIVE_LOW>; /* GPIO_IO28 */
 	};
 
-	i2cmuxsom@70 {
+	i2cmuxsom@71 {
                 pinctrl-names = "default";
                 compatible = "nxp,pca9546";
-                reg = <0x70>;
+                reg = <0x71>;
                 reset-gpios = <&pcal6534 32 GPIO_ACTIVE_LOW>; /* P4_0 */
                 #address-cells = <1>;
                 #size-cells = <0>;
@@ -332,10 +331,10 @@
 };
 
 &i2cmuxsomb { /* LCD I2C */
-	i2cmuxsmarc-lcd@70 { /* On SMARC carrier */
+	i2cmuxsmarc-lcd@73 { /* On SMARC carrier */
                 pinctrl-names = "default";
                 compatible = "nxp,pca9546";
-                reg = <0x70>;
+                reg = <0x73>;
                 reset-gpios = <&pcal6534 29 GPIO_ACTIVE_LOW>; /* P3_5 / GPIO_13 */
                 #address-cells = <1>;
                 #size-cells = <0>;
@@ -432,7 +431,7 @@
                 #clock-cells = <0>;
                 compatible = "microcrystal,rv3028";
                 reg = <0x52>;
-                interrupts-extended = <24 IRQ_TYPE_LEVEL_LOW>; /* SMARC GPIO12 */
+                // interrupts-extended = <24 IRQ_TYPE_LEVEL_LOW>; /* SMARC GPIO12 */
                 wakeup-source;
         };
 };
@@ -441,7 +440,7 @@
 	codec: wm8962@1a {
 		compatible = "wlf,wm8962";
 		reg = <0x1a>;
-		clocks = <&clk IMX93_CLK_SAI3_GATE>;
+		clocks = <&clk IMX93_CLK_SAI1_GATE>;
 		AVDD-supply = <&reg_vref_1v8>;
                 CPVDD-supply = <&reg_vref_1v8>;
                 DBVDD-supply = <&reg_vdd_3v3>;
@@ -610,17 +609,6 @@
                 >;
         };
 
-	pinctrl_flexspi: flexspigrp {
-		fsl,pins = <
-			MX93_PAD_SD3_CMD__FLEXSPI1_A_SS0_B	0x42
-			MX93_PAD_SD3_CLK__FLEXSPI1_A_SCLK	0x42
-			MX93_PAD_SD3_DATA0__FLEXSPI1_A_DATA00	0x42
-			MX93_PAD_SD3_DATA1__FLEXSPI1_A_DATA01	0x42
-			MX93_PAD_SD3_DATA2__FLEXSPI1_A_DATA02	0x42
-			MX93_PAD_SD3_DATA3__FLEXSPI1_A_DATA03	0x42
-		>;
-	};
-
 	pinctrl_lpi2c1: lpi2c1grp {
 		fsl,pins = <
 			MX93_PAD_I2C1_SCL__LPI2C1_SCL			0x40000b9e
@@ -735,33 +723,6 @@
 			MX93_PAD_GPIO_IO17__SAI3_MCLK		0x31e
 			MX93_PAD_GPIO_IO19__SAI3_TX_DATA00		0x31e
 			MX93_PAD_GPIO_IO20__SAI3_RX_DATA00		0x31e
-		>;
-	};
-
-	pinctrl_lcdif: lcdifgrp {
-		fsl,pins = <
-			MX93_PAD_GPIO_IO00__MEDIAMIX_DISP_CLK           0x31e
-			MX93_PAD_GPIO_IO01__MEDIAMIX_DISP_DE            0x31e
-			MX93_PAD_GPIO_IO02__MEDIAMIX_DISP_VSYNC         0x31e
-			MX93_PAD_GPIO_IO03__MEDIAMIX_DISP_HSYNC         0x31e
-			MX93_PAD_GPIO_IO04__MEDIAMIX_DISP_DATA00        0x31e
-			MX93_PAD_GPIO_IO05__MEDIAMIX_DISP_DATA01        0x31e
-			MX93_PAD_GPIO_IO06__MEDIAMIX_DISP_DATA02        0x31e
-			MX93_PAD_GPIO_IO07__MEDIAMIX_DISP_DATA03        0x31e
-			MX93_PAD_GPIO_IO08__MEDIAMIX_DISP_DATA04        0x31e
-			MX93_PAD_GPIO_IO09__MEDIAMIX_DISP_DATA05        0x31e
-			MX93_PAD_GPIO_IO10__MEDIAMIX_DISP_DATA06        0x31e
-			MX93_PAD_GPIO_IO11__MEDIAMIX_DISP_DATA07        0x31e
-			MX93_PAD_GPIO_IO12__MEDIAMIX_DISP_DATA08        0x31e
-			MX93_PAD_GPIO_IO13__MEDIAMIX_DISP_DATA09        0x31e
-			MX93_PAD_GPIO_IO14__MEDIAMIX_DISP_DATA10        0x31e
-			MX93_PAD_GPIO_IO15__MEDIAMIX_DISP_DATA11        0x31e
-			MX93_PAD_GPIO_IO16__MEDIAMIX_DISP_DATA12        0x31e
-			MX93_PAD_GPIO_IO17__MEDIAMIX_DISP_DATA13        0x31e
-			MX93_PAD_GPIO_IO18__MEDIAMIX_DISP_DATA14        0x31e
-			MX93_PAD_GPIO_IO19__MEDIAMIX_DISP_DATA15        0x31e
-			MX93_PAD_GPIO_IO20__MEDIAMIX_DISP_DATA16        0x31e
-			MX93_PAD_GPIO_IO21__MEDIAMIX_DISP_DATA17        0x31e
 		>;
 	};
 };
