@@ -204,6 +204,8 @@ static int mtu3_prepare_tx_gpd(struct mtu3_ep *mep, struct mtu3_request *mreq)
 	if (req->zero)
 		gpd->ext_flag |= GPD_EXT_FLAG_ZLP;
 
+	/* prevent reorder, make sure GPD's HWO is set last */
+	mb();
 	gpd->flag |= GPD_FLAGS_IOC | GPD_FLAGS_HWO;
 
 	mreq->gpd = gpd;
@@ -238,6 +240,8 @@ static int mtu3_prepare_rx_gpd(struct mtu3_ep *mep, struct mtu3_request *mreq)
 	gpd->next_gpd = cpu_to_le32((u32)gpd_virt_to_dma(ring, enq));
 	mtu3_flush_cache((uintptr_t)enq, sizeof(*gpd));
 
+	/* prevent reorder, make sure GPD's HWO is set last */
+	mb();
 	gpd->flag |= GPD_FLAGS_IOC | GPD_FLAGS_HWO;
 
 	mreq->gpd = gpd;
