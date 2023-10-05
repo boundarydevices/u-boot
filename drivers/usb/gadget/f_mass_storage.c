@@ -686,6 +686,26 @@ static int sleep_thread(struct fsg_common *common)
 	return rc;
 }
 
+int wait_for_state(struct fsg_common *common, enum fsg_buffer_state state, struct fsg_buffhd **pbh)
+{
+	struct fsg_buffhd *bh;
+	int rc;
+
+	/* Wait for the next buffer to become available */
+	while (1) {
+		bh = common->next_buffhd_to_fill;
+		if (bh->state == state) {
+			if (pbh)
+				*pbh = bh;
+			return 0;
+		}
+		rc = sleep_thread(common);
+		bh = common->next_buffhd_to_fill;
+		if (rc < 0)
+			return rc;
+	}
+}
+
 /*-------------------------------------------------------------------------*/
 unsigned get_max_transfer(struct usb_ep *ep)
 {
@@ -757,12 +777,9 @@ static int do_read(struct fsg_common *common)
 					partial_page);
 
 		/* Wait for the next buffer to become available */
-		bh = common->next_buffhd_to_fill;
-		while (bh->state != BUF_STATE_EMPTY) {
-			rc = sleep_thread(common);
-			if (rc)
-				return rc;
-		}
+		rc = wait_for_state(common, BUF_STATE_EMPTY, &bh);
+		if (rc < 0)
+			return rc;
 
 		/* If we were asked to read past the end of file,
 		 * end with an empty buffer. */
@@ -868,6 +885,7 @@ static int do_write(struct fsg_common *common)
 		curlun->sense_data = SS_LOGICAL_BLOCK_ADDRESS_OUT_OF_RANGE;
 		return -EINVAL;
 	}
+	debug("%s: %d of %lld, blkcnt=%d\n", __func__, lba, curlun->num_sectors, common->data_size_from_cmnd / SECTOR_SIZE);
 
 	/* Carry out the file writes */
 	get_some_more = 1;
@@ -950,6 +968,7 @@ static int do_write(struct fsg_common *common)
 
 			amount = bh->outreq->actual;
 
+			debug("%s: start block:%lld, blkcnt=%d\n", __func__, file_offset / SECTOR_SIZE, amount / SECTOR_SIZE);
 			/* Perform the write */
 			rc = ums[common->lun].write_sector(&ums[common->lun],
 					       file_offset / SECTOR_SIZE,
@@ -996,7 +1015,7 @@ static int do_write(struct fsg_common *common)
 
 		/* Wait for something to happen */
 		rc = sleep_thread(common);
-		if (rc)
+		if (rc < 0)
 			return rc;
 	}
 
@@ -1445,12 +1464,9 @@ static int pad_with_zeros(struct fsg_dev *fsg)
 	fsg->common->usb_amount_left = nkeep + fsg->common->residue;
 	while (fsg->common->usb_amount_left > 0) {
 
-		/* Wait for the next buffer to be free */
-		while (bh->state != BUF_STATE_EMPTY) {
-			rc = sleep_thread(fsg->common);
-			if (rc)
-				return rc;
-		}
+		rc = wait_for_state(fsg->common, BUF_STATE_EMPTY, &bh);
+		if (rc < 0)
+			return rc;
 
 		nsend = min(fsg->common->usb_amount_left, get_max_transfer(fsg->bulk_in));
 		memset(bh->buf + nkeep, 0, nsend - nkeep);
@@ -1513,7 +1529,7 @@ static int throw_away_data(struct fsg_common *common)
 
 		/* Otherwise wait for something to happen */
 		rc = sleep_thread(common);
-		if (rc)
+		if (rc < 0)
 			return rc;
 	}
 	return 0;
@@ -1626,12 +1642,9 @@ static int send_status(struct fsg_common *common)
 	u32			sd, sdinfo = 0;
 
 	/* Wait for the next buffer to become available */
-	bh = common->next_buffhd_to_fill;
-	while (bh->state != BUF_STATE_EMPTY) {
-		rc = sleep_thread(common);
-		if (rc)
-			return rc;
-	}
+	rc = wait_for_state(common, BUF_STATE_EMPTY, &bh);
+	if (rc < 0)
+		return rc;
 
 	if (curlun)
 		sd = curlun->sense_data;
@@ -1802,13 +1815,11 @@ static int do_scsi_command(struct fsg_common *common)
 	dump_cdb(common);
 
 	/* Wait for the next buffer to become available for data or status */
-	bh = common->next_buffhd_to_fill;
+	rc = wait_for_state(common, BUF_STATE_EMPTY, &bh);
+	if (rc < 0)
+		return rc;
 	common->next_buffhd_to_drain = bh;
-	while (bh->state != BUF_STATE_EMPTY) {
-		rc = sleep_thread(common);
-		if (rc)
-			return rc;
-	}
+
 	common->phase_error = 0;
 	common->short_packet_received = 0;
 
@@ -2068,8 +2079,11 @@ static int received_cbw(struct fsg_dev *fsg, struct fsg_buffhd *bh)
 	struct fsg_common	*common = fsg->common;
 
 	/* Was this a real packet?  Should it be ignored? */
-	if (req->status || test_bit(IGNORE_BULK_OUT, &fsg->atomic_bitflags))
+	if (req->status || test_bit(IGNORE_BULK_OUT, &fsg->atomic_bitflags)) {
+		printf("invalid status 0x%x\n",
+				req->status);
 		return -EINVAL;
+	}
 
 	/* Is the CBW valid? */
 	if (req->actual != USB_BULK_CB_WRAP_LEN ||
@@ -2130,13 +2144,9 @@ static int get_next_command(struct fsg_common *common)
 	struct fsg_buffhd	*bh;
 	int			rc = 0;
 
-	/* Wait for the next buffer to become available */
-	bh = common->next_buffhd_to_fill;
-	while (bh->state != BUF_STATE_EMPTY) {
-		rc = sleep_thread(common);
-		if (rc)
-			return rc;
-	}
+	rc = wait_for_state(common, BUF_STATE_EMPTY, &bh);
+	if (rc < 0)
+		return rc;
 
 	/* Queue a request to read a Bulk-only CBW */
 	set_bulk_out_req_length(common, bh, USB_BULK_CB_WRAP_LEN);
@@ -2151,11 +2161,9 @@ static int get_next_command(struct fsg_common *common)
 	 * next_buffhd_to_fill. */
 
 	/* Wait for the CBW to arrive */
-	while (bh->state != BUF_STATE_FULL) {
-		rc = sleep_thread(common);
-		if (rc)
-			return rc;
-	}
+	rc = wait_for_state(common, BUF_STATE_FULL, &bh);
+	if (rc < 0)
+		return rc;
 
 	rc = fsg_is_set(common) ? received_cbw(common->fsg, bh) : -EIO;
 	bh->state = BUF_STATE_EMPTY;
@@ -2304,6 +2312,7 @@ static void handle_exception(struct fsg_common *common)
 	enum fsg_state		old_state;
 	struct fsg_lun		*curlun;
 	unsigned int		exception_req_tag;
+	int rc;
 
 	/* Cancel all the pending transfers */
 	if (common->fsg) {
@@ -2325,7 +2334,8 @@ static void handle_exception(struct fsg_common *common)
 			}
 			if (num_active == 0)
 				break;
-			if (sleep_thread(common))
+			rc = sleep_thread(common);
+			if (rc < 0)
 				return;
 		}
 
@@ -2418,7 +2428,7 @@ int fsg_main_thread(void *common_)
 
 		if (!common->running) {
 			ret = sleep_thread(common);
-			if (ret)
+			if (ret < 0)
 				return ret;
 
 			continue;
