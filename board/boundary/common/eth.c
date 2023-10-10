@@ -464,7 +464,7 @@ static void init_fec_clocks(void)
 #ifdef CONFIG_MX6ULL
 #define PHY_MODE PHY_INTERFACE_MODE_RMII
 #else
-#define PHY_MODE PHY_INTERFACE_MODE_RGMII
+#define PHY_MODE PHY_INTERFACE_MODE_RGMII_ID
 #endif
 
 #if defined(CONFIG_PHY_ATHEROS) || defined(CONFIG_PHY_MICREL)
