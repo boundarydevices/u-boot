@@ -701,10 +701,6 @@
 };
 #endif
 
-&mt6359_vcn18_ldo_reg {
-	regulator-always-on;
-};
-
 #ifndef UBOOT
 &spmi {
 	#address-cells = <2>;
