@@ -713,8 +713,52 @@ static int do_fdt(struct cmd_tbl *cmdtp, int flag, int argc, char *const argv[])
 		else
 			return CMD_RET_FAILURE;
 #endif
+#if defined(CONFIG_FIT_SIGNATURE)
+	} else if (strncmp(argv[1], "authndtb", 8) == 0) {
+		int ret, num;
+		unsigned long addr;
+		const char *uname;
+		const void *blob;
+		const void *fit_data;
+		size_t fit_len = 0;
 
+		if (!working_fdt)
+			return CMD_RET_FAILURE;
+
+		if (argc > 2) {
+			addr = hextoul(argv[2], NULL);
+			blob = map_sysmem(addr, 0);
+		} else {
+			return CMD_RET_FAILURE;
+		}
+
+		if (fit_check_format(blob, IMAGE_SIZE_INVAL))
+			return CMD_RET_FAILURE;
+
+		num = fdt_path_offset(blob, FIT_IMAGES_PATH);
+		if (num < 0)
+			return CMD_RET_FAILURE;
+
+		uname = fdt_getprop(blob, num, FIT_DEFAULT_PROP, NULL);
+
+		num = fit_image_get_node(blob, uname);
+		if (num < 0) {
+			printf("Can't find '%s'\n", uname);
+			return CMD_RET_FAILURE;
+		} else if (!fit_image_check_type(blob, num, IH_TYPE_FLATDT)) {
+			printf("Incorrect image\n");
+			return CMD_RET_FAILURE;
+		}
+
+		ret = fit_image_verify(blob, num);
+		if (ret && !fit_image_get_data(blob, num, &fit_data, &fit_len)) {
+			memcpy(blob, fit_data, fit_len);
+			return CMD_RET_SUCCESS;
+		}
+
+		return CMD_RET_FAILURE;
 	}
+#endif
 #ifdef CONFIG_OF_LIBFDT_OVERLAY
 	/* apply an overlay */
 	else if (strncmp(argv[1], "ap", 2) == 0) {
@@ -1127,6 +1171,9 @@ static char fdt_help_text[] =
 	"fdt checksign [<addr>]              - check FIT signature\n"
 	"                                        <start> - addr of key blob\n"
 	"                                                  default gd->fdt_blob\n"
+#endif
+#if defined(CONFIG_FIT_SIGNATURE)
+	"fdt authndtb [<addr>]               - Device tree authentication\n"
 #endif
 	"NOTE: Dereference aliases by omitting the leading '/', "
 		"e.g. fdt print ethernet0.";
