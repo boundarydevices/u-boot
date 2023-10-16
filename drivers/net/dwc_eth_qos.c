@@ -48,7 +48,7 @@
 #include <asm/cache.h>
 #include <asm/gpio.h>
 #include <asm/io.h>
-#if defined(CONFIG_IMX8MP) || defined(CONFIG_IMX8DXL)
+#if defined(CONFIG_IMX8MP) || defined(CONFIG_IMX8DXL) || defined(CONFIG_IMX93)
 #include <asm/arch/clock.h>
 #include <asm/mach-imx/sys_proto.h>
 #endif
