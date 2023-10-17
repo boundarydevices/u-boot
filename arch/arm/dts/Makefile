@@ -1114,6 +1114,7 @@ dtb-$(CONFIG_ARCH_IMX8ULP) += \
 	imx8ulp-evk-i3c.dtb \
 	imx8ulp-9x9-evk.dtb \
 	imx8ulp-9x9-evk-i3c.dtb \
+	imx8ulp-nitrogen-som.dtb \
 	imx8ulp-watch.dtb
 
 dtb-$(CONFIG_ARCH_IMX8M) += \
