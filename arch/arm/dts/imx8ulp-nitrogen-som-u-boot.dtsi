@@ -1,0 +1,118 @@
+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
+/*
+ * Copyright 2021 NXP
+ */
+
+/ {
+	aliases {
+		usbgadget0 = &usbg1;
+		usbgadget1 = &usbg2;
+	};
+
+	mu@27020000 {
+		compatible = "fsl,imx8ulp-mu";
+		reg = <0 0x27020000 0 0x10000>;
+		status = "okay";
+		u-boot,dm-spl;
+	};
+
+
+	usbg1: usbg1 {
+		compatible = "fsl,imx27-usb-gadget";
+		dr_mode = "peripheral";
+		chipidea,usb = <&usbotg1>;
+		status = "okay";
+	};
+
+	usbg2: usbg2 {
+		compatible = "fsl,imx27-usb-gadget";
+		dr_mode = "peripheral";
+		chipidea,usb = <&usbotg2>;
+		status = "okay";
+	};
+
+	dsi_host: dsi-host {
+		compatible = "northwest,mipi-dsi";
+		status = "okay";
+	};
+};
+
+&{/firmware} {
+	u-boot,dm-pre-reloc;
+};
+
+&{/firmware/scmi} {
+	u-boot,dm-pre-reloc;
+};
+
+&{/firmware/scmi/protocol@15} {
+	u-boot,dm-pre-reloc;
+};
+
+&crypto {
+	u-boot,dm-spl;
+};
+
+&per_bridge3 {
+	u-boot,dm-spl;
+};
+
+&per_bridge4 {
+	u-boot,dm-spl;
+};
+
+&iomuxc1 {
+	u-boot,dm-spl;
+	fsl,mux_mask = <0xf00>;
+};
+
+&scmi_buf {
+	reg = <0x0 0x1000>; /* Align page size */
+};
+
+&sec_jr0 {
+	u-boot,dm-spl;
+};
+
+&sec_jr1 {
+	u-boot,dm-spl;
+};
+
+&sec_jr2 {
+	u-boot,dm-spl;
+};
+
+&sec_jr3 {
+	u-boot,dm-spl;
+};
+
+&lpuart7 {
+	u-boot,dm-spl;
+};
+
+&pinctrl_lpuart7 {
+	u-boot,dm-spl;
+};
+
+&pinctrl_usbotg1 {
+	fsl,pins = <
+		MX8ULP_PAD_PTD12__USB0_ID	0x10003
+		MX8ULP_PAD_PTD14__USB0_OC	0x10003
+	>;
+};
+
+&pinctrl_usdhc0 {
+	u-boot,dm-spl;
+};
+
+&usdhc0 {
+	u-boot,dm-spl;
+};
+
+&usbotg1 {
+	compatible = "fsl,imx8ulp-usb", "fsl,imx7ulp-usb", "fsl,imx27-usb";
+};
+
+&usbotg2 {
+	compatible = "fsl,imx8ulp-usb", "fsl,imx7ulp-usb", "fsl,imx27-usb";
+};
