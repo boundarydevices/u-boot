@@ -1,0 +1,6 @@
+i.MX 8ULP Nitrogen SOM
+M:	Gary Bisson <gary.bisson@boundarydevices.com>
+S:	Maintained
+F:	board/boundary/imx8ulp_nitrogen_som/
+F:	include/configs/imx8ulp_nitrogen_som.h
+F:	configs/imx8ulp_nitrogen_som_2gr0_defconfig

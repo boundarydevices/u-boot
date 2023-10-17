@@ -233,7 +233,7 @@
 #include "panel-q035-014.dtsi"
 
 / {
-	model = "NXP i.MX 8ULP tag test";
+	model = "Boundary Devices Nitrogen 8ULP SOM";
 	compatible = "boundary,imx8ulp-tag", "fsl,imx8ulp";
 
 	aliases {

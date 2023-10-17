@@ -974,7 +974,7 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
 
 dtb-$(CONFIG_ARCH_IMX8ULP) += \
 	imx8ulp-tag.dtb \
-	imx8ulp-tag-test.dtb \
+	imx8ulp-nitrogen-som.dtb \
 
 dtb-$(CONFIG_ARCH_IMXRT) += imxrt1050-evk.dtb \
 	imxrt1020-evk.dtb

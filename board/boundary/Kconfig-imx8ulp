@@ -1,6 +1,15 @@
 choice
-	prompt	"Boundary i.MX8ULP board select"
+	prompt	"Boundary i.MX 8ULP board select"
 	optional
+
+config TARGET_IMX8ULP_NITROGEN_SOM
+	bool "imx8ulp nitrogen som"
+	select IMX8ULP
+	select SUPPORT_SPL
+	select FSL_CAAM
+	select FSL_BLOB
+	select ARCH_MISC_INIT
+	select SPL_CRYPTO if SPL
 
 config TARGET_TAG
 	bool "tag"
@@ -20,5 +29,5 @@ config M33_FIRMWARE_SET
 	bool "M33_FIRMWARE value given"
 	default y if M33_FIRMWARE != ""
 
-
+source "board/boundary/imx8ulp_nitrogen_som/Kconfig"
 source "board/boundary/tag/Kconfig"
