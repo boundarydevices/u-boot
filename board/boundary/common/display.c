@@ -16,7 +16,7 @@
 #include "bd_common.h"
 
 /* pca9546 mux */
-static int detect_common(struct display_info_t const *di, int sub_bus,
+int detect_common(struct display_info_t const *di, int sub_bus,
 		int sub_bus2, int reg1, u8 val1, int reg2, u8 val2,
 		int gp_reset, int gp_irq, int probe2)
 {
