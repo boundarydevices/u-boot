@@ -218,7 +218,7 @@ static void usb_hub_power_on(struct usb_hub_device *hub)
 #else
 	hub->connect_timeout += env_get_ulong("usb_connect_wait", 10, HUB_DEBOUNCE_TIMEOUT);
 #endif
-	debug("devnum=%d poweron: query_delay=%d connect_timeout=%d\n",
+	debug("devnum=%d poweron: query_delay=%ld connect_timeout=%ld\n",
 	      dev->devnum, hub->query_delay, hub->connect_timeout);
 }
 
