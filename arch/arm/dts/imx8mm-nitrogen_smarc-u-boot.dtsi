@@ -1,0 +1,279 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2023 Boundary Devices
+ */
+#include "imx8mm-u-boot.dtsi"
+
+/ {
+	wdt-reboot {
+		compatible = "wdt-reboot";
+		wdt = <&wdog1>;
+		u-boot,dm-spl;
+	};
+};
+
+&{/soc@0} {
+	u-boot,dm-pre-reloc;
+	u-boot,dm-spl;
+};
+
+&aips1 {
+	u-boot,dm-spl;
+	u-boot,dm-pre-reloc;
+};
+
+&aips2 {
+	u-boot,dm-spl;
+};
+
+&aips3 {
+	u-boot,dm-spl;
+};
+
+&clk {
+	u-boot,dm-spl;
+	u-boot,dm-pre-reloc;
+	/delete-property/ assigned-clocks;
+	/delete-property/ assigned-clock-parents;
+	/delete-property/ assigned-clock-rates;
+};
+
+&gpio1 {
+	u-boot,dm-spl;
+};
+
+&gpio2 {
+	u-boot,dm-spl;
+};
+
+&gpio3 {
+	u-boot,dm-spl;
+};
+
+&gpio4 {
+	u-boot,dm-spl;
+};
+
+&gpio5 {
+	u-boot,dm-spl;
+};
+
+&i2c1 {
+	u-boot,dm-spl;
+};
+
+&iomuxc {
+	u-boot,dm-spl;
+};
+
+#ifndef SKIP_MIPI_PANELS
+&lcdif {
+	display = <&fb_mipi>;
+	status = "okay";
+};
+
+#ifndef SKIP_LONTIUM_DAUGHTER_BOARDS
+&mipi_ref2(lt8912, 2) {
+	port@0 {
+		lt8912_2_from_panel: endpoint {
+			remote-endpoint = <&panel_to_lt8912_2>;
+		};
+	};
+};
+#endif
+
+&mipi_dsi {
+	fb_mipi: panel@0 {
+		bits-per-pixel = <24>;
+		bus-width = <24>;
+		clocks = <&dsim_clk 0>,
+				<&clk IMX8MMN(CLK_LCDIF_PIXEL)>;
+
+		mipi_to_lvds: mipi-to-lvds {
+			interrupts-gpios = GP_MIPI_IRQ(GPIO_ACTIVE_HIGH);
+		};
+
+		port@1 {
+			panel_from_dsim: endpoint {
+				remote-endpoint = <&dsim_to_panel>;
+			};
+		};
+
+#ifndef SKIP_LONTIUM_DAUGHTER_BOARDS
+		port@2 {
+			panel_to_lt8912: endpoint {
+				remote-endpoint = <&lt8912_from_panel>;
+			};
+		};
+
+		port@3 {
+			panel_to_lt8912_2: endpoint {
+				remote-endpoint = <&lt8912_2_from_panel>;
+			};
+		};
+#endif
+	};
+
+	dsim_clk: dsim-clk {
+		#clock-cells = <1>;
+		#size-cells = <0>;
+		compatible = "generic,clk";
+		clocks = <&clk IMX8MMN(CLK_DSI_PHY_REF)>;
+		clock-names = "parent";
+		clock-output-names = "dsim-clk";
+		status = "okay";
+	};
+
+	dsi_host: dsi-host {
+		compatible = "samsung,sec-mipi-dsi";
+		clocks = <&dsim_clk 0>,
+			 <&clk IMX8MMN(CLK_DSI_CORE)>,
+			 <&clk IMX8MMN(CLK_DSI_PHY_REF)>,
+			 <&clk IMX8MMN(CLK_LCDIF_PIXEL)>;
+		clock-names = "dsim-clk", "cfg", "pll-ref", "pixel_clock";
+		status = "okay";
+	};
+
+	port@1 {
+		dsim_to_panel: endpoint {
+			remote-endpoint = <&panel_from_dsim>;
+		};
+	};
+};
+
+#ifndef SKIP_LONTIUM_DAUGHTER_BOARDS
+&mipi_ref(pca9546) {
+	MIPI_I2C_BUS@0 {
+		lt8912@48 {
+			port@0 {
+				lt8912_from_panel: endpoint {
+					remote-endpoint = <&panel_to_lt8912>;
+				};
+			};
+		};
+	};
+};
+#endif
+#endif
+
+&osc_24m {
+	u-boot,dm-spl;
+	u-boot,dm-pre-reloc;
+};
+
+&pinctrl_i2c1 {
+	u-boot,dm-spl;
+};
+
+&pinctrl_uart2 {
+	u-boot,dm-spl;
+};
+
+&pinctrl_usbotg1 {
+	u-boot,dm-spl;
+};
+
+&pinctrl_usbotg2 {
+	u-boot,dm-spl;
+};
+
+&pinctrl_usdhc1 {
+	u-boot,dm-spl;
+};
+
+&pinctrl_usdhc1_100mhz {
+	u-boot,dm-spl;
+};
+
+&pinctrl_usdhc1_200mhz {
+	u-boot,dm-spl;
+};
+
+&pinctrl_usdhc2 {
+	u-boot,dm-spl;
+};
+
+&pinctrl_usdhc2_state_100mhz {
+	u-boot,dm-spl;
+};
+
+&pinctrl_usdhc2_state_200mhz {
+	u-boot,dm-spl;
+};
+
+&pinctrl_usdhc3 {
+	u-boot,dm-spl;
+};
+
+&reg_vref_1v8 {
+	u-boot,dm-spl;
+};
+
+&reg_vref_3v3 {
+	u-boot,dm-spl;
+};
+
+&uart1 { /* BT */
+	status = "disabled";
+};
+
+&uart2 {
+	u-boot,dm-spl;
+};
+
+&uart3 { /* J15 */
+	status = "disabled";
+};
+
+&uart4 {
+	status = "disabled";
+};
+
+&usbmisc1 {
+	u-boot,dm-spl;
+};
+
+&usbmisc2 {
+	u-boot,dm-spl;
+};
+
+&usbotg1 {
+	u-boot,dm-spl;
+};
+
+&usbotg2 {
+	u-boot,dm-spl;
+};
+
+&usbphynop1 {
+	u-boot,dm-spl;
+};
+
+&usbphynop2 {
+	u-boot,dm-spl;
+};
+
+&usdhc1 {
+	cap-mmc-highspeed;
+	mmc-ddr-1_8v;
+	mmc-hs200-1_8v;
+	reset-gpios = GP_EMMC_RESET;
+	u-boot,dm-spl;
+};
+
+&usdhc2 {
+	cap-sd-highspeed;
+	sd-uhs-ddr50;
+	sd-uhs-sdr104;
+	sd-uhs-sdr12;
+	sd-uhs-sdr25;
+	u-boot,dm-spl;
+};
+
+&usdhc3 {
+	status = "disabled";
+};
+
+&wdog1 {
+	u-boot,dm-spl;
+};

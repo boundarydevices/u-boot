@@ -62,6 +62,12 @@ config TARGET_HL8MM
 	select IMX8MM
 	select SUPPORT_SPL
 
+config TARGET_IMX8MM_NITROGEN_SMARC
+	bool "imx8mn nitrogen smarc board"
+	select BINMAN
+	select IMX8MM
+	select SUPPORT_SPL
+
 config TARGET_IMX8MP_NITROGEN_SMARC
 	bool "imx8mp nitrogen smarc board"
 	select BINMAN
@@ -170,6 +176,7 @@ source "board/boundary/ds/Kconfig"
 source "board/boundary/dwe/Kconfig"
 source "board/boundary/em/Kconfig"
 source "board/boundary/hl8mm/Kconfig"
+source "board/boundary/imx8mm_nitrogen_smarc/Kconfig"
 source "board/boundary/imx8mp_nitrogen_smarc/Kconfig"
 source "board/boundary/kea/Kconfig"
 source "board/boundary/moo/Kconfig"
