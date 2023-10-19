@@ -371,6 +371,13 @@
 			output-low;
 		};
 	};
+
+	pinctrl_watchdog: watchdoggrp {
+		watchdog-pin {
+			pinmux = <PINMUX_GPIO100__FUNC_O_WATCHDOG>;	/* PMIC_WATCHDOG */
+			bias-pull-up;
+		};
+	};
 };
 
 / {
@@ -579,6 +586,8 @@
 	interrupt-parent = <&pio>;
 	interrupts = <222 IRQ_TYPE_LEVEL_HIGH>;
 
+	/delete-node/ mt6359keys;
+
 	pmic_key: pmic-key {
 		compatible = "mediatek,mt6359-keys";
 		mediatek,long-press-mode = <1>;
@@ -614,6 +623,10 @@
 };
 
 &mt6359_vcore_buck_reg {
+	regulator-always-on;
+};
+
+&mt6359_vemc_1_ldo_reg {
 	regulator-always-on;
 };
 
@@ -738,6 +751,11 @@
 				regulator-enable-ramp-delay = <256>;
 				regulator-allowed-modes = <0 1 2>;
 				regulator-always-on;
+
+				regulator-state-mem {
+					regulator-on-in-suspend;
+					regulator-suspend-microvolt = <1193750>;
+				};
 			};
 		};
 	};
@@ -811,7 +829,6 @@
 	mediatek,force-vbus;
 	pinctrl-0 = <&pinctrl_ssusb2>;
 	pinctrl-names = "default";
-	reset-gpios = GP_SSUSB2_RESET;
 	status = "okay";
 	vusb33-supply = <&mt6359_vusb_ldo_reg>;
 	wakeup-source;
@@ -829,6 +846,7 @@
 	status = "okay";
 	vusb33-supply = <&mt6359_vusb_ldo_reg>;
 	vdd1p2-supply = <&mt6315_6_vbuck4>;
+	reset-gpios = GP_SSUSB2_RESET;
 	#address-cells = <1>;
 	#size-cells = <0>;
 
@@ -960,6 +978,11 @@
 	domain-supply = <&mt6359_vproc1_buck_reg>;
 };
 #endif
+
+&watchdog {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_watchdog>;
+};
 
 #define MEDIATEK
 #define IOMUX pio
@@ -1252,6 +1275,8 @@
 #define PD_SM_GPIO5(a)			PINMUX_GPIO10__FUNC_B_GPIO10		/* GPIO10 */
 #define GP_SM_GPIO6(a)			<&GPIO 6 a>
 #define PD_SM_GPIO6(a)			PINMUX_GPIO6__FUNC_B_GPIO6		/* GPIO06 */
+#define DN_SM_GPIO6			bias-pull-down;
+#define UP_SM_GPIO6			bias-pull-up;
 #define GP_SM_GPIO7(a)			<&GPIO 7 a>
 #define PD_SM_GPIO7(a)			PINMUX_GPIO7__FUNC_B_GPIO7		/* GPIO07 */
 #define DN_SM_GPIO7			bias-pull-down;
