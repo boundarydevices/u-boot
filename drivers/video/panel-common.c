@@ -1208,14 +1208,15 @@ static int common_panel_probe(struct udevice *dev)
 
 	p->linked_panel = video_link_get_next_device(dev);
 	if (p->linked_panel &&
-		device_get_uclass_id(p->linked_panel) != UCLASS_PANEL) {
-		debug("get panel device error\n");
+	    device_get_uclass_id(p->linked_panel) != UCLASS_PANEL) {
+		debug("%s: get panel device error\n", __func__);
 		return -ENODEV;
 	}
 	ret = 0;
 	if (p->sn65.i2c) {
 		ret = sn65_init(&p->sn65);
 	}
+	debug("%s: exit=%d\n", __func__, ret);
 	return ret;
 }
 
