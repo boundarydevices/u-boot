@@ -127,6 +127,9 @@
  * ldb
  * t_lvds, t_lvds2
  */
+
+#define is_mipi(fb) ((fb == FB_MIPI) || (fb == FB_MIPI2))
+
 static const char *const fbnames[] = {
 [FB_HDMI] = "fb_hdmi",
 [FB_LCD] = "fb_lcd",
@@ -134,6 +137,7 @@ static const char *const fbnames[] = {
 [FB_LVDS] = "fb_lvds",
 [FB_LVDS2] = "fb_lvds2",
 [FB_MIPI] = "fb_mipi",
+[FB_MIPI2] = "fb_mipi2",
 #if defined(CONFIG_IMX8MQ) || defined(CONFIG_IMX8ULP)
 [FB_MIPI_BRIDGE] = "mipi_dsi_bridge",
 #else
@@ -148,6 +152,7 @@ static const char *const fbnames_name[] = {
 [FB_LVDS] = "fb_lvds_name",
 [FB_LVDS2] = "fb_lvds2_name",
 [FB_MIPI] = "fb_mipi_name",
+[FB_MIPI2] = "fb_mipi2_name",
 };
 
 static const char *const timings_names[] = {
@@ -157,6 +162,7 @@ static const char *const timings_names[] = {
 [FB_LVDS] = "t_lvds",
 [FB_LVDS2] = "t_lvds2",
 [FB_MIPI] = "t_mipi",
+[FB_MIPI2] = "t_mipi2",
 };
 
 static const char *const ch_names[] = {
@@ -166,6 +172,7 @@ static const char *const ch_names[] = {
 [FB_LVDS] = "ldb/lvds-channel@0",
 [FB_LVDS2] = "ldb/lvds-channel@1",
 [FB_MIPI] = "",
+[FB_MIPI2] = "",
 };
 
 static const char *const cmd_fbnames[] = {
@@ -175,6 +182,7 @@ static const char *const cmd_fbnames[] = {
 [FB_LVDS] = "cmd_lvds",
 [FB_LVDS2] = "cmd_lvds2",
 [FB_MIPI] = "cmd_mipi",
+[FB_MIPI2] = "cmd_mipi2",
 };
 
 static const char *const backlight_names[] = {
@@ -184,6 +192,7 @@ static const char *const backlight_names[] = {
 [FB_LVDS] = "backlight_lvds",
 [FB_LVDS2] = "backlight_lvds2",
 [FB_MIPI] = "backlight_mipi",
+[FB_MIPI2] = "backlight_mipi2",
 };
 
 static const char backlight_alt[] = "backlight_alt";
@@ -195,6 +204,7 @@ static const char *const pwm_names[] = {
 [FB_LVDS] = "pwm_lvds",
 [FB_LVDS2] = "pwm_lvds2",
 [FB_MIPI] = "pwm_mipi",
+[FB_MIPI2] = "pwm_mipi2",
 };
 
 static const char *const short_names[] = {
@@ -204,6 +214,7 @@ static const char *const short_names[] = {
 [FB_LVDS] = "lvds",
 [FB_LVDS2] = "lvds2",
 [FB_MIPI] = "mipi",
+[FB_MIPI2] = "mipi2",
 };
 
 static const char *new_aliases[FB_COUNT][2];
@@ -242,7 +253,8 @@ static const char *const aliases[] = {
 [FBP_PCA9540] = "pca9540",
 [FBP_PCA9540_2] = "pca9540_2",
 [FBP_PCA9546] = "pca9546",
-[FBP_BACKLIGHT_MIPI2] = "backlight_mipi2",
+[FBP_BACKLIGHT_MIPI_ALT] = "backlight_mipi_alt",
+[FBP_PWM_MIPI_ALT] = "pwm_mipi_alt",
 };
 
 static const char *const timings_properties[] = {
@@ -293,6 +305,10 @@ static void __board_enable_mipi(const struct display_info_t *di, int enable)
 {
 }
 
+static void __board_enable_mipi2(const struct display_info_t *di, int enable)
+{
+}
+
 void board_pre_enable(const struct display_info_t *di)
 	__attribute__((weak, alias("__board_pre_enable")));
 void board_enable_hdmi(const struct display_info_t *di, int enable)
@@ -305,6 +321,8 @@ void board_enable_lvds2(const struct display_info_t *di, int enable)
 	__attribute__((weak, alias("__board_enable_lvds2")));
 void board_enable_mipi(const struct display_info_t *di, int enable)
 	__attribute__((weak, alias("__board_enable_mipi")));
+void board_enable_mipi2(const struct display_info_t *di, int enable)
+	__attribute__((weak, alias("__board_enable_mipi2")));
 
 static unsigned get_fb_available_mask(const struct display_info_t *di, int cnt)
 {
@@ -719,8 +737,9 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 	const struct fb_videomode_f *mode;
 	const char * fmt;
 	char mode_name[80];
+	int mipi_alt_backlight = 0;
 #if defined(CONFIG_IMX8M) || defined(CONFIG_IMX8ULP)
-	unsigned fb1 = (fb == FB_MIPI) ? FB_MIPI_BRIDGE : fb;
+	unsigned fb1 = is_mipi(fb) ? FB_MIPI_BRIDGE : fb;
 #else
 	unsigned fb1 = fb;
 #endif
@@ -753,7 +772,7 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 				buf += sz;
 				size -= sz;
 			}
-			if (fb == FB_MIPI) {
+			if (is_mipi(fb)) {
 				sz = set_status(buf, size, "lcdif", false);
 			} else if (fb == FB_LCD) {
 				sz = set_status(buf, size, "lcd", 0);
@@ -816,13 +835,13 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		buf += sz;
 		size -= sz;
 	} else if (fb != FB_HDMI) {
-		if ((fb != FB_MIPI) || scan_for_alias(di, FBP_BACKLIGHT_MIPI2)) {
+		if (!is_mipi(fb) || scan_for_alias(di, FBP_BACKLIGHT_MIPI_ALT)) {
 			sz = set_status(buf, size, backlight_names[fb], true);
 			buf += sz;
 			size -= sz;
 		}
 	}
-	if (fb == FB_MIPI) {
+	if (is_mipi(fb)) {
 #if defined(CONFIG_IMX8MQ) || defined(CONFIG_IMX8ULP)
 		sz = set_status(buf, size, "mipi_dsi", true);
 		buf += sz;
@@ -841,7 +860,7 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		if (di) {
 			if ((di->addr_num == 0x2c) &&
 				(di->enable_alias[0] != FBP_MIPI_TO_LVDS)) {
-				sz = set_status(buf, size, "mipi_to_lvds", true);
+				sz = set_status(buf, size, aliases[FBP_MIPI_TO_LVDS], true);
 				buf += sz;
 				size -= sz;
 			}
@@ -879,11 +898,19 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 
 		if (!s)
 			continue;
+
+		if (s == aliases[FBP_PWM_MIPI_ALT]) {
+			/* disable the old, before enabling the new, in case they are the same */
+			sz = set_status(buf, size, "pwm_mipi", false);
+			buf += sz;
+			size -= sz;
+		}
+
 		sz = set_status(buf, size, s, true);
 		buf += sz;
 		size -= sz;
 
-		if (s == aliases[FBP_BACKLIGHT_MIPI2]) {
+		if (s == aliases[FBP_BACKLIGHT_MIPI_ALT]) {
 			/* point fb_mipi to backligh_mipi2 */
 			/* fdt get value blm2 backlight_mipi2 phandle;fdt set fb_mipi backlight <${blm2}> */
 			u32 blm2 = 0;
@@ -896,10 +923,7 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 				"backlight", blm2, "blm2");
 			buf += sz;
 			size -= sz;
-
-			sz = set_status(buf, size, "pwm_mipi", false);
-			buf += sz;
-			size -= sz;
+			mipi_alt_backlight = 1;
 		}
 	}
 
@@ -918,7 +942,7 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		fmt = rgb666;
 	}
 
-	if ((fb >= FB_LCD) && (fb != FB_MIPI)) {
+	if ((fb >= FB_LCD) && !is_mipi(fb)) {
 #ifdef CONFIG_VIDEO_MXS
 		sz = set_property_u32(buf, size, short_names[fb], "bus-width",
 				interface_width);
@@ -963,7 +987,7 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 			buf += sz;
 			size -= sz;
 		}
-	} else if (fb == FB_MIPI) {
+	} else if (is_mipi(fb)) {
 		sz = set_property_str(buf, size, fbnames[fb], "dsi-format",
 			(interface_width == 24) ? "rgb888" : "rgb666");
 		buf += sz;
@@ -971,14 +995,14 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 
 		if ((di->addr_num == 0x2c) || (di->fbflags & (FBF_JEIDA | FBF_SPLITMODE))) {
 			if (interface_width == 24) {
-				sz = set_property(buf, size, "mipi_to_lvds",
+				sz = set_property(buf, size, aliases[FBP_MIPI_TO_LVDS],
 					(di->fbflags & FBF_JEIDA) ? "jeida" :
 					"spwg");
 				buf += sz;
 				size -= sz;
 			}
 			if (di->fbflags & FBF_SPLITMODE) {
-				sz = set_property(buf, size, "mipi_to_lvds",
+				sz = set_property(buf, size, aliases[FBP_MIPI_TO_LVDS],
 						"split-mode");
 				buf += sz;
 				size -= sz;
@@ -999,6 +1023,19 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		size -= sz;
 		sz = set_property_str(buf, size, fbnames[fb1],
 			"pinctrl-names", "default");
+		buf += sz;
+		size -= sz;
+	}
+
+	if (di->fbflags & FBF_SN65_ALT) {
+		u32 alt = 0;
+
+		sz = get_value_joined_str(buf, size, &alt, "alt", "mipi_to_lvds_alt",
+				"", "phandle");
+		buf += sz;
+		size -= sz;
+		sz = set_property_u32_env(buf, size, fbnames[fb],
+			"sn65dsi83", alt, "alt");
 		buf += sz;
 		size -= sz;
 	}
@@ -1028,7 +1065,7 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		size -= sz;
 	}
 
-	if ((fb == FB_MIPI) || (di->fbflags & FBF_MODE_VIDEO)) {
+	if (is_mipi(fb) || (di->fbflags & FBF_MODE_VIDEO)) {
 		char mipi_cmd[90];
 		char *p;
 
@@ -1112,11 +1149,12 @@ static void setup_cmd_fb(unsigned fb, const struct display_info_t *di, char *buf
 		u32 pwm = 0;
 
 		i = di->enable_gp;
-		sz = get_value_joined_str(buf, size, &pwm, "pwm", pwm_names[fb],
+		sz = get_value_joined_str(buf, size, &pwm, "pwm",
+				mipi_alt_backlight ? aliases[FBP_PWM_MIPI_ALT] : pwm_names[fb],
 				"", "phandle");
 		buf += sz;
 		size -= sz;
-		sz = set_property_u32_env_parms(buf, size, backlight_names[fb],
+		sz = set_property_u32_env_parms(buf, size, mipi_alt_backlight ? aliases[FBP_BACKLIGHT_MIPI_ALT] : backlight_names[fb],
 			"pwms", pwm, "pwm", 0, di->pwm_period, 0);
 		buf += sz;
 		size -= sz;
@@ -1762,6 +1800,9 @@ void fbp_enable_fb(struct display_info_t const *di, int enable)
 	case FB_MIPI:
 		board_enable_mipi(di, enable);
 		break;
+	case FB_MIPI2:
+		board_enable_mipi2(di, enable);
+		break;
 	}
 	if (di->enable_gp && enable)
 		gpio_direction_output(di->enable_gp, enable ^
@@ -1839,6 +1880,7 @@ static struct flags_check fc2[] = {
 	{ 'l', FBF_ENABLE_GPIOS_ACTIVE_LOW},
 	{ 'o', FBF_ENABLE_GPIOS_OPEN_DRAIN},
 	{ 'd', FBF_ENABLE_GPIOS_DTB},
+	{ 't', FBF_SN65_ALT},
 	{ 's', FBF_MODE_SKIP_EOT},
 	{ 'h', FBF_DSI_HBP},
 	{ 'f', FBF_DSI_HFP},
@@ -2445,7 +2487,7 @@ static int init_display(const struct display_info_t *di)
 	ret = mxsfb_init(&g_vmode, di->pixfmt);
 #else
 	ret = 0;
-	if (di->fbtype != FB_MIPI) {
+	if (!is_mipi(di->fbtype)) {
 		memcpy(&g_vmode, &di->mode, sizeof(g_vmode));
 		g_vmode.pixclock = freq_to_period(di->mode.pixclock_f);
 		ret = ipuv3_fb_init(&g_vmode, (di->fbtype == FB_LCD2) ? 1 : 0,
@@ -2557,7 +2599,7 @@ int fbpanel_video_init(void)
 		return -EINVAL;
 	ret = init_display(di);
 #ifndef CONFIG_DM_VIDEO
-	if (di->fbtype == FB_MIPI)
+	if (is_mipi(di->fbtype))
 		ret = -EINVAL;
 #endif
 	return ret;
