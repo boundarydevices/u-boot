@@ -63,7 +63,7 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IOMUX_PAD_CTRL(GPIO1_IO09__GPIO1_IO9, 0x06),
 	IOMUX_PAD_CTRL(SAI2_RXC__GPIO4_IO22, PAD_CTL_DSE1 | PAD_CTL_ODE),
 
-#define GP_BACKLIGHT_MIPI2		IMX_GPIO_NR(5, 3)
+#define GP_BACKLIGHT_MIPI_ALT		IMX_GPIO_NR(5, 3)
 	IOMUX_PAD_CTRL(SPDIF_TX__GPIO5_IO3, 0x116),
 
 #define GP_CSI1_OV5640_MIPI_POWER_DOWN	IMX_GPIO_NR(1, 8)
@@ -97,7 +97,7 @@ int board_early_init_f(void)
 	struct wdog_regs *wdog = (struct wdog_regs *)WDOG1_BASE_ADDR;
 
 	imx_iomux_v3_setup_multiple_pads(init_pads, ARRAY_SIZE(init_pads));
-	gpio_direction_output(GP_BACKLIGHT_MIPI2, 0);
+	gpio_direction_output(GP_BACKLIGHT_MIPI_ALT, 0);
 	gpio_request(GP_SN65DSI83_EN, "sn65en");
 	gpio_direction_output(GP_SN65DSI83_EN, 0);
 	gpio_direction_output(GP_EMMC_RESET, 1);
@@ -115,15 +115,15 @@ int board_detect_gt911(struct display_info_t const *di)
 void board_enable_mipi(const struct display_info_t *di, int enable)
 {
 #ifndef CONFIG_DM_VIDEO
-	if (di->enable_alias[0] == FBP_BACKLIGHT_MIPI2) {
-		gpio_direction_output(GP_BACKLIGHT_MIPI2, enable);
+	if (di->enable_alias[0] == FBP_BACKLIGHT_MIPI_ALT) {
+		gpio_direction_output(GP_BACKLIGHT_MIPI_ALT, enable);
 	}
 #endif
 }
 
 static const struct display_info_t displays[] = {
 	VD_MIPI_DLC0350GEV06(MIPI, board_detect_gt911, fbp_bus_gp(2, 0, GP_DLC0350_ENABLE, 0), fbp_addr_gp(0x5d, 0, 0, 0), FBTS_GOODIX),
-	VD_LTK080A60A004T(MIPI, NULL, fbp_bus_gp(2, GP_LTK08_MIPI_EN, GP_LTK08_MIPI_EN, 0), 0x5d, FBP_BACKLIGHT_MIPI2, FBTS_GOODIX),
+	VD_LTK080A60A004T(MIPI, NULL, fbp_bus_gp(2, GP_LTK08_MIPI_EN, GP_LTK08_MIPI_EN, 0), 0x5d, FBP_BACKLIGHT_MIPI_ALT, FBTS_GOODIX),
 	VD_MIPI_M101NWWB_x("m101nwwb-1", B, MIPI, fbp_detect_i2c, fbp_bus_gp(2, GP_SN65DSI83_EN, 0, 0), 0x2c, FBP_MIPI_TO_LVDS, FBTS_FT5X06),
 	VD_MIPI_1280_720M_60(MIPI, NULL, fbp_bus_gp((2 | (3 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
 	VD_MIPI_1920_1080M_60(MIPI, board_detect_pca9546, fbp_bus_gp((2 | (3 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
@@ -139,7 +139,7 @@ int board_init(void)
 #ifndef CONFIG_DM_VIDEO
 	gpio_request(GP_SN65DSI83_EN, "sn65dsi83_enable");
 	gpio_request(GP_LTK08_MIPI_EN, "lkt08_mipi_en");
-	gpio_request(GP_BACKLIGHT_MIPI2, "backlight_pwm2");
+	gpio_request(GP_BACKLIGHT_MIPI_ALT, "backlight_mipi_alt");
 #endif
 	gpio_request(GP_DLC0350_ENABLE, "dlc0350 reset");
 	gpio_request(GP_GT911_RESET, "gt911_reset");
