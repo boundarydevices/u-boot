@@ -296,8 +296,12 @@
 			MX8MMN(IOMUXC_SD1_DATA1_USDHC1_DATA1, 0x1d0)
 			MX8MMN(IOMUXC_SD1_DATA2_USDHC1_DATA2, 0x1d0)
 			MX8MMN(IOMUXC_SD1_DATA3_USDHC1_DATA3, 0x1d0)
-			/* Bluetooth slow clock */
-			MX8MMN(IOMUXC_GPIO1_IO00_ANAMIX_REF_CLK_32K, 0x03)
+			MX8MMN(IOMUXC_SD1_DATA4_USDHC1_DATA4, 0x1d0)
+			MX8MMN(IOMUXC_SD1_DATA5_USDHC1_DATA5, 0x1d0)
+			MX8MMN(IOMUXC_SD1_DATA6_USDHC1_DATA6, 0x1d0)
+			MX8MMN(IOMUXC_SD1_DATA7_USDHC1_DATA7, 0x1d0)
+#define GP_EMMC_RESET		<&gpio2 10 GPIO_ACTIVE_LOW>
+			MX8MMN(IOMUXC_SD1_RESET_B_GPIO2_IO10, 0x141)
 		>;
 	};
 
@@ -309,6 +313,10 @@
 			MX8MMN(IOMUXC_SD1_DATA1_USDHC1_DATA1, 0x1d4)
 			MX8MMN(IOMUXC_SD1_DATA2_USDHC1_DATA2, 0x1d4)
 			MX8MMN(IOMUXC_SD1_DATA3_USDHC1_DATA3, 0x1d4)
+			MX8MMN(IOMUXC_SD1_DATA4_USDHC1_DATA4, 0x1d4)
+			MX8MMN(IOMUXC_SD1_DATA5_USDHC1_DATA5, 0x1d4)
+			MX8MMN(IOMUXC_SD1_DATA6_USDHC1_DATA6, 0x1d4)
+			MX8MMN(IOMUXC_SD1_DATA7_USDHC1_DATA7, 0x1d4)
 		>;
 	};
 
@@ -320,6 +328,10 @@
 			MX8MMN(IOMUXC_SD1_DATA1_USDHC1_DATA1, 0x1d6)
 			MX8MMN(IOMUXC_SD1_DATA2_USDHC1_DATA2, 0x1d6)
 			MX8MMN(IOMUXC_SD1_DATA3_USDHC1_DATA3, 0x1d6)
+			MX8MMN(IOMUXC_SD1_DATA4_USDHC1_DATA4, 0x1d6)
+			MX8MMN(IOMUXC_SD1_DATA5_USDHC1_DATA5, 0x1d6)
+			MX8MMN(IOMUXC_SD1_DATA6_USDHC1_DATA6, 0x1d6)
+			MX8MMN(IOMUXC_SD1_DATA7_USDHC1_DATA7, 0x1d6)
 		>;
 	};
 
@@ -366,12 +378,8 @@
 			MX8MMN(IOMUXC_NAND_DATA05_USDHC3_DATA1, 0x1d0)
 			MX8MMN(IOMUXC_NAND_DATA06_USDHC3_DATA2, 0x1d0)
 			MX8MMN(IOMUXC_NAND_DATA07_USDHC3_DATA3, 0x1d0)
-			MX8MMN(IOMUXC_NAND_RE_B_USDHC3_DATA4, 0x1d0)
-			MX8MMN(IOMUXC_NAND_CE2_B_USDHC3_DATA5, 0x1d0)
-			MX8MMN(IOMUXC_NAND_CE3_B_USDHC3_DATA6, 0x1d0)
-			MX8MMN(IOMUXC_NAND_CLE_USDHC3_DATA7, 0x1d0)
-#define GP_EMMC_RESET		<&gpio3 16 GPIO_ACTIVE_LOW>
-			MX8MMN(IOMUXC_NAND_READY_B_GPIO3_IO16, 0x141)
+			/* Bluetooth slow clock */
+			MX8MMN(IOMUXC_GPIO1_IO00_ANAMIX_REF_CLK_32K, 0x03)
 		>;
 	};
 
@@ -383,10 +391,6 @@
 			MX8MMN(IOMUXC_NAND_DATA05_USDHC3_DATA1, 0x1d4)
 			MX8MMN(IOMUXC_NAND_DATA06_USDHC3_DATA2, 0x1d4)
 			MX8MMN(IOMUXC_NAND_DATA07_USDHC3_DATA3, 0x1d4)
-			MX8MMN(IOMUXC_NAND_RE_B_USDHC3_DATA4, 0x1d4)
-			MX8MMN(IOMUXC_NAND_CE2_B_USDHC3_DATA5, 0x1d4)
-			MX8MMN(IOMUXC_NAND_CE3_B_USDHC3_DATA6, 0x1d4)
-			MX8MMN(IOMUXC_NAND_CLE_USDHC3_DATA7, 0x1d4)
 		>;
 	};
 
@@ -398,10 +402,6 @@
 			MX8MMN(IOMUXC_NAND_DATA05_USDHC3_DATA1, 0x1d6)
 			MX8MMN(IOMUXC_NAND_DATA06_USDHC3_DATA2, 0x1d6)
 			MX8MMN(IOMUXC_NAND_DATA07_USDHC3_DATA3, 0x1d6)
-			MX8MMN(IOMUXC_NAND_RE_B_USDHC3_DATA4, 0x1d6)
-			MX8MMN(IOMUXC_NAND_CE2_B_USDHC3_DATA5, 0x1d6)
-			MX8MMN(IOMUXC_NAND_CE3_B_USDHC3_DATA6, 0x1d6)
-			MX8MMN(IOMUXC_NAND_CLE_USDHC3_DATA7, 0x1d6)
 		>;
 	};
 
@@ -923,18 +923,19 @@
 };
 
 &usdhc1 {
-	bus-width = <4>;
-	fsl,sdio-async-interrupt-enabled;
-	keep-power-in-suspend;
-	no-sd-uhs-sdr104;
+	cap-mmc-highspeed;
+	bus-width = <8>;
+	mmc-ddr-1_8v;
+	mmc-hs200-1_8v;
+	no-mmc-hs400;
 	non-removable;
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
 	pinctrl-0 = <&pinctrl_usdhc1>;
 	pinctrl-1 = <&pinctrl_usdhc1_100mhz>;
 	pinctrl-2 = <&pinctrl_usdhc1_200mhz>;
-	pm-ignore-notify;
+	reset-gpios = GP_EMMC_RESET;
 	status = "okay";
-	vmmc-supply = <&reg_wlan_vmmc>;
+	vmmc-supply = <&reg_vref_3v3>;
 	vqmmc-1-8-v;
 	vqmmc-supply = <&reg_vref_1v8>;
 };
@@ -954,20 +955,23 @@
 #endif
 };
 
+#if 0
 &usdhc3 {
-	bus-width = <8>;
-	no-mmc-hs400;
+	fsl,sdio-async-interrupt-enabled;
+	keep-power-in-suspend;
+	pm-ignore-notify;
+	bus-width = <4>;
+	no-sd-uhs-sdr104;
 	non-removable;
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
 	pinctrl-0 = <&pinctrl_usdhc3>;
 	pinctrl-1 = <&pinctrl_usdhc3_100mhz>;
 	pinctrl-2 = <&pinctrl_usdhc3_200mhz>;
-	reset-gpios = GP_EMMC_RESET;
 	status = "okay";
-	vmmc-supply = <&reg_vref_3v3>;
+	vmmc-supply = <&reg_wlan_vmmc>;
 	vqmmc-1-8-v;
-	vqmmc-supply = <&reg_vref_1v8>;
 };
+#endif
 
 &wdog1 {
 	pinctrl-names = "default", "gpio";

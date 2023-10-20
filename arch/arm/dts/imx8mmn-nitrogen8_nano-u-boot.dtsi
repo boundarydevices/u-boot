@@ -92,7 +92,9 @@
 };
 
 &usdhc1 {
-	status = "disabled";
+	cap-mmc-highspeed;
+	mmc-ddr-1_8v;
+	mmc-hs200-1_8v;
 };
 
 &usdhc2 {
@@ -105,7 +107,5 @@
 };
 
 &usdhc3 {
-	cap-mmc-highspeed;
-	mmc-ddr-1_8v;
-	mmc-hs200-1_8v;
+	status = "disabled";
 };

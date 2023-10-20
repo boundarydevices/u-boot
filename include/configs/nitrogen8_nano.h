@@ -87,7 +87,7 @@
 #define CONFIG_SYS_INIT_SP_ADDR \
         (CONFIG_SYS_INIT_RAM_ADDR + CONFIG_SYS_INIT_SP_OFFSET)
 
-#define CONFIG_MMCROOT			"/dev/mmcblk2p2"  /* USDHC3 */
+#define CONFIG_MMCROOT			"/dev/mmcblk0p2"  /* USDHC1 */
 
 /* Size of malloc() pool */
 
@@ -111,7 +111,7 @@
 					sizeof(CONFIG_SYS_PROMPT) + 16)
 
 /* USDHC */
-#define CONFIG_SYS_FSL_USDHC_NUM	3
+#define CONFIG_SYS_FSL_USDHC_NUM	2
 #define CONFIG_SYS_FSL_ESDHC_ADDR       0
 
 #ifndef CONFIG_DM_I2C
@@ -148,7 +148,7 @@
 #endif
 
 #ifdef CONFIG_CMD_MMC
-#define DISTRO_BOOT_DEV_MMC(func) func(MMC, mmc, 1) func(MMC, mmc, 2)
+#define DISTRO_BOOT_DEV_MMC(func) func(MMC, mmc, 1) func(MMC, mmc, 0)
 #else
 #define DISTRO_BOOT_DEV_MMC(func)
 #endif
@@ -176,12 +176,12 @@
 
 #ifdef CONFIG_IMX8MM
 #define BD_FUSE1		"1 3"
-#define BD_FUSE1_VAL		"1000202a"	/* USDHC3 emmc */
+#define BD_FUSE1_VAL		"10002022"	/* USDHC1 emmc */
 #endif
 
 #ifdef CONFIG_IMX8MN
 #define BD_FUSE1		"1 3"
-#define BD_FUSE1_VAL		"10002000"	/* USDHC3 emmc */
+#define BD_FUSE1_VAL		"00000a00"	/* USDHC1 emmc */
 #define BD_FUSE2		"2 1"
 #define BD_FUSE2_VAL		"00000002"	/* 1.8V */
 #endif
