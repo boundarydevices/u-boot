@@ -89,6 +89,9 @@ static iomux_v3_cfg_t const init_pads[] = {
 #define GP_LVDS2_PWM		IMX_GPIO_NR(5, 5)
 	IOMUX_PAD_CTRL(SPDIF_EXT_CLK__GPIO5_IO05, 0x100),	/* PWM1 */
 
+#define GPIRQ_RV3028		IMX_GPIO_NR(3, 2)
+	IOMUX_PAD_CTRL(NAND_CE1_B__GPIO3_IO02, 0x1c0),		/* SM_GPIO12 */
+
 	/* eqos */
 	IOMUX_PAD_CTRL(ENET_MDC__ENET_QOS_MDC, 0x20),
 	IOMUX_PAD_CTRL(ENET_MDIO__ENET_QOS_MDIO, 0xa0),
@@ -242,6 +245,7 @@ static const struct display_info_t displays[] = {
 
 int board_init(void)
 {
+	gpio_request(GPIRQ_RV3028, "rv3028_irq");
 	gpio_request(GP_TS_GT911_RESET, "gt11_reset");
 	gpio_request(GP_PCA9546_RESET, "pca9546_reset");
 //	gpio_request(GP_SN65DSI83_EN, "sn65en");
@@ -266,4 +270,46 @@ int board_init(void)
 	board_usb_reset(0, USB_INIT_DEVICE);
 #endif
 	return 0;
+}
+
+static iomux_v3_cfg_t const rtcirq_pulldn_pads[] = {
+	IOMUX_PAD_CTRL(NAND_CE1_B__GPIO3_IO02, 0x180),		/* SM_GPIO12 */
+};
+
+static iomux_v3_cfg_t const rtcirq_pullup_pads[] = {
+	IOMUX_PAD_CTRL(NAND_CE1_B__GPIO3_IO02, 0x1c0),		/* SM_GPIO12 */
+};
+
+static void check_pcie_clk(void)
+{
+	int val;
+
+	imx_iomux_v3_setup_multiple_pads(rtcirq_pulldn_pads, ARRAY_SIZE(rtcirq_pulldn_pads));
+	val = gpio_get_value(GPIRQ_RV3028);
+	imx_iomux_v3_setup_multiple_pads(rtcirq_pullup_pads, ARRAY_SIZE(rtcirq_pullup_pads));
+	if (val) {
+		/*
+		 * pullup(R70) on rtc irq means an external PCIe clock
+		 * is provided to the processor
+		 */
+		env_set("cmd_board", "fdt set pcie-phy fsl,refclk-pad-mode <1>");
+	} else {
+		val = gpio_get_value(GPIRQ_RV3028);
+		if (!val) {
+			printf("Warning, rtc irq seems to be pending, pcie clk may be set incorrectly\n");
+		} else {
+			/*
+			 * No pullup(NS R70) on rtc irq means the processor
+			 * provides the PCIe clock.
+			 */
+			env_set("cmd_board",
+				"fdt set pcie-phy fsl,refclk-pad-mode <2>");
+		}
+
+	}
+}
+
+void board_env_init(void)
+{
+	check_pcie_clk();
 }
