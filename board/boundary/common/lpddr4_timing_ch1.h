@@ -9,9 +9,9 @@
 #include <asm/arch/lpddr4_define.h>
 
 #ifdef WR_POST_EXT_3200
-#define CH1_VAL_INIT4	((LPDDR4_MR3 << 16) | 0x00020008)
+#define CH1_VAL_INIT4	((LPDDR4_MR3 << 16) | 0x00020000)
 #else
-#define CH1_VAL_INIT4	((LPDDR4_MR3 << 16) | 8)
+#define CH1_VAL_INIT4	((LPDDR4_MR3 << 16) | 0)
 #endif
 
 #ifdef CONFIG_IMX8MN
