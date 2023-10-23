@@ -2,7 +2,11 @@
 /*
  * Copyright 2023 Boundary Devices
  */
+#ifdef IMX8MN
+#include "imx8mn-u-boot.dtsi"
+#else
 #include "imx8mm-u-boot.dtsi"
+#endif
 
 / {
 	wdt-reboot {
@@ -233,25 +237,31 @@
 	u-boot,dm-spl;
 };
 
+#ifdef IMX8MM
 &usbmisc2 {
 	u-boot,dm-spl;
 };
+#endif
 
 &usbotg1 {
 	u-boot,dm-spl;
 };
 
+#ifdef IMX8MM
 &usbotg2 {
 	u-boot,dm-spl;
 };
+#endif
 
 &usbphynop1 {
 	u-boot,dm-spl;
 };
 
+#ifdef IMX8MM
 &usbphynop2 {
 	u-boot,dm-spl;
 };
+#endif
 
 &usdhc1 {
 	cap-mmc-highspeed;
