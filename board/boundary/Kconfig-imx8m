@@ -63,9 +63,15 @@ config TARGET_HL8MM
 	select SUPPORT_SPL
 
 config TARGET_IMX8MM_NITROGEN_SMARC
-	bool "imx8mn nitrogen smarc board"
+	bool "imx8mm nitrogen smarc board"
 	select BINMAN
 	select IMX8MM
+	select SUPPORT_SPL
+
+config TARGET_IMX8MN_NITROGEN_SMARC
+	bool "imx8mn nitrogen smarc board"
+	select BINMAN
+	select IMX8MN
 	select SUPPORT_SPL
 
 config TARGET_IMX8MP_NITROGEN_SMARC
