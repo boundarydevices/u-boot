@@ -14,6 +14,10 @@ config SYS_VENDOR
 config SYS_CONFIG_NAME
 	default "imx8mm_nitrogen_smarc"
 
+config DRATE_BYTE
+	int
+	default 0
+
 source "board/boundary/common/Kconfig"
 
 endif
