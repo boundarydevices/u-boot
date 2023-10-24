@@ -83,6 +83,26 @@ else
 	sed -E -i -f lpddr4_sed_defines.txt $1
 fi
 
+cnt=`sed -n "/DDRC_DERATEEN(0), 0x0223/=" $1`
+if [ "${cnt}" != "" ] ; then
+	echo "CONFIG_DRATE_BYTE=2"
+	sed -E -i \
+	 -e 's/DDRC_DERATEEN\(0\), 0x0223/DDRC_DERATEEN\(0\), 0x0203 | DRATE_BYTE/' \
+	 -e 's/DDRC_FREQ1_DERATEEN\(0\), 0x21/DDRC_FREQ1_DERATEEN\(0\), 1 | DRATE_BYTE/' \
+	 -e 's/DDRC_FREQ2_DERATEEN\(0\), 0x21/DDRC_FREQ2_DERATEEN\(0\), 1 | DRATE_BYTE/' \
+	$1
+fi
+
+cnt=`sed -n "/DDRC_DERATEEN(0), 0x0203/=" $1`
+if [ "${cnt}" != "" ] ; then
+	echo "CONFIG_DRATE_BYTE=0"
+	sed -E -i \
+	 -e 's/DDRC_DERATEEN\(0\), 0x0203/DDRC_DERATEEN\(0\), 0x0203 | DRATE_BYTE/' \
+	 -e 's/DDRC_FREQ1_DERATEEN\(0\), 1/DDRC_FREQ1_DERATEEN\(0\), 1 | DRATE_BYTE/' \
+	 -e 's/DDRC_FREQ2_DERATEEN\(0\), 1/DDRC_FREQ2_DERATEEN\(0\), 1 | DRATE_BYTE/' \
+	$1
+fi
+
 #stage 3
 echo stage 3
 
