@@ -9,10 +9,14 @@
 #include <asm/arch/lpddr4_define.h>
 
 #ifdef WR_POST_EXT_3200
-#define CH1_VAL_INIT4	((LPDDR4_MR3 << 16) | 0x00020000)
+#define WR_POST_EXT 0x00020000
 #else
-#define CH1_VAL_INIT4	((LPDDR4_MR3 << 16) | 0)
+#define WR_POST_EXT 0
 #endif
+
+#define CH1_VAL_INIT4	((LPDDR4_MR3 << 16) | WR_POST_EXT)
+#define CH1_VAL_FREQ1_INIT4	((LPDDR4_MR3 << 16) | WR_POST_EXT)
+#define CH1_VAL_FREQ2_INIT4	((LPDDR4_MR3 << 16) | WR_POST_EXT)
 
 #ifdef CONFIG_DRATE_BYTE
 #define DRATE_BYTE	(CONFIG_DRATE_BYTE << 4)
