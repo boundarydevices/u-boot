@@ -106,10 +106,18 @@ fi
 #stage 3
 echo stage 3
 
+if [ ${processor} == "8mq" ] ; then
+init4_val=0x00310008
+else
+init4_val=0x00310000
+fi
+freq1_init4_val=0x00310000
+freq2_init4_val=0x00310000
+
 sed -E -i \
- -e "s/ DDRC_INIT4\(0\), 0x00310000 / DDRC_INIT4\(0\), ${chnum}_VAL_INIT4 /" \
- -e "s/ DDRC_FREQ1_INIT4\(0\), 0x00310000 / DDRC_FREQ1_INIT4\(0\), ${chnum}_VAL_INIT4 /" \
- -e "s/ DDRC_FREQ2_INIT4\(0\), 0x00310000 / DDRC_FREQ2_INIT4\(0\), ${chnum}_VAL_INIT4 /" \
+ -e "s/ DDRC_INIT4\(0\), ${init4_val} / DDRC_INIT4\(0\), ${chnum}_VAL_INIT4 /" \
+ -e "s/ DDRC_FREQ1_INIT4\(0\), ${freq1_init4_val} / DDRC_FREQ1_INIT4\(0\), ${chnum}_VAL_FREQ1_INIT4 /" \
+ -e "s/ DDRC_FREQ2_INIT4\(0\), ${freq2_init4_val} / DDRC_FREQ2_INIT4\(0\), ${chnum}_VAL_FREQ2_INIT4 /" \
  -e 's/ 0x54006, 0x11 / 0x54006, LPDDR4_PHY_VREF_VALUE /' \
  -e 's/ 0x54009, 0xc8 / 0x54009, LPDDR4_HDT_CTL_3200_1D /' \
  -e '/DDRC_PWRCTL\(0\), 1/ i \\t/* selfref_en=1, SDRAM enter self-refresh state */' \
