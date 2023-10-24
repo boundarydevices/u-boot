@@ -16,6 +16,12 @@
 #define CH2_VAL_INIT4	((LPDDR4_MR3 << 16) | 0)
 #endif
 
+#ifdef CONFIG_DRATE_BYTE
+#define DRATE_BYTE	(CONFIG_DRATE_BYTE << 4)
+#else
+#define DRATE_BYTE	(2 << 4)
+#endif
+
 #if CONFIG_DDR_MB == 1024
 	/* Address map is from MSB 28: r14, r13-r0, b2-b0, c9-c0 */
 #define CH2_VAL_DDRC_ADDRMAP0_R0	0x0000001F

@@ -14,6 +14,12 @@
 #define CH1_VAL_INIT4	((LPDDR4_MR3 << 16) | 0)
 #endif
 
+#ifdef CONFIG_DRATE_BYTE
+#define DRATE_BYTE	(CONFIG_DRATE_BYTE << 4)
+#else
+#define DRATE_BYTE	(0 << 4)
+#endif
+
 #ifdef CONFIG_IMX8MN
 #define IBASE_DIFF	1
 #else
