@@ -71,10 +71,10 @@ struct regulator_value {
 };
 const struct regulator_value reg_vals[] = {
 	{ "buck_vs2", 1600000},
+	{ "ldo_vcn33_2_bt", 3300000},
 #if 0
 	{ "ldo_vcn33_1_bt", 3300000},
 	{ "ldo_vcn33_1_wifi", 3300000},
-	{ "ldo_vcn33_2_bt", 3300000},
 	{ "ldo_vcn33_2_wifi", 3300000},
 #endif
 };
@@ -94,6 +94,9 @@ void set_regulators(void)
 			ret = regulator_set_value(dev, p->val);
 			if (ret)
 				printf("failed to set %s voltage to %d(%d)\n", p->name, p->val, ret);
+			ret = regulator_set_enable(dev, true);
+			if (ret)
+				printf("failed to enable %s(%d)\n", p->name, ret);
 		}
 	}
 }
