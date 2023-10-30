@@ -58,12 +58,12 @@ static void mtk_disp_pwm_update_bits(u32 offset, u32 mask, u32 data)
 {
 	u32 value;
 
-	value = PWM_REG_READ(DISP_PWM0_BASE + offset);
+	value = PWM_REG_READ(DISP_PWM1_BASE + offset);
 
 	value &= ~mask;
 	value |= data;
 
-	PWM_REG_WRITE(DISP_PWM0_BASE + offset, value);
+	PWM_REG_WRITE(DISP_PWM1_BASE + offset, value);
 }
 
 static void mtk_disp_pwm_config(u64 rate, u64 period_ns, u64 duty_ns)
@@ -115,10 +115,10 @@ void mtk_disp_pwm_dump(void)
 	printf("- DSI REGS -\n");
 	for (k = 0; k < 0xc0; k += 16) {
 		printf("0x%04x: 0x%08x 0x%08x 0x%08x 0x%08x\n", k,
-		       PWM_REG_READ(DISP_PWM0_BASE + k),
-		       PWM_REG_READ(DISP_PWM0_BASE + k + 0x4),
-		       PWM_REG_READ(DISP_PWM0_BASE + k + 0x8),
-		       PWM_REG_READ(DISP_PWM0_BASE + k + 0xc));
+		       PWM_REG_READ(DISP_PWM1_BASE + k),
+		       PWM_REG_READ(DISP_PWM1_BASE + k + 0x4),
+		       PWM_REG_READ(DISP_PWM1_BASE + k + 0x8),
+		       PWM_REG_READ(DISP_PWM1_BASE + k + 0xc));
 	}
 }
 
@@ -140,16 +140,16 @@ u32 lcm_if_set_backlight(u32 level, u32 level_max, bool use_default_level)
 	duty_ns = level * period_ns / (level_max + 1);
 
 	/* config topckgen disp_pwm clock mux */
-	PWM_REG_SET_BITS(TOPCKGEN_BASE + 0x00000094, (0xf << 24));
-	PWM_REG_SET_BITS(TOPCKGEN_BASE + 0x00000090, (0x1 << 24));
-	PWM_REG_SET_BITS(TOPCKGEN_BASE + 0x00000008, BIT(7));
+	PWM_REG_SET_BITS(TOPCKGEN_BASE + 0x000000a0, (0xf));
+	PWM_REG_SET_BITS(TOPCKGEN_BASE + 0x0000009c, (0x1));
+	PWM_REG_SET_BITS(TOPCKGEN_BASE + 0x00000008, BIT(8));
 	/* enable topck_gen clock */
-	PWM_REG_SET_BITS(TOPCKGEN_BASE + 0x00000094, BIT(31));
+	PWM_REG_SET_BITS(TOPCKGEN_BASE + 0x000000a0, BIT(7));
 	/* enable infrao clock */
-	PWM_REG_SET_BITS(INFR_AO_BASE + 0x000000a8, BIT(2));
+	PWM_REG_SET_BITS(INFR_AO_BASE + 0x000000c4, BIT(20));
 
-	disp_pwm_printf("UBOOT: disp_pwm_clock=0x%x\n", PWM_REG_READ(TOPCKGEN_BASE + 0x0000008c));
-	disp_pwm_printf("UBOOT: disp_pwm_infraao_clock=0x%x\n", PWM_REG_READ(INFR_AO_BASE + 0xac));
+	disp_pwm_printf("UBOOT: disp_pwm_clock=0x%x\n", PWM_REG_READ(TOPCKGEN_BASE + 0x00000098));
+	disp_pwm_printf("UBOOT: disp_pwm_infraao_clock=0x%x\n", PWM_REG_READ(INFR_AO_BASE + 0xc8));
 
 	mtk_disp_pwm_config(rate, period_ns, duty_ns);
 	mtk_disp_pwm_update_bits(DISP_PWM_EN, ENABLE_MASK, ENABLE_MASK);
