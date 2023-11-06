@@ -68,12 +68,6 @@
 #define CH2_VAL_DDRC_FREQ2_RFSHTMG_R1		0x00030005
 #define CH2_VAL_DDRC_FREQ2_DRAMTMG14_R1		5
 
-#elif CONFIG_DDR_MB == 3072
-	/* Address map is from MSB 29: r15, r14, cs, r13-r0, b2-b0, c9-c0 */
-#define CH2_VAL_DDRC_ADDRMAP0_R1	0x00000015
-#define CH2_VAL_DDRC_ADDRMAP6_R1	0x48080707
-#define CH2_VAL_DDRC_ADDRMAP7_R1	0x0f0f
-
 #elif CONFIG_DDR_MB == 4096
 	/* Address map is from MSB 29: cs, r15, r14, r13-r0, b2-b0, c9-c0 */
 #define CH2_VAL_DDRC_ADDRMAP0_R1	0x00000017
