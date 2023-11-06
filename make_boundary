@@ -25,6 +25,7 @@ for board in $boards ; do
 		export CROSS_COMPILE=arm-linux-gnueabihf-
 	fi
 
+	echo -e "\n\n== building ${board}_defconfig ==\n\n";
 	make distclean ; make ${board}_defconfig
 	make all -j $jobs
 	if [ $? -ne 0 ]; then
