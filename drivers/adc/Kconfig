@@ -47,6 +47,13 @@ config SARADC_MESON
 	  - 1O or 12 bits resolution
 	  - Up to 1MSPS of sample rate
 
+config MTK_MT6577_AUXADC
+	bool "Enable Mediatek MT6577 AUXADC driver"
+	help
+	  This enables driver for Mediatek MT6577 AUXADC.
+	  It provides:
+	  - 16 analog input channels
+
 config SARADC_ROCKCHIP
 	bool "Enable Rockchip SARADC driver"
 	depends on ADC
