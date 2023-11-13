@@ -15,11 +15,13 @@
 		stdout-path = &lpuart1;
 	};
 
+#if 0
 	/* Our board swaps the ports */
 	aliases {
 		ethernet0 = &eqos;
 		ethernet1 = &fec;
 	};
+#endif
 
 	reserved-memory {
 		#address-cells = <2>;
