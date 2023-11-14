@@ -8,8 +8,8 @@
 #include "imx93.dtsi"
 
 / {
-	model = "NXP i.MX93 Boundary SMARC Board";
-	compatible = "fsl,imx93";
+	model = "Boundary i.MX93 nitrogen93 board";
+	compatible = "boundary,imx93-nitrogen93", "fsl,imx93";
 
 	chosen {
 		stdout-path = &lpuart1;

@@ -1,19 +1,19 @@
-if TARGET_IMX93_BD_SMARC
+if TARGET_IMX93_NITROGEN_SMARC
 
 config SYS_BOARD
-	default "imx93_smarc"
+	default "nitrogen93"
 
 config SYS_VENDOR
 	default "boundary"
 
 config SYS_CONFIG_NAME
-	default "imx93_bd_smarc"
+	default "imx93_nitrogen_smarc"
 
 choice
 	prompt "Select DDR Type"
-	default IMX93_BD_SMARC_LPDDR4 if TARGET_IMX93_BD_SMARC
+	default IMX93_NITROGEN_SMARC_LPDDR4 if TARGET_IMX93_NITROGEN_SMARC
 
-config IMX93_BD_SMARC_LPDDR4
+config IMX93_NITROGEN_SMARC_LPDDR4
 	bool "Using LPDDR4 Timing and PMIC voltage"
 	# IMX9_LPDDR4X is used for LPDDR4 AND LPDDR4X
 	select IMX9_LPDDR4X

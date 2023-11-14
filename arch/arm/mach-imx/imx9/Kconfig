@@ -36,8 +36,8 @@ config TARGET_IMX93_9X9_QSB
 	select IMX93
 	select IMX9_LPDDR4X
 
-config TARGET_IMX93_BD_SMARC
-        bool "imx93_bd_smarc"
+config TARGET_IMX93_NITROGEN_SMARC
+        bool "imx93_nitrogen_smarc"
         select IMX93
 
 config TARGET_IMX91P_11X11_EVK
@@ -51,7 +51,7 @@ config TARGET_IMX91P_9X9_QSB
 
 endchoice
 
-source "board/boundary/imx93_smarc/Kconfig"
+source "board/boundary/nitrogen93/Kconfig"
 source "board/freescale/imx93_evk/Kconfig"
 source "board/freescale/imx93_qsb/Kconfig"
 
