@@ -72,6 +72,7 @@ struct regulator_value {
 const struct regulator_value reg_vals[] = {
 	{ "buck_vs2", 1600000},
 	{ "ldo_vcn33_2_bt", 3300000},
+	{ "ldo_vcn18", 1800000},
 #if 0
 	{ "ldo_vcn33_1_bt", 3300000},
 	{ "ldo_vcn33_1_wifi", 3300000},
