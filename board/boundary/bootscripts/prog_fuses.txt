@@ -1,0 +1,27 @@
+for f in fuse1 fuse2 fuse_mac1b fuse_mac1a ; do
+	setenv t "fuse=0x\${${f}}; fuse_val=0x\${${f}_val}"
+	run t
+
+	if itest.s "0x" != "${fuse}" ; then
+		if itest.s "0x" == "${fuse_val}" ; then
+			echo ${f}_val is not set
+			exit
+		fi
+		fuse read ${fuse}
+		if itest.s "0x" == "0x${fuse_read_val0}" ; then
+			echo "uboot version too old"
+			exit
+		fi
+		if itest.s "0x${fuse_read_val0}" == "${fuse_val}" ; then
+			echo "fuse ${fuse} verified"
+		else
+			if itest.s "${fuse_read_val0}" == "00000000" ; then
+				fuse prog -y ${fuse} ${fuse_val}
+				echo fuse prog ${fuse} ${fuse_val}
+			else
+				echo "fuse ${fuse} already set to 0x${fuse_read_val0}, aborting write of ${fuse_val}"
+				exit
+			fi
+		fi
+	fi
+done
