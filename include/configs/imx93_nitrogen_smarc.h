@@ -56,12 +56,14 @@
 	BOOTENV \
 	AHAB_ENV \
 	"board=nitrogen-smarc\0" \
+	"env_dev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
+        "env_part=" __stringify(CONFIG_SYS_MMC_ENV_PART) "\0" \
 	"prepare_mcore=setenv mcore_clk clk-imx93.mcore_booted;\0" \
 	"scriptaddr=0x83500000\0" \
 	"kernel_addr_r=" __stringify(CONFIG_SYS_LOAD_ADDR) "\0" \
 	"image=Image\0" \
 	"splashimage=0x90000000\0" \
-	"console=ttyLP0,115200 earlycon\0" \
+	"console=ttyLP0\0" \
 	"fdt_addr_r=0x83000000\0"			\
 	"fdt_addr=0x83000000\0"			\
 	"fdt_high=0xffffffffffffffff\0"		\
@@ -148,7 +150,10 @@
 				   "fi; " \
 				"fi; " \
 		   "fi; " \
-	   "fi;"
+	   "fi;\0" \
+	"upgradeu=setenv boot_scripts upgrade.scr; boot;" \
+                "echo Upgrade failed!; setenv boot_scripts boot.scr;\0" \
+	"uboot_defconfig=imx93_nitrogen_smarc\0"
 
 /* Link Definitions */
 
