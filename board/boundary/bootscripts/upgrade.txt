@@ -9,6 +9,10 @@ qspi_offset=0x0
 a_base=0x12000000
 block_size=0x200
 
+if test -z "${imx_cpu}"; then
+	setexpr imx_cpu sub ".*(..?..?)$" "\\1" "${soc_type}"
+fi
+
 #grab 1st 2/3 characters of string
 setexpr cpu2 sub "^(..?).*" "\\1" "${imx_cpu}"
 setexpr cpu3 sub "^(..?.?).*" "\\1" "${imx_cpu}"
@@ -27,7 +31,7 @@ elif itest.s x8M == "x${cpu2}"; then
 			offset=0x0
 		fi
 	fi
-elif itest.s x8U == "x${cpu2}"; then
+elif itest.s x8U == "x${cpu2}"  || itest.s x93 == "${cpu3}"; then
 	a_base=0x82000000
 	offset=0x8000
 	if itest ${env_part} != 0 ; then
