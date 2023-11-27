@@ -4,6 +4,10 @@ kernelimage=zImage
 bootcommand=bootz
 a_base=0x10000000
 
+if test -z "${imx_cpu}"; then
+	setexpr imx_cpu sub ".*(..?..?)$" "\\1" "${soc_type}"
+fi
+
 #grab 1st 2/3 characters of string
 setexpr cpu2 sub "^(..?).*" "\\1" "${imx_cpu}"
 setexpr cpu3 sub "^(..?.?).*" "\\1" "${imx_cpu}"
@@ -17,7 +21,7 @@ elif itest.s x8M == "x${cpu2}"; then
 	a_base=0x40000000
 	kernelimage=Image
 	bootcommand=booti
-elif itest.s x8U == "x${cpu2}"; then
+elif itest.s x8U == "x${cpu2}"  || itest.s x93 == "${cpu3}"; then
 	a_base=0x80000000
 	kernelimage=Image
 	bootcommand=booti
@@ -63,6 +67,8 @@ elif itest.s x8MQ == "x${cpu3}" ; then
 	dtb_prefix=imx8mq;
 elif itest.s x8ULP == "x${imx_cpu}" ; then
 	dtb_prefix=imx8ulp;
+elif itest.s x93 == "${cpu3}" ; then
+	dtb_prefix=imx93;
 else
 	dtb_prefix=imx6q;
 fi
@@ -80,18 +86,23 @@ if test ! -z "${m4enabled}"; then
     mcore_dtb=1
 fi
 
-if test -z "${fdt_file}" ; then
-    bn=${dtb_prefix}-${board}${board_rv}${board_carrier}${board_modifier};
-    if test ! -z "${mcore_dtb}" ; then
-            if test -e ${devtype} ${devnum}:${distro_bootpart} ${prefix}${bn}-rpmsg.dtb; then
-                    fdt_file=${bn}-rpmsg.dtb
-            else
-                    fdt_file=${bn}-m4.dtb
-            fi
-    else
-            fdt_file=${bn}.dtb
-    fi
+if test -z "${fdtfile}" ; then
+	if test -z "${fdt_file}" ; then
+	    bn=${dtb_prefix}-${board}${board_rv}${board_carrier}${board_modifier};
+	    if test ! -z "${mcore_dtb}" ; then
+		    if test -e ${devtype} ${devnum}:${distro_bootpart} ${prefix}${bn}-rpmsg.dtb; then
+		            fdt_file=${bn}-rpmsg.dtb
+		    else
+		            fdt_file=${bn}-m4.dtb
+		    fi
+	    else
+		    fdt_file=${bn}.dtb
+	    fi
+	fi
+else
+	fdt_file=${fdtfile}
 fi
+
 if test ! -z "${mcore_dtb}" ; then
     setenv bootargs ${bootargs} ${mcore_bootargs}
 fi
@@ -107,13 +118,11 @@ fi
 if itest.s x${console} != x ; then
 	setenv bootargs ${bootargs} console=${console},115200
 fi
-if itest.s "x" == "x$vmalloc" ; then
-	vmalloc=400M
-fi
+
 if itest.s x${consoleblank} == x ; then
 	consoleblank=0
 fi
-setenv bootargs ${bootargs} vmalloc=${vmalloc} consoleblank=${consoleblank} rootwait fixrtc cpu=${imx_cpu} board=${board} uboot_release=${uboot_release}
+setenv bootargs ${bootargs} consoleblank=${consoleblank} rootwait fixrtc
 
 if load ${devtype} ${devnum}:${distro_bootpart} ${a_fdt} ${prefix}${fdt_file} ; then
 	fdt addr ${a_fdt}
