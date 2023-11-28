@@ -57,7 +57,9 @@
 	AHAB_ENV \
 	"board=nitrogen-smarc\0" \
 	"env_dev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
-        "env_part=" __stringify(CONFIG_SYS_MMC_ENV_PART) "\0" \
+	"env_part=" __stringify(CONFIG_SYS_MMC_ENV_PART) "\0" \
+	"fastboot_raw_partition_bootloader=0x0 0x1ff0 mmcpart 1\0" \
+	"fastboot_raw_partition_bootloader-env=0x1ff0 0x10 mmcpart 1\0" \
 	"prepare_mcore=setenv mcore_clk clk-imx93.mcore_booted;\0" \
 	"scriptaddr=0x83500000\0" \
 	"kernel_addr_r=" __stringify(CONFIG_SYS_LOAD_ADDR) "\0" \
