@@ -4,6 +4,7 @@ config SYS_SOC
 	default "mediatek"
 
 config SYS_VENDOR
+	default "boundary" if TARGET_MT8370_TUNGSTEN_SMARC
 	default "mediatek"
 
 config MT8512
@@ -85,6 +86,10 @@ config TARGET_MT8370
 	  SD and MMC cards, UFS, PWM, I2C, I2S, S/PDIF, and several LPDDR4
 	  and LPDDR4x options.
 
+config TARGET_MT8370_TUNGSTEN_SMARC
+	bool "Boundary Devices MT8370 based tungsten board"
+	select ARM64
+
 config TARGET_MT8512
         bool "MediaTek MT8512 M1 Board"
         select ARM64
@@ -125,6 +130,7 @@ config SYS_BOARD
 	default "mt8195" if TARGET_MT8195
 	default "mt8365" if TARGET_MT8365
 	default "mt8370" if TARGET_MT8370
+	default "mt8370-tungsten-smarc" if TARGET_MT8370_TUNGSTEN_SMARC
 	default "mt8512" if TARGET_MT8512
 	default "mt8516" if TARGET_MT8516
 	default "mt8518" if TARGET_MT8518
@@ -144,6 +150,7 @@ config SYS_CONFIG_NAME
 	default "mt8195" if TARGET_MT8195
 	default "mt8365" if TARGET_MT8365
 	default "mt8370" if TARGET_MT8370
+	default "mt8370-tungsten-smarc" if TARGET_MT8370_TUNGSTEN_SMARC
 	default "mt8512" if TARGET_MT8512
 	default "mt8516" if TARGET_MT8516
 	default "mt8518" if TARGET_MT8518
@@ -157,7 +164,7 @@ config MTK_BROM_HEADER_INFO
 	string
 	default "media=nor" if TARGET_MT8518 || TARGET_MT8512 || TARGET_MT7629 || TARGET_MT7622
 	default "media=emmc" if TARGET_MT8516 || TARGET_MT8365 || TARGET_MT8183 || TARGET_MT8195 \
-		|| TARGET_MT8188 || TARGET_MT8370
+		|| TARGET_MT8188 || TARGET_MT8370 || TARGET_MT8370_TUNGSTEN_SMARC
 	default "lk=1" if TARGET_MT7623
 
 config SERIAL_ANDROID

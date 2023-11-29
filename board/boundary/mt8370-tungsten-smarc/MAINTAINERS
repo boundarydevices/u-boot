@@ -1,0 +1,6 @@
+Tungsten-510 (MT8370) SMARC
+M:	Simon Gaynor <simon.gaynor@lairdconnect.com>
+S:	Maintained
+F:	board/boundary/mt8370-tungsten-smarc
+F:	include/configs/mt8370-tungsten-smarc.h
+F:	configs/mt8370_tungsten_smarc_defconfig
