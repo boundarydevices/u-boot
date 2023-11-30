@@ -2,6 +2,8 @@
 
 obj-y	+= cpu.o
 obj-$(CONFIG_SPL_BUILD)	+= spl.o
+obj-$(CONFIG_SPL_ATF) += spl_atf.o
+obj-$(CONFIG_SPL_FASTBOOT) += spl_fastboot.o
 
 obj-$(CONFIG_MT8512) += mt8512/
 obj-$(CONFIG_TARGET_MT7622) += mt7622/
