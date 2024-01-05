@@ -1605,6 +1605,7 @@
 				<&pgc_hsiomix>, <&pgc_pcie_phy>;
 		power-domain-names = "bus", "usb", "usb-phy1",
 				     "usb-phy2", "pcie", "pcie-phy";
+		#clock-cells = <0>;
 		#power-domain-cells = <1>;
 	};
 
