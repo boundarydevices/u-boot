@@ -8,7 +8,6 @@
 #include <dm.h>
 #include <efi_loader.h>
 #include <net.h>
-#include <asm/gpio.h>
 #include <asm/io.h>
 #include <linux/kernel.h>
 #include <linux/arm-smccc.h>
@@ -104,45 +103,6 @@ void set_regulators(void)
 }
 #endif
 
-static void clear_dp_hpd(void)
-{
-	int ret;
-	struct gpio_desc desc;
-
-	ret = dm_gpio_lookup_name("46", &desc);
-        if (ret) {
-		printf("ERROR: Could NOT lookup DP HP_DET\n");
-		return;
-	}
-
-	ret = dm_gpio_request(&desc, "dp_hp_det");
-	if (ret) {
-		printf("ERROR: Could NOT request DP HP_DET\n");
-		return;
-	}
-
-	dm_gpio_set_dir_flags(&desc, GPIOD_IS_OUT);
-	udelay(500);
-	dm_gpio_set_value(&desc, 0);
-
-	ret = dm_gpio_lookup_name("26", &desc);
-        if (ret) {
-		printf("ERROR: Could NOT lookup eDP HP_DET\n");
-		return;
-	}
-
-	ret = dm_gpio_request(&desc, "edp_hp_det");
-	if (ret) {
-		printf("ERROR: Could NOT request eDP HP_DET\n");
-		return;
-	}
-
-	dm_gpio_set_dir_flags(&desc, GPIOD_IS_OUT);
-	udelay(500);
-	dm_gpio_set_value(&desc, 0);
-
-}
-
 int board_init(void)
 {
 	struct udevice *dev;
@@ -177,9 +137,6 @@ int board_init(void)
 
 	printf("Disabling WDT\n");
 	writel(0, 0x10007000);
-
-	printf("Clearing (e)DP HP_DET\n");
-	clear_dp_hpd();
 
 	printf("Enabling SCP SRAM\n");
 	for (unsigned int val = 0xFFFFFFFF; val != 0U;) {
