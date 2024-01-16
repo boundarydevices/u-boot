@@ -20,7 +20,7 @@
 #include <asm/cache.h>
 #include <asm/gpio.h>
 #include <asm/io.h>
-#include <asm/mach-imx/sys_proto.h>
+#include <asm/arch-mediatek/sys_proto.h>
 #include <linux/bitfield.h>
 #include <linux/bitops.h>
 #include <linux/delay.h>
@@ -570,6 +570,15 @@ static ulong eqos_get_tick_clk_rate_mtk(struct udevice *dev)
 #endif
 }
 
+#if CONFIG_IS_ENABLED(MTK_MAC_FUSE)
+static int eqos_get_enetaddr_mtk(struct udevice *dev)
+{
+	struct eth_pdata *pdata = dev_get_plat(dev);
+
+	return mtk_get_mac_from_fuse(pdata->enetaddr);
+}
+#endif
+
 static struct eqos_ops eqos_mtk_ops = {
 	.eqos_inval_desc = eqos_inval_desc_generic,
 	.eqos_flush_desc = eqos_flush_desc_generic,
@@ -584,7 +593,11 @@ static struct eqos_ops eqos_mtk_ops = {
 	.eqos_calibrate_pads = eqos_null_ops,
 	.eqos_disable_calibration = eqos_null_ops,
 	.eqos_set_tx_clk_speed = eqos_null_ops,
+#if !CONFIG_IS_ENABLED(MTK_MAC_FUSE)
 	.eqos_get_enetaddr = eqos_null_ops,
+#else
+	.eqos_get_enetaddr = eqos_get_enetaddr_mtk,
+#endif
 	.eqos_get_tick_clk_rate = eqos_get_tick_clk_rate_mtk,
 	.eqos_fix_mac_speed = eqos_fix_mac_speed_mtk,
 };
