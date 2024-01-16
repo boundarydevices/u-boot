@@ -133,6 +133,13 @@ config MTK_BROM_HEADER_INFO
 	default "media=emmc" if TARGET_MT8516 || TARGET_MT8365 || TARGET_MT8183 || TARGET_MT8188 || TARGET_MT8390_TUNGSTEN_SMARC
 	default "lk=1" if TARGET_MT7623
 
+config MTK_MAC_FUSE
+	bool
+	select TEE
+	select OPTEE
+	default y if TARGET_MT8188 || TARGET_MT8390_TUNGSTEN_SMARC
+	default n
+
 source "board/mediatek/Kconfig"
 source "board/boundary/mt8390-tungsten_smarc/Kconfig"
 endif
