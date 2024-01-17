@@ -17,6 +17,7 @@
 #include <net.h>
 #include <version_string.h>
 #include <efi_loader.h>
+#include <iot_ab.h>
 
 static void run_preboot_environment_command(void)
 {
@@ -56,6 +57,9 @@ void main_loop(void)
 
 	if (IS_ENABLED(CONFIG_EFI_CAPSULE_ON_DISK_EARLY))
 		efi_launch_capsules();
+
+	if (IS_ENABLED(CONFIG_MEDIATEK_IOT_AB_BOOT_SUPPORT))
+		iot_ab_boot_complete();
 
 	s = bootdelay_process();
 	if (cli_process_fdt(&s))
