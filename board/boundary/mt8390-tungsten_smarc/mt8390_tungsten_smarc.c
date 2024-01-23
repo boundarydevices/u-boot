@@ -8,6 +8,7 @@
 #include <dm.h>
 #include <efi_loader.h>
 #include <net.h>
+#include <asm/gpio.h>
 #include <asm/io.h>
 #include <linux/kernel.h>
 #include <linux/arm-smccc.h>
@@ -103,6 +104,29 @@ void set_regulators(void)
 }
 #endif
 
+static void clear_usb_vbus(void)
+{
+	int ret;
+	struct gpio_desc desc;
+
+	ret = dm_gpio_lookup_name("84", &desc);
+	if (ret) {
+		printf("ERROR: Could NOT lookup USB0_DRV_VBUS (GPIO 84)\n");
+		return;
+	}
+
+	ret = dm_gpio_request(&desc, "usb0_drv_vbus");
+	if (ret) {
+		printf("ERROR: Could NOT request USB0_DRV_VBUS (GPIO 84)\n");
+		return;
+	}
+
+	dm_gpio_set_dir_flags(&desc, GPIOD_IS_OUT);
+	udelay(500);
+	dm_gpio_set_value(&desc, 0);
+
+};
+
 int board_init(void)
 {
 	struct udevice *dev;
@@ -137,6 +161,9 @@ int board_init(void)
 
 	printf("Disabling WDT\n");
 	writel(0, 0x10007000);
+
+	printf("Clearing USB0_DRV_VBUS\n");
+	clear_usb_vbus();
 
 	printf("Enabling SCP SRAM\n");
 	for (unsigned int val = 0xFFFFFFFF; val != 0U;) {
