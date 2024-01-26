@@ -12,6 +12,7 @@
 #include <asm/io.h>
 #include <linux/kernel.h>
 #include <linux/arm-smccc.h>
+#include <linux/delay.h>
 #include <power/regulator.h>
 
 #define MT8390_UPDATABLE_IMAGES	5
