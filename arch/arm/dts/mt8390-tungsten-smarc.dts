@@ -8,7 +8,7 @@
 
 / {
 	model = "Boundary Devices mt8390 tungsten smarc";
-	compatible = "boundary,mt8390-tungsten_smarc", "mediatek,mt8188";
+	compatible = "boundary,mt8390-tungsten-smarc", "mediatek,mt8188";
 };
 
 #if !defined(UBOOT) && 1

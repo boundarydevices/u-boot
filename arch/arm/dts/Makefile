@@ -1212,7 +1212,7 @@ dtb-$(CONFIG_ARCH_MEDIATEK) += \
 	mt8516-pumpkin.dtb \
 	mt8518-ap1-emmc.dtb \
 	genio-700-evk.dtb \
-	mt8390-tungsten_smarc.dtb \
+	mt8390-tungsten-smarc.dtb \
 
 dtb-$(CONFIG_XEN) += xenguest-arm64.dtb
 

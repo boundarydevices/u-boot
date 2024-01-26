@@ -103,7 +103,7 @@ config SYS_BOARD
 	default "mt8512" if TARGET_MT8512
 	default "mt8516" if TARGET_MT8516
 	default "mt8518" if TARGET_MT8518
-	default "mt8390-tungsten_smarc" if TARGET_MT8390_TUNGSTEN_SMARC
+	default "mt8390-tungsten-smarc" if TARGET_MT8390_TUNGSTEN_SMARC
 	default ""
 	help
 	  This option contains information about board name.
@@ -141,5 +141,5 @@ config MTK_MAC_FUSE
 	default n
 
 source "board/mediatek/Kconfig"
-source "board/boundary/mt8390-tungsten_smarc/Kconfig"
+source "board/boundary/mt8390-tungsten-smarc/Kconfig"
 endif
