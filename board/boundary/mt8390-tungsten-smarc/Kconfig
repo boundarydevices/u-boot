@@ -1,3 +1,9 @@
-if TARGET_MT8390_TUNGSTEN_SMARC
+if TARGET_MT8390_TUNGSTEN_SMARC || TARGET_MT8370_TUNGSTEN_SMARC
 source "board/boundary/common/Kconfig"
+
+config BOARD_TYPE
+	string
+	depends on TARGET_MT8370_TUNGSTEN_SMARC
+	default "mt8370-tungsten-smarc" if TARGET_MT8370_TUNGSTEN_SMARC
+
 endif
