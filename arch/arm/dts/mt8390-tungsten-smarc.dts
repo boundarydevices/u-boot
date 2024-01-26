@@ -7,7 +7,7 @@
 #include "../bd-universal-smarc-carrier.dtsi"
 
 / {
-	model = "Boundary Devices mt8390 tungsten smarc";
+	model = "Boundary Devices MT83x0 Tungsten SMARC";
 	compatible = "boundary,mt8390-tungsten-smarc", "mediatek,mt8188";
 };
 
