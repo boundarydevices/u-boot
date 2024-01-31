@@ -81,11 +81,7 @@ elif itest.s x8MM == "x${cpu3}" ; then
 elif itest.s x8MN == "x${cpu3}" ; then
 	dtb_prefix=imx8mn;
 elif itest.s x8MP == "x${cpu3}" ; then
-	if itest *0x30360800 == 0x00824310 ; then
-		dtb_prefix=imx8mp-a0;
-	else
-		dtb_prefix=imx8mp;
-	fi
+	dtb_prefix=imx8mp;
 elif itest.s x8MQ == "x${cpu3}" ; then
 	dtb_prefix=imx8mq;
 elif itest.s x8ULP == "x${imx_cpu}" ; then
