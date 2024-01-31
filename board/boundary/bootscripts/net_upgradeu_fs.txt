@@ -16,7 +16,7 @@ elif itest.s x6SX == "x${cpu3}" || itest.s x6U == "x${cpu2}" || itest.s x7D == "
 	a_script=0x8000c000
 elif itest.s x8M == "x${cpu2}"; then
 	a_script=0x4000c000
-elif itest.s x8ULP == "x${imx_cpu}"; then
+elif itest.s x8UL == "x${cpu3}"; then
 	a_script=0x8000c000
 fi
 # uncomment below to force upgrade to eMMC,

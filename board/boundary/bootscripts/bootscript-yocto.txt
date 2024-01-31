@@ -57,7 +57,7 @@ elif itest.s x8MP == "x${cpu3}" ; then
 	dtb_prefix=imx8mp;
 elif itest.s x8MQ == "x${cpu3}" ; then
 	dtb_prefix=imx8mq;
-elif itest.s x8ULP == "x${imx_cpu}" ; then
+elif itest.s x8UL == "x${cpu3}" ; then
 	dtb_prefix=imx8ulp;
 else
 	dtb_prefix=imx6q;
