@@ -77,7 +77,6 @@ void spl_board_init(void)
 	struct udevice *dev;
 	u32 res;
 	int ret;
-	u32 reg, value;
 
 	ret = arch_cpu_init_dm();
 	if (ret)
