@@ -142,26 +142,6 @@ void spl_board_init(void)
 		if (ret)
 			printf("Fail to start RNG: %d\n", ret);
 	}
-
-	printf("\n"
-	       "                    PMIC registers:\n"
-	       "    00 01 02 03 04 05 06 07   08 09 0a 0b 0c 0d 0e 0f\n"
-	       "    -- -- -- -- -- -- -- --   -- -- -- -- -- -- -- --\n");
-	for (reg=0; reg <= 0x4e; reg++) {
-		if (0 == (reg & 0x0f))
-			printf("%02x: ", reg);
-		ret = upower_pmic_i2c_read(reg, &value);
-		if (ret)
-			printf("XX ");
-		else
-			printf("%02x ", value);
-		if (7 == (reg & 0x0f)) {
-			printf("  ");
-		} else if (0x0f == (reg & 0x0f)) {
-			putc('\n');
-		}
-	}
-	printf("\n\n");
 }
 
 void board_init_f(ulong dummy)
