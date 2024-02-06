@@ -61,20 +61,11 @@ static iomux_cfg_t const init_pads_m33[] = {
 };
 
 static iomux_cfg_t const init_pads[] = {
-#if IS_ENABLED(CONFIG_FEC_MXC)
 	IMX8ULP_PAD_PTE20__LPI2C5_SCL | MUX_PAD_CTRL(PAD_CTL_PUS_UP | PAD_CTL_ODE),
 	IMX8ULP_PAD_PTE21__LPI2C5_SDA | MUX_PAD_CTRL(PAD_CTL_PUS_UP | PAD_CTL_ODE),
-#else
-	IMX8ULP_PAD_PTE4__LPI2C5_SCL | MUX_PAD_CTRL(PAD_CTL_PUS_UP | PAD_CTL_ODE),
-	IMX8ULP_PAD_PTE5__LPI2C5_SDA | MUX_PAD_CTRL(PAD_CTL_PUS_UP | PAD_CTL_ODE),
-#endif
-#define GPIRQ_TS_ATMEL		GPIO_NR(E, 15)
+#define GPIRQ_TS		GPIO_NR(E, 15)
 	IMX8ULP_PAD_PTE15__PTE15 | MUX_PAD_CTRL(PAD_CTL_PUS_UP),
-#if IS_ENABLED(CONFIG_FEC_MXC)
-#define GP_TS_ATMEL_RESET	GPIO_NR(F, 26)
-#else
-#define GP_TS_ATMEL_RESET	GPIO_NR(E, 11)
-#endif
+#define GP_LCD_VDD_EN	GPIO_NR(F, 26)
 	IMX8ULP_PAD_PTF26__PTF26 | MUX_PAD_CTRL(PAD_CTL_PUS_DOWN),
 	IMX8ULP_PAD_PTE11__PTE11 | MUX_PAD_CTRL(PAD_CTL_PUS_DOWN),
 	IMX8ULP_PAD_PTF16__LPI2C6_SCL | MUX_PAD_CTRL(PAD_CTL_PUS_UP | PAD_CTL_ODE),
@@ -89,11 +80,10 @@ static iomux_cfg_t const init_pads[] = {
 	IMX8ULP_PAD_PTE2__PTE2 | MUX_PAD_CTRL(PAD_CTL_PUS_UP),
 	IMX8ULP_PAD_PTE3__PTE3 | MUX_PAD_CTRL(PAD_CTL_PUS_UP),
 	IMX8ULP_PAD_PTE6__PTE6 | MUX_PAD_CTRL(PAD_CTL_PUS_UP),
-#define GP_LCD_RESET		GPIO_NR(E, 7)
+#define GP_TS_RESET		GPIO_NR(E, 7)
 	IMX8ULP_PAD_PTE7__PTE7 | MUX_PAD_CTRL(PAD_CTL_PUS_DOWN),
 #define GP_BACKLIGHT_PWM	GPIO_NR(E, 8)
 	IMX8ULP_PAD_PTE8__PTE8 | MUX_PAD_CTRL(PAD_CTL_PUS_DOWN),
-#define GP_BACKLIGHT_EN		GPIO_NR(E, 9)
 	IMX8ULP_PAD_PTE9__PTE9 | MUX_PAD_CTRL(PAD_CTL_PUS_DOWN),
 	IMX8ULP_PAD_PTE10__PTE10 | MUX_PAD_CTRL(PAD_CTL_PUS_DOWN),
 	IMX8ULP_PAD_PTE11__PTE11 | MUX_PAD_CTRL(PAD_CTL_PUS_UP),
@@ -102,7 +92,6 @@ static iomux_cfg_t const init_pads[] = {
 	IMX8ULP_PAD_PTE17__PTE17 | MUX_PAD_CTRL(PAD_CTL_PUS_UP),
 	IMX8ULP_PAD_PTE18__PTE18 | MUX_PAD_CTRL(PAD_CTL_PUS_UP),
 	IMX8ULP_PAD_PTE19__PTE19 | MUX_PAD_CTRL(PAD_CTL_PUS_UP),
-#if IS_ENABLED(CONFIG_FEC_MXC)
 	IMX8ULP_PAD_PTF8__ENET0_MDIO | MUX_PAD_CTRL(PAD_CTRL_ENET_RX_UP),
 	IMX8ULP_PAD_PTF9__ENET0_MDC | MUX_PAD_CTRL(PAD_CTRL_ENET_RX_UP),
 	IMX8ULP_PAD_PTF6__ENET0_CRS_DV | MUX_PAD_CTRL(PAD_CTRL_ENET_RX_UP),
@@ -117,13 +106,6 @@ static iomux_cfg_t const init_pads[] = {
 	IMX8ULP_PAD_PTF11__PTF11 | MUX_PAD_CTRL(PAD_CTL_PUS_DOWN),
 #define GPIRQ_FEC_PHY	GPIO_NR(F, 10)
 	IMX8ULP_PAD_PTF10__PTF10 | MUX_PAD_CTRL(PAD_CTL_PUS_UP),
-#else
-	IMX8ULP_PAD_PTF8__PTF8 | MUX_PAD_CTRL(PAD_CTL_PUS_UP),
-	IMX8ULP_PAD_PTF9__PTF9 | MUX_PAD_CTRL(PAD_CTL_PUS_DOWN),
-	IMX8ULP_PAD_PTF6__PTF6 | MUX_PAD_CTRL(PAD_CTL_PUS_DOWN),
-	IMX8ULP_PAD_PTF4__PTF4 | MUX_PAD_CTRL(PAD_CTL_PUS_DOWN),
-	IMX8ULP_PAD_PTF7__PTF7 | MUX_PAD_CTRL(PAD_CTL_PUS_DOWN),
-#endif
 	IMX8ULP_PAD_PTF13__PTF13 | MUX_PAD_CTRL(PAD_CTL_PUS_UP),
 	IMX8ULP_PAD_PTF18__PTF18 | MUX_PAD_CTRL(PAD_CTL_PUS_UP),
 	IMX8ULP_PAD_PTF19__PTF19 | MUX_PAD_CTRL(PAD_CTL_PUS_UP),
@@ -148,45 +130,19 @@ static int setup_fec(void)
 }
 #endif
 
-static const iomux_cfg_t mipi_pads[] = {
-	IMX8ULP_PAD_PTA6__PTA6 | MUX_PAD_CTRL(PAD_CTL_PUS_UP),	/* mipi display reset */
-	IMX8ULP_PAD_PTC14__PTC14 | MUX_PAD_CTRL(PAD_CTL_PUS_UP),	/* mipi backlight enable */
-#if 0
-	IMX8ULP_PAD_PTC15__TPM3_CH3 | MUX_PAD_CTRL(PAD_CTL_DSE),	/* mipi backlight pwm */
-#else
-	IMX8ULP_PAD_PTC15__PTC15 | MUX_PAD_CTRL(PAD_CTL_PUS_UP),	/* mipi backlight pwm */
-#endif
-};
-
 static const struct display_info_t displays[] = {
-	VD_Q035_014(MIPI, fbp_detect_i2c, fbp_bus_gp(5, GP_TS_ATMEL_RESET, GP_LCD_RESET, 50), 0x4a, FBTS_ATMEL_MT),
-	VD_MIPI_COM35H3R04ULY(MIPI, NULL, fbp_bus_gp(0, 0, GP_LCD_RESET, 0), 0x0),
+	VD_MIPI_M101NWWB_x("m101nwwb", U, MIPI, NULL, fbp_bus_gp(5, GP_LCD_VDD_EN, 0, 0), 0x5d, FBP_MIPI_TO_LVDS, FBTS_GOODIX),
 };
 #define display_cnt	ARRAY_SIZE(displays)
 
-static void mipi_dsi_panel_backlight(void)
-{
-	/* It is temp solution to directly access pwm, need change to rpmsg later */
-	imx8ulp_iomux_setup_multiple_pads(mipi_pads, ARRAY_SIZE(mipi_pads));
-	writel(0xD4000001, 0x28102018);	/* PCC_TPM3, (option 4)/2 */
-
-	/* Use center-aligned PWM mode, CPWMS=1, MSnB:MSnA = 10, ELSnB:ELSnA = 00 */
-	writel(1000, 0x28106018);
-	writel(1000, 0x2810603c); /* MOD = CV, full duty */
-	writel(0x28, 0x28106010);
-	writel(0x20, 0x28106038);
-}
-
 int board_init(void)
 {
-	gpio_request(GP_TS_ATMEL_RESET, "atmel_reset");
+	gpio_request(GP_TS_RESET, "ts_rst");
+	gpio_direction_output(GP_TS_RESET, 1);
 	gpio_request(GP_I2C6_HAPTICS_EN, "haptic_en");
-	gpio_direction_output(GP_TS_ATMEL_RESET, 0);
 	gpio_direction_output(GP_I2C6_HAPTICS_EN, 0);
 	gpio_request(GP_BACKLIGHT_PWM, "backlight_pwm");
-	gpio_request(GP_BACKLIGHT_EN, "backlight_en");
 	gpio_direction_output(GP_BACKLIGHT_PWM, 1);
-	gpio_direction_output(GP_BACKLIGHT_EN, 1);
 
 #ifdef CONFIG_DM_ETH
 	board_eth_init(gd->bd);
@@ -195,10 +151,6 @@ int board_init(void)
 	setup_fec();
 #endif
 
-	/* When sync with M33 is failed, use local driver to set for video */
-	if (!is_m33_handshake_necessary() && IS_ENABLED(CONFIG_DM_VIDEO)) {
-		mipi_dsi_panel_backlight();
-	}
 #ifdef CONFIG_CMD_FBPANEL
 	fbp_setup_display(displays, display_cnt);
 #endif
@@ -211,8 +163,7 @@ int board_early_init_f(void)
 	imx8ulp_iomux_setup_multiple_pads(init_pads, ARRAY_SIZE(init_pads));
 	if (!m33_image_booted())
 		imx8ulp_iomux_setup_multiple_pads(init_pads_m33, ARRAY_SIZE(init_pads_m33));
-	gpio_request(GP_LCD_RESET, "lcd_rst");
-	gpio_direction_output(GP_LCD_RESET, 0);
+
 	return 0;
 }
 
