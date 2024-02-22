@@ -553,10 +553,20 @@
 			ranges;
 
 			pcc4: clock-controller@29800000 {
+				assigned-clocks = <&pcc4 IMX8ULP_CLK_LPI2C6>,
+						  <&pcc4 IMX8ULP_CLK_LPI2C7>,
+						  <&pcc4 IMX8ULP_CLK_LPUART6>,
+						  <&pcc4 IMX8ULP_CLK_LPUART7>;
+				assigned-clock-parents = <&cgc1 IMX8ULP_CLK_FROSC_DIV2>,
+							 <&cgc1 IMX8ULP_CLK_FROSC_DIV2>,
+							 <&cgc1 IMX8ULP_CLK_SOSC_DIV2>,
+							 <&cgc1 IMX8ULP_CLK_SOSC_DIV2>;
 				compatible = "fsl,imx8ulp-pcc4";
 				reg = <0x29800000 0x10000>;
 				#clock-cells = <1>;
 				#reset-cells = <1>;
+				clocks = <&cgc1 IMX8ULP_CLK_DUMMY>;
+				clock-names = "dummy";
 			};
 
 			flexspi2: spi@29810000 {

@@ -65,11 +65,11 @@
 	fsl,mux_mask = <0xf00>;
 };
 
-&pinctrl_lpuart5 {
+&pinctrl_lpuart7 {
 	u-boot,dm-spl;
 };
 
-&lpuart5 {
+&lpuart7 {
 	u-boot,dm-spl;
 };
 
