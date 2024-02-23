@@ -341,6 +341,7 @@ void fbp_setup_env_cmds(void);
 #define VD_MIPI_TM070JDHG30_x(name, b, _mode, args...)  VDF_TM070JDHG30(_mode, name, RGB24, FBF_ ## b ## _TM070JDHG30, args)
 /* name is a string, b can be B, U, E */
 #define VD_MIPI_M101NWWB_x(name, b, _mode, args...) VDF_MIPI_M101NWWB(_mode, name, RGB24, FBF_ ## b ## _M101NWWB, args)
+#define VD_MIPI_ULP_M101NWWB_x(name, b, _mode, args...) VDF_MIPI_ULP_M101NWWB(_mode, name, RGB24, FBF_ ## b ## _M101NWWB, args)
 
 #define VD_MIPI_AM_TFT1280X800(_mode, args...)	VDF_HANNSTAR7(_mode, "am-tft1280x800", RGB24, FBF_AM_TFT1280X800, args)
 #define VD_MIPI_AM_TFT1280X800W(_mode, args...)	VDF_AM_TFT1280X800W(_mode, "am-tft1280x800w", RGB24, FBF_AM_TFT1280X800W, args)
@@ -1991,6 +1992,7 @@ void fbp_setup_env_cmds(void);
 	}\
 }
 
+
 /*		freq		hbp		hfp		hs		hb		vbp		vfp		vs		vb
  * M101GWWF	70.0:72.4:76.6							130:160:190							28:38:68
  * M101NWWB	68.9:71.1:73.4							60:160:190							15:23:33
@@ -2005,6 +2007,26 @@ void fbp_setup_env_cmds(void);
 		.xres           = 1280,\
 		.yres           = 800,\
 		.pixclock_f	= 71700000,\
+		.left_margin    = 8,\
+		.right_margin   = 144,\
+		.upper_margin   = 2,\
+		.lower_margin   = 28,\
+		.hsync_len      = 8,\
+		.vsync_len      = 1,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
+#define VDF_MIPI_ULP_M101NWWB(_mode, _name, _fmt, _flags, args...) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, args),\
+	.mode	= {\
+		.name           = _name,\
+		.refresh        = 60,\
+		.xres           = 1280,\
+		.yres           = 800,\
+		.pixclock_f	= 79200000,\
 		.left_margin    = 8,\
 		.right_margin   = 144,\
 		.upper_margin   = 2,\
