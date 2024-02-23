@@ -131,7 +131,7 @@ static int setup_fec(void)
 #endif
 
 static const struct display_info_t displays[] = {
-	VD_MIPI_M101NWWB_x("m101nwwb", U, MIPI, NULL, fbp_bus_gp(5, GP_LCD_VDD_EN, 0, 0), 0x5d, FBP_MIPI_TO_LVDS, FBTS_GOODIX),
+	VD_MIPI_ULP_M101NWWB_x("m101nwwb", U, MIPI, NULL, fbp_bus_gp(5, GP_LCD_VDD_EN, 0, 0), 0x5d, FBP_MIPI_TO_LVDS, FBTS_GOODIX),
 };
 #define display_cnt	ARRAY_SIZE(displays)
 
