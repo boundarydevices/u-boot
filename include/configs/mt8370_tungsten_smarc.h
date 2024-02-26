@@ -76,6 +76,7 @@
 
 #if !defined(CONFIG_EXTRA_ENV_SETTINGS)
 #define CONFIG_EXTRA_ENV_SETTINGS \
+	"console=ttyS0\0" \
 	"dtbos=gpu-mali apusys video\0" \
 	"env_dev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
 	"env_part=" __stringify(CONFIG_SYS_MMC_ENV_PART) "\0" \
