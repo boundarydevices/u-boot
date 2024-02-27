@@ -1302,7 +1302,7 @@ void fbp_setup_env_cmds(void);
 		.name           = _name,\
 		.refresh        = 60,\
 		.xres           = 1280,\
-		.yres           = 800,\
+		.yres           = 600,\
 		.pixclock_f	= 74250000,\
 		.left_margin    = 5,\
 		.right_margin   = 67,\
