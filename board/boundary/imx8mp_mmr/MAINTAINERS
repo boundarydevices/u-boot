@@ -1,0 +1,6 @@
+i.MX8MP MMR  BOARD
+M:	Simon Gaynor <simon.gaynor@lairdconnect.com>
+S:	Maintained
+F:	board/boundary/imx8mp_mmr/
+F:	include/configs/imx8mp_mmr.h
+F:	configs/imx8mp_mmr_2gr0_defconfig
