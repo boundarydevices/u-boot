@@ -803,6 +803,33 @@ int board_phy_config(struct phy_device *phydev)
 #endif
 #endif
 
+#ifdef CONFIG_PHY_TI_DP83867
+
+#define PHY_ID_DP83867	0x2000a231
+
+static void phy_dp83867(struct phy_device *phydev)
+{
+	unsigned short val;
+	// Advertise 1000BASE-T FULL DUPLEX and 1000BASE-T HALF DUPLEX bits
+        unsigned short set_100_10 = (BIT(9) | BIT(8));
+
+	puts("DP83867 "); // 100/10 Mbs");
+
+	val = phy_read(phydev, MDIO_DEVAD_NONE, 0x9);
+	val &= ~(set_100_10); // Un-set these bits
+	phy_write(phydev, MDIO_DEVAD_NONE, 0x9, val);
+}
+
+int board_phy_config(struct phy_device *phydev)
+{
+	if (phydev->phy_id == PHY_ID_DP83867)
+		phy_dp83867(phydev);
+	if (phydev->drv->config)
+		phydev->drv->config(phydev);
+	return 0;
+}
+#endif
+
 #ifdef CONFIG_PHY_MICREL
 #define MII_KSZ9031_EXT_RGMII_COMMON_CTRL	0
 #define KSZ9031_LED_MODE_SINGLE			0x10
