@@ -371,7 +371,7 @@ static void setup2_enet_ksz9021(void)
 #endif
 #endif
 
-#if defined(CONFIG_FEC_MXC) || defined(CONFIG_DWC_ETH_QOS)
+#if defined(CONFIG_FEC_MXC) || defined(CONFIG_ARCH_MEDIATEK) || (defined(CONFIG_FEC_MXC) && defined(CONFIG_DWC_ETH_QOS))
 #if !defined(CONFIG_MX5)
 static void init_fec_clocks(void)
 {
@@ -525,7 +525,7 @@ static void setup_iomux_enet(int kz, int net_mask)
 	}
 #endif
 
-#if defined(CONFIG_FEC_MXC) || defined(CONFIG_DWC_ETH_QOS)
+#if defined(CONFIG_FEC_MXC) || defined(CONFIG_ARCH_MEDIATEK) || (defined(CONFIG_FEC_MXC) && defined(CONFIG_DWC_ETH_QOS))
 	init_fec_clocks();
 #endif
 	/* Need delay 10ms according to KSZ9021 spec */
@@ -1213,7 +1213,17 @@ int board_eth_init(struct bd_info *bis)
 #if !defined(CONFIG_DM_ETH) && defined(CONFIG_FEC_MXC)
 	init_fec(bis, ETH_PHY_MASK_ATH, ETH_PHY_MASK_KSZ);
 #endif
+#if defined(CONFIG_DWC_ETH_QOS) && !defined(CONFIG_FEC_MXC) && !defined(CONFIG_ARCH_MEDIATEK)
+	struct iomuxc_gpr_base_regs *iomuxc_gpr_regs =
+                (struct iomuxc_gpr_base_regs *)IOMUXC_GPR_BASE_ADDR;
 
+	/* set INTF as RGMII, enable RGMII TXC clock */
+	clrsetbits_le32(&iomuxc_gpr_regs->gpr[1],
+			IOMUXC_GPR_GPR1_GPR_ENET_QOS_INTF_SEL_MASK, BIT(16));
+	setbits_le32(&iomuxc_gpr_regs->gpr[1], BIT(19) | BIT(21));
+	set_clk_eqos(ENET_125MHZ);
+	udelay(100);	/* Wait 100 us before using mii interface */
+#endif
 	board_eth_addresses();
 #if defined(CONFIG_USB_ETHER)
 #if defined(CONFIG_DM_ETH)
