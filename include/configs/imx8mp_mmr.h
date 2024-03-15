@@ -192,6 +192,7 @@
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	"console=" BD_CONSOLE "\0" \
+	"disable_giga=1\0" \
 	"env_dev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
 	"env_part=" __stringify(CONFIG_SYS_MMC_ENV_PART) "\0" \
 	"scriptaddr=" __stringify(CONFIG_SYS_LOAD_ADDR) "\0" \
