@@ -293,6 +293,8 @@ void fbp_setup_env_cmds(void);
 #define VD_TM070JDHG30_5D(_mode, args...)	VDF_TM070JDHG30(_mode, "tm070jdhg30-5d", RGB24, 0, args)
 #define VD_G101EVN01(_mode, args...)		VDF_G101EVN01(_mode, "g101evn01", RGB666, FBF_BKLIT_DTB, args)
 #define VD_AUO_B101EW05(_mode, args...)		VDF_AUO_B101EW05(_mode, "auo_b101ew05", RGB666, 0, args)
+#define VD_AUO_P280IVN01(_mode, args...)	VDF_LVDS_AUO_P280IVN01(_mode, "auo_p280ivn01", RGB24, FBF_SPLITMODE, args)
+#define VD_AUO_P280IVN01_J(_mode, args...)	VDF_LVDS_AUO_P280IVN01(_mode, "auo_p280ivn01_J", RGB24, FBF_SPLITMODE | FBF_JEIDA, args)
 #define VD_HANNSTAR7(_mode, args...)		VDF_HANNSTAR7(_mode, "hannstar7", RGB666, 0, args)
 #define VD_LG1280_800(_mode, args...)		VDF_HANNSTAR7(_mode, "lg1280x800", RGB666, 0, args)
 #define VD_HDA800XPT(_mode, args...)		VDF_HDA800XPT(_mode, "hda800xpt", RGB24, FBF_BKLIT_DTB | FBF_BKLIT_LOW_ACTIVE | FBF_BKLIT_EN_LOW_ACTIVE | FBF_BKLIT_EN_DTB, args)
@@ -448,6 +450,26 @@ void fbp_setup_env_cmds(void);
 		.lower_margin   = 4,\
 		.hsync_len      = 44,\
 		.vsync_len      = 5,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
+#define VDF_LVDS_AUO_P280IVN01(_mode, _name, _fmt, _flags, args...) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, args),\
+	.mode	= {\
+		.name           = _name,\
+		.refresh        = 60,\
+		.xres           = 1920,\
+		.yres           = 1080,\
+		.pixclock_f	= ((1920+182+90+8)*(1080+24+18+3)*60),\
+		.left_margin    = 182,\
+		.right_margin   = 90,\
+		.upper_margin   = 18,\
+		.lower_margin   = 24,\
+		.hsync_len      = 8,\
+		.vsync_len      = 3,\
 		.sync           = FB_SYNC_EXT,\
 		.vmode          = FB_VMODE_NONINTERLACED\
 	}\
