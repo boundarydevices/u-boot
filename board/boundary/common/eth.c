@@ -3,6 +3,14 @@
  *
  * SPDX-License-Identifier:	GPL-2.0+
  */
+
+/* If TARGET_NITROGEN8MP AND PHY_ATHEROS then
+ * use the CONFIG_DM_ETH method of loading it and not code in this file.
+ */
+#if defined(CONFIG_TARGET_NITROGEN8MP) && defined(CONFIG_PHY_ATHEROS)
+#undef CONFIG_PHY_ATHEROS
+#endif
+
 #include <common.h>
 #ifndef CONFIG_ARCH_MEDIATEK
 #include <asm/arch/clock.h>
