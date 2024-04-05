@@ -53,34 +53,38 @@
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_gpio_keys>;
 
-			dry_ct_in1 {
-				label = "dry_ct_in1";
-				gpios = <&gpio4 15 GPIO_ACTIVE_LOW>;
-				linux,code = <KEY_FN_F1>;
-			};
-
-			temp1_warn {
-				label = "temp1_warn";
-				gpios = <&gpio4 17 GPIO_ACTIVE_LOW>;
-				linux,code = <KEY_FN_F2>;
-			};
-
 			5v_status {
 				label = "5v_status";
 				gpios = <&gpio4 18 GPIO_ACTIVE_HIGH>;
-				linux,code = <KEY_FN_F3>;
+				linux,code = <KEY_FN_F1>;
 			};
 
 			48v_status {
 				label = "48v_status";
 				gpios = <&gpio4 2 GPIO_ACTIVE_HIGH>;
+				linux,code = <KEY_FN_F2>;
+			};
+
+			ch1_input { /* dry_ct_in1 */
+				label = "ch1_input";
+				gpios = <&gpio4 15 GPIO_ACTIVE_LOW>;
 				linux,code = <KEY_FN_F4>;
 			};
 
-			48v_fault {
-				label = "48v_fault";
+			/* No ch1_16v_fault on this board (F5) */
+
+			ch1_48v_fault { /* 48v_fault */
+				label = "ch1_48v_fault";
 				gpios = <&gpio4 1 GPIO_ACTIVE_LOW>;
-				linux,code = <KEY_FN_F5>;
+				linux,code = <KEY_FN_F6>;
+			};
+
+			/* No ch2_input, ch2_16v_fault, ch2_48v_fault on this board */
+
+			temp1_warn {
+				label = "temp1_warn";
+				gpios = <&gpio4 17 GPIO_ACTIVE_LOW>;
+				linux,code = <KEY_FN_F10>;
 			};
 	};
 
@@ -427,52 +431,34 @@
 };
 
 &lcdif2 {
-	status = "disabled";
+	status = "okay";
 };
 
 &lcdif3 {
-	status = "disabled";
+	status = "okay";
 };
 
 &ldb {
+	status = "okay";
+	fsl,dual-channel;
 	lvds-channel@0 {
+		status = "okay";
 		backlight = <&backlight_lvds>;
-		fsl,data-mapping = "spwg";
+		fsl,data-mapping = "jeida";
 		fsl,data-width = <24>;
 
 		display-timings {
 			t_lvds: t_lvds_default {
-				/* m101nwwb by default */
+				/* AUO P280IVN01.1 by default */
 				clock-frequency = <74250000>;
-				hactive = <1280>;
-				vactive = <800>;
-				hback-porch = <5>;
-				hfront-porch = <123>;
-				vback-porch = <3>;
-				vfront-porch = <24>;
-				hsync-len = <1>;
-				vsync-len = <1>;
-			};
-		};
-	};
-
-	lvds-channel@1 {
-		backlight = <&backlight_lvds>;
-		fsl,data-mapping = "spwg";
-		fsl,data-width = <24>;
-
-		display-timings {
-			t_lvds2: t_lvds_default {
-				/* m101nwwb by default */
-				clock-frequency = <74250000>;
-				hactive = <1280>;
-				vactive = <800>;
-				hback-porch = <5>;
-				hfront-porch = <123>;
-				vback-porch = <3>;
-				vfront-porch = <24>;
-				hsync-len = <1>;
-				vsync-len = <1>;
+				hactive = <1920>;
+				vactive = <1080>; /* 360 (1/3) */
+				hback-porch = <182>;
+				hfront-porch = <90>;
+				vback-porch = <24>;
+				vfront-porch = <18>;
+				hsync-len = <8>;
+				vsync-len = <3>;
 			};
 		};
 	};
@@ -746,7 +732,8 @@
 
 	pinctrl_usb3_0: usb3-0grp {
 		fsl,pins = <
-			MX8MP_IOMUXC_GPIO1_IO13__USB1_OC	0x1c0
+		      //MX8MP_IOMUXC_GPIO1_IO13__USB1_OC        0x1c0
+			MX8MP_IOMUXC_GPIO1_IO13__USB1_OTG_OC	0x1c0
 		>;
 	};
 
