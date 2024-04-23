@@ -6,6 +6,7 @@
 #include <common.h>
 #include <command.h>
 #include <cpu_func.h>
+#include <display_options.h>
 #include <hang.h>
 #include <image.h>
 #include <init.h>
@@ -33,6 +34,8 @@
 #include <power/pca9450.h>
 #include <asm/arch/trdc.h>
 
+#define CS0_BNDS_1GB	0x8000bf
+
 DECLARE_GLOBAL_DATA_PTR;
 
 int spl_board_boot_device(enum boot_device boot_dev_spl)
@@ -54,9 +57,24 @@ void spl_board_init(void)
 void spl_dram_init(void)
 {
 	struct dram_timing_info *ptiming = &dram_timing;
+	long dram_size;
 
-	printf("DDR: %uMTS\n", ptiming->fsp_msg[0].drate);
+	printf("DDR: %uMTS", ptiming->fsp_msg[0].drate);
 	ddr_init(ptiming);
+
+	dram_size = get_ram_size((long int *)CFG_SYS_SDRAM_BASE, SZ_2G);
+	printf("\tSize: ");
+	print_size(dram_size, "\n");
+	/* Is this a 2G board or less ? */
+	if ( dram_size != SZ_2G ) {
+		if ( dram_size == SZ_1G ) {
+			printf("Config: DDR 1G\n");
+			/* (2GB -> 1GB DDR RAM) */
+			writel(CS0_BNDS_1GB, REG_DDR_CS0_BNDS);
+		} else {
+			printf("Warning: This board is not 2GiB or 1GiB !!!\n");
+		}
+	}
 }
 
 #if CONFIG_IS_ENABLED(DM_PMIC_PCA9450)

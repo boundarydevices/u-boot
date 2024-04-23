@@ -49,6 +49,8 @@
 	"emmc_dev=0\0"\
 	"sd_dev=1\0" \
 
+#define NITROGEN_SMARC_DEFCONFIG	"imx93_nitrogen_smarc"
+
 /* Initial environment variables */
 #define CFG_EXTRA_ENV_SETTINGS		\
 	JAILHOUSE_ENV \
@@ -56,6 +58,7 @@
 	BOOTENV \
 	AHAB_ENV \
 	"board=nitrogen-smarc\0" \
+	"soc_type=imx93\0" \
 	"env_dev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
 	"env_part=" __stringify(CONFIG_SYS_MMC_ENV_PART) "\0" \
 	"fastboot_raw_partition_bootloader=0x0 0x1ff0 mmcpart 1\0" \
@@ -155,8 +158,7 @@
 	   "fi;\0" \
 	"upgradeu=setenv boot_scripts upgrade.scr; boot;" \
                 "echo Upgrade failed!; setenv boot_scripts boot.scr;\0" \
-	"uboot_defconfig=imx93_nitrogen_smarc\0"
-
+	"uboot_defconfig=NITROGEN_SMARC_DEFCONFIG;\0"
 /* Link Definitions */
 
 #define CFG_SYS_INIT_RAM_ADDR        0x80000000

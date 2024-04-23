@@ -9,12 +9,22 @@
 #include <linux/kernel.h>
 #include <asm/arch/ddr.h>
 
+#define CS0_BNDS_1GB	0x8000bf
+#define CS0_BNDS_2GB	0x8000ff
+
+#define CS0_CONFIG_1GB	0x80000412	/* 10:8 100 (16 Row bits) */
+#define CS0_CONFIG_2GB	0x80000512	/* 10:8 101 (17 Row bits) */
+
+/* We try 2GB and make a change to 1GB if needed in spl.c */
+#define CS0_BNDS_VAL	CS0_BNDS_2GB
+#define CS0_CONFIG_VAL	CS0_CONFIG_2GB
+
 struct dram_cfg_param ddr_ddrc_cfg[] = {
     /** Initialize DDRC registers **/
     {0x4e300110, 0x44100001},
-    {0x4e300000, 0x8000bf},
+    {0x4e300000, CS0_BNDS_VAL},
     {0x4e300008, 0x0},
-    {0x4e300080, 0x80000412},
+    {0x4e300080, CS0_CONFIG_VAL},
     {0x4e300084, 0x0},
     {0x4e300114, 0x1002},
     {0x4e300260, 0x80},
