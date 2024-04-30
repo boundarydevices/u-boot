@@ -1027,17 +1027,16 @@ int board_phy_config(struct phy_device *phydev)
 	} else if (((phydev->drv->uid ^ PHY_ID_AR8035) & 0xffffffef) == 0) {
 		phy_ar8035_config(phydev);
 		board_eth_type(PHY_INDEX, 0);
-	} else if (is_micrel_part(phydev)) {
+	}
+#endif
+#if defined(CONFIG_PHY_MICREL) && !defined(CONFIG_PHY_MICREL_KSZ8XXX)
+	if (is_micrel_part(phydev)) {
 		/* found KSZ, reinit phy for KSZ */
 		setup_iomux_enet(1, (PHY_INDEX ? 2 : 1));
-#else
-	{
-#endif
-#ifndef CONFIG_PHY_MICREL_KSZ8XXX
 		phy_micrel_config(phydev);
 		board_eth_type(PHY_INDEX, 1);
-#endif
 	}
+#endif
 	if (phydev->drv->config)
 		phydev->drv->config(phydev);
 	return 0;
