@@ -38,7 +38,7 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
-int spl_board_boot_device(enum boot_device boot_dev_spl)
+int spl_board_boot_device(u32 boot_dev_spl)
 {
 	return BOOT_DEVICE_BOOTROM;
 }
