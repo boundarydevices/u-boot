@@ -137,7 +137,9 @@ static ulong android_image_get_kernel_addr(const struct andr_img_hdr *hdr)
 static int append_androidboot_args(char *args, uint32_t *len, void *fdt_addr)
 {
 	char args_buf[512] = {0};
+#ifdef CONFIG_FSL_FASTBOOT
 	extern boot_metric metrics;
+#endif
 
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	struct tag_serialnr serialnr;
@@ -239,6 +241,7 @@ static int append_androidboot_args(char *args, uint32_t *len, void *fdt_addr)
 #endif
 	}
 
+#ifdef CONFIG_FSL_FASTBOOT
 	/* boot metric variables */
 	metrics.ble_1 = get_timer(0);
 	sprintf(args_buf,
@@ -246,6 +249,7 @@ static int append_androidboot_args(char *args, uint32_t *len, void *fdt_addr)
 		metrics.bll_1, metrics.ble_1, metrics.kl, metrics.kd, metrics.avb,
 		metrics.odt, metrics.sw);
 	strncat(args, args_buf, *len - strlen(args));
+#endif
 
 #if defined(CONFIG_ARCH_MX6) || defined(CONFIG_ARCH_MX7) || \
 	defined(CONFIG_ARCH_MX7ULP) || defined(CONFIG_ARCH_IMX8M)
