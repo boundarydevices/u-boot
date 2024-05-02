@@ -45,6 +45,7 @@ config TARGET_IMX93_9X9_QSB
 
 config TARGET_IMX93_NITROGEN_SMARC
         bool "imx93_nitrogen_smarc"
+        select BINMAN
         select IMX93
 
 config TARGET_IMX91P_11X11_EVK
