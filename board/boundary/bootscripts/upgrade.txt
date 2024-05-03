@@ -51,6 +51,10 @@ if itest.s "x${vidconsole}" == "x" ; then
 fi
 setenv stdout serial,${vidconsole}
 
+if itest.s x6Q == "x${cpu2}" || itest.s x6S == "x${cpu2}" ; then
+	sf probe
+fi
+
 if itest.s "x${sfname}" == "x" ; then
 # U-Boot resides in (e)MMC
 if itest.s "x${env_dev}" == "x" || itest.s "x${env_part}" == "x"; then
