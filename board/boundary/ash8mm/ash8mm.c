@@ -134,6 +134,9 @@ static iomux_v3_cfg_t const init_pads[] = {
 #define GP_REG_USDHC2_VSEL	IMX_GPIO_NR(3, 2)
 	IOMUX_PAD_CTRL(NAND_CE1_B__GPIO3_IO2, 0x100),
 
+#define GP_SN65DSI83_EN         IMX_GPIO_NR(3, 6)
+	IOMUX_PAD_CTRL(NAND_DATA00__GPIO3_IO6, 0x100),
+
 #define GP_REG_WLAN_VMMC	IMX_GPIO_NR(4, 26)
 	IOMUX_PAD_CTRL(SAI2_TXD0__GPIO4_IO26, 0x100),
 
@@ -182,7 +185,8 @@ static iomux_v3_cfg_t const init_pads[] = {
 
 static const struct gpio_reserve gpios_to_reserve[] = {
 	{ GP_BACKLIGHT_MIPI_EN, GPIOD_OUT_LOW, GRF_FREE, "backlight-en", },
-	{ GP_DISPLAY_EN, GPIOD_OUT_LOW, GRF_FREE, "display-en", },
+	{ GP_DISPLAY_EN, GPIOD_OUT_HIGH, GRF_FREE, "display-en", },
+	{ GP_SN65DSI83_EN, GPIOD_OUT_HIGH, GRF_FREE, "sn65en", },
 	{ GP_BT_RFKILL_RESET, GPIOD_OUT_LOW, 0, "bt-rfkill-reset", },
 	{ GP_FEC1_RESET, GPIOD_OUT_LOW, 0, "fec1-reset", },
 	{ GPIRQ_FEC1_PHY, GPIOD_IN, 0, "irq-fec1-phy", },
@@ -229,37 +233,9 @@ int board_early_init_f(void)
 
 #ifdef CONFIG_CMD_FBPANEL
 static int sw_vals = -1;
-
-static ulong swm00[] = { CONFIG_SWM_DISPLAY_00_A, CONFIG_SWM_DISPLAY_00_B };
-static ulong swm24[] = { CONFIG_SWM_DISPLAY_24_A, CONFIG_SWM_DISPLAY_24_B };
-static ulong swm38[] = { CONFIG_SWM_DISPLAY_38_A, CONFIG_SWM_DISPLAY_38_B };
-
-int board_detect_display(const struct display_info_t *di)
-{
-	unsigned sw = sw_vals & 0x3f;
-	unsigned swl = sw >> 5;
-	ulong swm = 1 << (sw & 0x1f);
-	ulong mask;
-	char buf[16];
-
-	snprintf(buf, sizeof(buf), "swm%02x_%c", di->addr_num, 'a' + swl);
-
-	mask = env_get_hex(buf, (di->addr_num == 0x24) ?
-			swm24[swl] : (di->addr_num == 0x38) ? swm38[swl] : swm00[swl]);
-	return (swm & mask) ? 1 : 0;
-}
-
 static const struct display_info_t displays[] = {
-	/* lt8912 mipi to lvds */
-	VD_MIPI_WVGA_TX23D200_18L(MIPI, board_detect_display, fbp_bus_gp(1, 0, 0, 0), 0x00),
-	VD_MIPI_WVGA_TX23D200_18H(MIPI, NULL, fbp_bus_gp(1, 0, 0, 0), 0x00),
-	VD_MIPI_WVGA_TX23D200_24L(MIPI, NULL, fbp_bus_gp(1, 0, 0, 0), 0x00),
-	VD_MIPI_WVGA_TX23D200_24H(MIPI, NULL, fbp_bus_gp(1, 0, 0, 0), 0x00),
-	VD_MIPI_AM_1280800P2TZQW(MIPI, board_detect_display, fbp_bus_gp(1, 0, 0, 0), 0x24, FBTS_CYTTSP5),
-	VD_MIPI_DT070BTFT_24H(MIPI, board_detect_display, fbp_bus_gp(1, 0, 0, 0), 0x38, FBTS_FT5X06),
-	VD_MIPI_DT070BTFT_24L(MIPI, NULL, fbp_bus_gp(1, 0, 0, 0), 0x38, FBTS_FT5X06),
-	VD_MIPI_DT070BTFT_18H(MIPI, NULL, fbp_bus_gp(1, 0, 0, 0), 0x38, FBTS_FT5X06),
-	VD_MIPI_DT070BTFT_18L(MIPI, NULL, fbp_bus_gp(1, 0, 0, 0), 0x38, FBTS_FT5X06),
+	VD_MIPI_TM070JDHG30_x("tm070jdhg30-3",  E, MIPI, NULL, fbp_bus_gp((2 | (2 << 4)), GP_SN65DSI83_EN, 0, 0), 0x5d, FBP_MIPI_TO_LVDS, FBTS_CYTTSP5),
+
 };
 #define display_cnt	ARRAY_SIZE(displays)
 #else
