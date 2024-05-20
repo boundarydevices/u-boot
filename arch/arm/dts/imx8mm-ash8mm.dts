@@ -8,6 +8,14 @@
 #define MX8MMN(a, b)	MX8MM_##a b
 #define IMX8MMN(a)	IMX8MM_##a
 
+#ifdef UBOOT
+#include "bd-universal.h"
+#include "panel-m101nwwb.dtsi"
+#else
+#include "../bd-universal.h"
+#include "../panel-m101nwwb.dtsi"
+#endif
+
 &iomuxc {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_hog>;
@@ -120,14 +128,14 @@
 		>;
 	};
 
-	pinctrl_i2c1_lt8912: i2c1-lt8912grp {
-		fsl,pins = <
-#define GP_LT8912_RESET	<&gpio3 6 GPIO_ACTIVE_LOW>
+	pinctrl_sn65dsi83: sn65dsi83grp {
+                fsl,pins = <
+#define GP_SN65DSI83_EN <&gpio3 6 GPIO_ACTIVE_HIGH>
 			MX8MMN(IOMUXC_NAND_DATA00_GPIO3_IO6, 0x100)
-#define GPIRQ_LT8912	<&gpio3 8 IRQ_TYPE_LEVEL_LOW>
+#define GPIRQ_SN65DSI83 <&gpio3 8 IRQ_TYPE_LEVEL_HIGH>
 			MX8MMN(IOMUXC_NAND_DATA02_GPIO3_IO8, 0x1c0)
-		>;
-	};
+                >;
+        };
 
 	pinctrl_i2c1_pf8100: i2c1-pf8100grp {
 		fsl,pins = <
@@ -157,10 +165,10 @@
 
 	pinctrl_ts_cyttsp5: ts-cyttsp5grp {
 		fsl,pins = <
-#define GPIRQ_CYTTSP5 		<&gpio1 6 IRQ_TYPE_EDGE_FALLING>
 #define GP_CYTTSP5_IRQ		<&gpio1 6 GPIO_ACTIVE_LOW>
+#define GPIRQ_CYTTSP5 		<&gpio1 9 IRQ_TYPE_EDGE_FALLING>
 			MX8MMN(IOMUXC_GPIO1_IO06_GPIO1_IO6, 0x1c0)
-			MX8MMN(IOMUXC_GPIO1_IO07_GPIO1_IO7, 0x140)
+			MX8MMN(IOMUXC_GPIO1_IO09_GPIO1_IO9, 0x140)
 		>;
 	};
 
@@ -457,6 +465,7 @@
 		lcdif = &lcdif;
 		mipi = &fb_mipi;
 		mipi_dsi = &mipi_dsi;
+		mipi_to_lvds = &mipi_to_lvds;
 		pwm_mipi = &pwm3;
 		t_mipi = &t_mipi;
 		ts_cyttsp5 = &ts_cyttsp5;
@@ -787,16 +796,6 @@
 			};
 		};
 	};
-
-	lt8912@48 {
-		compatible = "lontium,lt8912" ;
-		display-dsi = <&fb_mipi>;
-		interrupts-extended = GPIRQ_LT8912;
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_i2c1_lt8912>;
-		reg = <0x48> ;
-		reset-gpios = GP_LT8912_RESET;
-	};
 };
 
 &i2c2 {
@@ -811,12 +810,12 @@
 	ts_cyttsp5: touchscreen@24 {
 		compatible = "cy,cyttsp5_i2c_adapter";
 		cy,adapter_id = "cyttsp5_i2c_adapter";
-		interrupts-extended = GPIRQ_CYTTSP5;
+		interrupts-extended = GP_CYTTSP5_IRQ;
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_ts_cyttsp5>;
 		reg = <0x24>;
 		status = "disabled";
-		wakeup-gpios = GP_CYTTSP5_IRQ;
+		// wakeup-gpios = GPIRQ_CYTTSP5;
 
 		cy,core {
 			cy,name = "cyttsp5_core";
@@ -972,11 +971,6 @@
 				 <&clk IMX8MMN(VIDEO_PLL1_OUT)>,
 				 <&clk IMX8MMN(CLK_24M)>;
 	assigned-clock-rates = <266000000>, <0>, <0>, <66000000>;
-
-	clocks = <&clk IMX8MMN(CLK_DSI_CORE)>,
-		 <&clk IMX8MMN(CLK_DSI_PHY_REF)>,
-		 <&clk IMX8MMN(CLK_LCDIF_PIXEL)>;
-	clock-names = "cfg", "pll-ref", "pixel_clock";
 	status = "okay";
 
 	fb_mipi: panel@0 {
@@ -992,34 +986,41 @@
 		dsi-lanes = <4>;
 		mode-skip-eot;
 		mode-video;
-#if 1
 		mode-video-burst;
-#else
-		mode-video-sync-pulse;
-#endif
 		panel-height-mm = <136>;
 		panel-width-mm = <217>;
+		pinctrl-names = "sn65dsi83";
+		pinctrl-0 = <&pinctrl_sn65dsi83>;
 		power-supply = <&reg_vref_5v>;
 		reg = <0>;
+		sn65dsi83 = <&mipi_to_lvds>;
 		spwg;
 
 		display-timings {
 			t_mipi: t-dsi-default {
-				/* DT070BTFT by default */
+				/* m101nwwb by default */
 				clock-frequency = <66000000>;
-				hactive = <1024>;
-				vactive = <600>;
-				hback-porch = <220>;
-				hfront-porch = <40>;
-				vback-porch = <21>;
-				vfront-porch = <4>;
-				hsync-len = <60>;
-				vsync-len = <10>;
+				hactive = <1280>;
+				vactive = <800>;
+				hback-porch = <5>;
+				hfront-porch = <123>;
+				vback-porch = <3>;
+				vfront-porch = <24>;
+				hsync-len = <1>;
+				vsync-len = <1>;
 				hsync-active = <0>;
 				vsync-active = <0>;
 				de-active = <1>;
 			};
 		};
+		mipi_to_lvds: mipi-to-lvds {
+		      alias = <&mipi_to_lvds>;
+		      enable-gpios = GP_SN65DSI83_EN;
+		      i2c-address = <0x2c>;
+		      i2c-bus = <&i2c1>;
+		      interrupts-extended = GPIRQ_SN65DSI83;
+		      status = "disabled";
+	      };
 	};
 };
 
