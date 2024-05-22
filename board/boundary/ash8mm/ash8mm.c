@@ -105,8 +105,6 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IOMUX_PAD_CTRL(GPIO1_IO03__GPIO1_IO3, 0x140),	/* TP38 */
 	IOMUX_PAD_CTRL(SPDIF_RX__PWM2_OUT, 0x140),	/* TP39 */
 
-#define GP_LT8912_RESET	IMX_GPIO_NR(3, 6)
-	IOMUX_PAD_CTRL(NAND_DATA00__GPIO3_IO6, 0x100),
 #define GPIRQ_LT8912	IMX_GPIO_NR(3, 8)
 	IOMUX_PAD_CTRL(NAND_DATA02__GPIO3_IO8, 0x1c0),
 
@@ -186,7 +184,6 @@ static iomux_v3_cfg_t const init_pads[] = {
 static const struct gpio_reserve gpios_to_reserve[] = {
 	{ GP_BACKLIGHT_MIPI_EN, GPIOD_OUT_LOW, GRF_FREE, "backlight-en", },
 	{ GP_DISPLAY_EN, GPIOD_OUT_HIGH, GRF_FREE, "display-en", },
-	{ GP_SN65DSI83_EN, GPIOD_OUT_HIGH, GRF_FREE, "sn65en", },
 	{ GP_BT_RFKILL_RESET, GPIOD_OUT_LOW, 0, "bt-rfkill-reset", },
 	{ GP_FEC1_RESET, GPIOD_OUT_LOW, 0, "fec1-reset", },
 	{ GPIRQ_FEC1_PHY, GPIOD_IN, 0, "irq-fec1-phy", },
@@ -199,7 +196,6 @@ static const struct gpio_reserve gpios_to_reserve[] = {
 	{ GP_GPIOKEY_SW7, GPIOD_IN, 0, "sw7", },
 	{ GP_GPIOKEY_SW8, GPIOD_IN, 0, "sw8", },
 	{ GP_BUTTON_LED, GPIOD_OUT_HIGH, 0, "button-led", },
-	{ GP_LT8912_RESET, GPIOD_OUT_LOW, GRF_FREE, "lt8912-reset", },
 	{ GPIRQ_LT8912, GPIOD_IN, GRF_FREE, "irq-lt8912", },
 	{ GP_I2C1_PF8100_EWARN, GPIOD_IN, 0, "ewarn", },
 	{ GP_I2C1_PF8100_FAULT, GPIOD_IN, 0, "fault", },
@@ -224,8 +220,11 @@ int board_early_init_f(void)
 {
 	struct wdog_regs *wdog = (struct wdog_regs *)WDOG1_BASE_ADDR;
 
-	gpios_reserve(gpios_to_reserve, ARRAY_SIZE(gpios_to_reserve));
 	imx_iomux_v3_setup_multiple_pads(init_pads, ARRAY_SIZE(init_pads));
+	gpios_reserve(gpios_to_reserve, ARRAY_SIZE(gpios_to_reserve));
+
+	gpio_request(GP_SN65DSI83_EN, "sn65en");
+	gpio_direction_output(GP_SN65DSI83_EN, 0);
 
 	set_wdog_reset(wdog);
 	return 0;
@@ -234,7 +233,7 @@ int board_early_init_f(void)
 #ifdef CONFIG_CMD_FBPANEL
 static int sw_vals = -1;
 static const struct display_info_t displays[] = {
-	VD_MIPI_TM070JDHG30_x("tm070jdhg30-3",  E, MIPI, NULL, fbp_bus_gp((2 | (2 << 4)), GP_SN65DSI83_EN, 0, 0), 0x5d, FBP_MIPI_TO_LVDS, FBTS_CYTTSP5),
+	VD_MIPI_TM070JDHG30_x("tm070jdhg30-3",  E, MIPI, NULL, fbp_bus_gp((2 | (2 << 4)), GP_SN65DSI83_EN, 0, 0), 0x24, FBP_MIPI_TO_LVDS, FBTS_CYTTSP5),
 
 };
 #define display_cnt	ARRAY_SIZE(displays)
