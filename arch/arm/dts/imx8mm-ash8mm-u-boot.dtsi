@@ -61,10 +61,10 @@
 &i2c1 {
 	u-boot,dm-spl;
 
-	lt8912@48 {
+	sn65@2c {
 		port@0 {
-			lt8912_from_panel: endpoint {
-				remote-endpoint = <&panel_to_lt8912>;
+			sn65_from_panel: endpoint {
+				remote-endpoint = <&panel_to_sn65>;
 			};
 		};
 	};
@@ -92,8 +92,8 @@
 		};
 
 		port@2 {
-			panel_to_lt8912: endpoint {
-				remote-endpoint = <&lt8912_from_panel>;
+			panel_to_sn65: endpoint {
+				remote-endpoint = <&sn65_from_panel>;
 			};
 		};
 	};

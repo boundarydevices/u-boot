@@ -114,17 +114,8 @@
 
 	pinctrl_i2c1: i2c1grp {
 		fsl,pins = <
-			MX8MMN(IOMUXC_I2C1_SCL_I2C1_SCL, 0x400001c3)
-			MX8MMN(IOMUXC_I2C1_SDA_I2C1_SDA, 0x400001c3)
-		>;
-	};
-
-	pinctrl_i2c1_1: i2c1_1grp {
-		fsl,pins = <
-#define GP_I2C1_SCL	<&gpio5 14 GPIO_OPEN_DRAIN>
-			MX8MMN(IOMUXC_I2C1_SCL_GPIO5_IO14, 0x400001c3)
-#define GP_I2C1_SDA	<&gpio5 15 GPIO_OPEN_DRAIN>
-			MX8MMN(IOMUXC_I2C1_SDA_GPIO5_IO15, 0x400001c3)
+			MX8MMN(IOMUXC_I2C1_SCL_I2C1_SCL, 0x400001c5)
+			MX8MMN(IOMUXC_I2C1_SDA_I2C1_SDA, 0x400001c5)
 		>;
 	};
 
@@ -689,11 +680,8 @@
 
 &i2c1 {
 	clock-frequency = <400000>;
-	pinctrl-names = "default", "gpio";
+	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_i2c1>;
-	pinctrl-1 = <&pinctrl_i2c1_1>;
-	scl-gpios = GP_I2C1_SCL;
-	sda-gpios = GP_I2C1_SDA;
 	status = "okay";
 
 	pf8100@8 {
