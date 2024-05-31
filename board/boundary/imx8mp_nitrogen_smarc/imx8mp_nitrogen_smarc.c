@@ -236,6 +236,9 @@ static const struct display_info_t displays[] = {
 	VD_HANNSTAR(LVDS2, fbp_detect_i2c, fbp_bus_gp(3, 0, 0, 0), 0x04, FBTS_EGALAX, FBTS_LVDS_EGALAX),
 
 	VD_HANNSTAR(LVDS, NULL, fbp_bus_gp(3, 0, 0, 0), 0x04, FBTS_EGALAX, FBTS_LVDS_EGALAX),
+
+	/* generic dual channel */
+	VD_1080P60(LVDS, NULL, fbp_bus_gp(0, 0, GP_MIPI_ENABLE, 0), 0x00),
 };
 #define display_cnt	ARRAY_SIZE(displays)
 #else
