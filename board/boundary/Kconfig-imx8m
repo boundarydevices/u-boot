@@ -1,0 +1,211 @@
+choice
+	prompt	"Boundary i.MX8M board select"
+	optional
+
+#config TARGET_ASH8MM
+#	bool "ash8mm"
+#	select BINMAN
+#	select IMX8MM
+#	select SUPPORT_SPL
+#
+#config TARGET_BIO
+#	bool "bio"
+#	select BINMAN
+#	select IMX8MQ
+#	select SUPPORT_SPL
+#
+#config TARGET_C2_IMX8MM
+#	bool "c2-imx8mm"
+#	select BINMAN
+#	select IMX8MM
+#	select SUPPORT_SPL
+#
+#config TARGET_C2_MID
+#	bool "c2-mid"
+#	select BINMAN
+#	select IMX8MM
+#	select SUPPORT_SPL
+#
+#config TARGET_CLE
+#	bool "cle"
+#	select BINMAN
+#	select IMX8MM
+#	select SUPPORT_SPL
+#
+#config TARGET_CRS
+#	bool "crs board"
+#	select BINMAN
+#	select IMX8MP
+#	select SUPPORT_SPL
+#
+#config TARGET_DS
+#	bool "ds"
+#	select BINMAN
+#	select IMX8MQ
+#	select SUPPORT_SPL
+#
+#config TARGET_DWE
+#	bool "dwe"
+#	select BINMAN
+#	select IMX8MM
+#	select SUPPORT_SPL
+#
+#config TARGET_EM
+#	bool "em"
+#	select BINMAN
+#	select IMX8MM
+#	select SUPPORT_SPL
+#
+#config TARGET_HL8MM
+#	bool "hl8mm"
+#	select BINMAN
+#	select IMX8MM
+#	select SUPPORT_SPL
+#
+#config TARGET_IMX8MP_MMR
+#	bool "imx8mp mmr board"
+#	select BINMAN
+#	select IMX8MP
+#	select SUPPORT_SPL
+
+config TARGET_IMX8MM_NITROGEN_SMARC
+	bool "imx8mm nitrogen smarc board"
+	select IMX8MM
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
+	select BINMAN
+	select FSL_CAAM
+	select FSL_BLOB
+	select ARCH_MISC_INIT
+	select SPL_CRYPTO if SPL
+
+#config TARGET_IMX8MN_NITROGEN_SMARC
+#	bool "imx8mn nitrogen smarc board"
+#	select BINMAN
+#	select IMX8MN
+#	select SUPPORT_SPL
+#
+#config TARGET_IMX8MP_NITROGEN_SMARC
+#	bool "imx8mp nitrogen smarc board"
+#	select BINMAN
+#	select IMX8MP
+#	select SUPPORT_SPL
+#
+#config TARGET_KEA
+#	bool "KEA"
+#	select BINMAN
+#	select IMX8MM
+#	select SUPPORT_SPL
+#
+#config TARGET_MOO
+#	bool "moo"
+#	select BINMAN
+#	select IMX8MM
+#	select SUPPORT_SPL
+#
+#config TARGET_NITROGEN8_LITE
+#	bool "nitrogen8_lite"
+#	select BINMAN
+#	select IMX8MM
+#	select SUPPORT_SPL
+#
+#config TARGET_NITROGEN8_NANO
+#	bool "nitrogen8_nano"
+#	select BINMAN
+#	select IMX8MN
+#	select SUPPORT_SPL
+#
+#config TARGET_NITROGEN8M
+#	bool "nitrogen8m"
+#	select BINMAN
+#	select IMX8MQ
+#	select SUPPORT_SPL
+#
+#config TARGET_NITROGEN8M_SOM
+#	bool "nitrogen8m_som"
+#	select BINMAN
+#	select IMX8MQ
+#	select SUPPORT_SPL
+#
+#config TARGET_NITROGEN8MM
+#	bool "nitrogen8mm"
+#	select BINMAN
+#	select IMX8MM
+#	select SUPPORT_SPL
+#
+#config TARGET_NITROGEN8MN
+#	bool "nitrogen8mn"
+#	select BINMAN
+#	select IMX8MN
+#	select SUPPORT_SPL
+#
+#config TARGET_NITROGEN8MM_SOM
+#	bool "nitrogen8mm_som"
+#	select BINMAN
+#	select IMX8MM
+#	select SUPPORT_SPL
+#
+#config TARGET_NITROGEN8MN_SOM
+#	bool "nitrogen8mn_som"
+#	select BINMAN
+#	select IMX8MN
+#	select SUPPORT_SPL
+#
+#config TARGET_NITROGEN8MM_TAB
+#	bool "nitrogen8mm_tab"
+#	select BINMAN
+#	select IMX8MM
+#	select SUPPORT_SPL
+#
+#config TARGET_NITROGEN8MP
+#	bool "Nitrogen8mp board"
+#	select BINMAN
+#	select IMX8MP
+#	select SUPPORT_SPL
+#
+#config TARGET_NITROGEN8MP_VM
+#	bool "Nitrogen8mp_vm board"
+#	select BINMAN
+#	select IMX8MP
+#	select SUPPORT_SPL
+#
+#config TARGET_SON
+#	bool "son"
+#	select BINMAN
+#	select IMX8MQ
+#	select SUPPORT_SPL
+#
+#config TARGET_SPAN
+#	bool "span"
+#	select BINMAN
+#	select IMX8MM
+#	select SUPPORT_SPL
+#
+endchoice
+
+#source "board/boundary/ash8mm/Kconfig"
+#source "board/boundary/bio/Kconfig"
+#source "board/boundary/c2-imx8mm/Kconfig"
+#source "board/boundary/c2-mid/Kconfig"
+#source "board/boundary/cle/Kconfig"
+#source "board/boundary/crs/Kconfig"
+#source "board/boundary/ds/Kconfig"
+#source "board/boundary/dwe/Kconfig"
+#source "board/boundary/em/Kconfig"
+#source "board/boundary/hl8mm/Kconfig"
+source "board/boundary/imx8mm_nitrogen_smarc/Kconfig"
+#source "board/boundary/imx8mp_mmr/Kconfig"
+#source "board/boundary/imx8mp_nitrogen_smarc/Kconfig"
+#source "board/boundary/kea/Kconfig"
+#source "board/boundary/moo/Kconfig"
+#source "board/boundary/nitrogen8_lite/Kconfig"
+#source "board/boundary/nitrogen8_nano/Kconfig"
+#source "board/boundary/nitrogen8m/Kconfig"
+#source "board/boundary/nitrogen8m_som/Kconfig"
+#source "board/boundary/nitrogen8mm/Kconfig"
+#source "board/boundary/nitrogen8mm_som/Kconfig"
+#source "board/boundary/nitrogen8mm_tab/Kconfig"
+#source "board/boundary/nitrogen8mp/Kconfig"
+#source "board/boundary/nitrogen8mp_vm/Kconfig"
+#source "board/boundary/son/Kconfig"
+#source "board/boundary/span/Kconfig"

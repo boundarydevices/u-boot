@@ -105,6 +105,7 @@ config TARGET_IMX8MM_EVK
 	select IMX8MM
 	select SUPPORT_SPL
 	select IMX8M_LPDDR4
+	select BINMAN
 	select FSL_CAAM
 	select FSL_BLOB
 	select ARCH_MISC_INIT
@@ -452,6 +453,7 @@ source "board/advantech/imx8mp_rsb3720a1/Kconfig"
 source "board/beacon/imx8mm/Kconfig"
 source "board/beacon/imx8mn/Kconfig"
 source "board/beacon/imx8mp/Kconfig"
+source "board/boundary/Kconfig-imx8m"
 source "board/bsh/imx8mn_smm_s2/Kconfig"
 source "board/cloos/imx8mm_phg/Kconfig"
 source "board/compulab/imx8mm-cl-iot-gate/Kconfig"
