@@ -13,6 +13,10 @@ fi
 
 a_base=0x10000000
 
+if test -z "${imx_cpu}"; then
+	setexpr imx_cpu sub ".*(..?..?)$" "\\1" "${soc_type}"
+fi
+
 #grab 1st 2/3 characters of string
 setexpr cpu2 sub "^(..?).*" "\\1" "${imx_cpu}"
 setexpr cpu3 sub "^(..?.?).*" "\\1" "${imx_cpu}"
@@ -24,7 +28,7 @@ elif itest.s x6SX == "x${cpu3}" || itest.s x6U == "x${cpu2}" || itest.s x7D == "
 	a_base=0x80000000
 elif itest.s x8M == "x${cpu2}"; then
 	a_base=0x40000000
-elif itest.s x8U == "x${cpu2}"; then
+elif itest.s x8U == "x${cpu2}" || itest.s x93 == "${cpu3}"; then
 	a_base=0x80000000
 fi
 setexpr a_gz  ${a_base} + 0x00080000
