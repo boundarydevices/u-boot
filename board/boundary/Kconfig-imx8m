@@ -183,6 +183,9 @@ config TARGET_IMX8MM_NITROGEN_SMARC
 #
 endchoice
 
+config DEFCONFIG
+        string "unknown"
+
 #source "board/boundary/ash8mm/Kconfig"
 #source "board/boundary/bio/Kconfig"
 #source "board/boundary/c2-imx8mm/Kconfig"
