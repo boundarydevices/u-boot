@@ -3,8 +3,8 @@
  * Copyright 2022 NXP
  */
 
-#ifndef __IMX93_EVK_H
-#define __IMX93_EVK_H
+#ifndef __IMX93_NITROGEN_SMARC_H
+#define __IMX93_NITROGEN_SMARC_H
 
 #include <linux/sizes.h>
 #include <linux/stringify.h>
@@ -31,17 +31,6 @@
 #define BOOTENV
 #endif
 
-#define JH_ROOT_DTB    "imx93-11x11-evk-root.dtb"
-
-#define JAILHOUSE_ENV \
-	"jh_root_dtb=" JH_ROOT_DTB "\0" \
-	"jh_mmcboot=setenv fdtfile ${jh_root_dtb}; " \
-		    "setenv jh_clk clk_ignore_unused mem=1248MB kvm-arm.mode=nvhe; " \
-		    "if run loadimage; then run mmcboot;" \
-		    "else run jh_netboot; fi; \0" \
-	"jh_netboot=setenv fdtfile ${jh_root_dtb}; " \
-		    "setenv jh_clk clk_ignore_unused mem=1248MB kvm-arm.mode=nvhe; run netboot; \0 "
-
 #define CFG_MFG_ENV_SETTINGS \
 	CFG_MFG_ENV_SETTINGS_DEFAULT \
 	"initrd_addr=0x83800000\0" \
@@ -53,7 +42,6 @@
 
 /* Initial environment variables */
 #define CFG_EXTRA_ENV_SETTINGS		\
-	JAILHOUSE_ENV \
 	CFG_MFG_ENV_SETTINGS \
 	BOOTENV \
 	AHAB_ENV \
@@ -179,10 +167,6 @@
 
 #ifdef CONFIG_IMX_MATTER_TRUSTY
 #define NS_ARCH_ARM64 1
-#endif
-
-#ifdef CONFIG_ANDROID_SUPPORT
-#include "imx93_bd_smarc_android.h"
 #endif
 
 #endif
