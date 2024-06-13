@@ -158,7 +158,7 @@
 	   "fi;\0" \
 	"upgradeu=setenv boot_scripts upgrade.scr; boot;" \
                 "echo Upgrade failed!; setenv boot_scripts boot.scr;\0" \
-	"uboot_defconfig=NITROGEN_SMARC_DEFCONFIG;\0"
+	"uboot_defconfig=" NITROGEN_SMARC_DEFCONFIG "\0"
 /* Link Definitions */
 
 #define CFG_SYS_INIT_RAM_ADDR        0x80000000
