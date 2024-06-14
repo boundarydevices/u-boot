@@ -6,6 +6,7 @@
 #include <common.h>
 #include <command.h>
 #include <cpu_func.h>
+#include <display_options.h>
 #include <hang.h>
 #include <image.h>
 #include <init.h>
@@ -33,7 +34,14 @@ DECLARE_GLOBAL_DATA_PTR;
 
 void spl_dram_init(void)
 {
+	long dram_size;
+
 	ddr_init(&dram_timing);
+
+	dram_size = get_ram_size((long int *)CFG_SYS_SDRAM_BASE, SZ_4G);
+
+	printf("DDRINFO: Size: ");
+	print_size(dram_size, "\n");
 }
 
 #define I2C_PAD_CTRL	(PAD_CTL_DSE1 | PAD_CTL_HYS | PAD_CTL_PUE | PAD_CTL_PE)
