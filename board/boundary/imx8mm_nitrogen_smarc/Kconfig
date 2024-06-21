@@ -21,6 +21,9 @@ config DRATE_BYTE
 config IMX_CONFIG
         default "board/boundary/imx8mm_nitrogen_smarc/imximage-8mm.cfg"
 
+config IMX8M_1G_MEMORY
+        bool "imx8m 1GB memory size"
+
 # source "board/boundary/common/Kconfig"
 
 endif
