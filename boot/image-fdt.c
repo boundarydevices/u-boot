@@ -14,6 +14,7 @@
 #include <env.h>
 #include <errno.h>
 #include <image.h>
+#include <image-android-dt.h>
 #include <lmb.h>
 #include <log.h>
 #include <malloc.h>
@@ -509,6 +510,33 @@ int boot_get_fdt(void *buf, const char *select, uint arch,
 				goto no_fdt;
 
 			debug("## Using FDT in Android image dtb area with idx %u\n", dtb_idx);
+
+#ifdef CONFIG_OF_LIBFDT_OVERLAY
+			if (env_get("adtbo_idx")) {
+				ulong dtbo_addr;
+				u32 dtbo_size;
+				u32 dtbo_index = (u32)env_get_ulong("adtbo_idx", 10, 0);
+				ulong fdtoverlay_addr_r = env_get_hex("fdtoverlay_addr_r", 0);
+				int ret;
+
+				ret = android_dt_get_fdt_by_index(fdtoverlay_addr_r, dtbo_index,
+								  &dtbo_addr, &dtbo_size);
+				if (ret < 0)
+					goto error;
+
+				ret = fdt_shrink_to_minimum(fdt_blob, dtbo_size);
+				if (ret < 0)
+					goto error;
+
+				debug("## Found Android dtbo %d with addr %lx and size %u\n",
+				      dtbo_index, dtbo_addr, dtbo_size);
+
+				ret = fdt_overlay_apply_verbose(fdt_blob,
+								map_sysmem(dtbo_addr, 0));
+				if (ret < 0)
+					goto error;
+			}
+#endif
 		} else if (!android_image_get_second(hdr, &fdt_data, &fdt_len) &&
 			!fdt_check_header((char *)fdt_data)) {
 			fdt_blob = (char *)fdt_data;

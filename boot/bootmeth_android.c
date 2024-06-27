@@ -228,6 +228,16 @@ static int configure_serialno(struct bootflow *bflow)
 	return bootflow_cmdline_set_arg(bflow, "androidboot.serialno", serialno, false);
 }
 
+static int configure_dtbo_idx(struct bootflow *bflow)
+{
+	char *adtbo_idx = env_get("adtbo_idx");
+
+	if (!adtbo_idx)
+		return log_msg_ret("dtbo", -ENOENT);
+
+	return bootflow_cmdline_set_arg(bflow, "androidboot.dtbo_idx", adtbo_idx, false);
+}
+
 static int android_read_bootflow(struct udevice *dev, struct bootflow *bflow)
 {
 	struct blk_desc *desc = dev_get_uclass_plat(bflow->blk);
@@ -325,8 +335,12 @@ static int android_read_bootflow(struct udevice *dev, struct bootflow *bflow)
 		}
 	}
 
-	/* Ignoring return code: setting serial number is not mandatory for booting */
+	/*
+	 * Ignoring return code: setting serial number and
+	 * dtbo index are not mandatory for booting
+	 */
 	configure_serialno(bflow);
+	configure_dtbo_idx(bflow);
 
 	if (priv->boot_mode == ANDROID_BOOT_MODE_NORMAL) {
 		ret = bootflow_cmdline_set_arg(bflow, "androidboot.force_normal_boot",
@@ -518,6 +532,7 @@ static int boot_android_normal(struct bootflow *bflow)
 	ulong loadaddr = env_get_hex("loadaddr", 0);
 	ulong iloadaddr = env_get_hex("init_boot_comp_addr_r", 0);
 	ulong vloadaddr = env_get_hex("vendor_boot_comp_addr_r", 0);
+	ulong fdtoverlay_addr_r = env_get_hex("fdtoverlay_addr_r", 0);
 
 	ret = run_avb_verification(bflow);
 	if (ret < 0)
@@ -549,6 +564,10 @@ static int boot_android_normal(struct bootflow *bflow)
 		}
 	}
 	set_abootimg_addr(loadaddr);
+
+	ret = read_slotted_partition(desc, "dtbo", priv->slot, 0, fdtoverlay_addr_r);
+	if (ret < 0)
+		return log_msg_ret("read dtbo", ret);
 
 	ret = bootm_boot_start(loadaddr, bflow->cmdline);
 
