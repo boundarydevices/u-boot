@@ -1,0 +1,25 @@
+if TARGET_NITROGEN8MM_SOM || TARGET_NITROGEN8MN_SOM
+
+config BOARD_TYPE
+	string
+	depends on IMX8MN
+	default "nitrogen8mn_som" if IMX8MN
+
+config SYS_BOARD
+	default "nitrogen8mm_som"
+
+config SYS_VENDOR
+	default "boundary"
+
+config SYS_CONFIG_NAME
+	default "nitrogen8mm_som"
+
+config IMX_CONFIG
+        default "board/boundary/nitrogen8mm_som/imximage-8mm.cfg"
+
+config IMX8M_1G_MEMORY
+        bool "imx8m 1GB memory size"
+
+#source "board/boundary/common/Kconfig"
+
+endif

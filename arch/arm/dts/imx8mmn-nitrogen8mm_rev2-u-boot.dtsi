@@ -1,0 +1,36 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2021 Boundary Devices
+ */
+
+&uart1 { /* BT */
+	status = "disabled";
+};
+
+&uart3 { /* J15 */
+	status = "disabled";
+};
+
+&uart4 {
+	status = "disabled";
+};
+
+&usdhc1 {
+	cap-mmc-highspeed;
+	mmc-ddr-1_8v;
+	mmc-hs200-1_8v;
+	reset-gpios = <&gpio2 10 GPIO_ACTIVE_LOW>;
+};
+
+&usdhc2 {
+	cap-sd-highspeed;
+	sd-uhs-ddr50;
+	sd-uhs-sdr104;
+	sd-uhs-sdr12;
+	sd-uhs-sdr25;
+	vqmmc-supply = <&reg_ldo2>;
+};
+
+&usdhc3 {
+	status = "disabled";
+};
