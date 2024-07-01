@@ -162,6 +162,12 @@ config TARGET_IMX8MM_MX8MENLO
 	select SUPPORT_SPL
 	select IMX8M_LPDDR4
 
+config TARGET_IMX8MM_PHG
+	bool "i.MX8MM PHG board"
+	select IMX8MM
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
+
 config TARGET_IMX8MM_NITROGEN_SMARC
 	bool "imx8mm_nitrogen_smarc"
 	select IMX8MM
@@ -173,11 +179,27 @@ config TARGET_IMX8MM_NITROGEN_SMARC
 	select ARCH_MISC_INIT
 	select SPL_CRYPTO if SPL
 
-config TARGET_IMX8MM_PHG
-	bool "i.MX8MM PHG board"
+config TARGET_NITROGEN8MM_SOM
+	bool "imx8mm_nitrogen_som"
+	select BINMAN
 	select IMX8MM
-	select SUPPORT_SPL
 	select IMX8M_LPDDR4
+	select SUPPORT_SPL
+	select FSL_CAAM
+	select FSL_BLOB
+	select ARCH_MISC_INIT
+	select SPL_CRYPTO if SPL
+
+config TARGET_NITROGEN8MM
+	bool "imx8mm_nitrogen"
+	select BINMAN
+	select IMX8MM
+	select IMX8M_LPDDR4
+	select SUPPORT_SPL
+	select FSL_CAAM
+	select FSL_BLOB
+	select ARCH_MISC_INIT
+	select SPL_CRYPTO if SPL
 
 config TARGET_IMX8MM_VENICE
 	bool "Support Gateworks Venice iMX8M Mini module"
@@ -463,6 +485,7 @@ source "board/advantech/imx8mp_rsb3720a1/Kconfig"
 source "board/beacon/imx8mm/Kconfig"
 source "board/beacon/imx8mn/Kconfig"
 source "board/beacon/imx8mp/Kconfig"
+source "board/boundary/imx8mm_nitrogen/Kconfig"
 source "board/boundary/imx8mm_nitrogen_smarc/Kconfig"
 source "board/bsh/imx8mn_smm_s2/Kconfig"
 source "board/cloos/imx8mm_phg/Kconfig"

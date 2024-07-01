@@ -1,0 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2024 Ezurio
+ */
+#include "imx8mm-nitrogen8mm_som-u-boot.dtsi"
