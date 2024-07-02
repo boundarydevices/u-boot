@@ -72,7 +72,7 @@ int board_init(void)
                 setup_fec();
         }
 
-	if (CONFIG_IS_ENABLED(DWC_ETH_QOS) && !is_imx91p0())
+	if (CONFIG_IS_ENABLED(DWC_ETH_QOS))
 		setup_eqos();
 
 	return 0;
@@ -80,19 +80,10 @@ int board_init(void)
 
 int board_late_init(void)
 {
-#ifdef CONFIG_ENV_IS_IN_MMC
-	board_late_mmc_env_init();
-#endif
-
 	env_set("sec_boot", "no");
 #ifdef CONFIG_AHAB_BOOT
 	env_set("sec_boot", "yes");
 #endif
 
-#ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
-	env_set("board_name", "NITROGEN_SMARC_93");
-	env_set("board_rev", "iMX93");
-#endif
 	return 0;
 }
-

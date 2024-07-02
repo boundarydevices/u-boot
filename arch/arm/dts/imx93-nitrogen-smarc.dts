@@ -67,7 +67,7 @@
 		};
 	};
 
-	cm33: imx93-cm33 {
+	imx93-cm33 {
 		compatible = "fsl,imx93-cm33";
 		mbox-names = "tx", "rx", "rxdb";
 		mboxes = <&mu1 0 1
