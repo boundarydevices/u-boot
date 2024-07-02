@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 /*
- * Copyright 2022 NXP
+ * Copyright 2024 Ezurio
  */
 
 /dts-v1/;
@@ -8,8 +8,8 @@
 #include "imx93.dtsi"
 
 / {
-	model = "Boundary i.MX93 nitrogen93 board";
-	compatible = "boundary,imx93-nitrogen93", "fsl,imx93";
+	model = "Ezurio i.MX93 Nitrogen SMARC board";
+	compatible = "boundary,imx93-nitrogen-smarc", "fsl,imx93";
 
 	chosen {
 		stdout-path = &lpuart1;

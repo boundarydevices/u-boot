@@ -87,7 +87,7 @@ config TARGET_IMX95_15X15_EVK
 
 endchoice
 
-source "board/boundary/nitrogen93/Kconfig"
+source "board/boundary/imx93_nitrogen_smarc/Kconfig"
 source "board/freescale/imx91_evk/Kconfig"
 source "board/freescale/imx91_qsb/Kconfig"
 source "board/freescale/imx93_evk/Kconfig"

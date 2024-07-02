@@ -1,7 +1,7 @@
 if TARGET_IMX93_NITROGEN_SMARC
 
 config SYS_BOARD
-	default "nitrogen93"
+	default "imx93_nitrogen_smarc"
 
 config SYS_VENDOR
 	default "boundary"
