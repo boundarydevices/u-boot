@@ -163,6 +163,28 @@ config TARGET_IMX8MM_MX8MENLO
 	select SUPPORT_SPL
 	select IMX8M_LPDDR4
 
+config TARGET_IMX8MM_NITROGEN_SMARC
+	bool "imx8mm nitrogen smarc board"
+	select IMX8MM
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
+	select BINMAN
+	select FSL_CAAM
+	select FSL_BLOB
+	select ARCH_MISC_INIT
+	select SPL_CRYPTO if SPL
+
+config TARGET_NITROGEN8MM_SOM
+	bool "nitrogen8mm_som"
+	select BINMAN
+	select IMX8MM
+	select IMX8M_LPDDR4
+	select SUPPORT_SPL
+	select FSL_CAAM
+	select FSL_BLOB
+	select ARCH_MISC_INIT
+	select SPL_CRYPTO if SPL
+
 config TARGET_IMX8MM_PHG
 	bool "i.MX8MM PHG board"
 	select IMX8MM
@@ -453,7 +475,8 @@ source "board/advantech/imx8mp_rsb3720a1/Kconfig"
 source "board/beacon/imx8mm/Kconfig"
 source "board/beacon/imx8mn/Kconfig"
 source "board/beacon/imx8mp/Kconfig"
-source "board/boundary/Kconfig-imx8m"
+source "board/boundary/imx8mm_nitrogen_smarc/Kconfig"
+source "board/boundary/nitrogen8mm_som/Kconfig"
 source "board/bsh/imx8mn_smm_s2/Kconfig"
 source "board/cloos/imx8mm_phg/Kconfig"
 source "board/compulab/imx8mm-cl-iot-gate/Kconfig"

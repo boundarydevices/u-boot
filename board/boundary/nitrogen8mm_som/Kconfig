@@ -20,6 +20,7 @@ config IMX_CONFIG
 config IMX8M_1G_MEMORY
         bool "imx8m 1GB memory size"
 
-#source "board/boundary/common/Kconfig"
+config DEFCONFIG
+	string "unknown"
 
 endif
