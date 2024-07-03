@@ -113,13 +113,14 @@
 		#size-cells = <0>;
 		clock-frequency = <5000000>;
 
-		ethphy1: ethernet-phy@1 {
+		ethphy1: ethernet-phy@7 {
 			compatible = "ethernet-phy-ieee802.3-c22";
-			reg = <3>; /* SimonG note reg-mask (0x90) is not in mainline u-boot */
+			reg = <7>;
 			eee-broken-1000t;
-			at803x,hib-disabled;
 			interrupts-extended = <&gpio2 29 GPIO_ACTIVE_LOW>;
-			reset-gpios =<&pcal6534 1 GPIO_ACTIVE_LOW>;
+			reset-gpios = <&pcal6534 1 GPIO_ACTIVE_LOW>;
+			reset-assert-us = <10000>;
+			reset-deassert-us = <80000>;
 		};
 	};
 };
@@ -136,14 +137,14 @@
                 #address-cells = <1>;
                 #size-cells = <0>;
 
-                ethphy2: ethernet-phy@2 {
+                ethphy2: ethernet-phy@7 {
 			compatible = "ethernet-phy-ieee802.3-c22";
+			reg = <7>;
 			eee-broken-1000t;
+			interrupts-extended = <&gpio2 16 IRQ_TYPE_LEVEL_LOW>;
 			reset-gpios = <&pcal6534 0 GPIO_ACTIVE_LOW>;
 			reset-assert-us = <10000>;
 			reset-deassert-us = <80000>;
-			interrupts-extended = <&gpio2 16 IRQ_TYPE_LEVEL_LOW>;
-			reg = <3>; /* SimonG note reg-mask (0x90) is not in mainline u-boot */
                 };
         };
 };
@@ -535,11 +536,11 @@
 			MX93_PAD_CCM_CLKO1__GPIO3_IO26				0x31e /* CSI0_EN */
 			MX93_PAD_ENET1_MDC__ENET_QOS_MDC			0x57e
 			MX93_PAD_ENET1_MDIO__ENET_QOS_MDIO			0x57e
-			MX93_PAD_ENET1_RD0__ENET_QOS_RGMII_RD0			0x57e
-			MX93_PAD_ENET1_RD1__ENET_QOS_RGMII_RD1			0x57e
-			MX93_PAD_ENET1_RD2__ENET_QOS_RGMII_RD2			0x57e
-			MX93_PAD_ENET1_RD3__ENET_QOS_RGMII_RD3			0x57e
-			MX93_PAD_ENET1_RXC__CCM_ENET_QOS_CLOCK_GENERATE_RX_CLK	0x5fe
+			MX93_PAD_ENET1_RD0__ENET_QOS_RGMII_RD0			0x37e
+			MX93_PAD_ENET1_RD1__ENET_QOS_RGMII_RD1			0x37e
+			MX93_PAD_ENET1_RD2__ENET_QOS_RGMII_RD2			0x37e
+			MX93_PAD_ENET1_RD3__ENET_QOS_RGMII_RD3			0x37e
+			MX93_PAD_ENET1_RXC__CCM_ENET_QOS_CLOCK_GENERATE_RX_CLK	0x3fe
 			MX93_PAD_ENET1_RX_CTL__ENET_QOS_RGMII_RX_CTL		0x57e
 			MX93_PAD_ENET1_TD0__ENET_QOS_RGMII_TD0			0x57e
 			MX93_PAD_ENET1_TD1__ENET_QOS_RGMII_TD1			0x57e
@@ -555,11 +556,11 @@
                 fsl,pins = <
 			MX93_PAD_ENET2_MDC__ENET1_MDC				0x57e
 			MX93_PAD_ENET2_MDIO__ENET1_MDIO				0x57e
-			MX93_PAD_ENET2_RD0__ENET1_RGMII_RD0			0x57e
-			MX93_PAD_ENET2_RD1__ENET1_RGMII_RD1			0x57e
-			MX93_PAD_ENET2_RD2__ENET1_RGMII_RD2			0x57e
-			MX93_PAD_ENET2_RD3__ENET1_RGMII_RD3			0x57e
-			MX93_PAD_ENET2_RXC__ENET1_RGMII_RXC			0x57e
+			MX93_PAD_ENET2_RD0__ENET1_RGMII_RD0			0x37e
+			MX93_PAD_ENET2_RD1__ENET1_RGMII_RD1			0x37e
+			MX93_PAD_ENET2_RD2__ENET1_RGMII_RD2			0x37e
+			MX93_PAD_ENET2_RD3__ENET1_RGMII_RD3			0x37e
+			MX93_PAD_ENET2_RXC__ENET1_RGMII_RXC			0x37e
 			MX93_PAD_ENET2_RX_CTL__ENET1_RGMII_RX_CTL		0x57e
 			MX93_PAD_ENET2_TD0__ENET1_RGMII_TD0			0x57e
 			MX93_PAD_ENET2_TD1__ENET1_RGMII_TD1			0x57e
