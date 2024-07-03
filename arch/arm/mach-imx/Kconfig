@@ -480,3 +480,10 @@ config PSCI_BOARD_REBOOT
 	depends on ARM_PSCI_FW
 	help
 	  This is a optional command used to trigger system board reboot on imx8q and imx95.
+
+config USB_GADGET_SPL_SPD_PRODUCT_NUM
+	hex "Product ID of the SPD USB device"
+	default 0x0151
+	help
+	  Product ID of the SPD USB device emulated, reported to the host device.
+
