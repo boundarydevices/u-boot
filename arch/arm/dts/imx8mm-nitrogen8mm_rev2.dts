@@ -5,7 +5,7 @@
 /dts-v1/;
 #include <dt-bindings/phy/phy-imx8-pcie.h>
 #include "imx8mm.dtsi"
-#include "imx8mm-nitrogen8mm_rev2.dtsi"
+#include "imx8mmn-nitrogen8mm_rev2.dtsi"
 
 / {
 	model = "Boundary Devices i.MX8MMini Nitrogen8MM Rev2";
