@@ -47,56 +47,71 @@ void spl_dram_init(void)
 #define I2C_PAD_CTRL	(PAD_CTL_DSE1 | PAD_CTL_HYS | PAD_CTL_PUE | PAD_CTL_PE)
 
 struct i2c_pads_info i2c_pad_info1[] = {
-{
-	.scl = {
-		.i2c_mode =  IMX8MM_PAD_I2C1_SCL_I2C1_SCL | MUX_PAD_CTRL(I2C_PAD_CTRL),
-		.gpio_mode = IMX8MM_PAD_I2C1_SCL_GPIO5_IO14 | MUX_PAD_CTRL(I2C_PAD_CTRL),
-		.gp = IMX_GPIO_NR(5, 14),
-	},
-	.sda = {
-		.i2c_mode = IMX8MM_PAD_I2C1_SDA_I2C1_SDA | MUX_PAD_CTRL(I2C_PAD_CTRL),
-		.gpio_mode = IMX8MM_PAD_I2C1_SDA_GPIO5_IO15 | MUX_PAD_CTRL(I2C_PAD_CTRL),
-		.gp = IMX_GPIO_NR(5, 15),
-	},
-},
-{
-	.scl = {
-		.i2c_mode = IMX8MM_PAD_I2C2_SCL_I2C2_SCL | MUX_PAD_CTRL(I2C_PAD_CTRL),
-		.gpio_mode = IMX8MM_PAD_I2C2_SCL_GPIO5_IO16 | MUX_PAD_CTRL(I2C_PAD_CTRL),
-		.gp = IMX_GPIO_NR(5, 16),
-	},
-	.sda = {
-		.i2c_mode = IMX8MM_PAD_I2C2_SDA_I2C2_SDA | MUX_PAD_CTRL(I2C_PAD_CTRL),
-		.gpio_mode = IMX8MM_PAD_I2C2_SDA_GPIO5_IO17 | MUX_PAD_CTRL(I2C_PAD_CTRL),
-		.gp = IMX_GPIO_NR(5, 17),
-	},
-},
-{
-	.scl = {
-		.i2c_mode = IMX8MM_PAD_I2C3_SCL_I2C3_SCL | MUX_PAD_CTRL(I2C_PAD_CTRL),
-		.gpio_mode = IMX8MM_PAD_I2C3_SCL_GPIO5_IO18 | MUX_PAD_CTRL(I2C_PAD_CTRL),
-		.gp = IMX_GPIO_NR(5, 18),
-	},
-	.sda = {
-		.i2c_mode = IMX8MM_PAD_I2C3_SDA_I2C3_SDA | MUX_PAD_CTRL(I2C_PAD_CTRL),
-		.gpio_mode = IMX8MM_PAD_I2C3_SDA_GPIO5_IO19 | MUX_PAD_CTRL(I2C_PAD_CTRL),
-		.gp = IMX_GPIO_NR(5, 19),
-	},
-},
-{
-	.scl = {
-		.i2c_mode = IMX8MM_PAD_I2C4_SDA_I2C4_SDA | MUX_PAD_CTRL(I2C_PAD_CTRL),
-		.gpio_mode = IMX8MM_PAD_I2C4_SCL_GPIO5_IO20 | MUX_PAD_CTRL(I2C_PAD_CTRL),
-		.gp = IMX_GPIO_NR(5, 20),
-	},
-	.sda = {
-		.i2c_mode = IMX8MM_PAD_I2C4_SDA_I2C4_SDA | MUX_PAD_CTRL(I2C_PAD_CTRL),
-		.gpio_mode = IMX8MM_PAD_I2C4_SDA_GPIO5_IO21 | MUX_PAD_CTRL(I2C_PAD_CTRL),
-		.gp = IMX_GPIO_NR(5, 21),
-	},
-},
+	{
+	 .scl = {
+		 .i2c_mode =
+		 IMX8MM_PAD_I2C1_SCL_I2C1_SCL | MUX_PAD_CTRL(I2C_PAD_CTRL),
+		 .gpio_mode =
+		 IMX8MM_PAD_I2C1_SCL_GPIO5_IO14 | MUX_PAD_CTRL(I2C_PAD_CTRL),
+		 .gp = IMX_GPIO_NR(5, 14),
+		 },
+	 .sda = {
+		 .i2c_mode =
+		 IMX8MM_PAD_I2C1_SDA_I2C1_SDA | MUX_PAD_CTRL(I2C_PAD_CTRL),
+		 .gpio_mode =
+		 IMX8MM_PAD_I2C1_SDA_GPIO5_IO15 | MUX_PAD_CTRL(I2C_PAD_CTRL),
+		 .gp = IMX_GPIO_NR(5, 15),
+		 },
+	  },
+	{
+	 .scl = {
+		 .i2c_mode =
+		 IMX8MM_PAD_I2C2_SCL_I2C2_SCL | MUX_PAD_CTRL(I2C_PAD_CTRL),
+		 .gpio_mode =
+		 IMX8MM_PAD_I2C2_SCL_GPIO5_IO16 | MUX_PAD_CTRL(I2C_PAD_CTRL),
+		 .gp = IMX_GPIO_NR(5, 16),
+		 },
+	 .sda = {
+		 .i2c_mode =
+		 IMX8MM_PAD_I2C2_SDA_I2C2_SDA | MUX_PAD_CTRL(I2C_PAD_CTRL),
+		 .gpio_mode =
+		 IMX8MM_PAD_I2C2_SDA_GPIO5_IO17 | MUX_PAD_CTRL(I2C_PAD_CTRL),
+		 .gp = IMX_GPIO_NR(5, 17),
+		 },
+	  },
+	{
+	 .scl = {
+		 .i2c_mode =
+		 IMX8MM_PAD_I2C3_SCL_I2C3_SCL | MUX_PAD_CTRL(I2C_PAD_CTRL),
+		 .gpio_mode =
+		 IMX8MM_PAD_I2C3_SCL_GPIO5_IO18 | MUX_PAD_CTRL(I2C_PAD_CTRL),
+		 .gp = IMX_GPIO_NR(5, 18),
+		 },
+	 .sda = {
+		 .i2c_mode =
+		 IMX8MM_PAD_I2C3_SDA_I2C3_SDA | MUX_PAD_CTRL(I2C_PAD_CTRL),
+		 .gpio_mode =
+		 IMX8MM_PAD_I2C3_SDA_GPIO5_IO19 | MUX_PAD_CTRL(I2C_PAD_CTRL),
+		 .gp = IMX_GPIO_NR(5, 19),
+		 },
+	  },
+	{
+	 .scl = {
+		 .i2c_mode =
+		 IMX8MM_PAD_I2C4_SDA_I2C4_SDA | MUX_PAD_CTRL(I2C_PAD_CTRL),
+		 .gpio_mode =
+		 IMX8MM_PAD_I2C4_SCL_GPIO5_IO20 | MUX_PAD_CTRL(I2C_PAD_CTRL),
+		 .gp = IMX_GPIO_NR(5, 20),
+		 },
+	 .sda = {
+		 .i2c_mode =
+		 IMX8MM_PAD_I2C4_SDA_I2C4_SDA | MUX_PAD_CTRL(I2C_PAD_CTRL),
+		 .gpio_mode =
+		 IMX8MM_PAD_I2C4_SDA_GPIO5_IO21 | MUX_PAD_CTRL(I2C_PAD_CTRL),
+		 .gp = IMX_GPIO_NR(5, 21),
+		 },
+	  },
 };
-
 
 #define USDHC_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_HYS | PAD_CTL_PUE |PAD_CTL_PE | \
 			 PAD_CTL_FSEL2)
@@ -115,7 +130,8 @@ static iomux_v3_cfg_t const usdhc1_pads[] = {
 	IMX8MM_PAD_SD1_DATA7_USDHC1_DATA7 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 
 #define GP_EMMC_RESET	IMX_GPIO_NR(2, 10)
-	IMX8MM_PAD_SD1_RESET_B_GPIO2_IO10 | MUX_PAD_CTRL(PAD_CTL_PUE | PAD_CTL_DSE1),
+	IMX8MM_PAD_SD1_RESET_B_GPIO2_IO10 | MUX_PAD_CTRL(PAD_CTL_PUE |
+							 PAD_CTL_DSE1),
 };
 
 static iomux_v3_cfg_t const usdhc2_pads[] = {
@@ -128,13 +144,15 @@ static iomux_v3_cfg_t const usdhc2_pads[] = {
 #define USDHC2_PWR_GPIO IMX_GPIO_NR(2, 19)
 	IMX8MM_PAD_SD2_RESET_B_GPIO2_IO19 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 #define GP_USDHC2_VSEL		IMX_GPIO_NR(1, 4)
-	IMX8MM_PAD_GPIO1_IO04_USDHC2_VSELECT | MUX_PAD_CTRL(PAD_CTL_FSEL2 | PAD_CTL_DSE4 | PAD_CTL_DSE2),
+	IMX8MM_PAD_GPIO1_IO04_USDHC2_VSELECT | MUX_PAD_CTRL(PAD_CTL_FSEL2 |
+							    PAD_CTL_DSE4 |
+							    PAD_CTL_DSE2),
 	IMX8MM_PAD_SD2_CD_B_USDHC2_CD_B | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 };
 
 static struct fsl_esdhc_cfg usdhc_cfg[2] = {
-	{USDHC1_BASE_ADDR, 0, 8},
-	{USDHC2_BASE_ADDR, 0, 4},
+	{ USDHC1_BASE_ADDR, 0, 8 },
+	{ USDHC2_BASE_ADDR, 0, 4 },
 };
 
 int board_mmc_getcd(struct mmc *mmc)
@@ -169,8 +187,9 @@ int board_mmc_init(struct bd_info *bis)
 		case 0:
 			init_clk_usdhc(1);
 			usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC_CLK);
-			imx_iomux_v3_setup_multiple_pads(
-				usdhc1_pads, ARRAY_SIZE(usdhc1_pads));
+			imx_iomux_v3_setup_multiple_pads(usdhc1_pads,
+							 ARRAY_SIZE
+							 (usdhc1_pads));
 			gpio_request(GP_EMMC_RESET, "usdhc1_reset");
 			gpio_direction_output(GP_EMMC_RESET, 0);
 			udelay(500);
@@ -179,12 +198,13 @@ int board_mmc_init(struct bd_info *bis)
 		case 1:
 			init_clk_usdhc(2);
 			usdhc_cfg[1].sdhc_clk = mxc_get_clock(MXC_ESDHC2_CLK);
-			imx_iomux_v3_setup_multiple_pads(
-				usdhc2_pads, ARRAY_SIZE(usdhc2_pads));
+			imx_iomux_v3_setup_multiple_pads(usdhc2_pads,
+							 ARRAY_SIZE
+							 (usdhc2_pads));
 			break;
 		default:
 			printf("Warning: you configured more USDHC controllers"
-				"(%d) than supported by the board\n", i + 1);
+			       "(%d) than supported by the board\n", i + 1);
 			return -EINVAL;
 		}
 
@@ -210,7 +230,7 @@ int power_init_boundary(void)
 #define SW4_VOLT	0x69
 #define SW5_VOLT	0x71
 
-	buf[0] = 0x50;	/* (.90-.4)*160=.50*160=80=0x50  80/160+.4=.90 gpu/dram/arm */
+	buf[0] = 0x50;		/* (.90-.4)*160=.50*160=80=0x50  80/160+.4=.90 gpu/dram/arm */
 	ret = i2c_write(PF8100, SW2_VOLT, 1, buf, 1);
 	if (ret)
 		return ret;
@@ -230,11 +250,10 @@ int power_init_boundary(void)
 		ret = i2c_write(PF8100, SW3_CONFIG2, 1, buf, 1);
 	}
 
-	buf[0] = 0x40;	/* (.80-.4)*160=.40*160=64=0x40  64/160+.4=.80 vpu */
+	buf[0] = 0x40;		/* (.80-.4)*160=.40*160=64=0x40  64/160+.4=.80 vpu */
 	ret = i2c_write(PF8100, SW5_VOLT, 1, buf, 1);
 	return ret;
 }
-
 
 void spl_board_init(void)
 {
