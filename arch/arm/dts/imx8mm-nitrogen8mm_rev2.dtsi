@@ -108,9 +108,6 @@
 &fec1 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_fec1>;
-#if 0
-	phy-reset-gpios = <&gpio3 15 GPIO_ACTIVE_LOW>;
-#endif
 	phy-mode = "rgmii-id";
 	phy-handle = <&ethphy0>;
 	fsl,magic-packet;
@@ -120,10 +117,14 @@
 		#address-cells = <1>;
 		#size-cells = <0>;
 
-		ethphy0: ethernet-phy@7 {
+		ethphy0: ethernet-phy {
 			compatible = "ethernet-phy-ieee802.3-c22";
 			interrupts-extended = <&gpio3 16 IRQ_TYPE_LEVEL_LOW>;
 			reg = <0x7>;
+			// reg-mask = <0x90>;
+			reset-gpios = <&gpio3 15 GPIO_ACTIVE_LOW>;
+			reset-assert-us = <10000>;
+			reset-deassert-us = <80000>;
 			rxc-skew-ps = <3000>;
 			rxd0-skew-ps = <0>;
 			rxd1-skew-ps = <0>;
@@ -535,7 +536,7 @@
 			MX8MM_IOMUXC_ENET_TD3_ENET1_RGMII_TD3	0x10
 			MX8MM_IOMUXC_ENET_TXC_ENET1_RGMII_TXC	0x12
 			MX8MM_IOMUXC_ENET_TX_CTL_ENET1_RGMII_TX_CTL	0x10
-			MX8MM_IOMUXC_NAND_RE_B_GPIO3_IO15	0x159
+			MX8MM_IOMUXC_NAND_RE_B_GPIO3_IO15	0x119
 			MX8MM_IOMUXC_NAND_READY_B_GPIO3_IO16	0x1c0
 		>;
 	};
