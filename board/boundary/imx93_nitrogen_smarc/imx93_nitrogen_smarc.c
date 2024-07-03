@@ -69,8 +69,8 @@ static int setup_eqos(void)
 int board_init(void)
 {
 	if (IS_ENABLED(CONFIG_FEC_MXC)) {
-                setup_fec();
-        }
+		setup_fec();
+	}
 
 	if (CONFIG_IS_ENABLED(DWC_ETH_QOS))
 		setup_eqos();
@@ -84,6 +84,18 @@ int board_late_init(void)
 #ifdef CONFIG_AHAB_BOOT
 	env_set("sec_boot", "yes");
 #endif
+
+	if (!env_get("serial#")) {
+		unsigned char mac_address[8];
+		char serialbuf[20];
+
+		imx_get_mac_from_fuse(0, mac_address);
+		snprintf(serialbuf, sizeof(serialbuf), "%02x%02x%02x%02x%02x%02x",
+			 mac_address[0], mac_address[1], mac_address[2],
+			 mac_address[3], mac_address[4], mac_address[5]);
+		printf("serial %s\n", serialbuf);
+		env_set("serial#", serialbuf);
+	}
 
 	return 0;
 }
