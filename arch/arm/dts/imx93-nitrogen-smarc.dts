@@ -51,10 +51,10 @@
 
 	reg_vref_5v0: regulator-5v0 {
 		compatible = "regulator-fixed";
-                regulator-name = "VDD_5V0";
-                regulator-min-microvolt = <5000000>;
-                regulator-max-microvolt = <5000000>;
-        };
+		regulator-name = "VDD_5V0";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+	};
 
 	reg_vdd_3v3: regulator-vdd {
 		compatible = "regulator-fixed";
@@ -71,9 +71,9 @@
 	};
 
 	usdhc3_pwrseq: usdhc3_pwrseq {
-                compatible = "mmc-pwrseq-simple";
-                reset-gpios = <&gpio1 10 GPIO_ACTIVE_LOW>; /* SDIO_RESET */
-        };
+		compatible = "mmc-pwrseq-simple";
+		reset-gpios = <&gpio1 10 GPIO_ACTIVE_LOW>; /* SDIO_RESET */
+	};
 
 	sound-wm8962 {
 		compatible = "fsl,imx-audio-wm8962";
@@ -82,15 +82,15 @@
 		audio-codec = <&codec>;
 		codec-master;
 		audio-routing =
-                        "Headphone Jack", "HPOUTL",
-                        "Headphone Jack", "HPOUTR",
-                        "Ext Spk", "SPKOUTL",
-                        "Ext Spk", "SPKOUTR",
-                        "AMIC", "MICBIAS",
-                        "IN1R", "AMIC",
-                        "IN2R", "AMIC",
-                        "IN3L", "AMIC",
-                        "IN3R", "AMIC";
+			"Headphone Jack", "HPOUTL",
+			"Headphone Jack", "HPOUTR",
+			"Ext Spk", "SPKOUTL",
+			"Ext Spk", "SPKOUTR",
+			"AMIC", "MICBIAS",
+			"IN1R", "AMIC",
+			"IN2R", "AMIC",
+			"IN3L", "AMIC",
+			"IN3R", "AMIC";
 	};
 
 };
@@ -126,18 +126,18 @@
 };
 
 &fec {
-        pinctrl-names = "default";
-        pinctrl-0 = <&pinctrl_fec>;
-        phy-mode = "rgmii-id";
-        phy-handle = <&ethphy2>;
-        fsl,magic-packet;
-        status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_fec>;
+	phy-mode = "rgmii-id";
+	phy-handle = <&ethphy2>;
+	fsl,magic-packet;
+	status = "okay";
 
-        mdio {
-                #address-cells = <1>;
-                #size-cells = <0>;
+	mdio {
+		#address-cells = <1>;
+		#size-cells = <0>;
 
-                ethphy2: ethernet-phy@7 {
+		ethphy2: ethernet-phy@7 {
 			compatible = "ethernet-phy-ieee802.3-c22";
 			reg = <7>;
 			eee-broken-1000t;
@@ -145,8 +145,8 @@
 			reset-gpios = <&pcal6534 0 GPIO_ACTIVE_LOW>;
 			reset-assert-us = <10000>;
 			reset-deassert-us = <80000>;
-                };
-        };
+		};
+	};
 };
 
 &lpi2c1 { /* PMIC I2C bus, but the PMIC is on lpi2c2 !!! */
@@ -259,143 +259,144 @@
 	};
 
 	i2cmuxsom@71 {
-                pinctrl-names = "default";
-                compatible = "nxp,pca9546";
-                reg = <0x71>;
-                reset-gpios = <&pcal6534 32 GPIO_ACTIVE_LOW>; /* P4_0 */
-                #address-cells = <1>;
-                #size-cells = <0>;
+		pinctrl-names = "default";
+		compatible = "nxp,pca9546";
+		reg = <0x71>;
+		reset-gpios = <&pcal6534 32 GPIO_ACTIVE_LOW>; /* P4_0 */
+		#address-cells = <1>;
+		#size-cells = <0>;
 
-                i2cmuxsoma: i2cmuxsom@csi0 {
-                        /* CSI0 I2C */
-                        clock-frequency = <100000>;
-                        reg = <0>;
-                        #address-cells = <1>;
-                        #size-cells = <0>;
-                };
+		i2cmuxsoma: i2cmuxsom@csi0 {
+			/* CSI0 I2C */
+			clock-frequency = <100000>;
+			reg = <0>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+		};
 
-                i2cmuxsomb: i2cmuxsom@lcd {
-                        /* LCD I2C */
-                        clock-frequency = <100000>;
-                        reg = <1>;
-                        #address-cells = <1>;
-                        #size-cells = <0>;
-                };
+		i2cmuxsomb: i2cmuxsom@lcd {
+			/* LCD I2C */
+			clock-frequency = <100000>;
+			reg = <1>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+		};
 
-                i2cmuxsomc: i2cmuxsom@csi1 {
-                        /* CSI1 I2C */
-                        clock-frequency = <100000>;
-                        reg = <2>;
-                        #address-cells = <1>;
-                        #size-cells = <0>;
-                };
-        };
+		i2cmuxsomc: i2cmuxsom@csi1 {
+			/* CSI1 I2C */
+			clock-frequency = <100000>;
+			reg = <2>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+		};
+	};
 };
 
-&i2cmuxsomb { /* LCD I2C */
-	i2cmuxsmarc-lcd@73 { /* On SMARC carrier */
-                pinctrl-names = "default";
-                compatible = "nxp,pca9546";
-                reg = <0x73>;
-                reset-gpios = <&pcal6534 29 GPIO_ACTIVE_LOW>; /* P3_5 / GPIO_13 */
-                #address-cells = <1>;
-                #size-cells = <0>;
+/* LCD I2C */
+&i2cmuxsomb {
+	i2cmuxsmarc-lcd@73 {
+		pinctrl-names = "default";
+		compatible = "nxp,pca9546";
+		reg = <0x73>;
+		reset-gpios = <&pcal6534 29 GPIO_ACTIVE_LOW>; /* P3_5 / GPIO_13 */
+		#address-cells = <1>;
+		#size-cells = <0>;
 
-                i2cmuxlcda: i2cmuxlcd@exp1 {
-                        /* EXP1 I2C */
-                        clock-frequency = <100000>;
-                        reg = <0>;
-                        #address-cells = <1>;
-                        #size-cells = <0>;
-                };
+		i2cmuxlcda: i2cmuxlcd@exp1 {
+			/* EXP1 I2C */
+			clock-frequency = <100000>;
+			reg = <0>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+		};
 
-                i2cmuxlcdb: i2cmuxlcd@exp2 {
-                        /* EXP2 I2C */
-                        clock-frequency = <100000>;
-                        reg = <1>;
-                        #address-cells = <1>;
-                        #size-cells = <0>;
-                };
+		i2cmuxlcdb: i2cmuxlcd@exp2 {
+			/* EXP2 I2C */
+			clock-frequency = <100000>;
+			reg = <1>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+		};
 
-                i2cmuxlcdc: i2cmuxlcd@dsi0 {
-                        /* DSI0 I2C */
-                        clock-frequency = <100000>;
-                        reg = <2>;
-                        #address-cells = <1>;
-                        #size-cells = <0>;
-                };
+		i2cmuxlcdc: i2cmuxlcd@dsi0 {
+			/* DSI0 I2C */
+			clock-frequency = <100000>;
+			reg = <2>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+		};
 
-                i2cmuxlcdd: i2cmuxlcd@dsi1 {
-                        /* DSI1 I2C */
-                        clock-frequency = <100000>;
-                        reg = <3>;
-                        #address-cells = <1>;
-                        #size-cells = <0>;
-                };
-        };
+		i2cmuxlcdd: i2cmuxlcd@dsi1 {
+			/* DSI1 I2C */
+			clock-frequency = <100000>;
+			reg = <3>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+		};
+	};
 };
 
-
-&lpi2c3 { /* SM_I2C_GP */
-        #address-cells = <1>;
-        #size-cells = <0>;
-        clock-frequency = <400000>; // 100000 ??
-        pinctrl-names = "default", "sleep";
-        pinctrl-0 = <&pinctrl_lpi2c3>;
-        pinctrl-1 = <&pinctrl_lpi2c3>;
-        status = "okay";
+/* SM_I2C_GP */
+&lpi2c3 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	clock-frequency = <400000>; // 100000 ??
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&pinctrl_lpi2c3>;
+	pinctrl-1 = <&pinctrl_lpi2c3>;
+	status = "okay";
 
 	/* On bd-universal-smarc-carrier */
 	i2cmuxsmarc-gp@73 {
-                compatible = "nxp,pca9546";
-                reg = <0x73>;
-                reset-gpios = <&gpio2 2 GPIO_ACTIVE_LOW>; /* SMARC GPIO6*/
-                #address-cells = <1>;
-                #size-cells = <0>;
+		compatible = "nxp,pca9546";
+		reg = <0x73>;
+		reset-gpios = <&gpio2 2 GPIO_ACTIVE_LOW>; /* SMARC GPIO6*/
+		#address-cells = <1>;
+		#size-cells = <0>;
 
-                i2cmuxsmarcgpa: i2cmuxsmarc-gp@rtc {
-                        /* RTC */
-                        clock-frequency = <100000>;
-                        reg = <0>;
-                        #address-cells = <1>;
-                        #size-cells = <0>;
-                };
+		i2cmuxsmarcgpa: i2cmuxsmarc-gp@rtc {
+			/* RTC */
+			clock-frequency = <100000>;
+			reg = <0>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+		};
 
-                i2cmuxsmarcgpb: i2cmuxsmarc-gp@usb-c {
-                        /* USB C */
-                        clock-frequency = <100000>;
-                        reg = <1>;
-                        #address-cells = <1>;
-                        #size-cells = <0>;
-                };
+		i2cmuxsmarcgpb: i2cmuxsmarc-gp@usb-c {
+			/* USB C */
+			clock-frequency = <100000>;
+			reg = <1>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+		};
 
-                i2cmuxsmarcgpc: i2cmuxsmarc-gp@audio {
-                        /* audio */
-                        clock-frequency = <100000>;
-                        reg = <2>;
-                        #address-cells = <1>;
-                        #size-cells = <0>;
-                };
+		i2cmuxsmarcgpc: i2cmuxsmarc-gp@audio {
+			/* audio */
+			clock-frequency = <100000>;
+			reg = <2>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+		};
 
-                i2cmuxsmarcgpd: i2cmuxsmarc-gp@pcie {
-                        /* pcie */
-                        clock-frequency = <100000>;
-                        reg = <3>;
-                        #address-cells = <1>;
-                        #size-cells = <0>;
-                };
-        };
+		i2cmuxsmarcgpd: i2cmuxsmarc-gp@pcie {
+			/* pcie */
+			clock-frequency = <100000>;
+			reg = <3>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+		};
+	};
 };
 
 &i2cmuxsmarcgpa {
-        rv3028: rtc@52 {
-                backup-switchover-dsm;
-                #clock-cells = <0>;
-                compatible = "microcrystal,rv3028";
-                reg = <0x52>;
-                // interrupts-extended = <24 IRQ_TYPE_LEVEL_LOW>; /* SMARC GPIO12 */
-                wakeup-source;
-        };
+	rv3028: rtc@52 {
+		backup-switchover-dsm;
+		#clock-cells = <0>;
+		compatible = "microcrystal,rv3028";
+		reg = <0x52>;
+		// interrupts-extended = <24 IRQ_TYPE_LEVEL_LOW>; /* SMARC GPIO12 */
+		wakeup-source;
+	};
 };
 
 &i2cmuxsmarcgpc {
@@ -404,28 +405,28 @@
 		reg = <0x1a>;
 		clocks = <&clk IMX93_CLK_SAI1_GATE>;
 		AVDD-supply = <&reg_vref_1v8>;
-                CPVDD-supply = <&reg_vref_1v8>;
-                DBVDD-supply = <&reg_vdd_3v3>;
-                DCVDD-supply = <&reg_vref_1v8>;
-                MICVDD-supply = <&reg_vdd_3v3>;
-                PLLVDD-supply = <&reg_vref_1v8>;
-                SPKVDD1-supply = <&reg_vref_5v0>;
-                SPKVDD2-supply = <&reg_vref_5v0>;
+		CPVDD-supply = <&reg_vref_1v8>;
+		DBVDD-supply = <&reg_vdd_3v3>;
+		DCVDD-supply = <&reg_vref_1v8>;
+		MICVDD-supply = <&reg_vdd_3v3>;
+		PLLVDD-supply = <&reg_vref_1v8>;
+		SPKVDD1-supply = <&reg_vref_5v0>;
+		SPKVDD2-supply = <&reg_vref_5v0>;
 		gpio-cfg = <
-                        0x0000 /* n/c */
-                        0x0000 /* gpio2: */
-                        0x0000 /* gpio3: */
-                        0x0000 /* n/c */
-                        0x8081 /* gpio5:HP detect */
-                        0x8095 /* gpio6:Mic detect */
-                >;
+			0x0000 /* n/c */
+			0x0000 /* gpio2: */
+			0x0000 /* gpio3: */
+			0x0000 /* n/c */
+			0x8081 /* gpio5:HP detect */
+			0x8095 /* gpio6:Mic detect */
+		>;
 	};
 };
 
 &lpuart1 { /* console */
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_uart1>;
-	status = "okay";
+pinctrl-names = "default";
+pinctrl-0 = <&pinctrl_uart1>;
+status = "okay";
 };
 
 &lpuart5 {
@@ -436,22 +437,22 @@
 };
 
 &usbotg1 {
-        dr_mode = "otg";
-        hnp-disable;
-        srp-disable;
-        adp-disable;
-        disable-over-current;
-        samsung,picophy-pre-emp-curr-control = <3>;
-        samsung,picophy-dc-vol-level-adjust = <7>;
-        status = "okay";
+	dr_mode = "otg";
+	hnp-disable;
+	srp-disable;
+	adp-disable;
+	disable-over-current;
+	samsung,picophy-pre-emp-curr-control = <3>;
+	samsung,picophy-dc-vol-level-adjust = <7>;
+	status = "okay";
 };
 
 &usbotg2 {
-        dr_mode = "host";
-        disable-over-current;
-        samsung,picophy-pre-emp-curr-control = <3>;
-        samsung,picophy-dc-vol-level-adjust = <7>;
-        status = "okay";
+	dr_mode = "host";
+	disable-over-current;
+	samsung,picophy-pre-emp-curr-control = <3>;
+	samsung,picophy-dc-vol-level-adjust = <7>;
+	status = "okay";
 };
 
 &mu1 {
@@ -553,7 +554,7 @@
 	};
 
 	pinctrl_fec: fecgrp {
-                fsl,pins = <
+		fsl,pins = <
 			MX93_PAD_ENET2_MDC__ENET1_MDC				0x57e
 			MX93_PAD_ENET2_MDIO__ENET1_MDIO				0x57e
 			MX93_PAD_ENET2_RD0__ENET1_RGMII_RD0			0x37e
@@ -569,8 +570,8 @@
 			MX93_PAD_ENET2_TXC__ENET1_RGMII_TXC			0x57e
 			MX93_PAD_ENET2_TX_CTL__ENET1_RGMII_TX_CTL		0x57e
 			MX93_PAD_GPIO_IO16__GPIO2_IO16				0x31e
-                >;
-        };
+		>;
+	};
 
 	pinctrl_lpi2c1: lpi2c1grp {
 		fsl,pins = <
@@ -587,13 +588,13 @@
 	};
 
 	pinctrl_lpi2c3: lpi2c3grp {
-                fsl,pins = <
+		fsl,pins = <
 			MX93_PAD_GPIO_IO00__LPI2C3_SDA			0x40000b9e
 			MX93_PAD_GPIO_IO01__LPI2C3_SCL			0x40000b9e
 			MX93_PAD_GPIO_IO02__GPIO2_IO02			0x31e
 			MX93_PAD_GPIO_IO24__GPIO2_IO24			0x31e
 		>;
-        };
+	};
 
 	pinctrl_pcal6534: pcal6534grp {
 		fsl,pins = <
@@ -663,9 +664,9 @@
 			MX93_PAD_SD3_CLK__USDHC3_CLK			0x15fe
 			MX93_PAD_SD3_CMD__USDHC3_CMD			0x13fe
 			MX93_PAD_SD3_DATA0__USDHC3_DATA0		0x13fe
-			MX93_PAD_SD3_DATA1__USDHC3_DATA1        	0x13fe
-			MX93_PAD_SD3_DATA2__USDHC3_DATA2        	0x13fe
-			MX93_PAD_SD3_DATA3__USDHC3_DATA3        	0x13fe
+			MX93_PAD_SD3_DATA1__USDHC3_DATA1		0x13fe
+			MX93_PAD_SD3_DATA2__USDHC3_DATA2		0x13fe
+			MX93_PAD_SD3_DATA3__USDHC3_DATA3		0x13fe
 			MX93_PAD_PDM_BIT_STREAM1__GPIO1_IO10		0x31e
 		>;
 	};
@@ -683,7 +684,7 @@
 		fsl,pins = <
 			MX93_PAD_GPIO_IO12__SAI3_RX_SYNC		0x31e
 			MX93_PAD_GPIO_IO18__SAI3_RX_BCLK		0x31e
-			MX93_PAD_GPIO_IO17__SAI3_MCLK		0x31e
+			MX93_PAD_GPIO_IO17__SAI3_MCLK			0x31e
 			MX93_PAD_GPIO_IO19__SAI3_TX_DATA00		0x31e
 			MX93_PAD_GPIO_IO20__SAI3_RX_DATA00		0x31e
 		>;

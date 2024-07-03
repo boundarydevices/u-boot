@@ -81,8 +81,8 @@ void spl_dram_init(void)
 	printf("\tSize: ");
 	print_size(dram_size, "\n");
 	/* Is this a 2G board or less ? */
-	if ( dram_size != SZ_2G ) {
-		if ( dram_size == SZ_1G ) {
+	if (dram_size != SZ_2G) {
+		if (dram_size == SZ_1G) {
 			printf("Config: DDR 1G\n");
 			/* (2GB -> 1GB DDR RAM) */
 			writel(CS0_BNDS_1GB, REG_DDR_CS0_BNDS);
@@ -118,13 +118,13 @@ int power_init_board(void)
 		val = ret;
 
 	if (is_voltage_mode(VOLT_LOW_DRIVE)) {
-		buck_val = 0x0c; /* 0.8v for Low drive mode */
+		buck_val = 0x0c;	/* 0.8v for Low drive mode */
 		printf("PMIC: Low Drive Voltage Mode\n");
 	} else if (is_voltage_mode(VOLT_NOMINAL_DRIVE)) {
-		buck_val = 0x10; /* 0.85v for Nominal drive mode */
+		buck_val = 0x10;	/* 0.85v for Nominal drive mode */
 		printf("PMIC: Nominal Voltage Mode\n");
 	} else {
-		buck_val = 0x14; /* 0.9v for Over drive mode */
+		buck_val = 0x14;	/* 0.9v for Over drive mode */
 		printf("PMIC: Over Drive Voltage Mode\n");
 	}
 
@@ -145,7 +145,7 @@ int power_init_board(void)
 	else
 		pmic_reg_write(dev, PCA9450_BUCK1OUT_DVS1, 0x4);
 
-	/* I2C_LT_EN*/
+	/* I2C_LT_EN */
 	pmic_reg_write(dev, 0xa, 0x3);
 	return 0;
 }
