@@ -104,23 +104,6 @@ static iomux_v3_cfg_t const init_pads[] = {
 
 };
 
-#if CONFIG_IS_ENABLED(EFI_HAVE_CAPSULE_SUPPORT)
-struct efi_fw_image fw_images[] = {
-	{
-	 .image_type_id = IMX_BOOT_IMAGE_GUID,
-	 .fw_name = u "IMX8MM-NIT-SOM-RAW",
-	 .image_index = 1,
-	  },
-};
-
-struct efi_capsule_update_info update_info = {
-	.dfu_string = "mmc 2=flash-bin raw 0x42 0x2000 mmcpart 1",
-	.num_images = ARRAY_SIZE(fw_images),
-	.images = fw_images,
-};
-
-#endif /* EFI_HAVE_CAPSULE_SUPPORT */
-
 #if IS_ENABLED(CONFIG_FEC_MXC)
 static int setup_fec(void)
 {
@@ -129,14 +112,6 @@ static int setup_fec(void)
 
 	/* Use 125M anatop REF_CLK1 for ENET1, not from external */
 	clrsetbits_le32(&gpr->gpr[1], 0x2000, 0);
-
-	return 0;
-}
-
-int board_phy_config(struct phy_device *phydev)
-{
-	if (phydev->drv->config)
-		phydev->drv->config(phydev);
 
 	return 0;
 }
@@ -208,57 +183,4 @@ int mmc_map_to_kernel_blk(int dev_no)
 int board_late_init(void)
 {
 	return 0;
-}
-
-#define PF8100 0x08
-#define PF8X00_EMREV	0x02
-#define PF8X00_PROGID	0x03
-#define ID_DUAL1	0x4008
-#define ID_DUAL2	0x301d
-
-static void check_dual_sw4(void)
-{
-	struct udevice *bus;
-	struct udevice *i2c_dev;
-	unsigned char id[4];
-	int ret;
-	int prog_id;
-
-	ret = uclass_get_device_by_seq(UCLASS_I2C, 0, &bus);
-	if (ret) {
-		printf("%s: Can't find bus\n", __func__);
-		return;
-	}
-
-	ret = dm_i2c_probe(bus, PF8100, 0, &i2c_dev);
-	if (ret) {
-		printf("%s: Can't find device id=0x%x\n", __func__, PF8100);
-		return;
-	}
-
-	id[0] = 0;
-	id[0] = 1;
-	dm_i2c_read(i2c_dev, PF8X00_PROGID, id, 1);
-	if ((id[0] != (ID_DUAL1 & 0xff)) && (id[0] != (ID_DUAL2 & 0xff)))
-		return;
-	dm_i2c_read(i2c_dev, PF8X00_EMREV, &id[1], 1);
-	prog_id = (id[1] << 8) | id[0];
-	if ((prog_id == ID_DUAL1) || (prog_id == ID_DUAL2)) {
-		/*
-		 * about 20 boards were stuffed with a dual phase sw3-sw4 PF8100
-		 * use sw4 as VDD_ARM for these boards.
-		 */
-		env_set("cmd_board",
-			"fdt set reg_sw4 dual-phase; "
-			"fdt get value reg reg_sw4 phandle; "
-			"fdt set a53 arm-supply <${reg}>; "
-			"fdt set a53 cpu-supply <${reg}>; "
-			"fdt get value gp gpio0 phandle; "
-			"fdt set wdog0 reset-gpios <${gp} 2 1>");
-	}
-}
-
-void board_env_init(void)
-{
-	check_dual_sw4();
 }
