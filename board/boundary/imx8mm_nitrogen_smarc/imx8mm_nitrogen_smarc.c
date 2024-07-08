@@ -35,87 +35,18 @@ static iomux_v3_cfg_t const wdog_pads[] = {
 	IMX8MM_PAD_GPIO1_IO02_WDOG1_WDOG_B | MUX_PAD_CTRL(WDOG_PAD_CTRL),
 };
 
-#if 0
-static iomux_v3_cfg_t const eth_strap_pads[] = {
-	IMX8MM_PAD_ENET_RXC_GPIO1_IO25 | MUX_PAD_CTRL(PAD_CTL_PUE),
-	IMX8MM_PAD_NAND_CLE_GPIO3_IO5 | MUX_PAD_CTRL(PAD_CTL_PUE),
-};
-
-static iomux_v3_cfg_t const eth_normal_pads[] = {
-	IMX8MM_PAD_ENET_RXC_ENET1_RGMII_RXC | MUX_PAD_CTRL(PAD_CTL_FSEL2),
-};
-#endif
-
-#define GP_ETH_STRAP			IMX_GPIO_NR(1, 25)
-#define GP_RGMII_PHY_RESET		IMX_GPIO_NR(3, 15)
-
 static iomux_v3_cfg_t const init_pads[] = {
-#define GPIRQ_I2C2_SN65DSI83		IMX_GPIO_NR(3, 24)
-#define GP_CS005_0004_03_DISPLAY_EN	IMX_GPIO_NR(3, 24)
-/* This enables 5V power on LTK080A60A004T mipi display */
-#define GP_LTK08_MIPI_EN		IMX_GPIO_NR(3, 24)
-#define GP_LS050T1SX12_EN		IMX_GPIO_NR(3, 24)
-#define GP_LT8912_DISPLAY_EN		IMX_GPIO_NR(3, 24)
-	IMX8MM_PAD_SAI5_RXD3_GPIO3_IO24 | MUX_PAD_CTRL(PAD_CTL_PE),	/* MIPI_IRQ - SM_CARRIER_STANDBY */
-
-#define GP_LVDS_BACKLIGHT_EN		IMX_GPIO_NR(1, 1)
-#define GPIRQ_TS_GT911 			IMX_GPIO_NR(1, 1)
+	IMX8MM_PAD_SAI5_RXD3_GPIO3_IO24 | MUX_PAD_CTRL(PAD_CTL_PE),			/* MIPI_IRQ - SM_CARRIER_STANDBY */
 	IMX8MM_PAD_GPIO1_IO01_GPIO1_IO1 | MUX_PAD_CTRL(PAD_CTL_PE | PAD_CTL_HYS),	/* MIPI_TS_IRQ  - SM_LCD0_BKLT_EN */
-
-#define GP_TS_ATMEL_RESET		IMX_GPIO_NR(4, 5)
-#define GP_TS_GT911_RESET		IMX_GPIO_NR(4, 5)
-#define GP_ST1633_RESET			IMX_GPIO_NR(4, 5)
-#define GP_TS_FT5X06_RESET		IMX_GPIO_NR(4, 5)
-#define GP_TS_ILI251X_RESET		IMX_GPIO_NR(4, 5)
-	IMX8MM_PAD_SAI1_RXD3_GPIO4_IO5 | MUX_PAD_CTRL(PAD_CTL_PE),	/* MIPI_TS_RESET - SM_GPIO7 */
-
-#define GP_TC358762_EN		IMX_GPIO_NR(1, 3)
-#define GP_SC18IS602B_RESET	IMX_GPIO_NR(1, 3)
-#define GP_DMT055FHNMCMI_EN	IMX_GPIO_NR(1, 3)
-#define GP_SN65DSI83_EN		IMX_GPIO_NR(1, 3)
-#define GP_MIPI_ENABLE		IMX_GPIO_NR(1, 3)
-#define	GP_LT8912_RESET		IMX_GPIO_NR(1, 3)
-/* enable for TPS65132 Single Inductor - Dual Output Power Supply */
-#define GP_LCD133_070_ENABLE		IMX_GPIO_NR(1, 3)
+	IMX8MM_PAD_SAI1_RXD3_GPIO4_IO5 | MUX_PAD_CTRL(PAD_CTL_PE),			/* MIPI_TS_RESET - SM_GPIO7 */
 	IMX8MM_PAD_GPIO1_IO03_GPIO1_IO3 | MUX_PAD_CTRL(PAD_CTL_DSE2 | PAD_CTL_DSE4),	/* MIPI_ENABLE - SM_LCD0_VDD_EN */
-
-#define GP_TS_LVDS_GT911_RESET	IMX_GPIO_NR(1, 10)
-#define GP_TS_LVDS_FT5X06_RESET	IMX_GPIO_NR(1, 10)
 	IMX8MM_PAD_GPIO1_IO10_GPIO1_IO10 | MUX_PAD_CTRL(PAD_CTL_DSE2 | PAD_CTL_DSE4),	/* SM_ESPI_ALERT0 */
-#define GPIRQ_TS_LVDS_GT911	IMX_GPIO_NR(3, 22)
 	IMX8MM_PAD_SAI5_RXD1_GPIO3_IO22 | MUX_PAD_CTRL(PAD_CTL_DSE2 | PAD_CTL_DSE4),	/* SM_SMB_ALERT */
-
-#define GP_SN65DSI83_LVDS_EN	IMX_GPIO_NR(3, 25)
-	IMX8MM_PAD_SAI5_MCLK_GPIO3_IO25 | MUX_PAD_CTRL(PAD_CTL_DSE2 | PAD_CTL_DSE4),	/* on som  */
-
-#define GPIRQ_RV3028		IMX_GPIO_NR(3, 23)
-	IMX8MM_PAD_SAI5_RXD2_GPIO3_IO23 | MUX_PAD_CTRL(PAD_CTL_DSE2 | PAD_CTL_DSE4),	/* SM_GPIO12 */
-
-	/* pcie */
-#define GP_PCIE0_RESET		IMX_GPIO_NR(3, 2)
-	IMX8MM_PAD_NAND_CE1_B_GPIO3_IO2 | MUX_PAD_CTRL(PAD_CTL_PE),	/* SM_PCIE_A_RST */
-
-#define GP_EMMC_RESET	IMX_GPIO_NR(2, 10)
-	IMX8MM_PAD_SD1_RESET_B_GPIO2_IO10 | MUX_PAD_CTRL(PAD_CTL_PUE |
-							 PAD_CTL_DSE1),
+	IMX8MM_PAD_SAI5_MCLK_GPIO3_IO25 | MUX_PAD_CTRL(PAD_CTL_DSE2 | PAD_CTL_DSE4),	/* SN65DSI83 on som  */
+	IMX8MM_PAD_SAI5_RXD2_GPIO3_IO23 | MUX_PAD_CTRL(PAD_CTL_DSE2 | PAD_CTL_DSE4),	/* RV3028 - SM_GPIO12 */
+	IMX8MM_PAD_NAND_CE1_B_GPIO3_IO2 | MUX_PAD_CTRL(PAD_CTL_PE),			/* SM_PCIE_A_RST */
+	IMX8MM_PAD_SD1_RESET_B_GPIO2_IO10 | MUX_PAD_CTRL(PAD_CTL_PUE | PAD_CTL_DSE1),	/* EMMC_RESET */
 };
-
-#if CONFIG_IS_ENABLED(EFI_HAVE_CAPSULE_SUPPORT)
-struct efi_fw_image fw_images[] = {
-	{
-	 .image_type_id = IMX_BOOT_IMAGE_GUID,
-	 .fw_name = u "IMX8MM-NIT-RAW",
-	 .image_index = 1,
-	  },
-};
-
-struct efi_capsule_update_info update_info = {
-	.dfu_string = "mmc 2=flash-bin raw 0x42 0x2000 mmcpart 1",
-	.num_images = ARRAY_SIZE(fw_images),
-	.images = fw_images,
-};
-
-#endif /* EFI_HAVE_CAPSULE_SUPPORT */
 
 #if IS_ENABLED(CONFIG_FEC_MXC)
 static int setup_fec(void)
@@ -134,7 +65,8 @@ int board_phy_config(struct phy_device *phydev)
 	if (phydev->drv->config)
 		phydev->drv->config(phydev);
 
-#ifndef CONFIG_DM_ETH
+//#ifndef CONFIG_DM_ETH
+#if 0
 	/* enable rgmii rxc skew and phy mode select to RGMII copper */
 	phy_write(phydev, MDIO_DEVAD_NONE, 0x1d, 0x1f);
 	phy_write(phydev, MDIO_DEVAD_NONE, 0x1e, 0x8);
@@ -161,11 +93,11 @@ int board_early_init_f(void)
 
 	init_uart_clk(1);
 
-	gpio_request(GP_SN65DSI83_EN, "sn65en");
-	gpio_direction_output(GP_SN65DSI83_EN, 0);
+	gpio_request(IMX_GPIO_NR(1, 3), "sn65en");
+	gpio_direction_output(IMX_GPIO_NR(1, 3), 0);
 	imx_iomux_v3_setup_multiple_pads(init_pads, ARRAY_SIZE(init_pads));
 
-	gpio_direction_output(GP_EMMC_RESET, 1);
+	gpio_direction_output(IMX_GPIO_NR(2, 10), 1);
 	return 0;
 }
 
@@ -181,16 +113,17 @@ int board_phys_sdram_size(phys_size_t * size)
 
 int board_init(void)
 {
-	gpio_request(GPIRQ_RV3028, "rv3028_irq");
-	gpio_request(GP_TS_GT911_RESET, "gt911_reset");
-	gpio_request(GP_TS_LVDS_GT911_RESET, "lvds_gt911_reset");
-	gpio_request(GPIRQ_TS_LVDS_GT911, "lvds_gt911_irq");
+	gpio_request(IMX_GPIO_NR(3, 23), "rv3028_irq");
+	gpio_request(IMX_GPIO_NR(4, 5), "gt911_reset");
+	gpio_request(IMX_GPIO_NR(1, 10), "lvds_gt911_reset");
+	gpio_request(IMX_GPIO_NR(3, 22), "lvds_gt911_irq");
 #ifndef CONFIG_DM_VIDEO
-	gpio_request(GP_SN65DSI83_EN, "sn65dsi83_enable");
-	gpio_request(GP_LTK08_MIPI_EN, "lkt08_mipi_en");
+	gpio_request(IMX_GPIO_NR(1, 3), "sn65dsi83_enable");
+	/* This enables 5V power on LTK080A60A004T mipi display */
+	gpio_request(IMX_GPIO_NR(3, 24), "lkt08_mipi_en");
 #endif
-	gpio_direction_output(GP_TS_GT911_RESET, 0);
-	gpio_direction_output(GP_TS_LVDS_GT911_RESET, 0);
+	gpio_direction_output(IMX_GPIO_NR(4, 5), 0);
+	gpio_direction_output(IMX_GPIO_NR(1, 10), 0);
 
 	if (IS_ENABLED(CONFIG_FEC_MXC))
 		setup_fec();
