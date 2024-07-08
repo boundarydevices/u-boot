@@ -73,9 +73,6 @@
 &fec1 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_fec1>;
-#if 0
-	phy-reset-gpios = <&gpio3 15 GPIO_ACTIVE_LOW>;
-#endif
 	phy-mode = "rgmii-id";
 	phy-handle = <&ethphy0>;
 	fsl,magic-packet;
@@ -89,6 +86,9 @@
 			compatible = "ethernet-phy-ieee802.3-c22";
 			interrupts-extended = <&gpio3 5 IRQ_TYPE_LEVEL_LOW>;
 			reg = <7>;
+			reset-gpios = <&gpio3 15 GPIO_ACTIVE_LOW>;
+			reset-assert-us = <10000>;
+			reset-deassert-us = <80000>;
 			rxc-skew-ps = <3000>;
 			rxd0-skew-ps = <0>;
 			rxd1-skew-ps = <0>;
