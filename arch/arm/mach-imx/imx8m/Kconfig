@@ -185,6 +185,17 @@ config TARGET_NITROGEN8MM_SOM
 	select ARCH_MISC_INIT
 	select SPL_CRYPTO if SPL
 
+config TARGET_NITROGEN8MM
+	bool "nitrogen8mm"
+	select BINMAN
+	select IMX8MM
+	select IMX8M_LPDDR4
+	select SUPPORT_SPL
+	select FSL_CAAM
+	select FSL_BLOB
+	select ARCH_MISC_INIT
+	select SPL_CRYPTO if SPL
+
 config TARGET_IMX8MM_PHG
 	bool "i.MX8MM PHG board"
 	select IMX8MM

@@ -142,5 +142,15 @@ int mmc_map_to_kernel_blk(int dev_no)
 
 int board_late_init(void)
 {
+	if (IS_ENABLED(CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG)) {
+#ifdef CONFIG_TARGET_NITROGEN8MM_SOM
+		env_set("board", "nitrogen8mm_som");
+		env_set("board_name", "nitrogen8mm_som");
+#elif CONFIG_TARGET_NITROGEN8MM
+		env_set("board", "nitrogen8mm_rev2");
+		env_set("board_name", "nitrogen8mm_rev2");
+#endif
+	}
+
 	return 0;
 }
