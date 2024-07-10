@@ -15,6 +15,9 @@ config IMX_CONFIG
 config IMX8M_1G_MEMORY
         bool "imx8m 1GB memory size"
 
+config IMX8M_2GR1_MEMORY
+	bool "imx8m 2GB rank 1 memory size"
+
 config DEFCONFIG
 	string "unknown"
 
