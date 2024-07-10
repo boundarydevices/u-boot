@@ -2,6 +2,7 @@
 /*
  * Copyright 2021 Boundary Devices
  */
+#include "imx8mm-u-boot.dtsi"
 
 &uart1 { /* BT */
 	status = "disabled";
