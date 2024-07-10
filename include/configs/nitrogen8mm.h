@@ -4,8 +4,8 @@
  * SPDX-License-Identifier:	GPL-2.0+
  */
 
-#ifndef __NITROGEN8MM_SOM_H
-#define __NITROGEN8MM_SOM_H
+#ifndef __NITROGEN8MM_H
+#define __NITROGEN8MM_H
 
 #ifdef CONFIG_BOARD_TYPE_SET
 #undef CONFIG_SYS_BOARD
