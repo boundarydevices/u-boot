@@ -63,9 +63,15 @@ static iomux_v3_cfg_t const init_pads[] = {
 
 	IMX8MM_PAD_GPIO1_IO14_USB2_OTG_PWR | MUX_PAD_CTRL(PAD_CTL_FSEL1 |
 							  PAD_CTL_DSE6),
+#ifdef CONFIG_TARGET_NITROGEN8MM_SOM
 	/* GPIO15 is used for CCM_CLKO2, GPIO1_IO08 is overcurrent */
 	IMX8MM_PAD_GPIO1_IO08_GPIO1_IO8 | MUX_PAD_CTRL(PAD_CTL_PUE |
 						       PAD_CTL_PE),
+#else
+	/* SBC */
+	IMX8MM_PAD_GPIO1_IO15_USB2_OTG_OC | MUX_PAD_CTRL(PAD_CTL_PUE |
+							PAD_CTL_PE),
+#endif
 
 };
 
