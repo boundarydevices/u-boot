@@ -2,7 +2,7 @@
 /*
  * Copyright 2019 NXP
  */
-#include "imx8mm-nitrogen8mm_rev2-u-boot.dtsi"
+#include "imx8mm-u-boot.dtsi"
 
 / {
 	wdt-reboot {
@@ -160,8 +160,20 @@
 	bootph-pre-ram;
 };
 
+&uart1 { /* BT */
+        status = "disabled";
+};
+
 &uart2 {
 	bootph-pre-ram;
+};
+
+&uart3 { /* J15 */
+        status = "disabled";
+};
+
+&uart4 {
+        status = "disabled";
 };
 
 &usbmisc1 {
