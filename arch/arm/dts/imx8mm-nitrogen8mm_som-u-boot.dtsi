@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0+
 /*
- * Copyright 2019 NXP
+ * Copyright 2024 Ezurio
  */
 #include "imx8mm-u-boot.dtsi"
 
@@ -59,12 +59,6 @@
 	/delete-property/ assigned-clocks;
 	/delete-property/ assigned-clock-parents;
 	/delete-property/ assigned-clock-rates;
-};
-
-&fec1 {
-	// phy-reset-gpios = <&gpio3 15 GPIO_ACTIVE_LOW>;
-	// phy-reset-duration = <15>;
-	// phy-reset-post-delay = <100>;
 };
 
 &ethphy0 {
@@ -161,7 +155,7 @@
 };
 
 &uart1 { /* BT */
-        status = "disabled";
+	status = "disabled";
 };
 
 &uart2 {
@@ -169,11 +163,11 @@
 };
 
 &uart3 { /* J15 */
-        status = "disabled";
+	status = "disabled";
 };
 
 &uart4 {
-        status = "disabled";
+	status = "disabled";
 };
 
 &usbmisc1 {
