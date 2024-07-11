@@ -78,6 +78,11 @@ int board_init(void)
 	return 0;
 }
 
+int mmc_map_to_kernel_blk(int dev_no)
+{
+	return dev_no;
+}
+
 int board_late_init(void)
 {
 	env_set("sec_boot", "no");
