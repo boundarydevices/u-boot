@@ -141,7 +141,7 @@
 			compatible = "ethernet-phy-ieee802.3-c22";
 			reg = <7>;
 			eee-broken-1000t;
-			interrupts-extended = <&gpio2 16 IRQ_TYPE_LEVEL_LOW>;
+			interrupts-extended = <&gpio2 18 IRQ_TYPE_LEVEL_LOW>;
 			reset-gpios = <&pcal6534 0 GPIO_ACTIVE_LOW>;
 			reset-assert-us = <10000>;
 			reset-deassert-us = <80000>;
@@ -569,7 +569,7 @@ status = "okay";
 			MX93_PAD_ENET2_TD3__ENET1_RGMII_TD3			0x57e
 			MX93_PAD_ENET2_TXC__ENET1_RGMII_TXC			0x57e
 			MX93_PAD_ENET2_TX_CTL__ENET1_RGMII_TX_CTL		0x57e
-			MX93_PAD_GPIO_IO16__GPIO2_IO16				0x31e
+			MX93_PAD_GPIO_IO18__GPIO2_IO18				0x31e
 		>;
 	};
 
