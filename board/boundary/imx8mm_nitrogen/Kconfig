@@ -1,16 +1,16 @@
 if TARGET_NITROGEN8MM_SOM || TARGET_NITROGEN8MM
 
 config SYS_BOARD
-	default "nitrogen8mm"
+	default "imx8mm_nitrogen"
 
 config SYS_VENDOR
 	default "boundary"
 
 config SYS_CONFIG_NAME
-	default "nitrogen8mm"
+	default "imx8mm_nitrogen"
 
 config IMX_CONFIG
-        default "board/boundary/nitrogen8mm/imximage-8mm.cfg"
+        default "board/boundary/imx8mm_nitrogen/imximage-8mm.cfg"
 
 config IMX8M_1G_MEMORY
         bool "imx8m 1GB memory size"

@@ -1,10 +1,8 @@
+// SPDX-License-Identifier: GPL-2.0+
 /*
- * Copyright 2018 NXP
- *
- * SPDX-License-Identifier:	GPL-2.0+
+ * Copyright 2024 Ezurio
  */
 
-#include <common.h>
 #include <errno.h>
 #include <asm/io.h>
 #include <init.h>
@@ -63,19 +61,19 @@ static iomux_v3_cfg_t const init_pads[] = {
 
 	IMX8MM_PAD_GPIO1_IO14_USB2_OTG_PWR | MUX_PAD_CTRL(PAD_CTL_FSEL1 |
 							  PAD_CTL_DSE6),
-#ifdef CONFIG_TARGET_NITROGEN8MM_SOM
+#if (IS_ENABLED(CONFIG_TARGET_NITROGEN8MM_SOM))
 	/* GPIO15 is used for CCM_CLKO2, GPIO1_IO08 is overcurrent */
 	IMX8MM_PAD_GPIO1_IO08_GPIO1_IO8 | MUX_PAD_CTRL(PAD_CTL_PUE |
 						       PAD_CTL_PE),
 #else
 	/* SBC */
 	IMX8MM_PAD_GPIO1_IO15_USB2_OTG_OC | MUX_PAD_CTRL(PAD_CTL_PUE |
-							PAD_CTL_PE),
+							 PAD_CTL_PE),
 #endif
 
 };
 
-#if IS_ENABLED(CONFIG_FEC_MXC)
+#if (IS_ENABLED(CONFIG_FEC_MXC))
 static int setup_fec(void)
 {
 	struct iomuxc_gpr_base_regs *gpr =
@@ -109,7 +107,7 @@ int board_early_init_f(void)
 	return 0;
 }
 
-int board_phys_sdram_size(phys_size_t * size)
+int board_phys_sdram_size(phys_size_t *size)
 {
 	if (!size)
 		return -EINVAL;
@@ -148,23 +146,15 @@ int mmc_map_to_kernel_blk(int dev_no)
 
 int board_late_init(void)
 {
-	if (IS_ENABLED(CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG)) {
-#ifdef CONFIG_TARGET_NITROGEN8MM_SOM
-		env_set("board", "nitrogen8mm_som");
-		env_set("board_name", "nitrogen8mm_som");
-#elif CONFIG_TARGET_NITROGEN8MM
-		env_set("board", "nitrogen8mm_rev2");
-		env_set("board_name", "nitrogen8mm_rev2");
-#endif
-	}
 	if (!env_get("serial#")) {
 		unsigned char mac_address[8];
 		char serialbuf[20];
 
 		imx_get_mac_from_fuse(0, mac_address);
-		snprintf(serialbuf, sizeof(serialbuf), "%02x%02x%02x%02x%02x%02x",
-				mac_address[0], mac_address[1], mac_address[2],
-				mac_address[3], mac_address[4], mac_address[5]);
+		snprintf(serialbuf, sizeof(serialbuf),
+			 "%02x%02x%02x%02x%02x%02x", mac_address[0],
+			 mac_address[1], mac_address[2], mac_address[3],
+			 mac_address[4], mac_address[5]);
 		printf("serial: %s\n", serialbuf);
 		env_set("serial#", serialbuf);
 	}

@@ -4,8 +4,8 @@
  * SPDX-License-Identifier:	GPL-2.0+
  */
 
-#ifndef __NITROGEN8MM_H
-#define __NITROGEN8MM_H
+#ifndef __IMX8MM_NITROGEN_H
+#define __IMX8MM_NITROGEN_H
 
 #ifdef CONFIG_BOARD_TYPE_SET
 #undef CONFIG_SYS_BOARD
@@ -153,8 +153,18 @@
 #define BD_FUSE_MAC1A_VAL_STR	"fuse_mac1a_val=" BD_FUSE_MAC1A_VAL "\0"
 #define BD_FUSE_MAC1B_STR	"fuse_mac1b=" BD_FUSE_MAC1B "\0"
 
-#define CFG_EXTRA_ENV_SETTINGS          \
+#if IS_ENABLED(CONFIG_TARGET_NITROGEN8MM_SOM)
+#define CFG_BOARD_SETTINGS \
 	"board=nitrogen8mm_som\0" \
+	"board_name=nitrogen8mm_som\0"
+#elif IS_ENABLED(CONFIG_TARGET_NITROGEN8MM)
+#define CFG_BOARD_SETTINGS \
+	"board=nitrogen8mm_rev2\0" \
+	"board_name=nitrogen8mm_rev2\0"
+#endif
+
+#define CFG_EXTRA_ENV_SETTINGS          \
+	CFG_BOARD_SETTINGS \
 	"soc_type=imx8MM\0" \
 	"console=" BD_CONSOLE "\0" \
 	"env_dev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \

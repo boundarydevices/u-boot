@@ -7,7 +7,7 @@
 #include "imx8mm-nitrogen8mm_rev2.dts"
 
 / {
-	model = "Boundary Devices i.MX8MMini Nitrogen8MM Som";
+	model = "Ezurio Devices i.MX8MMini Nitrogen8MM Som";
 	compatible = "boundary,imx8mm-nitrogen8mm_som", "fsl,imx8mm";
 
 	aliases {

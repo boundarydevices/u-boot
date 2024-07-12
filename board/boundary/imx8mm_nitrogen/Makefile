@@ -4,7 +4,7 @@
 # SPDX-License-Identifier:      GPL-2.0+
 #
 
-obj-y += nitrogen8mm.o
+obj-y += imx8mm_nitrogen.o
 
 ifdef CONFIG_SPL_BUILD
 obj-y += spl.o
