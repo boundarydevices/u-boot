@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0+
 /*
- * Copyright 2018 NXP
+ * Copyright 2024 Ezurio
  */
-#include <common.h>
+
 #include <efi_loader.h>
 #include <env.h>
 #include <init.h>
@@ -36,15 +36,15 @@ static iomux_v3_cfg_t const wdog_pads[] = {
 };
 
 static iomux_v3_cfg_t const init_pads[] = {
-	IMX8MM_PAD_SAI5_RXD3_GPIO3_IO24 | MUX_PAD_CTRL(PAD_CTL_PE),			/* MIPI_IRQ - SM_CARRIER_STANDBY */
+	IMX8MM_PAD_SAI5_RXD3_GPIO3_IO24 | MUX_PAD_CTRL(PAD_CTL_PE),	/* MIPI_IRQ - SM_CARRIER_STANDBY */
 	IMX8MM_PAD_GPIO1_IO01_GPIO1_IO1 | MUX_PAD_CTRL(PAD_CTL_PE | PAD_CTL_HYS),	/* MIPI_TS_IRQ  - SM_LCD0_BKLT_EN */
-	IMX8MM_PAD_SAI1_RXD3_GPIO4_IO5 | MUX_PAD_CTRL(PAD_CTL_PE),			/* MIPI_TS_RESET - SM_GPIO7 */
+	IMX8MM_PAD_SAI1_RXD3_GPIO4_IO5 | MUX_PAD_CTRL(PAD_CTL_PE),	/* MIPI_TS_RESET - SM_GPIO7 */
 	IMX8MM_PAD_GPIO1_IO03_GPIO1_IO3 | MUX_PAD_CTRL(PAD_CTL_DSE2 | PAD_CTL_DSE4),	/* MIPI_ENABLE - SM_LCD0_VDD_EN */
 	IMX8MM_PAD_GPIO1_IO10_GPIO1_IO10 | MUX_PAD_CTRL(PAD_CTL_DSE2 | PAD_CTL_DSE4),	/* SM_ESPI_ALERT0 */
 	IMX8MM_PAD_SAI5_RXD1_GPIO3_IO22 | MUX_PAD_CTRL(PAD_CTL_DSE2 | PAD_CTL_DSE4),	/* SM_SMB_ALERT */
 	IMX8MM_PAD_SAI5_MCLK_GPIO3_IO25 | MUX_PAD_CTRL(PAD_CTL_DSE2 | PAD_CTL_DSE4),	/* SN65DSI83 on som  */
 	IMX8MM_PAD_SAI5_RXD2_GPIO3_IO23 | MUX_PAD_CTRL(PAD_CTL_DSE2 | PAD_CTL_DSE4),	/* RV3028 - SM_GPIO12 */
-	IMX8MM_PAD_NAND_CE1_B_GPIO3_IO2 | MUX_PAD_CTRL(PAD_CTL_PE),			/* SM_PCIE_A_RST */
+	IMX8MM_PAD_NAND_CE1_B_GPIO3_IO2 | MUX_PAD_CTRL(PAD_CTL_PE),	/* SM_PCIE_A_RST */
 	IMX8MM_PAD_SD1_RESET_B_GPIO2_IO10 | MUX_PAD_CTRL(PAD_CTL_PUE | PAD_CTL_DSE1),	/* EMMC_RESET */
 };
 
@@ -64,18 +64,6 @@ int board_phy_config(struct phy_device *phydev)
 {
 	if (phydev->drv->config)
 		phydev->drv->config(phydev);
-
-//#ifndef CONFIG_DM_ETH
-#if 0
-	/* enable rgmii rxc skew and phy mode select to RGMII copper */
-	phy_write(phydev, MDIO_DEVAD_NONE, 0x1d, 0x1f);
-	phy_write(phydev, MDIO_DEVAD_NONE, 0x1e, 0x8);
-
-	phy_write(phydev, MDIO_DEVAD_NONE, 0x1d, 0x00);
-	phy_write(phydev, MDIO_DEVAD_NONE, 0x1e, 0x82ee);
-	phy_write(phydev, MDIO_DEVAD_NONE, 0x1d, 0x05);
-	phy_write(phydev, MDIO_DEVAD_NONE, 0x1e, 0x100);
-#endif
 
 	return 0;
 }
@@ -101,7 +89,7 @@ int board_early_init_f(void)
 	return 0;
 }
 
-int board_phys_sdram_size(phys_size_t * size)
+int board_phys_sdram_size(phys_size_t *size)
 {
 	if (!size)
 		return -EINVAL;
@@ -143,9 +131,10 @@ int board_late_init(void)
 		char serialbuf[20];
 
 		imx_get_mac_from_fuse(0, mac_address);
-		snprintf(serialbuf, sizeof(serialbuf), "%02x%02x%02x%02x%02x%02x",
-				mac_address[0], mac_address[1], mac_address[2],
-				mac_address[3], mac_address[4], mac_address[5]);
+		snprintf(serialbuf, sizeof(serialbuf),
+			 "%02x%02x%02x%02x%02x%02x", mac_address[0],
+			 mac_address[1], mac_address[2], mac_address[3],
+			 mac_address[4], mac_address[5]);
 		printf("serial: %s\n", serialbuf);
 		env_set("serial#", serialbuf);
 	}

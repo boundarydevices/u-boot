@@ -6,11 +6,11 @@
 /dts-v1/;
 
 #include "imx8mm.dtsi"
-#include "imx8mm-nitrogen_smarc-som.dtsi"
+#include "imx8mm-nitrogen-smarc-som.dtsi"
 
 / {
-	model = "Boundary Nitrogen8M Mini SMARC board";
-	compatible = "boundary,imx8mm-nitrogen_smarc", "fsl,imx8mm";
+	model = "Ezurio i.MX8MM Nitrogen SMARC board";
+	compatible = "boundary,imx8mm-nitrogen-smarc", "fsl,imx8mm";
 
 	aliases {
 		backlight_mipi_alt = &backlight_mipi;
