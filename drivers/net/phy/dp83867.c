@@ -4,6 +4,7 @@
  *
  */
 #include <common.h>
+#include <env.h>
 #include <log.h>
 #include <phy.h>
 #include <dm/devres.h>
@@ -433,6 +434,9 @@ static struct phy_driver DP83867_driver = {
 
 int phy_dp83867_init(void)
 {
+	if (env_get("disable_giga"))
+		DP83867_driver.features &= ~(PHY_1000BT_FEATURES);
+
 	phy_register(&DP83867_driver);
 	return 0;
 }

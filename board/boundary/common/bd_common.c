@@ -754,7 +754,9 @@ int bdcommon_env_init(void)
 	fbp_setup_env_cmds();
 #endif
 	board_env_init();
+#if !defined(CONFIG_TARGET_IMX8MP_MMR)
 	board_eth_addresses();
+#endif
 #if !defined(CONFIG_ARCH_MEDIATEK)
 #if defined(CONFIG_CMD_FASTBOOT) || defined(CONFIG_CMD_DFU)
 	addserial_env("serial#");

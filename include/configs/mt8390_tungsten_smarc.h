@@ -56,8 +56,10 @@
 
 #ifdef CONFIG_CMD_MMC
 #define BOOT_TARGET_MMC(func) func(MMC, mmc, 0)
+#define BOOT_TARGET_MMC1(func) func(MMC, mmc, 1)
 #else
 #define BOOT_TARGET_MMC(func)
+#define BOOT_TARGET_MMC1(func)
 #endif
 
 #ifdef CONFIG_CMD_USB
@@ -74,6 +76,7 @@
 
 #define BOOT_TARGET_DEVICES(func) \
 	BOOT_TARGET_MMC(func) \
+	BOOT_TARGET_MMC1(func) \
 	BOOT_TARGET_USB(func) \
 	BOOT_TARGET_SCSI(func)
 

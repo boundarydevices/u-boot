@@ -4,6 +4,10 @@
 # remove from environment so they won't override local values
 setenv a_script
 
+if test -z "${imx_cpu}"; then
+	setexpr imx_cpu sub ".*(..?..?)$" "\\1" "${soc_type}"
+fi
+
 a_script=0x1000c000
 #grab 1st 2/3 characters of string
 setexpr cpu2 sub "^(..?).*" "\\1" "${imx_cpu}"
@@ -16,7 +20,7 @@ elif itest.s x6SX == "x${cpu3}" || itest.s x6U == "x${cpu2}" || itest.s x7D == "
 	a_script=0x8000c000
 elif itest.s x8M == "x${cpu2}"; then
 	a_script=0x4000c000
-elif itest.s x8UL == "x${cpu3}"; then
+elif itest.s x8UL == "x${cpu3}" || itest.s x93 == "${cpu3}"; then
 	a_script=0x8000c000
 fi
 # uncomment below to force upgrade to eMMC,

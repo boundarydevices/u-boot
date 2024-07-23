@@ -24,3 +24,7 @@
 		rtc1 = &snvs_rtc;
 	};
 };
+
+&ldb_chan2 {
+	/delete-property/ backlight;
+};

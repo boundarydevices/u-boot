@@ -3,6 +3,14 @@
  *
  * SPDX-License-Identifier:	GPL-2.0+
  */
+
+/* If TARGET_NITROGEN8MP AND PHY_ATHEROS then
+ * use the CONFIG_DM_ETH method of loading it and not code in this file.
+ */
+#if defined(CONFIG_TARGET_NITROGEN8MP) && defined(CONFIG_PHY_ATHEROS)
+#undef CONFIG_PHY_ATHEROS
+#endif
+
 #include <common.h>
 #ifndef CONFIG_ARCH_MEDIATEK
 #include <asm/arch/clock.h>
@@ -371,7 +379,7 @@ static void setup2_enet_ksz9021(void)
 #endif
 #endif
 
-#if defined(CONFIG_FEC_MXC) || defined(CONFIG_DWC_ETH_QOS)
+#if defined(CONFIG_FEC_MXC) || defined(CONFIG_ARCH_MEDIATEK) || (defined(CONFIG_FEC_MXC) && defined(CONFIG_DWC_ETH_QOS))
 #if !defined(CONFIG_MX5)
 static void init_fec_clocks(void)
 {
@@ -525,7 +533,7 @@ static void setup_iomux_enet(int kz, int net_mask)
 	}
 #endif
 
-#if defined(CONFIG_FEC_MXC) || defined(CONFIG_DWC_ETH_QOS)
+#if defined(CONFIG_FEC_MXC) || defined(CONFIG_ARCH_MEDIATEK) || (defined(CONFIG_FEC_MXC) && defined(CONFIG_DWC_ETH_QOS))
 	init_fec_clocks();
 #endif
 	/* Need delay 10ms according to KSZ9021 spec */
@@ -803,6 +811,33 @@ int board_phy_config(struct phy_device *phydev)
 #endif
 #endif
 
+#ifdef CONFIG_PHY_TI_DP83867
+
+#define PHY_ID_DP83867	0x2000a231
+
+static void phy_dp83867(struct phy_device *phydev)
+{
+	unsigned short val;
+	// Advertise 1000BASE-T FULL DUPLEX and 1000BASE-T HALF DUPLEX bits
+        unsigned short set_100_10 = (BIT(9) | BIT(8));
+
+	puts("DP83867 "); // 100/10 Mbs");
+
+	val = phy_read(phydev, MDIO_DEVAD_NONE, 0x9);
+	val &= ~(set_100_10); // Un-set these bits
+	phy_write(phydev, MDIO_DEVAD_NONE, 0x9, val);
+}
+
+int board_phy_config(struct phy_device *phydev)
+{
+	if (phydev->phy_id == PHY_ID_DP83867)
+		phy_dp83867(phydev);
+	if (phydev->drv->config)
+		phydev->drv->config(phydev);
+	return 0;
+}
+#endif
+
 #ifdef CONFIG_PHY_MICREL
 #define MII_KSZ9031_EXT_RGMII_COMMON_CTRL	0
 #define KSZ9031_LED_MODE_SINGLE			0x10
@@ -992,17 +1027,16 @@ int board_phy_config(struct phy_device *phydev)
 	} else if (((phydev->drv->uid ^ PHY_ID_AR8035) & 0xffffffef) == 0) {
 		phy_ar8035_config(phydev);
 		board_eth_type(PHY_INDEX, 0);
-	} else if (is_micrel_part(phydev)) {
+	}
+#endif
+#if defined(CONFIG_PHY_MICREL) && !defined(CONFIG_PHY_MICREL_KSZ8XXX)
+	if (is_micrel_part(phydev)) {
 		/* found KSZ, reinit phy for KSZ */
 		setup_iomux_enet(1, (PHY_INDEX ? 2 : 1));
-#else
-	{
-#endif
-#ifndef CONFIG_PHY_MICREL_KSZ8XXX
 		phy_micrel_config(phydev);
 		board_eth_type(PHY_INDEX, 1);
-#endif
 	}
+#endif
 	if (phydev->drv->config)
 		phydev->drv->config(phydev);
 	return 0;
@@ -1186,7 +1220,17 @@ int board_eth_init(struct bd_info *bis)
 #if !defined(CONFIG_DM_ETH) && defined(CONFIG_FEC_MXC)
 	init_fec(bis, ETH_PHY_MASK_ATH, ETH_PHY_MASK_KSZ);
 #endif
+#if defined(CONFIG_DWC_ETH_QOS) && !defined(CONFIG_FEC_MXC) && !defined(CONFIG_ARCH_MEDIATEK)
+	struct iomuxc_gpr_base_regs *iomuxc_gpr_regs =
+                (struct iomuxc_gpr_base_regs *)IOMUXC_GPR_BASE_ADDR;
 
+	/* set INTF as RGMII, enable RGMII TXC clock */
+	clrsetbits_le32(&iomuxc_gpr_regs->gpr[1],
+			IOMUXC_GPR_GPR1_GPR_ENET_QOS_INTF_SEL_MASK, BIT(16));
+	setbits_le32(&iomuxc_gpr_regs->gpr[1], BIT(19) | BIT(21));
+	set_clk_eqos(ENET_125MHZ);
+	udelay(100);	/* Wait 100 us before using mii interface */
+#endif
 	board_eth_addresses();
 #if defined(CONFIG_USB_ETHER)
 #if defined(CONFIG_DM_ETH)

@@ -11,12 +11,10 @@ if itest.s "xmediatek" == "x${soc}" ; then
 	cpu3="MTK"
 else
 	if itest.s x == "x${imx_cpu}" ; then
-		cpu2="AM"
-		cpu3="AML"
-	else
-		setexpr cpu2 sub "^(..?).*" "\\1" "${imx_cpu}"
-		setexpr cpu3 sub "^(..?.?).*" "\\1" "${imx_cpu}"
+		setexpr imx_cpu sub ".*(..?..?)$" "\\1" "${soc_type}"
 	fi
+	setexpr cpu2 sub "^(..?).*" "\\1" "${imx_cpu}"
+	setexpr cpu3 sub "^(..?.?).*" "\\1" "${imx_cpu}"
 fi
 if itest.s x51 == "x${cpu2}" ; then
 	a_base=0x90000000
@@ -29,7 +27,7 @@ elif itest.s x8M == "x${cpu2}"; then
 	kernelimage=Image
 	bootcommand=booti
 	img_prefix=${prefix}
-elif itest.s x8U == "x${cpu2}"; then
+elif itest.s x8U == "x${cpu2}" || itest.s x93 == "${cpu3}"; then
 	a_base=0x80000000
 	kernelimage=Image
 	bootcommand=booti
@@ -86,6 +84,8 @@ elif itest.s x8MQ == "x${cpu3}" ; then
 	dtb_prefix=imx8mq;
 elif itest.s x8UL == "x${cpu3}" ; then
 	dtb_prefix=imx8ulp;
+elif itest.s x93 == "${cpu3}" ; then
+	dtb_prefix=imx93;
 elif itest.s xMT == "x${cpu2}" ; then
 	dtb_prefix="";
 else
