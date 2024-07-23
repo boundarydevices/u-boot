@@ -71,12 +71,12 @@
 	fsl,mux_mask = <0xf00>;
 };
 
-&pinctrl_lpuart5 {
+&pinctrl_lpuart7 {
 	bootph-all;
 	bootph-pre-ram;
 };
 
-&lpuart5 {
+&lpuart7 {
 	bootph-all;
 	bootph-pre-ram;
 };
