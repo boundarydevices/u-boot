@@ -1323,8 +1323,7 @@ static int gpio_renumber(struct udevice *removed_dev)
 	struct udevice *dev;
 	struct uclass *uc;
 	unsigned base;
-	int ret, i, j, max = 0;
-	struct gpio_dev_priv *sort[16];
+	int ret;
 
 	ret = uclass_get(UCLASS_GPIO, &uc);
 	if (ret)
@@ -1335,50 +1334,11 @@ static int gpio_renumber(struct udevice *removed_dev)
 	uclass_foreach_dev(dev, uc) {
 		if (device_active(dev) && dev != removed_dev) {
 			uc_priv = dev_get_uclass_priv(dev);
-			uc_priv->gpio_base = -1;
-			for (i = 0; i < max; i++) {
-				if (uc_priv->desired_gpio_base < sort[i]->desired_gpio_base)
-					break;
-				if (uc_priv->desired_gpio_base == sort[i]->desired_gpio_base)
-					if (strcmp(uc_priv->bank_name, sort[i]->bank_name) < 0)
-						break;
-			}
-			if (max < ARRAY_SIZE(sort))
-				max++;
-			if (i < max) {
-				j = max - 1;
-				while (j > i) {
-					sort[j] = sort[j - 1];
-					j--;
-				}
-				sort[j] = uc_priv;
-			}
+			uc_priv->gpio_base = base;
+			base += uc_priv->gpio_count;
 		}
 	}
 
-	for (i = 0; i < max; i++) {
-		uc_priv = sort[i];
-		if (base < uc_priv->desired_gpio_base
-				&& uc_priv->desired_gpio_base != -1)
-			base = uc_priv->desired_gpio_base;
-		uc_priv->gpio_base = base;
-		debug("%s: %s %d\n", __func__, uc_priv->bank_name, base);
-		base += uc_priv->gpio_count;
-	}
-
-	if (max < ARRAY_SIZE(sort))
-		return 0;
-
-	uclass_foreach_dev(dev, uc) {
-		if (device_active(dev) && dev != removed_dev) {
-			uc_priv = dev_get_uclass_priv(dev);
-			if (uc_priv->gpio_base == -1) {
-				debug("%s: %s %d\n", __func__, uc_priv->bank_name, base);
-				uc_priv->gpio_base = base;
-				base += uc_priv->gpio_count;
-			}
-		}
-	}
 	return 0;
 }
 
@@ -1392,14 +1352,6 @@ int gpio_get_number(const struct gpio_desc *desc)
 	uc_priv = dev_get_uclass_priv(dev);
 
 	return uc_priv->gpio_base + desc->offset;
-}
-
-static int gpio_pre_probe(struct udevice *dev)
-{
-	struct gpio_dev_priv *uc_priv = dev_get_uclass_priv(dev);
-
-	uc_priv->desired_gpio_base = -1;
-	return 0;
 }
 
 static int gpio_post_probe(struct udevice *dev)
@@ -1626,7 +1578,6 @@ UCLASS_DRIVER(gpio) = {
 	.flags		= DM_UC_FLAG_SEQ_ALIAS,
 	.post_probe	= gpio_post_probe,
 	.post_bind	= gpio_post_bind,
-	.pre_probe	= gpio_pre_probe,
 	.pre_remove	= gpio_pre_remove,
 	.per_device_auto	= sizeof(struct gpio_dev_priv),
 };
