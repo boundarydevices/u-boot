@@ -13,22 +13,32 @@
 static int fdt_nodename_eq_(const void *fdt, int offset,
 			    const char *s, int len)
 {
+	printf("fdt_nodename_eq_ : checking %s\n", s);
 	int olen;
 	const char *p = fdt_get_name(fdt, offset, &olen);
 
-	if (!p || (fdt_chk_extra() && olen < len))
+	if (!p || (fdt_chk_extra() && olen < len)) {
 		/* short match */
+		printf("fdt_nodename_eq_ : short match  \n");
 		return 0;
+	}
 
-	if (memcmp(p, s, len) != 0)
+	printf("fdt_nodename_eq_ : Before memcmp \n");
+	if (memcmp(p, s, len) != 0){
+		printf("fdt_nodename_eq_ :  memcmp match  \n");
 		return 0;
-
-	if (p[len] == '\0')
+	}
+	printf("fdt_nodename_eq_ : After memcmp \n");
+	if (p[len] == '\0'){
+		printf("fdt_nodename_eq_ :  len \n");
 		return 1;
-	else if (!memchr(s, '@', len) && (p[len] == '@'))
+	} else if (!memchr(s, '@', len) && (p[len] == '@')) {
+		printf("fdt_nodename_eq_ :  memchr \n");
 		return 1;
-	else
+	} else {
+		printf("fdt_nodename_eq_ : p[len] match  \n");
 		return 0;
+	}
 }
 
 const char *fdt_get_string(const void *fdt, int stroffset, int *lenp)
@@ -227,17 +237,26 @@ int fdt_subnode_offset_namelen(const void *fdt, int offset,
 {
 	int depth;
 
+	printf("fdt_subnode_offset_namelen: Enter %s\n", name);
+
 	FDT_RO_PROBE(fdt);
 
 	for (depth = 0;
 	     (offset >= 0) && (depth >= 0);
-	     offset = fdt_next_node(fdt, offset, &depth))
+	     offset = fdt_next_node(fdt, offset, &depth)) {
+		printf("fdt_subnode_offset_namelen: After fdt_next_node \n");
 		if ((depth == 1)
-		    && fdt_nodename_eq_(fdt, offset, name, namelen))
+		    && fdt_nodename_eq_(fdt, offset, name, namelen)){
+			printf("fdt_subnode_offset_namelen: Found node at offset %d\n", offset);
 			return offset;
+		}
+		printf("fdt_subnode_offset_namelen: Loop \n");
+	}
 
-	if (depth < 0)
+	if (depth < 0){
+		printf("fdt_subnode_offset_namelen: NOT found\n");
 		return -FDT_ERR_NOTFOUND;
+	}
 	return offset; /* error */
 }
 
