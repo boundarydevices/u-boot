@@ -19,16 +19,12 @@ static int fdt_nodename_eq_(const void *fdt, int offset,
 
 	if (!p || (fdt_chk_extra() && olen < len)) {
 		/* short match */
-		printf("fdt_nodename_eq_ : short match  \n");
 		return 0;
 	}
 
-	printf("fdt_nodename_eq_ : Before memcmp \n");
 	if (memcmp(p, s, len) != 0){
-		printf("fdt_nodename_eq_ :  memcmp match  \n");
 		return 0;
 	}
-	printf("fdt_nodename_eq_ : After memcmp \n");
 	if (p[len] == '\0'){
 		printf("fdt_nodename_eq_ :  len \n");
 		return 1;
@@ -36,7 +32,6 @@ static int fdt_nodename_eq_(const void *fdt, int offset,
 		printf("fdt_nodename_eq_ :  memchr \n");
 		return 1;
 	} else {
-		printf("fdt_nodename_eq_ : p[len] match  \n");
 		return 0;
 	}
 }
@@ -244,17 +239,15 @@ int fdt_subnode_offset_namelen(const void *fdt, int offset,
 	for (depth = 0;
 	     (offset >= 0) && (depth >= 0);
 	     offset = fdt_next_node(fdt, offset, &depth)) {
-		printf("fdt_subnode_offset_namelen: After fdt_next_node \n");
 		if ((depth == 1)
 		    && fdt_nodename_eq_(fdt, offset, name, namelen)){
-			printf("fdt_subnode_offset_namelen: Found node at offset %d\n", offset);
+			printf("fdt_subnode_offset_namelen: Found node \"%s\" at offset %d\n", name, offset);
 			return offset;
 		}
-		printf("fdt_subnode_offset_namelen: Loop \n");
 	}
 
 	if (depth < 0){
-		printf("fdt_subnode_offset_namelen: NOT found\n");
+		printf("fdt_subnode_offset_namelen: node \"%s\" NOT found\n", name);
 		return -FDT_ERR_NOTFOUND;
 	}
 	return offset; /* error */

@@ -181,9 +181,11 @@ static ulong get_fit_image_size(void *fit)
          * so should bypass authentication
          */
 	spl_image.flags = SPL_FIT_BYPASS_POST_LOAD;
+	printf("get_fit_image_size : Before spl_load_simple_fit\n");
 	spl_load_simple_fit(&spl_image, &spl_load_info,
 			    (uintptr_t)fit, fit);
 
+	printf("get_fit_image_size : After spl_load_simple_fit\n");
 	return last - (ulong)fit;
 }
 
@@ -247,8 +249,13 @@ static int img_info_size(void *img_hdr)
 
 static int img_total_size(void *img_hdr)
 {
+	printf("img_total_size : Enter\n");
+	int image_size;
 	if (IS_ENABLED(CONFIG_SPL_LOAD_FIT)) {
-		return get_fit_image_size(img_hdr);
+		printf("img_total_size : CONFIG_SPL_LOAD_FIT\n");
+		image_size = get_fit_image_size(img_hdr);
+		printf("img_total_size :  get_fit_image_size\n");
+		return image_size;
 	} else if (IS_ENABLED(CONFIG_SPL_LOAD_IMX_CONTAINER)) {
 		int total = get_container_size((ulong)img_hdr, NULL);
 
@@ -344,6 +351,8 @@ static int spl_romapi_load_image_stream(struct spl_image_info *spl_image,
 			return -1;
 		}
 	}
+
+	printf("ROM download done, checking image size \n");
 
 	total = img_total_size(phdr);
 	total += 3;
