@@ -236,18 +236,12 @@ int fdt_subnode_offset_namelen(const void *fdt, int offset,
 	for (depth = 0;
 	     (offset >= 0) && (depth >= 0);
 	     offset = fdt_next_node(fdt, offset, &depth)){
-		printf("fdt_subnode_offset_namelen : In loop %d \n", depth);
 		if ((depth == 1)
 		    && fdt_nodename_eq_(fdt, offset, name, namelen)) {
-			printf("fdt_subnode_offset_namelen : Returning offset %d\n", offset);
 			return offset;
-		} else {
-			printf("fdt_subnode_offset_namelen : depth !==1 etc. \n");
 		}
-		printf("fdt_subnode_offset_namelen : End loop %d \n", depth);
 	}
 
-	printf("fdt_subnode_offset_namelen : After or (depth = 0\n");
 	if (depth < 0)
 		return -FDT_ERR_NOTFOUND;
 	return offset; /* error */
