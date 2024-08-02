@@ -40,9 +40,13 @@ int fit_find_config_node(const void *fdt)
 	const char *dflt_conf_desc = NULL;
 	int dflt_conf_node = -ENOENT;
 
+	printf("fit_find_config_node : Enter\n");
 	conf = fdt_path_offset(fdt, FIT_CONFS_PATH);
+	printf("fit_find_config_node : After fdt_path_offset\n");
 	if (conf < 0) {
 		debug("%s: Cannot find /configurations node: %d\n", __func__,
+		      conf);
+		printf("%s: Cannot find /configurations node: %d\n", __func__,
 		      conf);
 		return -EINVAL;
 	}

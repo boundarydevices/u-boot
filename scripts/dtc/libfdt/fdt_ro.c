@@ -13,8 +13,11 @@
 static int fdt_nodename_eq_(const void *fdt, int offset,
 			    const char *s, int len)
 {
+	printf("fdt_nodename_eq_ : Enter\n");
 	int olen;
 	const char *p = fdt_get_name(fdt, offset, &olen);
+
+	printf("fdt_nodename_eq_ : Before fdt_chk_extra\n");
 
 	if (!p || (fdt_chk_extra() && olen < len))
 		/* short match */
@@ -227,15 +230,24 @@ int fdt_subnode_offset_namelen(const void *fdt, int offset,
 {
 	int depth;
 
+	printf("fdt_subnode_offset_namelen : Enter\n");
 	FDT_RO_PROBE(fdt);
 
 	for (depth = 0;
 	     (offset >= 0) && (depth >= 0);
-	     offset = fdt_next_node(fdt, offset, &depth))
+	     offset = fdt_next_node(fdt, offset, &depth)){
+		printf("fdt_subnode_offset_namelen : In loop %d \n", depth);
 		if ((depth == 1)
-		    && fdt_nodename_eq_(fdt, offset, name, namelen))
+		    && fdt_nodename_eq_(fdt, offset, name, namelen)) {
+			printf("fdt_subnode_offset_namelen : Returning offset %d\n", offset);
 			return offset;
+		} else {
+			printf("fdt_subnode_offset_namelen : depth !==1 etc. \n");
+		}
+		printf("fdt_subnode_offset_namelen : End loop %d \n", depth);
+	}
 
+	printf("fdt_subnode_offset_namelen : After or (depth = 0\n");
 	if (depth < 0)
 		return -FDT_ERR_NOTFOUND;
 	return offset; /* error */
@@ -253,9 +265,11 @@ int fdt_path_offset_namelen(const void *fdt, const char *path, int namelen)
 	const char *p = path;
 	int offset = 0;
 
+	printf("fdt_path_offset_namelen : Enter path (%s) namelen (%d)\n", path, namelen);
 	FDT_RO_PROBE(fdt);
 
 	/* see if we have an alias */
+	printf("fdt_path_offset_namelen : see if we have an alias\n");
 	if (*path != '/') {
 		const char *q = memchr(path, '/', end - p);
 
@@ -270,6 +284,7 @@ int fdt_path_offset_namelen(const void *fdt, const char *path, int namelen)
 		p = q;
 	}
 
+	printf("fdt_path_offset_namelen : while (p < end)\n");
 	while (p < end) {
 		const char *q;
 
@@ -278,17 +293,21 @@ int fdt_path_offset_namelen(const void *fdt, const char *path, int namelen)
 			if (p == end)
 				return offset;
 		}
+		printf("fdt_path_offset_namelen : After start / \n");
 		q = memchr(p, '/', end - p);
 		if (! q)
 			q = end;
 
+		printf("fdt_path_offset_namelen : Before fdt_subnode_offset_namelen\n");
 		offset = fdt_subnode_offset_namelen(fdt, offset, p, q-p);
+		printf("fdt_path_offset_namelen : After fdt_subnode_offset_namelen\n");
 		if (offset < 0)
 			return offset;
 
 		p = q;
 	}
 
+	printf("fdt_path_offset_namelen : Exit\n");
 	return offset;
 }
 

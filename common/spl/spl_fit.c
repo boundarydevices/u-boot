@@ -666,7 +666,9 @@ static int spl_simple_fit_read(struct spl_fit_info *ctx,
 static int spl_simple_fit_parse(struct spl_fit_info *ctx)
 {
 	/* Find the correct subnode under "/configurations" */
+	printf("spl_simple_fit_parse : Enter\n");
 	ctx->conf_node = fit_find_config_node(ctx->fit);
+	printf("spl_simple_fit_parse : After fit_find_config_node\n");
 	if (ctx->conf_node < 0)
 		return -EINVAL;
 
@@ -699,6 +701,8 @@ int spl_load_simple_fit(struct spl_image_info *spl_image,
 	int index = 0;
 	int firmware_node;
 
+	printf("spl_load_simple_fit : Enter\n");
+
 	ret = spl_simple_fit_read(&ctx, info, sector, fit);
 	if (ret < 0)
 		return ret;
@@ -709,7 +713,10 @@ int spl_load_simple_fit(struct spl_image_info *spl_image,
 
 	ctx.fit = spl_load_simple_fit_fix_load(ctx.fit);
 
+	printf("spl_load_simple_fit : Before spl_simple_fit_parse\n");
+
 	ret = spl_simple_fit_parse(&ctx);
+	printf("spl_load_simple_fit : After spl_simple_fit_parse\n");
 	if (ret < 0)
 		return ret;
 
