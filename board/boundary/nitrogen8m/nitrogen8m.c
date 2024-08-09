@@ -1,17 +1,18 @@
+// SPDX-License-Identifier: GPL-2.0+
 /*
- * Copyright 2016 Freescale Semiconductor, Inc.
- * Copyright 2017-2018 NXP
- *
- * SPDX-License-Identifier:	GPL-2.0+
+ * Copyright 2024 Ezurio
  */
 
 #include <common.h>
+#include <efi_loader.h>
+#include <env.h>
+#include <init.h>
 #include <malloc.h>
 #include <errno.h>
+#include <asm/global_data.h>
 #include <asm/io.h>
 #include <miiphy.h>
 #include <netdev.h>
-#include <asm/mach-imx/fbpanel.h>
 #include <asm/mach-imx/iomux-v3.h>
 #include <asm-generic/gpio.h>
 #include <fsl_esdhc_imx.h>
@@ -21,22 +22,37 @@
 #include <asm/mach-imx/gpio.h>
 #include <asm/mach-imx/mxc_i2c.h>
 #include <asm/arch/clock.h>
-#include <asm/mach-imx/video.h>
-#include <linux/delay.h>
-#include <video_fb.h>
 #include <spl.h>
+#include <linux/bitops.h>
 #include <power/pmic.h>
 #include <power/pfuze100_pmic.h>
-#include <dm.h>
-#include "../common/padctrl.h"
-#include "../common/bd_common.h"
+#include "../../freescale/common/pfuze.h"
+#include <usb.h>
+#include <dwc3-uboot.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
-static iomux_v3_cfg_t const init_pads[] = {
-	IMX8MQ_PAD_GPIO1_IO02__WDOG1_WDOG_B | MUX_PAD_CTRL(WDOG_PAD_CTRL),
+#define PAD_CTRL_ENET_MDC        (PAD_CTL_DSE3)
+#define PAD_CTRL_ENET_MDIO       (PAD_CTL_DSE3 | PAD_CTL_ODE)
+#define PAD_CTRL_ENET_TX 0x1f
+
+#define UART_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_FSEL1)
+#define WDOG_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_ODE | PAD_CTL_PUE)
+
+#define WEAK_PULLUP     ( \
+        PAD_CTL_HYS \
+        )
+
+static iomux_v3_cfg_t const uart_pads[] = {
 	IMX8MQ_PAD_UART1_RXD__UART1_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
 	IMX8MQ_PAD_UART1_TXD__UART1_TX | MUX_PAD_CTRL(UART_PAD_CTRL),
+};
+
+static iomux_v3_cfg_t const wdog_pads[] = {
+	IMX8MQ_PAD_GPIO1_IO02__WDOG1_WDOG_B | MUX_PAD_CTRL(WDOG_PAD_CTRL),
+};
+
+static iomux_v3_cfg_t const init_pads[] = {
 #define GP_I2C4_SN65DSI83_IRQ		IMX_GPIO_NR(1, 1)
 /* This enables 5V power on LTK080A60A004T mipi display */
 #define GP_LTK08_MIPI_EN		IMX_GPIO_NR(1, 1)
@@ -95,27 +111,41 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IMX8MQ_PAD_SD2_RESET_B__GPIO2_IO19 |MUX_PAD_CTRL(0x05),
 #ifdef CONFIG_FEC_MXC
 	/* PHY - AR8035 */
-	IOMUX_PAD_CTRL(ENET_MDIO__ENET_MDIO, PAD_CTRL_ENET_MDIO),
-	IOMUX_PAD_CTRL(ENET_MDC__ENET_MDC, PAD_CTRL_ENET_MDC),
-	IOMUX_PAD_CTRL(ENET_TX_CTL__ENET_RGMII_TX_CTL, PAD_CTRL_ENET_TX),
-	IOMUX_PAD_CTRL(ENET_TD0__ENET_RGMII_TD0, PAD_CTRL_ENET_TX),
-	IOMUX_PAD_CTRL(ENET_TD1__ENET_RGMII_TD1, PAD_CTRL_ENET_TX),
-	IOMUX_PAD_CTRL(ENET_TD2__ENET_RGMII_TD2, PAD_CTRL_ENET_TX),
-	IOMUX_PAD_CTRL(ENET_TD3__ENET_RGMII_TD3, PAD_CTRL_ENET_TX),
-	IOMUX_PAD_CTRL(ENET_TXC__ENET_RGMII_TXC, PAD_CTRL_ENET_TX),
+	IMX8MQ_PAD_ENET_MDIO__ENET_MDIO | MUX_PAD_CTRL(PAD_CTRL_ENET_MDIO),
+	IMX8MQ_PAD_ENET_MDC__ENET_MDC | MUX_PAD_CTRL(PAD_CTRL_ENET_MDC),
+	IMX8MQ_PAD_ENET_TX_CTL__ENET_RGMII_TX_CTL | MUX_PAD_CTRL(PAD_CTRL_ENET_TX),
+	IMX8MQ_PAD_ENET_TD0__ENET_RGMII_TD0 | MUX_PAD_CTRL(PAD_CTRL_ENET_TX),
+	IMX8MQ_PAD_ENET_TD1__ENET_RGMII_TD1 | MUX_PAD_CTRL(PAD_CTRL_ENET_TX),
+	IMX8MQ_PAD_ENET_TD2__ENET_RGMII_TD2 | MUX_PAD_CTRL(PAD_CTRL_ENET_TX),
+	IMX8MQ_PAD_ENET_TD3__ENET_RGMII_TD3 | MUX_PAD_CTRL(PAD_CTRL_ENET_TX),
+	IMX8MQ_PAD_ENET_TXC__ENET_RGMII_TXC | MUX_PAD_CTRL(PAD_CTRL_ENET_TX),
 #endif
 #define GP_RGMII_PHY_RESET	IMX_GPIO_NR(1, 9)
-	IOMUX_PAD_CTRL(GPIO1_IO09__GPIO1_IO9, WEAK_PULLUP),
+	IMX8MQ_PAD_GPIO1_IO09__GPIO1_IO9 | MUX_PAD_CTRL(WEAK_PULLUP),
 #define GPIRQ_ENET_PHY		IMX_GPIO_NR(1, 11)
-	IOMUX_PAD_CTRL(GPIO1_IO11__GPIO1_IO11, WEAK_PULLUP),
+	IMX8MQ_PAD_GPIO1_IO11__GPIO1_IO11 | MUX_PAD_CTRL(WEAK_PULLUP),
 };
+
+int dm_usb_gadget_handle_interrupts(struct udevice *dev)
+{
+	dwc3_uboot_handle_interrupt(dev);
+	return 0;
+}
 
 int board_early_init_f(void)
 {
 	struct wdog_regs *wdog = (struct wdog_regs *)WDOG1_BASE_ADDR;
 
-	imx_iomux_v3_setup_multiple_pads(init_pads, ARRAY_SIZE(init_pads));
+	imx_iomux_v3_setup_multiple_pads(wdog_pads, ARRAY_SIZE(wdog_pads));
+
 	set_wdog_reset(wdog);
+
+	imx_iomux_v3_setup_multiple_pads(uart_pads, ARRAY_SIZE(uart_pads));
+
+	init_uart_clk(1);
+
+	imx_iomux_v3_setup_multiple_pads(init_pads, ARRAY_SIZE(init_pads));
+
 
 	gpio_request(GP_BACKLIGHT_MIPI, "backlight_mipi");
 	gpio_request(GP_ARM_DRAM_VSEL, "arm_vsel");
@@ -156,78 +186,10 @@ int board_usb_hub_gpio_init(void)
 }
 #endif
 
-#ifdef CONFIG_CMD_FBPANEL
-
-#ifdef CONFIG_VIDEO_IMX8M_HDMI
-int board_detect_hdmi(struct display_info_t const *di)
+int mmc_map_to_kernel_blk(int dev_no)
 {
-	return hdmi_hpd_status() ? 1 : 0;
+	return dev_no;
 }
-#endif
-
-int board_detect_gt911(struct display_info_t const *di)
-{
-	return board_detect_gt911_common(di, 0, 0, GP_TS_GT911_RESET, GPIRQ_TS_GT911);
-}
-
-int board_detect_gt911_sn65(struct display_info_t const *di)
-{
-	board_disable_i2c_mux(di->bus_num & 0x0f);
-	return board_detect_gt911_sn65_common(di, 0, 0, GP_TS_GT911_RESET, GPIRQ_TS_GT911);
-}
-
-int board_detect_pca9546_gt911(struct display_info_t const *di)
-{
-	return board_detect_gt911_common(di, 1 << (di->bus_num >> 4), 0, GP_TS_GT911_RESET, GPIRQ_TS_GT911);
-}
-
-static const struct display_info_t displays[] = {
-#ifdef CONFIG_VIDEO_IMX8M_HDMI
-	/* hdmi */
-	VD_1920_1080M_60(HDMI, board_detect_hdmi, 0, 0x50),
-	VD_1280_720M_60(HDMI, NULL, 0, 0x50),
-#endif
-	VD_MIPI_M101NWWB_x("m101nwwb-1",	U, MIPI, board_detect_gt911_sn65, fbp_bus_gp(3, GP_SN65DSI83_EN, 0, 0), 0x5d, FBP_MIPI_TO_LVDS, FBTS_GOODIX),
-	VD_MIPI_M101NWWB_x("m101nwwb-2",	E, MIPI, NULL, fbp_bus_gp(3, GP_SN65DSI83_EN, 0, 0), 0x5d, FBP_MIPI_TO_LVDS, FBTS_GOODIX),
-	VD_MIPI_M101NWWB_x("m101nwwb-3",	B, MIPI, NULL, fbp_bus_gp(3, GP_SN65DSI83_EN, 0, 0), 0x5d, FBP_MIPI_TO_LVDS, FBTS_GOODIX),
-	VD_MIPI_TM070JDHG30_x("tm070jdhg30-1",	U, MIPI, NULL, fbp_bus_gp(3, GP_SN65DSI83_EN, 0, 0), 0x5d, FBP_MIPI_TO_LVDS, FBTS_GOODIX),
-	VD_MIPI_TM070JDHG30_x("tm070jdhg30-2",	E, MIPI, NULL, fbp_bus_gp(3, GP_SN65DSI83_EN, 0, 0), 0x5d, FBP_MIPI_TO_LVDS, FBTS_GOODIX),
-	VD_MIPI_TM070JDHG30_x("tm070jdhg30-3",	B, MIPI, NULL, fbp_bus_gp(3, GP_SN65DSI83_EN, 0, 0), 0x5d, FBP_MIPI_TO_LVDS, FBTS_GOODIX),
-
-	VD_MIPI_M101NWWB_x("m101nwwb-4",	U, MIPI, board_detect_sn65_and_ts, fbp_bus_gp(3, GP_SN65DSI83_EN, GP_TS_FT5X06_RESET, 0), 0x38, FBP_MIPI_TO_LVDS, FBTS_FT5X06),
-	VD_MIPI_M101NWWB_x("m101nwwb-5",	E, MIPI, NULL, fbp_bus_gp(3, GP_SN65DSI83_EN, GP_TS_FT5X06_RESET, 0), 0x38, FBP_MIPI_TO_LVDS, FBTS_FT5X06),
-	VD_MIPI_M101NWWB_x("m101nwwb-5",	B, MIPI, NULL, fbp_bus_gp(3, GP_SN65DSI83_EN, GP_TS_FT5X06_RESET, 0), 0x38, FBP_MIPI_TO_LVDS, FBTS_FT5X06),
-	VD_MIPI_TM070JDHG30_x("tm070jdhg30-4",	U, MIPI, NULL, fbp_bus_gp(3, GP_SN65DSI83_EN, GP_TS_FT5X06_RESET, 0), 0x38, FBP_MIPI_TO_LVDS, FBTS_FT5X06),
-	VD_MIPI_TM070JDHG30_x("tm070jdhg30-5",	E, MIPI, NULL, fbp_bus_gp(3, GP_SN65DSI83_EN, GP_TS_FT5X06_RESET, 0), 0x38, FBP_MIPI_TO_LVDS, FBTS_FT5X06),
-	VD_MIPI_TM070JDHG30_x("tm070jdhg30-6",	B, MIPI, NULL, fbp_bus_gp(3, GP_SN65DSI83_EN, GP_TS_FT5X06_RESET, 0), 0x38, FBP_MIPI_TO_LVDS, FBTS_FT5X06),
-
-	VD_DMT050WVNXCMI(MIPI, fbp_detect_i2c, fbp_bus_gp(3, GP_SC18IS602B_RESET, 0, 30), fbp_addr_gp(0x2f, 0, 6, 0), FBP_SPI_LCD, FBTS_GOODIX),
-	VD_LTK080A60A004T(MIPI, board_detect_gt911, fbp_bus_gp(3, GP_LTK08_MIPI_EN, GP_LTK08_MIPI_EN, 0), 0x5d, FBTS_GOODIX),	/* Goodix touchscreen */
-	VD_LCM_JM430(MIPI, fbp_detect_i2c, fbp_bus_gp(3, GP_ST1633_RESET, GP_TC358762_EN, 30), fbp_addr_gp(0x55, 0, 0, 0), FBTS_ST1633I),		/* Sitronix touch */
-	VD_LTK0680YTMDB(MIPI, NULL, fbp_bus_gp(3, GP_MIPI_RESET, GP_MIPI_RESET, 0), 0x5d, FBTS_GOODIX),
-	VD_MIPI_COM50H5N03ULC(MIPI, NULL, fbp_bus_gp(3, GP_MIPI_RESET, GP_MIPI_RESET, 0), 0x00),
-	VD_MIPI_TCXD070IBLMAT77(MIPI, fbp_detect_i2c, fbp_bus_gp(3, GP_TS_ILI251X_RESET, GP_MIPI_RESET, 0), fbp_addr_gp(0x41, GP_TCXD070_BKL_EN, 0, 0), FBTS_ILI251X),
-	/* 0x3e is the TPS65132 power chip on our adapter board */
-	VD_MIPI_LCD133_070(MIPI, board_detect_lcd133, fbp_bus_gp(3, GP_LCD133_070_ENABLE, GP_LCD133_070_ENABLE, 1), fbp_addr_gp(0x3e, 0, 0, 0), FBTS_FT7250),
-	VD_MIPI_MQ_VTFT101RPFT20(MIPI, board_detect_pca9546_gt911, fbp_bus_gp((3 | (2 << 4)), 0, 0, 0), 0x5d, FBP_PCA9546, FBTS_GOODIX2),
-	VD_MIPI_MQ_VTFT101RPFT20_2(MIPI, board_detect_pca9546, fbp_bus_gp((3 | (2 << 4)), 0, GP_TS_FT5X06_RESET, 0), 0x38, FBP_PCA9546, FBTS_FT5X06_2),
-	VD_MIPI_MQ_TM070JDHG30_LT8912(MIPI, NULL, fbp_bus_gp((3 | (2 << 4)), 0, 0, 0), 0x5d, FBP_PCA9546, FBTS_GOODIX2),
-	VD_MIPI_MQ_TM070JDHG30_LT8912_2(MIPI, NULL, fbp_bus_gp((3 | (2 << 4)), 0, GP_TS_FT5X06_RESET, 0), 0x38, FBP_PCA9546, FBTS_FT5X06_2),
-	/* Looking for the max7323 gpio chip on the Lontium daughter board */
-	VD_MIPI_MQ_1920_1080M_60(MIPI, board_detect_pca9546, fbp_bus_gp((3 | (3 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
-	VD_MIPI_MQ_1280_800M_60(MIPI, NULL, fbp_bus_gp((3 | (3 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
-	VD_MIPI_MQ_1280_720M_60(MIPI, NULL, fbp_bus_gp((3 | (3 << 4)), 0, 0, 0), fbp_addr_gp(0x68,0,8,0), FBP_PCA9546),
-	VD_MIPI_MQ_1024_768M_60(MIPI, NULL, fbp_bus_gp((3 | (3 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
-	VD_MIPI_MQ_800_600MR_60(MIPI, NULL, fbp_bus_gp((3 | (3 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
-	VD_MIPI_MQ_720_480M_60(MIPI, NULL, fbp_bus_gp((3 | (3 << 4)), 0, 0, 0), 0x68, FBP_PCA9546),
-	VD_MIPI_MQ_640_480M_60(MIPI, NULL, fbp_bus_gp((3 | (3 << 4)), 0, 0, 0), fbp_addr_gp(0x68,0,16,0), FBP_PCA9546),
-	VD_MIPI_MQ_VTFT101RPFT20_3(MIPI, fbp_detect_i2c, 3, 0x70, FBP_PCA9540),
-};
-#define display_cnt	ARRAY_SIZE(displays)
-#else
-#define displays	NULL
-#define display_cnt	0
-#endif
 
 int board_init(void)
 {
@@ -238,14 +200,10 @@ int board_init(void)
 	gpio_request(GP_TS_GT911_RESET, "gt911_reset");
 	gpio_request(GPIRQ_TS_GT911, "gt911_irq");
 	gpio_direction_output(GP_TS_GT911_RESET, 0);
-#ifdef CONFIG_DM_ETH
-	board_eth_init(gd->bd);
-#endif
-#ifdef CONFIG_CMD_FBPANEL
-	fbp_setup_display(displays, display_cnt);
-#endif
-	board_usb_reset(0, USB_INIT_DEVICE);
 
+#if defined(CONFIG_USB_DWC3) || defined(CONFIG_USB_XHCI_IMX8M)
+	init_usb_clk();
+#endif
 	return 0;
 }
 

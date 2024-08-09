@@ -1,29 +1,21 @@
+/* SPDX-License-Identifier: GPL-2.0+ */
 /*
- * Copyright 2018 Boundary Devices
- *
- * SPDX-License-Identifier:	GPL-2.0+
+ * Copyright 2024 Ezurio LLC
  */
 
 #ifndef __NITROGEN8M_H
 #define __NITROGEN8M_H
 
 #include <linux/sizes.h>
+#include <linux/stringify.h>
 #include <asm/arch/imx-regs.h>
 
-#define CONFIG_SPL_MAX_SIZE		(148 * 1024)
-#define CONFIG_SYS_MONITOR_LEN		SZ_512K
 #define CONFIG_SYS_MMCSD_FS_BOOT_PARTITION	1
 #define CONFIG_IMX6_PWM_PER_CLK		66000000
 
 #ifdef CONFIG_SPL_BUILD
 
 /*#define CONFIG_ENABLE_DDR_TRAINING_DEBUG*/
-#define CONFIG_SPL_STACK		0x00187FF0
-#define CONFIG_SPL_BSS_START_ADDR	0x00180000
-#define CONFIG_SPL_BSS_MAX_SIZE		SZ_8K
-#define CONFIG_SYS_SPL_MALLOC_START	0x42200000
-#define CONFIG_SYS_SPL_MALLOC_SIZE	SZ_512K
-#define CONFIG_MALLOC_F_ADDR		0x00182000	/* malloc f used before GD_FLG_FULL_MALLOC_INIT set */
 
 #define CONFIG_SPL_ABORT_ON_RAW_IMAGE /* For RAW image gives a error info not panic */
 
@@ -36,10 +28,6 @@
 #define CONFIG_SYS_I2C
 
 #endif
-
-#define CONFIG_BOARD_POSTCLK_INIT
-
-
 
 /* #define CONFIG_CMD_BMODE */
 #undef CONFIG_CMD_CRC32
@@ -60,39 +48,27 @@
 #endif
 
 /* Link Definitions */
-#define CONFIG_SYS_INIT_RAM_ADDR        0x40000000
-#define CONFIG_SYS_INIT_RAM_SIZE	0x200000
+#define CFG_SYS_INIT_RAM_ADDR        0x40000000
+#define CFG_SYS_INIT_RAM_SIZE	0x200000
 #define CONFIG_SYS_INIT_SP_OFFSET \
-        (CONFIG_SYS_INIT_RAM_SIZE - GENERATED_GBL_DATA_SIZE)
+        (CFG_SYS_INIT_RAM_SIZE - GENERATED_GBL_DATA_SIZE)
 #define CONFIG_SYS_INIT_SP_ADDR \
-        (CONFIG_SYS_INIT_RAM_ADDR + CONFIG_SYS_INIT_SP_OFFSET)
+        (CFG_SYS_INIT_RAM_ADDR + CONFIG_SYS_INIT_SP_OFFSET)
 
 
-/* Size of malloc() pool */
-
-/* bootm image length (Android) */
-#define CONFIG_SYS_BOOTM_LEN		(96 * SZ_1M)
-
-#define CONFIG_SYS_SDRAM_BASE           0x40000000
+#define CFG_SYS_SDRAM_BASE		0x40000000
 #define PHYS_SDRAM                      0x40000000
-#define PHYS_SDRAM_SIZE			(CONFIG_DDR_MB * 1024ULL * 1024ULL)
+#define PHYS_SDRAM_SIZE			SZ_2G /* Minimum */
 
 #define CONFIG_BAUDRATE			115200
 
-#define CONFIG_MXC_UART_BASE		UART1_BASE_ADDR
+#define CFG_MXC_UART_BASE		UART1_BASE_ADDR
 
 /* Monitor Command Prompt */
-#define CONFIG_SYS_CBSIZE              2048
 #define CONFIG_SYS_MAXARGS             64
-#define CONFIG_SYS_BARGSIZE CONFIG_SYS_CBSIZE
-#define CONFIG_SYS_PBSIZE		(CONFIG_SYS_CBSIZE + \
-					sizeof(CONFIG_SYS_PROMPT) + 16)
 
-#define CONFIG_SYS_FSL_USDHC_NUM	1
-#define CONFIG_SYS_FSL_ESDHC_ADDR       0
-
-#define CONFIG_SUPPORT_EMMC_RPMB
-
+#define CFG_SYS_FSL_USDHC_NUM	1
+#define CFG_SYS_FSL_ESDHC_ADDR       0
 
 
 /* I2C Configs */
@@ -113,10 +89,6 @@
 /* Framebuffer */
 #if defined(CONFIG_VIDEO) || defined(CONFIG_DM_VIDEO)
 #define CONFIG_SYS_VIDEO_LOGO_MAX_SIZE (6 * 1024 * 1024)
-#define CONFIG_BMP_16BPP
-#define CONFIG_BMP_24BPP
-#define CONFIG_BMP_32BPP
-#define CONFIG_VIDEO_BMP_LOGO
 #endif
 
 #ifndef BD_CONSOLE
@@ -174,6 +146,7 @@
 		"dcache flush; bootaux ${m4loadaddr}\0" \
 	"m4image=m4_fw.bin\0" \
 	"m4loadaddr="__stringify(CONFIG_IMX_MCORE_TCM_ADDR)"\0" \
+	"mcore_bootargs=clk-imx8mq.mcore_booted\0" \
 	"netargs=setenv bootargs console=${console},115200 root=/dev/nfs rw " \
 		"ip=dhcp nfsroot=${tftpserverip}:${nfsroot},v3,tcp\0" \
 	"netboot=run netargs; " \

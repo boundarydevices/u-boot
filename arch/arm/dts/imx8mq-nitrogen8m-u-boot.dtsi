@@ -4,99 +4,87 @@
  */
 #include "imx8mq-u-boot.dtsi"
 
-#define GP_I2C4_SN65DSI83_IRQ <&gpio1 1 GPIO_ACTIVE_HIGH>
-
 / {
-	aliases {
-		mipi_dsi_bridge = &mipi_dsi_bridge;
-		t_hdmi = &t_hdmi;
-	};
-
 	wdt-reboot {
 		compatible = "wdt-reboot";
 		wdt = <&wdog1>;
-		u-boot,dm-spl;
+		bootph-pre-ram;
 	};
 };
 
 &{/soc@0} {
-	u-boot,dm-pre-reloc;
-	u-boot,dm-spl;
+	bootph-all;
+	bootph-pre-ram;
 };
 
 &aips1 {
-	u-boot,dm-spl;
-	u-boot,dm-pre-reloc;
+	bootph-pre-ram;
+	bootph-all;
 };
 
 &aips2 {
-	u-boot,dm-spl;
+	bootph-pre-ram;
 };
 
 &aips3 {
-	u-boot,dm-spl;
+	bootph-pre-ram;
 };
 
 &ckil {
-	u-boot,dm-spl;
-	u-boot,dm-pre-reloc;
+	bootph-pre-ram;
+	bootph-all;
 };
 
 &clk {
-	u-boot,dm-spl;
-	u-boot,dm-pre-reloc;
+	bootph-pre-ram;
+	bootph-all;
 	/delete-property/ assigned-clocks;
 	/delete-property/ assigned-clock-parents;
 	/delete-property/ assigned-clock-rates;
 };
 
 &clk_ext1 {
-	u-boot,dm-spl;
-	u-boot,dm-pre-reloc;
+	bootph-pre-ram;
+	bootph-all;
 };
 
 &clk_ext2 {
-	u-boot,dm-spl;
-	u-boot,dm-pre-reloc;
+	bootph-pre-ram;
+	bootph-all;
 };
 
 &clk_ext3 {
-	u-boot,dm-spl;
-	u-boot,dm-pre-reloc;
+	bootph-pre-ram;
+	bootph-all;
 };
 
 &clk_ext4 {
-	u-boot,dm-spl;
-	u-boot,dm-pre-reloc;
+	bootph-pre-ram;
+	bootph-all;
 };
 
 &dcss {
 	disp-dev = "hdmi_disp";
 };
 
-&dummy {
-	u-boot,dm-spl;
-	u-boot,dm-pre-reloc;
-};
-
 &gpio1 {
-	u-boot,dm-spl;
+	bootph-pre-ram;
 };
 
 &gpio2 {
-	u-boot,dm-spl;
+	bootph-pre-ram;
 };
 
 &gpio3 {
-	u-boot,dm-spl;
+	bootph-pre-ram;
 };
 
 &gpio4 {
-	u-boot,dm-spl;
+	bootph-pre-ram;
 };
 
 &gpio5 {
-	u-boot,dm-spl;
+	bootph-pre-ram;
 };
 
 &hdmi {
@@ -120,171 +108,69 @@
 };
 
 &i2c1 {
-	u-boot,dm-spl;
+	bootph-pre-ram;
 };
 
 &iomuxc {
-	u-boot,dm-spl;
-};
-
-&lcdif {
-	display = <&fb_mipi>;
-	status = "okay";
-
-	/delete-node/ port;
-
-	port {
-		lcdif_out: endpoint {
-			remote-endpoint = <&mipi_dsi_bridge_in>;
-		};
-	};
-};
-
-&lt8912_2 {
-	port {
-		lt8912_2_from_panel: endpoint {
-			remote-endpoint = <&panel_to_lt8912_2>;
-		};
-	};
-};
-
-&mipi_dsi {
-	input-source = "lcdif";
-
-	fb_mipi: panel@0 {
-		bits-per-pixel = <24>;
-		bus-width = <24>;
-		clocks = <&dsim_clk 0>,
-			 <&clk IMX8MQ_CLK_LCDIF_PIXEL>;
-
-		mipi_to_lvds: mipi-to-lvds {
-			interrupts-gpios = GP_I2C4_SN65DSI83_IRQ;
-		};
-
-		/delete-node/ port;
-		ports {
-			#address-cells = <1>;
-			#size-cells = <0>;
-
-			port@1 {
-				panel1_in: endpoint {
-					remote-endpoint = <&mipi_dsi_bridge_out>;
-				};
-			};
-
-			port@2 {
-				panel_to_lt8912: endpoint {
-					remote-endpoint = <&lt8912_from_panel>;
-				};
-			};
-
-			port@3 {
-				panel_to_lt8912_2: endpoint {
-					remote-endpoint = <&lt8912_2_from_panel>;
-				};
-			};
-		};
-	};
-
-	/delete-node/ ports;
-};
-
-&mipi_dsi_bridge {
-	ports {
-		#address-cells = <1>;
-		#size-cells = <0>;
-
-		port@0 {
-			mipi_dsi_bridge_in: endpoint {
-				remote-endpoint = <&lcdif_out>;
-			};
-		};
-
-		port@1 {
-			mipi_dsi_bridge_out: endpoint {
-				remote-endpoint = <&panel1_in>;
-			};
-		};
-	};
+	bootph-pre-ram;
 };
 
 &osc_25m {
-	u-boot,dm-spl;
-	u-boot,dm-pre-reloc;
+	bootph-pre-ram;
+	bootph-all;
 };
 
 &osc_27m {
-	u-boot,dm-spl;
-	u-boot,dm-pre-reloc;
-};
-
-&pca9546 {
-	i2c4@0 {
-		lt8912@48 {
-			port {
-				lt8912_from_panel: endpoint {
-					remote-endpoint = <&panel_to_lt8912>;
-				};
-			};
-		};
-	};
-};
-
-&phy_27m {
-	u-boot,dm-spl;
-	u-boot,dm-pre-reloc;
+	bootph-pre-ram;
+	bootph-all;
 };
 
 &pinctrl_i2c1 {
-	u-boot,dm-spl;
+	bootph-pre-ram;
 };
 
 &pinctrl_uart2 {
-	u-boot,dm-spl;
+	bootph-pre-ram;
 };
 
 &pinctrl_usb3_0 {
-	u-boot,dm-spl;
-};
-
-&pinctrl_usb3_1 {
-	u-boot,dm-spl;
+	bootph-pre-ram;
 };
 
 &pinctrl_usdhc1 {
-	u-boot,dm-spl;
+	bootph-pre-ram;
 };
 
 &pinctrl_usdhc1_100mhz {
-	u-boot,dm-spl;
+	bootph-pre-ram;
 };
 
 &pinctrl_usdhc1_200mhz {
-	u-boot,dm-spl;
+	bootph-pre-ram;
 };
 
 &pinctrl_usdhc2 {
-	u-boot,dm-spl;
+	bootph-pre-ram;
 };
 
 &pinctrl_usdhc2_100mhz {
-	u-boot,dm-spl;
+	bootph-pre-ram;
 };
 
 &pinctrl_usdhc2_200mhz {
-	u-boot,dm-spl;
+	bootph-pre-ram;
 };
 
 &reg_vref_1v8 {
-	u-boot,dm-spl;
+	bootph-pre-ram;
 };
 
 &reg_vref_3v3 {
-	u-boot,dm-spl;
+	bootph-pre-ram;
 };
 
 &uart1 {
-	u-boot,dm-spl;
+	bootph-pre-ram;
 };
 
 &uart2 {
@@ -300,27 +186,27 @@
 };
 
 &usb3_phy0 {
-	u-boot,dm-spl;
+	bootph-pre-ram;
 };
 
 &usb3_phy1 {
-	u-boot,dm-spl;
+	bootph-pre-ram;
 };
 
 &usb_dwc3_0 {
-	u-boot,dm-spl;
+	bootph-pre-ram;
 };
 
 &usb_dwc3_1 {
-	u-boot,dm-spl;
+	bootph-pre-ram;
 };
 
 &usdhc1 {
 	cap-mmc-highspeed;
 	mmc-ddr-1_8v;
 	mmc-hs200-1_8v;
-	reset-gpios = GP_EMMC_RESET;
-	u-boot,dm-spl;
+	reset-gpios = <&gpio2 10 GPIO_ACTIVE_LOW>;
+	bootph-pre-ram;
 };
 
 &usdhc2 {
@@ -328,5 +214,5 @@
 };
 
 &wdog1 {
-	u-boot,dm-spl;
+	bootph-pre-ram;
 };

@@ -9,6 +9,10 @@ config SYS_VENDOR
 config SYS_CONFIG_NAME
 	default "nitrogen8m"
 
-source "board/boundary/common/Kconfig"
+config IMX_CONFIG
+	default "arch/arm/mach-imx/imx8m/imximage.cfg"
+
+config DEFCONFIG
+	string "unknown"
 
 endif
