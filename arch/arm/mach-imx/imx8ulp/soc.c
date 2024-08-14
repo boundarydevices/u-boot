@@ -1024,12 +1024,12 @@ void imx_get_mac_from_fuse(int dev_id, unsigned char *mac)
 	if (ret)
 		goto err;
 
-	mac[0] = val[0];
-	mac[1] = val[0] >> 8;
-	mac[2] = val[0] >> 16;
-	mac[3] = val[0] >> 24;
-	mac[4] = val[1];
-	mac[5] = val[1] >> 8;
+	mac[5] = val[0];
+	mac[4] = val[0] >> 8;
+	mac[3] = val[0] >> 16;
+	mac[2] = val[0] >> 24;
+	mac[1] = val[1];
+	mac[0] = val[1] >> 8;
 
 	debug("%s: MAC%d: %02x.%02x.%02x.%02x.%02x.%02x\n",
 	      __func__, dev_id, mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
