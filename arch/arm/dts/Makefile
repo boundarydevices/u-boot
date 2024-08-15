@@ -1444,6 +1444,8 @@ dtb-$(CONFIG_SOC_K3_AM625) += k3-am625-sk.dtb \
 			      k3-am625-r5-sk.dtb \
 			      k3-am62sip-r5-sk.dtb \
 			      k3-am625-beagleplay.dtb \
+			      k3-am625-carbon.dtb \
+			      k3-am625-carbon-r5.dtb \
 			      k3-am625-r5-beagleplay.dtb \
 			      k3-am625-verdin-wifi-dev.dtb \
 			      k3-am625-verdin-r5.dtb \

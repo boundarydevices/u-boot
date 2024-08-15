@@ -1,0 +1,38 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# Copyright (C) 2024 Ezurio LLC
+#
+
+if TARGET_CARBON_AM62_A53
+
+config SYS_BOARD
+       default "carbon-am62"
+
+config SYS_VENDOR
+       default "ezurio"
+
+config SYS_CONFIG_NAME
+       default "carbon-am62"
+
+config DEFCONFIG
+        string "unknown"
+
+endif
+
+if TARGET_CARBON_AM62_R5
+
+config SYS_BOARD
+       default "carbon-am62"
+
+config SYS_VENDOR
+       default "ezurio"
+
+config SYS_CONFIG_NAME
+       default "carbon-am62"
+
+config SPL_LDSCRIPT
+	default "arch/arm/mach-omap2/u-boot-spl.lds"
+
+# source "board/ti/common/Kconfig"
+
+endif

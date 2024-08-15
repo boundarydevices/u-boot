@@ -1,0 +1,81 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Common AM625 Carbon dts file for SPLs
+ * Copyright (C) 2024 Ezurio LLC
+ */
+
+#include "k3-am625-carbon-binman.dtsi"
+
+/ {
+	chosen {
+		tick-timer = &main_timer0;
+	};
+
+	panel_lvds: panel-lvds {
+		bootph-pre-ram;
+		compatible = "simple-panel";
+		status= "okay";
+		width-mm = <217>;
+		height-mm = <136>;
+		data-mapping = "vesa-24";
+		panel-timing {
+				bootph-pre-ram;
+				clock-frequency = <150274>;
+				hactive = <1920>;
+				vactive = <1200>;
+				hback-porch = <32>;
+				hfront-porch = <52>;
+				vback-porch = <24>;
+				vfront-porch = <8>;
+				hsync-len = <24>;
+				vsync-len = <3>;
+				de-active = <1>;
+		};
+	};
+};
+
+&dss {
+	clocks = <&k3_clks 186 6>,
+		 <&k3_clks 186 0>,
+		 <&k3_clks 186 2>;
+	ti,am65x-oldi-io-ctrl = <&dss_oldi_io_ctrl>;
+};
+
+&main_timer0 {
+	clock-frequency = <25000000>;
+};
+
+&main_bcdma {
+	reg = <0x00 0x485c0100 0x00 0x100>,
+	      <0x00 0x4c000000 0x00 0x20000>,
+	      <0x00 0x4a820000 0x00 0x20000>,
+	      <0x00 0x4aa40000 0x00 0x20000>,
+	      <0x00 0x4bc00000 0x00 0x100000>,
+	      <0x00 0x48600000 0x00 0x8000>,
+	      <0x00 0x484a4000 0x00 0x2000>,
+	      <0x00 0x484c2000 0x00 0x2000>;
+	reg-names = "gcfg", "bchanrt", "rchanrt", "tchanrt",
+		    "ringrt" , "cfg", "tchan", "rchan";
+};
+
+&main_pktdma {
+	bootph-all;
+};
+
+&cpsw_port2 {
+	status = "disabled";
+};
+
+&phy_gmii_sel {
+	bootph-all;
+};
+
+/* Required for USB DFU Boot */
+&usb0 {
+	dr_mode = "peripheral";
+};
+
+/* Required for USB DFU Boot */
+&usb0_phy_ctrl {
+	bootph-all;
+};
