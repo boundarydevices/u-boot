@@ -23,6 +23,7 @@
 #include <asm/mach-imx/ele_api.h>
 #include <asm/mach-imx/syscounter.h>
 #include <asm/sections.h>
+#include <display_options.h>
 #include <dm/uclass.h>
 #include <dm/device.h>
 #include <dm/uclass-internal.h>
