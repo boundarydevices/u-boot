@@ -41,7 +41,7 @@ config IMX_BOOTAUX
 	help
 	  bootaux [addr] to boot auxiliary core.
 
-if MACH_IMX
+if ARCH_MX6 || ARCH_MX7 || ARCH_IMX8M || ARCH_IMX9
 
 config IMX_MCORE_TCM_ADDR
 	hex "M-core ITCM address"
