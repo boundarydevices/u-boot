@@ -202,10 +202,10 @@
 	BD_FUSE_MAC1A_VAL_STR \
 	BD_FUSE_MAC1B_STR \
 	"initrd_high=0xffffffffffffffff\0" \
-	"m4boot=load ${devtype} ${devnum}:1 ${m4loadaddr} ${m4image}; " \
-		"dcache flush; bootaux ${m4loadaddr}\0" \
-	"m4image=m4_fw.bin\0" \
-	"m4loadaddr=" __stringify(MCU_BOOTROM_BASE_ADDR) "\0" \
+	"mcoreboot=load ${devtype} ${devnum}:1 ${mcore_loadaddr} ${mcore_image}; " \
+		"dcache flush; bootaux ${mcore_loadaddr}\0" \
+	"mcore_image=m4_fw.bin\0" \
+	"mcore_loadaddr=" __stringify(CONFIG_IMX_MCORE_TCM_ADDR) "\0" \
 	"mcore_bootargs=clk-imx8mm.mcore_booted\0" \
 	"netargs=setenv bootargs console=${console},115200 root=/dev/nfs rw " \
 		"ip=dhcp nfsroot=${tftpserverip}:${nfsroot},v3,tcp\0" \
