@@ -63,7 +63,7 @@
 };
 
 &cpsw_port2 {
-	status = "disabled";
+	status = "okay";
 };
 
 &phy_gmii_sel {
