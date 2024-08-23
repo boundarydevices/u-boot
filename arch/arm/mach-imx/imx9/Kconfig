@@ -46,6 +46,12 @@ config TARGET_IMX91_9X9_QSB
 	select IMX91
 	select IMX9_LPDDR4X
 
+config TARGET_IMX91_NITROGEN_SMARC
+	bool "imx91_nitrogen_smarc"
+	select BINMAN
+	select OF_BOARD_FIXUP
+	select IMX91
+
 config TARGET_IMX93_14X14_EVK
 	bool "imx93_14x14_evk"
 	select IMX93
@@ -89,6 +95,7 @@ config TARGET_IMX95_15X15_EVK
 
 endchoice
 
+source "board/boundary/imx91_nitrogen_smarc/Kconfig"
 source "board/boundary/imx93_nitrogen_smarc/Kconfig"
 source "board/freescale/imx91_evk/Kconfig"
 source "board/freescale/imx91_qsb/Kconfig"
