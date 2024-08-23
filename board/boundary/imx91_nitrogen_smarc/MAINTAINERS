@@ -1,0 +1,6 @@
+Ezurio i.MX 91 Nitrogen SMARC board
+M:	Gary Bisson <gary.bisson@ezurio.com>
+S:	Maintained
+F:	board/boundary/imx91_nitrogen_smarc/
+F:	include/configs/imx91_nitrogen_smarc.h
+F:	configs/imx91_nitrogen_smarc_defconfig
