@@ -424,9 +424,9 @@
 };
 
 &lpuart1 { /* console */
-pinctrl-names = "default";
-pinctrl-0 = <&pinctrl_uart1>;
-status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart1>;
+	status = "okay";
 };
 
 &lpuart5 {
