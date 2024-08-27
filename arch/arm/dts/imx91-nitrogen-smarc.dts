@@ -424,9 +424,9 @@
 };
 
 &lpuart1 { /* console */
-pinctrl-names = "default";
-pinctrl-0 = <&pinctrl_uart1>;
-status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart1>;
+	status = "okay";
 };
 
 &lpuart5 {
@@ -482,6 +482,10 @@ status = "okay";
 	assigned-clock-rates = <12288000>;
 	fsl,sai-mclk-direction-output;
 	fsl,sai-synchronous-rx;
+	status = "okay";
+};
+
+&tempsense0 {
 	status = "okay";
 };
 
