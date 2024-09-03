@@ -19,6 +19,7 @@
 #include <asm/io.h>
 #include <asm/arch/hardware.h>
 #include <dm/uclass.h>
+#include <power/regulator.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -41,6 +42,23 @@ int splash_screen_prepare(void)
 
 int board_init(void)
 {
+	struct udevice *regulator;
+	int ret;
+
+	// Ensure that mmc1 is selected to the SDCARD or M.2 device correctly.
+	// U-boot does not support vin-supply so we have to manually enable this regulator.
+	// See this regulator in the device-tree for selection.
+	ret = regulator_get_by_platname("vdd_mmc1_sel", &regulator);
+	if (ret) {
+		debug("%s vdd_mmc1_sel init fail! ret %d\n", __func__, ret);
+		goto out;
+	}
+
+	ret = regulator_set_enable(regulator, true);
+	if (ret)
+		debug("%s vdd_mmc1_sel set fail! ret %d\n", __func__, ret);
+out:
+
 	return 0;
 }
 
@@ -66,7 +84,6 @@ int board_late_init(void)
 #endif
 
 #if defined(CONFIG_SPL_BUILD)
-
 void spl_board_init(void)
 {
 	u32 val;
@@ -84,17 +101,6 @@ void spl_board_init(void)
 	if (IS_ENABLED(CONFIG_SPL_SPLASH_SCREEN) && IS_ENABLED(CONFIG_SPL_BMP))
 		splash_display();
 }
-
-#if 0
-void spl_perform_fixups(struct spl_image_info *spl_image)
-{
-	if (IS_ENABLED(CONFIG_K3_DDRSS) && IS_ENABLED(CONFIG_K3_INLINE_ECC))
-		fixup_ddr_driver_for_ecc(spl_image);
-	else
-		fixup_memory_node(spl_image);
-}
-#endif
-
 #endif
 
 #if defined(CONFIG_OF_BOARD_SETUP)
