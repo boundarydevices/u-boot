@@ -203,20 +203,8 @@
 	vqmmc-supply = <&vdd_sd_dv>; /* VSEL_SD */
 	disable-wp; // MMC1_SDWP is just pulled down, so lets not use this.
 
-	ti,otap-del-sel-legacy = <0x8>;
-	ti,otap-del-sel-sd-hs = <0x0>;
-	ti,otap-del-sel-sdr12 = <0x0>;
-	ti,otap-del-sel-sdr25 = <0x0>;
-	ti,otap-del-sel-sdr50 = <0x8>;
-	ti,otap-del-sel-sdr104 = <0x7>; // This one is failing
-	ti,otap-del-sel-ddr50 = <0x4>;
+	/delete-property/ ti,otap-del-sel-sdr104; // This one is failing
 
-	ti,itap-del-sel-legacy = <0xa>;
-	ti,itap-del-sel-sd-hs = <0x1>;
-	ti,itap-del-sel-sdr12 = <0xa>;
-	ti,itap-del-sel-sdr25 = <0x1>;
-
-	ti,trm-icp = <0x8>;
 	ti,driver-strength-ohm = <50>;
 };
 
