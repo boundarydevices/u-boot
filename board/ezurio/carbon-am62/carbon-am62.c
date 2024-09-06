@@ -42,23 +42,6 @@ int splash_screen_prepare(void)
 
 int board_init(void)
 {
-	struct udevice *regulator;
-	int ret;
-
-	// Ensure that mmc1 is selected to the SDCARD or M.2 device correctly.
-	// U-boot does not support vin-supply so we have to manually enable this regulator.
-	// See this regulator in the device-tree for selection.
-	ret = regulator_get_by_platname("vdd_mmc1_sel", &regulator);
-	if (ret) {
-		debug("%s vdd_mmc1_sel init fail! ret %d\n", __func__, ret);
-		goto out;
-	}
-
-	ret = regulator_set_enable(regulator, true);
-	if (ret)
-		debug("%s vdd_mmc1_sel set fail! ret %d\n", __func__, ret);
-out:
-
 	return 0;
 }
 
