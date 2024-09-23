@@ -192,6 +192,7 @@ static const struct display_info_t displays[] = {
 	VD_LXD_M8509A(MIPI, board_detect_pca9546_x73, fbp_bus_gp((2 | (2 << 4)), 0, 0, 0), 0x66, FBP_BACKLIGHT_MIPI_ALT, FBTS_FT5X06_3),
 
 	VD_MIPI_VTFT101RPFT20(MIPI, NULL, (2 | (2 << 4)), 0x70, FBP_PCA9540),
+	VD_TM050JDHG33(MIPI, NULL, 0, 0),
 
 	/* lvds */
 	/* goodix */
