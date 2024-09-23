@@ -190,6 +190,7 @@ static const struct display_info_t displays[] = {
 #else
 	VD_LTK190L3027T(LVDS, NULL, 0, 0, 0),
 #endif
+	VD_TM050JDHG33(MIPI, NULL, 0, 0),
 
 	/* lvds */
 	/* goodix */
