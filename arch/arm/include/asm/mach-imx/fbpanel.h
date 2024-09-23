@@ -199,6 +199,7 @@ struct display_info_t {
 #define FBF_AM_TFT1280X800	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_DSI_LANES_4 | FBF_DSI_HBP | FBF_DSI_HFP | FBF_DSI_HSA)
 #define FBF_AM_TFT1280X800W	(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_SYNC_PULSE | FBF_DSI_LANES_4)
 #define FBF_OSD050T		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_2)
+#define FBF_TM050JDHG33		(FBF_MODE_SKIP_EOT | FBF_MODE_VIDEO | FBF_MODE_VIDEO_BURST | FBF_MIPI_CMDS | FBF_DSI_LANES_4)
 
 	unsigned fbflags;
 	unsigned char enable_alias[4];
@@ -381,6 +382,7 @@ void fbp_setup_env_cmds(void);
 #define VD_A030JN01_UPS051(_mode, args...)	VDF_A030JN01_UPS051(_mode, "A030JN01_UPS051", UPS051, FBF_MODESTR | FBF_SPI, args)
 #define VD_A030JN01_YUV720(_mode, args...)	VDF_A030JN01_YUV720(_mode, "A030JN01_YUV720", YUYV, FBF_MODESTR | FBF_SPI, args)
 #define VD_KD024FM(_mode, args...)		VDF_KD024FM(_mode, "KD024FM", RGB666, FBF_MODESTR, args)
+#define VD_TM050JDHG33(_mode, args...)		VDF_TM050JDHG33(_mode, "tm050jdhg33", RGB24, FBF_TM050JDHG33, args)
 
 #define VD_HEADER(_mode, _fmt, _flags, _detect, _bus, _addr, args...) \
 	.bus	= _bus,\
@@ -1281,6 +1283,27 @@ void fbp_setup_env_cmds(void);
 		.lower_margin   = 40,\
 		.hsync_len      = 1,\
 		.vsync_len      = 1,\
+		.sync           = FB_SYNC_EXT,\
+		.vmode          = FB_VMODE_NONINTERLACED\
+	}\
+}
+
+#define VDF_TM050JDHG33(_mode, _name, _fmt, _flags, args...) \
+{\
+	VD_HEADER(_mode, _fmt, _flags, args),\
+	.pwm_period = 32000, \
+	.mode	= {\
+		.name           = _name,\
+		.refresh        = 60,\
+		.xres           = 720,\
+		.yres           = 1280,\
+		.pixclock_f	= 76608000,\
+		.left_margin    = 150,\
+		.right_margin   = 80,\
+		.upper_margin   = 20,\
+		.lower_margin   = 20,\
+		.hsync_len      = 10,\
+		.vsync_len      = 10,\
 		.sync           = FB_SYNC_EXT,\
 		.vmode          = FB_VMODE_NONINTERLACED\
 	}\
