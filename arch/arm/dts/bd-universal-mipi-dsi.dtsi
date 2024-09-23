@@ -107,6 +107,7 @@
 #include "panel-lxd-m8509a.dtsi"
 #include "panel-m101nwwb.dtsi"
 #include "panel-tcxd070iblmat77.dtsi"
+#include "panel-tm050jdhg33.dtsi"
 #include "panel-zwt055azh.dtsi"
 
 / {
