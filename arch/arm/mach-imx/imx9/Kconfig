@@ -93,10 +93,15 @@ config TARGET_IMX95_15X15_EVK
 	bool "imx95_15x15_evk"
 	select IMX95
 
+config TARGET_IMX95_NITROGEN_SMARC
+	bool "imx95_nitrogen_smarc"
+	select IMX95
+
 endchoice
 
 source "board/boundary/imx91_nitrogen_smarc/Kconfig"
 source "board/boundary/imx93_nitrogen_smarc/Kconfig"
+source "board/boundary/imx95_nitrogen_smarc/Kconfig"
 source "board/freescale/imx91_evk/Kconfig"
 source "board/freescale/imx91_qsb/Kconfig"
 source "board/freescale/imx93_evk/Kconfig"

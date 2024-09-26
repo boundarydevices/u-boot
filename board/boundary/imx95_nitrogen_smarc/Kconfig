@@ -1,0 +1,12 @@
+if TARGET_IMX95_NITROGEN_SMARC
+
+config SYS_BOARD
+	default "imx95_nitrogen_smarc"
+
+config SYS_VENDOR
+	default "boundary"
+
+config SYS_CONFIG_NAME
+	default "imx95_nitrogen_smarc"
+
+endif
