@@ -1073,7 +1073,8 @@ enum boot_device get_boot_device(void)
 	case BT_DEV_TYPE_USB:
 		boot_dev = boot_instance + USB_BOOT;
 #ifdef CONFIG_IMX95
-		boot_dev -= 3; //iMX95 usb instance start at 3
+		if (boot_instance == 3) // BootROM bug for USB1
+			boot_dev -= 3;
 #endif
 		break;
 	default:
