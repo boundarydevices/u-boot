@@ -56,7 +56,7 @@
 	"mmcdev=" __stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
 	"netargs=setenv bootargs ${cpuidle} ${mcore_args} console=${console},115200 " \
 		"root=/dev/nfs " \
-		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
+		"ip=dhcp nfsroot=${tftpserverip}:${nfsroot},v3,tcp\0" \
 	"netboot=echo Booting from net ...; " \
 		"run netargs;  " \
 		"if test ${ip_dyn} = yes; then " \
