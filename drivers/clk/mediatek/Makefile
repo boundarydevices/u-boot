@@ -11,6 +11,7 @@ obj-$(CONFIG_TARGET_MT7986) += clk-mt7986.o
 obj-$(CONFIG_TARGET_MT7981) += clk-mt7981.o
 obj-$(CONFIG_TARGET_MT7988) += clk-mt7988.o
 obj-$(CONFIG_TARGET_MT8183) += clk-mt8183.o
+obj-$(CONFIG_TARGET_MT8188) += clk-mt8188.o
 obj-$(CONFIG_TARGET_MT8365) += clk-mt8365.o
 obj-$(CONFIG_TARGET_MT8516) += clk-mt8516.o
 obj-$(CONFIG_TARGET_MT8518) += clk-mt8518.o
