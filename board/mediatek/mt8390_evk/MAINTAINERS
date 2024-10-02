@@ -1,0 +1,6 @@
+MT8390 EVK
+M:	Julien Masson <jmasson@baylibre.com>
+S:	Maintained
+F:	arch/arm/dts/mt8390-genio-700-evk.dts
+F:	board/mediatek/mt8390_evk/
+F:	configs/mt8390_evk_defconfig
