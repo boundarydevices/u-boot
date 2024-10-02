@@ -77,6 +77,15 @@ config TARGET_MT8183
 	  SD and MMC cards, UFS, PWM, I2C, I2S, S/PDIF, and several LPDDR3
 	  and LPDDR4 options.
 
+config TARGET_MT8188
+	bool "MediaTek MT8188 SoC"
+	select ARM64
+	help
+	  The MediaTek MT8188 is a ARM64-based SoC with a dual-core Cortex-A78
+          cluster and a six-core Cortex-A55 cluster. It includes UART, SPI,
+          USB3.0 dual role, SD and MMC cards, UFS, PWM, I2C, I2S, S/PDIF, and
+          several LPDDR3 and LPDDR4 options.
+
 config TARGET_MT8365
 	bool "MediaTek MT8365 SoC"
 	select ARM64
@@ -149,7 +158,7 @@ config SYS_CONFIG_NAME
 config MTK_BROM_HEADER_INFO
 	string
 	default "media=nor" if TARGET_MT8518 || TARGET_MT8512 || TARGET_MT7629 || TARGET_MT7622
-	default "media=emmc" if TARGET_MT8516 || TARGET_MT8365 || TARGET_MT8183
+	default "media=emmc" if TARGET_MT8516 || TARGET_MT8365 || TARGET_MT8183 || TARGET_MT8188
 	default "media=snand;nandinfo=2k+64" if TARGET_MT7981 || TARGET_MT7986 || TARGET_MT7988
 	default "lk=1" if TARGET_MT7623
 

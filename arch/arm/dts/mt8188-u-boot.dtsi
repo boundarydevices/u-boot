@@ -1,0 +1,58 @@
+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
+/*
+ * Copyright (c) 2024 Baylibre SAS.
+ * Author: Julien Masson <jmasson@baylibre.com>
+ */
+
+/ {
+	soc {
+		topckgen_cg: topckgen-cg@10000000 {
+			compatible = "mediatek,mt8188-topckgen-cg";
+			reg = <0 0x10000000 0 0x1000>;
+			#clock-cells = <1>;
+		};
+	};
+
+	usb: usb@112b0000 {
+		compatible = "mediatek,mt8188-mtu3", "mediatek,mtu3";
+		reg = <0 0x112b0000 0 0x1000>,
+		      <0 0x112b3e00 0 0x0100>;
+		reg-names = "mac", "ippc";
+		interrupts = <GIC_SPI 533 IRQ_TYPE_LEVEL_HIGH 0>;
+		assigned-clocks = <&topckgen CLK_TOP_SSUSB_XHCI_2P>,
+				  <&topckgen CLK_TOP_USB_TOP_2P>;
+		phys = <&u2port0 PHY_TYPE_USB2>;
+		assigned-clock-parents = <&topckgen CLK_TOP_UNIVPLL_D5_D4>,
+					 <&topckgen CLK_TOP_UNIVPLL_D5_D4>;
+		clocks = <&pericfg_ao CLK_PERI_AO_SSUSB_2P_BUS>,
+			 <&topckgen_cg CLK_TOP_SSUSB_TOP_P2_REF>,
+			 <&pericfg_ao CLK_PERI_AO_SSUSB_2P_XHCI>;
+		clock-names = "sys_ck", "ref_ck", "mcu_ck";
+		mediatek,syscon-wakeup = <&pericfg 0x460 2>;
+		wakeup-source;
+		status = "disabled";
+
+		ssusb: ssusb@112b0000 {
+			compatible = "mediatek,ssusb";
+			reg = <0 0x112b0000 0 0x3e00>,
+			      <0 0x112b3e00 0 0x0100>;
+			reg-names = "mac", "ippc";
+			interrupts = <GIC_SPI 532 IRQ_TYPE_LEVEL_HIGH 0>;
+			status = "disabled";
+		};
+	};
+};
+
+&watchdog {
+	compatible = "mediatek,mt8188-wdt", "mediatek,wdt";
+};
+
+&u3phy0 {
+	compatible = "mediatek,mt8188-tphy", "mediatek,generic-tphy-v3",
+		     "mediatek,generic-tphy-v2";
+};
+
+&u2port0 {
+	clocks = <&topckgen_cg CLK_TOP_SSUSB_PHY_P2_REF>,
+		 <&apmixedsys CLK_APMIXED_PLL_SSUSB26M_EN>;
+};
