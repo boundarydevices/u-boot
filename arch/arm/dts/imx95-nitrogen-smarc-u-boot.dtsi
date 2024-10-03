@@ -5,8 +5,6 @@
 
 / {
 	aliases {
-		ethernet0 = &enetc_port0;
-		ethernet1 = &enetc_port1;
 		usbgadget0 = &usbg2;
 	};
 
