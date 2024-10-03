@@ -13,6 +13,11 @@
 	model = "Ezurio Nitrogen95 SMARC board";
 	compatible = "fsl,imx95-nitrogen-smarc", "fsl,imx95";
 
+	aliases {
+		ethernet0 = &enetc_port0;
+		ethernet1 = &enetc_port1;
+	};
+
 	chosen {
 		bootargs = "console=ttyLP0,115200 earlycon";
 		stdout-path = &lpuart1;
@@ -72,8 +77,8 @@
 	pinctrl-1 = <&pinctrl_lpi2c1>;
 	status = "disabled"; // Can't use I2C1!
 
-	pcal6534: gpio@22 {
-		compatible = "nxp,pcal6534";
+	pcal6524: gpio@22 {
+		compatible = "nxp,pcal6524";
 		reg = <0x22>;
 		gpio-controller;
 		#gpio-cells = <2>;
@@ -146,7 +151,7 @@
 		compatible = "nxp,pca9546";
 		reg = <0x73>;
 		vdd-supply = <&reg_1p8v>;
-		reset-gpios = <&pcal6534 18 GPIO_ACTIVE_LOW>;
+		reset-gpios = <&pcal6524 18 GPIO_ACTIVE_LOW>;
 		#address-cells = <1>;
 		#size-cells = <0>;
 
@@ -251,11 +256,11 @@
 	pinctrl-0 = <&pinctrl_enetc1>;
 	phy-handle = <&ethphy1>;
 	phy-mode = "rgmii-id";
-	status = "okay";
+	status = "disabled";
 };
 
 &netc_emdio {
-	ethphy0: ethernet0-phy@7 {
+	ethphy0: ethernet-phy@7 {
 		compatible = "ethernet-phy-ieee802.3-c45";
 		reg = <7>;
 		reset-gpios = <&gpio2 29 GPIO_ACTIVE_LOW>;
@@ -263,9 +268,9 @@
 		reset-deassert-us = <80000>;
 	};
 
-	ethphy1: ethernet1-phy@7 {
+	ethphy1: ethernet-phy@3 {
 		compatible = "ethernet-phy-ieee802.3-c45";
-		reg = <7>;
+		reg = <3>;
 		reset-gpios = <&gpio2 18 GPIO_ACTIVE_LOW>;
 		reset-assert-us = <10000>;
 		reset-deassert-us = <80000>;
@@ -335,6 +340,7 @@
 			IMX95_PAD_ENET1_RD2__NETCMIX_TOP_ETH0_RGMII_RD2		0x57e
 			IMX95_PAD_ENET1_RD3__NETCMIX_TOP_ETH0_RGMII_RD3		0x57e
 			IMX95_PAD_GPIO_IO29__GPIO2_IO_BIT29			0x31e
+			IMX95_PAD_CCM_CLKO3__GPIO4_IO_BIT28			0x31e
 		>;
 	};
 
@@ -353,6 +359,7 @@
 			IMX95_PAD_ENET2_RD2__NETCMIX_TOP_ETH1_RGMII_RD2		0x57e
 			IMX95_PAD_ENET2_RD3__NETCMIX_TOP_ETH1_RGMII_RD3		0x57e
 			IMX95_PAD_GPIO_IO18__GPIO2_IO_BIT18			0x31e
+			IMX95_PAD_CCM_CLKO2__GPIO3_IO_BIT27			0x31e
 		>;
 	};
 
