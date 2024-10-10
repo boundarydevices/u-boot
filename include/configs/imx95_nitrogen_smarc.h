@@ -47,6 +47,7 @@
 	"fdt_addr_r=0x93000000\0"			\
 	"fdt_addr=0x93000000\0"			\
 	"fdt_high=0xffffffffffffffff\0"		\
+	"fdtoverlay_addr_r=0x94000000\0" 	\
 	"cntr_addr=0xA8000000\0"			\
 	"cntr_file=os_cntr_signed.bin\0" \
 	"boot_fit=no\0" \
@@ -65,8 +66,14 @@
 			"setenv get_cmd tftp; " \
 		"fi; " \
 		"${get_cmd} ${loadaddr} ${tftpserverip}:Image; " \
-		"if ${get_cmd} ${fdt_addr} ${tftpserverip}:${fdt_file}; then " \
-			"booti ${loadaddr} - ${fdt_addr}; " \
+		"if ${get_cmd} ${fdt_addr_r} ${tftpserverip}:${fdt_file}; then " \
+			"fdt addr ${fdt_addr_r}; " \
+			"fdt resize 0x10000; " \
+			"for dtbofile in ${dtbos}; do " \
+				"dhcp ${fdtoverlay_addr_r} ${tftpserverip}:${dtbofile}; " \
+				"fdt apply ${fdtoverlay_addr_r}; " \
+			"done; " \
+			"booti ${loadaddr} - ${fdt_addr_r}; " \
 		"else " \
 			"echo WARN: Cannot load the DT; " \
 		"fi;\0" \
