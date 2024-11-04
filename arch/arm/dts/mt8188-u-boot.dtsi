@@ -43,16 +43,59 @@
 	};
 };
 
+&clk26m {
+	bootph-pre-ram;
+};
+
+&topckgen {
+	bootph-pre-ram;
+};
+
+&topckgen_cg {
+	bootph-pre-ram;
+};
+
+&infracfg_ao {
+	bootph-pre-ram;
+};
+
 &watchdog {
 	compatible = "mediatek,mt8188-wdt", "mediatek,wdt";
+	bootph-pre-ram;
+};
+
+&apmixedsys {
+	bootph-pre-ram;
+};
+
+&uart0 {
+	bootph-pre-ram;
+};
+
+&pericfg_ao {
+	bootph-pre-ram;
+};
+
+&mmc0 {
+	bootph-pre-ram;
+};
+
+&usb {
+	bootph-pre-ram;
+};
+
+&ssusb {
+	bootph-pre-ram;
 };
 
 &u3phy0 {
 	compatible = "mediatek,mt8188-tphy", "mediatek,generic-tphy-v3",
 		     "mediatek,generic-tphy-v2";
+	bootph-pre-ram;
 };
 
 &u2port0 {
 	clocks = <&topckgen_cg CLK_TOP_SSUSB_PHY_P2_REF>,
 		 <&apmixedsys CLK_APMIXED_PLL_SSUSB26M_EN>;
+	bootph-pre-ram;
 };

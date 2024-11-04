@@ -6,6 +6,12 @@
 
 #include "mt8188-u-boot.dtsi"
 
+/ {
+        memory@40000000 {
+                bootph-pre-ram;
+        };
+};
+
 &usb {
 	status = "okay";
 };
