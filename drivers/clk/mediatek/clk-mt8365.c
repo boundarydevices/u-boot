@@ -80,7 +80,6 @@ static const struct mtk_fixed_clk top_fixed_clks[] = {
 	FACTOR(_id, _parent, _mult, _div, CLK_PARENT_APMIXED)
 
 static const struct mtk_fixed_factor top_divs[] = {
-	PLL_FACTOR(CLK_TOP_SYS_26M_D2, "sys_26m_d2", CLK_XTAL, 1, 2),
 	PLL_FACTOR(CLK_TOP_SYSPLL_D2, "syspll_d2", CLK_APMIXED_MAINPLL, 1, 2),
 	PLL_FACTOR(CLK_TOP_SYSPLL1_D2, "syspll1_d2", CLK_APMIXED_MAINPLL, 1, 4),
 	PLL_FACTOR(CLK_TOP_SYSPLL1_D4, "syspll1_d4", CLK_APMIXED_MAINPLL, 1, 8),
