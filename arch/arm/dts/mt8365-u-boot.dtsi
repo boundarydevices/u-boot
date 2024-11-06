@@ -42,16 +42,59 @@
 	};
 };
 
+&clk26m {
+	bootph-pre-ram;
+};
+
 &watchdog {
         compatible = "mediatek,mt8188-wdt", "mediatek,wdt";
+	bootph-pre-ram;
+};
+
+&apmixedsys {
+	bootph-pre-ram;
+};
+
+&topckgen {
+	bootph-pre-ram;
+};
+
+&topckgen_cg {
+	bootph-pre-ram;
+};
+
+&infracfg {
+	bootph-pre-ram;
+};
+
+&uart0 {
+	bootph-pre-ram;
+};
+
+&mmc0 {
+	bootph-pre-ram;
+};
+
+&u3phy {
+	bootph-pre-ram;
 };
 
 &u2port0 {
 	clocks = <&topckgen_cg CLK_TOP_SSUSB_PHY_CK_EN>,
         	 <&topckgen_cg CLK_TOP_USB20_48M_EN>;
+        bootph-pre-ram;
 };
 
 &u2port1 {
 	clocks = <&topckgen_cg CLK_TOP_SSUSB_PHY_CK_EN>,
 	         <&topckgen_cg CLK_TOP_USB20_48M_EN>;
+        bootph-pre-ram;
+};
+
+&usb {
+	bootph-pre-ram;
+};
+
+&ssusb {
+	bootph-pre-ram;
 };
