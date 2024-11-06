@@ -1,0 +1,57 @@
+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
+/*
+ * Copyright (c) 2024 Baylibre SAS.
+ * Author: Julien Masson <jmasson@baylibre.com>
+ */
+
+/delete-node/ &ssusb;
+
+/ {
+	soc {
+		topckgen_cg: topckgen-cg@10000000 {
+			compatible = "mediatek,mt8365-topckgen-cg", "syscon";
+			reg = <0 0x10000000 0 0x1000>;
+			#clock-cells = <1>;
+		};
+        };
+
+        usb: usb@11201000 {
+		compatible ="mediatek,mt8365-mtu3", "mediatek,mtu3";
+		reg = <0 0x11203e00 0 0x0100>;
+		reg-names = "ippc";
+		phys = <&u2port0 PHY_TYPE_USB2>,
+		       <&u2port1 PHY_TYPE_USB2>;
+		clocks = <&topckgen_cg CLK_TOP_SSUSB_TOP_CK_EN>,
+                         <&infracfg CLK_IFR_SSUSB_REF>,
+                         <&infracfg CLK_IFR_SSUSB_SYS>,
+                         <&infracfg CLK_IFR_ICUSB>;
+		clock-names = "sys_ck", "ref_ck", "mcu_ck",
+		              "dma_ck";
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+		status = "disabled";
+
+		ssusb: ssusb@11200000 {
+			compatible = "mediatek,ssusb";
+			reg = <0 0x11200000 0 0x3e00>;
+			reg-names = "mac";
+			interrupts = <GIC_SPI 72 IRQ_TYPE_LEVEL_LOW>;
+			status = "disabled";
+		};
+	};
+};
+
+&watchdog {
+        compatible = "mediatek,mt8188-wdt", "mediatek,wdt";
+};
+
+&u2port0 {
+	clocks = <&topckgen_cg CLK_TOP_SSUSB_PHY_CK_EN>,
+        	 <&topckgen_cg CLK_TOP_USB20_48M_EN>;
+};
+
+&u2port1 {
+	clocks = <&topckgen_cg CLK_TOP_SSUSB_PHY_CK_EN>,
+	         <&topckgen_cg CLK_TOP_USB20_48M_EN>;
+};
