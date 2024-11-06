@@ -556,6 +556,35 @@ static const struct mtk_gate top_clk_gates[] = {
 	GATE_TOP2(CLK_TOP_AUD_SPDIF_M, CLK_TOP_APLL12_CK_DIV6, 8),
 };
 
+static const int mt8365_topckgen_cg_id_offs_map[] = {
+	[0 ... 120] = -1,
+	10, /* CLK_TOP_AUD_I2S0_M */
+	11, /* CLK_TOP_AUD_I2S1_M */
+	12, /* CLK_TOP_AUD_I2S2_M */
+	13, /* CLK_TOP_AUD_I2S3_M */
+	14, /* CLK_TOP_AUD_TDMOUT_M */
+	15, /* CLK_TOP_AUD_TDMOUT_B */
+	16, /* CLK_TOP_AUD_TDMIN_M */
+	17, /* CLK_TOP_AUD_TDMIN_B */
+	18, /* CLK_TOP_AUD_SPDIF_M */
+	4, /* CLK_TOP_USB20_48M_EN */
+	5, /* CLK_TOP_UNIVPLL_48M_EN */
+	6, /* CLK_TOP_LVDSTX_CLKDIG_EN */
+	7, /* CLK_TOP_VPLL_DPIX_EN */
+	8, /* CLK_TOP_SSUSB_TOP_CK_EN */
+	9, /* CLK_TOP_SSUSB_PHY_CK_EN */
+	0, /* CLK_TOP_CONN_32K */
+	1, /* CLK_TOP_CONN_26M */
+	2, /* CLK_TOP_DSP_32K */
+	3, /* CLK_TOP_DSP_26M */
+};
+
+static const struct mtk_clk_tree mt8365_topckgen_cg_clk_tree = {
+	.xtal_rate = 26 * MHZ,
+	.xtal2_rate = 26 * MHZ,
+	.id_offs_map = mt8365_topckgen_cg_id_offs_map,
+};
+
 /* infracfg */
 static const struct mtk_gate_regs ifr2_cg_regs = {
 	.set_ofs = 0x80,
@@ -702,7 +731,7 @@ static int mt8365_topckgen_probe(struct udevice *dev)
 
 static int mt8365_topckgen_cg_probe(struct udevice *dev)
 {
-	return mtk_common_clk_gate_init(dev, &mt8365_clk_tree, top_clk_gates);
+	return mtk_common_clk_gate_init(dev, &mt8365_topckgen_cg_clk_tree, top_clk_gates);
 }
 
 static int mt8365_infracfg_probe(struct udevice *dev)
