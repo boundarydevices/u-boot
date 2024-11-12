@@ -1184,7 +1184,7 @@ static int common_panel_ofdata_to_platdata(struct udevice *dev)
 	}
 	ret = ofnode_parse_phandle(np, "sn65dsi83", &sn65_np);
 	if (!ret) {
-		if (ofnode_is_available(sn65_np)) {
+		if (ofnode_is_enabled(sn65_np)) {
 			panel->sn65.mipi_clk = mipi_clk;
 			ret = sn65dsi83_ofdata_to_platdata(dev, &panel->sn65, np, sn65_np);
 		}
