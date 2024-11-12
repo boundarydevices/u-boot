@@ -125,6 +125,8 @@ void spl_board_init(void)
 
 	fastboot_init(NULL, 0);
 
+	initr_watchdog();
+
 	printf("Waiting fastboot commands ...\n");
 	do_fastboot_usb(buf_addr, buf_size);
 }
