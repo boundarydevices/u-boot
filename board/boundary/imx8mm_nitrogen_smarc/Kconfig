@@ -5,6 +5,9 @@ config BOARD_TYPE
 	depends on IMX8MN
 	default "imx8mn_nitrogen_smarc" if IMX8MN
 
+config CMD_FBPANEL
+	bool "Enable fbpanel command"
+
 config DEFCONFIG
         string "unknown"
 
