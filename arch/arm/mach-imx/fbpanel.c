@@ -1,6 +1,7 @@
 /*
  * SPDX-License-Identifier:	GPL-2.0+
  */
+
 #include <common.h>
 #include <command.h>
 #include <errno.h>
@@ -26,7 +27,6 @@
 #include <linux/delay.h>
 #include <log.h>
 #include <malloc.h>
-#include <video_fb.h>
 
 #if !defined(CONFIG_MX51) && !defined(CONFIG_MX53) && !defined(CONFIG_MX6UL) && !defined(CONFIG_MX6ULL) && !defined(CONFIG_MX7D) && !defined(CONFIG_IMX8M) && !defined(CONFIG_IMX8ULP)
 #define LVDS_SUPPORT
@@ -1249,12 +1249,13 @@ int fbp_detect_i2c(struct display_info_t const *di)
 	int ret;
 #ifdef CONFIG_DM_I2C
 	struct udevice *bus;
+	struct udevice *devp;
 #endif
-#ifdef CONFIG_DM_VIDEO
+#ifdef CONFIG_VIDEO
 	int ret_request;
 #endif
 
-#ifdef CONFIG_DM_VIDEO
+#ifdef CONFIG_VIDEO
 	if (di->bus_gp) {
 		ret_request = gpio_request(di->bus_gp, "bus_gp");
 	}
@@ -1267,10 +1268,10 @@ int fbp_detect_i2c(struct display_info_t const *di)
 #ifdef CONFIG_DM_I2C
 	ret = uclass_get_device_by_seq(UCLASS_I2C, di->bus_num, &bus);
 	if (!ret) {
-		ret = i2c_probe_chip(bus, di->addr_num, 0);
+		ret = dm_i2c_probe(bus, di->addr_num, 0, &devp);
 		if (ret && (di->addr_num == 0x4a)) {
 			/* atmel's address can be 0x26 the 1st time */
-			ret = i2c_probe_chip(bus, 0x26, 0);
+			ret = dm_i2c_probe(bus, 0x26, 0, &devp);
 		}
 	}
 #else
@@ -1286,7 +1287,7 @@ int fbp_detect_i2c(struct display_info_t const *di)
 
 	if (di->bus_gp)
 		gpio_set_value(di->bus_gp, 0);
-#ifdef CONFIG_DM_VIDEO
+#ifdef CONFIG_VIDEO
 	if (di->bus_gp && !ret_request) {
 		gpio_free(di->bus_gp);
 	}
@@ -2598,7 +2599,7 @@ int fbpanel_video_init(void)
 	if (!di)
 		return -EINVAL;
 	ret = init_display(di);
-#ifndef CONFIG_DM_VIDEO
+#ifndef CONFIG_VIDEO
 	if (is_mipi(di->fbtype))
 		ret = -EINVAL;
 #endif
