@@ -23,6 +23,7 @@ int detect_common(struct display_info_t const *di, int sub_bus,
 	int ret = 0;
 #if CONFIG_IS_ENABLED(DM_I2C)
 	struct udevice *bus;
+	struct udevice *devp;
 	struct i2c_msg msg;
 	struct dm_i2c_ops *ops;
 	u8 buf[4];
@@ -30,7 +31,7 @@ int detect_common(struct display_info_t const *di, int sub_bus,
 	u8 orig_i2c_bus;
 #endif
 
-#ifdef CONFIG_DM_VIDEO
+#ifdef CONFIG_VIDEO
 	int req_bus;
 	int req_en;
 	int req_irq;
@@ -101,7 +102,7 @@ int detect_common(struct display_info_t const *di, int sub_bus,
 		}
 		msg.addr = di->addr_num;
 		if (!ret && (reg1 < 0)) {
-			ret = i2c_probe_chip(bus, di->addr_num, 0);
+			ret = dm_i2c_probe(bus, di->addr_num, 0, &devp);
 			debug("%s: probe 0x%x ret=%d\n", __func__, di->addr_num, ret);
 #ifdef DEBUG
 			if (ret && di->addr_num == 0x5d) {
@@ -135,7 +136,7 @@ int detect_common(struct display_info_t const *di, int sub_bus,
 			}
 		}
 		if (!ret && (probe2 > 0)) {
-			ret = i2c_probe_chip(bus, probe2, 0);
+			ret = dm_i2c_probe(bus, probe2, 0, &devp);
 			debug("%s: probe2 0x%x ret=%d\n", __func__, probe2, ret);
 		}
 	}
@@ -174,7 +175,7 @@ int detect_common(struct display_info_t const *di, int sub_bus,
 		if (di->enable_gp && !(di->fbflags & FBF_ENABLE_GPIOS_OPEN_DRAIN))
 			gpio_direction_input(di->enable_gp);
 	}
-#ifdef CONFIG_DM_VIDEO
+#ifdef CONFIG_VIDEO
 	if (di->bus_gp && !req_bus) {
 		gpio_free(di->bus_gp);
 	}
