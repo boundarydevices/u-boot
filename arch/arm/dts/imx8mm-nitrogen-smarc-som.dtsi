@@ -5,6 +5,7 @@
 
 #include <dt-bindings/phy/phy-imx8-pcie.h>
 #include <dt-bindings/usb/pd.h>
+#include "../panel-m101nwwb.dtsi"
 
 / {
 	backlight_mipi: backlight-mipi {
@@ -12,6 +13,11 @@
 		compatible = "pwm-backlight";
 		default-brightness-level = <8>;
 		pwms = <&pwm1 0 32000 0>;
+		status = "okay";
+	};
+
+	dsi_host: dsi-host {
+		compatible = "samsung,sec-mipi-dsi";
 		status = "okay";
 	};
 
@@ -597,6 +603,100 @@
 		fsl,pins = <
 			MX8MM_IOMUXC_GPIO1_IO02_WDOG1_WDOG_B	0x140
 		>;
+	};
+};
+
+&lcdif {
+	display = <&display0>;
+	status = "okay";
+
+	display0: display@0 {
+		bits-per-pixel = <24>;
+		bus-width = <24>;
+	};
+};
+
+&mipi_dsi {
+	status = "okay";
+
+	fb_mipi: panel@0 {
+		backlight = <&backlight_mipi>;
+		bits-per-color = <8>;
+		bridge-de-active = <0>;
+		bus-format = "rgb888";
+		//clocks = <&mipi_dsi 0>,
+		//	<&clk IMX8MM_CLK_LCDIF_PIXEL>;
+		clocks = <&clk IMX8MM_CLK_DSI_CORE>,
+			<&clk IMX8MM_CLK_LCDIF_PIXEL>;
+		clock-names = "mipi_clk", "pixel_clock";
+		compatible = "panel,common";
+		dsi-format = "rgb888";
+		dsi-lanes = <4>;
+		mode-skip-eot;
+		mode-video;
+		mode-video-burst;
+		panel-height-mm = <136>;
+		panel-width-mm = <217>;
+		pinctrl-names = "sn65dsi83";
+		pinctrl-0 = <&pinctrl_mipi_sn65dsi83_alt>;
+		power-supply = <&reg_vref_5v0>;
+		reg = <0>;
+		sn65dsi83 = <&mipi_to_lvds_alt>;
+		spwg;
+		mode-video-hbp-disable;
+		mode-video-hfp-disable;
+		mode-video-hsa-disable;
+
+		display-timings {
+			t_mipi: t-dsi-default {
+				/* m101nwwb by default */
+				clock-frequency = <66000000>;
+				hactive = <1280>;
+				vactive = <800>;
+				hback-porch = <5>;
+				hfront-porch = <123>;
+				vback-porch = <3>;
+				vfront-porch = <24>;
+				hsync-len = <1>;
+				vsync-len = <1>;
+				hsync-active = <0>;
+				vsync-active = <0>;
+				de-active = <1>;
+			};
+		};
+
+		mipi_to_lvds_alt: mipi-to-lvds-altgrp {
+			alias = <&mipi_to_lvds_alt>;
+			enable-gpios = <&gpio3 25 GPIO_ACTIVE_HIGH>;
+			i2c-address = <0x2c>;
+			i2c-bus = <&i2c1c>;
+			interrupts-extended = <&gpio3 20 IRQ_TYPE_LEVEL_HIGH>;
+			status = "okay";
+
+			port {
+				sn65dsi_from_dsim: endpoint {
+					remote-endpoint = <&dsim_to_sn65dsi>;
+				};
+			};
+		};
+
+		port {
+			fb_mipi_from_dsim: endpoint {
+				remote-endpoint = <&dsim_to_fb_mipi>;
+			};
+		};
+	};
+
+	port@1 {
+		dsim_to_sn65dsi: endpoint {
+			remote-endpoint = <&sn65dsi_from_dsim>;
+		};
+	};
+
+	port@2 {
+		dsim_to_fb_mipi: endpoint {
+			remote-endpoint = <&fb_mipi_from_dsim>;
+		};
 	};
 };
 
