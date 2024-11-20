@@ -1,0 +1,55 @@
+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
+/*
+ * Copyright (c) 2024 Baylibre SAS.
+ * Author: Julien Masson <jmasson@baylibre.com>
+ */
+
+#include "mt8188-u-boot.dtsi"
+
+/ {
+        memory@40000000 {
+                bootph-pre-ram;
+        };
+};
+
+&usb {
+	status = "okay";
+};
+
+&ssusb {
+	mediatek,force-vbus;
+	maximum-speed = "high-speed";
+	dr_mode = "peripheral";
+	status = "okay";
+};
+
+&auxadc {
+	status = "okay";
+};
+
+&u3phy1 {
+	status = "okay";
+};
+
+&xhci1 {
+	pinctrl-0 = <&usb1_default_pins>;
+	pinctrl-names = "default";
+	vusb33-supply = <&usb_hub_fixed_3v3>;
+	vbus-supply = <&usb_hub_reset_1v8>;
+	status = "okay";
+};
+
+&u2port1 {
+	status = "okay";
+};
+
+&u3port1 {
+	status = "okay";
+};
+
+&usb1_default_pins {
+	pins-vbus {
+		pinmux = <PINMUX_GPIO87__FUNC_O_USB_DRVVBUS_1P>;
+		output-high;
+	};
+};

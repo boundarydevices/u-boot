@@ -1,0 +1,6 @@
+MT8370 EVK
+M:	Esteban Blanc <eblanc@baylibre.com>
+S:	Maintained
+F:	arch/arm/dts/mt8370-genio-510-evk.dts
+F:	board/mediatek/mt8370_evk/
+F:	configs/mt8370_evk_defconfig
