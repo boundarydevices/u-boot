@@ -49,3 +49,4 @@ endif
 
 obj-$(CONFIG_$(SPL_)POWER_TPS62362) += pmic_tps62362.o
 obj-$(CONFIG_SPL_POWER_TPS65910) += pmic_tps65910.o
+obj-$(CONFIG_MTK_PMIC_WRAP) += mtk-pmic-wrap.o

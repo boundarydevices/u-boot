@@ -413,6 +413,14 @@ config PMIC_RAA215300
 	  support and several voltage regulators. For now, this driver simply
 	  allows register access and will bind the sysreset driver
 	  (CONFIG_SYSRESET_RAA215300) if it is enabled.
+
+config MTK_PMIC_WRAP
+	bool "Enable driver for MediaTek PMIC Wrapper Support"
+	help
+	  Say yes here to add support for MediaTek PMIC Wrapper found
+	  on different MediaTek SoCs. The PMIC wrapper is a proprietary
+	  hardware to connect the PMIC.
+
 endif
 
 config PMIC_TPS65217

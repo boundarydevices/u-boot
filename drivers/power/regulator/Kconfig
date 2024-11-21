@@ -463,7 +463,7 @@ config DM_REGULATOR_TPS65219
 
 config DM_REGULATOR_MT6357
 	bool "Enable driver for MediaTek MT6357 PMIC regulators"
-	depends on DM_REGULATOR
+	depends on DM_REGULATOR && MTK_PMIC_WRAP
 	help
 	  Say y here to select this option to enable the power regulator of
 	  MediaTek MT6357 PMIC.
