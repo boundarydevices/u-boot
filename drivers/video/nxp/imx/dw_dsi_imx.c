@@ -294,6 +294,12 @@ static int dw_dsi_imx_attach(struct udevice *dev)
 		return bpp;
 	}
 
+	/* If device->lanes is not set then use panel plat values */
+	if ( device->lanes == 0 ) {
+		device->lanes = mplat->lanes;
+		device->format = mplat->format;
+	}
+
 	priv->lanes = device->lanes;
 	priv->format = device->format;
 
