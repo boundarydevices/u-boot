@@ -1,0 +1,95 @@
+// SPDX-License-Identifier: (GPL-2.0-or-later OR MIT)
+/*
+ * Example to use a Simple native DSI (MIPI) display.
+ *
+ * Copyright 2024 Boundary Devices
+ */
+
+/dts-v1/;
+
+#include "imx93-nitrogen-smarc.dts"
+
+/delete-node/ &dsi0_sn65dsi84;
+/delete-node/ &dsi_backlight;
+/delete-node/ &panel_dsi;
+
+
+/ {
+	model = "Boundary Devices Nitrogen93 SMARC DSI auo,b080uan01 (simple-mipi) example";
+	compatible = "fsl,imx93-nitrogen-smarc", "fsl,imx93";
+
+	dsi_backlight: dsi-backlight {
+                /* No u-boot support for tpm (pwm) so ... */
+                compatible = "gpio-backlight";
+                gpios = <&gpio2 22 GPIO_ACTIVE_HIGH>;
+                pinctrl-names = "default";
+                pinctrl-0 = <&pinctrl_backlight_dsi>;
+                status = "okay";
+        };
+
+	dsi_host: dsi-host {
+		compatible = "synopsys,dw-mipi-dsi";
+		status = "okay";
+	};
+
+	panel_dsi: panel-dsi {
+		/* If you know you are only using the BD070LIC3 then use ...
+		 * compatible = "tianma,tm070jdhg30";
+		 *
+		 * And for the BD101LCC3 use ...
+		 * compatible = "infovision,ivo-m101nwwb";
+		*/
+		//compatible = "boundary,bd070-101"; /* For BD070LIC3 and BD101LCC3 */
+		compatible = "panasonic,vvx10f004b00", "simple-panel";
+		//compatible = "rm67191_panel";
+		//compatible = "auo,b080uan01";
+		power-supply = <&reg_vref_1v8>;
+		backlight = <&dsi_backlight>;
+		enable-gpios = <&pcal6534 17 GPIO_ACTIVE_HIGH>;
+
+		port {
+			panel_in: endpoint {
+				remote-endpoint = <&dsi_out>;
+			};
+		};
+
+		display-timings {
+			native-mode = <&timing0>;
+			timing0: timing0 {
+				clock-frequency = <154500000>;
+				hactive = <1200>;
+				vactive = <1920>;
+				hfront-porch = <62>;
+				hback-porch = <62>;
+				hsync-len = <4>;
+				vback-porch = <8>;
+				vfront-porch = <9>;
+				vsync-len = <2>;
+
+				vsync-active = <0>;
+				hsync-active = <0>;
+			};
+		};
+	};
+};
+
+&dsi {
+	status = "okay";
+
+	ports {
+		port@1 {
+			reg = <1>;
+			dsi_out: endpoint {
+				remote-endpoint = <&panel_in>;
+			};
+		};
+	};
+};
+
+&iomuxc {
+	pinctrl_backlight_dsi: backlight-dsi {
+		fsl,pins = <
+			MX93_PAD_GPIO_IO22__GPIO2_IO22                          0x31e
+		>;
+	};
+};
