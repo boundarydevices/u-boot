@@ -5,6 +5,7 @@
  */
 
 /delete-node/ &ssusb;
+/delete-node/ &syscfg_pctl;
 
 / {
 	soc {
@@ -97,4 +98,9 @@
 
 &ssusb {
 	bootph-pre-ram;
+};
+
+&pio {
+	/delete-property/ mediatek,pctl-regmap;
+	reg = <0 0x10005000 0 0x1000>;
 };
