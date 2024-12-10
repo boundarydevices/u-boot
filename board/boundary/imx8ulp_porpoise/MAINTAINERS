@@ -1,0 +1,6 @@
+i.MX 8ULP Porpoise
+M:	Gary Bisson <gary.bisson@ezurio.com>
+S:	Maintained
+F:	board/boundary/imx8ulp_porpoise/
+F:	include/configs/imx8ulp_porpoise.h
+F:	configs/imx8ulp_porpoise_2gr0_defconfig
