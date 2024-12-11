@@ -1627,6 +1627,57 @@ static const struct mtk_clk_tree mt8188_topckgen_cg_clk_tree = {
 	.gates_offs = 185, /* CLK_TOP_CFGREG_CLOCK_EN_VPP0 */
 };
 
+static const struct mtk_gate_regs imp_iic_wrap_cg_regs = {
+	.set_ofs = 0xe08,
+	.clr_ofs = 0xe04,
+	.sta_ofs = 0xe00,
+};
+
+#define GATE_IMP_IIC_WRAP(_id, _parent, _shift) {				\
+			.id = _id,						\
+			.parent = _parent,					\
+			.regs = &imp_iic_wrap_cg_regs,				\
+			.shift = _shift,					\
+			.flags = CLK_GATE_SETCLR | CLK_PARENT_TOPCKGEN,		\
+}
+
+static const struct mtk_gate imp_iic_wrap_c_clks[] = {
+	GATE_IMP_IIC_WRAP(CLK_IMP_IIC_WRAP_C_AP_CLOCK_I2C0, CLK_TOP_I2C, 0),
+	GATE_IMP_IIC_WRAP(CLK_IMP_IIC_WRAP_C_AP_CLOCK_I2C2, CLK_TOP_I2C, 1),
+	GATE_IMP_IIC_WRAP(CLK_IMP_IIC_WRAP_C_AP_CLOCK_I2C3, CLK_TOP_I2C, 2),
+};
+
+static const struct mtk_gate imp_iic_wrap_w_clks[] = {
+	GATE_IMP_IIC_WRAP(CLK_IMP_IIC_WRAP_W_AP_CLOCK_I2C1, CLK_TOP_I2C, 0),
+	GATE_IMP_IIC_WRAP(CLK_IMP_IIC_WRAP_W_AP_CLOCK_I2C4, CLK_TOP_I2C, 1),
+};
+
+static const struct mtk_gate imp_iic_wrap_en_clks[] = {
+	GATE_IMP_IIC_WRAP(CLK_IMP_IIC_WRAP_EN_AP_CLOCK_I2C5, CLK_TOP_I2C, 0),
+	GATE_IMP_IIC_WRAP(CLK_IMP_IIC_WRAP_EN_AP_CLOCK_I2C6, CLK_TOP_I2C, 1),
+};
+
+const struct mtk_clk_tree mt8188_imp_iic_wrap_c_clk_tree = {
+	.xtal_rate = 26 * MHZ,
+	.xtal2_rate = 26 * MHZ,
+	/* CLK_IMP_IIC_WRAP_C_AP_CLOCK_I2C0 */
+	.gates_offs = 0,
+};
+
+const struct mtk_clk_tree mt8188_imp_iic_wrap_w_clk_tree = {
+	.xtal_rate = 26 * MHZ,
+	.xtal2_rate = 26 * MHZ,
+	/* CLK_IMP_IIC_WRAP_C_AP_CLOCK_I2C1 */
+	.gates_offs = 0,
+};
+
+const struct mtk_clk_tree mt8188_imp_iic_wrap_en_clk_tree = {
+	.xtal_rate = 26 * MHZ,
+	.xtal2_rate = 26 * MHZ,
+	/* imp_iic_wrap_en: CLK_IMP_IIC_WRAP_EN_AP_CLOCK_I2C5 */
+	.gates_offs = 0,
+};
+
 static int mt8188_apmixedsys_probe(struct udevice *dev)
 {
 	return mtk_common_clk_init(dev, &mt8188_apmixedsys_clk_tree);
@@ -1652,6 +1703,20 @@ static int mt8188_pericfg_ao_probe(struct udevice *dev)
 	return mtk_common_clk_gate_init(dev, &mt8188_pericfg_ao_clk_tree, pericfg_ao_clks);
 }
 
+static int mt8188_imp_iic_wrap_c_probe(struct udevice *dev)
+{
+	return mtk_common_clk_gate_init(dev, &mt8188_imp_iic_wrap_c_clk_tree, imp_iic_wrap_c_clks);
+}
+
+static int mt8188_imp_iic_wrap_w_probe(struct udevice *dev)
+{
+	return mtk_common_clk_gate_init(dev, &mt8188_imp_iic_wrap_w_clk_tree, imp_iic_wrap_w_clks);
+}
+
+static int mt8188_imp_iic_wrap_en_probe(struct udevice *dev)
+{
+	return mtk_common_clk_gate_init(dev, &mt8188_imp_iic_wrap_en_clk_tree, imp_iic_wrap_en_clks);
+}
 static const struct udevice_id mt8188_apmixed_compat[] = {
 	{ .compatible = "mediatek,mt8188-apmixedsys", },
 	{ }
@@ -1674,6 +1739,21 @@ static const struct udevice_id mt8188_infracfg_ao_compat[] = {
 
 static const struct udevice_id mt8188_pericfg_ao_compat[] = {
 	{ .compatible = "mediatek,mt8188-pericfg-ao", },
+	{ }
+};
+
+static const struct udevice_id mt8188_imp_iic_wrap_c_compat[] = {
+	{ .compatible = "mediatek,mt8188-imp-iic-wrap-c", },
+	{ }
+};
+
+static const struct udevice_id mt8188_imp_iic_wrap_w_compat[] = {
+	{ .compatible = "mediatek,mt8188-imp-iic-wrap-w", },
+	{ }
+};
+
+static const struct udevice_id mt8188_imp_iic_wrap_en_compat[] = {
+	{ .compatible = "mediatek,mt8188-imp-iic-wrap-en", },
 	{ }
 };
 
@@ -1722,6 +1802,36 @@ U_BOOT_DRIVER(mtk_clk_pericfg_ao) = {
 	.id = UCLASS_CLK,
 	.of_match = mt8188_pericfg_ao_compat,
 	.probe = mt8188_pericfg_ao_probe,
+	.priv_auto = sizeof(struct mtk_cg_priv),
+	.ops = &mtk_clk_gate_ops,
+	.flags = DM_FLAG_PRE_RELOC,
+};
+
+U_BOOT_DRIVER(mtk_clk_imp_iic_wrap_c) = {
+	.name = "mt8188-imp_iic_wrap_c",
+	.id = UCLASS_CLK,
+	.of_match = mt8188_imp_iic_wrap_c_compat,
+	.probe = mt8188_imp_iic_wrap_c_probe,
+	.priv_auto = sizeof(struct mtk_cg_priv),
+	.ops = &mtk_clk_gate_ops,
+	.flags = DM_FLAG_PRE_RELOC,
+};
+
+U_BOOT_DRIVER(mtk_clk_imp_iic_wrap_w) = {
+	.name = "mt8188-imp_iic_wrap_w",
+	.id = UCLASS_CLK,
+	.of_match = mt8188_imp_iic_wrap_w_compat,
+	.probe = mt8188_imp_iic_wrap_w_probe,
+	.priv_auto = sizeof(struct mtk_cg_priv),
+	.ops = &mtk_clk_gate_ops,
+	.flags = DM_FLAG_PRE_RELOC,
+};
+
+U_BOOT_DRIVER(mtk_clk_imp_iic_wrap_en) = {
+	.name = "mt8188-imp_iic_wrap_en",
+	.id = UCLASS_CLK,
+	.of_match = mt8188_imp_iic_wrap_en_compat,
+	.probe = mt8188_imp_iic_wrap_en_probe,
 	.priv_auto = sizeof(struct mtk_cg_priv),
 	.ops = &mtk_clk_gate_ops,
 	.flags = DM_FLAG_PRE_RELOC,
