@@ -120,6 +120,29 @@ static const u16 mt_i2c_regs_v2[] = {
 	[OFFSET_LTIMING] = 0x2c,
 };
 
+static const u16 mt_i2c_regs_v3[] = {
+	[OFFSET_DATA_PORT] = 0x0,
+	[OFFSET_INTR_MASK] = 0x8,
+	[OFFSET_INTR_STAT] = 0xc,
+	[OFFSET_CONTROL] = 0x10,
+	[OFFSET_TRANSFER_LEN] = 0x14,
+	[OFFSET_TRANSAC_LEN] = 0x18,
+	[OFFSET_DELAY_LEN] = 0x1c,
+	[OFFSET_TIMING] = 0x20,
+	[OFFSET_START] = 0x24,
+	[OFFSET_EXT_CONF] = 0x28,
+	[OFFSET_LTIMING] = 0x2c,
+	[OFFSET_FIFO_STAT] = 0xf4,
+	[OFFSET_FIFO_ADDR_CLR] = 0x38,
+	[OFFSET_IO_CONFIG] = 0x34,
+	[OFFSET_HS] = 0x30,
+	[OFFSET_SOFTRESET] = 0x50,
+	[OFFSET_TRANSFER_LEN_AUX] = 0x44,
+	[OFFSET_CLOCK_DIV] = 0x48,
+	[OFFSET_SLAVE_ADDR] = 0x94,
+	[OFFSET_DCM_EN] = 0xf88,
+};
+
 struct mtk_i2c_compatible {
 	const u16 *regs;
 	unsigned char pmic_i2c: 1;
@@ -152,6 +175,16 @@ static const struct mtk_i2c_compatible mt8365_compat = {
 	.aux_len_reg = 1,
 	.timing_adjust = 1,
 	.ltiming_adjust = 0,
+};
+
+static const struct mtk_i2c_compatible mt8188_compat = {
+	.regs = mt_i2c_regs_v3,
+	.pmic_i2c = 0,
+	.dcm = 0,
+	.auto_restart = 1,
+	.aux_len_reg = 1,
+	.timing_adjust = 1,
+	.ltiming_adjust = 1,
 };
 
 static u16 mtk_i2c_readw(struct mtk_i2c *i2c, enum I2C_REGS_OFFSET reg)
@@ -588,6 +621,7 @@ static const struct dm_i2c_ops mtk_i2c_ops = {
 
 static const struct udevice_id mtk_i2c_ids[] = {
 	{ .compatible = "mediatek,mt8365-i2c", .data = (ulong)&mt8365_compat },
+	{ .compatible = "mediatek,mt8188-i2c", .data = (ulong)&mt8188_compat },
 	{ }
 };
 
