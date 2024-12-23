@@ -99,3 +99,8 @@
 		 <&apmixedsys CLK_APMIXED_PLL_SSUSB26M_EN>;
 	bootph-pre-ram;
 };
+
+&u3phy1 {
+	compatible = "mediatek,mt8188-tphy", "mediatek,generic-tphy-v3",
+			 "mediatek,generic-tphy-v2";
+};

@@ -26,3 +26,25 @@
 &auxadc {
 	status = "okay";
 };
+
+&xhci1 {
+	pinctrl-0 = <&usb1_default_pins>;
+	pinctrl-names = "default";
+	vusb33-supply = <&usb_hub_fixed_3v3>;
+	vbus-supply = <&usb_hub_reset_1v8>;
+};
+
+&u2port1 {
+	status = "okay";
+};
+
+&u3port1 {
+	status = "okay";
+};
+
+&usb1_default_pins {
+	pins-vbus {
+		pinmux = <PINMUX_GPIO87__FUNC_O_USB_DRVVBUS_1P>;
+		output-high;
+	};
+};
