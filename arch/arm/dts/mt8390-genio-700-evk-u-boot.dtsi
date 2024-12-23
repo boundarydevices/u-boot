@@ -22,3 +22,7 @@
 	dr_mode = "peripheral";
 	status = "okay";
 };
+
+&auxadc {
+	status = "okay";
+};
