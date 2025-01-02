@@ -17,7 +17,6 @@
 #include <asm/mach-imx/mxc_i2c.h>
 #include <asm/io.h>
 #include <common.h>
-#include <fsl_esdhc_imx.h>
 #include <i2c.h>
 #include <linux/sizes.h>
 #include <malloc.h>
@@ -40,16 +39,6 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #define UART_PAD_CTRL  (PAD_CTL_PUS_100K_UP | PAD_CTL_SPEED_MED | \
 	PAD_CTL_DSE_40ohm | PAD_CTL_HYS | PAD_CTL_SRE_FAST)
-
-#define USDHC1_CLK_PAD_CTRL (PAD_CTL_SPEED_LOW | \
-	PAD_CTL_DSE_40ohm | PAD_CTL_HYS | PAD_CTL_SRE_FAST)
-
-#define USDHC1_PAD_CTRL (USDHC1_CLK_PAD_CTRL | PAD_CTL_PUS_47K_UP)
-
-#define USDHC2_CLK_PAD_CTRL (PAD_CTL_SPEED_LOW | \
-	PAD_CTL_DSE_40ohm | PAD_CTL_HYS | PAD_CTL_SRE_FAST)
-
-#define USDHC2_PAD_CTRL (USDHC2_CLK_PAD_CTRL | PAD_CTL_PUS_47K_UP)
 
 static const iomux_v3_cfg_t init_pads[] = {
 	/* can1 */
@@ -84,9 +73,6 @@ static const iomux_v3_cfg_t init_pads[] = {
 	/* Hog */
 	IOMUX_PAD_CTRL(GPIO1_IO04__GPIO1_IO04, 0x1b0b0),	/* software reset */
 	IOMUX_PAD_CTRL(ENET2_TX_CLK__GPIO2_IO14, 0x130b0),	/* R27 to ground */
-	/* Test points */
-#define GP_TP3		IMX_GPIO_NR(4, 20)
-	IOMUX_PAD_CTRL(CSI_HSYNC__GPIO4_IO20, 0x1b0b0),		/* tp3 */
 
 	/* Lcdif */
 	IOMUX_PAD_CTRL(LCD_CLK__LCDIF_CLK, 0x79),
@@ -149,29 +135,6 @@ static const iomux_v3_cfg_t init_pads[] = {
 	/* USB OTG2 */
 	IOMUX_PAD_CTRL(ENET2_TX_DATA1__USB_OTG2_PWR, 0x030b0),
 	IOMUX_PAD_CTRL(ENET2_TX_EN__USB_OTG2_OC, 0x1b0b0),
-
-	/* usdhc1 - SD card */
-	IOMUX_PAD_CTRL(SD1_CLK__USDHC1_CLK, USDHC1_CLK_PAD_CTRL),
-	IOMUX_PAD_CTRL(SD1_CMD__USDHC1_CMD, USDHC1_PAD_CTRL),
-	IOMUX_PAD_CTRL(SD1_DATA0__USDHC1_DATA0, USDHC1_PAD_CTRL),
-	IOMUX_PAD_CTRL(SD1_DATA1__USDHC1_DATA1, USDHC1_PAD_CTRL),
-	IOMUX_PAD_CTRL(SD1_DATA2__USDHC1_DATA2, USDHC1_PAD_CTRL),
-	IOMUX_PAD_CTRL(SD1_DATA3__USDHC1_DATA3, USDHC1_PAD_CTRL),
-#define GP_USDHC1_CD	IMX_GPIO_NR(1, 19)
-	IOMUX_PAD_CTRL(UART1_RTS_B__GPIO1_IO19, 0x1b0b0),
-
-	/* usdhc2 - eMMC */
-	IOMUX_PAD_CTRL(NAND_RE_B__USDHC2_CLK, USDHC2_CLK_PAD_CTRL),
-	IOMUX_PAD_CTRL(NAND_WE_B__USDHC2_CMD, USDHC2_PAD_CTRL),
-	IOMUX_PAD_CTRL(NAND_DATA00__USDHC2_DATA0, USDHC2_PAD_CTRL),
-	IOMUX_PAD_CTRL(NAND_DATA01__USDHC2_DATA1, USDHC2_PAD_CTRL),
-	IOMUX_PAD_CTRL(NAND_DATA02__USDHC2_DATA2, USDHC2_PAD_CTRL),
-	IOMUX_PAD_CTRL(NAND_DATA03__USDHC2_DATA3, USDHC2_PAD_CTRL),
-	IOMUX_PAD_CTRL(NAND_DATA04__USDHC2_DATA4, USDHC2_PAD_CTRL),
-	IOMUX_PAD_CTRL(NAND_DATA05__USDHC2_DATA5, USDHC2_PAD_CTRL),
-	IOMUX_PAD_CTRL(NAND_DATA06__USDHC2_DATA6, USDHC2_PAD_CTRL),
-	IOMUX_PAD_CTRL(NAND_DATA07__USDHC2_DATA7, USDHC2_PAD_CTRL),
-	IOMUX_PAD_CTRL(NAND_ALE__USDHC2_RESET_B, USDHC2_PAD_CTRL),
 };
 
 static const iomux_v3_cfg_t lcd_pwm_pads[] = {
@@ -225,15 +188,6 @@ int board_ehci_power(int port, int on)
 }
 #endif
 
-#ifdef CONFIG_FSL_ESDHC_IMX
-struct fsl_esdhc_cfg board_usdhc_cfg[] = {
-	{.esdhc_base = USDHC1_BASE_ADDR, .bus_width = 4,
-			.gp_cd = GP_USDHC1_CD},
-	{.esdhc_base = USDHC2_BASE_ADDR, .bus_width = 8,
-			.vs18_enable = 1},
-};
-#endif
-
 #ifdef CONFIG_CMD_FBPANEL
 void board_enable_lcd(const struct display_info_t *di, int enable)
 {
@@ -279,9 +233,7 @@ static const unsigned short gpios_out_high[] = {
 static const unsigned short gpios_in[] = {
 	GP_VPP_DETECT,
 	GP_18V_DETECT,
-	GP_TP3,
 	GPIRQ_TS_AR1021,
-	GP_USDHC1_CD,
 };
 
 int board_early_init_f(void)
@@ -309,7 +261,6 @@ int board_init(void)
 }
 
 const struct button_key board_buttons[] = {
-	{"tp3",	GP_TP3,	'3', 1},
 	{NULL, 0, 0, 0},
 };
 
