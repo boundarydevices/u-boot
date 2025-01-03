@@ -81,6 +81,11 @@ config TARGET_IMX93_NITROGEN_SMARC
 	select BINMAN
 	select IMX93
 
+config TARGET_IMX93_NVC
+	bool "imx93_nvc"
+	select BINMAN
+	select IMX93
+
 config TARGET_IMX95_19X19_EVK
 	bool "imx95_19x19_evk"
 	select IMX95
@@ -101,6 +106,7 @@ endchoice
 
 source "board/boundary/imx91_nitrogen_smarc/Kconfig"
 source "board/boundary/imx93_nitrogen_smarc/Kconfig"
+source "board/boundary/imx93_nvc/Kconfig"
 source "board/boundary/imx95_nitrogen_smarc/Kconfig"
 source "board/freescale/imx91_evk/Kconfig"
 source "board/freescale/imx91_qsb/Kconfig"

@@ -1,0 +1,6 @@
+Ezurio i.MX 93 NVC board
+M:	Gary Bisson <gary.bisson@ezurio.com>
+S:	Maintained
+F:	board/boundary/imx93_nvc/
+F:	include/configs/imx93_nvc.h
+F:	configs/imx93_nvc_defconfig
