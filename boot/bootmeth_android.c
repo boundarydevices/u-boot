@@ -370,6 +370,7 @@ static int android_read_file(struct udevice *dev, struct bootflow *bflow,
  * @name: Partition name to read
  * @slot: Nul-terminated slot suffixed to partition name ("a\0" or "b\0")
  * @image_size: Image size in bytes used when reading the partition
+ *              If 0, the whole partition will be read.
  * @addr: Address where the partition content is loaded into
  * Return: 0 if OK, negative errno on failure.
  */
@@ -378,7 +379,7 @@ static int read_slotted_partition(struct blk_desc *desc, const char *const name,
 {
 	struct disk_partition partition;
 	char partname[PART_NAME_LEN];
-	ulong num_blks = DIV_ROUND_UP(image_size, desc->blksz);
+	ulong num_blks;
 	int ret;
 	u32 n;
 
@@ -390,6 +391,8 @@ static int read_slotted_partition(struct blk_desc *desc, const char *const name,
 	ret = part_get_info_by_name(desc, partname, &partition);
 	if (ret < 0)
 		return log_msg_ret("part", ret);
+
+	num_blks = image_size ? DIV_ROUND_UP(image_size, desc->blksz) : partition.size;
 
 	n = blk_dread(desc, partition.start, num_blks, map_sysmem(addr, 0));
 	if (n < num_blks)
