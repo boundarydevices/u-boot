@@ -1391,7 +1391,7 @@ static int ci_udc_otg_clk_init(struct udevice *dev,
 	return 0;
 }
 
-static int ci_udc_otg_phy_mode(struct udevice *dev)
+int __weak board_ci_udc_otg_phy_mode(struct udevice *dev)
 {
 	struct ci_udc_priv_data *priv = dev_get_priv(dev);
 
@@ -1487,7 +1487,7 @@ static int ci_udc_otg_probe(struct udevice *dev)
 
 	ehci_mx6_phy_init(ehci, &priv->phy_data, dev_seq(dev));
 
-	if (ci_udc_otg_phy_mode(dev) != USB_INIT_DEVICE)
+	if (board_ci_udc_otg_phy_mode(dev) != USB_INIT_DEVICE)
 		return -ENODEV;
 
 	priv->ctrl.hccr = (struct ehci_hccr *)((ulong)&ehci->caplength);
