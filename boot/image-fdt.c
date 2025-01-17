@@ -515,26 +515,33 @@ int boot_get_fdt(void *buf, const char *select, uint arch,
 			if (env_get("adtbo_idx")) {
 				ulong dtbo_addr;
 				u32 dtbo_size;
-				u32 dtbo_index = (u32)env_get_ulong("adtbo_idx", 10, 0);
+				char *dtbo_index;
+				char *dtbo_list;
 				ulong fdtoverlay_addr_r = env_get_hex("fdtoverlay_addr_r", 0);
 				int ret;
 
-				ret = android_dt_get_fdt_by_index(fdtoverlay_addr_r, dtbo_index,
-								  &dtbo_addr, &dtbo_size);
-				if (ret < 0)
-					goto error;
+				dtbo_list = env_get("adtbo_idx");
 
-				ret = fdt_shrink_to_minimum(fdt_blob, dtbo_size);
-				if (ret < 0)
-					goto error;
+				do {
+					dtbo_index = strsep(&dtbo_list, " ");
+					ret = android_dt_get_fdt_by_index(fdtoverlay_addr_r,
+					                                  simple_strtoul(dtbo_index, NULL, 0),
+					                                  &dtbo_addr, &dtbo_size);
+					if (ret < 0)
+						goto error;
 
-				debug("## Found Android dtbo %d with addr %lx and size %u\n",
-				      dtbo_index, dtbo_addr, dtbo_size);
+					ret = fdt_shrink_to_minimum(fdt_blob, dtbo_size);
+					if (ret < 0)
+						goto error;
 
-				ret = fdt_overlay_apply_verbose(fdt_blob,
-								map_sysmem(dtbo_addr, 0));
-				if (ret < 0)
-					goto error;
+					debug("## Found Android dtbo %c with addr %lx and size %u\n",
+						  *dtbo_index, dtbo_addr, dtbo_size);
+
+					ret = fdt_overlay_apply_verbose(fdt_blob,
+									map_sysmem(dtbo_addr, 0));
+					if (ret < 0)
+						goto error;
+				} while (dtbo_list);
 			}
 #endif
 		} else if (!android_image_get_second(hdr, &fdt_data, &fdt_len) &&
