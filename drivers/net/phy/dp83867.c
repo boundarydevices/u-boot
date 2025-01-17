@@ -265,7 +265,7 @@ static int dp83867_config(struct phy_device *phydev)
 	/* Restart the PHY.  */
 	val = phy_read(phydev, MDIO_DEVAD_NONE, DP83867_CTRL);
 	phy_write(phydev, MDIO_DEVAD_NONE, DP83867_CTRL,
-		  val | DP83867_SW_RESTART);
+		  val | DP83867_SW_RESET);
 
 	/* Mode 1 or 2 workaround */
 	if (dp83867->rxctrl_strap_quirk) {
