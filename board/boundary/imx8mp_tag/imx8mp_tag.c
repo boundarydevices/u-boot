@@ -1,0 +1,98 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2025 Ezurio LLC
+ */
+
+#include <common.h>
+#include <command.h>
+#include <asm/arch/clock.h>
+#include <asm/arch/imx8mp_pins.h>
+#include <asm/arch/sys_proto.h>
+#include <asm/io.h>
+#include <asm/mach-imx/dma.h>
+#include <asm/mach-imx/fbpanel.h>
+#include <asm/mach-imx/gpio.h>
+#include <asm/mach-imx/iomux-v3.h>
+#include <asm/mach-imx/mxc_i2c.h>
+#include <asm-generic/gpio.h>
+
+#include <display_detect.h>
+#include <dwc3-uboot.h>
+#include <errno.h>
+#include <linux/delay.h>
+#include <miiphy.h>
+#include <mmc.h>
+#include <netdev.h>
+#include <power/pmic.h>
+#include <spl.h>
+#include <usb.h>
+#include "../common/padctrl.h"
+#include "../common/bd_common.h"
+
+DECLARE_GLOBAL_DATA_PTR;
+
+#define UART_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_FSEL1)
+#define WDOG_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_ODE | PAD_CTL_PUE | PAD_CTL_PE)
+
+static iomux_v3_cfg_t const init_pads[] = {
+	IOMUX_PAD_CTRL(GPIO1_IO02__WDOG1_WDOG_B, WDOG_PAD_CTRL),
+	IOMUX_PAD_CTRL(UART2_RXD__UART2_DCE_RX, UART_PAD_CTRL),
+	IOMUX_PAD_CTRL(UART2_TXD__UART2_DCE_TX, UART_PAD_CTRL),
+#define GP_LCD_RESET		IMX_GPIO_NR(5, 3)
+	IOMUX_PAD_CTRL(SPDIF_TX__GPIO5_IO03, 0),
+#define GP_TS_ATMEL_RESET	IMX_GPIO_NR(1, 29)
+	IOMUX_PAD_CTRL(ENET_RD3__GPIO1_IO29, 0),
+#define GP_PWM1_MIPI		IMX_GPIO_NR(1, 1)
+	IOMUX_PAD_CTRL(GPIO1_IO01__GPIO1_IO01, 0),
+	IOMUX_PAD_CTRL(ENET_MDC__ENET_QOS_MDC, 0x3),
+	IOMUX_PAD_CTRL(ENET_MDIO__ENET_QOS_MDIO, 0x3),
+};
+
+int board_early_init_f(void)
+{
+	struct wdog_regs *wdog = (struct wdog_regs *)WDOG1_BASE_ADDR;
+
+	imx_iomux_v3_setup_multiple_pads(init_pads, ARRAY_SIZE(init_pads));
+
+	gpio_request(GP_TS_ATMEL_RESET, "atmel_reset");
+	gpio_direction_output(GP_TS_ATMEL_RESET, 0);
+	gpio_free(GP_TS_ATMEL_RESET);
+
+	gpio_request(GP_LCD_RESET, "lcd_rst");
+	gpio_direction_output(GP_LCD_RESET, 0);
+	gpio_free(GP_LCD_RESET);
+
+	gpio_request(GP_PWM1_MIPI, "pwm1");
+	gpio_direction_output(GP_PWM1_MIPI, 1);
+	gpio_free(GP_PWM1_MIPI);
+
+	set_wdog_reset(wdog);
+	init_uart_clk(1);
+
+	return 0;
+}
+
+#ifdef CONFIG_CMD_FBPANEL
+static const struct display_info_t displays[] = {
+	VD_Q035_014(MIPI, fbp_detect_i2c, fbp_bus_gp(5, GP_TS_ATMEL_RESET, GP_LCD_RESET, 50), 0x4a, FBTS_ATMEL_MT),
+	VD_MIPI_COM35H3R04ULY(MIPI, NULL, fbp_bus_gp(0, 0, GP_LCD_RESET, 0), 0x0),
+};
+#define display_cnt	ARRAY_SIZE(displays)
+#else
+#define displays	NULL
+#define display_cnt	0
+#endif
+
+int board_init(void)
+{
+#ifdef CONFIG_DM_ETH
+	board_eth_init(gd->bd);
+#endif
+#ifdef CONFIG_CMD_FBPANEL
+	fbp_setup_display(displays, display_cnt);
+#endif
+#if !CONFIG_IS_ENABLED(USB_DWC3_GENERIC) && (defined(CONFIG_USB_DWC3) || defined(CONFIG_USB_XHCI_IMX8M))
+	board_usb_reset(0, USB_INIT_DEVICE);
+#endif
+	return 0;
+}

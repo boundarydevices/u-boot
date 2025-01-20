@@ -1,0 +1,6 @@
+i.MX8MP TAG BOARD
+M:	Simon Gaynor <simon.gaynor@ezurio.com>
+S:	Maintained
+F:	board/boundary/imx8mp_tag/
+F:	include/configs/imx8mp_tag.h
+F:	configs/imx8mp_tag_2gr0_defconfig

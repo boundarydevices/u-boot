@@ -1,0 +1,14 @@
+if TARGET_IMX8MP_TAG
+
+config SYS_BOARD
+	default "imx8mp_tag"
+
+config SYS_VENDOR
+	default "boundary"
+
+config SYS_CONFIG_NAME
+	default "imx8mp_tag"
+
+source "board/boundary/common/Kconfig"
+
+endif
