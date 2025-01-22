@@ -10,7 +10,7 @@
 #include "k3-am625-carbon-som.dtsi"
 
 / {
-	model = "Ezurio Carbon AM625 OSM Carrier Board";
+	model = "Ezurio Carbon AM625 OSM Carrier Board V.2-0";
 	compatible = "ezurio,am62-dev",
 		     "ti,am625";
 
@@ -172,11 +172,6 @@
 	pinctrl-0 = <&main_gpio0_hog_pins_default>; /* Just Muxing them to a GPIO */
 };
 
-&main_gpio1 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&main_gpio1_hog_pins_default>; /* Just Muxing them to a GPIO */
-};
-
 &main_i2c1 { /* I2C_A */
 	status = "okay";
 
@@ -212,48 +207,38 @@
 		gpio-controller;
 
 		gpio-line-names = "USB_C_OEn_P00", "USB_D_OEn_P01",
-			"ACD_nINT", "", "M2_WDISABLE1_EXP",
+			"CAN_A_STB", "CAN_B_STB", "M2_WDISABLE1_EXP",
 			"M2_WDISABLE2_EXP", "M2_WL_DEVICE_WAKEUP",
 			"M2_BT_DEVICE_WAKEUP",
-			"M2_UART_WAKE",	"M2_Vendor_DF38", "M2_SD_nRST",
-			"M2_SD_HOST_WAKEUP", "M2_Power_EN", "",
-			"VOL_UP", "VOL_DOWN";
-	};
-
-	exp2: gpio@75 {
-		compatible = "ti,tca9539";
-		reg = <0x75>;
-		#gpio-cells = <2>;
-		gpio-controller;
-
-		gpio-line-names = "", "",
-			"CAN_A_STB", "",
-			"CAN_B_STB", "",
-			"", "",
-			"SDIO_A_SEL", "AUD_PWR_EN",
-			"CHGR_INTn", "CHGR_CEn",
-			"", "", "", "";
+			"AUD_PWR_EN",	"M2_Vendor_DF38", "M2_SD_nRST",
+			"CHGR_CEn", "M2_Power_EN", "SDIO_A_SWITCH_EN",
+			"SDIO_A_SEL", "";
 
 		/* Force SDIO_A_SEL output-low for SDCARD, high for M.2 */
 		sdio-a-sel-hog {
 			/* SDIO_A_SEL U51 P10 */
 			gpio-hog;
-			gpios = <8 GPIO_ACTIVE_HIGH>;
+			gpios = <14 GPIO_ACTIVE_HIGH>;
 			output-low;
 			line-name = "SDIO_A_SEL_SDCARD";
 		};
 	};
 
-	exp3: gpio@77 {
+	exp2: gpio@77 {
 		compatible = "ti,tca9539";
+		pinctrl-names = "default";
+		pinctrl-0 = <&main_exp2_pins_default>;
 		reg = <0x77>;
+		#interrupt-cells = <2>;
+		interrupt-controller;
+		interrupts-extended = <&main_gpio1 12 IRQ_TYPE_EDGE_FALLING>; /* expander_INT USB_A_PD_RST / GPIO_A_3 */
 		#gpio-cells = <2>;
 		gpio-controller;
 
-		gpio-line-names = "CSI_A_GPIO0", "CSI_A_GPIO1",
-			"CSI_B_GPIO0", "CSI_B_GPIO1",
-			"CSI_C_GPIO0", "CSI_C_GPIO1",
-			"CSI_D_GPIO0", "CSI_D_GPIO1",
+		gpio-line-names = "ACD_nINT", "M2_UART_WAKE",
+			"M2_SD_HOST_WAKEUP", "CHGR_INTn",
+			"VOL_UP", "VOL_DOWN",
+			"", "",
 			"LVDS_C_INT", "LVDS_C_HPD",
 			"LVDS_D_INT", "LVDS_D_HPD",
 			"LVDS_E_INT", "LVDS_E_HPD",
@@ -330,6 +315,13 @@
 };
 
 &main_pmx0 {
+
+	main_exp2_pins_default: main-exp2-default-pins {
+		pinctrl-single,pins = <
+			AM62X_IOPAD(0x01a8, PIN_INPUT, 7) /* GPIO_A_3 (D20) MCASP0_AFSX.GPIO1_12 */
+		>;
+	};
+
 	main_gpio0_hog_pins_default: main-gpio0-hog-default-pins {
 		pinctrl-single,pins = <
 			AM62X_IOPAD(0x0044, PIN_INPUT, 7) /* GPIO_B_7 (N24) GPMC0_AD2.GPIO0_17 */
@@ -340,12 +332,6 @@
 			AM62X_IOPAD(0x0078, PIN_INPUT, 7) /* GPIO_B_6 (U24) GPMC0_AD15.GPIO0_30 */
 			AM62X_IOPAD(0x0098, PIN_INPUT, 7) /* GPIO_A_0 (U23) GPMC0_WAIT0.GPIO0_37 */
 			AM62X_IOPAD(0x009c, PIN_INPUT, 7) /* GPIO_B_2 (V25) GPMC0_WAIT1.GPIO0_38 */
-		>;
-	};
-
-	main_gpio1_hog_pins_default: main-gpio1-hog-default-pins {
-		pinctrl-single,pins = <
-			AM62X_IOPAD(0x01a8, PIN_INPUT, 7) /* GPIO_A_3 (D20) MCASP0_AFSX.GPIO1_12 */
 		>;
 	};
 
