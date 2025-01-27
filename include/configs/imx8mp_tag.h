@@ -170,7 +170,7 @@
 #define BD_RAM_FDT	"43000000"
 
 #define BD_FUSE1		"1 3"
-#define BD_FUSE1_VAL		"10000000"	/* USDHC1 emmc */
+#define BD_FUSE1_VAL		"10002a00"	/* USDHC1 emmc */
 
 #define BD_FUSE1_STR		"fuse1=" BD_FUSE1 "\0"
 #define BD_FUSE1_VAL_STR	"fuse1_val=" BD_FUSE1_VAL "\0"
