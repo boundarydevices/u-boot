@@ -44,6 +44,8 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IOMUX_PAD_CTRL(ENET_RD3__GPIO1_IO29, 0),
 #define GP_PWM1_MIPI		IMX_GPIO_NR(1, 1)
 	IOMUX_PAD_CTRL(GPIO1_IO01__GPIO1_IO01, 0),
+#define GP_BKLT_EN		IMX_GPIO_NR(1, 23)
+	IOMUX_PAD_CTRL(ENET_TXC__GPIO1_IO23, 0),
 	IOMUX_PAD_CTRL(ENET_MDC__ENET_QOS_MDC, 0x3),
 	IOMUX_PAD_CTRL(ENET_MDIO__ENET_QOS_MDIO, 0x3),
 };
@@ -62,6 +64,10 @@ int board_early_init_f(void)
 	gpio_direction_output(GP_LCD_RESET, 0);
 	gpio_free(GP_LCD_RESET);
 
+	gpio_request(GP_BKLT_EN, "bklt_en");
+	gpio_direction_output(GP_BKLT_EN, 1);
+	gpio_free(GP_BKLT_EN);
+
 	gpio_request(GP_PWM1_MIPI, "pwm1");
 	gpio_direction_output(GP_PWM1_MIPI, 1);
 	gpio_free(GP_PWM1_MIPI);
@@ -74,7 +80,7 @@ int board_early_init_f(void)
 
 #ifdef CONFIG_CMD_FBPANEL
 static const struct display_info_t displays[] = {
-	VD_Q035_014(MIPI, fbp_detect_i2c, fbp_bus_gp(5, GP_TS_ATMEL_RESET, GP_LCD_RESET, 50), 0x4a, FBTS_ATMEL_MT),
+	VD_Q035_014(MIPI, fbp_detect_i2c, fbp_bus_gp(2, GP_TS_ATMEL_RESET, GP_LCD_RESET, 50), 0x4a, FBTS_ATMEL_MT),
 	VD_MIPI_COM35H3R04ULY(MIPI, NULL, fbp_bus_gp(0, 0, GP_LCD_RESET, 0), 0x0),
 };
 #define display_cnt	ARRAY_SIZE(displays)

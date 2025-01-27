@@ -4,13 +4,12 @@
  */
 
 /dts-v1/;
-#ifdef CONFIG_DEFCONFIG
-#define UBOOT
-#endif
-#define IMX8MP
 
 #include <dt-bindings/usb/pd.h>
 #include "imx8mp.dtsi"
+
+#include "panel-com35h3r04uly.dtsi"
+#include "panel-q035-014.dtsi"
 
 / {
 	model = "Ezurio i.MX 8MP TAG board";
@@ -25,12 +24,9 @@
 		mipi = &fb_mipi;
 		mipi_dsi = &mipi_dsi;
 		mipi_dsi_bridge = &mipi_dsi;
-		//mipi_dsi_phy = &dphy;
 		pwm_mipi = &pwm1;
 		t_mipi = &t_mipi;
 		ts_atmel_mt = &ts_mipi_atmel_mt;
-		//ts_goodix = &ts_goodix;
-		//mipi_to_lvds = &mipi_to_lvds;
 		usb_mux = &usb_mux;
 	};
 
@@ -112,7 +108,6 @@
 
 };
 
-#ifndef UBOOT
 &A53_0 {
 	cpu-supply = <&buck2>;
 };
@@ -128,10 +123,6 @@
 &A53_3 {
 	cpu-supply = <&buck2>;
 };
-
-&aips3 {
-};
-#endif
 
 &clk {
 	init-on-array = <IMX8MP_CLK_HSIO_ROOT>;
@@ -213,15 +204,10 @@
 	#size-cells = <0>;
 
 	fb_mipi: panel@0 {
-#if 0
 		backlight = <&backlight_mipi>;
-#endif
 		bits-per-color = <8>;
 		bridge-de-active = <0>;
 		bus-format = "rgb888";
-		//clocks = <&dphy 0>,
-		//	<&pcc5 IMX8ULP_CLK_DC_NANO>;
-		// clock-names = "mipi_clk", "pixel_clock";
 		compatible = "panel,common";
 		delay-power-up = <2>;
 		dsi-format = "rgb888";
@@ -238,7 +224,6 @@
 
 		display-timings {
 			t_mipi: t-dsi-default {
-				/* m101nwwb by default */
 				clock-frequency = <70000000>;
 				hactive = <1280>;
 				vactive = <800>;
@@ -310,7 +295,6 @@
 	pmic: pca9450@25 {
 		reg = <0x25>;
 		compatible = "nxp,pca9450c";
-		/* PMIC PCA9450 */
 		pinctrl-0 = <&pinctrl_pmic>;
 		interrupts-extended = <&gpio1 14 IRQ_TYPE_LEVEL_LOW>;
 
@@ -426,7 +410,6 @@
 	status = "okay";
 
 	usb_mux: hd3ss3220@47 {
-		/* tusb320 is compatible with hd3ss3220 */
 		compatible = "ti,hd3ss3220";
 		interrupts-extended = <&gpio5 4 IRQ_TYPE_LEVEL_LOW>;
 		pinctrl-names = "default";
@@ -469,7 +452,7 @@
 };
 
 &uart2 {
-	/* J1 - console */
+	/* console */
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart2>;
 	status = "okay";
@@ -734,6 +717,3 @@
 		>;
 	};
 };
-#include "panel-com35h3r04uly.dtsi"
-#include "panel-q035-014.dtsi"
-
