@@ -66,7 +66,7 @@
 			port@0 {
 				reg = <0>;
 				hs_ep: endpoint {
-				       remote-endpoint = <&usb3_hs_ep>;
+					remote-endpoint = <&usb3_hs_ep>;
 				};
 			};
 
@@ -218,7 +218,6 @@
 		panel-height-mm = <136>;
 		panel-width-mm = <217>;
 		power-supply = <&reg_vref_5v0>;
-
 		reg = <0>;
 		spwg;
 
@@ -238,24 +237,6 @@
 				de-active = <1>;
 			};
 		};
-
-		port {
-			panel1_in: endpoint {
-				remote-endpoint = <&mipi_dsi_out>;
-			};
-		};
-	};
-
-	ports {
-		#address-cells = <1>;
-		#size-cells = <0>;
-		port@1 {
-			reg = <1>;
-
-			mipi_dsi_out: endpoint {
-				remote-endpoint = <&panel1_in>;
-			};
-		};
 	};
 };
 
@@ -264,7 +245,7 @@
 	pinctrl-0 = <&pinctrl_eqos>;
 	phy-mode = "rgmii-id";
 	phy-handle = <&ethphy0>;
-	status = "okay";
+	status = "disabled";
 
 	mdio {
 		compatible = "snps,dwmac-mdio";
@@ -275,7 +256,6 @@
 			compatible = "ethernet-phy-ieee802.3-c22";
 			interrupts-extended = <&gpio5 1 IRQ_TYPE_LEVEL_LOW>;
 			max-speed = <100>;
-			eee-broken-1000t;
 			reset-gpios = <&gpio5 0 GPIO_ACTIVE_LOW>;
 			reg = <7>;
 			reset-assert-us = <10000>;
@@ -409,12 +389,12 @@
 	pinctrl-0 = <&pinctrl_i2c4>;
 	status = "okay";
 
-	usb_mux: hd3ss3220@47 {
+	usb_mux: hd3ss3220@60 {
 		compatible = "ti,hd3ss3220";
 		interrupts-extended = <&gpio5 4 IRQ_TYPE_LEVEL_LOW>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_i2c4_hd3ss3220>;
-		reg = <0x47>;
+		reg = <0x60>;
 
 		ports {
 		#address-cells = <1>;
@@ -576,7 +556,7 @@
 
 	pinctrl_hog: hoggrp {
 		fsl,pins = <
-			MX8MP_IOMUXC_GPIO1_IO09__GPIO1_IO09		0x1c0	/* 1588_EVENT0_OUT TODO do something with this ?? */
+			MX8MP_IOMUXC_GPIO1_IO09__GPIO1_IO09		0x1c0
 		>;
 	};
 
@@ -589,42 +569,39 @@
 
 	pinctrl_i2c1_1: i2c1-1grp {
 		fsl,pins = <
-			MX8MP_IOMUXC_I2C1_SCL__GPIO5_IO14        	0x1c3
-			MX8MP_IOMUXC_I2C1_SDA__GPIO5_IO15        	0x1c3
+			MX8MP_IOMUXC_I2C1_SCL__GPIO5_IO14	0x1c3
+			MX8MP_IOMUXC_I2C1_SDA__GPIO5_IO15	0x1c3
 		>;
 	};
 
 	pinctrl_i2c3: i2c3grp {
 		fsl,pins = <
-			MX8MP_IOMUXC_I2C3_SCL__I2C3_SCL			0x400001c3
-			MX8MP_IOMUXC_I2C3_SDA__I2C3_SDA			0x400001c3
+			MX8MP_IOMUXC_I2C3_SCL__I2C3_SCL		0x400001c3
+			MX8MP_IOMUXC_I2C3_SDA__I2C3_SDA		0x400001c3
 		>;
 	};
 
 	pinctrl_i2c4: i2c4grp {
 		fsl,pins = <
-			MX8MP_IOMUXC_I2C4_SCL__I2C4_SCL			0x400001c3
-			MX8MP_IOMUXC_I2C4_SDA__I2C4_SDA			0x400001c3
+			MX8MP_IOMUXC_I2C4_SCL__I2C4_SCL		0x400001c3
+			MX8MP_IOMUXC_I2C4_SDA__I2C4_SDA		0x400001c3
 		>;
 	};
 
 	pinctrl_i2c4_hd3ss3220: i2c4-hd3ss3220grp {
 		fsl,pins = <
-#define GPIRQ_HD3SS3220	<&gpio1 8 IRQ_TYPE_LEVEL_LOW>
-			MX8MP_IOMUXC_SPDIF_RX__GPIO5_IO04		0x16
+			MX8MP_IOMUXC_SPDIF_RX__GPIO5_IO04	0x16
 		>;
 	};
 
 	pinctrl_mipi_com35h3r04uly: mipi-com35h3r04ulygrp {
 		fsl,pins = <
-#define GP_LCD_RESET	<&gpio5 3 GPIO_ACTIVE_LOW>
-			MX8MP_IOMUXC_SPDIF_TX__GPIO5_IO03		0x02
+			MX8MP_IOMUXC_SPDIF_TX__GPIO5_IO03	0x02
 		>;
 	};
 
 	pinctrl_mipi_q035_014: mipi-q035-014grp {
 		fsl,pins = <
-#define GP_LCD_RESET	<&gpio5 3 GPIO_ACTIVE_LOW>
 			MX8MP_IOMUXC_SPDIF_TX__GPIO5_IO03	0x02
 		>;
 	};
@@ -657,8 +634,7 @@
 
 	pinctrl_usb3_0: usb3-0grp {
 		fsl,pins = <
-			MX8MP_IOMUXC_GPIO1_IO13__USB1_OC        0x1c0
-			//MX8MP_IOMUXC_GPIO1_IO13__USB1_OTG_OC	0x1c0
+			MX8MP_IOMUXC_GPIO1_IO13__USB1_OC	0x1c0
 		>;
 	};
 
