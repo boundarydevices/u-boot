@@ -18,8 +18,9 @@
 
 	aliases {
 		serial2 = &main_uart0; /* CONSOLE */
-		serial3 = &main_uart6; /* UART_A */
-		serial4 = &mcu_uart0;  /* UART_B */
+		serial3 = &main_uart1; /* BT */
+		serial4 = &main_uart6; /* UART_A */
+		serial5 = &mcu_uart0;  /* UART_B */
 		serial6 = &main_uart4; /* UART_D */
 		mmc0 = &sdhci0;
 		mmc1 = &sdhci1;
@@ -88,7 +89,7 @@
 		linux,cma {
 			compatible = "shared-dma-pool";
 			reusable;
-			size = <0x00 0x8000000>;
+			size = <0x00 0x8000000>; /* 0x8000000 = 128MiB */
 			linux,cma-default;
 		};
 
@@ -115,9 +116,9 @@
 		compatible = "pwm-clock";
 		status = "disabled";
 		#clock-cells = <0>;
-		clock-frequency = <20000000>;
+		clock-frequency = <24000000>;
 		clock-output-names = "cam_mck";
-                pwms = <&ecap2 0 50 0>; /* 1 / 50 ns = 20 MHz */
+		pwms = <&ecap2 0 42 0>; /* 1 / 42 ns = 24 MHz */
 	};
 
 	vsys_5v: regulator-vcc-in-5v {
@@ -140,6 +141,28 @@
 		regulator-max-microvolt = <3300000>;
 		regulator-always-on;
 		regulator-boot-on;
+	};
+
+	vcc_1v8_sys: regulator-u3-b2 {
+		/* output of U3 Buck 2 */
+		bootph-all;
+		compatible = "regulator-fixed";
+		regulator-name = "vcc_1v8_sys";
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+		regulator-always-on;
+		regulator-boot-on;
+	};
+
+	wifi_pwrseq: wifi-pwrseq {
+		compatible = "mmc-pwrseq-simple";
+		pinctrl-names = "default";
+		pinctrl-0 = <&main_wifi_en_default>;
+		clocks = <&rv3028>;
+		clock-names = "ext_clock";
+		reset-gpios = <&main_gpio0 20 GPIO_ACTIVE_LOW>; /* W_DISABLE# */
+		post-power-on-delay-ms = <100>;
+		status = "okay";
 	};
 
 	vdd_sd: regulator-u3-ldo1 {
@@ -215,13 +238,13 @@
 
 &main_gpio0 {
 	bootph-all;
-	gpio-line-names = "","GPIO_A_2","GPIO_A_1","","", 	/* 0 - 4 */
+	gpio-line-names = "","GPIO_A_2","GPIO_A_1","","",	/* 0 - 4 */
 		"","","","","",
 		"","","","","",					/* 10 - 14 */
 		"","","GPIO_B_7","SDIO_A_PWR_EN","GPIO_C_2",
-		"","","","","",					/* 20 - 24 */
+		"W_DISABLE#","","W_DISABLE2#","","",		/* 20 - 24 */
 		"GPIO_C_3","GPIO_C_6","","","GPIO_C_7",
-		"GPIO_B_6","SDIO_A_IOPWR","","","",		/* 30 - 34 */
+		"GPIO_B_6","SDIO_A_IOPWR","","RGB_RESET#","",	/* 30 - 34 */
 		"","GPIO_B_3","GPIO_A_0","GPIO_B_2","GPIO_C_0",
 		"","GPIO_C_1","","","",				/* 40 - 44 */
 		"","","","","",
@@ -262,14 +285,13 @@
 	clock-frequency = <400000>;
 
 	rv3028: rtc@52 {
-		backup-switchover-dsm;
 		#clock-cells = <0>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&mcu_rtc_pins_default>;
 		compatible = "microcrystal,rv3028";
 		reg = <0x52>;
-		// interrupts-extended = <&mcu_gpio0 23 GPIO_ACTIVE_LOW>;
-		// wakeup-source;
+		interrupts-extended = <&mcu_gpio0 23 IRQ_TYPE_EDGE_FALLING>;
+		wakeup-source;
 	};
 
 	tps65219: pmic@30 {
@@ -387,9 +409,10 @@
 };
 
 &main_pmx0 {
-	mypruicssm0ecap1_pins_default: mypruicssm0ecap1-default-pins {
+	main_bt_gpio_pins_default: main-bt-gpio-default-pins {
 		pinctrl-single,pins = <
-			AM62X_IOPAD(0x00a4, PIN_INPUT, 1) /* PWM_0 (M22) GPMC0_DIR.PR0_ECAP0_IN_APWM_OUT */
+			AM62X_IOPAD(0x00ac, PIN_INPUT, 7) /* BT_HOST_WAKE (L21) GPMC0_CSn1.GPIO0_42 */
+			AM62X_IOPAD(0x0058, PIN_OUTPUT, 7) /* W_DISABLE2# (R23) GPMC0_AD7.GPIO0_22 */
 		>;
 	};
 
@@ -471,9 +494,10 @@
 			AM62X_IOPAD(0x0120, PIN_INPUT, 0) /* (C24) MMC2_CMD */
 			AM62X_IOPAD(0x0118, PIN_OUTPUT, 0) /* (D25) MMC2_CLK */
 			AM62X_IOPAD(0x0114, PIN_INPUT, 0) /* (B24) MMC2_DAT0 */
-			AM62X_IOPAD(0x0110, PIN_INPUT_PULLUP, 0) /* (C25) MMC2_DAT1 */
-			AM62X_IOPAD(0x010c, PIN_INPUT_PULLUP, 0) /* (E23) MMC2_DAT2 */
-			AM62X_IOPAD(0x0108, PIN_INPUT_PULLUP, 0) /* (D24) MMC2_DAT3 */
+			AM62X_IOPAD(0x0110, PIN_INPUT, 0) /* (C25) MMC2_DAT1 */
+			AM62X_IOPAD(0x010c, PIN_INPUT, 0) /* (E23) MMC2_DAT2 */
+			AM62X_IOPAD(0x0108, PIN_INPUT, 0) /* (D24) MMC2_DAT3 */
+			AM62X_IOPAD(0x11c, PIN_INPUT, 0) /* (#N/A) MMC2_CLKB */
 		>;
 	};
 
@@ -565,12 +589,6 @@
 			AM62X_IOPAD(0x0f4, PIN_OUTPUT, 0) /* (AA21) VOUT0_DATA15 */
 			AM62X_IOPAD(0x05c, PIN_OUTPUT, 1) /* (R24) GPMC0_AD8.VOUT0_DATA16 */
 			AM62X_IOPAD(0x060, PIN_OUTPUT, 1) /* (R25) GPMC0_AD9.VOUT0_DATA17 */
-			AM62X_IOPAD(0x064, PIN_OUTPUT, 1) /* (T25) GPMC0_AD10.VOUT0_DATA18 */
-			AM62X_IOPAD(0x068, PIN_OUTPUT, 1) /* (R21) GPMC0_AD11.VOUT0_DATA19 */
-			AM62X_IOPAD(0x06c, PIN_OUTPUT, 1) /* (T22) GPMC0_AD12.VOUT0_DATA20 */
-			AM62X_IOPAD(0x070, PIN_OUTPUT, 1) /* (T24) GPMC0_AD13.VOUT0_DATA21 */
-			AM62X_IOPAD(0x074, PIN_OUTPUT, 1) /* (U25) GPMC0_AD14.VOUT0_DATA22 */
-			AM62X_IOPAD(0x078, PIN_OUTPUT, 1) /* (U24) GPMC0_AD15.VOUT0_DATA23 */
 		>;
 	};
 
@@ -625,6 +643,24 @@
 		>;
 	};
 
+	main_wifi_en_default: main-wifi-en-default-pins {
+		pinctrl-single,pins = <
+			AM62X_IOPAD(0x0050, PIN_OUTPUT, 7) /* W_DISABLE# (P22) GPMC0_AD5.GPIO0_20 */
+		>;
+	};
+
+	main_wifi_wake_default: main-wifi-wake-default-pins {
+		pinctrl-single,pins = <
+			AM62X_IOPAD(0x0040, PIN_INPUT, 7) /* SDIO_WAKE# (N23) GPMC0_AD1.GPIO0_16 */
+		>;
+	};
+
+	pmic_irq_pins_default: pmic-irq-default-pins {
+		pinctrl-single,pins = <
+			AM62X_IOPAD(0x01f4, PIN_INPUT, 0) /* (D16) EXTINTn */
+		>;
+	};
+
 	ospi0_pins_default: ospi0-default-pins {
 		bootph-all;
 		pinctrl-single,pins = <
@@ -648,8 +684,8 @@
 
 &main_spi0 { /* SPI_B */
 	status = "disabled";
-        pinctrl-names = "default";
-        pinctrl-0 = <&main_spi0_pins_default>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&main_spi0_pins_default>;
 };
 
 &main_uart0 {
@@ -664,22 +700,31 @@
 };
 
 &main_uart1 {
-	/* Main UART1 is used by TIFS firmware */
-	bootph-pre-ram;
-	status = "reserved";
+	/* ttyS3 BT (Also used by TIFS firmware) */
+	bootph-all;
+	status = "okay";
 	pinctrl-names = "default";
-	pinctrl-0 = <&main_uart1_pins_default>;
+	pinctrl-0 = <&main_uart1_pins_default>, <&main_bt_gpio_pins_default>;
+	uart-has-rtscts;
+	// interrupts-extended = <&main_gpio0 42 IRQ_TYPE_EDGE_FALLING>; /* BT_HOST_WAKE */
+
+	bluetooth {
+		compatible = "ti,cc33xx-bt";
+		cc33xx-supply = <&vcc_3v3_sys>;
+		shutdown-gpios = <&main_gpio0 22 GPIO_ACTIVE_HIGH>; /* W_DISABLE2# */
+		max-speed = <115200>;
+	};
 };
 
 &main_uart4 {
-	/* UART_D */
+	/* ttyS6 UART_D */
 	status = "disabled";
 	pinctrl-names = "default";
 	pinctrl-0 = <&main_uart4_pins_default>;
 };
 
 &main_uart6 {
-	/* UART_A */
+	/* ttyS4 UART_A */
 	status = "disabled";
 	pinctrl-names = "default";
 	pinctrl-0 = <&main_uart6_pins_default>;
@@ -705,18 +750,18 @@
 	rx-num-evt = <0>;
 };
 
-/* mcu_gpio0 and mcu_gpio_intr are reserved for mcu firmware usage */
+/* mcu_gpio0 and mcu_gpio_intr are normally reserved for mcu firmware usage */
 &mcu_gpio0 {
-	status = "reserved";
+	status = "okay";
 	gpio-line-names = "","","","","",                       /* 0 - 4 */
 		"","","","","",
 		"","GPIO_B_1","GPIO_B_0","","",			/* 10 - 14 */
-		"","","GPIO_A_4","GPIO_A_5","GPIO_B_4",
+		"","USB_A_ID","GPIO_A_4","GPIO_A_5","GPIO_B_4",
 		"GPIO_B_5","","","rv3028_int";			/* 20 - 23 */
 };
 
 &mcu_gpio_intr {
-	status = "reserved";
+	status = "okay";
 };
 
 &mcu_m4fss {
@@ -733,13 +778,6 @@
 };
 
 &mcu_pmx0 {
-
-	pmic_irq_pins_default: pmic-irq-default-pins {
-		pinctrl-single,pins = <
-			AM62X_IOPAD(0x01f4, PIN_INPUT, 0) /* (D16) EXTINTn */
-		>;
-	};
-
 	wkup_uart0_pins_default: wkup-uart0-default-pins {
 		bootph-pre-ram;
 		pinctrl-single,pins = <
@@ -759,7 +797,7 @@
 
 	mcu_rtc_pins_default: mcu-rtc-default-pins {
 		pinctrl-single,pins = <
-			AM62X_MCU_IOPAD(0x0084, PIN_INPUT, 7) /* RTC_INT (A12) WKUP_CLKOUT0.MCU_GPIO0_23 */
+			AM62X_MCU_IOPAD(0x0084, PIN_INPUT_PULLUP, 7) /* RTC_INT (A12) WKUP_CLKOUT0.MCU_GPIO0_23 */
 		>;
 	};
 
@@ -771,10 +809,16 @@
 			AM62X_MCU_IOPAD(0x0018, PIN_OUTPUT, 0) /* (A5) MCU_UART0_TXD */
 		>;
 	};
+
+	pinctrl_mcu_usb0: mcu-usb0-default-pins {
+		pinctrl-single,pins = <
+			AM62X_MCU_IOPAD(0x0040, PIN_INPUT, 7) /* USB_A_ID (D4) MCU_MCAN1_RX.MCU_GPIO0_16 */
+		>;
+	};
 };
 
 &mcu_uart0 {
-	/* UART_B */
+	/* ttyS5 UART_B */
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_mcu_uart0>;
 	status = "disabled";
@@ -805,7 +849,24 @@
 &sdhci2 { /* SDIO_B  WIFI */
 	status = "okay";
 	pinctrl-names = "default";
-	pinctrl-0 = <&main_mmc2_pins_default>;
+	pinctrl-0 = <&main_mmc2_pins_default>, <&main_wifi_wake_default>;
+	vmmc-supply = <&vcc_3v3_sys>;
+	vqmmc-supply = <&vcc_1v8_sys>;
+	mmc-pwrseq = <&wifi_pwrseq>; /* W_DISABLE# */
+	non-removable;
+	ti,fails-without-test-cd;
+	cap-power-off-card;
+	keep-power-in-suspend;
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	wlcore: wlcore@2 {
+		compatible = "ti,cc33xx";
+		reg = <2>;
+
+		/* To use in-band SDIO interrupts remove the following line */
+		interrupts-extended = <&main_gpio0 16 IRQ_TYPE_EDGE_RISING>; /* SDIO_WAKE# */
+	};
 };
 
 #define K3_TS_OFFSET(pa, val)	(0x4+(pa)*4) (0x10000 | val)
@@ -835,13 +896,20 @@
 	ti,vbus-divider;
 };
 
-&usb0 {
+&usb0 { /* USB_A */
 	bootph-all;
 	#address-cells = <1>;
 	#size-cells = <0>;
 	dr_mode = "otg";
 	pinctrl-names = "default";
-	pinctrl-0 = <&main_usb0_pins_default>;
+	pinctrl-0 = <&main_usb0_pins_default>,<&pinctrl_mcu_usb0>;
+	usb-role-switch;
+
+	connector {
+		compatible = "gpio-usb-b-connector", "usb-b-connector";
+		type = "micro";
+		id-gpios = <&mcu_gpio0 16 GPIO_ACTIVE_HIGH>;
+	};
 };
 
 &usb1 {

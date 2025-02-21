@@ -7,6 +7,8 @@
 /dts-v1/;
 
 #include <dt-bindings/leds/common.h>
+#include <dt-bindings/input/linux-event-codes.h>
+#include <dt-bindings/interrupt-controller/irq.h>
 #include "k3-am625-carbon-som.dtsi"
 
 / {
@@ -28,53 +30,89 @@
 		gpio = <&main_gpio0 18 GPIO_ACTIVE_HIGH>;
 	};
 
-#if 0
-	tlv320_mclk: clk-0 {
-		#clock-cells = <0>;
-		compatible = "fixed-clock";
-		clock-frequency = <12288000>;
+	vdd_3v3: regulator-u4-sw2 {
+		/* output of U4 */
+		bootph-all;
+		compatible = "regulator-fixed";
+		regulator-name = "vdd_3v3";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-always-on;
+		regulator-boot-on;
+	};
+
+	vdd_1v8: regulator-u4-sw3 {
+		/* output of U4 */
+		bootph-all;
+		compatible = "regulator-fixed";
+		regulator-name = "vdd_1v8";
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+		regulator-always-on;
+		regulator-boot-on;
+	};
+
+	vdd_aud_3v3: regulator-aud-pwr {
+		compatible = "regulator-fixed";
+		regulator-name = "vdd_aud_3v3";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		enable-active-high;
+		gpio = <&exp1 8 GPIO_ACTIVE_HIGH>;
 	};
 
 	codec_audio: sound {
 		compatible = "simple-audio-card";
-		simple-audio-card,name = "AM62x-SKEVM";
-		simple-audio-card,widgets =
-			"Headphone",	"Headphone Jack",
-			"Line",		"Line In",
-			"Microphone",	"Microphone Jack";
-		simple-audio-card,routing =
-			"Headphone Jack",	"HPLOUT",
-			"Headphone Jack",	"HPROUT",
-			"LINE1L",		"Line In",
-			"LINE1R",		"Line In",
-			"MIC3R",		"Microphone Jack",
-			"Microphone Jack",	"Mic Bias";
-		simple-audio-card,format = "dsp_b";
-		simple-audio-card,bitclock-master = <&sound_master>;
-		simple-audio-card,frame-master = <&sound_master>;
-		simple-audio-card,bitclock-inversion;
-
-		simple-audio-card,cpu {
-			sound-dai = <&mcasp1>;
-		};
-
-		sound_master: simple-audio-card,codec {
-			sound-dai = <&tlv320aic3106>;
-			clocks = <&tlv320_mclk>;
-		};
-	};
-#endif
-
-#if 0
-	backlight: backlight {
-		brightness-levels = <0 1 2 3 4 5 6 7 8 9 10>;
-		compatible = "pwm-backlight";
-		default-brightness-level = <8>;
-		display = <&lcdif>;
-		pwms = <&epwm1 0 30000 0>; /* 3.3 KHz */
 		status = "okay";
+
+		simple-audio-card,bitclock-master = <&dailink0_master>;
+		simple-audio-card,frame-master = <&dailink0_master>;
+
+		simple-audio-card,name = "ti,tac5x1x-soundcard";
+		simple-audio-card,format = "i2s";
+
+		simple-audio-card,widgets =
+			"Headphone", "Headphone Jack",
+			"Line",      "Line In",
+			"Line",      "Line Out";
+
+		simple-audio-card,routing =
+			"Headphone Jack", "OUT1",
+			"Headphone Jack", "OUT2",
+			"AIN1", "Line In",
+			"AIN2", "Line In",
+			"Line Out", "OUT1",
+			"Line Out", "OUT2";
+
+		simple-audio-card,aux-devs = <&headset>;
+
+		dailink0_master: simple-audio-card,cpu {
+			sound-dai = <&mcasp1>;
+			bitclock-master;
+			frame-master;
+			system-clock-direction-out;
+		};
+
+		simple-audio-card,codec {
+			sound-dai = <&tac5112>;
+		};
 	};
-#endif
+
+	audio_volume {
+		compatible = "gpio-keys";
+
+		volume-up {
+			label = "Volume Up";
+			gpios = <&exp2 4 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+			linux,code = <KEY_VOLUMEUP>;
+		};
+
+		volume-down {
+			label = "Volume Down";
+			gpios = <&exp2 5 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+			linux,code = <KEY_VOLUMEDOWN>;
+		};
+	};
 
 	leds {
 		compatible = "pwm-leds";
@@ -97,6 +135,8 @@
 			pwms = <&epwm1 1 30000 0>; /* 3.3 KHz */
 		};
 
+#if 0
+		/* disable cam_mck before enabling this */
 		test_cam_mck: cam-mck {
 			function = LED_FUNCTION_STATUS;
 			label = "CAM_MCK";
@@ -104,25 +144,40 @@
 			max-brightness = <248>;
 			pwms = <&ecap2 0 50 0>; /* 1 / 50 ns = 20 MHz */
 		};
+#endif
+	};
+
+	gpio-leds {
+		compatible = "gpio-leds";
+
+		led-0 {
+			pinctrl-names = "default";
+			pinctrl-0 = <&main_led_gpio_default>;
+			gpios = <&main_gpio0 13 GPIO_ACTIVE_HIGH>;
+			linux,default-trigger = "heartbeat";
+			function = LED_FUNCTION_HEARTBEAT;
+			label = "LED10";
+			default-state = "on";
+		};
 	};
 
 	transceiver1: can-phy0 {
 		compatible = "ti,tcan1042";
 		#phy-cells = <0>;
 		max-bitrate = <5000000>;
-		standby-gpios = <&exp2 2 GPIO_ACTIVE_HIGH>; /* TCAN1046 STB is active HIGH */
+		standby-gpios = <&exp1 2 GPIO_ACTIVE_HIGH>; /* TCAN1046 STB */
 	};
 
 	transceiver2: can-phy1 {
 		compatible = "ti,tcan1042";
 		#phy-cells = <0>;
 		max-bitrate = <5000000>;
-		standby-gpios = <&exp2 4 GPIO_ACTIVE_HIGH>; /* TCAN1046 STB is active HIGH */
+		standby-gpios = <&exp1 3 GPIO_ACTIVE_HIGH>; /* TCAN1046 STB */
 	};
 };
 
 &cam_mck {
-//	status = "okay"; /* Remove test_cam_mck before enabling this */
+	status = "okay";
 };
 
 &cpsw3g_mdio {
@@ -141,8 +196,6 @@
 		ti,tx-internal-delay = <DP83867_RGMIIDCTL_2_00_NS>;
 		ti,fifo-depth = <DP83867_PHYCR_FIFO_DEPTH_4_B_NIB>;
 		ti,clk-output-sel = <DP83867_CLK_O_SEL_OFF>;
-		// ti,max-output-impedance;
-		//ti,min-output-impedance;
 	};
 
 	cpsw3g_phy1: ethernet-phy@1 {
@@ -158,8 +211,6 @@
 		ti,tx-internal-delay = <DP83867_RGMIIDCTL_2_00_NS>;
 		ti,fifo-depth = <DP83867_PHYCR_FIFO_DEPTH_4_B_NIB>;
 		ti,clk-output-sel = <DP83867_CLK_O_SEL_OFF>;
-		// ti,max-output-impedance;
-		//ti,min-output-impedance;
 	};
 };
 
@@ -175,21 +226,17 @@
 &main_i2c1 { /* I2C_A */
 	status = "okay";
 
-// TODO 
-// PMIC X 2 on carrier, usb-c PM, U9 boost ctrl,
-// charger, Audio codec, Audio headset ctrl
-// 0x60 ?? TI, TPS65263RHBR
-// 0x69 TI, TPS65400QRGZTQ1
-
 	power-sensor-5v@40 {
-		compatible = "ti,ina231"; /* TI, INA232AIDDFR */
+		compatible = "ti,ina232"; /* TI, INA232AIDDFR */
 		reg = <0x40>;
+		vs-supply = <&vdd_3v3>;
 		shunt-resistor = <33000>; /* 0.033 Ohms */
 	};
 
 	power-sensor-3v3@41 {
-		compatible = "ti,ina231"; /* TI, INA232AIDDFR */
+		compatible = "ti,ina232"; /* TI, INA232AIDDFR */
 		reg = <0x41>;
+		vs-supply = <&vdd_3v3>;
 		shunt-resistor = <33000>; /* 0.033 Ohms */
 	};
 
@@ -197,11 +244,12 @@
 		/* U53 Giantec, GT24C256C-2GLI-TR */
 		compatible = "atmel,24c256";
 		reg = <0x54>;
+		vcc-supply = <&vdd_1v8>;
 	};
 
 	exp1: gpio@74 {
 		compatible = "ti,tca9539";
-		// TODO from U4 PMIC vcc-supply = <&vcc_1v8>;
+		vcc-supply = <&vdd_1v8>;
 		reg = <0x74>;
 		#gpio-cells = <2>;
 		gpio-controller;
@@ -215,17 +263,18 @@
 			"SDIO_A_SEL", "";
 
 		/* Force SDIO_A_SEL output-low for SDCARD, high for M.2 */
-		sdio-a-sel-hog {
+		sdio_a_sel_hog: sdio-a-sel-hog {
 			/* SDIO_A_SEL U51 P10 */
 			gpio-hog;
-			gpios = <14 GPIO_ACTIVE_HIGH>;
+			gpios = <&exp1 14 GPIO_ACTIVE_HIGH>;
 			output-low;
 			line-name = "SDIO_A_SEL_SDCARD";
 		};
 	};
 
 	exp2: gpio@77 {
-		compatible = "ti,tca9539";
+		compatible = "ti,tcal9539";
+		vcc-supply = <&vdd_1v8>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&main_exp2_pins_default>;
 		reg = <0x77>;
@@ -245,22 +294,38 @@
 			"RGB_INT", "RGB_HDMI_HPD";
 	};
 
-
-// PMIC TI, TPS65400QRGZTQ1 0x69 Linux driver ??
-
-#if 0
-	tlv320aic3106: audio-codec@1b {
+	tac5112: audio-codec@51 {
+		/* U19, TI, XTAC5112IRGER */
 		#sound-dai-cells = <0>;
-		compatible = "ti,tlv320aic3106";
-		reg = <0x1b>;
-		ai3x-micbias-vg = <1>;	/* 2.0V */
+		compatible = "ti,tac5112";
+		reg = <0x51>;
 
-		/* Regulators */
-		AVDD-supply = <&vcc_3v3_sys>;
-		IOVDD-supply = <&vcc_3v3_sys>;
-		DRVDD-supply = <&vcc_3v3_sys>;
+		ti,vref = <0>;  /* 2.75V */
+		ti,micbias-vg = <0>; /* same as Vref */
+		ti,gpios-func = <0>, <0>, <0>; /* GPIOx - Disable */
+		ti,gpi1-func = <0>; /* TAC5X1X_GPIO_DISABLE */
+
+		ti,gpios-drive = <0>, <0>, <0>; /* Hi-Z Output */
+		ti,gpa-gpio = <0>; /* GPA using GPIO1 is disabled */
+		ti,gpa-threshold = <75>, <186>; /* GPA Low and High threshold Values */
+
+		avdd-supply = <&vdd_aud_3v3>;
+		iovdd-supply = <&vdd_1v8>;
 	};
-#endif
+
+	headset: ts3a227e@3b {
+		/* U20, TI, TS3A227ERVAR */
+		compatible = "ti,ts3a227e";
+		reg = <0x3b>;
+
+		interrupts-extended = <&exp2 0 IRQ_TYPE_EDGE_FALLING>; /* ACD_nINT */
+		ti,micbias = <6>; /* 2.7V, must match mic bias from codec */
+	};
+
+};
+
+&mcasp1 {
+	status = "okay";
 };
 
 &main_i2c2 { /* I2C_B / I2C_B_MCU / J 25 */
@@ -277,8 +342,7 @@
 	i2c-mux@73 {
 		compatible = "nxp,pca9546"; /* U34 TCA9546APWR */
 		reg = <0x73>;
-		/* No reset reset-gpios = <&gpio1 8 GPIO_ACTIVE_LOW>; */
-		//vdd-supply = <&p3v3>;
+		vdd-supply = <&vdd_1v8>;
 		#address-cells = <1>;
 		#size-cells = <0>;
 
@@ -330,8 +394,14 @@
 			AM62X_IOPAD(0x0068, PIN_INPUT, 7) /* GPIO_C_6 (R21) GPMC0_AD11.GPIO0_26 */
 			AM62X_IOPAD(0x0074, PIN_INPUT, 7) /* GPIO_C_7 (U25) GPMC0_AD14.GPIO0_29 */
 			AM62X_IOPAD(0x0078, PIN_INPUT, 7) /* GPIO_B_6 (U24) GPMC0_AD15.GPIO0_30 */
-			AM62X_IOPAD(0x0098, PIN_INPUT, 7) /* GPIO_A_0 (U23) GPMC0_WAIT0.GPIO0_37 */
 			AM62X_IOPAD(0x009c, PIN_INPUT, 7) /* GPIO_B_2 (V25) GPMC0_WAIT1.GPIO0_38 */
+			AM62X_IOPAD(0x0088, PIN_INPUT, 7) /* RGB_RESET# (L24) GPMC0_OEn_REn.GPIO0_33 */
+		>;
+	};
+
+	main_led_gpio_default: main-gpio-led-default-pins {
+		pinctrl-single,pins = <
+			AM62X_IOPAD(0x0034, PIN_INPUT, 7) /* (H21) OSPI0_CSn2.GPIO0_13 */
 		>;
 	};
 
@@ -351,21 +421,6 @@
 		>;
 	};
 
-	main_spia_pins_default: spia-default-pins {
-		bootph-all;
-		pinctrl-single,pins = <
-			AM62X_IOPAD(0x00c, PIN_INPUT, 0) /* SPI_A_SDI (E25) OSPI0_D0 */
-			AM62X_IOPAD(0x010, PIN_OUTPUT, 0) /* SPI_A_SDO (G24) OSPI0_D1 */
-
-			AM62X_IOPAD(0x02c, PIN_OUTPUT, 0) /* SPI_A_CS0# (F23) OSPI0_CSn0 */
-			AM62X_IOPAD(0x030, PIN_OUTPUT, 0) /* SPI_A_CS0# (G21) OSPI0_CSn1 */
-			AM62X_IOPAD(0x000, PIN_OUTPUT, 0) /* SPI_A_SCK (H24) OSPI0_CLK */
-
-			AM62X_IOPAD(0x014, PIN_INPUT, 7) /* SPI_A_/WP_ (F25) OSPI0_D2.GPIO0_5 */
-			AM62X_IOPAD(0x018, PIN_INPUT, 7) /* SPI_A_/HOLD (F24) OSPI0_D3.GPIO0_6 */
-		>;
-	};
-
 	main_vdd_sdio_a_gpio: main-vdd-sdio-a-default-pins {
 		bootph-all;
 		pinctrl-single,pins = <
@@ -376,6 +431,12 @@
 
 &main_spi0 { /* SPI_B */
 	status = "okay";
+
+	spidev@0 {
+		compatible = "rohm,dh2228fv";
+		spi-max-frequency = <24000000>;
+		reg = <0>;
+	};
 };
 
 &main_uart4 { /* UART_D */
@@ -404,10 +465,55 @@
 	status = "okay";
 };
 
-&ospi0 { /* SPI_A Used as a normal SPI */
+&ospi0 { /* SPI_A Used as a qSPI */
 	status = "okay";
-	pinctrl-names = "default";
-	pinctrl-0 = <&main_spia_pins_default>;
+
+	flash@0 {
+		compatible = "winbond,w25q64jwz", "jedec,spi-nor";
+		reg = <0>;
+		spi-rx-bus-width = <4>;
+		spi-tx-bus-width = <4>;
+		spi-max-frequency = <25000000>;
+		cdns,tshsl-ns = <60>;
+		cdns,tsd2d-ns = <60>;
+		cdns,tchsh-ns = <60>;
+		cdns,tslch-ns = <60>;
+		cdns,read-delay = <4>;
+
+		partitions {
+			bootph-all;
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			/* TODO Define usage / partitions */
+			partition@0 {
+				label = "qspi.part0";
+				reg = <0x0 0x80000>;
+			};
+
+			partition@80000 {
+				label = "qspi.part1";
+				reg = <0x80000 0x200000>;
+			};
+
+			partition@280000 {
+				label = "qspi.part2";
+				reg = <0x280000 0x400000>;
+			};
+
+			partition@680000 {
+				label = "qspi.part3";
+				reg = <0x680000 0x40000>;
+			};
+
+			partition@6c0000 {
+				label = "qspi.part4";
+				reg = <0x6c0000 0x40000>;
+			};
+
+		};
+	};
 };
 
 &sdhci1 { /* SDIO_A uSD / M.2_SDIO */
@@ -415,20 +521,10 @@
 	vmmc-supply = <&vdd_mmc1>; /* SDIO_A_PWR_EN */
 	vqmmc-supply = <&vdd_sd>; /* VSEL_SD */
 	disable-wp; // MMC1_SDWP is just pulled down, so lets not use this.
-
-	/delete-property/ ti,otap-del-sel-sdr104; // This one is failing
-
-	ti,driver-strength-ohm = <50>;
 };
-
-#if 0
-&tlv320aic3106 {
-	DVDD-supply = <&vcc_1v8>;
-};
-#endif
 
 &wkup_i2c0 { /* I2C_C */
-	status = "disabled";		/* TODO */
+	status = "okay";		/* TODO HW changes */
 	pinctrl-names = "default";
 	pinctrl-0 = <&wkupi2c1_pins_default>;
 	clock-frequency = <100000>;
@@ -436,8 +532,7 @@
 	i2c-mux@72 {
 		compatible = "nxp,pca9546"; /* U34 TCA9546APWR */
 		reg = <0x72>;
-		/* No reset reset-gpios = <&gpio1 8 GPIO_ACTIVE_LOW>; */
-		//vdd-supply = <&p3v3>;
+		vdd-supply = <&vdd_1v8>;
 		#address-cells = <1>;
 		#size-cells = <0>;
 
