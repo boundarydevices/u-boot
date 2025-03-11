@@ -76,6 +76,11 @@ config TARGET_IMX93_9X9_QSB
 	select IMX93
 	select IMX9_LPDDR4X
 
+config TARGET_IMX93_BDX
+	bool "imx93_bdx"
+	select BINMAN
+	select IMX93
+
 config TARGET_IMX93_NITROGEN_SMARC
 	bool "imx93_nitrogen_smarc"
 	select BINMAN
@@ -105,6 +110,7 @@ config TARGET_IMX95_NITROGEN_SMARC
 endchoice
 
 source "board/boundary/imx91_nitrogen_smarc/Kconfig"
+source "board/boundary/imx93_bdx/Kconfig"
 source "board/boundary/imx93_nitrogen_smarc/Kconfig"
 source "board/boundary/imx93_nvc/Kconfig"
 source "board/boundary/imx95_nitrogen_smarc/Kconfig"

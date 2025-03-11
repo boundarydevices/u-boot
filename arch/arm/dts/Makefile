@@ -1211,6 +1211,7 @@ dtb-$(CONFIG_ARCH_IMX9) += \
 	imx95-nitrogen-smarc.dtb \
 
 dtb-$(CONFIG_ARCH_IMX9) += \
+	imx93-bdx.dtb \
 	imx93-nvc.dtb \
 
 dtb-$(CONFIG_ARCH_IMXRT) += imxrt1050-evk.dtb \
