@@ -1,0 +1,6 @@
+MT8390 Tungsten700 SMARC module from Ezurio
+M:	Gary Bisson <gary.bisson@ezurio.com>
+S:	Maintained
+F:	arch/arm/dts/mt8390-tungsten-smarc.dts
+F:	board/mediatek/mt8390_tungsten/
+F:	configs/mt8390_tungsten_defconfig

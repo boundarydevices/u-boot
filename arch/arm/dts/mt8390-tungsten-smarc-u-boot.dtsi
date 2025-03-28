@@ -1,0 +1,30 @@
+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
+/*
+ * Copyright (c) 2025 Ezurio
+ */
+
+#include "mt8188-u-boot.dtsi"
+
+/ {
+        memory@40000000 {
+                bootph-pre-ram;
+        };
+};
+
+&usb {
+	status = "okay";
+};
+
+&ssusb {
+	mediatek,force-vbus;
+	maximum-speed = "high-speed";
+	dr_mode = "peripheral";
+	status = "okay";
+};
+
+&xhci1 {
+	pinctrl-0 = <&usbotg_pins>;
+	pinctrl-names = "default";
+	vusb33-supply = <&VDD_3V3>;
+	vbus-supply = <&reg_usb_otg_vbus>;
+};
