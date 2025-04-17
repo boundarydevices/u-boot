@@ -1,0 +1,46 @@
+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
+/*
+ * Copyright (C) 2025 Ezurio
+ */
+/dts-v1/;
+#include "mt8188.dtsi"
+#include "mt83x0-tungsten-smarc.dtsi"
+
+/ {
+	model = "Ezurio Tungsten510 SMARC (MT8370)";
+	compatible = "ezurio,mt8370-tungsten-smarc", "mediatek,mt8370",
+		     "mediatek,mt8188";
+};
+
+/* MT8370 has only 4 A55 */
+/delete-node/ &cpu4;
+/delete-node/ &cpu5;
+/delete-node/ &{/cpus/cpu-map/cluster0/core6};
+/delete-node/ &{/cpus/cpu-map/cluster0/core7};
+
+&{/cpus/cpu-map/cluster0} {
+	core4 {
+		cpu = <&cpu6>;
+	};
+
+	core5 {
+		cpu = <&cpu7>;
+	};
+};
+
+&ppi_cluster0 {
+	affinity = <&cpu0 &cpu1 &cpu2 &cpu3>;
+};
+
+&ppi_cluster1 {
+	affinity = <&cpu6 &cpu7>;
+};
+
+/* MT8370 A78 have a reduced frequency */
+&cpu6 {
+	clock-frequency = <2000000000>;
+};
+
+&cpu7 {
+	clock-frequency = <2000000000>;
+};
