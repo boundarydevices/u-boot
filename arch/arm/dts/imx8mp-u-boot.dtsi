@@ -180,7 +180,7 @@
 					entry = <0x970000>;
 
 					atf_blob: atf-blob {
-						filename = "bl31.bin";
+						filename = "bl31-iMX8MP.bin";
 						type = "atf-bl31";
 					};
 				};
