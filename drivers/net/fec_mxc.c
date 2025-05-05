@@ -995,6 +995,12 @@ static void fec_free_descs(struct fec_priv *fec)
 	}
 	free(fec->rbd_base);
 	free(fec->tbd_base);
+
+#if CONFIG_IS_ENABLED(DM_GPIO)
+	if (dm_gpio_is_valid(&fec->phy_reset_gpio)) {
+		dm_gpio_free(NULL, &fec->phy_reset_gpio);
+	}
+#endif
 }
 
 struct mii_dev *fec_get_miibus(ulong base_addr, int dev_id)
