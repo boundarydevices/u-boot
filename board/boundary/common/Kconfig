@@ -1,0 +1,4 @@
+config NITROGEN_COMMON
+        bool "Enable Nitrogen common functions"
+	default y if TARGET_IMX8MP_NITROGEN_SMARC
+
