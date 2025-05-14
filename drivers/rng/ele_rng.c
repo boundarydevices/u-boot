@@ -6,6 +6,8 @@
 #include <rng.h>
 #include <linux/kernel.h>
 #include <asm/mach-imx/ele_api.h>
+#include <malloc.h>
+#include <memalign.h>
 
 U_BOOT_DRVINFO(ele_rng) = {
 	.name = "ele-rng",
