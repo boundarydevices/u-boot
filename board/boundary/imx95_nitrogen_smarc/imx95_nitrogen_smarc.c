@@ -173,7 +173,6 @@ int board_phys_sdram_size(phys_size_t *size)
 void board_quiesce_devices(void)
 {
 	int ret;
-	struct uclass *uc_dev;
 
 	ret = imx9_scmi_power_domain_enable(IMX95_PD_HSIO_TOP, false);
 	if (ret) {
@@ -186,12 +185,6 @@ void board_quiesce_devices(void)
 		printf("%s: Failed for NETC MIX: %d\n", __func__, ret);
 		return;
 	}
-
-	ret = uclass_get(UCLASS_SPI_FLASH, &uc_dev);
-	if (uc_dev)
-		ret = uclass_destroy(uc_dev);
-	if (ret)
-		printf("couldn't remove SPI FLASH devices\n");
 }
 
 #if IS_ENABLED(CONFIG_OF_BOARD_FIXUP)
