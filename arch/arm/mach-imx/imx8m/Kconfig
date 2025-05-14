@@ -326,6 +326,17 @@ config TARGET_IMX8MP_NITROGEN_SMARC
 	select ARCH_MISC_INIT
 	select SPL_CRYPTO if SPL
 
+config TARGET_IMX8MP_NITROGEN_SOM
+	bool "imx8mp nitrogen som board"
+	select BINMAN
+	select IMX8MP
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
+	select FSL_CAAM
+	select FSL_BLOB
+	select ARCH_MISC_INIT
+	select SPL_CRYPTO if SPL
+
 config TARGET_IMX8MP_VENICE
 	bool "Support Gateworks Venice iMX8M Plus module"
 	select IMX8MP
@@ -464,6 +475,7 @@ source "board/beacon/imx8mm/Kconfig"
 source "board/beacon/imx8mn/Kconfig"
 source "board/beacon/imx8mp/Kconfig"
 source "board/boundary/imx8mp_nitrogen_smarc/Kconfig"
+source "board/boundary/nitrogen8mp/Kconfig"
 source "board/bsh/imx8mn_smm_s2/Kconfig"
 source "board/cloos/imx8mm_phg/Kconfig"
 source "board/compulab/imx8mm-cl-iot-gate/Kconfig"

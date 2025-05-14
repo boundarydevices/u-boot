@@ -1,0 +1,25 @@
+if TARGET_IMX8MP_NITROGEN_SOM
+
+config SYS_BOARD
+	default "nitrogen8mp"
+
+config SYS_CONFIG_NAME
+	default "nitrogen8mp"
+
+config NITROGEN_SMARC_DEFCONFIG
+	string "unknown"
+
+config SYS_VENDOR
+	default "boundary"
+
+config IMX8M_4G_LPDDR4
+	bool "imx8m 4GB memory size"
+
+config IMX8M_8G_LPDDR4
+	bool "imx8m 8GB memory size"
+
+config IMX_CONFIG
+	default "board/boundary/nitrogen8mp/imximage-8mp-lpddr4.cfg"
+
+source "board/boundary/common/Kconfig"
+endif

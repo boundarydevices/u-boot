@@ -1173,6 +1173,9 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
 	imx8mp-icore-mx8mp-edimm2.2.dtb \
 	imx8mp-msc-sm2s.dtb \
 	imx8mp-nitrogen_smarc.dtb \
+	imx8mp-nitrogen8mp.dtb \
+	imx8mp-nitrogen8mp-enc.dtb \
+	imx8mp-nitrogen8mp_r20-enc.dtb \
 	imx8mp-phyboard-pollux-rdk.dtb \
 	imx8mp-venice.dtb \
 	imx8mp-venice-gw71xx-2x.dtb \
