@@ -356,34 +356,10 @@ static int append_androidboot_args(char *args, uint32_t *len, void *fdt_addr)
 	}
 
 	if (!fdt_addr) {
-		sprintf(args_buf,
-			" androidboot.boot_device_root=mmcblk%d", mmc_map_to_kernel_blk(mmc_get_env_dev()));
-		strncat(args, args_buf, *len - strlen(args));
 	} else {
-		char mmcblk[30];
-		char *boot_device = NULL;
+#if defined(CONFIG_IMX8ULP) || defined(CONFIG_IMX95)
 		int offset = -1;
 
-		/* The boot device should locates at "/firmware/android/"boot_devices_mmcblkX" */
-		offset = fdt_path_offset(fdt_addr, "/firmware/android");
-		if (offset > 0) {
-			sprintf(mmcblk, "boot_devices_mmcblk%d", mmc_map_to_kernel_blk(mmc_get_env_dev()));
-			boot_device = (char *)fdt_getprop(fdt_addr, offset, mmcblk, NULL);
-			if (boot_device) {
-				sprintf(args_buf,
-					" androidboot.boot_devices=%s", boot_device);
-				strncat(args, args_buf, *len - strlen(args));
-			} else {
-				printf("failed to get boot device from device tree!\n");
-				return -1;
-			}
-		} else {
-			printf("failed to get boot device from device tree!\n");
-			return -1;
-		}
-
-#if defined(CONFIG_ANDROID_SUPPORT) || defined(CONFIG_ANDROID_AUTO_SUPPORT)
-#if defined(CONFIG_IMX8ULP) || defined(CONFIG_IMX95)
 		/* set the value of the /chosen/rng-seed property */
 		offset = fdt_path_offset(fdt_addr, "/chosen");
 		if (offset > 0) {
@@ -414,7 +390,6 @@ static int append_androidboot_args(char *args, uint32_t *len, void *fdt_addr)
 		} else {
 			printf("the device tree may not have the /chosen node\n");
 		}
-#endif
 #endif
 	}
 
@@ -570,7 +545,6 @@ int android_image_get_kernel(const void *hdr,
 			     const void *vendor_boot_img, int verify,
 			     ulong *os_data, ulong *os_len)
 {
-	u32 len;
 	struct andr_image_data img_data = {0};
 	u32 kernel_addr;
 	const struct legacy_img_hdr *ihdr;
@@ -594,54 +568,42 @@ int android_image_get_kernel(const void *hdr,
 	printf("Kernel load addr 0x%08x size %u KiB\n",
 	       kernel_addr, DIV_ROUND_UP(img_data.kernel_size, 1024));
 
-	char commandline[COMMANDLINE_LENGTH] = {0};
-	int offset;
-	char *bootargs = env_get("bootargs");
-
-	if (bootargs) {
-		if (strlen(bootargs) + 1 > sizeof(commandline)) {
-			printf("bootargs is too long!\n");
-			return -1;
-		}
-		else
-			strncpy(commandline, bootargs, sizeof(commandline) - 1);
-	} else {
-		offset = fdt_path_offset(gd->fdt_blob, "/chosen");
-		if (offset > 0) {
-			bootargs = (char *)fdt_getprop(gd->fdt_blob, offset,
-							"bootargs", NULL);
-			if (bootargs)
-				sprintf(commandline, "%s ", bootargs);
-		}
-
-		if (*img_data.kcmdline_extra) {
-			if (strlen((char *)img_data.kcmdline_extra) + 1 >
-				COMMANDLINE_LENGTH - strlen(commandline)) {
-				printf("cmdline in vendor_boot image is too long!\n");
-				return -1;
-			}
-			else
-				strncat(commandline, (char *)(img_data.kcmdline_extra), COMMANDLINE_LENGTH - strlen(commandline));
-		}
-
-		if (*img_data.kcmdline) {
-			if (strlen(img_data.kcmdline) + 1 >
-				COMMANDLINE_LENGTH - strlen(commandline)) {
-				printf("cmdline in bootimg is too long!\n");
-				return -1;
-			}
-			else
-				strncat(commandline, img_data.kcmdline, COMMANDLINE_LENGTH - strlen(commandline));
-		}
+	int len = 0;
+	if (*img_data.kcmdline) {
+		printf("Kernel command line: %s\n", img_data.kcmdline);
+		len += strlen(img_data.kcmdline);
 	}
 
-	append_kernel_cmdline(commandline);
-	len = COMMANDLINE_LENGTH - strlen(commandline);
-	if (append_androidboot_args(commandline, &len, NULL) < 0)
-		return -1;
+	if (img_data.kcmdline_extra) {
+		printf("Kernel extra command line: %s\n", img_data.kcmdline_extra);
+		len += strlen(img_data.kcmdline_extra);
+	}
 
-	debug("Kernel command line: %s\n", commandline);
-	env_set("bootargs", commandline);
+	char *bootargs = env_get("bootargs");
+	if (bootargs)
+		len += strlen(bootargs);
+
+	char *newbootargs = malloc(len + 2);
+	if (!newbootargs) {
+		puts("Error: malloc in android_image_get_kernel failed!\n");
+		return -ENOMEM;
+	}
+	*newbootargs = '\0';
+
+	if (bootargs) {
+		strcpy(newbootargs, bootargs);
+		strcat(newbootargs, " ");
+	}
+
+	if (*img_data.kcmdline)
+		strcat(newbootargs, img_data.kcmdline);
+
+	if (img_data.kcmdline_extra) {
+		strcat(newbootargs, " ");
+		strcat(newbootargs, img_data.kcmdline_extra);
+	}
+
+	env_set("bootargs", newbootargs);
 
 	if (os_data) {
 		if (image_get_magic(ihdr) == IH_MAGIC) {
@@ -656,7 +618,6 @@ int android_image_get_kernel(const void *hdr,
 		else
 			*os_len = img_data.kernel_size;
 	}
-
 	return 0;
 }
 
