@@ -186,20 +186,8 @@ int mmc_map_to_kernel_blk(int dev_no)
 
 int board_late_init(void)
 {
-	unsigned char mac_address[6];
-
-	imx_get_mac_from_fuse(0, mac_address);
-	if (is_valid_ethaddr(mac_address)) {
-		if (!env_get("serial#")) {
-			bd_setserialnumber(mac_address);
-		};
-		if (!env_get("eth1addr")) {
-			/* Get the second MAC address */
-			bd_incrementmacaddress(mac_address);
-			eth_env_set_enetaddr("eth1addr", mac_address);
-			printf("eth1addr: %s\n", env_get("eth1addr"));
-		};
-	}
+	if (!env_get("serial#"))
+		bd_setserialnumber();
 
 	return 0;
 }
