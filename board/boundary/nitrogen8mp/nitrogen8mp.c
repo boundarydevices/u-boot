@@ -32,12 +32,12 @@ DECLARE_GLOBAL_DATA_PTR;
 #define UART_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_FSEL1)
 #define WDOG_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_ODE | PAD_CTL_PUE | PAD_CTL_PE)
 
-static iomux_v3_cfg_t const uart_pads[] = {
+static const iomux_v3_cfg_t uart_pads[] = {
 	MX8MP_PAD_UART2_RXD__UART2_DCE_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
 	MX8MP_PAD_UART2_TXD__UART2_DCE_TX | MUX_PAD_CTRL(UART_PAD_CTRL),
 };
 
-static iomux_v3_cfg_t const wdog_pads[] = {
+static const iomux_v3_cfg_t wdog_pads[] = {
 	MX8MP_PAD_GPIO1_IO02__WDOG1_WDOG_B  | MUX_PAD_CTRL(WDOG_PAD_CTRL),
 };
 
@@ -80,11 +80,11 @@ int ft_board_setup(void *blob, struct bd_info *bd)
 
 #define USB_PHY_CTRL6			0xF0058
 
-#define HSIO_GPR_BASE                               (0x32F10000U)
-#define HSIO_GPR_REG_0                              (HSIO_GPR_BASE)
-#define HSIO_GPR_REG_0_USB_CLOCK_MODULE_EN_SHIFT    (1)
-#define HSIO_GPR_REG_0_USB_CLOCK_MODULE_EN          (0x1U << HSIO_GPR_REG_0_USB_CLOCK_MODULE_EN_SHIFT)
-
+#define HSIO_GPR_BASE					(0x32F10000U)
+#define HSIO_GPR_REG_0					(HSIO_GPR_BASE)
+#define HSIO_GPR_REG_0_USB_CLOCK_MODULE_EN_SHIFT	(1)
+#define HSIO_GPR_REG_0_USB_CLOCK_MODULE_EN \
+	(0x1U << HSIO_GPR_REG_0_USB_CLOCK_MODULE_EN_SHIFT)
 
 static struct dwc3_device dwc3_device_data = {
 #ifdef CONFIG_SPL_BUILD
@@ -106,39 +106,39 @@ int dm_usb_gadget_handle_interrupts(struct udevice *dev)
 
 static void dwc3_nxp_usb_phy_init(struct dwc3_device *dwc3)
 {
-	u32 RegData;
+	u32 regdata;
 
 	/* enable usb clock via hsio gpr */
-	RegData = readl(HSIO_GPR_REG_0);
-	RegData |= HSIO_GPR_REG_0_USB_CLOCK_MODULE_EN;
-	writel(RegData, HSIO_GPR_REG_0);
+	regdata = readl(HSIO_GPR_REG_0);
+	regdata |= HSIO_GPR_REG_0_USB_CLOCK_MODULE_EN;
+	writel(regdata, HSIO_GPR_REG_0);
 
 	/* USB3.0 PHY signal fsel for 100M ref */
-	RegData = readl(dwc3->base + USB_PHY_CTRL0);
-	RegData = (RegData & 0xfffff81f) | (0x2a<<5);
-	writel(RegData, dwc3->base + USB_PHY_CTRL0);
+	regdata = readl(dwc3->base + USB_PHY_CTRL0);
+	regdata = (regdata & 0xfffff81f) | (0x2a << 5);
+	writel(regdata, dwc3->base + USB_PHY_CTRL0);
 
-	RegData = readl(dwc3->base + USB_PHY_CTRL6);
-	RegData &= ~0x1;
-	writel(RegData, dwc3->base + USB_PHY_CTRL6);
+	regdata = readl(dwc3->base + USB_PHY_CTRL6);
+	regdata &= ~0x1;
+	writel(regdata, dwc3->base + USB_PHY_CTRL6);
 
-	RegData = readl(dwc3->base + USB_PHY_CTRL1);
-	RegData &= ~(USB_PHY_CTRL1_VDATSRCENB0 | USB_PHY_CTRL1_VDATDETENB0 |
+	regdata = readl(dwc3->base + USB_PHY_CTRL1);
+	regdata &= ~(USB_PHY_CTRL1_VDATSRCENB0 | USB_PHY_CTRL1_VDATDETENB0 |
 			USB_PHY_CTRL1_COMMONONN);
-	RegData |= USB_PHY_CTRL1_RESET | USB_PHY_CTRL1_ATERESET;
-	writel(RegData, dwc3->base + USB_PHY_CTRL1);
+	regdata |= USB_PHY_CTRL1_RESET | USB_PHY_CTRL1_ATERESET;
+	writel(regdata, dwc3->base + USB_PHY_CTRL1);
 
-	RegData = readl(dwc3->base + USB_PHY_CTRL0);
-	RegData |= USB_PHY_CTRL0_REF_SSP_EN;
-	writel(RegData, dwc3->base + USB_PHY_CTRL0);
+	regdata = readl(dwc3->base + USB_PHY_CTRL0);
+	regdata |= USB_PHY_CTRL0_REF_SSP_EN;
+	writel(regdata, dwc3->base + USB_PHY_CTRL0);
 
-	RegData = readl(dwc3->base + USB_PHY_CTRL2);
-	RegData |= USB_PHY_CTRL2_TXENABLEN0;
-	writel(RegData, dwc3->base + USB_PHY_CTRL2);
+	regdata = readl(dwc3->base + USB_PHY_CTRL2);
+	regdata |= USB_PHY_CTRL2_TXENABLEN0;
+	writel(regdata, dwc3->base + USB_PHY_CTRL2);
 
-	RegData = readl(dwc3->base + USB_PHY_CTRL1);
-	RegData &= ~(USB_PHY_CTRL1_RESET | USB_PHY_CTRL1_ATERESET);
-	writel(RegData, dwc3->base + USB_PHY_CTRL1);
+	regdata = readl(dwc3->base + USB_PHY_CTRL1);
+	regdata &= ~(USB_PHY_CTRL1_RESET | USB_PHY_CTRL1_ATERESET);
+	writel(regdata, dwc3->base + USB_PHY_CTRL1);
 }
 #endif
 
@@ -162,6 +162,7 @@ int board_usb_init(int index, enum usb_init_type init)
 int board_usb_cleanup(int index, enum usb_init_type init)
 {
 	int ret = 0;
+
 	if (index == 0 && init == USB_INIT_DEVICE) {
 		dwc3_uboot_exit(index);
 		imx8m_usb_power(index, false);
@@ -183,7 +184,7 @@ int board_init(void)
 
 int mmc_map_to_kernel_blk(int dev_no)
 {
-       return dev_no;
+	return dev_no;
 }
 
 int board_late_init(void)
@@ -212,6 +213,7 @@ bool is_power_key_pressed(void)
 unsigned long spl_mmc_get_uboot_raw_sector(struct mmc *mmc, unsigned long raw_sect)
 {
 	u32 boot_dev = spl_boot_device();
+
 	switch (boot_dev) {
 	case BOOT_DEVICE_MMC2:
 		return CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR - UBOOT_RAW_SECTOR_OFFSET;
