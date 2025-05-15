@@ -4,6 +4,6 @@
 #ifndef __NITROGEN_COMMON_H_
 #define __NITROGEN_COMMON_H_
 
-void bd_setserialnumber(unsigned char mac[6]);
+void bd_setserialnumber(void);
 void bd_incrementmacaddress(unsigned char mac[6]);
 #endif
