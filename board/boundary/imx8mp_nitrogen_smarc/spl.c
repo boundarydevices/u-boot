@@ -4,7 +4,6 @@
  *
  */
 
-#include <common.h>
 #include <hang.h>
 #include <init.h>
 #include <log.h>
@@ -61,7 +60,7 @@ void spl_dram_init(void)
 
 	ddr_init(ptiming);
 
-	dram_size = get_ram_size((long int *)CFG_SYS_SDRAM_BASE, (SZ_4G << 1));
+	dram_size = get_ram_size((long *)CFG_SYS_SDRAM_BASE, (SZ_4G << 1));
 	printf("DDRINFO: Size: ");
 	print_size(dram_size, "\n");
 }

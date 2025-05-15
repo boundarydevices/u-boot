@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0+
-/*
- * Copyright 2025 Ezurio
- */
+// Copyright 2025 Ezurio
 
 #include <efi_loader.h>
 #include <env.h>
@@ -32,12 +30,12 @@ DECLARE_GLOBAL_DATA_PTR;
 #define UART_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_FSEL1)
 #define WDOG_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_ODE | PAD_CTL_PUE | PAD_CTL_PE)
 
-static iomux_v3_cfg_t const uart_pads[] = {
+static const iomux_v3_cfg_t uart_pads[] = {
 	MX8MP_PAD_UART2_RXD__UART2_DCE_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
 	MX8MP_PAD_UART2_TXD__UART2_DCE_TX | MUX_PAD_CTRL(UART_PAD_CTRL),
 };
 
-static iomux_v3_cfg_t const wdog_pads[] = {
+static const iomux_v3_cfg_t wdog_pads[] = {
 	MX8MP_PAD_GPIO1_IO02__WDOG1_WDOG_B  | MUX_PAD_CTRL(WDOG_PAD_CTRL),
 };
 
@@ -85,7 +83,6 @@ int ft_board_setup(void *blob, struct bd_info *bd)
 #define HSIO_GPR_REG_0_USB_CLOCK_MODULE_EN_SHIFT    (1)
 #define HSIO_GPR_REG_0_USB_CLOCK_MODULE_EN          (0x1U << HSIO_GPR_REG_0_USB_CLOCK_MODULE_EN_SHIFT)
 
-
 static struct dwc3_device dwc3_device_data = {
 #ifdef CONFIG_SPL_BUILD
 	.maximum_speed = USB_SPEED_HIGH,
@@ -115,11 +112,11 @@ static void dwc3_nxp_usb_phy_init(struct dwc3_device *dwc3)
 
 	/* USB3.0 PHY signal fsel for 100M ref */
 	RegData = readl(dwc3->base + USB_PHY_CTRL0);
-	RegData = (RegData & 0xfffff81f) | (0x2a<<5);
+	RegData = (RegData & 0xfffff81f) | (0x2a << 5);
 	writel(RegData, dwc3->base + USB_PHY_CTRL0);
 
 	RegData = readl(dwc3->base + USB_PHY_CTRL6);
-	RegData &=~0x1;
+	RegData &=  ~0x1;
 	writel(RegData, dwc3->base + USB_PHY_CTRL6);
 
 	RegData = readl(dwc3->base + USB_PHY_CTRL1);
@@ -162,6 +159,7 @@ int board_usb_init(int index, enum usb_init_type init)
 int board_usb_cleanup(int index, enum usb_init_type init)
 {
 	int ret = 0;
+
 	if (index == 0 && init == USB_INIT_DEVICE) {
 		dwc3_uboot_exit(index);
 		imx8m_usb_power(index, false);
@@ -207,7 +205,8 @@ int board_late_init(void)
 }
 
 #ifdef CONFIG_ANDROID_SUPPORT
-bool is_power_key_pressed(void) {
+bool is_power_key_pressed(void)
+{
 	return (bool)(!!(readl(SNVS_HPSR) & (0x1 << 6)));
 }
 #endif
@@ -217,11 +216,12 @@ bool is_power_key_pressed(void) {
 unsigned long spl_mmc_get_uboot_raw_sector(struct mmc *mmc, unsigned long raw_sect)
 {
 	u32 boot_dev = spl_boot_device();
+
 	switch (boot_dev) {
-		case BOOT_DEVICE_MMC2:
-			return CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR - UBOOT_RAW_SECTOR_OFFSET;
-		default:
-			return CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR;
+	case BOOT_DEVICE_MMC2:
+		return CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR - UBOOT_RAW_SECTOR_OFFSET;
+	default:
+		return CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR;
 	}
 }
 #endif
