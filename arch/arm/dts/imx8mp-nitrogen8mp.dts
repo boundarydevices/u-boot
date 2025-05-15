@@ -273,7 +273,7 @@
 
 	pinctrl_i2c2_pca9546: i2c2-pca9546grp {
 		fsl,pins = <
-			MX8MP_IOMUXC_GPIO1_IO05__GPIO1_IO05        	0x100
+			MX8MP_IOMUXC_GPIO1_IO05__GPIO1_IO05		0x100
 		>;
 	};
 

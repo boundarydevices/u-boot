@@ -31,7 +31,6 @@
 #define CFG_MFG_ENV_SETTINGS \
 	CFG_MFG_ENV_SETTINGS_DEFAULT \
 	"initrd_addr=0x43800000\0" \
-	"initrd_high=0xffffffffffffffff\0" \
 	"emmc_dev=0\0"\
 	"sd_dev=1\0"
 
@@ -57,11 +56,10 @@
 	"fastboot_raw_partition_bootloader-env=0x1ff0 0x10 mmcpart 1\0" \
 	"fdt_addr=0x43000000\0"			\
 	"boot_fdt=try\0" \
-	"fdt_high=0xffffffffffffffff\0"		\
 	"boot_fit=no\0" \
 	"fdtfile=" CONFIG_DEFAULT_FDT_FILE "\0" \
 	"bootm_size=0x10000000\0" \
-	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
+	"mmcdev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
 	"mmcpart=1\0" \
 	"mmcroot=/dev/mmcblk1p2 rootwait rw\0" \
 	"mmcautodetect=yes\0" \
@@ -100,7 +98,8 @@
 			"echo WARN: Cannot load the DT; " \
 		"fi;\0" \
 	"net_upgradeu=dhcp " BD_RAM_SCRIPT " net_upgradeu.scr && source " BD_RAM_SCRIPT "\0" \
-	"otg_upgradeu=run usbnetwork; tftp " BD_RAM_SCRIPT " net_upgradeu.scr && source " BD_RAM_SCRIPT "\0" \
+	"otg_upgradeu=run usbnetwork; tftp " BD_RAM_SCRIPT \
+		" net_upgradeu.scr && source " BD_RAM_SCRIPT "\0" \
 	"upgradeu=setenv boot_scripts upgrade.scr; boot;" \
 		"echo Upgrade failed!; setenv boot_scripts boot.scr\0" \
 	"usbnet_devaddr=00:19:b8:00:00:02\0" \
@@ -121,7 +120,7 @@
 		   "fi; " \
 	   "fi;\0" \
 	"upgradeu=setenv boot_scripts upgrade.scr; boot;" \
-                "echo Upgrade failed!; setenv boot_scripts boot.scr;\0" \
+		"echo Upgrade failed!; setenv boot_scripts boot.scr;\0" \
 	"uboot_defconfig=" CONFIG_NITROGEN_SMARC_DEFCONFIG "\0"
 
 /* Link Definitions */
@@ -129,22 +128,20 @@
 #define CFG_SYS_INIT_RAM_ADDR	0x40000000
 #define CFG_SYS_INIT_RAM_SIZE	0x80000
 
-
 #define CFG_SYS_SDRAM_BASE		0x40000000
 
 #define PHYS_SDRAM			0x40000000
 
-#if defined (CONFIG_IMX8M_8G_LPDDR4)
+#if defined(CONFIG_IMX8M_8G_LPDDR4)
 #define PHYS_SDRAM_SIZE			SZ_4G
 #define PHYS_SDRAM_2_SIZE		SZ_4G
-#elif defined (CONFIG_IMX8M_4G_LPDDR4)
+#elif defined(CONFIG_IMX8M_4G_LPDDR4)
 #define PHYS_SDRAM_SIZE			SZ_4G
 #else
 #define PHYS_SDRAM_SIZE			SZ_2G
 #endif
 
 #define CFG_MXC_UART_BASE		UART2_BASE_ADDR
-
 
 #define CFG_SYS_FSL_USDHC_NUM	2
 
