@@ -119,7 +119,7 @@ static void dwc3_nxp_usb_phy_init(struct dwc3_device *dwc3)
 	writel(RegData, dwc3->base + USB_PHY_CTRL0);
 
 	RegData = readl(dwc3->base + USB_PHY_CTRL6);
-	RegData &=~0x1;
+	RegData &= ~0x1;
 	writel(RegData, dwc3->base + USB_PHY_CTRL6);
 
 	RegData = readl(dwc3->base + USB_PHY_CTRL1);
@@ -201,7 +201,8 @@ int board_late_init(void)
 }
 
 #ifdef CONFIG_ANDROID_SUPPORT
-bool is_power_key_pressed(void) {
+bool is_power_key_pressed(void)
+{
 	return (bool)(!!(readl(SNVS_HPSR) & (0x1 << 6)));
 }
 #endif
@@ -212,10 +213,10 @@ unsigned long spl_mmc_get_uboot_raw_sector(struct mmc *mmc, unsigned long raw_se
 {
 	u32 boot_dev = spl_boot_device();
 	switch (boot_dev) {
-		case BOOT_DEVICE_MMC2:
-			return CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR - UBOOT_RAW_SECTOR_OFFSET;
-		default:
-			return CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR;
+	case BOOT_DEVICE_MMC2:
+		return CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR - UBOOT_RAW_SECTOR_OFFSET;
+	default:
+		return CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR;
 	}
 }
 #endif
