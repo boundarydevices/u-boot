@@ -9,4 +9,5 @@ config SYS_VENDOR
 config SYS_CONFIG_NAME
 	default "imx95_nitrogen_smarc"
 
+source "board/boundary/common/Kconfig"
 endif

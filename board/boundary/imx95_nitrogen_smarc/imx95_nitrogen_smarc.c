@@ -23,6 +23,7 @@
 #include <i2c.h>
 #include <dm/uclass.h>
 #include <dm/uclass-internal.h>
+#include "../common/nitrogen_common.h"
 
 #ifdef CONFIG_SCMI_FIRMWARE
 #include <scmi_agent.h>
@@ -153,6 +154,10 @@ int board_late_init(void)
 #ifdef CONFIG_AHAB_BOOT
 	env_set("sec_boot", "yes");
 #endif
+
+	if (!env_get("serial#"))
+		bd_setserialnumber();
+
 	return 0;
 }
 
