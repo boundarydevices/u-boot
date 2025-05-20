@@ -6,8 +6,21 @@
 #include <net.h>
 #include <stdio.h>
 #include <vsprintf.h>
+#include "nitrogen_common.h"
 
-void bd_setserialnumber(void) {
+void bd_seteth1addr(void)
+{
+	unsigned char mac[8];
+
+	imx_get_mac_from_fuse(0, mac);
+	if (is_valid_ethaddr(mac)) {
+		bd_incrementmacaddress(mac);
+		eth_env_set_enetaddr("eth1addr", mac);
+	}
+}
+
+void bd_setserialnumber(void)
+{
 	char serialbuf[13];
 	unsigned char mac[8];
 
