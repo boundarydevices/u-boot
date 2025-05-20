@@ -103,39 +103,39 @@ int dm_usb_gadget_handle_interrupts(struct udevice *dev)
 
 static void dwc3_nxp_usb_phy_init(struct dwc3_device *dwc3)
 {
-	u32 RegData;
+	u32 regdata;
 
 	/* enable usb clock via hsio gpr */
-	RegData = readl(HSIO_GPR_REG_0);
-	RegData |= HSIO_GPR_REG_0_USB_CLOCK_MODULE_EN;
-	writel(RegData, HSIO_GPR_REG_0);
+	regdata = readl(HSIO_GPR_REG_0);
+	regdata |= HSIO_GPR_REG_0_USB_CLOCK_MODULE_EN;
+	writel(regdata, HSIO_GPR_REG_0);
 
 	/* USB3.0 PHY signal fsel for 100M ref */
-	RegData = readl(dwc3->base + USB_PHY_CTRL0);
-	RegData = (RegData & 0xfffff81f) | (0x2a << 5);
-	writel(RegData, dwc3->base + USB_PHY_CTRL0);
+	regdata = readl(dwc3->base + USB_PHY_CTRL0);
+	regdata = (regdata & 0xfffff81f) | (0x2a << 5);
+	writel(regdata, dwc3->base + USB_PHY_CTRL0);
 
-	RegData = readl(dwc3->base + USB_PHY_CTRL6);
-	RegData &=  ~0x1;
-	writel(RegData, dwc3->base + USB_PHY_CTRL6);
+	regdata = readl(dwc3->base + USB_PHY_CTRL6);
+	regdata &=  ~0x1;
+	writel(regdata, dwc3->base + USB_PHY_CTRL6);
 
-	RegData = readl(dwc3->base + USB_PHY_CTRL1);
-	RegData &= ~(USB_PHY_CTRL1_VDATSRCENB0 | USB_PHY_CTRL1_VDATDETENB0 |
+	regdata = readl(dwc3->base + USB_PHY_CTRL1);
+	regdata &= ~(USB_PHY_CTRL1_VDATSRCENB0 | USB_PHY_CTRL1_VDATDETENB0 |
 			USB_PHY_CTRL1_COMMONONN);
-	RegData |= USB_PHY_CTRL1_RESET | USB_PHY_CTRL1_ATERESET;
-	writel(RegData, dwc3->base + USB_PHY_CTRL1);
+	regdata |= USB_PHY_CTRL1_RESET | USB_PHY_CTRL1_ATERESET;
+	writel(regdata, dwc3->base + USB_PHY_CTRL1);
 
-	RegData = readl(dwc3->base + USB_PHY_CTRL0);
-	RegData |= USB_PHY_CTRL0_REF_SSP_EN;
-	writel(RegData, dwc3->base + USB_PHY_CTRL0);
+	regdata = readl(dwc3->base + USB_PHY_CTRL0);
+	regdata |= USB_PHY_CTRL0_REF_SSP_EN;
+	writel(regdata, dwc3->base + USB_PHY_CTRL0);
 
-	RegData = readl(dwc3->base + USB_PHY_CTRL2);
-	RegData |= USB_PHY_CTRL2_TXENABLEN0;
-	writel(RegData, dwc3->base + USB_PHY_CTRL2);
+	regdata = readl(dwc3->base + USB_PHY_CTRL2);
+	regdata |= USB_PHY_CTRL2_TXENABLEN0;
+	writel(regdata, dwc3->base + USB_PHY_CTRL2);
 
-	RegData = readl(dwc3->base + USB_PHY_CTRL1);
-	RegData &= ~(USB_PHY_CTRL1_RESET | USB_PHY_CTRL1_ATERESET);
-	writel(RegData, dwc3->base + USB_PHY_CTRL1);
+	regdata = readl(dwc3->base + USB_PHY_CTRL1);
+	regdata &= ~(USB_PHY_CTRL1_RESET | USB_PHY_CTRL1_ATERESET);
+	writel(regdata, dwc3->base + USB_PHY_CTRL1);
 }
 #endif
 
@@ -188,6 +188,9 @@ int board_late_init(void)
 {
 	if (!env_get("serial#"))
 		bd_setserialnumber();
+
+	if (!env_get("eth1addr"))
+		bd_seteth1addr();
 
 	return 0;
 }
