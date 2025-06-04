@@ -22,4 +22,5 @@ config IMX91_NITROGEN_SMARC_LPDDR4
 
 endchoice
 
+source "board/boundary/common/Kconfig"
 endif
