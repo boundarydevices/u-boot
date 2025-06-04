@@ -9,4 +9,5 @@ config SYS_VENDOR
 config SYS_CONFIG_NAME
 	default "imx8ulp_nitrogen_som"
 
+source "board/boundary/common/Kconfig"
 endif

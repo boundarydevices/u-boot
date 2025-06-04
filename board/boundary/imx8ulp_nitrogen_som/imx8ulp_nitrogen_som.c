@@ -15,6 +15,7 @@
 #include <asm/gpio.h>
 #include <power-domain.h>
 #include <dt-bindings/power/imx8ulp-power.h>
+#include "../common/nitrogen_common.h"
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -130,18 +131,8 @@ int board_late_init(void)
 	if (addr)
 		memset((void *)addr, 0, 0x400);
 
-	if (!env_get("serial#")) {
-		unsigned char mac_address[8];
-		char serialbuf[20];
-
-		imx_get_mac_from_fuse(0, mac_address);
-		snprintf(serialbuf, sizeof(serialbuf),
-			 "%02x%02x%02x%02x%02x%02x", mac_address[0],
-			 mac_address[1], mac_address[2], mac_address[3],
-			 mac_address[4], mac_address[5]);
-		printf("serial %s\n", serialbuf);
-		env_set("serial#", serialbuf);
-	}
+	if (!env_get("serial#"))
+		bd_setserialnumber();
 
 	return 0;
 }
