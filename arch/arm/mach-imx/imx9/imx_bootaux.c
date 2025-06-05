@@ -234,7 +234,7 @@ static int do_bootaux_cntr(struct cmd_tbl *cmdtp, int flag, int argc,
 
 	return CMD_RET_SUCCESS;
 }
-#else
+#endif
 
 /*
  * To i.MX6SX and i.MX7D, the image supported by bootaux needs
@@ -292,7 +292,6 @@ static int do_bootaux(struct cmd_tbl *cmdtp, int flag, int argc,
 
 	return CMD_RET_SUCCESS;
 }
-#endif
 
 static int do_stopaux(struct cmd_tbl *cmdtp, int flag, int argc,
 		      char *const argv[])
@@ -335,7 +334,7 @@ U_BOOT_CMD(
 	"   - start auxiliary core [<core>] (default 0),\n"
 	"     with signed container image at address <address> in A core view\n"
 );
-#else
+#endif
 U_BOOT_CMD(
 	bootaux, CONFIG_SYS_MAXARGS, 1,	do_bootaux,
 	"Start auxiliary core",
@@ -343,4 +342,3 @@ U_BOOT_CMD(
 	"   - start auxiliary core [<core>] (default 0),\n"
 	"     at address <address> of auxiliary core view\n"
 );
-#endif
