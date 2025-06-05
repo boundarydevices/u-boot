@@ -45,7 +45,8 @@
 	"env_part=" __stringify(CONFIG_SYS_MMC_ENV_PART) "\0" \
 	"fastboot_raw_partition_bootloader=0x0 0x1ff0 mmcpart 1\0" \
 	"fastboot_raw_partition_bootloader-env=0x1ff0 0x10 mmcpart 1\0" \
-	"mcoreboot=load ${devtype} ${devnum}:1 ${mcore_loadaddr} ${mcore_image}; " \
+	"mcoreboot=load ${devtype} ${devnum}:1 ${loadaddr} ${mcore_image}; " \
+		"cp ${loadaddr} ${mcore_loadaddr} ${filesize}; " \
 		"dcache flush; bootaux " __stringify(TCML_BASE_MCORE_SEC_ADDR)"\0" \
 	"mcore_image=m33_fw.bin\0" \
 	"mcore_loadaddr=" __stringify(CONFIG_IMX_MCORE_TCM_ADDR) "\0" \
@@ -54,7 +55,6 @@
 	"console=ttyLP0\0" \
 	"fdt_addr=0x83000000\0"			\
 	"fdt_high=0xffffffffffffffff\0"		\
-	"fdt_file=" CONFIG_DEFAULT_FDT_FILE "\0" \
 	"netargs=setenv bootargs console=${console},115200 root=/dev/nfs rw " \
 		"ip=dhcp nfsroot=${tftpserverip}:${nfsroot},v3,tcp\0" \
 	"netboot=echo Booting from net ...; " \
