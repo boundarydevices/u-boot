@@ -34,6 +34,7 @@ int detect_common(struct display_info_t const *di, int sub_bus,
 	int req_bus;
 	int req_en;
 	int req_irq;
+	int req_reset;
 
 	if (di->bus_gp)
 		req_bus = gpio_request(di->bus_gp, "bus_gp");
@@ -41,6 +42,8 @@ int detect_common(struct display_info_t const *di, int sub_bus,
 		req_en = gpio_request(di->enable_gp, "enable_gp");
 	if (gp_irq)
 		req_irq = gpio_request(gp_irq, "ts_irq");
+	if (gp_reset)
+		req_reset = gpio_request(gp_reset, "ts_reset");
 #endif
 
 	if (sub_bus && !(sub_bus >> 8))
@@ -183,6 +186,9 @@ int detect_common(struct display_info_t const *di, int sub_bus,
 	}
 	if (gp_irq && !req_irq) {
 		gpio_free(gp_irq);
+	}
+	if (gp_reset && !req_reset) {
+		gpio_free(gp_reset);
 	}
 #endif
 	return (ret == 0);
