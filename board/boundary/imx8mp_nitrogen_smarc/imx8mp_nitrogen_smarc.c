@@ -39,8 +39,12 @@ static iomux_v3_cfg_t const init_pads[] = {
 	IOMUX_PAD_CTRL(NAND_CLE__GPIO3_IO05, 0x100),
 
 #define GP_PCA9546_RESET	IMX_GPIO_NR(1, 0)
+#define GP_I2C6_PCA9546_RESET	IMX_GPIO_NR(3, 7)
+#define GP_I2C6_MCP23018_RESET	IMX_GPIO_NR(4,27)
 	IOMUX_PAD_CTRL(GPIO1_IO00__GPIO1_IO00, 0x100),
 	IOMUX_PAD_CTRL(GPIO1_IO01__GPIO1_IO01, 0x100),
+	IOMUX_PAD_CTRL(NAND_DATA01__GPIO3_IO07, 0x100),
+	IOMUX_PAD_CTRL(SAI2_MCLK__GPIO4_IO27, 0x100),
 	IOMUX_PAD_CTRL(GPIO1_IO02__WDOG1_WDOG_B, WDOG_PAD_CTRL),
 	IOMUX_PAD_CTRL(UART1_RXD__UART1_DCE_RX, UART_PAD_CTRL),
 	IOMUX_PAD_CTRL(UART1_TXD__UART1_DCE_TX, UART_PAD_CTRL),
@@ -67,11 +71,11 @@ static iomux_v3_cfg_t const init_pads[] = {
 #define GP_TS_FT5X06_WAKE	IMX_GPIO_NR(3, 15)
 	IOMUX_PAD_CTRL(NAND_RE_B__GPIO3_IO15, 0x100),
 
-#define MCP23018 8
+#define MCP23018 6
 #define GP_TS_GT911_RESET	IMX_GPIO_NR(MCP23018, 7)
 #define GP_ST1633_RESET		IMX_GPIO_NR(MCP23018, 7)
 #define GP_TS_FT5X06_RESET	IMX_GPIO_NR(MCP23018, 7)	/* mcp23018 7 */
-
+#define GP_I2C6_ADDRESS_SEL	IMX_GPIO_NR(MCP23018,12)
 
 #define GP_TC358762_EN		IMX_GPIO_NR(4, 3)
 #define GP_SC18IS602B_RESET	IMX_GPIO_NR(4, 3)
@@ -115,6 +119,13 @@ int board_early_init_f(void)
 	gpio_request(GP_SN65DSI83_EN, "sn65en");
 	gpio_direction_output(GP_SN65DSI83_EN, 0);
 	gpio_free(GP_SN65DSI83_EN);
+
+	gpio_request(GP_I2C6_PCA9546_RESET, "i2c6 pca9546_reset");
+	gpio_request(GP_I2C6_MCP23018_RESET, "i2c6 mcp23018_reset");
+	gpio_direction_output(GP_I2C6_PCA9546_RESET, 1);
+	gpio_direction_output(GP_I2C6_MCP23018_RESET, 1);
+	gpio_free(GP_I2C6_PCA9546_RESET);
+	gpio_free(GP_I2C6_MCP23018_RESET);
 
 	imx_iomux_v3_setup_multiple_pads(init_pads, ARRAY_SIZE(init_pads));
 	set_wdog_reset(wdog);
@@ -250,14 +261,14 @@ static const struct display_info_t displays[] = {
 int board_init(void)
 {
 	gpio_request(GPIRQ_RV3028, "rv3028_irq");
-	gpio_request(GP_TS_GT911_RESET, "gt11_reset");
+	gpio_request(GP_I2C6_ADDRESS_SEL, "mux_addr_sel");
 	gpio_request(GP_PCA9546_RESET, "pca9546_reset");
 //	gpio_request(GP_SN65DSI83_EN, "sn65en");
 //	gpio_request(GP_LTK08_MIPI_EN, "ltk08_mipi_en");
 #if !CONFIG_IS_ENABLED(USB_DWC3_GENERIC)
 	gpio_request(GP_USB3_1_HUB_RESET, "usb1_hub_reset");
 #endif
-	gpio_direction_output(GP_TS_GT911_RESET, 0);
+	gpio_direction_output(GP_I2C6_ADDRESS_SEL, 0);
 	gpio_direction_output(GP_PCA9546_RESET, 1);
 #if !CONFIG_IS_ENABLED(USB_DWC3_GENERIC)
 	gpio_direction_output(GP_USB3_1_HUB_RESET, 0);
@@ -267,6 +278,7 @@ int board_init(void)
 	board_eth_init(gd->bd);
 #endif
 	gpio_free(GP_PCA9546_RESET);
+	gpio_free(GP_I2C6_ADDRESS_SEL);
 #ifdef CONFIG_CMD_FBPANEL
 	fbp_setup_display(displays, display_cnt);
 #endif
