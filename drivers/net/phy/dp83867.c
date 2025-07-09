@@ -259,6 +259,10 @@ static int dp83867_of_init(struct phy_device *phydev)
 	dp83867->tx_id_delay = DP83867_RGMIIDCTL_2_75_NS;
 	dp83867->fifo_depth = DEFAULT_FIFO_DEPTH;
 	dp83867->io_impedance = -EINVAL;
+#ifdef CONFIG_TARGET_USD_MR2
+	dp83867->set_clk_output = true;
+	dp83867->clk_output_sel = DP83867_CLK_O_SEL_CHN_A_TCLK;
+#endif
 
 	return 0;
 }
