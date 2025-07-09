@@ -829,7 +829,6 @@ static void phy_ar8035_config(struct phy_device *phydev)
 #ifndef CONFIG_PHY_MICREL
 int board_phy_config(struct phy_device *phydev)
 {
-	printf("%s %d\n", __func__, __LINE__);
 	if (((phydev->drv->uid ^ PHY_ID_AR8031) & 0xffffffef) == 0)
 		phy_ar8031_config(phydev);
 	else if (((phydev->drv->uid ^ PHY_ID_AR8035) & 0xffffffef) == 0)
