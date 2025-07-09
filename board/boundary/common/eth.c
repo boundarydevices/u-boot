@@ -524,7 +524,7 @@ static void setup_iomux_enet(int kz, int net_mask)
 
 #ifdef CONFIG_FEC_ENET1
 	if (net_mask & 1) {
-		setup_gpio_eth(kz);
+		//setup_gpio_eth(kz);
 	}
 #endif
 #ifdef CONFIG_FEC_ENET2
@@ -710,6 +710,35 @@ error:
 }
 #endif
 
+#ifdef CONFIG_PHY_TI_DP83867
+
+#define PHY_ID_DP83867	0x2000a231
+
+static void phy_dp83867(struct phy_device *phydev)
+{
+	unsigned short val;
+	// Advertise 1000BASE-T FULL DUPLEX and 1000BASE-T HALF DUPLEX bits
+        unsigned short set_100_10 = (BIT(9) | BIT(8));
+
+	puts("DP83867 ");
+
+	val = phy_read(phydev, MDIO_DEVAD_NONE, 0x9);
+	val &= ~(set_100_10); // Un-set these bits
+	phy_write(phydev, MDIO_DEVAD_NONE, 0x9, val);
+}
+
+#ifndef CONFIG_PHY_ATHEROS
+int board_phy_config(struct phy_device *phydev)
+{
+	if (phydev->phy_id == PHY_ID_DP83867)
+		phy_dp83867(phydev);
+	if (phydev->drv->config)
+		phydev->drv->config(phydev);
+	return 0;
+}
+#endif
+#endif
+
 #ifdef CONFIG_PHY_ATHEROS
 static void phy_ar8031_config(struct phy_device *phydev)
 {
@@ -800,42 +829,20 @@ static void phy_ar8035_config(struct phy_device *phydev)
 #ifndef CONFIG_PHY_MICREL
 int board_phy_config(struct phy_device *phydev)
 {
+	printf("%s %d\n", __func__, __LINE__);
 	if (((phydev->drv->uid ^ PHY_ID_AR8031) & 0xffffffef) == 0)
 		phy_ar8031_config(phydev);
 	else if (((phydev->drv->uid ^ PHY_ID_AR8035) & 0xffffffef) == 0)
 		phy_ar8035_config(phydev);
-	if (phydev->drv->config)
-		phydev->drv->config(phydev);
-	return 0;
-}
-#endif
-#endif
-
 #ifdef CONFIG_PHY_TI_DP83867
-
-#define PHY_ID_DP83867	0x2000a231
-
-static void phy_dp83867(struct phy_device *phydev)
-{
-	unsigned short val;
-	// Advertise 1000BASE-T FULL DUPLEX and 1000BASE-T HALF DUPLEX bits
-        unsigned short set_100_10 = (BIT(9) | BIT(8));
-
-	puts("DP83867 "); // 100/10 Mbs");
-
-	val = phy_read(phydev, MDIO_DEVAD_NONE, 0x9);
-	val &= ~(set_100_10); // Un-set these bits
-	phy_write(phydev, MDIO_DEVAD_NONE, 0x9, val);
-}
-
-int board_phy_config(struct phy_device *phydev)
-{
-	if (phydev->phy_id == PHY_ID_DP83867)
+	else if (phydev->phy_id == PHY_ID_DP83867)
 		phy_dp83867(phydev);
+#endif
 	if (phydev->drv->config)
 		phydev->drv->config(phydev);
 	return 0;
 }
+#endif
 #endif
 
 #ifdef CONFIG_PHY_MICREL
