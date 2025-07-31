@@ -184,9 +184,6 @@ static iomux_v3_cfg_t const init_pads[] = {
 static const struct gpio_reserve gpios_to_reserve[] = {
 	{ GP_BACKLIGHT_MIPI_EN, GPIOD_OUT_LOW, GRF_FREE, "backlight-en", },
 	{ GP_DISPLAY_EN, GPIOD_OUT_HIGH, GRF_FREE, "display-en", },
-	{ GP_BT_RFKILL_RESET, GPIOD_OUT_LOW, 0, "bt-rfkill-reset", },
-	{ GP_FEC1_RESET, GPIOD_OUT_LOW, 0, "fec1-reset", },
-	{ GPIRQ_FEC1_PHY, GPIOD_IN, 0, "irq-fec1-phy", },
 	{ GP_GPIOKEY_SW1, GPIOD_IN, 0, "sw1", },
 	{ GP_GPIOKEY_SW2, GPIOD_IN, 0, "sw2", },
 	{ GP_GPIOKEY_SW3, GPIOD_IN, 0, "sw3", },
@@ -205,7 +202,6 @@ static const struct gpio_reserve gpios_to_reserve[] = {
 	{ GP_BACKLIGHT_MIPI_PWM, GPIOD_OUT_LOW, 0, "backlight-pwm", },
 	{ GP_REG_USDHC2_VSEL, GPIOD_OUT_LOW, GRF_FREE, "usdhc2-vsel", },
 	{ GP_REG_WLAN_VMMC, GPIOD_OUT_LOW, 0, "wlan-en", },
-	{ GP_WM8960_MIC_DET, GPIOD_IN, 0, "mic-det", },
 	{ GP_TDA7991_MUTE, GPIOD_OUT_LOW, 0, "mute", },
 	{ GP_TDA7991_G0, GPIOD_OUT_LOW, 0, "g0", },
 	{ GP_TDA7991_G1, GPIOD_OUT_LOW, 0, "g1", },
