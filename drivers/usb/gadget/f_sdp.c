@@ -76,6 +76,7 @@ struct hid_report {
 #define SDP_HID_PACKET_SIZE_EP1 1024
 
 #define SDP_EXIT 1
+#define SDP_FAIL 2
 
 struct sdp_command {
 	u16 cmd;
@@ -767,7 +768,7 @@ static ulong search_container_header(ulong p, int size)
 
 	for (i = 0; i < size; i += 4) {
 		hdr = (u8 *)(p + i);
-		if (*(hdr + 3) == 0x87 && *hdr == 0)
+		if (*(hdr + 3) == 0x87 && (*hdr == 0 || *hdr == 2))
 			if (*(hdr + 1) != 0 || *(hdr + 2) != 0)
 				return p + i;
 	}
@@ -842,13 +843,16 @@ static int sdp_handle_in_ep(struct spl_image_info *spl_image,
 #ifdef CONFIG_SPL_LOAD_FIT
 			if (image_get_magic(header) == FDT_MAGIC) {
 				struct spl_load_info load;
+				int ret;
 
 				debug("Found FIT\n");
 				load.priv = header;
 				spl_set_bl_len(&load, 1);
 				load.read = sdp_load_read;
-				spl_load_simple_fit(spl_image, &load, 0,
+				ret = spl_load_simple_fit(spl_image, &load, 0,
 						    header);
+				if (ret)
+					return SDP_FAIL;
 
 				return SDP_EXIT;
 			}
@@ -856,11 +860,15 @@ static int sdp_handle_in_ep(struct spl_image_info *spl_image,
 			if (IS_ENABLED(CONFIG_SPL_LOAD_IMX_CONTAINER) &&
 			    valid_container_hdr((void *)header)) {
 				struct spl_load_info load;
+				int ret;
 
 				load.priv = header;
 				spl_set_bl_len(&load, 1);
 				load.read = sdp_load_read;
-				spl_load_imx_container(spl_image, &load, 0);
+				ret = spl_load_imx_container(spl_image, &load, 0);
+				if (ret)
+					return SDP_FAIL;
+
 				return SDP_EXIT;
 			}
 
@@ -930,6 +938,8 @@ int spl_sdp_handle(struct udevice *udc, struct spl_image_info *spl_image,
 
 		if (flag == SDP_EXIT)
 			return 0;
+		else if (flag == SDP_FAIL)
+			return -EIO;
 
 		schedule();
 		dm_usb_gadget_handle_interrupts(udc);

@@ -79,9 +79,11 @@
                 "${get_cmd} ${xenlinux_addr} ${image};" \
                 "fdt addr ${fdt_addr};" \
                 "fdt resize 256;" \
+                "fdt mknode /chosen module@0;" \
                 "fdt set /chosen/module@0 reg <0x00000000 ${xenlinux_addr} 0x00000000 0x${filesize}>;" \
                 "fdt set /chosen/module@0 bootargs \"${bootargs} ${xenlinux_bootargs}\"; " \
                 "fdt set /soc/bus@49000000/iommu@490d0000 status disabled;" \
+		"fdt set /chosen/module@0 compatible \"xen,linux-zimage\" \"xen,multiboot-module\";" \
                 "setenv bootargs ${xenhyper_bootargs};" \
                 "booti ${loadaddr} - ${fdt_addr};" \
             "\0" \
@@ -132,16 +134,12 @@
 	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
 	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr_r} ${fdtfile}\0" \
 	"loadcntr=fatload mmc ${mmcdev}:${mmcpart} ${cntr_addr} ${cntr_file}\0" \
-	"auth_os=auth_cntr ${cntr_addr}\0" \
+	"auth_os=booti ${cntr_addr}\0" \
 	"boot_os=booti ${loadaddr} - ${fdt_addr_r};\0" \
 	"mmcboot=echo Booting from mmc ...; " \
 		"run mmcargs; " \
 		"if test ${sec_boot} = yes; then " \
-			"if run auth_os; then " \
-				"run boot_os; " \
-			"else " \
-				"echo ERR: failed to authenticate; " \
-			"fi; " \
+			"run auth_os; " \
 		"else " \
 			"if test ${boot_fit} = yes || test ${boot_fit} = try; then " \
 				"bootm ${loadaddr}; " \
@@ -165,11 +163,7 @@
 		"fi; " \
 		"if test ${sec_boot} = yes; then " \
 			"${get_cmd} ${cntr_addr} ${cntr_file}; " \
-			"if run auth_os; then " \
-				"run boot_os; " \
-			"else " \
-				"echo ERR: failed to authenticate; " \
-			"fi; " \
+			"run auth_os; " \
 		"else " \
 			"${get_cmd} ${loadaddr} ${image}; " \
 			"if test ${boot_fit} = yes || test ${boot_fit} = try; then " \

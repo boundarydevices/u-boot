@@ -120,6 +120,7 @@ struct bd_info;
 	is_cpu_type(MXC_CPU_IMX9101) || is_cpu_type(MXC_CPU_IMX9121))
 
 #define is_imx95() (is_cpu_type(MXC_CPU_IMX95))
+#define is_imx95_a0() (is_imx95() && (soc_rev() < CHIP_REV_2_0))
 
 #define is_imxrt1020() (is_cpu_type(MXC_CPU_IMXRT1020))
 #define is_imxrt1050() (is_cpu_type(MXC_CPU_IMXRT1050))

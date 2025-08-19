@@ -129,6 +129,8 @@ void board_init_f(ulong dummy)
 
 	get_reset_reason(true, false);
 
+	disable_smmuv3();
+
 	/* Will set ARM freq to max rate */
 	clock_init_late();
 

@@ -27,9 +27,6 @@
 
 extern rom_passover_t rom_passover_data;
 
-#define MAX_V2X_CTNR_IMG_NUM   (4)
-#define MIN_V2X_CTNR_IMG_NUM   (2)
-
 #define IMG_FLAGS_IMG_TYPE_SHIFT  (0u)
 #define IMG_FLAGS_IMG_TYPE_MASK   (0xfU)
 #define IMG_FLAGS_IMG_TYPE(x)     (((x) & IMG_FLAGS_IMG_TYPE_MASK) >> \
@@ -40,11 +37,7 @@ extern rom_passover_t rom_passover_data;
 #define IMG_FLAGS_CORE_ID(x)      (((x) & IMG_FLAGS_CORE_ID_MASK) >> \
                                    IMG_FLAGS_CORE_ID_SHIFT)
 
-#define IMG_TYPE_V2X_PRI_FW     (0x0Bu)   /* Primary V2X FW */
-#define IMG_TYPE_V2X_SND_FW     (0x0Cu)   /* Secondary V2X FW */
-
-#define CORE_V2X_PRI 9
-#define CORE_V2X_SND 10
+#define IMG_TYPE_DDR_TDATA_DUMMY  (0x0Du)   /* dummy DDR training data image */
 
 /** Polynomial: 0xEDB88320 */
 static u32 const p_table[] =
@@ -79,16 +72,28 @@ static u32 qb_crc32(const void* addr, u32 len)
 static bool qb_check(void)
 {
 	struct ddrphy_qb_state *qb_state;
-	bool valid = true;
-	u32 size, crc;
+	u32 i, size, crc;
 
-	/** check crc here, or validate it using ELE */
+	/**
+	 * Ensure MAC is not empty, the reason is that
+	 * the data is invalidated after first save run
+	 */
 	qb_state = (struct ddrphy_qb_state *)CONFIG_SAVED_QB_STATE_BASE;
-	size = sizeof(struct ddrphy_qb_state) - sizeof(u32);
-	crc = qb_crc32(&qb_state->TrainedVREFCA_A0, size);
-	valid = (crc == qb_state->crc);
 
-	return valid;
+	if (is_imx95_a0()) {
+		/** For iMX95 A0/1 check the CRC32 value */
+		size = sizeof(struct ddrphy_qb_state) - MAC_LENGTH * sizeof(u32);
+		crc = qb_crc32(&qb_state->TrainedVREFCA_A0, size);
+
+		return (crc == qb_state->mac[0]);
+	} else {
+		for (i = 0; i < MAC_LENGTH; i++) {
+			if (qb_state->mac[i] == 0)
+				return false;
+		}
+	}
+
+	return true;
 }
 
 static int do_qb_check(struct cmd_tbl *cmdtp, int flag,
@@ -142,15 +147,22 @@ static int parse_container(void *addr, u32 *qb_data_off)
 	struct container_hdr *phdr;
 	struct boot_img_t *img_entry;
 	u8 i = 0;
-	u32 img_end;
+	u32 img_type, img_end;
 
 	phdr = (struct container_hdr *)addr;
-	if (phdr->tag != 0x87 || phdr->version != 0x0) {
+	if (phdr->tag != 0x87 || (phdr->version != 0x0 && phdr->version != 0x2)) {
 		return -1;
 	}
 
 	img_entry = (struct boot_img_t *)(addr + sizeof(struct container_hdr));
 	for (i = 0; i < phdr->num_images; i++) {
+		img_type = IMG_FLAGS_IMG_TYPE(img_entry->hab_flags);
+		if (img_type == IMG_TYPE_DDR_TDATA_DUMMY && img_entry->size == 0) {
+			/** Image entry pointing to DDR Training Data */
+			(*qb_data_off) = img_entry->offset;
+			return 0;
+		}
+
 		img_end = img_entry->offset + img_entry->size;
 		if (i + 1 < phdr->num_images) {
 			img_entry++;
@@ -167,7 +179,8 @@ static int parse_container(void *addr, u32 *qb_data_off)
 
 static int get_dev_qbdata_offset(void *dev, int dev_type, unsigned long offset, u32 *qbdata_offset)
 {
-	void *buf = malloc(CONTAINER_HDR_ALIGNMENT);
+	u16 ctnr_hdr_align = container_hdr_alignment();
+	void *buf = malloc(ctnr_hdr_align);
 	int ret = 0;
 	char cmd[128];
 	unsigned long count = 0;
@@ -184,7 +197,7 @@ static int get_dev_qbdata_offset(void *dev, int dev_type, unsigned long offset, 
 
 		count = blk_dread(mmc_get_blk_desc(mmc),
 				  offset / mmc->read_bl_len,
-				  CONTAINER_HDR_ALIGNMENT / mmc->read_bl_len,
+				  ctnr_hdr_align / mmc->read_bl_len,
 				  buf);
 		if (count == 0) {
 			printf("Read container image from MMC/SD failed\n");
@@ -193,7 +206,7 @@ static int get_dev_qbdata_offset(void *dev, int dev_type, unsigned long offset, 
 		break;
 	case QSPI_DEV:
 		sprintf(cmd, "sf read 0x%x 0x%lx 0x%x", (unsigned int)(uintptr_t)buf,
-			offset, CONTAINER_HDR_ALIGNMENT);
+			offset, ctnr_hdr_align);
 		/** Read data */
 		ret = run_command(cmd, 0);
 		if (ret) {
@@ -203,7 +216,7 @@ static int get_dev_qbdata_offset(void *dev, int dev_type, unsigned long offset, 
 		break;
 	case QSPI_NOR_DEV:
 	case RAM_DEV:
-		memcpy(buf, (const void *)offset, CONTAINER_HDR_ALIGNMENT);
+		memcpy(buf, (const void *)offset, ctnr_hdr_align);
 		break;
 	}
 
@@ -217,14 +230,22 @@ static int get_dev_qbdata_offset(void *dev, int dev_type, unsigned long offset, 
 static int get_qbdata_offset(void *dev, int dev_type, u32 *qbdata_offset)
 {
 	u32 offset = get_boot_device_offset(dev, dev_type);
+	u16 ctnr_hdr_align = container_hdr_alignment();
+	u32 contOffset;
+	int ret, i;
 
-	/** third container, @todo: v2x might be missing */
-	offset += 2 * CONTAINER_HDR_ALIGNMENT;
-	get_dev_qbdata_offset(dev, dev_type, offset, qbdata_offset);
+	for (i = 0; i < 3; i++)
+	{
+		contOffset = offset + i * ctnr_hdr_align;
+		ret = get_dev_qbdata_offset(dev, dev_type, contOffset, qbdata_offset);
+		if (ret == 0)
+		{
+			(*qbdata_offset) += contOffset;
+			break;
+		}
+	}
 
-	(*qbdata_offset) += offset;
-
-	return 0;
+	return ret;
 }
 
 static int get_board_boot_device(enum boot_device dev)

@@ -1195,8 +1195,7 @@ void bootm_init(struct bootm_info *bmi)
 {
 	memset(bmi, '\0', sizeof(struct bootm_info));
 	bmi->boot_progress = true;
-	if (IS_ENABLED(CONFIG_CMD_BOOTM))
-		bmi->images = &images;
+	bmi->images = &images;
 }
 
 /**

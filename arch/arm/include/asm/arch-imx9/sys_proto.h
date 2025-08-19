@@ -24,6 +24,8 @@ int get_reset_reason(bool sys, bool lm);
 
 int power_on_m7(char *name);
 
+int disable_smmuv3(void);
+
 #define is_voltage_mode(mode) (soc_target_voltage_mode() == mode)
 
 #endif

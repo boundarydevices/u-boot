@@ -12,7 +12,6 @@
 #define IV_MAX_LEN			32
 #define HASH_MAX_LEN			64
 
-#define CONTAINER_HDR_ALIGNMENT 0x400
 #define CONTAINER_HDR_EMMC_OFFSET 0
 #define CONTAINER_HDR_MMCSD_OFFSET SZ_32K
 #define CONTAINER_HDR_QSPI_OFFSET SZ_4K
@@ -68,11 +67,31 @@ struct generate_key_blob_hdr {
 	u8 mode;
 } __packed;
 
+#if IS_ENABLED(CONFIG_IMX95)
+u32 container_hdr_alignment(void);
+#else
+static inline u32 container_hdr_alignment(void)
+{
+#if IS_ENABLED(CONFIG_IMX_PQC_SUPPORT)
+	return 0x4000;
+#else
+	return 0x400;
+#endif
+}
+#endif
+
 int get_container_size(ulong addr, u16 *header_length);
 
 static inline bool valid_container_hdr(struct container_hdr *container)
 {
+#if IS_ENABLED(CONFIG_IMX_PQC_SUPPORT)
+	return (container->tag == CONTAINER_HDR_TAG ||
+		container->tag == 0x82) &&
+		(container->version == CONTAINER_HDR_VERSION ||
+		 container->version == 0x2);
+#else
 	return container->tag == CONTAINER_HDR_TAG &&
 	       container->version == CONTAINER_HDR_VERSION;
+#endif
 }
 #endif

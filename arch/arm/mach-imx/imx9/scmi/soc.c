@@ -33,6 +33,7 @@
 #include <asm/mach-imx/ele_api.h>
 #include <asm/mach-imx/optee.h>
 #include <linux/delay.h>
+#include <linux/iopoll.h>
 #include <fuse.h>
 #include <imx_thermal.h>
 #include <thermal.h>
@@ -202,8 +203,9 @@ u32 get_cpu_temp_grade(int *minc, int *maxc)
 			*minc = -40;
 			*maxc = 105;
 		} else if (val == TEMP_EXTCOMMERCIAL) {
-			*minc = -20;
-			*maxc = 105;
+			/* Map to Ext industrial */
+			*minc = -40;
+			*maxc = 125;
 		} else {
 			*minc = 0;
 			*maxc = 95;
@@ -689,10 +691,7 @@ int print_cpuinfo(void)
 		puts("Industrial temperature grade ");
 		break;
 	case TEMP_EXTCOMMERCIAL:
-		if (is_imx93())
-			puts("Extended Industrial temperature grade ");
-		else
-			puts("Extended Consumer temperature grade ");
+		puts("Extended Industrial temperature grade ");
 		break;
 	default:
 		puts("Consumer temperature grade ");
@@ -794,10 +793,272 @@ static int delete_fdt_nodes(void *blob, const char *const nodes_path[], int size
 	return 0;
 }
 
+static int get_cooling_device_list(void * blob, u32 nodeoff, const char *const path, u32* cooling_dev, int max_cnt)
+{
+		int cnt, j;
+
+		cnt = fdtdec_get_int_array_count(blob, nodeoff, "cooling-device", cooling_dev, max_cnt);
+		if (cnt < 0) {
+			printf("cnt incorrect, path %s, cnt = %d\n", path, cnt);
+			return cnt;
+		}
+		if (cnt != max_cnt)
+			printf("Warning: %s, cooling-device count %d\n", path, cnt);
+
+		for (j = 0; j < cnt; j++)
+			cooling_dev[j] = cpu_to_fdt32(cooling_dev[j]);
+
+		return cnt;
+}
+
+static void disable_thermal_vpu_node(void *blob, u32 disabled_cores, u32 gpu_disabled)
+{
+	static const char * const thermal_path[] = {
+		"/thermal-zones/ana/cooling-maps/map0"
+	};
+	u32 cooling_dev[24 - (disabled_cores * 3) - (gpu_disabled * 3)];
+	u32 array_cnt = 24 - (disabled_cores * 3) - (gpu_disabled * 3);
+
+	int nodeoff, ret, i;
+
+	for (i = 0; i < ARRAY_SIZE(thermal_path); i++) {
+		nodeoff = fdt_path_offset(blob, thermal_path[i]);
+		if (nodeoff < 0) {
+			printf("path not found %s\n", thermal_path[i]);
+			continue; /* Not found, skip it */
+		}
+		get_cooling_device_list(blob, nodeoff, thermal_path[i], cooling_dev, array_cnt);
+
+		/* Remove  VPU it the last two nodes in the fdt ana blob */
+		ret = fdt_setprop(blob, nodeoff, "cooling-device", &cooling_dev,
+				  sizeof(u32) * (array_cnt - 3));
+
+		if (ret < 0) {
+			printf("Warning: %s, cooling-device setprop failed %d\n",
+			       thermal_path[i], ret);
+			continue;
+		}
+
+		printf("Update node %s, cooling-device prop\n", thermal_path[i]);
+	}
+}
+
+static void disable_thermal_gpu_node(void *blob, u32 disabled_cores)
+{
+	static const char * const thermal_path[] = {
+		"/thermal-zones/ana/cooling-maps/map0",
+	};
+	u32 cooling_dev[24 - (disabled_cores * 3)];
+	u32 array_cnt = 24 - (disabled_cores * 3);
+	int nodeoff, ret, i;
+
+	for (i = 0; i < ARRAY_SIZE(thermal_path); i++) {
+		nodeoff = fdt_path_offset(blob, thermal_path[i]);
+		if (nodeoff < 0) {
+			printf("path not found %s\n", thermal_path[i]);
+			continue; /* Not found, skip it */
+		}
+		get_cooling_device_list(blob, nodeoff, thermal_path[i], cooling_dev, array_cnt);
+
+		/* Remove GPU and VPU as these are the last two nodes in the fdt ana blob */
+		ret = fdt_setprop(blob, nodeoff, "cooling-device", &cooling_dev,
+				  sizeof(u32) * (array_cnt - 6));
+
+		if (ret < 0) {
+			printf("Warning: %s, cooling-device setprop failed %d\n",
+			       thermal_path[i], ret);
+			continue;
+		}
+
+		/* Add VPU node back to ana thermal-zone. */
+		ret = fdt_appendprop(blob, nodeoff, "cooling-device", &cooling_dev[array_cnt - 3],
+				  sizeof(u32) * 3);
+
+		if (ret < 0) {
+			printf("Warning: %s, cooling-device appendprop failed %d\n",
+			       thermal_path[i], ret);
+			continue;
+		}
+
+		printf("Update node %s, cooling-device prop\n", thermal_path[i]);
+	}
+}
+
+static void disable_thermal_cpu_nodes(void *blob, u32 disabled_cores)
+{
+	static const char * const thermal_path[] = {
+		"/thermal-zones/pf53_arm/cooling-maps/map0",
+		"/thermal-zones/ana/cooling-maps/map0",
+		"/thermal-zones/a55/cooling-maps/map0",
+	};
+	u32 cooling_dev[24];
+
+	int nodeoff, ret, i, cnt;
+
+	for (i = 0; i < ARRAY_SIZE(thermal_path); i++) {
+		nodeoff = fdt_path_offset(blob, thermal_path[i]);
+		if (nodeoff < 0) {
+			printf("path not found %s\n", thermal_path[i]);
+			continue; /* Not found, skip it */
+		}
+		cnt = get_cooling_device_list(blob, nodeoff, thermal_path[i], cooling_dev, 24);
+
+		ret = fdt_setprop(blob, nodeoff, "cooling-device", &cooling_dev,
+				  sizeof(u32) * (18 - disabled_cores * 3));
+
+		if (ret < 0) {
+			printf("Warning: %s, cooling-device setprop failed %d\n",
+			       thermal_path[i], ret);
+			continue;
+		}
+
+		/* Add GPU and VPU nodes back to ana thermal-zone. */
+		if (cnt > 18)
+			ret = fdt_appendprop(blob, nodeoff, "cooling-device", &cooling_dev[18],
+					  sizeof(u32) * 6);
+
+		if (ret < 0) {
+			printf("Warning: %s, cooling-device appendprop failed %d\n",
+			       thermal_path[i], ret);
+			continue;
+		}
+
+		printf("Update node %s, cooling-device prop\n", thermal_path[i]);
+	}
+}
+
+static int disable_npu_node(void *blob)
+{
+	static const char * const nodes_path_npu[] = {
+		"/soc/imx95-neutron-remoteproc@4ab00000",
+		"/soc/imx95-neutron@4ab00004",
+	};
+
+	return delete_fdt_nodes(blob, nodes_path_npu, ARRAY_SIZE(nodes_path_npu));
+}
+
+static int disable_arm_cpu_nodes(void *blob, u32 disabled_cores)
+{
+	u32 i = 0;
+	int rc;
+	int nodeoff;
+	char nodes_path[32];
+
+	printf("disable_arm_cpu_nodes, num_disabled_cores = %d\n", disabled_cores);
+	for (i = 6; i > (6 - disabled_cores); i--) {
+
+		sprintf(nodes_path, "/cpus/cpu@%u00", i - 1);
+
+		nodeoff = fdt_path_offset(blob, nodes_path);
+		if (nodeoff < 0)
+			continue; /* Not found, skip it */
+
+		debug("Found %s node\n", nodes_path);
+
+		rc = fdt_del_node(blob, nodeoff);
+		if (rc < 0) {
+			printf("Unable to delete node %s, err=%s\n",
+			       nodes_path, fdt_strerror(rc));
+		} else {
+			printf("Delete node %s\n", nodes_path);
+		}
+	}
+
+	disable_thermal_cpu_nodes(blob, disabled_cores);
+
+	return 0;
+}
+
+static int disable_jpegdec_node(void *blob)
+{
+	static const char * const nodes_path_jpegdec[] = {
+		"/soc/jpegdec@4c500000",
+	};
+
+	return delete_fdt_nodes(blob, nodes_path_jpegdec, ARRAY_SIZE(nodes_path_jpegdec));
+}
+
+static int disable_jpegenc_node(void *blob)
+{
+	static const char * const nodes_path_jpegenc[] = {
+		"/soc/jpegenc@4c550000",
+	};
+
+	return delete_fdt_nodes(blob, nodes_path_jpegenc, ARRAY_SIZE(nodes_path_jpegenc));
+}
+
+static int disable_mipicsi0_node(void *blob)
+{
+	static const char * const nodes_path_mipicsi0[] = {
+		"/soc/csi@4ad30000",
+	};
+
+	return delete_fdt_nodes(blob, nodes_path_mipicsi0, ARRAY_SIZE(nodes_path_mipicsi0));
+}
+
+static int disable_mipicsi1_node(void *blob)
+{
+	static const char * const nodes_path_mipicsi1[] = {
+		"/soc/csi@4ad40000",
+	};
+
+	return delete_fdt_nodes(blob, nodes_path_mipicsi1, ARRAY_SIZE(nodes_path_mipicsi1));
+}
+
+
+static int disable_isp_node(void *blob)
+{
+	static const char * const nodes_path_isp[] = {
+		"/soc@0/isp@4ae00000",
+		"/soc/isp@4ae00000",
+	};
+
+	return delete_fdt_nodes(blob, nodes_path_isp, ARRAY_SIZE(nodes_path_isp));
+}
+
+static int disable_vpu_node(void *blob, u32 num_a55_cores_disabled, u32 gpu_disabled)
+{
+	uint32_t ret = 0;
+
+	printf("Disable VPU nodes\n");
+	static const char * const nodes_path_vpu[] = {
+		"/soc/vpu-ctrl@4c4c0000",
+		"/soc/vpu@4c480000",
+		"/soc/vpu@4c490000",
+		"/soc/vpu@4c4a0000",
+		"/soc/vpu@4c4b0000",
+		"/soc/jpegdec@4c500000",
+		"/soc/jpegenc@4c550000",
+		"/soc/syscon@4c410000"
+	};
+
+	ret = delete_fdt_nodes(blob, nodes_path_vpu, ARRAY_SIZE(nodes_path_vpu));
+	disable_thermal_vpu_node(blob, num_a55_cores_disabled, gpu_disabled);
+	return ret;
+}
+
+static int disable_gpu_node(void *blob, uint32_t num_a55_cores_disabled)
+{
+	uint32_t ret = 0;
+
+	static const char * const nodes_path_gpu[] = {
+		"/soc/gpu@4d900000",
+		"/thermal-zones@1/ana/cooling-maps/map1/cooling-device/gpu@4d900000",
+		"/thermal-zones/ana/cooling-maps/map1/cooling-device/gpu@4d900000",
+		"/thermal-zones@1/ana/cooling-maps/map1/cooling-device",
+		"/thermal-zones/ana/cooling-maps/map1/cooling-device",
+		"/thermal-zones@1/ana/cooling-maps/map1",
+		"/thermal-zones/ana/cooling-maps/map1",
+	};
+
+	ret = delete_fdt_nodes(blob, nodes_path_gpu, ARRAY_SIZE(nodes_path_gpu));
+	disable_thermal_gpu_node(blob, num_a55_cores_disabled);
+	return ret;
+}
+
 static int disable_pciea_node(void *blob)
 {
 	static const char * const nodes_path_pciea[] = {
-		"/soc@0/pcie@4c300000",
 		"/soc/pcie@4c300000"
 	};
 
@@ -807,7 +1068,6 @@ static int disable_pciea_node(void *blob)
 static int disable_pcieb_node(void *blob)
 {
 	static const char * const nodes_path_pcieb[] = {
-		"/soc@0/pcie@4c380000",
 		"/soc/pcie@4c380000"
 	};
 
@@ -837,13 +1097,122 @@ static bool is_m7_off(void)
 		return false;
 }
 
+static int disable_smmu_node(void *blob)
+{
+	struct scmi_imx_misc_cfg_info_out out = { 0 };
+	struct scmi_msg msg = SCMI_MSG(SCMI_IMX_PROTOCOL_ID_MISC,
+				       SCMI_IMX_MISC_CFG_INFO, out);
+	int ret, nodeoff;
+	bool disable_smmu_node = false;
+	const char *status = "disabled";
+
+	ret = devm_scmi_process_msg(gd->arch.scmi_dev, &msg);
+	if (out.status) {
+		printf("%s:%d fail\n", __func__, out.status);
+		return ret;
+	}
+
+	if (!strncmp(out.cfgname, "mx95alt", MISC_MAX_CFGNAME))
+		disable_smmu_node = true;
+
+	if ((gd->arch.soc_rev >> 28) == 0xa)
+		disable_smmu_node = true;
+
+	if (!disable_smmu_node)
+		return 0;
+
+	puts("disabling SMMU\n");
+
+	ret = fdt_increase_size(blob, 256);
+	if (ret) {
+		printf("Unable to increase fdt size, err=%s\n", fdt_strerror(ret));
+		return ret;
+	}
+	nodeoff = fdt_path_offset(blob, "/soc/bus@49000000/iommu@490d0000");
+	if (nodeoff > 0) {
+		ret = fdt_setprop(blob, nodeoff, "status", status,
+				  strlen(status) + 1);
+		if (ret) {
+			printf("Unable to disable SMMU, err=%s\n", fdt_strerror(ret));
+			return ret;
+		}
+	}
+
+	return 0;
+}
+
+int disable_enet10g_node(void *blob)
+{
+	static const char * const nodes_path_enet10g[] = {
+		"/pcie@4ca00000/ethernet@10,0",
+		"/soc/pcie@4ca00000/ethernet@10,0",
+		"/soc/syscon@4ca00000/ethernet@10,0",
+	};
+
+	return delete_fdt_nodes(blob, nodes_path_enet10g, ARRAY_SIZE(nodes_path_enet10g));
+}
+
+
+int disable_mipidsi_node(void *blob)
+{
+	static const char * const nodes_path_mipidsi[] = {
+		"/soc/dsi@4acf0000",
+		"/soc/syscon@4acf0000",
+	};
+
+	return delete_fdt_nodes(blob, nodes_path_mipidsi, ARRAY_SIZE(nodes_path_mipidsi));
+}
+
+
+int disable_lvds_node(void *blob)
+{
+	static const char * const nodes_path_lvds[] = {
+		"/soc/syscon@4b0c0000/ldb@4/channel@0",
+		"/soc/syscon@4b0c0000/phy@8",
+		"/soc/syscon@4b0c0000/ldb@4/channel@1",
+		"/soc/syscon@4b0c0000/phy@c",
+	};
+
+	return delete_fdt_nodes(blob, nodes_path_lvds, ARRAY_SIZE(nodes_path_lvds));
+}
+
+
 int ft_system_setup(void *blob, struct bd_info *bd)
 {
-	u32 val;
+	u32 val = 0;
 	int ret = 0;
+	int num_a55_cores_disabled = 0;
+	int gpu_disabled = 0;
 
 	if (is_imx95()) {
-		val = BIT(6) | BIT(7); /* In case fuse read failure, disable PCIE */
+		fuse_read(2, 2, &val);
+
+		if (val & BIT(0)) /* NPU */
+			disable_npu_node(blob);
+
+		if (val & BIT(3)) /* A55C4 */
+			num_a55_cores_disabled++;
+
+		if (val & BIT(4)) /* A55C5 */
+			num_a55_cores_disabled++;
+
+		if (val & BIT(5)) /* A55C4 */
+			num_a55_cores_disabled++;
+
+		if (val & BIT(6)) /* A55C5 */
+			num_a55_cores_disabled++;
+
+		if (num_a55_cores_disabled > 0)
+			disable_arm_cpu_nodes(blob, num_a55_cores_disabled);
+
+		if (val & BIT(27)) /* LVDS */
+			disable_lvds_node(blob);
+
+		if (val & BIT(29)) /* ISP */
+			disable_isp_node(blob);
+
+		/* Disable devices based on fuse*/
+		val = 0x0;
 
 		fuse_read(2, 3, &val);
 
@@ -851,6 +1220,32 @@ int ft_system_setup(void *blob, struct bd_info *bd)
 			disable_pciea_node(blob);
 		if (val & BIT(7)) /* PCIE B */
 			disable_pcieb_node(blob);
+
+		if (val & BIT(17)) { /* GPU MIX */
+			disable_gpu_node(blob, num_a55_cores_disabled);
+			gpu_disabled = 1;
+		}
+		if (val & BIT(18)) /* VPU MIX */
+			disable_vpu_node(blob, num_a55_cores_disabled, gpu_disabled);
+		if (val & BIT(19)) /* JPEGDEC disable */
+			disable_jpegenc_node(blob);
+		if (val & BIT(20)) /* JPEGENC disable */
+			disable_jpegdec_node(blob);
+
+		if (val & BIT(22)) /* MIPI-CSI0 */
+			disable_mipicsi0_node(blob);
+		if (val & BIT(23)) /* MIPI-CSI1 */
+			disable_mipicsi1_node(blob);
+		if (val & BIT(24)) /* MIPI-DSI MIX */
+			disable_mipidsi_node(blob);
+
+		val = 0x0;
+		fuse_read(2, 4, &val);
+
+		if (val & BIT(12)) /* Disable 10G */
+			disable_enet10g_node(blob);
+
+		disable_smmu_node(blob);
 	}
 
 	if (is_imx95() && is_m7_off()) {
@@ -867,7 +1262,31 @@ int ft_system_setup(void *blob, struct bd_info *bd)
 	return ft_add_optee_node(blob, bd);
 }
 
-#if defined(CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG)
+/* Fix uboot dtb based on fuses. */
+int board_fix_fdt_fuse(void *fdt)
+{
+	u32 val = 0;;
+
+	fuse_read(2, 2, &val);
+
+	if (val & BIT(27)) /* LVDS */
+		disable_lvds_node(fdt);
+
+	val = 0x0;
+	fuse_read(2, 3, &val);
+
+	if (val & BIT(24)) /* MIPI-DSI MIX */
+		disable_mipidsi_node(fdt);
+
+	val = 0x0;
+	fuse_read(2, 4, &val);
+
+	if (val & BIT(12)) /* Disable 10G */
+		disable_enet10g_node(fdt);
+	return 0;
+}
+
+#if IS_ENABLED(CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG)
 void get_board_serial(struct tag_serialnr *serialnr)
 {
 	printf("UID: %08x%08x%08x%08x\n", __be32_to_cpu(gd->arch.uid[0]),
@@ -929,7 +1348,7 @@ int imx9_probe_mu(void)
 	if (ret)
 		return ret;
 
-#if defined(CONFIG_IMX_TRUSTY_OS) && defined(CONFIG_SPL_BUILD)
+#if defined(CONFIG_SPL_BUILD)
 	ret = uclass_get_device_by_name(UCLASS_MISC, "mailbox@47530000", &dev);
 #else
 	ret = uclass_get_device_by_name(UCLASS_MISC, "mailbox@47550000", &dev);
@@ -950,6 +1369,53 @@ int imx9_probe_mu(void)
 }
 EVENT_SPY_SIMPLE(EVT_DM_POST_INIT_F, imx9_probe_mu);
 EVENT_SPY_SIMPLE(EVT_DM_POST_INIT_R, imx9_probe_mu);
+
+#ifdef CONFIG_SPL_BUILD
+int disable_smmuv3(void)
+{
+	/*
+	 * Disable SMMU in case kernel force reset, not check whether SMMU
+	 * is already disabled, because there is chance that when SMMU
+	 * is being dsiable in linux, while linux got reset. So disable SMMU
+	 * no matter SMMU is disabled or enabled.
+	 */
+	if (IS_ENABLED(CONFIG_IMX95)) {
+		int ret;
+		u32 reg, val, __iomem *gbpa = (void __iomem *)SMMU_BASE_ADDR + SMMU_GBPA;
+
+		ret = readl_relaxed_poll_timeout(gbpa, reg, !(reg & GBPA_UPDATE),
+						 ARM_SMMU_POLL_TIMEOUT_US);
+
+		if (ret) {
+			printf("GBPA updating waiting timeout\n");
+			return ret;
+		}
+
+		/* Use incoming SHCFG attributes */
+		reg = BIT(12);
+
+		writel_relaxed(reg | GBPA_UPDATE, gbpa);
+		ret = readl_relaxed_poll_timeout(gbpa, reg, !(reg & GBPA_UPDATE),
+						 ARM_SMMU_POLL_TIMEOUT_US);
+
+		if (ret) {
+			printf("GBPA not responding to update\n");
+			return ret;
+		}
+
+		val = 0;
+		writel_relaxed(val, SMMU_BASE_ADDR + SMMU_CR0);
+		ret = readl_relaxed_poll_timeout(SMMU_BASE_ADDR + SMMU_CR0_ACK, reg, reg == val,
+						 ARM_SMMU_POLL_TIMEOUT_US);
+		if (ret) {
+			printf("CR0 not updated\n");
+			return ret;
+		}
+	}
+
+	return 0;
+}
+#endif
 
 int timer_init(void)
 {
@@ -1073,8 +1539,8 @@ enum boot_device get_boot_device(void)
 	case BT_DEV_TYPE_USB:
 		boot_dev = boot_instance + USB_BOOT;
 #ifdef CONFIG_IMX95
-		if (boot_instance == 3) // BootROM bug for USB1
-			boot_dev -= 3;
+        if (is_imx95_a0())
+			boot_dev -= 3; //iMX95 usb instance start at 3
 #endif
 		break;
 	default:
@@ -1101,7 +1567,7 @@ ulong h_spl_load_read(struct spl_load_info *load, ulong off,
 #endif
 
 	/* Check if the buf is in non-secure world, otherwise copy from trampoline */
-	if ((ulong)buf < CFG_SYS_SDRAM_BASE || (ulong)buf + (count * sector) > ns_ddr_end) {
+	if ((ulong)buf < CFG_SYS_SDRAM_BASE || (ulong)buf + (count << bd->log2blksz) > ns_ddr_end) {
 		total = 0;
 		while (count) {
 			read_count = trampoline_cnt > count ? count : trampoline_cnt;
@@ -1122,3 +1588,10 @@ ulong h_spl_load_read(struct spl_load_info *load, ulong off,
 
 	return blk_dread(bd, sector, count, buf) << bd->log2blksz;
 }
+
+#ifdef CONFIG_IMX95
+u32 container_hdr_alignment(void)
+{
+	return is_imx95_a0() ? 0x400: 0x4000;
+}
+#endif

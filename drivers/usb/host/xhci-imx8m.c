@@ -230,7 +230,7 @@ static int xhci_imx8m_probe(struct udevice *dev)
 		return ret;
 
 	/* Workaround for i.MX95(A) USB3 Host Controller */
-	if (device_is_compatible(dev, "fsl,imx95a-dwc3"))
+	if (is_imx95_a0())
 		imx8m_xhci_set_txfifo(dwc3_reg);
 
 	return 0;
