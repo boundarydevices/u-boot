@@ -53,8 +53,8 @@ static void board_gpio_init(void)
 	if (ret)
 		return;
 
-	dm_gpio_set_value(&desc, 1);
 	dm_gpio_set_dir_flags(&desc, GPIOD_IS_OUT);
+	dm_gpio_set_value(&desc, 1);
 };
 
 int board_phy_config(struct phy_device *phydev)
