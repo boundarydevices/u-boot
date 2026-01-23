@@ -147,10 +147,6 @@
 	bootph-pre-ram;
 };
 
-&pinctrl_lpi2c4 {
-	bootph-pre-ram;
-};
-
 &ethphy1 {
 	reset-gpios = <&gpio4 21 GPIO_ACTIVE_LOW>;
 	reset-assert-us = <100>;
