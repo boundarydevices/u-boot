@@ -69,7 +69,7 @@
 
 #ifdef CONFIG_FEC_MXC
 #ifndef CONFIG_FEC_MXC_PHYADDR
-#define CONFIG_FEC_MXC_PHYADDR		6
+#define CONFIG_FEC_MXC_PHYADDR		7
 #endif
 
 #ifndef IMX_FEC_BASE
